@@ -1,0 +1,163 @@
+- generic [ref=f10e2]:
+  - generic [ref=f10e3]:
+    - generic [ref=f10e4]: SC-M12 · P1 · 매니저 · 웹 · 목록 화면
+    - heading "교안 관리 — 목록" [level=1] [ref=f10e5]
+    - paragraph [ref=f10e6]: "교안은 프로젝트가 아니라 기수 자산(D85·B10·D91) — 선택된 기수 스코프에서 교안·버전 단위로 등록한다(한 기수의 여러 프로젝트가 공통 참조, 담당은 배정 기수 스코프·테넌트 격리). 이 화면은 컬렉션(마스터): 교안 자료를 찾아 상태를 훑고 교안 상세(구조 추출·매핑 승인)로 드릴다운하는 통로다. 상태 머신 업로드 → 추출 중 → 추출 완료 / 추출 실패 → 매핑 대기 → 검수 대기 → 승인(CUR-03). 승인된 매핑만 리포트 \"취약축→교안 위치 안내\"(MEAS-07)로 소비. 등록·구조 추출(CUR-01)·매핑 승인(CUR-02)은 별도 화면(후속). 상단 셸·기수 선택기는 전 화면 통일(기수 7기)."
+  - generic [ref=f10e7]: 화면 · 교안 목록 (CUR-03 · 컬렉션 · 상태 머신)
+  - generic [ref=f10e9]:
+    - generic [ref=f10e10]: iz-get.com/cohorts/7/curriculum
+    - generic [ref=f10e16]:
+      - generic [ref=f10e17]:
+        - generic [ref=f10e18]:
+          - generic [ref=f10e19]:
+            - generic [ref=f10e20]: ◆
+            - text: IZ-Get
+          - generic [ref=f10e21]:
+            - generic [ref=f10e22]: 기수
+            - text: 7기 ▾
+        - generic [ref=f10e23]:
+          - text: 박지현 · 매니저
+          - generic [ref=f10e24]: 박
+      - generic [ref=f10e25]:
+        - generic [ref=f10e26]:
+          - generic [ref=f10e27]:
+            - generic [ref=f10e28]: ▦
+            - text: 대시보드
+          - generic [ref=f10e29]:
+            - generic [ref=f10e30]: ◔
+            - text: 기수 구성
+          - generic [ref=f10e31]:
+            - generic [ref=f10e32]: ▧
+            - text: 교안
+          - generic [ref=f10e33]:
+            - generic [ref=f10e34]: ▤
+            - text: 프로젝트
+          - generic [ref=f10e35]:
+            - generic [ref=f10e36]: △
+            - text: 분석 · 진단
+          - generic [ref=f10e37]:
+            - generic [ref=f10e38]: ◎
+            - text: 교육생
+          - generic [ref=f10e39]:
+            - generic [ref=f10e40]: ✎
+            - text: 개입
+          - generic [ref=f10e41]:
+            - generic [ref=f10e42]: ▥
+            - text: 리포트
+          - generic [ref=f10e43]:
+            - generic [ref=f10e44]: ⚖
+            - text: 이의 · 공개
+        - generic [ref=f10e45]:
+          - generic [ref=f10e46]:
+            - generic [ref=f10e47]: 교안 › 7기
+            - heading "교안 관리" [level=2] [ref=f10e48]
+          - generic [ref=f10e49]:
+            - generic [ref=f10e50]:
+              - text: 교안 목록
+              - generic [ref=f10e51]: 총 6개
+            - button "+ 교안 등록" [ref=f10e52] [cursor=pointer]
+          - generic [ref=f10e53]:
+            - generic [ref=f10e54]: 🔍 교안명 · 주제 검색
+            - generic [ref=f10e55] [cursor=pointer]: 차수 전체 ▾
+            - generic [ref=f10e56] [cursor=pointer]: 추출 상태 전체 ▾
+            - generic [ref=f10e57] [cursor=pointer]: 매핑 검수 전체 ▾
+            - generic [ref=f10e58] [cursor=pointer]: 정렬 최근 수정순 ▾
+          - table [ref=f10e60]:
+            - rowgroup [ref=f10e61]:
+              - row [ref=f10e62]:
+                - columnheader "교안명" [ref=f10e63]
+                - columnheader "유형" [ref=f10e64]
+                - columnheader "버전" [ref=f10e65]
+                - columnheader "추출 상태" [ref=f10e66]
+                - columnheader "매핑 검수" [ref=f10e67]
+                - columnheader "최종 수정" [ref=f10e68]
+                - columnheader [ref=f10e69]
+            - rowgroup [ref=f10e70]:
+              - row [ref=f10e71] [cursor=pointer]:
+                - cell "JWT · 인증 인증 · 토큰 수명 · 세션" [ref=f10e72]:
+                  - text: JWT · 인증
+                  - generic [ref=f10e73]: 인증 · 토큰 수명 · 세션
+                - cell "PDF" [ref=f10e74]
+                - cell "v3" [ref=f10e75]
+                - cell [ref=f10e76]
+                - cell [ref=f10e79]
+                - cell "07-10" [ref=f10e82]
+                - cell "⋯" [ref=f10e83]
+              - row [ref=f10e84] [cursor=pointer]:
+                - cell "반례 · 예외 처리 가이드 edge case · 방어적 프로그래밍" [ref=f10e85]:
+                  - text: 반례 · 예외 처리 가이드
+                  - generic [ref=f10e86]: edge case · 방어적 프로그래밍
+                - cell "PDF" [ref=f10e87]
+                - cell "v2" [ref=f10e88]
+                - cell [ref=f10e89]
+                - cell [ref=f10e92]
+                - cell "07-12" [ref=f10e95]
+                - cell "검수 →⋯" [ref=f10e96]
+              - row [ref=f10e97] [cursor=pointer]:
+                - cell "설계 대안 비교 트레이드오프 · 아키텍처" [ref=f10e98]:
+                  - text: 설계 대안 비교
+                  - generic [ref=f10e99]: 트레이드오프 · 아키텍처
+                - cell "PDF" [ref=f10e100]
+                - cell "v1" [ref=f10e101]
+                - cell [ref=f10e102]
+                - cell [ref=f10e105]
+                - cell "07-11" [ref=f10e108]
+                - cell "⋯" [ref=f10e109]
+              - row [ref=f10e110] [cursor=pointer]:
+                - cell "REST API 설계 리소스 · 상태코드 · 규약" [ref=f10e111]:
+                  - text: REST API 설계
+                  - generic [ref=f10e112]: 리소스 · 상태코드 · 규약
+                - cell "PDF" [ref=f10e113]
+                - cell "v1" [ref=f10e114]
+                - cell [ref=f10e115]
+                - cell "—" [ref=f10e118]
+                - cell "07-09" [ref=f10e120]
+                - cell "재처리⋯" [ref=f10e121]
+              - row [ref=f10e122] [cursor=pointer]:
+                - cell "동시성 · 경합 락 · 트랜잭션 격리" [ref=f10e123]:
+                  - text: 동시성 · 경합
+                  - generic [ref=f10e124]: 락 · 트랜잭션 격리
+                - cell "PDF" [ref=f10e125]
+                - cell "v1" [ref=f10e126]
+                - cell [ref=f10e127]
+                - cell "—" [ref=f10e130]
+                - cell "07-13" [ref=f10e132]
+                - cell "⋯" [ref=f10e133]
+              - row [ref=f10e134] [cursor=pointer]:
+                - cell "상태 관리 기초방금 등록 생명주기 · 불변성" [ref=f10e135]:
+                  - text: 상태 관리 기초방금 등록
+                  - generic [ref=f10e136]: 생명주기 · 불변성
+                - cell "PDF" [ref=f10e137]
+                - cell "v1" [ref=f10e138]
+                - cell [ref=f10e139]
+                - cell "—" [ref=f10e142]
+                - cell "07-13" [ref=f10e144]
+                - cell "⋯" [ref=f10e145]
+          - generic [ref=f10e146]:
+            - generic [ref=f10e147]: 6개 중 1–6
+            - generic [ref=f10e148]: "1"
+          - generic [ref=f10e150]: "· 행 클릭 → 교안 상세(구조 추출·매핑 승인, 별도 화면·후속). 상태 머신: 업로드 → 추출 중 → 추출 완료 / 추출 실패 → 매핑 대기 → 검수 대기 → 승인. 정의 안 된 전이는 차단. 추출 실패 자료는 재처리·삭제만 가능(원본 유지). 승인된 교안은 활성 매핑 연결 확인 후에만 삭제. 배정 밖 기수 교안 접근 차단(테넌트 격리). 자동확정 금지 — 매핑은 매니저 승인 전까지 추천 상태."
+          - generic [ref=f10e152]:
+            - generic [ref=f10e153]:
+              - generic [ref=f10e154]: 이 화면 · 상태 · case (CUR-03 · 등록 관리 중 목록 관련)
+              - generic [ref=f10e155] [cursor=pointer]: 상태 ↔ case 매핑 총합 → (후속)
+            - generic [ref=f10e156]:
+              - generic [ref=f10e157]: 03-4
+              - generic [ref=f10e158]: 중복 차단
+              - generic [ref=f10e159]: 기수 내 동일 교안·버전 중복 — 신규 등록 차단, 기존 항목 확인 유도
+            - generic [ref=f10e160]:
+              - generic [ref=f10e161]: 03-7
+              - generic [ref=f10e162]: 재처리만
+              - generic [ref=f10e163]: 구조 추출 실패 — 추출 실패 상태, 원본 유지한 채 재처리만 허용
+            - generic [ref=f10e164]:
+              - generic [ref=f10e165]: 03-8
+              - generic [ref=f10e166]: 전이 차단
+              - generic [ref=f10e167]: 정의 안 된 상태 전이 — 변경 차단, 현재/허용 다음 상태 안내
+            - generic [ref=f10e168]:
+              - generic [ref=f10e169]: 03-9
+              - generic [ref=f10e170]: 삭제 차단
+              - generic [ref=f10e171]: 승인·활성 매핑 사용 중 삭제 — 차단, 연결 해제 절차 안내
+            - generic [ref=f10e172]:
+              - generic [ref=f10e173]: 03-10
+              - generic [ref=f10e174]: "403"
+              - generic [ref=f10e175]: 배정 밖 기수 교안 접근 — 요청 차단(테넌트 격리·SYS-02)

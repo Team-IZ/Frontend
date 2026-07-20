@@ -1,0 +1,259 @@
+- generic [ref=f1e2]:
+  - complementary [ref=f1e3]:
+    - generic [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - generic [ref=f1e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=f1e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=f1e8]:
+      - generic [ref=f1e9]:
+        - generic [ref=f1e10]: shared
+        - button "로그인 shared/login.html" [ref=f1e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=f1e13]: shared/login.html
+      - generic [ref=f1e14]:
+        - generic [ref=f1e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=f1e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=f1e18]: ▸
+      - generic [ref=f1e19]:
+        - generic [ref=f1e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=f1e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=f1e23]: 총괄
+          - generic [ref=f1e24]: ▸
+      - generic [ref=f1e25]:
+        - generic [ref=f1e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=f1e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=f1e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=f1e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=f1e31]: manager/dashboard.html
+        - button "프로젝트 ▸" [ref=f1e33] [cursor=pointer]:
+          - text: 프로젝트
+          - generic [ref=f1e34]: ▸
+        - button "위험 · 분석 manager/risk-analysis.html" [ref=f1e35] [cursor=pointer]:
+          - text: 위험 · 분석
+          - generic [ref=f1e36]: manager/risk-analysis.html
+        - button "코호트 히트맵 manager/heatmap.html" [ref=f1e37] [cursor=pointer]:
+          - text: 코호트 히트맵
+          - generic [ref=f1e38]: manager/heatmap.html
+        - button "교육생 리스트 manager/trainee-list.html" [ref=f1e39] [cursor=pointer]:
+          - text: 교육생 리스트
+          - generic [ref=f1e40]: manager/trainee-list.html
+        - button "개별 교육생 상세 manager/trainee-detail.html" [ref=f1e41] [cursor=pointer]:
+          - text: 개별 교육생 상세
+          - generic [ref=f1e42]: manager/trainee-detail.html
+        - button "개입 관리 manager/intervention.html" [ref=f1e43] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=f1e44]: manager/intervention.html
+        - generic [ref=f1e45]:
+          - button "리포트 ▸" [ref=f1e46] [cursor=pointer]:
+            - text: 리포트
+            - generic [ref=f1e47]: ▸
+          - generic [ref=f1e48]:
+            - button "종합 리포트 RPT-01 · 기수" [ref=f1e49] [cursor=pointer]
+            - button "체크포인트 RPT-04 · 회차별" [ref=f1e50] [cursor=pointer]
+            - button "개인 최종 RPT-02" [ref=f1e51] [cursor=pointer]
+            - button "상태 ↔ case 매핑 총합" [ref=f1e52] [cursor=pointer]
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=f1e53] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=f1e54]: manager/appeal-disclosure.html
+      - generic [ref=f1e55]:
+        - generic [ref=f1e56]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=f1e58] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=f1e59]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=f1e60] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=f1e61]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=f1e62] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=f1e63]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=f1e64] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=f1e65]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=f1e66] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=f1e67]: trainee/result.html
+  - main [ref=f1e68]:
+    - generic [ref=f1e69]:
+      - generic [ref=f1e70]: 리포트 · 체크포인트
+      - generic [ref=f1e71]: manager/report.html#checkpoints
+      - link "새 탭에서 열기 ↗" [ref=f1e72] [cursor=pointer]:
+        - /url: manager/report.html#checkpoints
+    - iframe [ref=f1e73]:
+      - generic [ref=f2e2]:
+        - text: → → ◔ ◔ ◔ ◔ ◔ ◔ ◔ ◔ ◔ ◔ ◔
+        - generic [ref=f2e171]:
+          - heading "상태별 UI — 예외 case 전량 (게이트 A)" [level=3] [ref=f2e172]
+          - generic [ref=f2e173]: RPT-01 7 + RPT-02 7 + RPT-04 7 + RPT-05 6 = 27. (RPT-03 면담 체크리스트는 SC-M06 소관.)
+          - generic [ref=f2e174]: RPT-01 · 종합 리포트
+          - table [ref=f2e176]:
+            - rowgroup [ref=f2e177]:
+              - row [ref=f2e178]:
+                - columnheader "#" [ref=f2e179]
+                - columnheader "상태" [ref=f2e180]
+                - columnheader "처리" [ref=f2e181]
+                - columnheader "표현 / 다음 행동" [ref=f2e182]
+              - row [ref=f2e183]:
+                - cell "1" [ref=f2e184]
+                - cell "일부 데이터 부족" [ref=f2e185]
+                - cell "항목 생략·표기" [ref=f2e186]
+                - cell "해당 항목 생략하고 결측 병기(분포에서 결측 2명 제외 표시)" [ref=f2e188]
+              - row [ref=f2e189]:
+                - cell "2" [ref=f2e190]
+                - cell "근거 없는 수치" [ref=f2e191]
+                - cell "노출 차단" [ref=f2e192]
+                - cell "근거 trace 없으면 수치 자체를 렌더 안 함(A2)" [ref=f2e194]
+              - row [ref=f2e195]:
+                - cell "3" [ref=f2e196]
+                - cell "AI 요약 수치 불일치" [ref=f2e197]
+                - cell "문단 재생성" [ref=f2e198]
+                - cell "불일치 문단만 재생성, 정형 지표는 유지" [ref=f2e200]
+              - row [ref=f2e201]:
+                - cell "4" [ref=f2e202]
+                - cell "표본 부족 회복률" [ref=f2e203]
+                - cell "백분율 제한" [ref=f2e204]
+                - cell "백분율 대신 자연빈도(분수)만 표시(B4)" [ref=f2e206]
+              - row [ref=f2e207]:
+                - cell "5" [ref=f2e208]
+                - cell "공통 집계 함수 실패" [ref=f2e209]
+                - cell "확정 중단" [ref=f2e210]
+                - cell "리포트 확정 중단·재시도, 매니저 알림" [ref=f2e212]
+              - row [ref=f2e213]:
+                - cell "6" [ref=f2e214]
+                - cell "export 실패" [ref=f2e215]
+                - cell "원본 보존" [ref=f2e216]
+                - cell "PDF 실패해도 원본 리포트 보존, 재시도 안내" [ref=f2e218]
+              - row [ref=f2e219]:
+                - cell "7" [ref=f2e220]
+                - cell "RPT-04와 독립 계산 요청" [ref=f2e221]
+                - cell "SSOT 강제" [ref=f2e222]
+                - cell "공통 집계 재사용 강제 — 별도 계산 금지(B8)" [ref=f2e224]
+          - generic [ref=f2e225]: RPT-02 · 개인 최종 리포트
+          - table [ref=f2e227]:
+            - rowgroup [ref=f2e228]:
+              - row [ref=f2e229]:
+                - columnheader "#" [ref=f2e230]
+                - columnheader "상태" [ref=f2e231]
+                - columnheader "처리" [ref=f2e232]
+                - columnheader "표현 / 다음 행동" [ref=f2e233]
+              - row [ref=f2e234]:
+                - cell "1" [ref=f2e235]
+                - cell "최종 회차 미완료" [ref=f2e236]
+                - cell "생성 차단" [ref=f2e237]
+                - cell "목록에 '최종 미완료' 배지, 리포트 생성 불가" [ref=f2e239]
+              - row [ref=f2e240]:
+                - cell "2" [ref=f2e241]
+                - cell "일부 회차 점수 결측" [ref=f2e242]
+                - cell "결측 표시" [ref=f2e243]
+                - cell "결측 구간 표시 후 산출 가능한 추이만 구성" [ref=f2e245]
+              - row [ref=f2e246]:
+                - cell "3" [ref=f2e247]
+                - cell "최종 등급 부재" [ref=f2e248]
+                - cell "등급 제외" [ref=f2e249]
+                - cell "등급 항목 제외, 성장 추이·강약점만 생성" [ref=f2e251]
+              - row [ref=f2e252]:
+                - cell "4" [ref=f2e253]
+                - cell "GOV-03 미지정" [ref=f2e254]
+                - cell "기본 비공개" [ref=f2e255]
+                - cell "교육생용 리포트 기본 비공개 적용" [ref=f2e257]
+              - row [ref=f2e258]:
+                - cell "5" [ref=f2e259]
+                - cell "교육생 비공개 설정" [ref=f2e260]
+                - cell "매니저용만" [ref=f2e261]
+                - cell "매니저용 유지, 교육생 화면 미노출(T05)" [ref=f2e263]
+              - row [ref=f2e264]:
+                - cell "6" [ref=f2e265]
+                - cell "루브릭·채점 근거 노출 탐지" [ref=f2e266]
+                - cell "항목 제거" [ref=f2e267]
+                - cell "해당 항목 제거 후 공개 범위 재검증(A5)" [ref=f2e269]
+              - row [ref=f2e270]:
+                - cell "7" [ref=f2e271]
+                - cell "리포트 중복 생성 요청" [ref=f2e272]
+                - cell "활성 버전" [ref=f2e273]
+                - cell "최신 활성 버전 반환 또는 신규 버전 정책" [ref=f2e275]
+          - generic [ref=f2e276]: RPT-04 · 체크포인트 리포트 자동생성
+          - table [ref=f2e278]:
+            - rowgroup [ref=f2e279]:
+              - row [ref=f2e280]:
+                - columnheader "#" [ref=f2e281]
+                - columnheader "상태" [ref=f2e282]
+                - columnheader "처리" [ref=f2e283]
+                - columnheader "표현 / 다음 행동" [ref=f2e284]
+              - row [ref=f2e285]:
+                - cell "1" [ref=f2e286]
+                - cell "자동 생성 실패" [ref=f2e287]
+                - cell "실패 기록" [ref=f2e288]
+                - cell "실패 기록 및 매니저 알림(무단 누락 금지)" [ref=f2e290]
+              - row [ref=f2e291]:
+                - cell "2" [ref=f2e292]
+                - cell "직전 스냅샷 없음(최초 체크포인트)" [ref=f2e293]
+                - cell "diff 생략" [ref=f2e294]
+                - cell "diff 없이 최초 스냅샷만 ('diff 없음' 표기)" [ref=f2e296]
+              - row [ref=f2e297]:
+                - cell "3" [ref=f2e298]
+                - cell "RPT-01 공통 집계 실패" [ref=f2e299]
+                - cell "생성 중단" [ref=f2e300]
+                - cell "집계 실패 시 체크포인트 생성 중단" [ref=f2e302]
+              - row [ref=f2e303]:
+                - cell "4" [ref=f2e304]
+                - cell "독립 계산값 불일치" [ref=f2e305]
+                - cell "공통값 우선" [ref=f2e306]
+                - cell "공통 집계값 우선 적용(B8)" [ref=f2e308]
+              - row [ref=f2e309]:
+                - cell "5" [ref=f2e310]
+                - cell "동일 회차 중복 생성" [ref=f2e311]
+                - cell "단일 버전" [ref=f2e312]
+                - cell "활성 버전 단일 유지" [ref=f2e314]
+              - row [ref=f2e315]:
+                - cell "6" [ref=f2e316]
+                - cell "생성 이벤트 누락" [ref=f2e317]
+                - cell "재생성" [ref=f2e318]
+                - cell "누락 회차 재생성" [ref=f2e320]
+              - row [ref=f2e321]:
+                - cell "7" [ref=f2e322]
+                - cell "AI 요약 실패" [ref=f2e323]
+                - cell "정형 지표 유지" [ref=f2e324]
+                - cell "정형 지표는 유지, 요약만 빈 상태" [ref=f2e326]
+          - generic [ref=f2e327]: RPT-05 · 리포트 근거 온디맨드 열람
+          - table [ref=f2e329]:
+            - rowgroup [ref=f2e330]:
+              - row [ref=f2e331]:
+                - columnheader "#" [ref=f2e332]
+                - columnheader "상태" [ref=f2e333]
+                - columnheader "처리" [ref=f2e334]
+                - columnheader "표현 / 다음 행동" [ref=f2e335]
+              - row [ref=f2e336]:
+                - cell "1" [ref=f2e337]
+                - cell "클릭 전 근거 렌더 요청" [ref=f2e338]
+                - cell "차단" [ref=f2e339]
+                - cell "클릭 전 근거 데이터 렌더링 금지(성능·정보과다)" [ref=f2e341]
+              - row [ref=f2e342]:
+                - cell "2" [ref=f2e343]
+                - cell "근거 데이터 없음" [ref=f2e344]
+                - cell "집계 불가 표시" [ref=f2e345]
+                - cell "패널에 '집계 불가' 상태 표시" [ref=f2e347]
+              - row [ref=f2e348]:
+                - cell "3" [ref=f2e349]
+                - cell "수치 ↔ 근거 불일치" [ref=f2e350]
+                - cell "패널 차단" [ref=f2e351]
+                - cell "패널 노출 차단(불일치 수치 신뢰 불가)" [ref=f2e353]
+              - row [ref=f2e354]:
+                - cell "4" [ref=f2e355]
+                - cell "대량 이력" [ref=f2e356]
+                - cell "페이지네이션" [ref=f2e357]
+                - cell "원본 이력 페이지네이션 적용" [ref=f2e359]
+              - row [ref=f2e360]:
+                - cell "5" [ref=f2e361]
+                - cell "권한 없음" [ref=f2e362]
+                - cell "열람 차단" [ref=f2e363]
+                - cell "담당 범위 밖 근거 열람 차단(테넌트 격리)" [ref=f2e365]
+              - row [ref=f2e366]:
+                - cell "6" [ref=f2e367]
+                - cell "리포트 버전 불일치" [ref=f2e368]
+                - cell "버전 재조회" [ref=f2e369]
+                - cell "선택 버전 기준 근거 재조회" [ref=f2e371]
+          - generic [ref=f2e372]: "· 게이트 A: 27 case = 27 상태 행 ✅ · 모든 수치는 RPT-05 온디맨드 근거(클릭 전 비렌더) · RPT-01↔04 동일 지표 SSOT 일치(B8) · 최종 등급은 최종회차만(B3) · 교육생 공개용은 루브릭·채점근거 제거(A5·GOV-03) · 표본 부족 회복률은 자연빈도(B4) · 담당 기수·기관 범위(SYS-02·AUTH-09)."

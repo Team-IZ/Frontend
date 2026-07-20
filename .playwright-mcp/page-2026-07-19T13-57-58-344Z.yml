@@ -1,0 +1,483 @@
+- generic [ref=f7e2]:
+  - generic [ref=f7e3]:
+    - generic [ref=f7e4]: SC-T05 · P0 · 교육생 · 웹
+    - heading "결과 리포트 (교육생) — 상태별 전량" [level=1] [ref=f7e5]
+    - paragraph [ref=f7e6]: 교육생이 볼 수 있는 것만(GOV-03 전체/요약/비공개, 미지정 시 기본 비공개). 점수·루브릭·산정 공식·채점 근거는 비노출(A5) — 리포트는 서술형 강약점 + 이해 상태 궤적. 취약점은 처방이 아니라 교안 위치 안내까지(자동 연결된 매핑이 있고 신뢰도가 충분할 때만, B10·D96). 등급은 최종 회차만(B3). 이의는 대상 + 사유 필수로 제출 → 매니저 검토(SC-M09), 원본은 불변.
+  - generic [ref=f7e7]: T0 · "내 리포트" 진입 별도 목록 화면 없음 — 회차 선택기 + 최신 리포트 (D116)
+  - generic [ref=f7e8]:
+    - generic [ref=f7e9]: iz-get.com/reports
+    - generic [ref=f7e15]:
+      - generic [ref=f7e16]:
+        - generic [ref=f7e17]:
+          - generic [ref=f7e18]:
+            - generic [ref=f7e19]: ◆
+            - text: IZ-Get
+          - generic [ref=f7e20]:
+            - generic [ref=f7e21]: 홈
+            - generic [ref=f7e22]: 내 리포트
+        - generic [ref=f7e23]:
+          - generic [ref=f7e24]:
+            - text: 김민준
+            - generic [ref=f7e25]: 7기 · A반
+          - generic [ref=f7e26]: 민
+      - generic [ref=f7e27]:
+        - generic [ref=f7e28]:
+          - generic [ref=f7e29]:
+            - generic [ref=f7e30]: 내 리포트
+            - heading "3회차 결과" [level=2] [ref=f7e31]
+          - generic [ref=f7e32]: 전체 공개
+        - generic [ref=f7e33]: 생성 05.11 · API 서버 · 중간 회차 · 가장 최근 리포트
+        - generic [ref=f7e34]:
+          - generic [ref=f7e35] [cursor=pointer]:
+            - text: 1회차
+            - generic [ref=f7e36]: 🔒
+          - generic [ref=f7e37] [cursor=pointer]: 2회차
+          - generic [ref=f7e38] [cursor=pointer]: 3회차
+          - generic [ref=f7e39] [cursor=pointer]: 4회차 · 준비 중
+        - generic [ref=f7e40]:
+          - generic [ref=f7e41]: 지금까지의 변화
+          - generic [ref=f7e42]:
+            - generic [ref=f7e43]:
+              - generic [ref=f7e45]: 시작
+              - generic [ref=f7e46]: 1회차
+            - generic [ref=f7e47]:
+              - generic [ref=f7e49]: 부분
+              - generic [ref=f7e50]: 2회차
+            - generic [ref=f7e51]:
+              - generic [ref=f7e52]: 견고
+              - generic [ref=f7e53]: 3회차
+          - paragraph [ref=f7e54]: 코드를 설명하는 힘이 회차를 거치며 꾸준히 나아지고 있어요.
+        - generic [ref=f7e55]:
+          - generic [ref=f7e56]: 잘한 점
+          - paragraph [ref=f7e58]: 예외 상황 대응이 눈에 띄게 좋아졌어요.
+          - generic [ref=f7e59]: 반례 대응
+        - generic [ref=f7e61]: 🔒 점수·루브릭·채점 근거는 표시되지 않아요. · 회차를 눌러 지난 결과를 볼 수 있어요(비공개 회차는 잠금).
+  - generic [ref=f7e62]: T1 · 요약 공개 (GOV-03) 중간 회차 · 이의 폼 접힘(기본) · 등급 없음(B3)
+  - generic [ref=f7e63]:
+    - generic [ref=f7e64]: iz-get.com/reports/2
+    - generic [ref=f7e70]:
+      - generic [ref=f7e71]:
+        - generic [ref=f7e72]:
+          - generic [ref=f7e73]:
+            - generic [ref=f7e74]: ◆
+            - text: IZ-Get
+          - generic [ref=f7e75]:
+            - generic [ref=f7e76]: 홈
+            - generic [ref=f7e77]: 내 리포트
+        - generic [ref=f7e78]:
+          - generic [ref=f7e79]:
+            - text: 김민준
+            - generic [ref=f7e80]: 7기 · A반
+          - generic [ref=f7e81]: 민
+      - generic [ref=f7e82]:
+        - generic [ref=f7e83]:
+          - generic [ref=f7e84]:
+            - generic [ref=f7e85]: 내 리포트 › 2회차
+            - heading "2회차 결과" [level=2] [ref=f7e86]
+          - generic [ref=f7e87]: 요약 공개
+        - generic [ref=f7e88]: 생성 04.12 · API 서버 · 중간 회차 (등급은 최종 회차 후에 부여돼요)
+        - generic [ref=f7e89]:
+          - generic [ref=f7e90]: 잘한 점
+          - paragraph [ref=f7e92]: 제출한 코드의 설계 의도를 명확히 설명했고, 인증 흐름에서 다른 방식과 비교해 무엇을 얻고 무엇을 포기했는지 짚었어요.
+          - generic [ref=f7e93]:
+            - generic [ref=f7e94]: 설계 논리
+            - generic [ref=f7e95]: 대안 비교
+        - generic [ref=f7e96]:
+          - generic [ref=f7e97]: 더 볼 부분
+          - paragraph [ref=f7e99]: 만료·위변조 토큰 같은 예외 상황에 대한 대응이 아직 약해요. 정상 흐름은 잘 이해했지만, 실패하는 경우를 코드에서 어떻게 막을지에 대한 설명이 부족했어요.
+          - generic [ref=f7e100]: 반례 대응
+        - generic [ref=f7e102]:
+          - generic [ref=f7e103]: 📘 관련 학습 자료
+          - generic [ref=f7e104]:
+            - text: ·
+            - generic [ref=f7e105]: 인증·보안 모듈
+            - text: — 3장 12~18p (토큰 예외 처리)
+          - generic [ref=f7e106]: 더 볼 부분과 관련된 교안 위치예요. 무엇을 하라는 지시가 아니라 자료 안내입니다.
+        - generic [ref=f7e108]:
+          - generic [ref=f7e109]: 결과에서 확인하고 싶은 점이 있나요?
+          - button "이의제기" [ref=f7e110] [cursor=pointer]
+        - generic [ref=f7e111]: 🔒 점수·루브릭·채점 근거는 표시되지 않아요. · 공개 범위는 담당 매니저가 정합니다.
+  - generic [ref=f7e112]: T2 · 전체 공개 (GOV-03) 이해 상태 궤적 추가 · 점수 눈금 없음(A5) · 2회차부터 표시(B4)
+  - generic [ref=f7e113]:
+    - generic [ref=f7e114]: iz-get.com/reports/3
+    - generic [ref=f7e120]:
+      - generic [ref=f7e121]:
+        - generic [ref=f7e122]:
+          - generic [ref=f7e123]:
+            - generic [ref=f7e124]: ◆
+            - text: IZ-Get
+          - generic [ref=f7e125]:
+            - generic [ref=f7e126]: 홈
+            - generic [ref=f7e127]: 내 리포트
+        - generic [ref=f7e128]:
+          - generic [ref=f7e129]:
+            - text: 김민준
+            - generic [ref=f7e130]: 7기 · A반
+          - generic [ref=f7e131]: 민
+      - generic [ref=f7e132]:
+        - generic [ref=f7e133]:
+          - generic [ref=f7e134]:
+            - generic [ref=f7e135]: 내 리포트 › 3회차
+            - heading "3회차 결과" [level=2] [ref=f7e136]
+          - generic [ref=f7e137]: 전체 공개
+        - generic [ref=f7e138]: 생성 05.11 · API 서버 · 중간 회차
+        - generic [ref=f7e139]:
+          - generic [ref=f7e140]: 지금까지의 변화
+          - generic [ref=f7e141]:
+            - generic [ref=f7e142]:
+              - generic [ref=f7e144]: 시작
+              - generic [ref=f7e145]: 1회차
+            - generic [ref=f7e146]:
+              - generic [ref=f7e148]: 부분
+              - generic [ref=f7e149]: 2회차
+            - generic [ref=f7e150]:
+              - generic [ref=f7e151]: 견고
+              - generic [ref=f7e152]: 3회차
+          - paragraph [ref=f7e153]: 코드를 설명하는 힘이 회차를 거치며 꾸준히 나아지고 있어요. 특히 왜 그렇게 만들었는지를 스스로 풀어내는 부분이 좋아졌습니다.
+          - paragraph [ref=f7e154]: 회차별 이해 상태만 표시해요. 점수·순위는 표시하지 않습니다.
+        - generic [ref=f7e155]:
+          - generic [ref=f7e156]: 잘한 점
+          - paragraph [ref=f7e158]: 이전 회차에서 약했던 예외 상황 대응이 눈에 띄게 좋아졌어요. 실패 케이스를 먼저 떠올리고 코드로 막는 방법을 설명했습니다.
+          - generic [ref=f7e159]:
+            - generic [ref=f7e160]: 반례 대응
+            - generic [ref=f7e161]: 자기 수정
+        - generic [ref=f7e162]:
+          - generic [ref=f7e163]: 더 볼 부분
+          - paragraph [ref=f7e165]: 동시성처럼 여러 요청이 겹치는 상황에 대한 설명은 아직 여유가 있어요.
+          - generic [ref=f7e166]: 코드 이해
+        - generic [ref=f7e168]:
+          - generic [ref=f7e169]: 📘 관련 학습 자료
+          - generic [ref=f7e170]:
+            - text: ·
+            - generic [ref=f7e171]: 동시성·트랜잭션 모듈
+            - text: — 5장 40~47p
+          - generic [ref=f7e172]: 더 볼 부분과 관련된 교안 위치예요.
+        - generic [ref=f7e174]:
+          - generic [ref=f7e175]: 결과에서 확인하고 싶은 점이 있나요?
+          - button "이의제기" [ref=f7e176] [cursor=pointer]
+        - generic [ref=f7e177]: 🔒 점수·루브릭·채점 근거는 표시되지 않아요.
+  - generic [ref=f7e178]: T3 · 이의제기 작성 대상 선택(scoreRef) + 사유 필수(P-1) · 원본 불변 고지
+  - generic [ref=f7e179]:
+    - generic [ref=f7e180]: iz-get.com/reports/2#appeal
+    - generic [ref=f7e186]:
+      - generic [ref=f7e187]:
+        - generic [ref=f7e188]:
+          - generic [ref=f7e189]:
+            - generic [ref=f7e190]: ◆
+            - text: IZ-Get
+          - generic [ref=f7e191]:
+            - generic [ref=f7e192]: 홈
+            - generic [ref=f7e193]: 내 리포트
+        - generic [ref=f7e194]:
+          - generic [ref=f7e195]:
+            - text: 김민준
+            - generic [ref=f7e196]: 7기 · A반
+          - generic [ref=f7e197]: 민
+      - generic [ref=f7e198]:
+        - generic [ref=f7e199]:
+          - generic [ref=f7e200]:
+            - generic [ref=f7e201]: 내 리포트 › 2회차
+            - heading "2회차 결과" [level=2] [ref=f7e202]
+          - generic [ref=f7e203]: 요약 공개
+        - generic [ref=f7e204]: 생성 04.12 · API 서버 · 중간 회차
+        - generic [ref=f7e205]:
+          - generic [ref=f7e206]: 더 볼 부분
+          - paragraph [ref=f7e208]: 만료·위변조 토큰 같은 예외 상황에 대한 대응이 아직 약해요.
+          - generic [ref=f7e209]: 반례 대응
+        - generic [ref=f7e211]:
+          - generic [ref=f7e212]:
+            - generic [ref=f7e213]: 결과에서 확인하고 싶은 점이 있나요?
+            - button "취소" [ref=f7e214] [cursor=pointer]
+          - generic [ref=f7e215]:
+            - generic [ref=f7e216]: 어느 부분에 대한 이의인가요? *
+            - generic [ref=f7e217]:
+              - generic [ref=f7e218] [cursor=pointer]: 더 볼 부분 · 반례 대응
+              - generic [ref=f7e219] [cursor=pointer]: 잘한 점 · 설계 논리
+              - generic [ref=f7e220] [cursor=pointer]: 세션 진행 방식
+              - generic [ref=f7e221] [cursor=pointer]: 기타
+            - generic [ref=f7e222]: 이유를 적어주세요 *
+            - generic [ref=f7e223]: "예: 세션에서 토큰 만료 처리를 설명했는데 반영되지 않은 것 같아요. 3번째 답변에서 미들웨어 방식으로…"
+            - generic [ref=f7e224]: 이유를 입력해야 제출할 수 있어요.
+            - generic [ref=f7e225]:
+              - button "취소" [ref=f7e226] [cursor=pointer]
+              - button "제출" [ref=f7e227] [cursor=pointer]
+          - generic [ref=f7e228]: 제출하면 담당 매니저가 검토해요. 결과가 바로 바뀌지는 않고, 매니저가 확인 후 수정 여부를 결정합니다. 원래 기록은 그대로 보존돼요.
+  - generic [ref=f7e229]: T4 · 이의 제출 후 · 검토 중 진행 상태 가시화 · 중복 제출 차단(P-2)
+  - generic [ref=f7e230]:
+    - generic [ref=f7e231]: iz-get.com/reports/2
+    - generic [ref=f7e237]:
+      - generic [ref=f7e238]:
+        - generic [ref=f7e239]:
+          - generic [ref=f7e240]:
+            - generic [ref=f7e241]: ◆
+            - text: IZ-Get
+          - generic [ref=f7e242]:
+            - generic [ref=f7e243]: 홈
+            - generic [ref=f7e244]: 내 리포트
+        - generic [ref=f7e245]:
+          - generic [ref=f7e246]:
+            - text: 김민준
+            - generic [ref=f7e247]: 7기 · A반
+          - generic [ref=f7e248]: 민
+      - generic [ref=f7e249]:
+        - generic [ref=f7e250]:
+          - generic [ref=f7e251]:
+            - generic [ref=f7e252]: 내 리포트 › 2회차
+            - heading "2회차 결과" [level=2] [ref=f7e253]
+          - generic [ref=f7e254]: 요약 공개
+        - generic [ref=f7e255]: 생성 04.12 · API 서버 · 중간 회차
+        - generic [ref=f7e256]:
+          - generic [ref=f7e257]: 더 볼 부분
+          - paragraph [ref=f7e259]: 만료·위변조 토큰 같은 예외 상황에 대한 대응이 아직 약해요.
+          - generic [ref=f7e260]: 반례 대응
+        - generic [ref=f7e262]:
+          - generic [ref=f7e263]: 이의제기
+          - generic [ref=f7e265]:
+            - generic [ref=f7e266]: 검토 중
+            - generic [ref=f7e267]: 더 볼 부분 · 반례 대응에 대해 04.13에 제출했어요. 담당 매니저가 확인하고 있어요. 결과가 바뀌면 이 리포트에 반영되고 알림을 보내드려요.같은 항목으로 다시 제출할 수는 없어요.
+        - generic [ref=f7e268]: 🔒 점수·루브릭·채점 근거는 표시되지 않아요.
+  - generic [ref=f7e269]: T5 · 최종 리포트 (최종 회차) 등급은 여기서만 부여(B3) · D25 어휘(견고/부분/표면)
+  - generic [ref=f7e270]:
+    - generic [ref=f7e271]: iz-get.com/reports/final
+    - generic [ref=f7e277]:
+      - generic [ref=f7e278]:
+        - generic [ref=f7e279]:
+          - generic [ref=f7e280]:
+            - generic [ref=f7e281]: ◆
+            - text: IZ-Get
+          - generic [ref=f7e282]:
+            - generic [ref=f7e283]: 홈
+            - generic [ref=f7e284]: 내 리포트
+        - generic [ref=f7e285]:
+          - generic [ref=f7e286]:
+            - text: 김민준
+            - generic [ref=f7e287]: 7기 · A반
+          - generic [ref=f7e288]: 민
+      - generic [ref=f7e289]:
+        - generic [ref=f7e290]:
+          - generic [ref=f7e291]:
+            - generic [ref=f7e292]: 내 리포트 › 최종
+            - heading "최종 리포트" [level=2] [ref=f7e293]
+          - generic [ref=f7e294]: 전체 공개
+        - generic [ref=f7e295]: 생성 06.08 · 4회차(최종) · 전 회차 종합
+        - generic [ref=f7e296]:
+          - generic [ref=f7e297]: 최종 이해 상태
+          - generic [ref=f7e298]:
+            - text: 견고
+            - generic [ref=f7e299]: · 코드를 스스로 설명하고 근거를 댈 수 있는 수준
+          - paragraph [ref=f7e300]: 전 회차에 걸쳐 코드 이해도가 꾸준히 올라갔어요. 이 판정은 최종 회차 기준으로만 부여됩니다.
+        - generic [ref=f7e301]:
+          - generic [ref=f7e302]: 전체 변화
+          - generic [ref=f7e303]:
+            - generic [ref=f7e304]:
+              - generic [ref=f7e306]: 시작
+              - generic [ref=f7e307]: 1회차
+            - generic [ref=f7e308]:
+              - generic [ref=f7e310]: 부분
+              - generic [ref=f7e311]: 2회차
+            - generic [ref=f7e312]:
+              - generic [ref=f7e314]: 견고
+              - generic [ref=f7e315]: 3회차
+            - generic [ref=f7e316]:
+              - generic [ref=f7e317]: 견고
+              - generic [ref=f7e318]: 4회차
+          - paragraph [ref=f7e319]: 회차별 이해 상태만 표시해요. 점수·순위·다른 사람과의 비교는 표시하지 않습니다.
+        - generic [ref=f7e320]:
+          - generic [ref=f7e321]: 강점
+          - paragraph [ref=f7e323]: 설계 논리와 대안 비교가 특히 좋고, 자기 답변을 스스로 교정하는 힘이 붙었어요.
+          - generic [ref=f7e324]:
+            - generic [ref=f7e325]: 설계 논리
+            - generic [ref=f7e326]: 대안 비교
+            - generic [ref=f7e327]: 자기 수정
+        - generic [ref=f7e328]:
+          - generic [ref=f7e329]: 더 볼 부분
+          - paragraph [ref=f7e331]: 반례·엣지 케이스 대응은 초반보다 크게 나아졌지만, 앞으로도 더 키울 여지가 있는 영역이에요.
+          - generic [ref=f7e332]: 반례 대응
+        - generic [ref=f7e335]:
+          - generic [ref=f7e336]: 최종 결과에서 확인하고 싶은 점이 있나요?
+          - button "이의제기" [ref=f7e337] [cursor=pointer]
+        - generic [ref=f7e338]: 🔒 점수·루브릭은 표시되지 않아요. 최종 이해 상태는 최종 회차에만 부여됩니다(B3).
+  - generic [ref=f7e339]: T6 · 비공개(R-1) · 설정 미지정·조회 실패도 동일(R-2) 기본 비공개 = 안전 기본값
+  - generic [ref=f7e340]:
+    - generic [ref=f7e341]: iz-get.com/reports/1
+    - generic [ref=f7e347]:
+      - generic [ref=f7e348]:
+        - generic [ref=f7e349]:
+          - generic [ref=f7e350]:
+            - generic [ref=f7e351]: ◆
+            - text: IZ-Get
+          - generic [ref=f7e352]:
+            - generic [ref=f7e353]: 홈
+            - generic [ref=f7e354]: 내 리포트
+        - generic [ref=f7e355]:
+          - generic [ref=f7e356]:
+            - text: 김민준
+            - generic [ref=f7e357]: 7기 · A반
+          - generic [ref=f7e358]: 민
+      - generic [ref=f7e359]:
+        - generic [ref=f7e360]:
+          - generic [ref=f7e361]:
+            - generic [ref=f7e362]: 내 리포트 › 1회차
+            - heading "1회차 결과" [level=2] [ref=f7e363]
+          - generic [ref=f7e364]: 비공개
+        - generic [ref=f7e365]:
+          - generic [ref=f7e366]: 🔒
+          - heading "결과가 아직 공개되지 않았어요" [level=3] [ref=f7e367]
+          - paragraph [ref=f7e368]: 담당 매니저가 공개 범위를 정하면 확인할 수 있어요.궁금한 점은 담당 매니저에게 문의해 주세요.
+  - generic [ref=f7e369]: T7 · 세션 미완료(R-3) · 리포트 준비 중(R-4) 두 상태 · 같은 화면 골격
+  - generic [ref=f7e370]:
+    - generic [ref=f7e371]: iz-get.com/reports/4
+    - generic [ref=f7e377]:
+      - generic [ref=f7e378]:
+        - generic [ref=f7e379]:
+          - generic [ref=f7e380]:
+            - generic [ref=f7e381]: ◆
+            - text: IZ-Get
+          - generic [ref=f7e382]:
+            - generic [ref=f7e383]: 홈
+            - generic [ref=f7e384]: 내 리포트
+        - generic [ref=f7e385]:
+          - generic [ref=f7e386]:
+            - text: 김민준
+            - generic [ref=f7e387]: 7기 · A반
+          - generic [ref=f7e388]: 민
+      - generic [ref=f7e389]:
+        - generic [ref=f7e391]:
+          - generic [ref=f7e392]: 내 리포트 › 4회차
+          - heading "4회차 결과" [level=2] [ref=f7e393]
+        - generic [ref=f7e394]:
+          - generic [ref=f7e395]: 📝
+          - heading "검증 세션을 마치면 결과를 볼 수 있어요" [level=3] [ref=f7e396]
+          - paragraph [ref=f7e397]: 아직 이번 회차 세션이 끝나지 않았어요. (R-3)
+        - generic [ref=f7e398]:
+          - generic [ref=f7e399]: ⏳
+          - heading "결과를 정리하고 있어요" [level=3] [ref=f7e400]
+          - paragraph [ref=f7e402]: 세션은 끝났고, 리포트를 만드는 중이에요. 준비되면 알림을 보내드려요. (R-4)
+  - generic [ref=f7e403]: T8 · 교안 위치 안내 없음(R-5) 미링크·미커버·저신뢰 3분기 → 블록 자체 생략 · 빈 껍데기 금지
+  - generic [ref=f7e404]:
+    - generic [ref=f7e405]: iz-get.com/reports/2
+    - generic [ref=f7e411]:
+      - generic [ref=f7e412]:
+        - generic [ref=f7e413]:
+          - generic [ref=f7e414]:
+            - generic [ref=f7e415]: ◆
+            - text: IZ-Get
+          - generic [ref=f7e416]:
+            - generic [ref=f7e417]: 홈
+            - generic [ref=f7e418]: 내 리포트
+        - generic [ref=f7e419]:
+          - generic [ref=f7e420]:
+            - text: 김민준
+            - generic [ref=f7e421]: 7기 · A반
+          - generic [ref=f7e422]: 민
+      - generic [ref=f7e423]:
+        - generic [ref=f7e424]:
+          - generic [ref=f7e425]:
+            - generic [ref=f7e426]: 내 리포트 › 2회차
+            - heading "2회차 결과" [level=2] [ref=f7e427]
+          - generic [ref=f7e428]: 요약 공개
+        - generic [ref=f7e429]: 생성 04.12 · API 서버 · 중간 회차
+        - generic [ref=f7e430]:
+          - generic [ref=f7e431]: 잘한 점
+          - paragraph [ref=f7e433]: 제출한 코드의 설계 의도를 명확히 설명했어요.
+          - generic [ref=f7e434]: 설계 논리
+        - generic [ref=f7e436]:
+          - generic [ref=f7e437]: 더 볼 부분
+          - paragraph [ref=f7e439]: 예외 상황에 대한 대응이 아직 약해요.
+          - generic [ref=f7e440]: 반례 대응
+        - generic [ref=f7e443]:
+          - generic [ref=f7e444]: 결과에서 확인하고 싶은 점이 있나요?
+          - button "이의제기" [ref=f7e445] [cursor=pointer]
+        - generic [ref=f7e446]: 🔒 점수·루브릭·채점 근거는 표시되지 않아요. · 이번 회차는 연결된 교안 위치를 찾지 못해 학습 자료 안내가 표시되지 않습니다(R-5 · 블록 자체 생략 — 프로젝트에 교안 미링크 / 해당 기술영역 미커버 / 자동 연결 신뢰도 부족 중 하나).
+  - generic [ref=f7e447]:
+    - heading "상태 ↔ 명세 case 매핑 (교육생-facing 11)" [level=3] [ref=f7e448]
+    - paragraph [ref=f7e449]: 매니저 검토·판정 수정(GOV-01 c4~7)·공개 범위 설정(GOV-03 매니저측)은 SC-M09 소관.
+    - table [ref=f7e451]:
+      - rowgroup [ref=f7e452]:
+        - row [ref=f7e453]:
+          - columnheader "#" [ref=f7e454]
+          - columnheader "상태" [ref=f7e455]
+          - columnheader "표현" [ref=f7e456]
+          - columnheader "교육생에게 보이는 것" [ref=f7e457]
+          - columnheader "화면" [ref=f7e458]
+      - rowgroup [ref=f7e459]:
+        - row [ref=f7e460]:
+          - cell "—" [ref=f7e461]
+          - cell "정상(요약/전체 공개)" [ref=f7e462]
+          - cell "—" [ref=f7e463]
+          - cell "서술형 강약점 · (전체 시)이해 상태 궤적 · 교안 위치" [ref=f7e464]
+          - cell "✔ T1·T2" [ref=f7e465]
+        - row [ref=f7e466]:
+          - cell "R-1" [ref=f7e467]
+          - cell "전체 비공개(GOV-03)" [ref=f7e468]
+          - cell "잠금" [ref=f7e469]
+          - cell "\"결과가 아직 공개되지 않았어요\"" [ref=f7e471]
+          - cell "✔ T6" [ref=f7e472]
+        - row [ref=f7e473]:
+          - cell "R-2" [ref=f7e474]
+          - cell "설정 미지정·조회 실패" [ref=f7e475]
+          - cell "잠금" [ref=f7e476]
+          - cell "기본 비공개 적용(안전)" [ref=f7e478]
+          - cell "✔ T6" [ref=f7e479]
+        - row [ref=f7e480]:
+          - cell "R-3" [ref=f7e481]
+          - cell "세션 미완료" [ref=f7e482]
+          - cell "info" [ref=f7e483]
+          - cell "\"세션을 마치면 결과를 볼 수 있어요\"" [ref=f7e485]
+          - cell "✔ T7" [ref=f7e486]
+        - row [ref=f7e487]:
+          - cell "R-4" [ref=f7e488]
+          - cell "리포트 생성 중/실패" [ref=f7e489]
+          - cell "info" [ref=f7e490]
+          - cell "\"결과를 정리하고 있어요\"" [ref=f7e492]
+          - cell "✔ T7" [ref=f7e493]
+        - row [ref=f7e494]:
+          - cell "R-5" [ref=f7e495]
+          - cell "교안 위치 안내 불가(미링크·미커버·저신뢰)" [ref=f7e496]
+          - cell "-" [ref=f7e497]
+          - cell "학습 자료 블록 생략(빈 껍데기 금지) · D96 자동연결 모델" [ref=f7e499]
+          - cell "✔ T8" [ref=f7e500]
+        - row [ref=f7e501]:
+          - cell "R-9" [ref=f7e502]
+          - cell "첫 회차(비교할 이전 회차 없음)" [ref=f7e503]
+          - cell "info" [ref=f7e504]
+          - cell "궤적 블록 생략 · \"회차가 쌓이면 변화를 보여드려요\" · 단독 판정 금지(B4)" [ref=f7e506]
+          - cell "T2 변형" [ref=f7e507]
+        - row [ref=f7e508]:
+          - cell "R-6" [ref=f7e509]
+          - cell "최종 회차 아님" [ref=f7e510]
+          - cell "-" [ref=f7e511]
+          - cell "등급 미표시, 강약점·궤적만" [ref=f7e513]
+          - cell "✔ T1·T2" [ref=f7e514]
+        - row [ref=f7e515]:
+          - cell "R-7" [ref=f7e516]
+          - cell "최종 등급 부재" [ref=f7e517]
+          - cell "info" [ref=f7e518]
+          - cell "등급 항목 제외, 궤적만" [ref=f7e520]
+          - cell "T5 변형" [ref=f7e521]
+        - row [ref=f7e522]:
+          - cell "R-8" [ref=f7e523]
+          - cell "공개 금지 정보 탐지" [ref=f7e524]
+          - cell "warning" [ref=f7e525]
+          - cell "해당 항목 제거 후 노출(교육생엔 흔적 없음)" [ref=f7e527]
+          - cell "서버측" [ref=f7e528]
+        - row [ref=f7e529]:
+          - cell "P-1" [ref=f7e530]
+          - cell "이의 사유 미입력" [ref=f7e531]
+          - cell "danger" [ref=f7e532]
+          - cell "필드 오류 · 제출 차단" [ref=f7e534]
+          - cell "✔ T3" [ref=f7e535]
+        - row [ref=f7e536]:
+          - cell "P-2" [ref=f7e537]
+          - cell "중복 이의" [ref=f7e538]
+          - cell "info" [ref=f7e539]
+          - cell "기존 상태 표시 · 같은 항목 재제출 불가" [ref=f7e541]
+          - cell "✔ T4" [ref=f7e542]
+        - row [ref=f7e543]:
+          - cell "P-3" [ref=f7e544]
+          - cell "직접 점수 수정 시도" [ref=f7e545]
+          - cell "danger" [ref=f7e546]
+          - cell "구조적으로 차단(이의제기 경로만 존재)" [ref=f7e548]
+          - cell "설계상" [ref=f7e549]
+    - generic [ref=f7e550]: "⚠️ 확인 필요(명세 공백): 최종 등급 체계의 값이 기능명세서에 정의돼 있지 않다. 이 와이어는 세션 이해 상태 어휘(견고/부분/표면, D25)를 재사용했다. 이전 초안의 \"소유\"는 테스트 랩 용어가 유입된 것이라 제거. 등급을 이해 상태와 같은 축으로 둘지 별도 등급(A/B/C 등)으로 둘지 확정 필요."
+    - generic [ref=f7e551]: "디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 신규: ReportHeader·ScopeBadge·StrengthWeakness(서술형)·StateTrajectory(점수 눈금 없음)·CurriculumHint·GradeBadge·AppealForm(대상+사유)·AppealStatus·LockCard·StateCard · 점수·루브릭·산정 공식 비노출(A5) · 처방 금지·위치 안내까지(B10) · 등급은 최종 회차만(B3) · 1회차 단독 판정 금지 → 궤적은 2회차부터(B4) · 순위·타인 비교 배제(B5·D29) · 이의는 대상+사유 필수·원본 불변(GOV-01) · 웹 기준"

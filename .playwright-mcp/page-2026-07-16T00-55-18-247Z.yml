@@ -1,0 +1,239 @@
+- generic [ref=f1e2]:
+  - complementary [ref=f1e3]:
+    - generic [ref=f1e4]:
+      - generic [ref=f1e5]:
+        - generic [ref=f1e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=f1e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=f1e8]:
+      - generic [ref=f1e9]:
+        - generic [ref=f1e10]: shared
+        - button "로그인 shared/login.html" [ref=f1e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=f1e13]: shared/login.html
+      - generic [ref=f1e14]:
+        - generic [ref=f1e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=f1e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=f1e18]: ▸
+      - generic [ref=f1e19]:
+        - generic [ref=f1e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=f1e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=f1e23]: 총괄
+          - generic [ref=f1e24]: ▸
+      - generic [ref=f1e25]:
+        - generic [ref=f1e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=f1e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=f1e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=f1e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=f1e31]: manager/dashboard.html
+        - button "프로젝트 ▸" [ref=f1e33] [cursor=pointer]:
+          - text: 프로젝트
+          - generic [ref=f1e34]: ▸
+        - button "위험 · 분석 manager/risk-analysis.html" [ref=f1e35] [cursor=pointer]:
+          - text: 위험 · 분석
+          - generic [ref=f1e36]: manager/risk-analysis.html
+        - button "코호트 히트맵 manager/heatmap.html" [ref=f1e37] [cursor=pointer]:
+          - text: 코호트 히트맵
+          - generic [ref=f1e38]: manager/heatmap.html
+        - button "교육생 리스트 manager/trainee-list.html" [ref=f1e39] [cursor=pointer]:
+          - text: 교육생 리스트
+          - generic [ref=f1e40]: manager/trainee-list.html
+        - button "개별 교육생 상세 manager/trainee-detail.html" [ref=f1e41] [cursor=pointer]:
+          - text: 개별 교육생 상세
+          - generic [ref=f1e42]: manager/trainee-detail.html
+        - button "개입 관리 manager/intervention.html" [ref=f1e43] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=f1e44]: manager/intervention.html
+        - generic [ref=f1e45]:
+          - button "리포트 ▸" [ref=f1e46] [cursor=pointer]:
+            - text: 리포트
+            - generic [ref=f1e47]: ▸
+          - generic [ref=f1e48]:
+            - button "종합 리포트 RPT-01 · 기수" [ref=f1e49] [cursor=pointer]
+            - button "체크포인트 RPT-04 · 회차별" [ref=f1e50] [cursor=pointer]
+            - button "개인 최종 RPT-02" [ref=f1e51] [cursor=pointer]
+            - button "상태 ↔ case 매핑 총합" [ref=f1e52] [cursor=pointer]
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=f1e53] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=f1e54]: manager/appeal-disclosure.html
+      - generic [ref=f1e55]:
+        - generic [ref=f1e56]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=f1e58] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=f1e59]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=f1e60] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=f1e61]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=f1e62] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=f1e63]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=f1e64] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=f1e65]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=f1e66] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=f1e67]: trainee/result.html
+  - main [ref=f1e68]:
+    - generic [ref=f1e69]:
+      - generic [ref=f1e70]: 리포트 · 체크포인트
+      - generic [ref=f1e71]: manager/report.html#checkpoints
+      - link "새 탭에서 열기 ↗" [ref=f1e72] [cursor=pointer]:
+        - /url: manager/report.html#checkpoints
+    - iframe [ref=f1e73]:
+      - generic [ref=f2e3]:
+        - heading "상태 ↔ 명세 case 매핑 · 총합 (교안 관리 · 총괄 전용)" [level=3] [ref=f2e4]
+        - generic [ref=f2e5]: CUR-01 7 + CUR-02 8 + CUR-03 10 = 25. 화면 흐름 SC-M12 · 연계 FR-15.2/15.3/15.4.
+        - generic [ref=f2e6]: CUR-01 · 구조 추출 계층
+        - table [ref=f2e8]:
+          - rowgroup [ref=f2e9]:
+            - row [ref=f2e10]:
+              - columnheader "#" [ref=f2e11]
+              - columnheader "상태" [ref=f2e12]
+              - columnheader "처리" [ref=f2e13]
+              - columnheader "표현 / 다음 행동" [ref=f2e14]
+            - row [ref=f2e15]:
+              - cell "1" [ref=f2e16]
+              - cell "제목 신호 없음" [ref=f2e17]
+              - cell "대체 처리" [ref=f2e18]
+              - cell "전체 문서 단일 모듈 폴백 및 fallback_used=true" [ref=f2e20]
+            - row [ref=f2e21]:
+              - cell "2" [ref=f2e22]
+              - cell "PDF 텍스트 추출 실패" [ref=f2e23]
+              - cell "재시도" [ref=f2e24]
+              - cell "실패 상태 및 재처리 등록" [ref=f2e26]
+            - row [ref=f2e27]:
+              - cell "3" [ref=f2e28]
+              - cell "암호화 PDF" [ref=f2e29]
+              - cell "처리 차단" [ref=f2e30]
+              - cell "처리 차단" [ref=f2e32]
+            - row [ref=f2e33]:
+              - cell "4" [ref=f2e34]
+              - cell "폰트·위치 정보 불완전" [ref=f2e35]
+              - cell "예외 처리" [ref=f2e36]
+              - cell "텍스트 순서 기반 보조 추출" [ref=f2e38]
+            - row [ref=f2e39]:
+              - cell "5" [ref=f2e40]
+              - cell "LLM 경계 추론 실패" [ref=f2e41]
+              - cell "예외 처리" [ref=f2e42]
+              - cell "휴리스틱 경계 임시 모듈" [ref=f2e44]
+            - row [ref=f2e45]:
+              - cell "6" [ref=f2e46]
+              - cell "페이지 범위 중첩·역전" [ref=f2e47]
+              - cell "예외 처리" [ref=f2e48]
+              - cell "정규화 후 재검증" [ref=f2e50]
+            - row [ref=f2e51]:
+              - cell "7" [ref=f2e52]
+              - cell "상류 품질 상태 저장 실패" [ref=f2e53]
+              - cell "처리 차단" [ref=f2e54]
+              - cell "하류(CUR-02) 전달 차단 — 데이터 캐스케이드 방지" [ref=f2e56]
+        - generic [ref=f2e57]: CUR-02 · 실패유형↔모듈·페이지 매핑 및 승인
+        - table [ref=f2e59]:
+          - rowgroup [ref=f2e60]:
+            - row [ref=f2e61]:
+              - columnheader "#" [ref=f2e62]
+              - columnheader "상태" [ref=f2e63]
+              - columnheader "처리" [ref=f2e64]
+              - columnheader "표현 / 다음 행동" [ref=f2e65]
+            - row [ref=f2e66]:
+              - cell "1" [ref=f2e67]
+              - cell "CUR-01 모듈 목록 부재" [ref=f2e68]
+              - cell "생성 차단" [ref=f2e69]
+              - cell "매핑 생성 차단" [ref=f2e71]
+            - row [ref=f2e72]:
+              - cell "2" [ref=f2e73]
+              - cell "상류 fallback 상태" [ref=f2e74]
+              - cell "상태 표시" [ref=f2e75]
+              - cell "검수 화면에 저신뢰 경고 표시" [ref=f2e77]
+            - row [ref=f2e78]:
+              - cell "3" [ref=f2e79]
+              - cell "LLM 자기신뢰도만 존재" [ref=f2e80]
+              - cell "처리 차단" [ref=f2e81]
+              - cell "단독 확정 금지" [ref=f2e83]
+            - row [ref=f2e84]:
+              - cell "4" [ref=f2e85]
+              - cell "객관 신호 계산 실패" [ref=f2e86]
+              - cell "기존 유지" [ref=f2e87]
+              - cell "추천 유지하되 검토 필요 표시" [ref=f2e89]
+            - row [ref=f2e90]:
+              - cell "5" [ref=f2e91]
+              - cell "매핑 후보 없음" [ref=f2e92]
+              - cell "수동 지정" [ref=f2e93]
+              - cell "수동 지정 유도" [ref=f2e95]
+            - row [ref=f2e96]:
+              - cell "6" [ref=f2e97]
+              - cell "승인 전 자동확정 요청" [ref=f2e98]
+              - cell "처리 차단" [ref=f2e99]
+              - cell "차단(FR-8.2 자동확정 금지)" [ref=f2e101]
+            - row [ref=f2e102]:
+              - cell "7" [ref=f2e103]
+              - cell "존재하지 않는 모듈 선택" [ref=f2e104]
+              - cell "저장 차단" [ref=f2e105]
+              - cell "저장 차단" [ref=f2e107]
+            - row [ref=f2e108]:
+              - cell "8" [ref=f2e109]
+              - cell "임계값 실물 검증 전 확정 요청" [ref=f2e110]
+              - cell "가정값 유지" [ref=f2e111]
+              - cell "[가정값] 유지 — 골든셋 확보 후 확정" [ref=f2e113]
+        - generic [ref=f2e114]: CUR-03 · 교안 등록 관리 화면
+        - table [ref=f2e116]:
+          - rowgroup [ref=f2e117]:
+            - row [ref=f2e118]:
+              - columnheader "#" [ref=f2e119]
+              - columnheader "상태" [ref=f2e120]
+              - columnheader "처리" [ref=f2e121]
+              - columnheader "표현 / 다음 행동" [ref=f2e122]
+            - row [ref=f2e123]:
+              - cell "1" [ref=f2e124]
+              - cell "지원 안 하는 파일 형식" [ref=f2e125]
+              - cell "업로드 차단" [ref=f2e126]
+              - cell "허용 형식 안내" [ref=f2e128]
+            - row [ref=f2e129]:
+              - cell "2" [ref=f2e130]
+              - cell "파일 용량 초과" [ref=f2e131]
+              - cell "저장 중단" [ref=f2e132]
+              - cell "최대 허용 용량 안내" [ref=f2e134]
+            - row [ref=f2e135]:
+              - cell "3" [ref=f2e136]
+              - cell "필수 메타데이터 누락" [ref=f2e137]
+              - cell "등록 중단" [ref=f2e138]
+              - cell "누락 항목 표시" [ref=f2e140]
+            - row [ref=f2e141]:
+              - cell "4" [ref=f2e142]
+              - cell "동일 과정·차수·버전 중복" [ref=f2e143]
+              - cell "등록 차단" [ref=f2e144]
+              - cell "기존 항목 확인 유도" [ref=f2e146]
+            - row [ref=f2e147]:
+              - cell "5" [ref=f2e148]
+              - cell "파일 저장소 업로드 실패" [ref=f2e149]
+              - cell "재시도" [ref=f2e150]
+              - cell "DB 미기록·재시도 가능 상태 기록" [ref=f2e152]
+            - row [ref=f2e153]:
+              - cell "6" [ref=f2e154]
+              - cell "DB 저장 실패" [ref=f2e155]
+              - cell "롤백" [ref=f2e156]
+              - cell "임시 파일 정리·트랜잭션 롤백" [ref=f2e158]
+            - row [ref=f2e159]:
+              - cell "7" [ref=f2e160]
+              - cell "구조 추출 실패" [ref=f2e161]
+              - cell "상태 전환" [ref=f2e162]
+              - cell "EXTRACTION_FAILED, 원본 유지·재처리만 허용" [ref=f2e164]
+            - row [ref=f2e165]:
+              - cell "8" [ref=f2e166]
+              - cell "정의 안 된 상태 전이 요청" [ref=f2e167]
+              - cell "전이 차단" [ref=f2e168]
+              - cell "현재 상태·허용 다음 상태 안내" [ref=f2e170]
+            - row [ref=f2e171]:
+              - cell "9" [ref=f2e172]
+              - cell "APPROVED 활성 매핑 사용 중 삭제" [ref=f2e173]
+              - cell "삭제 차단" [ref=f2e174]
+              - cell "연결 해제 절차 안내" [ref=f2e176]
+            - row [ref=f2e177]:
+              - cell "10" [ref=f2e178]
+              - cell "권한 없는 과정 접근" [ref=f2e179]
+              - cell "403" [ref=f2e180]
+              - cell "요청 차단(테넌트 격리)" [ref=f2e182]
+        - generic [ref=f2e183]: "· 게이트 A: 25 case = 25 상태 행 ✅ · 교안=기수(과정) 자산(프로젝트 아님) · 자동확정 금지(FR-8.2) — 매니저 승인 전 추천 상태 · 승인 매핑 → MEAS-07 위치 안내 소비(처방형 콘텐츠는 배제) · 구현 범위 PDF 1경로(pptx/docx/스캔본 보류) · 권한: 담당 과정·기관 범위(테넌트 격리)."

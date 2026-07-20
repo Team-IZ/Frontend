@@ -1,0 +1,195 @@
+- generic [ref=f6e2]:
+  - complementary [ref=f6e3]:
+    - generic [ref=f6e4]:
+      - generic [ref=f6e5]:
+        - generic [ref=f6e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=f6e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=f6e8]:
+      - generic [ref=f6e9]:
+        - generic [ref=f6e10]: shared
+        - button "로그인 shared/login.html" [ref=f6e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=f6e13]: shared/login.html
+      - generic [ref=f6e14]:
+        - generic [ref=f6e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=f6e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=f6e18]: ▸
+      - generic [ref=f6e19]:
+        - generic [ref=f6e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=f6e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=f6e23]: 총괄
+          - generic [ref=f6e24]: ▸
+      - generic [ref=f6e25]:
+        - generic [ref=f6e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=f6e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=f6e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=f6e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=f6e31]: manager/dashboard.html
+        - generic [ref=f6e32]:
+          - button "교안 ▸" [ref=f6e33] [cursor=pointer]:
+            - text: 교안
+            - generic [ref=f6e34]: ▸
+          - generic [ref=f6e35]:
+            - button "교안 목록 CUR-03 · 컬렉션" [ref=f6e36] [cursor=pointer]
+            - button "교안 등록 CUR-03 · 업로드" [ref=f6e37] [cursor=pointer]
+            - button "교안 구성 CUR-01 · 목차" [ref=f6e38] [cursor=pointer]
+            - button "교안 연결 CUR-02 · 자동+확인" [ref=f6e39] [cursor=pointer]
+        - button "프로젝트 ▸" [ref=f6e41] [cursor=pointer]:
+          - text: 프로젝트
+          - generic [ref=f6e42]: ▸
+        - button "분석 · 진단 ▸" [ref=f6e44] [cursor=pointer]:
+          - text: 분석 · 진단
+          - generic [ref=f6e45]: ▸
+        - button "교육생 ▸" [ref=f6e47] [cursor=pointer]:
+          - text: 교육생
+          - generic [ref=f6e48]: ▸
+        - button "개입 관리 manager/intervention.html" [ref=f6e49] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=f6e50]: manager/intervention.html
+        - button "리포트 ▸" [ref=f6e52] [cursor=pointer]:
+          - text: 리포트
+          - generic [ref=f6e53]: ▸
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=f6e54] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=f6e55]: manager/appeal-disclosure.html
+      - generic [ref=f6e56]:
+        - generic [ref=f6e57]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=f6e59] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=f6e60]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=f6e61] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=f6e62]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=f6e63] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=f6e64]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=f6e65] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=f6e66]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=f6e67] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=f6e68]: trainee/result.html
+  - main [ref=f6e69]:
+    - generic [ref=f6e70]:
+      - generic [ref=f6e71]: 교안 · 등록
+      - generic [ref=f6e72]: manager/curriculum.html#upload
+      - link "새 탭에서 열기 ↗" [ref=f6e73] [cursor=pointer]:
+        - /url: manager/curriculum.html#upload
+    - iframe [ref=f6e74]:
+      - generic [ref=f7e3]:
+        - generic [ref=f7e4]:
+          - generic [ref=f7e5]: iz-get.com/cohorts/7/curriculum/new
+          - generic [ref=f7e11]:
+            - generic [ref=f7e12]:
+              - generic [ref=f7e13]:
+                - generic [ref=f7e14]:
+                  - generic [ref=f7e15]: ◆
+                  - text: IZ-Get
+                - generic [ref=f7e16]:
+                  - generic [ref=f7e17]: 기수
+                  - text: 7기 ▾
+              - generic [ref=f7e18]:
+                - generic "열람=총괄·담당 / 저작=총괄" [ref=f7e19] [cursor=pointer]:
+                  - generic [ref=f7e20]: 총괄 뷰
+                  - generic [ref=f7e21]: 담당 뷰
+                - generic [ref=f7e22]:
+                  - text: 박지현 · 총괄 매니저
+                  - generic [ref=f7e23]: 박
+            - generic [ref=f7e24]:
+              - generic [ref=f7e25]:
+                - generic [ref=f7e26]:
+                  - generic [ref=f7e27]: ▦
+                  - text: 대시보드
+                - generic [ref=f7e28]:
+                  - generic [ref=f7e29]: ◔
+                  - text: 기수 구성
+                - generic [ref=f7e30]:
+                  - generic [ref=f7e31]: ▧
+                  - text: 교안
+                - generic [ref=f7e32]:
+                  - generic [ref=f7e33]: ▤
+                  - text: 프로젝트
+                - generic [ref=f7e34]:
+                  - generic [ref=f7e35]: △
+                  - text: 분석 · 진단
+                - generic [ref=f7e36]:
+                  - generic [ref=f7e37]: ◎
+                  - text: 교육생
+                - generic [ref=f7e38]:
+                  - generic [ref=f7e39]: ✎
+                  - text: 개입
+                - generic [ref=f7e40]:
+                  - generic [ref=f7e41]: ▥
+                  - text: 리포트
+                - generic [ref=f7e42]:
+                  - generic [ref=f7e43]: ⚖
+                  - text: 이의 · 공개
+              - generic [ref=f7e44]:
+                - generic [ref=f7e45]:
+                  - generic [ref=f7e46]: ← 교안 목록 › 등록
+                  - heading "교안 등록 총괄" [level=2] [ref=f7e47]
+                - generic [ref=f7e48]:
+                  - generic [ref=f7e49]:
+                    - generic [ref=f7e50]: ⬆
+                    - generic [ref=f7e51]: PDF를 끌어다 놓거나 클릭해 선택
+                    - generic [ref=f7e52]: 현재 PDF만 지원 (pptx·docx·스캔본은 보류) · 최대 50MB
+                    - generic [ref=f7e53]:
+                      - generic [ref=f7e54]: 📄 AI_Kubernetes와 CICD_교안.pdf · 2.4MB
+                      - generic [ref=f7e55] [cursor=pointer]: ✕
+                  - generic [ref=f7e56]:
+                    - generic [ref=f7e57]: 교안명 *
+                    - generic [ref=f7e58]: Kubernetes와 CICD
+                  - generic [ref=f7e59]:
+                    - generic [ref=f7e60]: 주제 · 설명 · 선택
+                    - generic [ref=f7e61]: "예: K8s 아키텍처 · 컨테이너 배포 · Service/Ingress · CICD"
+                    - generic [ref=f7e62]: 검색·목록 표시용. 비워도 됨(분석이 섹션·주제를 자동 추출).
+                  - generic [ref=f7e63]:
+                    - generic [ref=f7e64]:
+                      - generic [ref=f7e65]: 유형
+                      - generic [ref=f7e66]: PDF
+                    - generic [ref=f7e67]:
+                      - generic [ref=f7e68]: 버전
+                      - generic [ref=f7e69]: v2 · 기존 v1 있음 → 자동 증가
+                      - generic [ref=f7e70]: 같은 교안 재업로드 시 기존 버전 보존, 새 버전으로 등록.
+                  - generic [ref=f7e71]:
+                    - generic [ref=f7e72]: 적용 프로젝트 · 선택 · 지금 안 해도 됨
+                    - generic [ref=f7e73]:
+                      - generic [ref=f7e74]: MSA 배포 실습
+                      - button "+ 프로젝트 연결" [ref=f7e75] [cursor=pointer]
+                      - generic [ref=f7e76]: 1개 선택됨
+                    - generic [ref=f7e77]: 비우고 나중에 프로젝트 개요에서 연결해도 됨.
+                  - generic [ref=f7e78]: ℹ 업로드하면 자동 분석이 시작됩니다.
+                  - generic [ref=f7e79]:
+                    - button "업로드 · 자동 분석 시작총괄" [ref=f7e80] [cursor=pointer]
+                    - button "취소" [ref=f7e81] [cursor=pointer]
+        - generic [ref=f7e83]:
+          - generic [ref=f7e84]: 이 화면 · 상태 · case (CUR-03 · 등록 관련)
+          - generic [ref=f7e86]:
+            - generic [ref=f7e87]: 03-1
+            - generic [ref=f7e88]: 형식 차단
+            - generic [ref=f7e89]: 지원 안 하는 파일 형식 — 업로드 차단·허용 형식 안내(현재 PDF)
+          - generic [ref=f7e90]:
+            - generic [ref=f7e91]: 03-2
+            - generic [ref=f7e92]: 용량 차단
+            - generic [ref=f7e93]: 파일 용량 초과 — 저장 중단·최대 허용 용량 안내
+          - generic [ref=f7e94]:
+            - generic [ref=f7e95]: 03-3
+            - generic [ref=f7e96]: 누락 표시
+            - generic [ref=f7e97]: 필수 메타 누락(교안명) — 등록 중단·누락 항목 표시
+          - generic [ref=f7e98]:
+            - generic [ref=f7e99]: 03-4
+            - generic [ref=f7e100]: 중복 차단
+            - generic [ref=f7e101]: 기수 내 동일 교안·버전 중복 — 등록 차단·기존 항목 확인 유도
+          - generic [ref=f7e102]:
+            - generic [ref=f7e103]: 03-5
+            - generic [ref=f7e104]: 재시도
+            - generic [ref=f7e105]: 파일 저장소 업로드 실패 — DB 미기록·재시도 가능 상태
+          - generic [ref=f7e106]:
+            - generic [ref=f7e107]: 03-6
+            - generic [ref=f7e108]: 롤백
+            - generic [ref=f7e109]: DB 저장 실패 — 임시 파일 정리·트랜잭션 롤백

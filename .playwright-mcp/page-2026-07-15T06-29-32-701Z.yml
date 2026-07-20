@@ -1,0 +1,579 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: SC-M03 · P0/P1 · 매니저 · 웹
+    - heading "측정 계획 (체크포인트 · 추출범위 · 검증포커스 · 응시현황)" [level=1] [ref=e5]
+    - paragraph [ref=e6]: 측정의 언제(체크포인트)·무엇을(추출범위)·어디에 초점(포커스)을 정하고, 진행 중 회차의 응시를 모니터링. 검증 포커스는 교육생 비노출(A4 — 미리 알면 게이밍). 최종 회차는 단 1건. 매니저 앱 셸 공유.
+  - generic [ref=e7]: 탭 · 체크포인트 (PLAN-01)
+  - generic [ref=e8]:
+    - generic [ref=e9]: iz-get.com/cohorts/7/plan/checkpoints
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - generic [ref=e19]: ◆
+            - text: IZ-Get
+          - generic [ref=e20]:
+            - generic [ref=e21]: 기수
+            - text: 7기 · 그린 부트캠프 ▾
+        - generic [ref=e22]:
+          - text: 박지현 · 매니저
+          - generic [ref=e23]: 박
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - generic [ref=e27]: ▦
+            - text: 대시보드
+          - generic [ref=e28]:
+            - generic [ref=e29]: ◔
+            - text: 기수 구성
+          - generic [ref=e30]:
+            - generic [ref=e31]: ▤
+            - text: 프로젝트
+          - generic [ref=e32]:
+            - generic [ref=e33]: ◷
+            - text: 측정 계획
+          - generic [ref=e34]:
+            - generic [ref=e35]: △
+            - text: 위험 · 분석
+          - generic [ref=e36]:
+            - generic [ref=e37]: ◎
+            - text: 교육생
+          - generic [ref=e38]:
+            - generic [ref=e39]: ✎
+            - text: 개입
+          - generic [ref=e40]:
+            - generic [ref=e41]: ▥
+            - text: 리포트
+          - generic [ref=e42]:
+            - generic [ref=e43]: ▧
+            - text: 교안
+        - generic [ref=e44]:
+          - generic [ref=e45]:
+            - generic [ref=e46]:
+              - generic [ref=e47]: 측정 계획 › 7기
+              - heading "측정 계획" [level=2] [ref=e48]
+            - button "+ 회차 추가" [ref=e49] [cursor=pointer]
+          - generic [ref=e50]:
+            - generic [ref=e51]: 체크포인트
+            - generic [ref=e52]: 추출 범위
+            - generic [ref=e53]: 검증 포커스
+            - generic [ref=e54]: 응시 현황
+          - table [ref=e56]:
+            - rowgroup [ref=e57]:
+              - row [ref=e58]:
+                - columnheader "체크포인트" [ref=e59]
+                - columnheader "프로젝트 · 회차" [ref=e60]
+                - columnheader "측정일" [ref=e61]
+                - columnheader "응시 기한" [ref=e62]
+                - columnheader "질문 수" [ref=e63]
+                - columnheader "응시 진행" [ref=e64]
+                - columnheader "포커스" [ref=e65]
+                - columnheader "상태" [ref=e66]
+                - columnheader [ref=e67]
+            - rowgroup [ref=e68]:
+              - row [ref=e69]:
+                - cell "체크포인트 1" [ref=e70]
+                - cell "CLI 과제 · 1회차" [ref=e71]
+                - cell "03.18" [ref=e72]
+                - cell "03.18 09:00 ~ 03.19 18:00" [ref=e73]
+                - cell "4" [ref=e74]
+                - cell "48 / 48" [ref=e75]
+                - cell "설정됨" [ref=e76]
+                - cell "완료" [ref=e78]
+                - cell "수정" [ref=e80]
+              - row [ref=e81]:
+                - cell "체크포인트 2" [ref=e82]
+                - cell "CLI 과제 · 2회차" [ref=e83]
+                - cell "04.10" [ref=e84]
+                - cell "04.10 09:00 ~ 04.11 18:00" [ref=e85]
+                - cell "4" [ref=e86]
+                - cell "34 / 48" [ref=e87]
+                - cell "설정됨" [ref=e88]
+                - cell "진행 중" [ref=e90]
+                - cell "응시 보기" [ref=e92]
+              - row [ref=e93]:
+                - cell "체크포인트 3" [ref=e94]
+                - cell "API 서버 · 1회차" [ref=e95]
+                - cell "05.09" [ref=e96]
+                - cell "05.09 09:00 ~ 05.10 18:00" [ref=e97]
+                - cell "3" [ref=e98]
+                - cell "—" [ref=e99]
+                - cell "미설정" [ref=e100]
+                - cell "예정" [ref=e102]
+                - cell "수정" [ref=e104]
+              - row [ref=e105]:
+                - cell "체크포인트 4 최종" [ref=e106]:
+                  - text: 체크포인트 4
+                  - generic [ref=e107]: 최종
+                - cell "API 서버 · 2회차" [ref=e108]
+                - cell "06.06" [ref=e109]
+                - cell "06.06 09:00 ~ 06.07 18:00" [ref=e110]
+                - cell "5" [ref=e111]
+                - cell "—" [ref=e112]
+                - cell "미설정" [ref=e113]
+                - cell "예정" [ref=e115]
+                - cell "수정" [ref=e117]
+          - generic [ref=e118]: · 최종 회차는 단 1건(등급은 이때만 · B3). 질문 수(예산 N)는 회차별 설정 · 기본 4(전 학생 동일 = 비교 가능성 · 개인차는 세션 depth가 적응 · D28). 응시 진행·포커스 여부 표에서 확인. 데이터 있는 회차 삭제는 경고. 기한 역순·중복 방지.
+  - generic [ref=e119]: "[+ 회차 추가] / [수정] 클릭 시 · 회차 설정 모달 (표가 이 입력으로 채워짐)"
+  - generic [ref=e120]:
+    - generic [ref=e121]: iz-get.com/cohorts/7/plan/checkpoints
+    - generic [ref=e127]:
+      - generic [ref=e128]: 체크포인트 표 …(뒤 배경)
+      - generic [ref=e130]:
+        - generic [ref=e131]:
+          - heading "회차 추가" [level=4] [ref=e132]
+          - generic [ref=e133] [cursor=pointer]: ✕
+        - generic [ref=e134]:
+          - generic [ref=e135]:
+            - generic [ref=e136]:
+              - generic [ref=e137]: 회차 번호
+              - generic [ref=e138]:
+                - generic [ref=e139] [cursor=pointer]: −
+                - generic [ref=e140]: "5"
+                - generic [ref=e141] [cursor=pointer]: +
+            - generic [ref=e142]:
+              - generic [ref=e143]: 측정일
+              - generic [ref=e144]:
+                - text: 2026-06-06
+                - generic [ref=e145]: 📅
+          - generic [ref=e146]:
+            - generic [ref=e147]: 응시 기한 (시작 ~ 마감)
+            - generic [ref=e148]:
+              - generic [ref=e149]: 2026-06-06 09:00
+              - generic [ref=e150]: "-"
+              - generic [ref=e151]: 2026-06-07 18:00
+          - generic [ref=e152]:
+            - generic [ref=e153]:
+              - generic [ref=e154]: 질문 수 (예산 N)
+              - generic [ref=e155]:
+                - generic [ref=e156] [cursor=pointer]: −
+                - generic [ref=e157]: "4"
+                - generic [ref=e158] [cursor=pointer]: +
+              - generic [ref=e159]: 회차마다 다르게 · 기본 4 · 전 학생 동일(개인차는 세션 depth 적응, D28)
+            - generic [ref=e160]:
+              - generic [ref=e161]: 최종 회차
+              - generic [ref=e162]:
+                - generic [ref=e163]: 일반
+                - generic [ref=e164]: 최종
+              - generic [ref=e165]: 최종은 단 1건 · 등급은 이 회차만(B3)
+          - generic [ref=e166]: · 검증 포커스는 저장 후 [검증 포커스] 탭에서 회차별로 설정(교육생 비공개). · 저장 시 회차 정렬·기한 역순/중복 검증.
+        - generic [ref=e167]:
+          - button "취소" [ref=e168] [cursor=pointer]
+          - button "저장" [ref=e169] [cursor=pointer]
+  - generic [ref=e170]: · [수정]도 같은 모달(기존 값 채워짐). [응시 보기]는 아래 응시 현황 탭으로 이동하며 해당 회차가 선택됨. 데이터 있는 회차 삭제 시 경고 모달.
+  - generic [ref=e171]: 탭 · 추출 범위 (PLAN-02)
+  - generic [ref=e172]:
+    - generic [ref=e173]: iz-get.com/cohorts/7/plan/focus
+    - generic [ref=e179]:
+      - generic [ref=e180]:
+        - generic [ref=e181]:
+          - generic [ref=e182]:
+            - generic [ref=e183]: ◆
+            - text: IZ-Get
+          - generic [ref=e184]:
+            - generic [ref=e185]: 기수
+            - text: 7기 · 그린 부트캠프 ▾
+        - generic [ref=e186]:
+          - text: 박지현 · 매니저
+          - generic [ref=e187]: 박
+      - generic [ref=e188]:
+        - generic [ref=e189]:
+          - generic [ref=e190]:
+            - generic [ref=e191]: ▦
+            - text: 대시보드
+          - generic [ref=e192]:
+            - generic [ref=e193]: ◔
+            - text: 기수 구성
+          - generic [ref=e194]:
+            - generic [ref=e195]: ▤
+            - text: 프로젝트
+          - generic [ref=e196]:
+            - generic [ref=e197]: ◷
+            - text: 측정 계획
+          - generic [ref=e198]:
+            - generic [ref=e199]: △
+            - text: 위험 · 분석
+          - generic [ref=e200]:
+            - generic [ref=e201]: ◎
+            - text: 교육생
+          - generic [ref=e202]:
+            - generic [ref=e203]: ✎
+            - text: 개입
+          - generic [ref=e204]:
+            - generic [ref=e205]: ▥
+            - text: 리포트
+          - generic [ref=e206]:
+            - generic [ref=e207]: ▧
+            - text: 교안
+        - generic [ref=e208]:
+          - generic [ref=e210]:
+            - generic [ref=e211]: 측정 계획 › 7기
+            - heading "측정 계획" [level=2] [ref=e212]
+          - generic [ref=e213]:
+            - generic [ref=e214]: 체크포인트
+            - generic [ref=e215]: 추출 범위
+            - generic [ref=e216]: 검증 포커스
+            - generic [ref=e217]: 응시 현황
+          - generic [ref=e218]:
+            - heading "추출 범위 · 프로젝트별" [level=3] [ref=e220]:
+              - text: 추출 범위
+              - generic [ref=e221]: · 프로젝트별
+            - table [ref=e223]:
+              - rowgroup [ref=e224]:
+                - row [ref=e225]:
+                  - columnheader "프로젝트" [ref=e226]
+                  - columnheader "유형" [ref=e227]
+                  - columnheader "추출 범위" [ref=e228]
+                  - columnheader "기여분석" [ref=e229]
+              - rowgroup [ref=e230]:
+                - row [ref=e231]:
+                  - cell "CLI 과제" [ref=e232]
+                  - cell "개인" [ref=e233]
+                  - cell "전체코드 본인커밋기여분 권장 기본" [ref=e234]:
+                    - generic [ref=e235]:
+                      - generic [ref=e236]: 전체코드
+                      - generic [ref=e237]: 본인커밋기여분
+                    - generic [ref=e238]: 권장 기본
+                  - cell "—" [ref=e239]
+                - row [ref=e240]:
+                  - cell "API 서버" [ref=e241]
+                  - cell "팀" [ref=e242]
+                  - cell "전체코드 본인커밋기여분" [ref=e243]:
+                    - generic [ref=e244]:
+                      - generic [ref=e245]: 전체코드
+                      - generic [ref=e246]: 본인커밋기여분
+                  - cell "가용" [ref=e247]
+            - generic [ref=e249]: · 개인 프로젝트는 전체코드 권장 기본. 본인커밋기여분은 AUTH-07 검증 이메일 있을 때만. → MEAS-02A/02B 라우팅.
+  - generic [ref=e250]: 탭 · 검증 포커스 (PLAN-03) — 교육생 비공개
+  - generic [ref=e251]:
+    - generic [ref=e252]: iz-get.com/cohorts/7/plan/focus
+    - generic [ref=e258]:
+      - generic [ref=e259]:
+        - generic [ref=e260]:
+          - generic [ref=e261]:
+            - generic [ref=e262]: ◆
+            - text: IZ-Get
+          - generic [ref=e263]:
+            - generic [ref=e264]: 기수
+            - text: 7기 · 그린 부트캠프 ▾
+        - generic [ref=e265]:
+          - text: 박지현 · 매니저
+          - generic [ref=e266]: 박
+      - generic [ref=e267]:
+        - generic [ref=e268]:
+          - generic [ref=e269]:
+            - generic [ref=e270]: ▦
+            - text: 대시보드
+          - generic [ref=e271]:
+            - generic [ref=e272]: ◔
+            - text: 기수 구성
+          - generic [ref=e273]:
+            - generic [ref=e274]: ▤
+            - text: 프로젝트
+          - generic [ref=e275]:
+            - generic [ref=e276]: ◷
+            - text: 측정 계획
+          - generic [ref=e277]:
+            - generic [ref=e278]: △
+            - text: 위험 · 분석
+          - generic [ref=e279]:
+            - generic [ref=e280]: ◎
+            - text: 교육생
+          - generic [ref=e281]:
+            - generic [ref=e282]: ✎
+            - text: 개입
+          - generic [ref=e283]:
+            - generic [ref=e284]: ▥
+            - text: 리포트
+          - generic [ref=e285]:
+            - generic [ref=e286]: ▧
+            - text: 교안
+        - generic [ref=e287]:
+          - generic [ref=e289]:
+            - generic [ref=e290]: 측정 계획 › 7기
+            - heading "측정 계획" [level=2] [ref=e291]
+          - generic [ref=e292]:
+            - generic [ref=e293]: 체크포인트
+            - generic [ref=e294]: 추출 범위
+            - generic [ref=e295]: 검증 포커스
+            - generic [ref=e296]: 응시 현황
+          - generic [ref=e297]:
+            - heading "검증 포커스 🔒 교육생 비공개" [level=3] [ref=e298]:
+              - text: 검증 포커스
+              - generic [ref=e299]: 🔒 교육생 비공개
+            - generic [ref=e300]:
+              - generic [ref=e301]: 회차
+              - text: 2회차 ▾
+          - generic [ref=e302]:
+            - generic [ref=e303]:
+              - generic [ref=e304]: 인증 · 보안
+              - generic [ref=e305]: API 구조
+              - generic [ref=e306]: 에러 처리
+              - generic [ref=e307] [cursor=pointer]: + 포커스 추가
+            - generic [ref=e308]: 🔒 이 설정은 교육생 화면·API 응답에서 제외됩니다(A4). 미리 알면 게이밍 → 노출 탐지 시 차단. DP 후보 랭킹 가중치로만 사용.
+  - generic [ref=e309]: 탭 · 응시 현황 (PLAN-04) — 미응시 벌크 독촉
+  - generic [ref=e310]:
+    - generic [ref=e311]: iz-get.com/cohorts/7/plan/attendance
+    - generic [ref=e317]:
+      - generic [ref=e318]:
+        - generic [ref=e319]:
+          - generic [ref=e320]:
+            - generic [ref=e321]: ◆
+            - text: IZ-Get
+          - generic [ref=e322]:
+            - generic [ref=e323]: 기수
+            - text: 7기 · 그린 부트캠프 ▾
+        - generic [ref=e324]:
+          - text: 박지현 · 매니저
+          - generic [ref=e325]: 박
+      - generic [ref=e326]:
+        - generic [ref=e327]:
+          - generic [ref=e328]:
+            - generic [ref=e329]: ▦
+            - text: 대시보드
+          - generic [ref=e330]:
+            - generic [ref=e331]: ◔
+            - text: 기수 구성
+          - generic [ref=e332]:
+            - generic [ref=e333]: ▤
+            - text: 프로젝트
+          - generic [ref=e334]:
+            - generic [ref=e335]: ◷
+            - text: 측정 계획
+          - generic [ref=e336]:
+            - generic [ref=e337]: △
+            - text: 위험 · 분석
+          - generic [ref=e338]:
+            - generic [ref=e339]: ◎
+            - text: 교육생
+          - generic [ref=e340]:
+            - generic [ref=e341]: ✎
+            - text: 개입
+          - generic [ref=e342]:
+            - generic [ref=e343]: ▥
+            - text: 리포트
+          - generic [ref=e344]:
+            - generic [ref=e345]: ▧
+            - text: 교안
+        - generic [ref=e346]:
+          - generic [ref=e348]:
+            - generic [ref=e349]: 측정 계획 › 7기
+            - heading "측정 계획" [level=2] [ref=e350]
+          - generic [ref=e351]:
+            - generic [ref=e352]: 체크포인트
+            - generic [ref=e353]: 추출 범위
+            - generic [ref=e354]: 검증 포커스
+            - generic [ref=e355]: 응시 현황
+          - generic [ref=e356]:
+            - generic [ref=e357]:
+              - generic [ref=e358]: 회차
+              - text: 2회차 (진행 중) ▾
+            - generic [ref=e359]:
+              - generic [ref=e360]: 반
+              - text: 전체 ▾
+            - generic [ref=e361]:
+              - generic [ref=e362]: 상태
+              - text: 미응시만 ▾
+            - generic [ref=e363]: 응시 34 / 48 · 미응시 14
+          - generic [ref=e364]:
+            - generic [ref=e365]: 2명 선택됨
+            - generic [ref=e366] [cursor=pointer]: 독촉 발송
+            - generic [ref=e367] [cursor=pointer]: 선택 해제
+          - table [ref=e369]:
+            - rowgroup [ref=e370]:
+              - row [ref=e371]:
+                - columnheader [ref=e372]
+                - columnheader "학생" [ref=e374]
+                - columnheader "반" [ref=e375]
+                - columnheader "제출" [ref=e376]
+                - columnheader "세션" [ref=e377]
+                - columnheader "완료" [ref=e378]
+            - rowgroup [ref=e379]:
+              - row [ref=e380]:
+                - cell "✓" [ref=e381]
+                - cell "한도현" [ref=e383]
+                - cell "A반" [ref=e384]
+                - cell "미제출" [ref=e385]
+                - cell "-" [ref=e387]
+                - cell "미완료" [ref=e389]
+              - row [ref=e391]:
+                - cell "✓" [ref=e392]
+                - cell "오세훈" [ref=e394]
+                - cell "C반" [ref=e395]
+                - cell "제출" [ref=e396]
+                - cell "진행" [ref=e398]
+                - cell "미완료" [ref=e400]
+              - row [ref=e402]:
+                - cell [ref=e403]
+                - cell "강민준" [ref=e405]
+                - cell "A반" [ref=e406]
+                - cell "제출" [ref=e407]
+                - cell "완료" [ref=e409]
+                - cell "완료" [ref=e411]
+          - generic [ref=e413]: · 미응시 선택 → 일괄 독촉(AUTH-10). 중복 독촉 제한·이미 완료자 제외. 응시 집계는 대시보드(DASH-01) 입력.
+  - generic [ref=e414]:
+    - heading "상태 ↔ 명세 case 매핑 (PLAN-01 8 + 02 7 + 03 7 + 04 8 = 30)" [level=3] [ref=e415]
+    - paragraph [ref=e416]: 비주얼은 정상 탭만. 예외는 이 표가 계약.
+    - generic [ref=e417]: 체크포인트 (PLAN-01)
+    - table [ref=e419]:
+      - rowgroup [ref=e420]:
+        - row [ref=e421]:
+          - cell "K-1" [ref=e422]
+          - cell "존재않는 기수" [ref=e423]
+          - cell "danger" [ref=e424]
+          - cell "일정 생성 차단" [ref=e426]
+        - row [ref=e427]:
+          - cell "K-2" [ref=e428]
+          - cell "회차 번호 중복" [ref=e429]
+          - cell "danger" [ref=e430]
+          - cell "중복 회차 차단" [ref=e432]
+        - row [ref=e433]:
+          - cell "K-3" [ref=e434]
+          - cell "시작>마감" [ref=e435]
+          - cell "danger" [ref=e436]
+          - cell "해당 회차 저장 차단" [ref=e438]
+        - row [ref=e439]:
+          - cell "K-4" [ref=e440]
+          - cell "이전 회차 역순" [ref=e441]
+          - cell "danger" [ref=e442]
+          - cell "전체 확정 차단·충돌 안내" [ref=e444]
+        - row [ref=e445]:
+          - cell "K-5" [ref=e446]
+          - cell "동일 시간대 중복" [ref=e447]
+          - cell "warning" [ref=e448]
+          - cell "충돌 경고" [ref=e450]
+        - row [ref=e451]:
+          - cell "K-6" [ref=e452]
+          - cell "최종 회차 2건+" [ref=e453]
+          - cell "danger" [ref=e454]
+          - cell "단일 최종 선택 요청" [ref=e456]
+        - row [ref=e457]:
+          - cell "K-7" [ref=e458]
+          - cell "최종 회차 미지정" [ref=e459]
+          - cell "warning" [ref=e460]
+          - cell "마지막 회차 자동 후보" [ref=e462]
+        - row [ref=e463]:
+          - cell "K-8" [ref=e464]
+          - cell "일부 저장 실패(롤백)" [ref=e465]
+          - cell "danger" [ref=e466]
+          - cell "전체 롤백/재저장" [ref=e468]
+    - generic [ref=e469]: 추출 범위 (PLAN-02)
+    - table [ref=e471]:
+      - rowgroup [ref=e472]:
+        - row [ref=e473]:
+          - cell "S-1" [ref=e474]
+          - cell "존재않는 프로젝트" [ref=e475]
+          - cell "danger" [ref=e476]
+          - cell "저장 차단" [ref=e478]
+        - row [ref=e479]:
+          - cell "S-2" [ref=e480]
+          - cell "허용안된 scope" [ref=e481]
+          - cell "danger" [ref=e482]
+          - cell "두 값만 허용" [ref=e484]
+        - row [ref=e485]:
+          - cell "S-3" [ref=e486]
+          - cell "기여분+커밋이메일 부재" [ref=e487]
+          - cell "warning" [ref=e488]
+          - cell "보류·AUTH-07 등록 요청" [ref=e490]
+        - row [ref=e491]:
+          - cell "S-4" [ref=e492]
+          - cell "git history 미확보" [ref=e493]
+          - cell "warning" [ref=e494]
+          - cell "전체코드 폴백 안내" [ref=e496]
+        - row [ref=e497]:
+          - cell "S-5" [ref=e498]
+          - cell "개인 프로젝트 기여분 선택" [ref=e499]
+          - cell "info" [ref=e500]
+          - cell "허용·전체코드 권장" [ref=e502]
+        - row [ref=e503]:
+          - cell "S-6" [ref=e504]
+          - cell "저장 실패" [ref=e505]
+          - cell "-" [ref=e506]
+          - cell "기존 scope 유지" [ref=e508]
+        - row [ref=e509]:
+          - cell "S-7" [ref=e510]
+          - cell "분석 중 범위 변경" [ref=e511]
+          - cell "info" [ref=e512]
+          - cell "다음 재분석부터" [ref=e514]
+    - generic [ref=e515]: 검증 포커스 (PLAN-03)
+    - table [ref=e517]:
+      - rowgroup [ref=e518]:
+        - row [ref=e519]:
+          - cell "F-1" [ref=e520]
+          - cell "존재않는 회차" [ref=e521]
+          - cell "danger" [ref=e522]
+          - cell "저장 차단" [ref=e524]
+        - row [ref=e525]:
+          - cell "F-2" [ref=e526]
+          - cell "빈 포커스" [ref=e527]
+          - cell "-" [ref=e528]
+          - cell "기본 가중치 유지" [ref=e530]
+        - row [ref=e531]:
+          - cell "F-3" [ref=e532]
+          - cell "허용안된 값" [ref=e533]
+          - cell "danger" [ref=e534]
+          - cell "저장 차단/검토" [ref=e536]
+        - row [ref=e537]:
+          - cell "F-4" [ref=e538]
+          - cell "중복 영역" [ref=e539]
+          - cell "-" [ref=e540]
+          - cell "중복 제거" [ref=e542]
+        - row [ref=e543]:
+          - cell "F-5" [ref=e544]
+          - cell "교육생 응답 노출 탐지" [ref=e545]
+          - cell "danger" [ref=e546]
+          - cell "응답 차단·비노출 재적용" [ref=e548]
+        - row [ref=e549]:
+          - cell "F-6" [ref=e550]
+          - cell "MEAS-02B 연계 실패" [ref=e551]
+          - cell "warning" [ref=e552]
+          - cell "설정 유지·가중치 재시도" [ref=e554]
+        - row [ref=e555]:
+          - cell "F-7" [ref=e556]
+          - cell "분석 중 변경" [ref=e557]
+          - cell "info" [ref=e558]
+          - cell "다음 버전부터" [ref=e560]
+    - generic [ref=e561]: 응시 현황 (PLAN-04)
+    - table [ref=e563]:
+      - rowgroup [ref=e564]:
+        - row [ref=e565]:
+          - cell "A-1" [ref=e566]
+          - cell "진행중 아닌 회차" [ref=e567]
+          - cell "danger" [ref=e568]
+          - cell "독촉 발송 차단" [ref=e570]
+        - row [ref=e571]:
+          - cell "A-2" [ref=e572]
+          - cell "미응시 없음" [ref=e573]
+          - cell "-" [ref=e574]
+          - cell "\"전원 응시\" 표시" [ref=e576]
+        - row [ref=e577]:
+          - cell "A-3" [ref=e578]
+          - cell "중복 독촉" [ref=e579]
+          - cell "info" [ref=e580]
+          - cell "신규 발송 억제" [ref=e582]
+        - row [ref=e583]:
+          - cell "A-4" [ref=e584]
+          - cell "연락 채널 부재" [ref=e585]
+          - cell "warning" [ref=e586]
+          - cell "대상 제외·미전달 기록" [ref=e588]
+        - row [ref=e589]:
+          - cell "A-5" [ref=e590]
+          - cell "AUTH-10 발송 실패" [ref=e591]
+          - cell "warning" [ref=e592]
+          - cell "재시도 큐" [ref=e594]
+        - row [ref=e595]:
+          - cell "A-6" [ref=e596]
+          - cell "일부 발송 실패" [ref=e597]
+          - cell "warning" [ref=e598]
+          - cell "성공 유지·실패만 재시도" [ref=e600]
+        - row [ref=e601]:
+          - cell "A-7" [ref=e602]
+          - cell "이미 완료자 포함" [ref=e603]
+          - cell "info" [ref=e604]
+          - cell "재조회 후 독촉 제외" [ref=e606]
+        - row [ref=e607]:
+          - cell "A-8" [ref=e608]
+          - cell "상태 조회 실패" [ref=e609]
+          - cell "warning" [ref=e610]
+          - cell "독촉 보류·재집계" [ref=e612]
+    - generic [ref=e613]: "디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 신규: FinalBadge·ScopeToggle·ChipInput·PrivateBadge · 검증 포커스 교육생 비노출(A4) · 웹 기준"

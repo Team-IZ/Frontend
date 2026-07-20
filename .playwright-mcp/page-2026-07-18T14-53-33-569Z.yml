@@ -1,0 +1,665 @@
+- generic [ref=f16e2]:
+  - complementary [ref=f16e3]:
+    - generic [ref=f16e4]:
+      - generic [ref=f16e5]:
+        - generic [ref=f16e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=f16e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=f16e8]:
+      - generic [ref=f16e9]:
+        - generic [ref=f16e10]: shared
+        - button "로그인 shared/login.html" [ref=f16e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=f16e13]: shared/login.html
+      - generic [ref=f16e14]:
+        - generic [ref=f16e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=f16e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=f16e18]: ▸
+      - generic [ref=f16e19]:
+        - generic [ref=f16e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=f16e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=f16e23]: 총괄
+          - generic [ref=f16e24]: ▸
+      - generic [ref=f16e25]:
+        - generic [ref=f16e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=f16e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=f16e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=f16e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=f16e31]: manager/dashboard.html
+        - button "교안 ▸" [ref=f16e33] [cursor=pointer]:
+          - text: 교안
+          - generic [ref=f16e34]: ▸
+        - button "프로젝트 ▸" [ref=f16e36] [cursor=pointer]:
+          - text: 프로젝트
+          - generic [ref=f16e37]: ▸
+        - button "분석 · 진단 ▸" [ref=f16e39] [cursor=pointer]:
+          - text: 분석 · 진단
+          - generic [ref=f16e40]: ▸
+        - button "교육생 ▸" [ref=f16e42] [cursor=pointer]:
+          - text: 교육생
+          - generic [ref=f16e43]: ▸
+        - button "개입 관리 manager/intervention.html" [ref=f16e44] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=f16e45]: manager/intervention.html
+        - button "리포트 ▸" [ref=f16e47] [cursor=pointer]:
+          - text: 리포트
+          - generic [ref=f16e48]: ▸
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=f16e49] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=f16e50]: manager/appeal-disclosure.html
+      - generic [ref=f16e51]:
+        - generic [ref=f16e52]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=f16e54] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=f16e55]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=f16e56] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=f16e57]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=f16e58] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=f16e59]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=f16e60] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=f16e61]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=f16e62] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=f16e63]: trainee/result.html
+  - main [ref=f16e64]:
+    - generic [ref=f16e65]:
+      - generic [ref=f16e66]: 대시보드
+      - generic [ref=f16e67]: manager/dashboard.html
+      - link "새 탭에서 열기 ↗" [ref=f16e68] [cursor=pointer]:
+        - /url: manager/dashboard.html
+    - iframe [ref=f16e69]:
+      - generic [ref=f17e2]:
+        - generic [ref=f17e3]:
+          - generic [ref=f17e4]: SC-M01 · P0 · 매니저 · 웹
+          - heading "대시보드" [level=1] [ref=f17e5]
+          - paragraph [ref=f17e6]: "매니저의 홈이자 모든 화면을 집계하는 화면. 3계층으로 먼저 전체 상태를, 그다음 조치를 보여준다. ① 기수 전경: 브리핑(DASH-02)+KPI(DASH-01)+이해도 추이+취약 지점+개입 파이프라인. ② 확인·조치 필요: Priority 정렬 인박스(DASH-03: Priority=S×(0.5+R), 순위+수식+사유), 각 행에 타이밍(DASH-05·항상 표시)·추천(INTV-01)·초안(INTV-02)·확정 대기 큐. ③ 추천 품질(접힌 메타): 성능(DASH-07)·규칙 재검토(INTV-03)·안정성(DASH-06). 지표마다 [ⓘ 출처] 데이터 계보. 확정은 매니저(GOV-02)."
+        - generic [ref=f17e7]: "메인 · 3계층 (① 행동 큐=확정 대기: DASH-02·03·05+INTV-01·02 / ② 기수 맥락=DASH-01 접이 / ③ 추천 품질=DASH-06·07+INTV-03 접힌 메타)"
+        - generic [ref=f17e8]:
+          - generic [ref=f17e9]: iz-get.com/cohorts/7/dashboard
+          - generic [ref=f17e15]:
+            - generic [ref=f17e16]:
+              - generic [ref=f17e17]:
+                - generic [ref=f17e18]:
+                  - generic [ref=f17e19]: ◆
+                  - text: IZ-Get
+                - generic [ref=f17e20]:
+                  - generic [ref=f17e21]: 기수
+                  - text: 7기 ▾
+              - generic [ref=f17e22]:
+                - text: 박지현 · 매니저
+                - generic [ref=f17e23]: 박
+            - generic [ref=f17e24]:
+              - generic [ref=f17e25]:
+                - generic [ref=f17e26]:
+                  - generic [ref=f17e27]: ▦
+                  - text: 대시보드
+                - generic [ref=f17e28]:
+                  - generic [ref=f17e29]: ◔
+                  - text: 기수 구성
+                - generic [ref=f17e30]:
+                  - generic [ref=f17e31]: ▧
+                  - text: 교안
+                - generic [ref=f17e32]:
+                  - generic [ref=f17e33]: ▤
+                  - text: 프로젝트
+                - generic [ref=f17e34]:
+                  - generic [ref=f17e35]: △
+                  - text: 분석 · 진단
+                - generic [ref=f17e36]:
+                  - generic [ref=f17e37]: ◎
+                  - text: 교육생
+                - generic [ref=f17e38]:
+                  - generic [ref=f17e39]: ✎
+                  - text: 개입
+                - generic [ref=f17e40]:
+                  - generic [ref=f17e41]: ▥
+                  - text: 리포트
+                - generic [ref=f17e42]:
+                  - generic [ref=f17e43]: ⚖
+                  - text: 이의 · 공개
+              - generic [ref=f17e44]:
+                - generic [ref=f17e45]:
+                  - generic [ref=f17e46]:
+                    - generic [ref=f17e47]: 대시보드 › 7기
+                    - heading "대시보드" [level=2] [ref=f17e48]
+                  - generic [ref=f17e49]: 집계 기준 2026-07-12 14:03 · 일부 캐시
+                - generic [ref=f17e50]:
+                  - generic [ref=f17e51]: 🔔
+                  - generic [ref=f17e52]:
+                    - text: 지난 방문(어제 18:00) 이후 신규 위험 2명(강민준·이서준), 오세훈 회복.
+                    - generic [ref=f17e53]: 중복·동일 원인 시그널은 요약됨(DASH-02)
+                  - generic [ref=f17e54]:
+                    - generic [ref=f17e55]: 확정 대기 3
+                    - generic [ref=f17e56]: 즉시 2
+                    - generic [ref=f17e57]: 회복 1
+                  - button "브리핑 확인" [ref=f17e58] [cursor=pointer]
+                - generic [ref=f17e59]:
+                  - generic [ref=f17e60]:
+                    - generic [ref=f17e61]:
+                      - text: 위험 인원
+                      - generic "출처 보기" [ref=f17e62] [cursor=pointer]: ⓘ
+                    - generic [ref=f17e63]: 3명
+                    - generic [ref=f17e64]: ▲ +2 신규
+                  - generic [ref=f17e65]:
+                    - generic [ref=f17e66]:
+                      - text: 이해도 평균
+                      - generic "출처 보기" [ref=f17e67] [cursor=pointer]: ⓘ
+                    - generic [ref=f17e68]: 3.6/5
+                    - generic [ref=f17e69]:
+                      - text: ▲ +0.2
+                      - generic [ref=f17e70]: 2→3회차
+                  - generic [ref=f17e71]:
+                    - generic [ref=f17e72]:
+                      - text: 응시율
+                      - generic "출처 보기" [ref=f17e73] [cursor=pointer]: ⓘ
+                    - generic [ref=f17e74]: 92%
+                    - generic [ref=f17e75]:
+                      - text: ▼ −3%p
+                      - generic [ref=f17e76]: 3회차 due
+                  - generic [ref=f17e77]:
+                    - generic [ref=f17e78]:
+                      - text: 활성 시그널
+                      - generic "출처 보기" [ref=f17e79] [cursor=pointer]: ⓘ
+                    - generic [ref=f17e80]: "7"
+                    - generic [ref=f17e81]: 미해소
+                  - generic [ref=f17e83]:
+                    - generic [ref=f17e84]:
+                      - text: 참여도
+                      - generic "정의 미확정" [ref=f17e85] [cursor=pointer]: ⓘ
+                    - generic [ref=f17e86]: 82%
+                    - generic [ref=f17e87]: 정의 확인 필요
+                  - generic [ref=f17e88]:
+                    - generic [ref=f17e89]:
+                      - text: 팀 진행률
+                      - generic "정의 미확정" [ref=f17e90] [cursor=pointer]: ⓘ
+                    - generic [ref=f17e91]: 68%
+                    - generic [ref=f17e92]: 정의 확인 필요
+                - generic [ref=f17e93]:
+                  - generic [ref=f17e94]:
+                    - heading "이해도 추이 회차 비교 ↗" [level=4] [ref=f17e95]:
+                      - text: 이해도 추이
+                      - generic [ref=f17e96] [cursor=pointer]: 회차 비교 ↗
+                    - img [ref=f17e97]:
+                      - generic [ref=f17e102]: 1회차 3.1
+                      - generic [ref=f17e103]: 2회차 3.4
+                      - generic [ref=f17e104]: 3회차 3.6
+                  - generic [ref=f17e105]:
+                    - heading "취약 지점 히트맵 ↗" [level=4] [ref=f17e106]:
+                      - text: 취약 지점
+                      - generic [ref=f17e107] [cursor=pointer]: 히트맵 ↗
+                    - generic [ref=f17e108]:
+                      - generic [ref=f17e109]:
+                        - generic [ref=f17e110]: 반례대응
+                        - generic [ref=f17e113]: 2.6 최약
+                      - generic [ref=f17e114]:
+                        - generic [ref=f17e115]: 대안비교
+                        - generic [ref=f17e118]: "3.0"
+                      - generic [ref=f17e119]:
+                        - generic [ref=f17e120]: 자기수정
+                        - generic [ref=f17e123]: "3.2"
+                      - generic [ref=f17e124]:
+                        - generic [ref=f17e125]: 코드이해
+                        - generic [ref=f17e128]: "3.8"
+                  - generic [ref=f17e129]:
+                    - heading "개입 파이프라인 개입 ↗" [level=4] [ref=f17e130]:
+                      - text: 개입 파이프라인
+                      - generic [ref=f17e131] [cursor=pointer]: 개입 ↗
+                    - generic [ref=f17e132]:
+                      - generic [ref=f17e133]:
+                        - generic [ref=f17e134]: "3"
+                        - generic [ref=f17e135]: 대기
+                      - generic [ref=f17e136]:
+                        - generic [ref=f17e137]: "4"
+                        - generic [ref=f17e138]: 진행
+                      - generic [ref=f17e139]:
+                        - generic [ref=f17e140]: "11"
+                        - generic [ref=f17e141]: 완료
+                    - generic [ref=f17e142]: 완료 개입 회복률 73% (8/11·자연빈도·DASH-07)
+                - generic [ref=f17e143]:
+                  - generic [ref=f17e144]: 확인·조치 필요 · Priority 정렬 (DASH-03)
+                  - generic [ref=f17e145]: 7명
+                - generic [ref=f17e146]:
+                  - generic [ref=f17e147] [cursor=pointer]: 전체 7
+                  - generic [ref=f17e148] [cursor=pointer]: 확정 대기 3
+                  - generic [ref=f17e149] [cursor=pointer]: 관찰 2
+                  - generic [ref=f17e150] [cursor=pointer]: 회복 1
+                  - generic [ref=f17e151] [cursor=pointer]: 표본 부족 1
+                  - generic [ref=f17e152] [cursor=pointer]: ↕ Priority 순 ▾
+                - generic [ref=f17e153]:
+                  - text: AI가 추천·초안까지 작성함
+                  - generic [ref=f17e154]: 확인 후 확정(GOV-02)
+                - generic [ref=f17e155]:
+                  - generic [ref=f17e157]:
+                    - generic [ref=f17e158]:
+                      - generic [ref=f17e159]: "1"
+                      - generic [ref=f17e160]: 강민준
+                      - generic [ref=f17e161]: NEW
+                      - generic [ref=f17e162]: A반
+                      - generic [ref=f17e163]: 즉시
+                      - generic [ref=f17e164]: Priority 2.4S 1.8 · R 0.85
+                    - generic [ref=f17e165]:
+                      - text: 반례대응 4→3→2, 2회 연속 하락, 기수 평균보다 크게 낮음. 낮은 축 3개.
+                      - generic [ref=f17e166]: · 근거 3회차 표본 · 채점 안정
+                    - generic [ref=f17e167]:
+                      - generic [ref=f17e168]: "추천: 멘토링"
+                      - generic [ref=f17e169]: 낮은 축 3개 이상 (결정리스트 1순위 · INTV-01)
+                      - generic [ref=f17e170] [cursor=pointer]: 초안 접기 ▾
+                    - generic [ref=f17e171]: 강민준 교육생은 반례대응·자기수정·대안비교 축이 낮아 멘토링을 제안합니다. 반례·예외 상황을 스스로 설계하는 연습을 1:1로 진행하고, 다음 회차에 회복을 확인합니다. (AI 초안 · 편집 가능·INTV-02)
+                    - generic [ref=f17e172]:
+                      - generic [ref=f17e173]:
+                        - generic [ref=f17e174] [cursor=pointer]: 벤치마크 ▾
+                        - generic [ref=f17e175] [cursor=pointer]: 근거 원본 ↗
+                        - generic [ref=f17e176] [cursor=pointer]: ⓘ 출처
+                      - generic [ref=f17e177]:
+                        - button "✓ 확정 → SC-M07" [ref=f17e178] [cursor=pointer]
+                        - button "수정" [ref=f17e179] [cursor=pointer]
+                        - button "미루기" [ref=f17e180] [cursor=pointer]
+                  - generic [ref=f17e182]:
+                    - generic [ref=f17e183]:
+                      - generic [ref=f17e184]: "2"
+                      - generic [ref=f17e185]: 이서준
+                      - generic [ref=f17e186]: NEW
+                      - generic [ref=f17e187]: B반
+                      - generic [ref=f17e188]: 즉시
+                      - generic [ref=f17e189]: Priority 1.7S 1.4 · R 0.80
+                    - generic [ref=f17e190]:
+                      - text: 대안비교 3→2, 특정 기술영역(동시성) 집중 취약.
+                      - generic [ref=f17e191]: · 근거 3회차 표본 · 채점 안정
+                    - generic [ref=f17e192]:
+                      - generic [ref=f17e193]: "추천: 보강 세션"
+                      - generic [ref=f17e194]: 낮은 축 1~2개+기술영역 집중 (3순위)
+                      - generic [ref=f17e195] [cursor=pointer]: 초안 펼치기 ▸
+                    - generic [ref=f17e196]:
+                      - generic [ref=f17e197]:
+                        - generic [ref=f17e198] [cursor=pointer]: 벤치마크 ▾
+                        - generic [ref=f17e199] [cursor=pointer]: 근거 원본 ↗
+                        - generic [ref=f17e200] [cursor=pointer]: ⓘ 출처
+                      - generic [ref=f17e201]:
+                        - button "✓ 확정 → SC-M07" [ref=f17e202] [cursor=pointer]
+                        - button "수정" [ref=f17e203] [cursor=pointer]
+                        - button "미루기" [ref=f17e204] [cursor=pointer]
+                  - generic [ref=f17e206]:
+                    - generic [ref=f17e207]:
+                      - generic [ref=f17e208]: "3"
+                      - generic [ref=f17e209]: 박준호
+                      - generic [ref=f17e210]: A반
+                      - generic [ref=f17e211]: 이번 주 내
+                      - generic [ref=f17e212]: Priority 1.3S 1.0 · R 0.76
+                    - generic [ref=f17e213]:
+                      - text: 반례대응 하락, 자기수정 포함.
+                      - generic [ref=f17e214]: · 근거 4회차 표본
+                    - generic [ref=f17e215]:
+                      - generic [ref=f17e216]: "추천: 면담"
+                      - generic [ref=f17e217]: 낮은 축 1~2개+반례·자기수정 포함 (2순위)
+                      - generic [ref=f17e218] [cursor=pointer]: 초안 펼치기 ▸
+                    - generic [ref=f17e219]:
+                      - generic [ref=f17e220]:
+                        - generic [ref=f17e221] [cursor=pointer]: 벤치마크 ▾
+                        - generic [ref=f17e222] [cursor=pointer]: ⓘ 출처
+                      - generic [ref=f17e223]:
+                        - button "✓ 확정 → SC-M07" [ref=f17e224] [cursor=pointer]
+                        - button "수정" [ref=f17e225] [cursor=pointer]
+                        - button "미루기" [ref=f17e226] [cursor=pointer]
+                - generic [ref=f17e227]:
+                  - text: ⚡ 같은 유형 묶음 검토 —
+                  - generic [ref=f17e228]: 3건을 한 번의 흐름으로 확인·확정
+                  - text: (각각 개별 기록·GOV-02)
+                  - button "3건 함께 검토 →" [ref=f17e229] [cursor=pointer]
+                - generic [ref=f17e230]:
+                  - generic [ref=f17e231] [cursor=pointer]:
+                    - generic [ref=f17e232]: 관찰 중 2
+                    - generic [ref=f17e233]: 서지우(개입 진행·쿨다운) · 정하늘 — 지금 조치 불필요
+                    - generic [ref=f17e234]: ▸
+                  - generic [ref=f17e235] [cursor=pointer]:
+                    - generic [ref=f17e236]: 회복 확인 1
+                    - generic [ref=f17e237]: 오세훈 — 자기수정 2→3 회복세, 모니터링 유지
+                    - generic [ref=f17e238]: ▸
+                  - generic [ref=f17e239] [cursor=pointer]:
+                    - generic [ref=f17e240]: 표본 부족 1
+                    - generic [ref=f17e241]: 한도현 — 1회차만, 2회차 후 재평가(DASH-08)
+                    - generic [ref=f17e242]: ▸
+                - generic [ref=f17e243]:
+                  - generic [ref=f17e244]: 추천 품질
+                  - generic [ref=f17e245]: 채점 안정 22 · 재검토 2 (DASH-06)
+                  - generic [ref=f17e246]: 멘토링 회복률 73% (8/11·DASH-07)
+                  - generic [ref=f17e247]: ⚠ 규칙 재검토 1 (INTV-03)
+                  - generic [ref=f17e248] [cursor=pointer]: 품질 상세 ▾
+        - generic [ref=f17e249]: 상태 · [초안 보기] — 개입 실행 초안 (INTV-02 슬롯 템플릿 + 편집 + 개입 생성 · INTV-01 트리 근거)
+        - generic [ref=f17e250]:
+          - generic [ref=f17e251]: iz-get.com/cohorts/7/dashboard#draft-강민준
+          - generic [ref=f17e257]:
+            - generic [ref=f17e258]:
+              - generic [ref=f17e259]:
+                - generic [ref=f17e260]:
+                  - generic [ref=f17e261]: ◆
+                  - text: IZ-Get
+                - generic [ref=f17e262]:
+                  - generic [ref=f17e263]: 기수
+                  - text: 7기 ▾
+              - generic [ref=f17e264]:
+                - text: 박지현 · 매니저
+                - generic [ref=f17e265]: 박
+            - generic [ref=f17e266]:
+              - generic [ref=f17e267]:
+                - generic [ref=f17e268]:
+                  - generic [ref=f17e269]: ▦
+                  - text: 대시보드
+                - generic [ref=f17e270]:
+                  - generic [ref=f17e271]: ◔
+                  - text: 기수 구성
+                - generic [ref=f17e272]:
+                  - generic [ref=f17e273]: ▧
+                  - text: 교안
+                - generic [ref=f17e274]:
+                  - generic [ref=f17e275]: ▤
+                  - text: 프로젝트
+                - generic [ref=f17e276]:
+                  - generic [ref=f17e277]: △
+                  - text: 분석 · 진단
+                - generic [ref=f17e278]:
+                  - generic [ref=f17e279]: ◎
+                  - text: 교육생
+                - generic [ref=f17e280]:
+                  - generic [ref=f17e281]: ✎
+                  - text: 개입
+                - generic [ref=f17e282]:
+                  - generic [ref=f17e283]: ▥
+                  - text: 리포트
+                - generic [ref=f17e284]:
+                  - generic [ref=f17e285]: ⚖
+                  - text: 이의 · 공개
+              - generic [ref=f17e287]:
+                - generic [ref=f17e288]: 강민준 · 개입 실행 초안
+                - generic [ref=f17e289]: "INTV-01 트리 경로: 활성 시그널 → primary_low(≤2) 축 3개 → 1순위 멘토링 확정(최초 매칭 1건). 근거 축: 반례대응·자기수정·대안비교."
+                - generic [ref=f17e290]: "강민준 교육생은 최근 회차에서 반례대응·자기수정·대안비교 축이 기수 평균 대비 낮아, 멘토링 개입을 제안합니다. 제안 조치: 반례·예외 상황을 스스로 설계하는 연습을 1:1로 진행하고, 다음 회차에 회복 여부를 확인합니다."
+                - generic [ref=f17e291]: ✎ 매니저 편집 가능 — 편집 여부는 별도 플래그로 기록(추천 신뢰도 개선 신호). v1은 사무형 시안 하나, 편집률로 톤 교체 사후 판단.
+                - generic [ref=f17e292]:
+                  - button "개입 생성 → SC-M07" [ref=f17e293] [cursor=pointer]
+                  - button "이의제기(INTV-03)" [ref=f17e294] [cursor=pointer]
+                  - button "닫기" [ref=f17e295] [cursor=pointer]
+        - generic [ref=f17e296]: 상태 · [벤치마크] 온디맨드 패널 (DASH-04 · due_at 스냅샷 고정 · 수정 배지)
+        - generic [ref=f17e297]:
+          - generic [ref=f17e298]: iz-get.com/cohorts/7/dashboard#bench-강민준
+          - generic [ref=f17e304]:
+            - generic [ref=f17e305]:
+              - generic [ref=f17e306]:
+                - generic [ref=f17e307]:
+                  - generic [ref=f17e308]: ◆
+                  - text: IZ-Get
+                - generic [ref=f17e309]:
+                  - generic [ref=f17e310]: 기수
+                  - text: 7기 ▾
+              - generic [ref=f17e311]:
+                - text: 박지현 · 매니저
+                - generic [ref=f17e312]: 박
+            - generic [ref=f17e313]:
+              - generic [ref=f17e314]:
+                - generic [ref=f17e315]:
+                  - generic [ref=f17e316]: ▦
+                  - text: 대시보드
+                - generic [ref=f17e317]:
+                  - generic [ref=f17e318]: ◔
+                  - text: 기수 구성
+                - generic [ref=f17e319]:
+                  - generic [ref=f17e320]: ▧
+                  - text: 교안
+                - generic [ref=f17e321]:
+                  - generic [ref=f17e322]: ▤
+                  - text: 프로젝트
+                - generic [ref=f17e323]:
+                  - generic [ref=f17e324]: △
+                  - text: 분석 · 진단
+                - generic [ref=f17e325]:
+                  - generic [ref=f17e326]: ◎
+                  - text: 교육생
+                - generic [ref=f17e327]:
+                  - generic [ref=f17e328]: ✎
+                  - text: 개입
+                - generic [ref=f17e329]:
+                  - generic [ref=f17e330]: ▥
+                  - text: 리포트
+                - generic [ref=f17e331]:
+                  - generic [ref=f17e332]: ⚖
+                  - text: 이의 · 공개
+              - generic [ref=f17e334]:
+                - generic [ref=f17e335]:
+                  - generic [ref=f17e336]: 강민준 · 벤치마크
+                  - generic [ref=f17e337]: 2회차 due_at 스냅샷 · 고정
+                - table [ref=f17e338]:
+                  - rowgroup [ref=f17e339]:
+                    - row [ref=f17e340]:
+                      - columnheader "축" [ref=f17e341]
+                      - columnheader "본인" [ref=f17e342]
+                      - columnheader "기수 평균 대비" [ref=f17e343]
+                      - columnheader "직전 회차 대비" [ref=f17e344]
+                    - row [ref=f17e345]:
+                      - cell "반례대응" [ref=f17e346]
+                      - cell "2.0" [ref=f17e347]
+                      - cell "−1.4" [ref=f17e348]
+                      - cell "−1.0" [ref=f17e349]
+                    - row [ref=f17e350]:
+                      - cell "자기수정" [ref=f17e351]
+                      - cell "2.4" [ref=f17e352]
+                      - cell "−0.8" [ref=f17e353]
+                      - cell "−0.3" [ref=f17e354]
+                    - row [ref=f17e355]:
+                      - cell "대안비교" [ref=f17e356]
+                      - cell "2.6" [ref=f17e357]
+                      - cell "−0.4" [ref=f17e358]
+                      - cell "+0.1" [ref=f17e359]
+                    - row [ref=f17e360]:
+                      - cell "코드이해" [ref=f17e361]
+                      - cell "3.8" [ref=f17e362]
+                      - cell "+0.2" [ref=f17e363]
+                      - cell "+0.2" [ref=f17e364]
+                - generic [ref=f17e365]: · due_at 시점 스냅샷 기준 — 이후 원본 변경돼도 표시값 불변(DASH-04). GOV-01 판정 수정이 있으면 스냅샷 이후 수정됨 배지 표시. 1회차는 직전 비교 생략, 지각 정책 미확정 시 분모 포함 여부 명시.
+        - generic [ref=f17e366]: 상태 · 지표 [ⓘ 출처] 클릭 — 데이터 계보 (원천 → 수집 → 처리 → 표시, 매니저 신뢰 + 백엔드 ERD 근거)
+        - generic [ref=f17e367]:
+          - generic [ref=f17e368]: iz-get.com/cohorts/7/dashboard#lineage-이해도
+          - generic [ref=f17e374]:
+            - generic [ref=f17e375]:
+              - generic [ref=f17e376]:
+                - generic [ref=f17e377]:
+                  - generic [ref=f17e378]: ◆
+                  - text: IZ-Get
+                - generic [ref=f17e379]:
+                  - generic [ref=f17e380]: 기수
+                  - text: 7기 ▾
+              - generic [ref=f17e381]:
+                - text: 박지현 · 매니저
+                - generic [ref=f17e382]: 박
+            - generic [ref=f17e383]:
+              - generic [ref=f17e384]:
+                - generic [ref=f17e385]:
+                  - generic [ref=f17e386]: ▦
+                  - text: 대시보드
+                - generic [ref=f17e387]:
+                  - generic [ref=f17e388]: ◔
+                  - text: 기수 구성
+                - generic [ref=f17e389]:
+                  - generic [ref=f17e390]: ▧
+                  - text: 교안
+                - generic [ref=f17e391]:
+                  - generic [ref=f17e392]: ▤
+                  - text: 프로젝트
+                - generic [ref=f17e393]:
+                  - generic [ref=f17e394]: △
+                  - text: 분석 · 진단
+                - generic [ref=f17e395]:
+                  - generic [ref=f17e396]: ◎
+                  - text: 교육생
+                - generic [ref=f17e397]:
+                  - generic [ref=f17e398]: ✎
+                  - text: 개입
+                - generic [ref=f17e399]:
+                  - generic [ref=f17e400]: ▥
+                  - text: 리포트
+                - generic [ref=f17e401]:
+                  - generic [ref=f17e402]: ⚖
+                  - text: 이의 · 공개
+              - generic [ref=f17e403]:
+                - generic [ref=f17e404]:
+                  - generic [ref=f17e405]:
+                    - generic [ref=f17e406]: 데이터 출처 · 이해도 평균 3.6
+                    - generic [ref=f17e407] [cursor=pointer]: ✕
+                  - generic [ref=f17e408]:
+                    - generic [ref=f17e411]:
+                      - generic [ref=f17e412]: ① 원천 · 어디서 생겼나
+                      - generic [ref=f17e413]: 교육생의 세션 답변 (코드 이해 소크라테스 세션)
+                      - generic [ref=f17e414]: SC-T04 세션 · MEAS-06 · CODE 타입 L1→L2→L3
+                    - generic [ref=f17e417]:
+                      - generic [ref=f17e418]: ② 채점 · 어떻게 점수화
+                      - generic [ref=f17e419]: ENG-01 5축 LLM-as-judge (코드이해·설계논리·대안비교·반례대응·자기수정)
+                      - generic [ref=f17e420]: 25점 동일가중 · 편향완화 스왑 · 축별 근거 span 인용 · 모델/프롬프트/루브릭 버전 기록
+                    - generic [ref=f17e423]:
+                      - generic [ref=f17e424]: ③ 집계 · 어떻게 합쳐졌나
+                      - generic [ref=f17e425]: 개인 총점 → 기수 평균 (회차 스냅샷 단위)
+                      - generic [ref=f17e426]: ENG-02 회차 변화(Δ)와 동일 스냅샷 · 분모 = 응시 완료 24명(결측 2명 제외)
+                    - generic [ref=f17e429]:
+                      - generic [ref=f17e430]: ④ 표시 · 이 화면
+                      - generic [ref=f17e431]: DASH-01 통합 현황 KPI · Δ는 직전 회차 대비(ENG-02)
+                      - generic [ref=f17e432]: 기준 2026-07-12 14:03 (3회차 스냅샷) · 근거 없는 값 노출 차단(A2)
+                    - generic [ref=f17e433]: "정의: 5축 평균 점수(개인 총점 ÷ 5)의 기수 전체 평균. 분모 = 응시 완료 교육생 수. 회차 스냅샷 기준이라 회차가 바뀌면 값이 갱신됨(B1)."
+                - generic [ref=f17e434]:
+                  - generic [ref=f17e435]: 모든 지표에 [ⓘ 출처]가 붙습니다. 매니저는 숫자의 정의·최신성·신뢰도를 한 번에 확인하고, 백엔드는 이 계보가 곧 ERD 데이터 흐름(어느 엔티티·이벤트에서 파생됐는지)입니다.
+                  - generic [ref=f17e436]: ⚠ 참여도·팀 진행률은 기능명세서에 정의(분자/분모)가 명시되지 않음. 출처 패널이 "정의 확인 필요"로 표시 — 백엔드 확정 전까지 수치 신뢰 유보. (명세 공백·플래그)
+        - generic [ref=f17e437]:
+          - heading "상태별 UI — 예외 case 전량 (게이트 A)" [level=3] [ref=f17e438]
+          - generic [ref=f17e439]: DASH-01 6 + 02 6 + 03 8 + 04 6 + 05 8 + 06 6 + 07 7 + 08 6 + 09 7 + INTV-01 8 + 02 7 + 03 7 = 82. (P0 최대 집계 화면.)
+          - generic [ref=f17e440]:
+            - generic [ref=f17e441]: DASH-01 통합 현황
+            - generic [ref=f17e442]:
+              - generic [ref=f17e443]:
+                - text: 1 조회 권한 없는 기수 →
+                - generic [ref=f17e444]: 요청 차단
+                - text: ·권한 내 목록
+              - generic [ref=f17e445]:
+                - text: 2 일부 지표 결측 →
+                - generic [ref=f17e446]: 데이터 없음 표시
+                - text: ·나머지 유지
+              - generic [ref=f17e447]: 3 기준 시각 불일치 → 최신 공통 기준 재집계·시각 병기
+              - generic [ref=f17e448]: 4 시그널 조회 실패 → 일반 지표만·시그널 영역 오류 기록
+              - generic [ref=f17e449]: 5 전체 결과 없음 → 빈 상태·조건 변경 안내
+              - generic [ref=f17e450]: 6 대량 집계 지연 → 캐시 우선 표시·갱신 상태 표기
+            - generic [ref=f17e451]: DASH-02 자동 브리핑
+            - generic [ref=f17e452]: 1 신규 위험 없음 → 정상 상태 메시지
+            - generic [ref=f17e453]: 2 마지막 확인 시각 없음 → 최초 로그인 정책(최근 N일/활성)
+            - generic [ref=f17e454]: 3 데이터 과다 → 상위 우선순위만 요약·전체 링크
+            - generic [ref=f17e455]: 4 시그널 조회 실패 → 브리핑 보류·기본 화면
+            - generic [ref=f17e456]: 5 확인 시각 갱신 실패 → 표시 유지·재시도 등록
+            - generic [ref=f17e457]: 6 확인한 동일 시그널 재조회 → ID 기준 중복 제거
+            - generic [ref=f17e458]: DASH-03 우선순위 정렬
+            - generic [ref=f17e459]:
+              - text: 1 비교 표본 <2명 → S 생략·
+              - generic [ref=f17e460]: DASH-08 표본 부족
+            - generic [ref=f17e461]: 2 기수 σ=0 → S 생략·DASH-08 대체
+            - generic [ref=f17e462]: 3 5축 일부 누락 → 심각도 확정 유보·누락 명시
+            - generic [ref=f17e463]: 4 회복 이력 0건 → 라플라스 R=0.5·강제 분기 금지
+            - generic [ref=f17e464]: 5 회복 이력 조회 실패 → 확정 보류·최근 정상 집계
+            - generic [ref=f17e465]:
+              - text: 6 근거 문구 생성 실패 →
+              - generic [ref=f17e466]: 순위 표시 차단
+              - text: (A2)
+            - generic [ref=f17e467]: 7 임의 가중 요청 → 검증 전 동일 가중 유지
+            - generic [ref=f17e468]: 8 비활성 시그널 포함 → 제외 후 재정렬
+            - generic [ref=f17e469]: DASH-04 벤치마크
+            - generic [ref=f17e470]: 1 1회차(직전 없음) → 직전 비교 생략
+            - generic [ref=f17e471]: 2 due_at 확정 점수 부재 → 비교값 비표시
+            - generic [ref=f17e472]: 3 스냅샷 중복 생성 → 활성 스냅샷 단일 유지
+            - generic [ref=f17e473]: 4 일부 축 누락 → 해당 축 비교 제외
+            - generic [ref=f17e474]: 5 지각 정책 미확정 → 분모 포함 여부 명시적 표시
+            - generic [ref=f17e475]:
+              - text: 6 스냅샷 이후 판정 수정 → 원본 불변·
+              - generic [ref=f17e476]: 수정 배지
+            - generic [ref=f17e477]: DASH-05 개입 타이밍 문구
+            - generic [ref=f17e478]: 1 위험도 데이터 부족 → 확정 문구 없이 데이터 부족 표시
+            - generic [ref=f17e479]: 2 쿨다운 기간 내 → 즉시 개입 대신 경과 관찰 문구
+            - generic [ref=f17e480]: 3 지표 상충 → 단일 결론 회피·추가 확인 필요
+            - generic [ref=f17e481]: 4 위험 급상승 → 우선 확인 필요로 상향
+            - generic [ref=f17e482]: 5 회복 추세 → 회복 확인·모니터링 문구
+            - generic [ref=f17e483]: 6 템플릿 조회 실패 → 기본 안전 문구·오류 기록
+            - generic [ref=f17e484]: 7 동일 문구 반복 → 최신 근거만 갱신·중복 알림 억제
+            - generic [ref=f17e485]: 8 문구 모델 실패 → 규칙 기반 템플릿 대체·이력
+            - generic [ref=f17e486]: DASH-06 채점 안정성 배지
+            - generic [ref=f17e487]: 1 ENG-05 미실행 → 배지 비표시
+            - generic [ref=f17e488]: 2 결과 불명확 → 재검증 요청
+            - generic [ref=f17e489]: 3 허용 범위 미설정 → 배지 생성 유보
+            - generic [ref=f17e490]: 4 채점·검증 버전 불일치 → 기존 배지 제거
+            - generic [ref=f17e491]:
+              - text: 5 3단계 이상 요청 →
+              - generic [ref=f17e492]: 차단
+              - text: (2상태만)
+            - generic [ref=f17e493]: 6 결과 조회 실패 → 배지 미표시
+            - generic [ref=f17e494]: DASH-07 추천 성능 지표
+            - generic [ref=f17e495]: 1 데이터 없음 → 지표 자체 생략
+            - generic [ref=f17e496]:
+              - text: 2 N<5 백분율 요청 →
+              - generic [ref=f17e497]: 차단
+              - text: ·진행바만
+            - generic [ref=f17e498]: 3 회복 미판정 건 → 집계 제외
+            - generic [ref=f17e499]: 4 동일 건 중복 결과 → 최신 유효 판정만
+            - generic [ref=f17e500]: 5 분모 0 → 회복률 계산 생략
+            - generic [ref=f17e501]: 6 원본 이력 누락 → 해당 건 제외·불완전 표시
+            - generic [ref=f17e502]: 7 집계 실패 → 이전 정상 집계 유지 또는 비노출
+            - generic [ref=f17e503]: DASH-08 표본부족 배지
+            - generic [ref=f17e504]: 1 완료 회차 조회 실패 → 확정 차단·보수적 표본 부족
+            - generic [ref=f17e505]:
+              - text: 2 1회차 자동 확정 요청 →
+              - generic [ref=f17e506]: 차단
+            - generic [ref=f17e507]: 3 매니저 다른 유형·사유 미입력 → 저장 차단
+            - generic [ref=f17e508]: 4 미완료 회차 포함 → 집계 제외
+            - generic [ref=f17e509]: 5 회차 중복 기록 → 고유 회차 재집계
+            - generic [ref=f17e510]: 6 플래그 누락 성능 집계 → 보류·데이터 보완
+            - generic [ref=f17e511]: DASH-09 채점 근거 원본
+            - generic [ref=f17e512]:
+              - text: 1 매니저 권한 없음 →
+              - generic [ref=f17e513]: 원본 열람 차단
+            - generic [ref=f17e514]: 2 원본 응답 부재 → 검토 필요 표시
+            - generic [ref=f17e515]: 3 버전 필드 누락 → ENG-01 데이터 계약 오류
+            - generic [ref=f17e516]: 4 교육생 프롬프트·루브릭 요청 → 비공개 유지
+            - generic [ref=f17e517]: 5 발췌·원본 불일치 → 공개 차단
+            - generic [ref=f17e518]: 6 자동 전체 공개 요청 → 차단
+            - generic [ref=f17e519]: 7 채점 버전 다수 → 활성 버전 우선·선택 제공
+            - generic [ref=f17e520]: INTV-01 개입 유형 추천
+            - generic [ref=f17e521]: 1 복수 조건 충족 → 결정리스트 최초 매칭만
+            - generic [ref=f17e522]: 2 5축 일부 결측 → 결측 의존 분기 제외·유보 검토
+            - generic [ref=f17e523]: 3 기수 σ=0 → relative_low 생략·primary_low만
+            - generic [ref=f17e524]: 4 팀편차 데이터 부재 → 팀조정 분기 제외
+            - generic [ref=f17e525]:
+              - text: 5 추천 근거 부재 →
+              - generic [ref=f17e526]: 추천 생성 차단
+            - generic [ref=f17e527]: 6 규칙 버전 부재 → 추천 중단
+            - generic [ref=f17e528]: 7 어떤 분기도 미매칭 → 모니터링 유지
+            - generic [ref=f17e529]: 8 병렬 규칙 중복 추천 → 저장 차단
+            - generic [ref=f17e530]: INTV-02 실행 초안
+            - generic [ref=f17e531]: 1 일부 슬롯 누락 → 누락 문구만 생략·나머지 구성
+            - generic [ref=f17e532]:
+              - text: 2 추천 결과 부재 →
+              - generic [ref=f17e533]: 초안 차단
+              - text: ·INTV-01 선행 요청
+            - generic [ref=f17e534]: 3 템플릿 조회 실패 → 기본 템플릿 적용
+            - generic [ref=f17e535]: 4 전체 슬롯 부재 → 자동 초안 중단
+            - generic [ref=f17e536]: 5 편집 저장 실패 → 기존 초안 유지·재저장 요청
+            - generic [ref=f17e537]: 6 편집 플래그 저장 실패 → 초안 유지·신호 기록만 재시도
+            - generic [ref=f17e538]: 7 과도한 편집 길이 → 최대 길이 제한
+            - generic [ref=f17e539]: INTV-03 추천 이의제기
+            - generic [ref=f17e540]:
+              - text: 1 이견 사유 미입력 →
+              - generic [ref=f17e541]: 제출 차단
+            - generic [ref=f17e542]: 2 추천 누적 <5건 → 개별 이의 저장·재검토 유보
+            - generic [ref=f17e543]: 3 최근 이력 집계 실패 → 이의 저장·플래그 보류
+            - generic [ref=f17e544]: 4 동일 추천 중복 이의 → 기존 반환 또는 사유 병합
+            - generic [ref=f17e545]: 5 규칙 버전 부재 → 이의 저장·재검토 연결 보류
+            - generic [ref=f17e546]: 6 플래그 저장 실패 → 이의 유지·재시도
+            - generic [ref=f17e547]:
+              - text: 7 플래그 후 자동 규칙 변경 요청 →
+              - generic [ref=f17e548]: 차단
+              - text: ·사람 검토
+          - generic [ref=f17e549]: "· 게이트 A: 82 case = 82 상태 항목 ✅ · 근거 없는 순위·수치·시그널 금지(A2) · Priority=S×(0.5+R)(DASH-03) · 타이밍 문구는 항상 표시·상태만 전환·방치해도 안 사라짐(A7·DASH-05) · INTV-01 결정리스트 배타·최초 1건 · 확정은 매니저 명시 액션(GOV-02), 표본 부족이 매니저 선택 봉쇄 안 함(DASH-08) · 자연빈도 우선·N<5 진행바(DASH-07) · 근거 원본 매니저 전용(DASH-09) · 담당 기수·기관 범위(SYS-02·AUTH-09)."

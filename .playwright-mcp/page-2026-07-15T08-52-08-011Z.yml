@@ -1,0 +1,424 @@
+- generic [ref=e2]:
+    - generic [ref=e3]:
+        - generic [ref=e4]: SC-M13 · P0/P1 · manager/project-workspace · 웹
+        - heading "프로젝트 워크스페이스 생성=총괄" [level=1] [ref=e5]
+        - paragraph [ref=e6]: "프로젝트가 상위 개념이므로 측정(체크포인트)은 프로젝트 안에서 구성한다(D77). 프로젝트 선택 → 의존 순서 4탭: ① 개요(유형·대상 + 요구사항 O/X 검증=프로젝트 소속) ② 팀·레포(팀 편성→단위 N 확정 · 레포 연결) ③ 측정 계획(체크포인트 — 질문 초점·추출범위=회차 소속, 응시 분모 N은 단위 상속, 레포는 실행 시 JIT) ④ 결과. 레포·체크포인트는 직교 축이라 병렬(D77 다이아몬드). 근거: 05-project-flow-analysis.md."
+    - generic [ref=e7]: 프로젝트 목록 (기수 내 N개 · 클릭 → 워크스페이스)
+    - generic [ref=e8]:
+        - generic [ref=e9]: iz-get.com/cohorts/7/projects?new=1
+        - generic [ref=e15]:
+            - generic [ref=e16]:
+                - generic [ref=e17]:
+                    - generic [ref=e18]:
+                        - generic [ref=e19]: ◆
+                        - text: IZ-Get
+                    - generic [ref=e20] [cursor=pointer]:
+                        - generic [ref=e21]: 기관
+                        - text: 그린 부트캠프
+                        - generic [ref=e22]: · 현재
+                        - text: 7기 ▾
+                - generic [ref=e23]:
+                    - text: 박지현 · 총괄 매니저
+                    - generic [ref=e24]: 박
+            - generic [ref=e25]:
+                - generic [ref=e26]:
+                    - generic [ref=e27]:
+                        - generic [ref=e28]: ▦
+                        - text: 대시보드
+                    - generic [ref=e29]:
+                        - generic [ref=e30]: ⚙
+                        - text: 운영 관리
+                        - generic [ref=e31]: 총괄
+                    - generic [ref=e32]:
+                        - generic [ref=e33]: ▤
+                        - text: 프로젝트
+                    - generic [ref=e34]:
+                        - generic [ref=e35]: ◎
+                        - text: 교육생
+                    - generic [ref=e36]:
+                        - generic [ref=e37]: △
+                        - text: 위험 · 분석
+                    - generic [ref=e38]:
+                        - generic [ref=e39]: ✎
+                        - text: 개입
+                    - generic [ref=e40]:
+                        - generic [ref=e41]: ▥
+                        - text: 리포트
+                    - generic [ref=e42]:
+                        - generic [ref=e43]: ▧
+                        - text: 교안
+                - generic [ref=e44]:
+                    - generic [ref=e45]:
+                        - generic [ref=e46]:
+                            - generic [ref=e47]: 프로젝트 › 7기
+                            - heading "프로젝트 4개" [level=2] [ref=e48]
+                        - button "+ 프로젝트 생성" [ref=e49] [cursor=pointer]
+                    - generic [ref=e50]:
+                        - generic [ref=e51]: 🔍 프로젝트명 검색
+                        - generic [ref=e52]:
+                            - generic [ref=e53]: 반
+                            - text: 전체 ▾
+                        - generic [ref=e54]:
+                            - generic [ref=e55]: 유형
+                            - text: 전체 ▾
+                        - generic [ref=e56]:
+                            - generic [ref=e57]: 상태
+                            - text: 전체 ▾
+                    - table [ref=e59]:
+                        - rowgroup [ref=e60]:
+                            - row [ref=e61]:
+                                - columnheader "프로젝트" [ref=e62]
+                                - columnheader "유형" [ref=e63]
+                                - columnheader "대상 반" [ref=e64]
+                                - columnheader "기간" [ref=e65]
+                                - columnheader "단위 · 레포 커버리지" [ref=e66]
+                                - columnheader "회차" [ref=e67]
+                                - columnheader "상태" [ref=e68]
+                                - columnheader [ref=e69]
+                        - rowgroup [ref=e70]:
+                            - row [ref=e71]:
+                                - cell "CLI 과제" [ref=e72]
+                                - cell "개인" [ref=e73]
+                                - cell "A반" [ref=e75]
+                                - cell "03.04 ~ 03.18" [ref=e76]
+                                - cell "18명 · 레포 18/18" [ref=e77]
+                                - cell "2회차" [ref=e78]
+                                - cell "완료" [ref=e79]
+                                - cell "›" [ref=e81]
+                            - row [ref=e82]:
+                                - cell "API 서버" [ref=e83]
+                                - cell "팀" [ref=e84]
+                                - cell "A반" [ref=e86]
+                                - cell "03.20 ~ 04.10" [ref=e87]
+                                - cell "4팀 · 레포 4/4" [ref=e88]
+                                - cell "2회차" [ref=e89]
+                                - cell "진행" [ref=e90]
+                                - cell "›" [ref=e92]
+                            - row [ref=e93]:
+                                - cell "풀스택" [ref=e94]
+                                - cell "팀" [ref=e95]
+                                - cell "전체" [ref=e97]
+                                - cell "04.14 ~ 05.09" [ref=e98]
+                                - cell "5팀 · 레포 2/5" [ref=e99]:
+                                    - text: 5팀 ·
+                                    - generic [ref=e100]: 레포 2/5
+                                - cell "미설정" [ref=e101]
+                                - cell "준비" [ref=e102]
+                                - cell "›" [ref=e104]
+                            - row [ref=e105]:
+                                - cell "웹 서비스 방금 생성" [ref=e106]:
+                                    - text: 웹 서비스
+                                    - generic [ref=e107]: 방금 생성
+                                - cell "팀" [ref=e108]
+                                - cell "B반" [ref=e110]
+                                - cell "05.12 ~ 05.30" [ref=e111]
+                                - cell "팀 미편성 · 단위(분모) 없음" [ref=e112]:
+                                    - generic [ref=e113]: 팀 미편성
+                                    - text: · 단위(분모) 없음
+                                - cell "미설정" [ref=e114]
+                                - cell "준비" [ref=e115]
+                                - cell "›" [ref=e117]
+                    - generic [ref=e118]: '· 갓 생성(팀·레포 미정) 표기 규칙(D78): 개인 프로젝트는 단위=학생이라 생성 즉시 N명 · 레포 0/N(분모 있음). 팀 프로젝트는 편성 전까지 단위 자체가 없어 "팀 미편성 · 분모 없음"(레포 커버리지 계산 불가) → 상세 [팀·레포]에서 편성해야 분모 생김. · "단위·레포 커버리지" = 레포 커버리지(연결 unit/전체) = 준비 신호, 응시 커버리지(체크포인트별)와는 별개(D77).'
+            - generic [ref=e120]:
+                - generic [ref=e121]:
+                    - heading "프로젝트 생성 · 7기 · B반" [level=3] [ref=e122]
+                    - generic [ref=e123] [cursor=pointer]: ✕
+                - generic [ref=e124]:
+                    - generic [ref=e125]:
+                        - generic [ref=e126]:
+                            - text: 프로젝트명
+                            - generic [ref=e127]: 필수
+                        - generic [ref=e128]: 웹 서비스
+                    - generic [ref=e129]:
+                        - generic [ref=e130]:
+                            - text: 유형
+                            - generic [ref=e131]: · 단위(학생/팀)와 이후 플로우를 가름
+                        - generic [ref=e132]:
+                            - generic [ref=e133] [cursor=pointer]: 개인
+                            - generic [ref=e134] [cursor=pointer]: 팀
+                        - generic [ref=e135]: ℹ 팀 선택 → 생성 후 [팀·레포] 탭에서 팀 편성해야 단위(분모) 확정. 개인 선택 시 단위=반 인원, 팀 편성 단계 생략.
+                    - generic [ref=e136]:
+                        - generic [ref=e137]:
+                            - generic [ref=e138]:
+                                - text: 대상 반
+                                - generic [ref=e139]: · 측정 모집단
+                            - generic [ref=e140]: B반 ▾
+                        - generic [ref=e141]:
+                            - generic [ref=e142]:
+                                - text: 기간
+                                - generic [ref=e143]: · 회차(체크포인트) 기한의 상·하한
+                            - generic [ref=e144]:
+                                - generic [ref=e145]: 2026-05-12
+                                - generic [ref=e146]: 2026-05-30
+                    - generic [ref=e147]:
+                        - generic [ref=e148]:
+                            - text: 요구사항
+                            - generic [ref=e149]: · 이 프로젝트가 요구하는 필수 조건 · 실행 후 단위별 O/X 검증
+                        - generic [ref=e150]:
+                            - generic [ref=e151]:
+                                - generic [ref=e152]: JWT 토큰 인증
+                                - generic [ref=e153]: 사용 여부 O/X 판정
+                                - generic [ref=e154] [cursor=pointer]: ✕
+                            - generic [ref=e155]:
+                                - generic [ref=e156]: H2 사용
+                                - generic [ref=e157]: 사용 여부 O/X 판정
+                                - generic [ref=e158] [cursor=pointer]: ✕
+                            - generic [ref=e159]:
+                                - generic [ref=e160]: REST 규약 준수
+                                - generic [ref=e161]: 사용 여부 O/X 판정
+                                - generic [ref=e162] [cursor=pointer]: ✕
+                            - generic [ref=e163] [cursor=pointer]: + 요구사항 추가
+                        - generic [ref=e164]: '"내준 프로젝트를 목적대로 제대로 했는가"를 조건별 O/X로 검증. 대체 구현(예: H2 대신 PostgreSQL)은 X + 비고로 기록. 질문을 어디 치중할지(질문 초점)와는 별개 — 그건 회차별로 [측정 계획]에서.'
+                    - generic [ref=e165]: 여기까지가 프로젝트 생성(ORG-03) — 프로젝트 정체성 + 요구사항(O/X 조건). 질문 초점(질문을 어디 치중할지)과 추출 범위·회차 일정은 회차마다 다르므로 회차(체크포인트) 소속 → 생성 후 [측정 계획] 탭에서 체크포인트 지정 시 정합니다(PLAN-01~03). 추출 범위 기본값만 유형 따라 자동(팀=본인커밋 / 개인=전체코드).
+                - generic [ref=e166]:
+                    - generic [ref=e167]: 생성 후 → 팀 편성·레포는 [팀·레포], 질문 초점·회차는 [측정 계획] 탭에서
+                    - generic [ref=e168]:
+                        - button "취소" [ref=e169] [cursor=pointer]
+                        - button "프로젝트 생성" [ref=e170] [cursor=pointer]
+    - generic [ref=e171]: 프로젝트 워크스페이스 — API 서버(팀) · 의존 순서 4탭 (탭 클릭 이동)
+    - generic [ref=e172]:
+        - generic [ref=e173]: iz-get.com/cohorts/7/projects/api/overview
+        - generic [ref=e179]:
+            - generic [ref=e180]:
+                - generic [ref=e181]:
+                    - generic [ref=e182]:
+                        - generic [ref=e183]: ◆
+                        - text: IZ-Get
+                    - generic [ref=e184] [cursor=pointer]:
+                        - generic [ref=e185]: 기관
+                        - text: 그린 부트캠프
+                        - generic [ref=e186]: · 현재
+                        - text: 7기 ▾
+                - generic [ref=e187]:
+                    - text: 박지현 · 총괄 매니저
+                    - generic [ref=e188]: 박
+            - generic [ref=e189]:
+                - generic [ref=e190]:
+                    - generic [ref=e191]:
+                        - generic [ref=e192]: ▦
+                        - text: 대시보드
+                    - generic [ref=e193]:
+                        - generic [ref=e194]: ⚙
+                        - text: 운영 관리
+                        - generic [ref=e195]: 총괄
+                    - generic [ref=e196]:
+                        - generic [ref=e197]: ▤
+                        - text: 프로젝트
+                    - generic [ref=e198]:
+                        - generic [ref=e199]: ◎
+                        - text: 교육생
+                    - generic [ref=e200]:
+                        - generic [ref=e201]: △
+                        - text: 위험 · 분석
+                    - generic [ref=e202]:
+                        - generic [ref=e203]: ✎
+                        - text: 개입
+                    - generic [ref=e204]:
+                        - generic [ref=e205]: ▥
+                        - text: 리포트
+                    - generic [ref=e206]:
+                        - generic [ref=e207]: ▧
+                        - text: 교안
+                - generic [ref=e208]:
+                    - generic [ref=e210]:
+                        - link "← 프로젝트 목록" [ref=e212] [cursor=pointer]:
+                            - /url: "#"
+                        - heading "API 서버 팀 프로젝트 전환 ▾" [level=2] [ref=e213]:
+                            - text: API 서버
+                            - generic [ref=e214]: 팀
+                            - generic [ref=e216] [cursor=pointer]:
+                                - generic [ref=e217]: 프로젝트 전환
+                                - text: ▾
+                    - generic [ref=e218]:
+                        - generic [ref=e219] [cursor=pointer]: 개요
+                        - generic [ref=e220] [cursor=pointer]: 팀 · 레포
+                        - generic [ref=e221] [cursor=pointer]: 측정 계획
+                        - generic [ref=e222] [cursor=pointer]: 결과
+                    - generic [ref=e223]:
+                        - generic [ref=e224]:
+                            - generic [ref=e225]:
+                                - generic [ref=e226]: 유형
+                                - generic [ref=e227]: 팀 프로젝트
+                            - generic [ref=e228]:
+                                - generic [ref=e229]: 대상 반
+                                - generic [ref=e230]: A반
+                            - generic [ref=e231]:
+                                - generic [ref=e232]: 기간
+                                - generic [ref=e233]: 03.20 ~ 04.10
+                            - generic [ref=e234]:
+                                - generic [ref=e235]: 단위(분모)
+                                - generic [ref=e236]: 4팀 팀·레포 →
+                            - generic [ref=e237]:
+                                - generic [ref=e238]: 추출 범위 기본값
+                                - generic [ref=e239]: 본인커밋기여분 · 회차 상속
+                            - generic [ref=e240]:
+                                - generic [ref=e241]: 회차 수
+                                - generic [ref=e242]: 2회차 측정 계획 →
+                        - generic [ref=e243]:
+                            - generic [ref=e244]:
+                                - heading "요구사항 충족 · 프로젝트 필수 조건 · 단위별 O/X 검증 (실행 후 산출)" [level=3] [ref=e245]
+                                - button "요구사항 편집" [ref=e246] [cursor=pointer]
+                            - table [ref=e248]:
+                                - rowgroup [ref=e249]:
+                                    - row [ref=e250]:
+                                        - columnheader "단위" [ref=e251]
+                                        - columnheader "JWT 토큰 인증" [ref=e252]
+                                        - columnheader "H2 사용" [ref=e253]
+                                        - columnheader "REST 규약" [ref=e254]
+                                        - columnheader "비고" [ref=e255]
+                                - rowgroup [ref=e256]:
+                                    - row [ref=e257]:
+                                        - cell "팀 A" [ref=e258]
+                                        - cell "O" [ref=e259]
+                                        - cell "O" [ref=e261]
+                                        - cell "O" [ref=e263]
+                                        - cell "—" [ref=e265]
+                                    - row [ref=e266]:
+                                        - cell "팀 B" [ref=e267]
+                                        - cell "O" [ref=e268]
+                                        - cell "X" [ref=e270]
+                                        - cell "O" [ref=e272]
+                                        - cell "H2 권장이었으나 PostgreSQL로 고도화" [ref=e274]
+                                    - row [ref=e275]:
+                                        - cell "팀 C" [ref=e276]
+                                        - cell "X" [ref=e277]
+                                        - cell "O" [ref=e279]
+                                        - cell "O" [ref=e281]
+                                        - cell "세션 기반 인증으로 대체" [ref=e283]
+                                    - row [ref=e284]:
+                                        - cell "팀 D" [ref=e285]
+                                        - cell "—" [ref=e286]
+                                        - cell "—" [ref=e288]
+                                        - cell "—" [ref=e290]
+                                        - cell "미제출 · 검증 대기" [ref=e292]
+                            - generic [ref=e293]: · 요구사항 = "내준 프로젝트를 목적대로 제대로 했는가"(프로젝트 소속). 조건별 O/X + 비고(더 나은 대체 구현은 X여도 비고로 인정). 질문 초점과는 별개 — 요구사항은 "무엇을 갖췄나(준수)", 질문 초점은 "무엇을 물을까(질문 방향)". 조건은 프로젝트 생성 시 정의, 판정은 실행 후 자동.
+                        - generic [ref=e294]:
+                            - generic [ref=e295]:
+                                - heading "회차 구성 요약 · 질문 초점·추출 범위는 [측정 계획]에서 지정 (읽기전용)" [level=3] [ref=e296]
+                                - button "측정 계획 열기 →" [ref=e297] [cursor=pointer]
+                            - table [ref=e299]:
+                                - rowgroup [ref=e300]:
+                                    - row [ref=e301]:
+                                        - columnheader "회차" [ref=e302]
+                                        - columnheader "질문 초점 · 비우면 AI 자율" [ref=e303]
+                                        - columnheader "추출 범위" [ref=e304]
+                                - rowgroup [ref=e305]:
+                                    - row [ref=e306]:
+                                        - cell "API 서버 · 1회차" [ref=e307]
+                                        - cell "책임 분리 반례·예외" [ref=e308]:
+                                            - generic [ref=e309]: 책임 분리
+                                            - generic [ref=e310]: 반례·예외
+                                        - cell "본인커밋" [ref=e311]
+                                    - row [ref=e312]:
+                                        - cell "API 서버 · 2회차 최종" [ref=e313]:
+                                            - text: API 서버 · 2회차
+                                            - generic [ref=e314]: 최종
+                                        - cell "미지정 → AI가 기여분에서 자율 추출" [ref=e315]:
+                                            - generic [ref=e316]: 미지정
+                                            - text: → AI가 기여분에서 자율 추출
+                                        - cell "본인커밋" [ref=e317]
+                            - generic [ref=e318]: "· 질문 초점 = 질문을 어디에 치중할지(회차 소속·PLAN-03). 비우면 AI가 각자 기여분을 보고 중요 지점을 질문수만큼 자율 추출(제한 아님). 지정하면(예: CSS·디자인) 그 영역 치중 질문. 교육생 비노출(A4·FB-F6). 지정·편집은 [측정 계획] 탭."
+                    - text: ✓ ✓
+    - generic [ref=e319]: 모든 프로젝트 상세 = 같은 4탭 셸 · 개인 프로젝트(CLI 과제)는 [팀·레포]가 학생별 레포로 분기
+    - generic [ref=e320]:
+        - generic [ref=e321]: iz-get.com/cohorts/7/projects/cli/teams
+        - generic [ref=e327]:
+            - generic [ref=e328]:
+                - generic [ref=e329]:
+                    - generic [ref=e330]:
+                        - generic [ref=e331]: ◆
+                        - text: IZ-Get
+                    - generic [ref=e332] [cursor=pointer]:
+                        - generic [ref=e333]: 기관
+                        - text: 그린 부트캠프
+                        - generic [ref=e334]: · 현재
+                        - text: 7기 ▾
+                - generic [ref=e335]:
+                    - text: 박지현 · 총괄 매니저
+                    - generic [ref=e336]: 박
+            - generic [ref=e337]:
+                - generic [ref=e338]:
+                    - generic [ref=e339]:
+                        - generic [ref=e340]: ▦
+                        - text: 대시보드
+                    - generic [ref=e341]:
+                        - generic [ref=e342]: ⚙
+                        - text: 운영 관리
+                        - generic [ref=e343]: 총괄
+                    - generic [ref=e344]:
+                        - generic [ref=e345]: ▤
+                        - text: 프로젝트
+                    - generic [ref=e346]:
+                        - generic [ref=e347]: ◎
+                        - text: 교육생
+                    - generic [ref=e348]:
+                        - generic [ref=e349]: △
+                        - text: 위험 · 분석
+                    - generic [ref=e350]:
+                        - generic [ref=e351]: ✎
+                        - text: 개입
+                    - generic [ref=e352]:
+                        - generic [ref=e353]: ▥
+                        - text: 리포트
+                    - generic [ref=e354]:
+                        - generic [ref=e355]: ▧
+                        - text: 교안
+                - generic [ref=e356]:
+                    - generic [ref=e358]:
+                        - link "← 프로젝트 목록" [ref=e360] [cursor=pointer]:
+                            - /url: "#"
+                        - heading "CLI 과제 개인" [level=2] [ref=e361]:
+                            - text: CLI 과제
+                            - generic [ref=e362]: 개인
+                    - generic [ref=e363]:
+                        - generic [ref=e364] [cursor=pointer]: 개요
+                        - generic [ref=e365] [cursor=pointer]: 팀 · 레포
+                        - generic [ref=e366] [cursor=pointer]: 측정 계획
+                        - generic [ref=e367] [cursor=pointer]: 결과
+                    - generic [ref=e368]: 동일한 4탭 셸이 모든 프로젝트 상세에 공통. 개인 프로젝트는 [팀·레포] 탭이 팀 편성 없이 학생별 레포로 바뀔 뿐, 탭 구성은 팀 프로젝트와 같음.
+                    - generic [ref=e369]:
+                        - generic [ref=e370]:
+                            - generic [ref=e371]: 제출 단위(개인)
+                            - generic [ref=e372]: 18 명
+                            - generic [ref=e373]: 개인=학생이 단위(팀 편성 없음)
+                        - generic [ref=e374]:
+                            - generic [ref=e375]: 레포 커버리지
+                            - generic [ref=e376]: 18/18
+                            - generic [ref=e377]: 전원 연결
+                    - heading "학생별 레포 18명· 미제출 0" [level=3] [ref=e379]
+                    - table [ref=e381]:
+                        - rowgroup [ref=e382]:
+                            - row [ref=e383]:
+                                - columnheader "교육생" [ref=e384]
+                                - columnheader "레포" [ref=e385]
+                                - columnheader "커밋" [ref=e386]
+                                - columnheader "상태" [ref=e387]
+                        - rowgroup [ref=e388]:
+                            - row [ref=e389]:
+                                - cell "김서연" [ref=e390]
+                                - cell "github.com/…/cli-kim" [ref=e391]
+                                - cell "연결됨" [ref=e392]
+                                - cell "제출" [ref=e393]
+                            - row [ref=e395]:
+                                - cell "이도윤" [ref=e396]
+                                - cell "github.com/…/cli-lee" [ref=e397]
+                                - cell "연결됨" [ref=e398]
+                                - cell "제출" [ref=e399]
+                            - row [ref=e401]:
+                                - cell "박준호" [ref=e402]
+                                - cell "github.com/…/cli-park" [ref=e403]
+                                - cell "연결됨" [ref=e404]
+                                - cell "제출" [ref=e405]
+                    - generic [ref=e407]: · 개인 프로젝트는 ②팀 편성을 건너뛴다 — 단위=학생(명단에 이미 존재)이라 ① 직후 바로 레포 연결. 응시 분모 N = 18명. 나머지 탭(개요·측정계획·결과)은 팀 프로젝트와 동일 구조.
+    - generic [ref=e408]:
+        - heading "이 화면의 데이터 플로우 (D77 다이아몬드)" [level=3] [ref=e409]
+        - generic [ref=e410]: 단계 · 의존
+        - paragraph [ref=e411]: ① 개요(프로젝트·유형 + 요구사항 O/X=프로젝트 소속) → ② 팀·레포(단위 N 확정 = 응시 분모) → ③ 측정 계획(질문 초점=회차 소속, 프로젝트만 있으면 계획, 레포는 실행 JIT) → ④ 결과. ②③(레포∥체크포인트)은 병렬, ⑤실행에서 스냅샷으로 수렴.
+        - generic [ref=e412]: 요구사항 ≠ 질문 초점 (D80)
+        - paragraph [ref=e413]: '요구사항(프로젝트 소속): "목적대로 제대로 했나" — 필수 조건(JWT·PostgreSQL) 단위별 O/X+비고. 질문 초점(회차 소속·구 "결정 지점"/"검증 포커스" 통합): "질문을 어디 치중할까" — 비우면 AI가 기여분에서 자율 추출, 지정하면 그 영역 치중. 판정 대상(요구사항) vs 질문 방향(초점)으로 완전 별개.'
+        - generic [ref=e414]: 두 커버리지(혼동 금지)
+        - paragraph [ref=e415]: '레포 커버리지(②·준비: 연결 unit/전체) ≠ 응시 커버리지(③·체크포인트별: 응시 unit/전체). M03의 옛 "48/48"은 후자인데 분모를 개인으로 가정한 오류 → 여기선 단위(팀 4)에서 상속.'
+        - generic [ref=e416]: 허브 ≠ 모놀리식 (D78)
+        - paragraph [ref=e417]: "워크스페이스는 프로젝트 컨텍스트를 고정하는 허브(브레드크럼+스위처+탭바)일 뿐, 화면을 흡수한 게 아니다. 위계(측정계획⊂프로젝트)와 화면 분해는 별개 축 — 탭마다 자기 SC-ID·라우트·예외 커버리지: 개요·팀레포=SC-M13(예외 16), 측정계획=SC-M03(예외 30), 결과=SC-M08 링크. 생성 입력은 5필드뿐(type·classId·기간·requirements + extract_scope 기본값); 4탭 덩치는 생성이 아니라 프로젝트에 시간차로 붙는 4개 독립 FR 계열에서 옴."
+        - generic [ref=e418]: 권한
+        - paragraph [ref=e419]: "프로젝트 생성·팀 편성·측정 계획 = 총괄(FB-F5). 담당 매니저는 실행 후 모니터링·개입. 관련: D75·D76·D77·D78 · FB-F4/F5/F6/Y1/M02a."

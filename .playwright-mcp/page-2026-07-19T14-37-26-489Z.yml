@@ -1,0 +1,230 @@
+- generic [ref=f3e2]:
+  - complementary [ref=f3e3]:
+    - generic [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - generic [ref=f3e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=f3e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=f3e8]:
+      - generic [ref=f3e9]:
+        - generic [ref=f3e10]: shared
+        - button "로그인 shared/login.html" [ref=f3e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=f3e13]: shared/login.html
+      - generic [ref=f3e14]:
+        - generic [ref=f3e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=f3e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=f3e18]: ▸
+      - generic [ref=f3e19]:
+        - generic [ref=f3e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=f3e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=f3e23]: 총괄
+          - generic [ref=f3e24]: ▸
+      - generic [ref=f3e25]:
+        - generic [ref=f3e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=f3e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=f3e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=f3e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=f3e31]: manager/dashboard.html
+        - generic [ref=f3e32]:
+          - button "교안 ▸" [ref=f3e33] [cursor=pointer]:
+            - text: 교안
+            - generic [ref=f3e34]: ▸
+          - generic [ref=f3e70]:
+            - button "교안 목록 CUR-03 · 컬렉션" [ref=f3e71] [cursor=pointer]
+            - button "교안 등록 CUR-03 · 업로드" [ref=f3e72] [cursor=pointer]
+            - button "교안 구성 CUR-01 · 목차" [ref=f3e73] [cursor=pointer]
+            - button "교안 연결 CUR-02 · 자동+확인" [ref=f3e74] [cursor=pointer]
+        - button "프로젝트 ▸" [ref=f3e36] [cursor=pointer]:
+          - text: 프로젝트
+          - generic [ref=f3e37]: ▸
+        - button "분석 · 진단 ▸" [ref=f3e39] [cursor=pointer]:
+          - text: 분석 · 진단
+          - generic [ref=f3e40]: ▸
+        - button "교육생 ▸" [ref=f3e42] [cursor=pointer]:
+          - text: 교육생
+          - generic [ref=f3e43]: ▸
+        - button "개입 관리 manager/intervention.html" [ref=f3e44] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=f3e45]: manager/intervention.html
+        - button "리포트 ▸" [ref=f3e47] [cursor=pointer]:
+          - text: 리포트
+          - generic [ref=f3e48]: ▸
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=f3e49] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=f3e50]: manager/appeal-disclosure.html
+      - generic [ref=f3e51]:
+        - generic [ref=f3e52]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=f3e54] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=f3e55]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=f3e56] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=f3e57]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=f3e58] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=f3e59]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=f3e60] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=f3e61]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=f3e62] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=f3e63]: trainee/result.html
+  - main [ref=f3e64]:
+    - generic [ref=f3e65]:
+      - generic [ref=f3e66]: 교안 상세 · 교안 연결
+      - generic [ref=f3e67]: manager/curriculum.html#mapping
+      - link "새 탭에서 열기 ↗" [ref=f3e68] [cursor=pointer]:
+        - /url: manager/curriculum.html#mapping
+    - iframe [ref=f3e69]:
+      - generic [ref=f4e3]:
+        - generic [ref=f4e4]:
+          - generic [ref=f4e5]: iz-get.com/cohorts/7/curriculum/2/mapping
+          - generic [ref=f4e11]:
+            - generic [ref=f4e12]:
+              - generic [ref=f4e13]:
+                - generic [ref=f4e14]:
+                  - generic [ref=f4e15]: ◆
+                  - text: IZ-Get
+                - generic [ref=f4e16]:
+                  - generic [ref=f4e17]: 기수
+                  - text: 7기 ▾
+              - generic [ref=f4e18]:
+                - generic "열람=총괄·담당 / 저작=총괄" [ref=f4e19] [cursor=pointer]:
+                  - generic [ref=f4e20]: 총괄 뷰
+                  - generic [ref=f4e21]: 담당 뷰
+                - generic [ref=f4e22]:
+                  - text: 박지현 · 총괄 매니저
+                  - generic [ref=f4e23]: 박
+            - generic [ref=f4e24]:
+              - generic [ref=f4e25]:
+                - generic [ref=f4e26]:
+                  - generic [ref=f4e27]: ▦
+                  - text: 대시보드
+                - generic [ref=f4e28]:
+                  - generic [ref=f4e29]: ◔
+                  - text: 기수 구성
+                - generic [ref=f4e30]:
+                  - generic [ref=f4e31]: ▧
+                  - text: 교안
+                - generic [ref=f4e32]:
+                  - generic [ref=f4e33]: ▤
+                  - text: 프로젝트
+                - generic [ref=f4e34]:
+                  - generic [ref=f4e35]: △
+                  - text: 분석 · 진단
+                - generic [ref=f4e36]:
+                  - generic [ref=f4e37]: ◎
+                  - text: 교육생
+                - generic [ref=f4e38]:
+                  - generic [ref=f4e39]: ✎
+                  - text: 개입
+                - generic [ref=f4e40]:
+                  - generic [ref=f4e41]: ▥
+                  - text: 리포트
+                - generic [ref=f4e42]:
+                  - generic [ref=f4e43]: ⚖
+                  - text: 이의 · 공개
+              - generic [ref=f4e44]:
+                - generic [ref=f4e45]:
+                  - generic [ref=f4e46]:
+                    - generic [ref=f4e47] [cursor=pointer]: ← 교안 목록
+                    - generic [ref=f4e48]:
+                      - text: Kubernetes와 CICD
+                      - generic [ref=f4e49]: v2
+                    - generic [ref=f4e50]: "기술영역 연결: 자동 연결 2 · 저신뢰 생략 1 · 미커버 1"
+                  - generic [ref=f4e51] [cursor=pointer]: 다른 교안 전환 ▾
+                - generic [ref=f4e52]:
+                  - generic [ref=f4e53] [cursor=pointer]: 교안 구성
+                  - generic [ref=f4e54] [cursor=pointer]: 교안 연결
+                - generic [ref=f4e55]:
+                  - generic [ref=f4e56]:
+                    - generic [ref=f4e57] [cursor=pointer]:
+                      - generic [ref=f4e58]: 서비스 노출 · 네트워킹
+                      - generic [ref=f4e59]: ✓ 자동 연결됨
+                    - generic [ref=f4e60] [cursor=pointer]:
+                      - generic [ref=f4e61]: 컨테이너 오케스트레이션
+                      - generic [ref=f4e62]: ✓ 자동 연결됨
+                    - generic [ref=f4e63] [cursor=pointer]:
+                      - generic [ref=f4e64]: CICD 파이프라인
+                      - generic [ref=f4e65]: ⊘ 자신 없어 생략
+                    - generic [ref=f4e66] [cursor=pointer]:
+                      - generic [ref=f4e67]: 관측성 · 모니터링
+                      - generic [ref=f4e68]: 미커버 · 이 교안 밖
+                  - generic [ref=f4e69]:
+                    - generic: 서비스 노출 · 네트워킹 → 자동 연결된 교안 섹션 (리포트 제공 중)
+                    - generic [ref=f4e70]:
+                      - generic:
+                        - text: 컨테이너 통신 (Service·Ingress)
+                        - generic [ref=f4e71]: p.35–46
+                      - generic [ref=f4e72]: “Service는 파드 집합에 안정적인 접근점을 제공하고, Ingress는 클러스터 외부 HTTP 트래픽을 규칙에 따라 서비스로 라우팅한다…”
+                      - generic:
+                        - generic:
+                          - generic [ref=f4e73]: 내용 일치
+                          - generic [ref=f4e74]: "89"
+                          - generic [ref=f4e75]: AI 자동
+                        - generic:
+                          - generic [ref=f4e76]: 출처 신뢰도
+                          - generic [ref=f4e77]: "92"
+                      - generic [ref=f4e78]: ✓ 자동 연결됨 · 리포트 제공 중
+                      - generic:
+                        - button "다른 섹션으로총괄" [ref=f4e79] [cursor=pointer]
+                        - button "연결 해제" [ref=f4e80] [cursor=pointer]
+                    - generic: 자신 없어 생략 (리포트 미표시)
+                    - generic [ref=f4e81]:
+                      - generic:
+                        - text: CICD 파이프라인 → CICD Pipeline
+                        - generic [ref=f4e82]: p.54–70
+                        - generic [ref=f4e83]: 저신뢰 64
+                      - generic [ref=f4e84]: ⊘ 안내 자동 생략
+                      - generic:
+                        - button "이 위치로 안내 켜기총괄" [ref=f4e85] [cursor=pointer]
+                        - button "다른 섹션으로" [ref=f4e86] [cursor=pointer]
+                - generic [ref=f4e87]:
+                  - heading "축 → 교안 위치 규칙 고정 · 승인 대상 아님" [level=4] [ref=f4e88]:
+                    - text: 축 → 교안 위치 규칙
+                    - generic [ref=f4e89]: 고정 · 승인 대상 아님
+                  - generic [ref=f4e90]:
+                    - generic [ref=f4e91]: 반례대응 → 섹션의 주의 · 반례 부분
+                    - generic [ref=f4e92]: 코드이해 → 개념 설명 부분
+                    - generic [ref=f4e93]: 대안비교 → 비교 · 트레이드오프 부분
+                    - generic [ref=f4e94]: 자기수정 → 복구 · 수정 부분
+                    - generic [ref=f4e95]: 의사소통 → 교안 위치 안내 대상 아님(코드 설명 능력)
+        - generic [ref=f4e97]:
+          - generic [ref=f4e98]: 이 화면 · 상태 · case (CUR-02 · 교안 연결 8건)
+          - generic [ref=f4e100]:
+            - generic [ref=f4e101]: 02-1
+            - generic [ref=f4e102]: 연결 불가
+            - generic [ref=f4e103]: 교안 구성(섹션) 부재 — 자동 매핑 불가·분석 먼저
+          - generic [ref=f4e104]:
+            - generic [ref=f4e105]: 02-2
+            - generic [ref=f4e106]: 저신뢰 생략
+            - generic [ref=f4e107]: 자동 매핑 신뢰도 낮음 — 위치 안내 자동 생략(오안내 방지)·요약에만 표기·매니저 강제 검수 없음(원하면 오버라이드)
+          - generic [ref=f4e108]:
+            - generic [ref=f4e109]: 02-3
+            - generic [ref=f4e110]: 고신뢰 자동
+            - generic [ref=f4e111]: 내용 일치·출처 신뢰도 높음 — 자동 연결·리포트 즉시 제공(무액션, 오버라이드 가능)
+          - generic [ref=f4e112]:
+            - generic [ref=f4e113]: 02-4
+            - generic [ref=f4e114]: 저신뢰 생략
+            - generic [ref=f4e115]: 내용 일치 계산 실패 — 자동 연결 보류·저신뢰 생략(요약만·오버라이드 가능)
+          - generic [ref=f4e116]:
+            - generic [ref=f4e117]: 02-5
+            - generic [ref=f4e118]: 미커버
+            - generic [ref=f4e119]: 기술영역에 맞는 섹션 없음 — 미커버 표기·위치 안내 없음(수동 지정 선택 가능)
+          - generic [ref=f4e120]:
+            - generic [ref=f4e121]: 02-6
+            - generic [ref=f4e122]: 오버라이드
+            - generic [ref=f4e123]: 매니저 수정·연결 해제 — 언제든 자동 매핑 덮어쓰기·이력 저장(거버넌스=게이트 아닌 오버라이드)
+          - generic [ref=f4e124]:
+            - generic [ref=f4e125]: 02-7
+            - generic [ref=f4e126]: 저장 차단
+            - generic [ref=f4e127]: 존재하지 않는 섹션 수동 지정 — 저장 차단
+          - generic [ref=f4e128]:
+            - generic [ref=f4e129]: 02-8
+            - generic [ref=f4e130]: 가정값 유지
+            - generic [ref=f4e131]: 정확도 기준 실물 검증 전 — [가정값]으로 자동 매핑·골든셋 후 임계값 보정

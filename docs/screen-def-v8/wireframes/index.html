@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IZ-Get · 화면정의 와이어프레임</title>
+<style>
+  :root{
+    --bg:#f4f5f7; --surface:#fff; --border:#e2e5ea; --border2:#cfd4dc;
+    --text:#181b20; --text2:#5a616b; --text3:#8b929c;
+    --primary:#3a4db8; --primary-soft:#eef0fb;
+    --nav:#1b2030; --nav2:#262d40; --navtext:#aeb4c6;
+    --warn:#d9a441; --info:#5b8fd0;
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+  .app{display:flex;height:100vh}
+
+  /* sidebar */
+  .side{width:272px;flex:0 0 272px;background:var(--nav);color:var(--navtext);display:flex;flex-direction:column;overflow:hidden}
+  .side .head{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.07)}
+  .side .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px;color:#fff;margin-bottom:6px}
+  .side .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .side .head .sub{font-size:11px;color:#7d8497;line-height:1.5}
+  .side .list{flex:1;overflow-y:auto;padding:10px 10px 24px}
+  .grp{margin-top:14px}
+  .grp:first-child{margin-top:4px}
+  .grp .gt{display:flex;align-items:center;gap:7px;padding:6px 8px;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8b93a8}
+  .grp .gt .dot{width:7px;height:7px;border-radius:50%}
+  .dot.super{background:#8b93a8}.dot.manager{background:#7f8ef0}.dot.lead{background:var(--warn)}.dot.trainee{background:var(--info)}.dot.shared{background:#7d8497}
+  .item{display:block;width:100%;text-align:left;background:none;border:0;color:var(--navtext);font-family:inherit;font-size:13px;padding:8px 10px;border-radius:8px;cursor:pointer;line-height:1.35}
+  .item:hover{background:var(--nav2);color:#fff}
+  .item.on{background:var(--primary);color:#fff;font-weight:600}
+  /* 아코디언: 플랫폼 콘솔(상위) → 클릭 시 하위 메뉴 열림 */
+  .item.parent{display:flex;align-items:center;font-weight:600;color:#cdd2df}
+  .item.parent .cev{margin-left:auto;font-size:10px;color:#8b93a8;transition:transform .15s}
+  .grp.open > .item.parent .cev{transform:rotate(90deg)}
+  .grp.open > .item.parent{color:#fff}
+  .subwrap{display:none;margin:3px 0 4px 16px;border-left:1px solid #3a4258;padding-left:0}
+  .grp.open > .subwrap{display:block}
+  .item.sub{padding-left:16px;font-size:12px;position:relative}
+  .item.sub::before{content:"";position:absolute;left:0;top:15px;width:9px;height:1px;background:#3a4258}
+  .item .pth{display:block;font-size:10px;color:#6c7488;font-family:var(--mono);margin-top:2px}
+  .item.on .pth{color:rgba(255,255,255,.72)}
+  .item.lead{position:relative}
+  .item.lead::after{content:"총괄";position:absolute;right:9px;top:8px;font-size:9px;font-weight:700;color:var(--warn)}
+  .item.lead.on::after{color:#ffe4ad}
+
+  /* main */
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg)}
+  .bar{height:48px;flex:0 0 48px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 16px}
+  .bar .nm{font-weight:700;font-size:14px}
+  .bar .pth{font-size:11px;color:var(--text3);font-family:var(--mono)}
+  .bar .sp{flex:1}
+  .bar a{font-size:12px;color:var(--primary);text-decoration:none;border:1px solid var(--border2);border-radius:8px;padding:5px 11px;font-weight:600}
+  .bar a:hover{background:var(--primary-soft)}
+  iframe{flex:1;width:100%;border:0;background:var(--bg)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="head">
+      <div class="brand"><span class="mk">◆</span>IZ-Get 화면정의</div>
+      <div class="sub">권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.<br>총괄 = 매니저 전부 + 운영 관리 하나 더.</div>
+    </div>
+    <nav class="list" id="list">
+      <div class="grp">
+        <div class="gt"><span class="dot shared"></span>shared</div>
+        <button class="item" data-src="shared/login.html" data-nm="로그인">로그인<span class="pth">shared/login.html</span></button>
+      </div>
+      <div class="grp" id="grp-sa">
+        <div class="gt"><span class="dot super"></span>superadmin</div>
+        <button class="item parent" data-toggle="grp-sa">플랫폼 콘솔<span class="cev">▸</span></button>
+        <div class="subwrap">
+          <button class="item sub" data-src="superadmin/console.html#p1" data-nm="플랫폼 콘솔 · 기관 목록">기관 목록</button>
+          <button class="item sub" data-src="superadmin/console.html#p2" data-nm="플랫폼 콘솔 · 기관 생성">기관 생성 <span style="font-size:9px;color:#8b93a8">모달</span></button>
+          <button class="item sub" data-src="superadmin/console.html#p3" data-nm="플랫폼 콘솔 · 기관 상세 개요">기관 상세 · 개요</button>
+          <button class="item sub" data-src="superadmin/console.html#p4" data-nm="플랫폼 콘솔 · 매니저 관리">매니저 관리</button>
+          <button class="item sub" data-src="superadmin/console.html#p5" data-nm="플랫폼 콘솔 · 총괄 매니저 초대">총괄 매니저 초대 <span style="font-size:9px;color:#8b93a8">모달</span></button>
+          <button class="item sub" data-src="superadmin/console.html#p6" data-nm="플랫폼 콘솔 · 사용량·AI 비용">사용량 · AI 비용</button>
+          <button class="item sub" data-src="superadmin/console.html#p7" data-nm="플랫폼 콘솔 · 설정">설정</button>
+          <button class="item sub" data-src="superadmin/console.html#p8" data-nm="플랫폼 콘솔 · 상태 매핑">상태 ↔ case 매핑</button>
+        </div>
+      </div>
+      <div class="grp" id="grp-lead">
+        <div class="gt"><span class="dot lead"></span>총괄 매니저 · 아래 매니저 전부 + 관리 하나 더</div>
+        <button class="item parent" data-toggle="grp-lead">운영 관리 <span style="font-size:9px;font-weight:700;color:var(--warn);margin-left:4px">총괄</span><span class="cev">▸</span></button>
+        <div class="subwrap">
+          <button class="item sub" data-src="manager/lead-only/program-admin.html#tab-cohort" data-nm="운영 관리 · 기수">기수 <span style="font-size:9px;color:#8b93a8">기관</span></button>
+          <button class="item sub" data-src="manager/lead-only/program-admin.html#m-cohort" data-nm="운영 관리 · 기수 생성">기수 생성 <span style="font-size:9px;color:#8b93a8">모달</span></button>
+          <button class="item sub" data-src="manager/lead-only/program-admin.html#tab-class" data-nm="운영 관리 · 반">반 <span style="font-size:9px;color:#8b93a8">선택 기수</span></button>
+          <button class="item sub" data-src="manager/lead-only/program-admin.html#m-class" data-nm="운영 관리 · 반 추가">반 추가 <span style="font-size:9px;color:#8b93a8">모달</span></button>
+          <button class="item sub" data-src="manager/lead-only/program-admin.html#tab-roster" data-nm="운영 관리 · 명단">명단 <span style="font-size:9px;color:#8b93a8">선택 기수</span></button>
+          <button class="item sub" data-src="manager/lead-only/program-admin.html#m-roster" data-nm="운영 관리 · 명단 추가">명단 추가 <span style="font-size:9px;color:#8b93a8">모달</span></button>
+          <button class="item sub" data-src="manager/lead-only/roster-assign.html" data-nm="운영 관리 · 명단 - 반 배정">명단 - 반 배정 <span style="font-size:9px;color:#8b93a8">선택 기수</span></button>
+          <button class="item sub" data-src="manager/lead-only/program-admin.html#tab-mgr" data-nm="운영 관리 · 매니저">매니저 <span style="font-size:9px;color:#8b93a8">기관</span></button>
+          <button class="item sub" data-src="manager/lead-only/program-admin.html#m-mgr" data-nm="운영 관리 · 매니저 초대">매니저 초대 <span style="font-size:9px;color:#8b93a8">모달</span></button>
+          <button class="item sub" data-src="manager/lead-only/program-admin.html#cases" data-nm="운영 관리 · 상태 매핑">상태 ↔ case 매핑 <span style="font-size:9px;color:#8b93a8">총합</span></button>
+        </div>
+      </div>
+      <div class="grp">
+        <div class="gt"><span class="dot manager"></span>매니저(담당) · 총괄도 동일하게 봄</div>
+        <button class="item" data-src="manager/signup.html" data-nm="매니저 회원가입">매니저 회원가입<span class="pth">manager/signup.html</span></button>
+        <button class="item" data-src="manager/dashboard.html" data-nm="대시보드">대시보드<span class="pth">manager/dashboard.html</span></button>
+        <div class="grp" id="grp-curriculum" style="margin-top:2px">
+          <button class="item parent" data-toggle="grp-curriculum">교안<span class="cev">▸</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/curriculum.html#list" data-nm="교안 · 목록">교안 목록 <span style="font-size:9px;color:#8b93a8">CUR-03 · 컬렉션</span></button>
+            <button class="item sub" data-src="manager/curriculum.html#upload" data-nm="교안 · 등록">교안 등록 <span style="font-size:9px;color:#8b93a8">CUR-03 · 업로드</span></button>
+            <button class="item sub" data-src="manager/curriculum.html#structure" data-nm="교안 상세 · 교안 구성">교안 구성 <span style="font-size:9px;color:#8b93a8">CUR-01 · 목차</span></button>
+            <button class="item sub" data-src="manager/curriculum.html#mapping" data-nm="교안 상세 · 교안 연결">교안 연결 <span style="font-size:9px;color:#8b93a8">CUR-02 · 자동+확인</span></button>
+          </div>
+        </div>
+        <div class="grp" id="grp-proj" style="margin-top:2px">
+          <button class="item parent" data-toggle="grp-proj">프로젝트<span class="cev">▸</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/project-workspace.html#list" data-nm="프로젝트 · 목록">프로젝트 목록 <span style="font-size:9px;color:#8b93a8">컬렉션</span></button>
+            <button class="item sub" data-src="manager/project-workspace.html#new" data-nm="프로젝트 · 생성">프로젝트 생성 <span style="font-size:9px;color:#8b93a8">모달 · 요구사항</span></button>
+            <div style="font-size:9px;font-weight:700;letter-spacing:.04em;color:#6c7488;padding:9px 8px 3px 16px">프로젝트 상세 · 예: API 서버</div>
+            <button class="item sub" data-src="manager/project-workspace.html#overview" data-nm="프로젝트 상세 · 개요">개요 <span style="font-size:9px;color:#8b93a8">요구사항 O/X</span></button>
+            <button class="item sub" data-src="manager/project-workspace.html#req" data-nm="프로젝트 상세 · 요구사항 편집" style="padding-left:28px;font-size:11px">요구사항 편집 <span style="font-size:9px;color:#8b93a8">모달</span></button>
+            <button class="item sub" data-src="manager/project-workspace.html#curlink" data-nm="프로젝트 상세 · 교안 연결" style="padding-left:28px;font-size:11px">교안 연결 <span style="font-size:9px;color:#8b93a8">모달 · 총괄</span></button>
+            <button class="item sub" data-src="manager/project-workspace.html#teams" data-nm="프로젝트 상세 · 팀·레포">팀 · 레포 <span style="font-size:9px;color:#8b93a8">단위 확정</span></button>
+            <button class="item sub" data-src="manager/project-workspace.html#team-add" data-nm="프로젝트 상세 · 팀 추가" style="padding-left:28px;font-size:11px">팀 추가 <span style="font-size:9px;color:#8b93a8">모달</span></button>
+            <button class="item sub" data-src="manager/project-workspace.html#team-auto" data-nm="프로젝트 상세 · 자동 배분" style="padding-left:28px;font-size:11px">자동 배분 <span style="font-size:9px;color:#8b93a8">모달</span></button>
+            <button class="item sub" data-src="manager/project-workspace.html#plan" data-nm="프로젝트 상세 · 측정 계획">측정 계획 <span style="font-size:9px;color:#8b93a8">회차 지정</span></button>
+            <button class="item sub" data-src="manager/project-workspace.html#cp" data-nm="프로젝트 상세 · 체크포인트 지정" style="padding-left:28px;font-size:11px">체크포인트 지정 <span style="font-size:9px;color:#8b93a8">모달</span></button>
+            <button class="item sub" data-src="manager/project-workspace.html#result" data-nm="프로젝트 상세 · 결과">결과 <span style="font-size:9px;color:#8b93a8">→ 리포트</span></button>
+            <button class="item sub" data-src="manager/project-workspace.html#cli" data-nm="프로젝트 상세 · 개인형(학생별 레포)">개인형 · 학생별 레포 <span style="font-size:9px;color:#8b93a8">변형</span></button>
+            <button class="item sub" data-src="manager/project-workspace.html#notify" data-nm="프로젝트 상세 · 벌크 독촉·안내" style="padding-left:28px;font-size:11px">벌크 독촉·안내 <span style="font-size:9px;color:#8b93a8">모달</span></button>
+            <button class="item sub" data-src="manager/project-workspace.html#cases" data-nm="프로젝트 · 상태 ↔ case 매핑">상태 ↔ case 매핑 <span style="font-size:9px;color:#8b93a8">총합</span></button>
+          </div>
+        </div>
+        <div class="grp" id="grp-analysis" style="margin-top:2px">
+          <button class="item parent" data-toggle="grp-analysis">분석 · 진단<span class="cev">▸</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/analysis.html#risk" data-nm="분석·진단 · 위험 목록">위험 목록 <span style="font-size:9px;color:#8b93a8">사람 · DASH-10</span></button>
+            <button class="item sub" data-src="manager/analysis.html#imbalance" data-nm="분석·진단 · 기여·이해도 불균형">기여·이해도 불균형 <span style="font-size:9px;color:#8b93a8">사람 · DASH-11</span></button>
+            <button class="item sub" data-src="manager/analysis.html#ace" data-nm="분석·진단 · 에이스">에이스 <span style="font-size:9px;color:#8b93a8">사람 · DASH-12</span></button>
+            <button class="item sub" data-src="manager/analysis.html#team" data-nm="분석·진단 · 팀 분석">팀 분석 <span style="font-size:9px;color:#8b93a8">사람 · DASH-13</span></button>
+            <button class="item sub" data-src="manager/analysis.html#stage" data-nm="분석·진단 · 이해 단계 히트맵">이해 단계 히트맵 <span style="font-size:9px;color:#8b93a8">패턴 · DASH-14</span></button>
+            <button class="item sub" data-src="manager/analysis.html#domain" data-nm="분석·진단 · 기술영역 히트맵">기술영역 히트맵 <span style="font-size:9px;color:#8b93a8">패턴 · DASH-15</span></button>
+            <button class="item sub" data-src="manager/analysis.html#trainee" data-nm="분석·진단 · 개인 궤적">개인 궤적 <span style="font-size:9px;color:#8b93a8">패턴 · 드릴</span></button>
+            <button class="item sub" data-src="manager/analysis.html#cases" data-nm="분석·진단 · 상태 ↔ case 매핑">상태 ↔ case 매핑 <span style="font-size:9px;color:#8b93a8">39</span></button>
+          </div>
+        </div>
+        <div class="grp" id="grp-trainee" style="margin-top:2px">
+          <button class="item parent" data-toggle="grp-trainee">교육생<span class="cev">▸</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/trainee-list.html" data-nm="교육생 · 리스트(명부)">리스트 <span style="font-size:9px;color:#8b93a8">명부 · DASH-17</span></button>
+            <button class="item sub" data-src="manager/trainee-detail.html" data-nm="교육생 · 개별 상세">개별 상세 <span style="font-size:9px;color:#8b93a8">리스트·분석에서 진입 · DASH-16</span></button>
+          </div>
+        </div>
+        <button class="item" data-src="manager/intervention.html" data-nm="개입 관리">개입 관리<span class="pth">manager/intervention.html</span></button>
+        <div class="grp" id="grp-report" style="margin-top:2px">
+          <button class="item parent" data-toggle="grp-report">리포트<span class="cev">▸</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/report.html#summary" data-nm="리포트 · 종합">종합 리포트 <span style="font-size:9px;color:#8b93a8">RPT-01 · 기수</span></button>
+            <button class="item sub" data-src="manager/report.html#checkpoints" data-nm="리포트 · 체크포인트">체크포인트 <span style="font-size:9px;color:#8b93a8">RPT-04 · 회차별</span></button>
+            <button class="item sub" data-src="manager/report.html#final" data-nm="리포트 · 개인 최종">개인 최종 <span style="font-size:9px;color:#8b93a8">RPT-02</span></button>
+            <button class="item sub" data-src="manager/report.html#cases" data-nm="리포트 · 상태 ↔ case 매핑">상태 ↔ case 매핑 <span style="font-size:9px;color:#8b93a8">총합</span></button>
+          </div>
+        </div>
+        <button class="item" data-src="manager/appeal-disclosure.html" data-nm="이의 검토 · 열람 범위">이의 검토 · 열람 범위<span class="pth">manager/appeal-disclosure.html</span></button>
+      </div>
+      <div class="grp">
+        <div class="gt"><span class="dot trainee"></span>trainee</div>
+        <button class="item" data-src="trainee/activation.html" data-nm="교육생 계정 활성화">교육생 계정 활성화<span class="pth">trainee/activation.html</span></button>
+        <button class="item" data-src="trainee/home.html" data-nm="홈(회차·응시)">홈(회차·응시)<span class="pth">trainee/home.html</span></button>
+        <button class="item" data-src="trainee/submission.html" data-nm="코드 제출">코드 제출<span class="pth">trainee/submission.html</span></button>
+        <button class="item" data-src="trainee/session.html" data-nm="검증 세션">검증 세션<span class="pth">trainee/session.html</span></button>
+        <button class="item" data-src="trainee/result.html" data-nm="결과 리포트">결과 리포트<span class="pth">trainee/result.html</span></button>
+      </div>
+    </nav>
+  </aside>
+  <main class="main">
+    <div class="bar">
+      <span class="nm" id="curNm">대시보드</span>
+      <span class="pth" id="curPth">manager/dashboard.html</span>
+      <span class="sp"></span>
+      <a id="newtab" href="manager/dashboard.html" target="_blank">새 탭에서 열기 ↗</a>
+    </div>
+    <iframe id="view" src="manager/dashboard.html" title="wireframe"></iframe>
+  </main>
+</div>
+<script>
+  var list = document.getElementById('list');
+  var view = document.getElementById('view');
+  var curNm = document.getElementById('curNm');
+  var curPth = document.getElementById('curPth');
+  var newtab = document.getElementById('newtab');
+
+  // 각 화면의 data-src(예: manager/lead-only/program-admin.html#tab-cohort)를
+  // 세분화된 라우트(#/manager/lead-only/program-admin/tab-cohort)로 매핑.
+  // 정적 파일 서버라 실제 경로 라우팅은 안 되니 해시로 같은 효과를 낸다.
+  var routes = {};
+  list.querySelectorAll('.item[data-src]').forEach(function(btn){
+    var route = '#/' + btn.getAttribute('data-src').replace('.html', '').replace('#', '/');
+    btn.dataset.route = route;
+    routes[route] = btn;
+  });
+
+  function select(btn, skipHash){
+    var src = btn.getAttribute('data-src');
+    view.src = src;
+    curNm.textContent = btn.getAttribute('data-nm');
+    curPth.textContent = src;
+    newtab.href = src;
+    var prev = list.querySelector('.item.on');
+    if(prev) prev.classList.remove('on');
+    btn.classList.add('on');
+    var grp = btn.closest('.grp');
+    if(grp) grp.classList.add('open');
+    if(!skipHash && location.hash !== btn.dataset.route) location.hash = btn.dataset.route;
+  }
+  list.addEventListener('click', function(e){
+    var par = e.target.closest('.item.parent');
+    if(par){ document.getElementById(par.getAttribute('data-toggle')).classList.toggle('open'); return; }
+    var btn = e.target.closest('.item');
+    if(btn) select(btn);
+  });
+  window.addEventListener('hashchange', function(){
+    var btn = routes[location.hash];
+    if(btn) select(btn, true);
+  });
+  // iframe 화면(예: 프로젝트 워크스페이스 결과 탭)이 다른 화면으로 이동 요청 → 해당 사이드바 항목으로 전환
+  window.addEventListener('message', function(e){
+    var nav = e.data && e.data.iznav;
+    if(!nav) return;
+    var btn = list.querySelector('[data-src="' + nav + '"]');
+    if(btn) select(btn);
+  });
+  // 딥링크 진입 시 해시가 가리키는 화면 복원, 없으면 기본값(대시보드)
+  var initial = routes[location.hash] || list.querySelector('[data-src="manager/dashboard.html"]');
+  select(initial, true);
+</script>
+</body>
+</html>

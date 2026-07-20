@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-A02 · 회원가입·계정 활성화 — 와이어프레임 (웹 기준)</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-hover:#31429e; --c-primary-soft:#eef0fb;
+    --c-brand-1:#31429e; --c-brand-2:#232a4d;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px; --fs-3xl:32px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px; --sp-10:64px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1280px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:800px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff}
+  .chrome{height:38px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:460px}
+
+  .split{display:flex;min-height:600px}
+  .brand{flex:0 0 42%;background:linear-gradient(150deg,var(--c-brand-1),var(--c-brand-2));color:#fff;padding:var(--sp-10) var(--sp-8);display:flex;flex-direction:column;justify-content:space-between}
+  .brand .wordmark{display:flex;align-items:center;gap:var(--sp-2);font-weight:700;font-size:var(--fs-lg)}
+  .brand .wordmark .mk{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.16);display:inline-flex;align-items:center;justify-content:center;font-size:15px}
+  .brand .lede h2{font-size:var(--fs-2xl);line-height:1.3;letter-spacing:-.01em;margin-bottom:var(--sp-3);font-weight:700}
+  .brand .lede p{color:rgba(255,255,255,.72);font-size:var(--fs-sm);max-width:320px;line-height:1.6}
+  .brand .meta{font-size:var(--fs-xs);color:rgba(255,255,255,.5)}
+  .formside{flex:1;display:flex;align-items:center;justify-content:center;padding:var(--sp-8);background:var(--c-surface)}
+  .form{width:100%;max-width:380px}
+  .form h2{font-size:var(--fs-xl);margin-bottom:var(--sp-1);letter-spacing:-.01em}
+  .form .sub{font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-5)}
+  .field{margin-bottom:var(--sp-4)}
+  .field label{display:block;font-size:var(--fs-xs);font-weight:600;color:var(--c-text-2);margin-bottom:var(--sp-2)}
+  .field .cap{color:var(--c-text-3);font-weight:400}
+  .input{width:100%;height:42px;border:1px solid var(--c-border-strong);border-radius:var(--r-md);padding:0 var(--sp-3);font-size:var(--fs-sm);color:var(--c-text);background:#fff;display:flex;align-items:center;justify-content:space-between}
+  .input.ph{color:var(--c-text-3);background:var(--c-surface-2)}
+  .input.ro{background:#f0f1f4;color:var(--c-text-2);border-style:dashed}
+  .input .eye,.input .lock{font-size:var(--fs-xs);color:var(--c-text-3)}
+  .hint{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:var(--sp-2)}.hint b{color:var(--c-text-2)}
+  .btn{width:100%;height:44px;border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-sm);cursor:pointer;margin-top:var(--sp-5)}
+  .btn.disabled{background:#c7cbd6;cursor:not-allowed}
+
+  /* consent — clean list, no box */
+  .consent{margin-top:var(--sp-5);border-top:1px solid var(--c-border);padding-top:var(--sp-3)}
+  .consent .all{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-2) 0 var(--sp-3);border-bottom:1px solid var(--c-border);font-weight:600;font-size:var(--fs-sm)}
+  .crow{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) 0}
+  .cbox{width:18px;height:18px;border:1.5px solid var(--c-border-strong);border-radius:5px;flex:0 0 auto}
+  .cbox.on{background:var(--c-primary);border-color:var(--c-primary);position:relative}
+  .cbox.on::after{content:"✓";color:#fff;font-size:14px;font-weight:800;line-height:1;position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .ctext{flex:1;font-size:var(--fs-sm);display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+  .tag{font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px}
+  .tag.req{background:var(--c-primary-soft);color:var(--c-primary)}
+  .tag.opt{background:#eef0f3;color:var(--c-text-2)}
+  .ctext .conseq{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .ctext .view{margin-left:auto;color:var(--c-text-3);font-size:var(--fs-xs);text-decoration:underline;cursor:pointer;white-space:nowrap}
+
+  .notes{margin-top:var(--sp-8);background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-5) var(--sp-6)}
+  .notes h3{font-size:var(--fs-lg);margin-bottom:var(--sp-1)}
+  .notes .grp{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--c-text-3);margin:var(--sp-5) 0 var(--sp-2)}
+  .notes .hint{font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-2)}
+  .tblwrap{overflow-x:auto}
+  .tbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm);min-width:560px}
+  .tbl th,.tbl td{text-align:left;padding:var(--sp-2) var(--sp-3);border-bottom:1px solid var(--c-border)}
+  .tbl th{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);font-weight:600}
+  .tbl td:first-child{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .tbl tr.na td{color:var(--c-text-3)}
+  .pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
+  .pill.danger{background:var(--c-danger-soft);color:var(--c-danger)}
+  .pill.warning{background:var(--c-warning-soft);color:var(--c-warning)}
+  .pill.info{background:var(--c-info-soft);color:var(--c-info)}
+  .pill.na{background:#eef0f3;color:var(--c-text-3)}
+  .respnote{margin-top:var(--sp-4);font-size:var(--fs-sm);color:var(--c-text-2);background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4)}
+  .foot{margin-top:var(--sp-5);font-size:var(--fs-xs);color:var(--c-text-3)}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">SC-A02(교육생) · P0 · trainee/activation · 웹</span>
+    <h1>교육생 계정 활성화</h1>
+    <p><b>교육생 초대 링크</b> 진입 전용 뷰(AUTH-06). 명단(SC-M02)에 이름이 이미 등록되어 <b>이름 입력 없음</b> — 이메일 읽기전용 + 비밀번호 설정 + 필수 동의 4 + 선택 1. 매니저 회원가입은 <b>manager/signup</b>에서 별도. 데스크톱 2단 분할.</p>
+  </div>
+
+  <!-- ===== 교육생 활성화 (AUTH-06) ===== -->
+  <div class="sec-label">교육생 계정 활성화 (AUTH-06) — 데스크톱</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/invite/stu-4c19…</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede"><h2>검증 세션을<br>시작하세요</h2><p>비밀번호를 설정하고 데이터 처리에 동의하면 계정이 활성화됩니다.</p></div>
+        <div class="meta">초대 링크로 이메일이 확인되었습니다</div>
+      </div>
+      <div class="formside"><div class="form">
+        <h2>계정 활성화</h2><div class="sub">비밀번호 설정과 동의로 활성화됩니다.</div>
+        <div class="field"><label>이메일 <span class="cap">· 명단 등록 (확인됨)</span></label><div class="input ro">trainee@org.com<span class="lock">고정</span></div></div>
+        <div class="field"><label>비밀번호</label><div class="input ph">비밀번호 설정<span class="eye">표시</span></div><div class="hint"><b>8자 이상</b>, 영문·숫자·특수문자 포함</div></div>
+        <div class="field"><label>비밀번호 확인</label><div class="input ph">다시 입력<span class="eye">표시</span></div></div>
+        <div class="consent">
+          <div class="all"><span class="cbox on"></span>전체 동의</div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>서비스 이용약관<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>개인정보 수집·이용 (이름·이메일·소속)<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>코드·세션 답변의 AI 분석 <span class="conseq">· 미동의 시 평가 불가</span><span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>평가 결과의 소속 기관 공유<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox"></span><div class="ctext"><span class="tag opt">선택</span>익명 데이터의 서비스 개선 활용<span class="view">전문 보기</span></div></div>
+        </div>
+        <button class="btn">활성화하기</button>
+      </div></div>
+    </div>
+  </div>
+  <div class="respnote"><b>모바일 반응형(옵션)</b> — 좌측 브랜드 패널은 상단 축소 배너로 접히고 폼이 화면 폭을 채움. 정보구조·요소 순서 불변. 별도 화면으로 정의하지 않음.</div>
+
+  <!-- ===== STATE MAPPING ===== -->
+  <div class="notes">
+    <h3>상태 ↔ 명세 case 매핑</h3>
+    <p class="hint">AUTH-01 case4·8은 이메일 읽기전용·초대=인증(D13)으로 <b>구조적 소멸</b>. AUTH-02(이메일 인증) 8건은 <b>프로필 '이메일 변경' 소관</b>으로 이동. 비주얼은 v2 통일 패스.</p>
+
+    <div class="grp">교육생 계정 활성화 (AUTH-06)</div>
+    <div class="tblwrap"><table class="tbl"><thead><tr><th>#</th><th>상태</th><th>표현</th><th>문구 / 다음 행동</th></tr></thead><tbody>
+      <tr><td>B1</td><td>명단 외 이메일</td><td><span class="pill danger">danger</span></td><td>"명단에 등록되지 않은 계정입니다." · 관리자 문의</td></tr>
+      <tr><td>B2</td><td>초대 토큰 만료</td><td><span class="pill warning">warning</span></td><td>"링크가 만료되었습니다." + 재발송(신규 토큰)</td></tr>
+      <tr><td>B3</td><td>초대 메일 미수신</td><td><span class="pill info">info</span></td><td>"메일을 받지 못하셨나요?" + 재발송</td></tr>
+      <tr><td>B4</td><td>이미 활성화</td><td><span class="pill warning">warning</span></td><td>"이미 활성화된 계정입니다." + 로그인</td></tr>
+      <tr><td>B5</td><td>이메일 중복 등록</td><td><span class="pill danger">danger</span></td><td>기존 계정·기수 소속 확인 · 관리자 문의</td></tr>
+      <tr><td>B6</td><td>비번 정책 미충족</td><td><span class="pill danger">danger</span></td><td>필드 하단 미충족 기준 · 재입력</td></tr>
+      <tr><td>B7</td><td>상태 저장 실패(롤백)</td><td><span class="pill danger">danger</span></td><td>"일시적 오류입니다." · 재시도</td></tr>
+      <tr><td>B8</td><td>잘못된 기관·기수 토큰</td><td><span class="pill danger">danger</span></td><td>"유효하지 않은 링크입니다." (보안 로그)</td></tr>
+    </tbody></table></div>
+
+    <div class="grp">동의 관련 상태 (D14 · 교육생 필수 4 + 선택 1)</div>
+    <div class="tblwrap"><table class="tbl"><tbody>
+      <tr><td>CS1</td><td>필수 미동의</td><td><span class="pill info">info</span></td><td>제출 버튼 비활성 + 미체크 필수 항목 하이라이트</td></tr>
+      <tr><td>CS2</td><td>선택 미동의</td><td><span class="pill na">-</span></td><td>정상 진행(제한 없음)</td></tr>
+      <tr><td>CS3</td><td>동의 저장 실패</td><td><span class="pill danger">danger</span></td><td>"잠시 후 다시 시도하세요." (계정 생성 전 차단)</td></tr>
+    </tbody></table></div>
+
+    <div class="foot">디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 동의는 구분선 리스트(박스·인라인 문단 제거, 상세는 전문 보기) · 이메일 읽기전용·초대=인증(D13) · 동의 대상 차등(D14) · 슈퍼어드민 제외(SC-S01 소관) · 웹 기준</div>
+  </div>
+</div>
+</body>
+</html>

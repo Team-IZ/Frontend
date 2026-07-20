@@ -1,0 +1,210 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: SC-M13 · P0/P1 · manager/project-workspace · 웹
+    - heading "프로젝트 워크스페이스 생성=총괄" [level=1] [ref=e5]
+    - paragraph [ref=e6]: "운영 관리와 같은 \"메뉴 하나 = 화면 하나\" 형식(단일 뷰포트 + 탭 전환). 사이드바 하위 메뉴가 각 탭·모달로 딥링크되고, 한 번에 한 화면만 표시. 탭: 목록 · 개요(요구사항 O/X=프로젝트) · 팀·레포(단위 N 확정) · 측정 계획(질문 초점=회차) · 결과 · 개인형. 각 탭 하단에 그 탭의 상태·case 발췌, 전량은 상태 ↔ case 매핑(총합). 근거: D77·D78·D80."
+  - generic [ref=e7]:
+    - generic [ref=e8]: iz-get.com/cohorts/7/projects/api/teams
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - generic [ref=e18]: ◆
+            - text: IZ-Get
+          - generic [ref=e19] [cursor=pointer]:
+            - generic [ref=e20]: 기관
+            - text: 그린 부트캠프
+            - generic [ref=e21]: · 현재
+            - text: 7기 ▾
+        - generic [ref=e22]:
+          - text: 박지현 · 총괄 매니저
+          - generic [ref=e23]: 박
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - generic [ref=e27]: ▦
+            - text: 대시보드
+          - generic [ref=e28]:
+            - generic [ref=e29]: ⚙
+            - text: 운영 관리
+            - generic [ref=e30]: 총괄
+          - generic [ref=e31]:
+            - generic [ref=e32]: ▤
+            - text: 프로젝트
+          - generic [ref=e33]:
+            - generic [ref=e34]: ◎
+            - text: 교육생
+          - generic [ref=e35]:
+            - generic [ref=e36]: △
+            - text: 위험 · 분석
+          - generic [ref=e37]:
+            - generic [ref=e38]: ✎
+            - text: 개입
+          - generic [ref=e39]:
+            - generic [ref=e40]: ▥
+            - text: 리포트
+          - generic [ref=e41]:
+            - generic [ref=e42]: ▧
+            - text: 교안
+        - generic [ref=e43]:
+          - generic [ref=e44]:
+            - generic [ref=e45]:
+              - generic [ref=e46]: ← 프로젝트 목록
+              - generic [ref=e47]:
+                - generic [ref=e48]: API 서버
+                - generic [ref=e49]: 팀
+                - generic [ref=e51] [cursor=pointer]:
+                  - generic [ref=e52]: 프로젝트 전환
+                  - text: ▾
+            - generic [ref=e53]: A반 · 03.20 ~ 04.10 · 추출 기본 본인커밋
+          - generic [ref=e54]:
+            - generic [ref=e55] [cursor=pointer]: 목록
+            - generic [ref=e56] [cursor=pointer]: 개요
+            - generic [ref=e57] [cursor=pointer]: 팀 · 레포
+            - generic [ref=e58] [cursor=pointer]: 측정 계획
+            - generic [ref=e59] [cursor=pointer]: 결과
+            - generic [ref=e60] [cursor=pointer]: 개인형
+          - generic [ref=e61]:
+            - generic [ref=e62]:
+              - generic [ref=e63]:
+                - generic [ref=e64]: 제출 단위(팀)
+                - generic [ref=e65]: 4 팀
+                - generic [ref=e66]: 여기서 확정 = 응시 분모 N
+              - generic [ref=e67]:
+                - generic [ref=e68]: 레포 커버리지
+                - generic [ref=e69]: 4/4팀
+                - generic [ref=e70]: 연결됨 · 측정 실행 가능
+              - generic [ref=e71]:
+                - generic [ref=e72]: 미배정 교육생
+                - generic [ref=e73]: 2 명
+                - generic [ref=e74]: 풀에서 팀 배정 필요
+            - generic [ref=e75]:
+              - heading "팀 편성 · 이 프로젝트 전용 · 다음 프로젝트는 새로" [level=3] [ref=e76]
+              - generic [ref=e77]:
+                - button "⚄ 자동 배분" [ref=e78] [cursor=pointer]
+                - button "+ 팀 추가" [ref=e79] [cursor=pointer]
+            - generic [ref=e80]:
+              - generic [ref=e81]:
+                - heading "팀 A 3명" [level=4] [ref=e82]:
+                  - text: 팀 A
+                  - generic [ref=e83]: 3명
+                - generic [ref=e84]:
+                  - generic [ref=e85]: repo
+                  - text: …/api-a
+                - generic [ref=e86]: 강민준
+                - generic [ref=e88]: 김서연
+                - generic [ref=e90]: 한도현 · 커밋 미검증
+              - generic [ref=e92]:
+                - heading "팀 B 2명" [level=4] [ref=e93]:
+                  - text: 팀 B
+                  - generic [ref=e94]: 2명
+                - generic [ref=e95]:
+                  - generic [ref=e96]: repo
+                  - text: …/api-b
+                - generic [ref=e97]: 이서연
+                - generic [ref=e99]: 박준호
+              - generic [ref=e101]:
+                - heading "팀 C 3명" [level=4] [ref=e102]:
+                  - text: 팀 C
+                  - generic [ref=e103]: 3명
+                - generic [ref=e104]:
+                  - generic [ref=e105]: repo
+                  - text: …/api-c
+                - generic [ref=e106]: 정우성
+                - generic [ref=e108]: 손예진
+                - generic [ref=e110]: 주지훈
+              - generic [ref=e112]:
+                - heading "미배정 2명 · 2 선택" [level=4] [ref=e113]:
+                  - text: 미배정
+                  - generic [ref=e114]: 2명 · 2 선택
+                - generic [ref=e115]:
+                  - generic [ref=e116] [cursor=pointer]: ✓
+                  - text: 정하늘
+                - generic [ref=e117]:
+                  - generic [ref=e118] [cursor=pointer]: ✓
+                  - text: 오지훈
+                - button "선택 2명 → 팀 배정" [ref=e120] [cursor=pointer]
+              - generic [ref=e121] [cursor=pointer]: + 팀 추가
+            - generic [ref=e122]: · 팀 편성 = 명단(운영관리)에서 골라담기(D75와 동형). 자동 배분(균등/랜덤) 또는 풀 다중선택 → 팀 배정. 각 팀이 자기 레포(팀별 다름). 여기서 단위 4팀이 확정돼야 [측정 계획]의 응시 분모가 생김. 재배정은 이력 보존(from/to·D16). 커밋 미검증은 귀속 경고(AUTH-07·A8). 개인 프로젝트는 [개인형] 탭 = 학생별 레포.
+      - generic [ref=e124]:
+        - generic [ref=e125]:
+          - heading "팀 추가 · API 서버 · 미배정에서 골라담기" [level=3] [ref=e126]
+          - generic [ref=e127] [cursor=pointer]: ✕
+        - generic [ref=e128]:
+          - generic [ref=e129]:
+            - generic [ref=e130]:
+              - text: 팀명
+              - generic [ref=e131]: 필수
+            - generic [ref=e132]: 팀 D
+          - generic [ref=e133]:
+            - generic [ref=e134]:
+              - text: 팀원
+              - generic [ref=e135]: · 미배정 풀에서 선택(D75 골라담기) · 동일 시점 중복 소속 금지
+            - generic [ref=e136]:
+              - generic [ref=e137]:
+                - generic [ref=e138] [cursor=pointer]: ✓
+                - text: 정하늘
+              - generic [ref=e139]:
+                - generic [ref=e140] [cursor=pointer]: ✓
+                - text: 오지훈
+              - generic [ref=e141]:
+                - text: 한지민
+                - generic [ref=e143]: · 이미 팀 A
+          - generic [ref=e144]:
+            - generic [ref=e145]:
+              - text: 레포 URL
+              - generic [ref=e146]: · 선택 · 나중에 연결 가능(실행 시 JIT)
+            - generic [ref=e147]: github.com/org/api-d
+            - generic [ref=e148]: 비공개 레포는 접근 권한 확인 필요(R-2). 커밋 이메일 미검증 시 귀속 경고(R-4).
+        - generic [ref=e149]:
+          - generic [ref=e150]: 추가 시 단위(팀) 수 증가 → [측정 계획] 응시 분모에 반영
+          - generic [ref=e151]:
+            - button "취소" [ref=e152] [cursor=pointer]
+            - button "팀 추가" [ref=e153] [cursor=pointer]
+      - text: ✓
+  - generic [ref=e155]:
+    - generic [ref=e156]:
+      - generic [ref=e157]: 현재 탭 · 팀·레포 — 상태 · case (팀 편성 ORG-02 + 레포 연결)
+      - generic [ref=e158] [cursor=pointer]: 총합 →
+    - generic [ref=e159]:
+      - generic [ref=e160]: T-1
+      - generic [ref=e161]: danger
+      - generic [ref=e162]: 존재않는 기수/프로젝트 — 팀 생성 차단
+    - generic [ref=e163]:
+      - generic [ref=e164]: T-2
+      - generic [ref=e165]: danger
+      - generic [ref=e166]: 중복 팀명 — 필드 오류
+    - generic [ref=e167]:
+      - generic [ref=e168]: T-3
+      - generic [ref=e169]: danger
+      - generic [ref=e170]: 미소속 교육생 배정 — 대상 제외 안내
+    - generic [ref=e171]:
+      - generic [ref=e172]: T-4
+      - generic [ref=e173]: danger
+      - generic [ref=e174]: 동일 시점 중복 소속 — 신규 배정 차단·기존 확인
+    - generic [ref=e175]:
+      - generic [ref=e176]: T-6
+      - generic [ref=e177]: danger
+      - generic [ref=e178]: to_at > from_at 역전 — 이력 무결성 오류·차단
+    - generic [ref=e179]:
+      - generic [ref=e180]: T-7
+      - generic [ref=e181]: warning
+      - generic [ref=e182]: 일부 배정 저장 실패 — 실패만 롤백·성공/실패 분리
+    - generic [ref=e183]:
+      - generic [ref=e184]: R-2
+      - generic [ref=e185]: warning
+      - generic [ref=e186]: 비공개 레포 접근 실패 — 임시 저장·접근 권한 안내
+    - generic [ref=e187]:
+      - generic [ref=e188]: R-4
+      - generic [ref=e189]: warning
+      - generic [ref=e190]: 미검증 커밋 이메일 — 매핑 유지·귀속 경고 배지(AUTH-07)
+  - generic [ref=e191]:
+    - heading "이 화면의 데이터 플로우 (D77 다이아몬드) · 개념 경계" [level=3] [ref=e192]
+    - generic [ref=e193]: 단계 · 의존
+    - paragraph [ref=e194]: ① 개요(프로젝트·유형 + 요구사항 O/X=프로젝트) → ② 팀·레포(단위 N 확정 = 응시 분모) → ③ 측정 계획(질문 초점=회차, 프로젝트만 있으면 계획) → ④ 결과. ②③(레포∥체크포인트) 병렬, ⑤실행에서 스냅샷 수렴.
+    - generic [ref=e195]: 요구사항 ≠ 질문 초점 (D80)
+    - paragraph [ref=e196]: "요구사항(프로젝트): \"목적대로 제대로 했나\" — 필수 조건(JWT·PostgreSQL) 단위별 O/X+비고. 질문 초점(회차·구 \"결정 지점\"/\"검증 포커스\" 통합): \"질문을 어디 치중할까\" — 비우면 AI 자율 추출, 지정하면 그 영역 치중. 판정 대상 vs 질문 방향으로 별개."
+    - generic [ref=e197]: 허브 ≠ 모놀리식 (D78)
+    - paragraph [ref=e198]: "워크스페이스는 프로젝트 컨텍스트 허브 + 탭. 각 탭은 자기 SC-ID: 개요·팀레포=SC-M13, 측정계획=SC-M03, 결과=SC-M08. 위계(측정계획⊂프로젝트)와 화면 분해는 별개 축."
+    - generic [ref=e199]: 권한
+    - paragraph [ref=e200]: "프로젝트 생성·팀 편성·측정 계획 = 총괄(FB-F5). 담당 매니저는 실행 후 모니터링·개입. 관련: D75·D76·D77·D78·D80."

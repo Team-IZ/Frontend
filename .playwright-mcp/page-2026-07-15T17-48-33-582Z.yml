@@ -1,0 +1,126 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: SC-M13 · P0/P1 · manager/project-workspace · 웹
+    - heading "프로젝트 워크스페이스 생성=총괄" [level=1] [ref=e5]
+    - paragraph [ref=e6]: "운영 관리와 같은 \"메뉴 하나 = 화면 하나\" 형식(단일 뷰포트 + 탭 전환). 사이드바 하위 메뉴가 각 탭·모달로 딥링크되고, 한 번에 한 화면만 표시. 탭: 목록 · 개요(요구사항 O/X=프로젝트) · 팀·레포(단위 N 확정) · 측정 계획(질문 초점=회차) · 결과 · 개인형. 각 탭 하단에 그 탭의 상태·case 발췌, 전량은 상태 ↔ case 매핑(총합). 근거: D77·D78·D80."
+  - generic [ref=e7]:
+    - generic [ref=e8]: iz-get.com/cohorts/7/projects/cli/teams
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - generic [ref=e18]: ◆
+            - text: IZ-Get
+          - generic [ref=e19] [cursor=pointer]:
+            - generic [ref=e20]: 기관
+            - text: 그린 부트캠프
+            - generic [ref=e21]: · 현재
+            - text: 7기 ▾
+        - generic [ref=e22]:
+          - text: 박지현 · 총괄 매니저
+          - generic [ref=e23]: 박
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - generic [ref=e27]: ▦
+            - text: 대시보드
+          - generic [ref=e28]:
+            - generic [ref=e29]: ⚙
+            - text: 운영 관리
+            - generic [ref=e30]: 총괄
+          - generic [ref=e31]:
+            - generic [ref=e32]: ▤
+            - text: 프로젝트
+          - generic [ref=e33]:
+            - generic [ref=e34]: ◎
+            - text: 교육생
+          - generic [ref=e35]:
+            - generic [ref=e36]: △
+            - text: 위험 · 분석
+          - generic [ref=e37]:
+            - generic [ref=e38]: ✎
+            - text: 개입
+          - generic [ref=e39]:
+            - generic [ref=e40]: ▥
+            - text: 리포트
+          - generic [ref=e41]:
+            - generic [ref=e42]: ▧
+            - text: 교안
+        - generic [ref=e43]:
+          - generic [ref=e147]:
+            - generic [ref=e148]:
+              - generic [ref=e149]: ← 프로젝트 목록
+              - generic [ref=e150]:
+                - generic [ref=e151]: CLI 과제
+                - generic [ref=e152]: 개인
+                - generic [ref=e154] [cursor=pointer]:
+                  - generic [ref=e155]: 프로젝트 전환
+                  - text: ▾
+            - generic [ref=e156]: A반 · 03.04 ~ 03.18 · 추출 전체코드
+          - generic [ref=e157]:
+            - generic [ref=e158] [cursor=pointer]: 개요
+            - generic [ref=e159] [cursor=pointer]: 팀 · 레포
+            - generic [ref=e160] [cursor=pointer]: 측정 계획
+            - generic [ref=e161] [cursor=pointer]: 결과
+          - text: ✓ ✓
+          - generic [ref=e294]:
+            - generic [ref=e295]: "개인 프로젝트(예: CLI 과제)의 [팀·레포] 변형. 개인은 단위=학생(명단에 이미 존재)이라 팀 편성을 건너뛰고 바로 학생별 레포. 나머지 탭(개요·측정계획·결과)은 팀 프로젝트와 동일 구조."
+            - generic [ref=e296]:
+              - generic [ref=e297]:
+                - generic [ref=e298]: 제출 단위(개인)
+                - generic [ref=e299]: 18 명
+                - generic [ref=e300]: 개인=학생이 단위(팀 편성 없음)
+              - generic [ref=e301]:
+                - generic [ref=e302]: 레포 커버리지
+                - generic [ref=e303]: 18/18
+                - generic [ref=e304]: 전원 연결
+            - generic [ref=e305]:
+              - heading "학생별 레포 18명· 미제출 0" [level=3] [ref=e306]
+              - button "벌크 독촉·안내" [ref=e307] [cursor=pointer]
+            - table [ref=e309]:
+              - rowgroup [ref=e310]:
+                - row [ref=e311]:
+                  - columnheader "교육생" [ref=e312]
+                  - columnheader "레포" [ref=e313]
+                  - columnheader "커밋" [ref=e314]
+                  - columnheader "상태" [ref=e315]
+              - rowgroup [ref=e316]:
+                - row [ref=e317]:
+                  - cell "김서연" [ref=e318]
+                  - cell "github.com/…/cli-kim" [ref=e319]
+                  - cell "연결됨" [ref=e320]
+                  - cell "제출" [ref=e321]
+                - row [ref=e323]:
+                  - cell "이도윤" [ref=e324]
+                  - cell "github.com/…/cli-lee" [ref=e325]
+                  - cell "연결됨" [ref=e326]
+                  - cell "제출" [ref=e327]
+                - row [ref=e329]:
+                  - cell "박준호" [ref=e330]
+                  - cell "github.com/…/cli-park" [ref=e331]
+                  - cell "연결됨" [ref=e332]
+                  - cell "제출" [ref=e333]
+            - generic [ref=e335]: · 응시 분모 N = 18명. 개인 프로젝트는 팀 편성 단계 생략(단위=학생). 요구사항 O/X·질문 초점·결과는 팀 프로젝트와 동일하게 [개요]·[측정 계획]·[결과]에서.
+      - text: ✓ ✓ ✓
+  - generic [ref=e336]:
+    - generic [ref=e337]:
+      - generic [ref=e338]: 현재 탭 · 개인형 — 상태 · case (학생별 레포)
+      - generic [ref=e339] [cursor=pointer]: 총합 →
+    - generic [ref=e340]:
+      - generic [ref=e341]: CL-1
+      - generic [ref=e342]: warning
+      - generic [ref=e343]: 학생 미제출 — 벌크 독촉·레포 안내 재발송(D19)
+    - generic [ref=e344]:
+      - generic [ref=e345]: CL-2
+      - generic [ref=e346]: warning
+      - generic [ref=e347]: 커밋 이메일 미검증 — 귀속 경고·교육생 SC-T02에서 검증
+  - generic [ref=e137]:
+    - heading "이 화면의 데이터 플로우 (D77 다이아몬드) · 개념 경계" [level=3] [ref=e138]
+    - generic [ref=e139]: 단계 · 의존
+    - paragraph [ref=e140]: ① 개요(프로젝트·유형 + 요구사항 O/X=프로젝트) → ② 팀·레포(단위 N 확정 = 응시 분모) → ③ 측정 계획(질문 초점=회차, 프로젝트만 있으면 계획) → ④ 결과. ②③(레포∥체크포인트) 병렬, ⑤실행에서 스냅샷 수렴.
+    - generic [ref=e141]: 요구사항 ≠ 질문 초점 (D80)
+    - paragraph [ref=e142]: "요구사항(프로젝트): \"목적대로 제대로 했나\" — 필수 조건(JWT·PostgreSQL) 단위별 O/X+비고. 질문 초점(회차·구 \"결정 지점\"/\"검증 포커스\" 통합): \"질문을 어디 치중할까\" — 비우면 AI 자율 추출, 지정하면 그 영역 치중. 판정 대상 vs 질문 방향으로 별개."
+    - generic [ref=e143]: 허브 ≠ 모놀리식 (D78)
+    - paragraph [ref=e144]: "워크스페이스는 프로젝트 컨텍스트 허브 + 탭. 각 탭은 자기 SC-ID: 개요·팀레포=SC-M13, 측정계획=SC-M03, 결과=SC-M08. 위계(측정계획⊂프로젝트)와 화면 분해는 별개 축."
+    - generic [ref=e145]: 권한
+    - paragraph [ref=e146]: "프로젝트 생성·팀 편성·측정 계획 = 총괄(FB-F5). 담당 매니저는 실행 후 모니터링·개입. 관련: D75·D76·D77·D78·D80."

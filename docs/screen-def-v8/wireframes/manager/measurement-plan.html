@@ -1,0 +1,1473 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SC-M03 · 측정 계획 — 와이어프레임</title>
+    <style>
+      :root {
+        --c-bg: #f4f5f7;
+        --c-surface: #ffffff;
+        --c-surface-2: #fafbfc;
+        --c-border: #e2e5ea;
+        --c-border-strong: #cfd4dc;
+        --c-text: #181b20;
+        --c-text-2: #5a616b;
+        --c-text-3: #8b929c;
+        --c-primary: #3a4db8;
+        --c-primary-hover: #31429e;
+        --c-primary-soft: #eef0fb;
+        --c-nav: #1e2436;
+        --c-nav-2: #2a3147;
+        --c-nav-text: #aeb4c6;
+        --c-danger: #c0392b;
+        --c-danger-soft: #fbeceb;
+        --c-warning: #b3771a;
+        --c-warning-soft: #fbf3e6;
+        --c-success: #1f8a5b;
+        --c-success-soft: #e8f5ee;
+        --c-info: #2f6bb0;
+        --c-info-soft: #eaf2fa;
+        --r-sm: 6px;
+        --r-md: 10px;
+        --r-lg: 14px;
+        --fs-xs: 12px;
+        --fs-sm: 13px;
+        --fs-base: 14px;
+        --fs-lg: 16px;
+        --fs-xl: 20px;
+        --fs-2xl: 26px;
+        --sp-1: 4px;
+        --sp-2: 8px;
+        --sp-3: 12px;
+        --sp-4: 16px;
+        --sp-5: 24px;
+        --sp-6: 32px;
+        --sp-8: 48px;
+        --shadow-card:
+          0 1px 2px rgba(20, 24, 31, 0.05), 0 10px 34px rgba(20, 24, 31, 0.09);
+        --font:
+          -apple-system, "Apple SD Gothic Neo", system-ui, "Segoe UI",
+          sans-serif;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: var(--font);
+        color: var(--c-text);
+        background: var(--c-bg);
+        font-size: var(--fs-base);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+      }
+      .page {
+        max-width: 1320px;
+        margin: 0 auto;
+        padding: var(--sp-8) var(--sp-5);
+      }
+      .doc-head {
+        margin-bottom: var(--sp-6);
+      }
+      .doc-head .id {
+        display: inline-block;
+        font-size: var(--fs-xs);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        color: var(--c-primary);
+        background: var(--c-primary-soft);
+        padding: 3px 8px;
+        border-radius: var(--r-sm);
+      }
+      .doc-head h1 {
+        font-size: var(--fs-2xl);
+        margin: var(--sp-3) 0 var(--sp-2);
+        letter-spacing: -0.01em;
+      }
+      .doc-head p {
+        color: var(--c-text-2);
+        font-size: var(--fs-sm);
+        max-width: 840px;
+      }
+      .sec-label {
+        font-size: var(--fs-xs);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--c-text-3);
+        margin: var(--sp-8) 0 var(--sp-3);
+      }
+      /* modal */
+      .mdlov {
+        position: absolute;
+        inset: 0;
+        background: rgba(20, 24, 31, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .mdl {
+        width: 460px;
+        background: #fff;
+        border-radius: var(--r-lg);
+        box-shadow: 0 20px 50px rgba(20, 24, 31, 0.24);
+        overflow: hidden;
+      }
+      .mdlh {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--sp-4) var(--sp-5);
+        border-bottom: 1px solid var(--c-border);
+      }
+      .mdlh h4 {
+        font-size: var(--fs-lg);
+      }
+      .mdlh .x {
+        color: var(--c-text-3);
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .mdlb {
+        padding: var(--sp-5);
+        display: flex;
+        flex-direction: column;
+        gap: var(--sp-4);
+      }
+      .frow {
+        display: flex;
+        gap: var(--sp-3);
+      }
+      .fld {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .fld label {
+        font-size: var(--fs-xs);
+        font-weight: 600;
+        color: var(--c-text-2);
+        margin-bottom: var(--sp-2);
+      }
+      .inp {
+        height: 40px;
+        border: 1px solid var(--c-border-strong);
+        border-radius: var(--r-md);
+        background: var(--c-surface-2);
+        font-size: var(--fs-sm);
+        color: var(--c-text);
+        display: flex;
+        align-items: center;
+        padding: 0 var(--sp-3);
+      }
+      .inp.ph {
+        color: var(--c-text-3);
+      }
+      .fhint {
+        font-size: 11px;
+        color: var(--c-text-3);
+        margin-top: 4px;
+      }
+      .toggle2 {
+        display: inline-flex;
+        border: 1px solid var(--c-border-strong);
+        border-radius: var(--r-md);
+        overflow: hidden;
+        font-size: var(--fs-sm);
+        height: 40px;
+      }
+      .toggle2.full {
+        display: flex;
+        width: 100%;
+      }
+      .toggle2 span {
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        color: var(--c-text-2);
+      }
+      .toggle2 span.on {
+        background: var(--c-primary);
+        color: #fff;
+        font-weight: 600;
+      }
+      .toggle2.full span {
+        flex: 1;
+        justify-content: center;
+        padding: 0;
+      }
+      .numstep {
+        display: flex;
+        align-items: center;
+        height: 40px;
+        border: 1px solid var(--c-border-strong);
+        border-radius: var(--r-md);
+        background: #fff;
+        overflow: hidden;
+      }
+      .numstep .mn,
+      .numstep .pl {
+        width: 38px;
+        text-align: center;
+        color: var(--c-text-2);
+        font-size: 16px;
+        user-select: none;
+        cursor: pointer;
+      }
+      .numstep .mn {
+        border-right: 1px solid var(--c-border);
+      }
+      .numstep .pl {
+        border-left: 1px solid var(--c-border);
+      }
+      .numstep .vv {
+        flex: 1;
+        text-align: center;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      .fnote {
+        font-size: 11px;
+        color: var(--c-text-3);
+        line-height: 1.6;
+        background: var(--c-surface-2);
+        border-radius: var(--r-md);
+        padding: var(--sp-3);
+      }
+      .mdlf {
+        display: flex;
+        justify-content: flex-end;
+        gap: var(--sp-2);
+        padding: var(--sp-4) var(--sp-5);
+        border-top: 1px solid var(--c-border);
+      }
+
+      .viewport {
+        border: 1px solid var(--c-border-strong);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-card);
+        background: #fff;
+      }
+      .chrome {
+        height: 36px;
+        background: #eceef1;
+        border-bottom: 1px solid var(--c-border);
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
+        padding: 0 var(--sp-4);
+      }
+      .chrome .tl {
+        display: flex;
+        gap: 6px;
+      }
+      .chrome .tl i {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #cfd4dc;
+        display: block;
+      }
+      .chrome .url {
+        flex: 1;
+        height: 22px;
+        background: #fff;
+        border: 1px solid var(--c-border);
+        border-radius: 20px;
+        font-size: var(--fs-xs);
+        color: var(--c-text-3);
+        display: flex;
+        align-items: center;
+        padding: 0 var(--sp-3);
+        margin-left: var(--sp-3);
+        max-width: 440px;
+      }
+
+      .app {
+        display: flex;
+        flex-direction: column;
+        min-height: 560px;
+      }
+      .topbar {
+        height: 54px;
+        background: var(--c-surface);
+        border-bottom: 1px solid var(--c-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--sp-5);
+      }
+      .topbar .left {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-4);
+      }
+      .topbar .brand {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
+        font-weight: 700;
+        font-size: var(--fs-base);
+      }
+      .topbar .brand .mk {
+        width: 26px;
+        height: 26px;
+        border-radius: 7px;
+        background: var(--c-primary);
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+      }
+      .cohortsel {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
+        border: 1px solid var(--c-border-strong);
+        border-radius: 20px;
+        padding: 5px var(--sp-3);
+        font-size: var(--fs-sm);
+        color: var(--c-text);
+        background: var(--c-surface-2);
+      }
+      .cohortsel .k {
+        color: var(--c-text-3);
+        font-size: var(--fs-xs);
+      }
+      .topbar .me {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
+        font-size: var(--fs-sm);
+        color: var(--c-text-2);
+      }
+      .topbar .me .av {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        background: var(--c-primary-soft);
+        color: var(--c-primary);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .body {
+        display: flex;
+        flex: 1;
+      }
+      .nav {
+        width: 184px;
+        background: var(--c-nav);
+        padding: var(--sp-4) var(--sp-3);
+        flex: 0 0 184px;
+      }
+      .nav .item {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
+        padding: 9px var(--sp-3);
+        border-radius: var(--r-md);
+        color: var(--c-nav-text);
+        font-size: var(--fs-sm);
+        margin-bottom: 2px;
+      }
+      .nav .item.on {
+        background: var(--c-nav-2);
+        color: #fff;
+        font-weight: 600;
+      }
+      .nav .item .ic {
+        width: 15px;
+        text-align: center;
+        opacity: 0.85;
+        font-size: 12px;
+      }
+      .content {
+        flex: 1;
+        background: var(--c-bg);
+        padding: var(--sp-6);
+      }
+      .phead {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: var(--sp-4);
+      }
+      .phead h2 {
+        font-size: var(--fs-xl);
+        letter-spacing: -0.01em;
+      }
+      .phead .crumb {
+        font-size: var(--fs-sm);
+        color: var(--c-text-3);
+        margin-bottom: var(--sp-1);
+      }
+      .tabs {
+        display: flex;
+        gap: var(--sp-5);
+        border-bottom: 1px solid var(--c-border);
+        margin-bottom: var(--sp-5);
+      }
+      .tabs .t {
+        padding: var(--sp-2) 0;
+        font-size: var(--fs-sm);
+        color: var(--c-text-2);
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+      }
+      .tabs .t.on {
+        color: var(--c-primary);
+        border-color: var(--c-primary);
+        font-weight: 600;
+      }
+
+      .btn {
+        border: 0;
+        border-radius: var(--r-md);
+        background: var(--c-primary);
+        color: #fff;
+        font-weight: 600;
+        font-size: var(--fs-sm);
+        cursor: pointer;
+        padding: 8px var(--sp-4);
+      }
+      .btn.ghost {
+        background: #fff;
+        color: var(--c-text-2);
+        border: 1px solid var(--c-border-strong);
+      }
+      .btn.sm {
+        padding: 6px var(--sp-3);
+        font-size: var(--fs-xs);
+      }
+      .block {
+        margin-bottom: var(--sp-6);
+      }
+      .bhead {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--sp-3);
+      }
+      .bhead h3 {
+        font-size: var(--fs-base);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
+      }
+
+      .card {
+        background: var(--c-surface);
+        border: 1px solid var(--c-border);
+        border-radius: var(--r-md);
+        overflow: hidden;
+      }
+      .tbl {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: var(--fs-sm);
+      }
+      .tbl th,
+      .tbl td {
+        text-align: left;
+        padding: 10px var(--sp-4);
+        border-bottom: 1px solid var(--c-border);
+      }
+      .tbl th {
+        font-size: var(--fs-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        color: var(--c-text-3);
+        font-weight: 600;
+        background: var(--c-surface-2);
+      }
+      .tbl tr:last-child td {
+        border-bottom: 0;
+      }
+      .tbl .nm {
+        font-weight: 600;
+      }
+      .tbl tr.final td {
+        background: var(--c-primary-soft);
+      }
+      .badge {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 20px;
+      }
+      .badge.ok {
+        background: var(--c-success-soft);
+        color: var(--c-success);
+      }
+      .badge.off {
+        background: #eef0f3;
+        color: var(--c-text-3);
+      }
+      .badge.warn {
+        background: var(--c-warning-soft);
+        color: var(--c-warning);
+      }
+      .badge.info {
+        background: var(--c-info-soft);
+        color: var(--c-info);
+      }
+      .badge.final {
+        background: var(--c-primary);
+        color: #fff;
+      }
+      .badge.priv {
+        background: var(--c-warning-soft);
+        color: var(--c-warning);
+      }
+      .link {
+        color: var(--c-primary);
+        font-size: var(--fs-xs);
+        cursor: pointer;
+      }
+      .cbx {
+        width: 15px;
+        height: 15px;
+        border: 1.5px solid var(--c-border-strong);
+        border-radius: 4px;
+        display: inline-block;
+        vertical-align: -2px;
+        flex: 0 0 auto;
+      }
+      .cbx.on {
+        background: var(--c-primary);
+        border-color: var(--c-primary);
+        position: relative;
+      }
+      .cbx.on::after {
+        content: "✓";
+        color: #fff;
+        font-size: 10px;
+        position: absolute;
+        top: -2px;
+        left: 2px;
+      }
+      .tbl td.chk,
+      .tbl th.chk {
+        width: 38px;
+      }
+      .bulkbar {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-3);
+        background: var(--c-primary-soft);
+        border: 1px solid var(--c-primary);
+        border-radius: var(--r-md);
+        padding: 8px var(--sp-4);
+        margin-bottom: var(--sp-3);
+      }
+      .bulkbar .n {
+        font-weight: 700;
+        color: var(--c-primary);
+        font-size: var(--fs-sm);
+      }
+      .bulkbar .ba {
+        border: 1px solid var(--c-primary);
+        background: #fff;
+        color: var(--c-primary);
+        border-radius: var(--r-md);
+        padding: 5px 10px;
+        font-size: var(--fs-xs);
+        cursor: pointer;
+      }
+      .bulkbar .clear {
+        margin-left: auto;
+        color: var(--c-text-2);
+        font-size: var(--fs-xs);
+        cursor: pointer;
+      }
+      /* scope toggle */
+      .toggle {
+        display: inline-flex;
+        border: 1px solid var(--c-border-strong);
+        border-radius: 20px;
+        overflow: hidden;
+        font-size: var(--fs-xs);
+      }
+      .toggle span {
+        padding: 4px 12px;
+        color: var(--c-text-2);
+      }
+      .toggle span.on {
+        background: var(--c-primary);
+        color: #fff;
+        font-weight: 600;
+      }
+      /* chips */
+      .chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .fchip {
+        background: var(--c-primary-soft);
+        color: var(--c-primary);
+        border-radius: 20px;
+        padding: 4px 10px;
+        font-size: var(--fs-xs);
+        font-weight: 600;
+      }
+      .fchip.add {
+        background: #fff;
+        border: 1px dashed var(--c-border-strong);
+        color: var(--c-text-3);
+        font-weight: 400;
+        cursor: pointer;
+      }
+      .selrow {
+        display: flex;
+        align-items: center;
+        gap: var(--sp-2);
+        margin-bottom: var(--sp-3);
+        font-size: var(--fs-sm);
+        color: var(--c-text-2);
+      }
+      .sel {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        border: 1px solid var(--c-border-strong);
+        border-radius: var(--r-md);
+        padding: 6px var(--sp-3);
+        font-size: var(--fs-xs);
+        color: var(--c-text);
+        background: #fff;
+      }
+      .sel .k {
+        color: var(--c-text-3);
+      }
+
+      .notes {
+        margin-top: var(--sp-8);
+        background: var(--c-surface);
+        border: 1px solid var(--c-border);
+        border-radius: var(--r-lg);
+        padding: var(--sp-5) var(--sp-6);
+      }
+      .notes h3 {
+        font-size: var(--fs-lg);
+        margin-bottom: var(--sp-1);
+      }
+      .notes .grp {
+        font-size: var(--fs-xs);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--c-text-3);
+        margin: var(--sp-5) 0 var(--sp-2);
+      }
+      .notes .hint {
+        font-size: var(--fs-sm);
+        color: var(--c-text-2);
+        margin-bottom: var(--sp-2);
+      }
+      .tblwrap {
+        overflow-x: auto;
+      }
+      .ntbl {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: var(--fs-sm);
+        min-width: 520px;
+      }
+      .ntbl th,
+      .ntbl td {
+        text-align: left;
+        padding: var(--sp-2) var(--sp-3);
+        border-bottom: 1px solid var(--c-border);
+      }
+      .ntbl td:first-child {
+        width: 48px;
+        color: var(--c-text-3);
+      }
+      .pill {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 7px;
+        border-radius: 20px;
+      }
+      .pill.danger {
+        background: var(--c-danger-soft);
+        color: var(--c-danger);
+      }
+      .pill.warning {
+        background: var(--c-warning-soft);
+        color: var(--c-warning);
+      }
+      .pill.info {
+        background: var(--c-info-soft);
+        color: var(--c-info);
+      }
+      .foot {
+        margin-top: var(--sp-5);
+        font-size: var(--fs-xs);
+        color: var(--c-text-3);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="doc-head">
+        <span class="id">SC-M03 · P0/P1 · 매니저 · 웹</span>
+        <h1>측정 계획 (체크포인트 · 추출범위 · 검증포커스 · 응시현황) <span style="font-size:12px;color:#2f6bb0;vertical-align:4px">워크스페이스 경유 진입</span></h1>
+        <div style="background:#eaf2fa;border:1px solid #2f6bb0;border-radius:10px;padding:12px 16px;margin:12px 0;font-size:13px;color:#2f6bb0;line-height:1.6">ℹ <b>이 화면(SC-M03)은 <a href="project-workspace.html#plan" style="color:#2f6bb0;font-weight:700">프로젝트 워크스페이스 › 측정 계획 탭</a>을 통해 프로젝트 컨텍스트로 진입하는 독립 화면입니다</b>(D77·D78). 측정계획은 프로젝트 하위(위계)지만 화면·정의서·예외(PLAN 30건)는 독립 유지 — 워크스페이스에 흡수된 게 아님. <b>응시 분모만 팀·레포 탭의 단위 N에서 상속</b>(옛 "48/48" 고정 분모 오류 교정). 이 단독 버전은 컨텍스트 없는 참고용.</div>
+        <p>
+          측정의 <b>언제(체크포인트)·무엇을(추출범위)·어디에 초점(포커스)</b>을
+          정하고, 진행 중 회차의 응시를 모니터링.
+          <b>검증 포커스는 교육생 비노출</b>(A4 — 미리 알면 게이밍). 최종 회차는
+          단 1건. 매니저 앱 셸 공유.
+        </p>
+      </div>
+
+      <!-- ===== 체크포인트 ===== -->
+      <div class="sec-label">탭 · 체크포인트 (PLAN-01)</div>
+      <div class="viewport">
+        <div class="chrome">
+          <span class="tl"><i></i><i></i><i></i></span
+          ><span class="url">iz-get.com/cohorts/7/plan/checkpoints</span>
+        </div>
+        <div class="app">
+          <div class="topbar">
+            <div class="left">
+              <div class="brand"><span class="mk">◆</span>IZ-Get</div>
+              <div class="cohortsel">
+                <span class="k">기수</span> 7기 · 그린 부트캠프 ▾
+              </div>
+            </div>
+            <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+          </div>
+          <div class="body">
+            <div class="nav">
+              <div class="item"><span class="ic">▦</span>대시보드</div>
+              <div class="item"><span class="ic">◔</span>기수 구성</div>
+              <div class="item"><span class="ic">▧</span>교안</div>
+              <div class="item"><span class="ic">▤</span>프로젝트</div>
+              <div class="item on"><span class="ic">◷</span>측정 계획</div>
+              <div class="item"><span class="ic">△</span>위험 · 분석</div>
+              <div class="item"><span class="ic">◎</span>교육생</div>
+              <div class="item"><span class="ic">✎</span>개입</div>
+              <div class="item"><span class="ic">▥</span>리포트</div>
+            </div>
+            <div class="content">
+              <div class="phead">
+                <div>
+                  <div class="crumb">측정 계획 › 7기</div>
+                  <h2>측정 계획</h2>
+                </div>
+                <button class="btn">+ 회차 추가</button>
+              </div>
+              <div class="tabs">
+                <span class="t on">체크포인트</span
+                ><span class="t">추출 범위</span
+                ><span class="t">검증 포커스</span
+                ><span class="t">응시 현황</span>
+              </div>
+              <div class="card">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th>체크포인트</th>
+                      <th>프로젝트 · 회차</th>
+                      <th>측정일</th>
+                      <th>응시 기한</th>
+                      <th>질문 수</th>
+                      <th>응시 진행</th>
+                      <th>포커스</th>
+                      <th>상태</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="nm">체크포인트 1</td>
+                      <td>CLI 과제 · 1회차</td>
+                      <td>03.18</td>
+                      <td>03.18 09:00 ~ 03.19 18:00</td>
+                      <td>4</td>
+                      <td>48 / 48</td>
+                      <td><span class="badge ok">설정됨</span></td>
+                      <td><span class="badge ok">완료</span></td>
+                      <td><span class="link">수정</span></td>
+                    </tr>
+                    <tr>
+                      <td class="nm">체크포인트 2</td>
+                      <td>CLI 과제 · 2회차</td>
+                      <td>04.10</td>
+                      <td>04.10 09:00 ~ 04.11 18:00</td>
+                      <td>4</td>
+                      <td>34 / 48</td>
+                      <td><span class="badge ok">설정됨</span></td>
+                      <td><span class="badge warn">진행 중</span></td>
+                      <td><span class="link">응시 보기</span></td>
+                    </tr>
+                    <tr>
+                      <td class="nm">체크포인트 3</td>
+                      <td>API 서버 · 1회차</td>
+                      <td>05.09</td>
+                      <td>05.09 09:00 ~ 05.10 18:00</td>
+                      <td>3</td>
+                      <td>—</td>
+                      <td><span class="badge info">미설정</span></td>
+                      <td><span class="badge off">예정</span></td>
+                      <td><span class="link">수정</span></td>
+                    </tr>
+                    <tr class="final">
+                      <td class="nm">
+                        체크포인트 4 <span class="badge final">최종</span>
+                      </td>
+                      <td>API 서버 · 2회차</td>
+                      <td>06.06</td>
+                      <td>06.06 09:00 ~ 06.07 18:00</td>
+                      <td>5</td>
+                      <td>—</td>
+                      <td><span class="badge info">미설정</span></td>
+                      <td><span class="badge off">예정</span></td>
+                      <td><span class="link">수정</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div
+                style="
+                  font-size: 12px;
+                  color: var(--c-text-3);
+                  margin-top: 12px;
+                ">
+                · 최종 회차는 <b>단 1건</b>(등급은 이때만 · B3).
+                <b>질문 수(예산 N)는 회차별 설정 · 기본 4</b>(전 학생 동일 =
+                비교 가능성 · 개인차는 세션 depth가 적응 · D28). 응시
+                진행·포커스 여부 표에서 확인. 데이터 있는 회차 삭제는 경고. 기한
+                역순·중복 방지.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 회차 추가/수정 모달 ===== -->
+      <div class="sec-label">
+        [+ 회차 추가] / [수정] 클릭 시 · 회차 설정 모달 (표가 이 입력으로
+        채워짐)
+      </div>
+      <div class="viewport">
+        <div class="chrome">
+          <span class="tl"><i></i><i></i><i></i></span
+          ><span class="url">iz-get.com/cohorts/7/plan/checkpoints</span>
+        </div>
+        <div class="app" style="min-height: 560px; position: relative">
+          <div
+            style="
+              filter: blur(1.5px);
+              opacity: 0.5;
+              padding: 24px;
+              font-size: 13px;
+              color: var(--c-text-3);
+            ">
+            체크포인트 표 …(뒤 배경)
+          </div>
+          <div class="mdlov">
+            <div class="mdl">
+              <div class="mdlh">
+                <h4>회차 추가</h4>
+                <span class="x">✕</span>
+              </div>
+              <div class="mdlb">
+                <div class="frow">
+                  <div class="fld">
+                    <label>회차 번호</label>
+                    <div class="numstep">
+                      <span class="mn">−</span><span class="vv">5</span
+                      ><span class="pl">+</span>
+                    </div>
+                  </div>
+                  <div class="fld">
+                    <label>측정일</label>
+                    <div class="inp ph">
+                      2026-06-06
+                      <span style="margin-left: auto; color: var(--c-text-3)"
+                        >📅</span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div class="fld">
+                  <label>응시 기한 (시작 ~ 마감)</label>
+                  <div style="display: flex; align-items: center; gap: 10px">
+                    <div class="inp ph" style="flex: 1">2026-06-06 09:00</div>
+                    <span style="color: var(--c-text-3); font-weight: 600"
+                      >-</span
+                    >
+                    <div class="inp ph" style="flex: 1">2026-06-07 18:00</div>
+                  </div>
+                </div>
+                <div class="frow">
+                  <div class="fld">
+                    <label>질문 수 (예산 N)</label>
+                    <div class="numstep">
+                      <span class="mn">−</span><span class="vv">4</span
+                      ><span class="pl">+</span>
+                    </div>
+                    <div class="fhint">
+                      회차마다 다르게 · 기본 4 · 전 학생 동일(개인차는 세션
+                      depth 적응, D28)
+                    </div>
+                  </div>
+                  <div class="fld">
+                    <label>최종 회차</label>
+                    <div class="toggle2 full">
+                      <span>일반</span><span class="on">최종</span>
+                    </div>
+                    <div class="fhint">
+                      최종은 단 1건 · 등급은 이 회차만(B3)
+                    </div>
+                  </div>
+                </div>
+                <div class="fnote">
+                  · 검증 포커스는 저장 후 <b>[검증 포커스] 탭</b>에서 회차별로
+                  설정(교육생 비공개). · 저장 시 회차 정렬·기한 역순/중복 검증.
+                </div>
+              </div>
+              <div class="mdlf">
+                <button class="btn ghost">취소</button
+                ><button class="btn">저장</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size: 12px; color: var(--c-text-3); margin: 8px 0 0">
+        · [수정]도 같은 모달(기존 값 채워짐). [응시 보기]는
+        <b>아래 응시 현황 탭으로 이동하며 해당 회차가 선택됨</b>. 데이터 있는
+        회차 삭제 시 경고 모달.
+      </div>
+
+      <!-- ===== 추출 범위 ===== -->
+      <div class="sec-label">탭 · 추출 범위 (PLAN-02)</div>
+      <div class="viewport">
+        <div class="chrome">
+          <span class="tl"><i></i><i></i><i></i></span
+          ><span class="url">iz-get.com/cohorts/7/plan/focus</span>
+        </div>
+        <div class="app">
+          <div class="topbar">
+            <div class="left">
+              <div class="brand"><span class="mk">◆</span>IZ-Get</div>
+              <div class="cohortsel">
+                <span class="k">기수</span> 7기 · 그린 부트캠프 ▾
+              </div>
+            </div>
+            <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+          </div>
+          <div class="body">
+            <div class="nav">
+              <div class="item"><span class="ic">▦</span>대시보드</div>
+              <div class="item"><span class="ic">◔</span>기수 구성</div>
+              <div class="item"><span class="ic">▧</span>교안</div>
+              <div class="item"><span class="ic">▤</span>프로젝트</div>
+              <div class="item on"><span class="ic">◷</span>측정 계획</div>
+              <div class="item"><span class="ic">△</span>위험 · 분석</div>
+              <div class="item"><span class="ic">◎</span>교육생</div>
+              <div class="item"><span class="ic">✎</span>개입</div>
+              <div class="item"><span class="ic">▥</span>리포트</div>
+            </div>
+            <div class="content">
+              <div class="phead">
+                <div>
+                  <div class="crumb">측정 계획 › 7기</div>
+                  <h2>측정 계획</h2>
+                </div>
+              </div>
+              <div class="tabs">
+                <span class="t">체크포인트</span
+                ><span class="t on">추출 범위</span
+                ><span class="t">검증 포커스</span
+                ><span class="t">응시 현황</span>
+              </div>
+
+              <div class="block">
+                <div class="bhead">
+                  <h3>
+                    추출 범위
+                    <span
+                      style="
+                        color: var(--c-text-3);
+                        font-weight: 400;
+                        font-size: 13px;
+                      "
+                      >· 프로젝트별</span
+                    >
+                  </h3>
+                </div>
+                <div class="card">
+                  <table class="tbl">
+                    <thead>
+                      <tr>
+                        <th>프로젝트</th>
+                        <th>유형</th>
+                        <th>추출 범위</th>
+                        <th>기여분석</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="nm">CLI 과제</td>
+                        <td>개인</td>
+                        <td>
+                          <span class="toggle"
+                            ><span class="on">전체코드</span
+                            ><span>본인커밋기여분</span></span
+                          >
+                          <span class="badge info" style="margin-left: 6px"
+                            >권장 기본</span
+                          >
+                        </td>
+                        <td>—</td>
+                      </tr>
+                      <tr>
+                        <td class="nm">API 서버</td>
+                        <td>팀</td>
+                        <td>
+                          <span class="toggle"
+                            ><span>전체코드</span
+                            ><span class="on">본인커밋기여분</span></span
+                          >
+                        </td>
+                        <td><span class="badge ok">가용</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div
+                  style="
+                    font-size: 12px;
+                    color: var(--c-text-3);
+                    margin-top: 8px;
+                  ">
+                  · 개인 프로젝트는 전체코드 권장 기본. 본인커밋기여분은 AUTH-07
+                  검증 이메일 있을 때만. → MEAS-02A/02B 라우팅.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 검증 포커스 (별도 탭) ===== -->
+      <div class="sec-label">탭 · 검증 포커스 (PLAN-03) — 교육생 비공개</div>
+      <div class="viewport">
+        <div class="chrome">
+          <span class="tl"><i></i><i></i><i></i></span
+          ><span class="url">iz-get.com/cohorts/7/plan/focus</span>
+        </div>
+        <div class="app">
+          <div class="topbar">
+            <div class="left">
+              <div class="brand"><span class="mk">◆</span>IZ-Get</div>
+              <div class="cohortsel">
+                <span class="k">기수</span> 7기 · 그린 부트캠프 ▾
+              </div>
+            </div>
+            <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+          </div>
+          <div class="body">
+            <div class="nav">
+              <div class="item"><span class="ic">▦</span>대시보드</div>
+              <div class="item"><span class="ic">◔</span>기수 구성</div>
+              <div class="item"><span class="ic">▧</span>교안</div>
+              <div class="item"><span class="ic">▤</span>프로젝트</div>
+              <div class="item on"><span class="ic">◷</span>측정 계획</div>
+              <div class="item"><span class="ic">△</span>위험 · 분석</div>
+              <div class="item"><span class="ic">◎</span>교육생</div>
+              <div class="item"><span class="ic">✎</span>개입</div>
+              <div class="item"><span class="ic">▥</span>리포트</div>
+            </div>
+            <div class="content">
+              <div class="phead">
+                <div>
+                  <div class="crumb">측정 계획 › 7기</div>
+                  <h2>측정 계획</h2>
+                </div>
+              </div>
+              <div class="tabs">
+                <span class="t">체크포인트</span><span class="t">추출 범위</span
+                ><span class="t on">검증 포커스</span
+                ><span class="t">응시 현황</span>
+              </div>
+              <div class="bhead" style="margin-bottom: 12px">
+                <h3>
+                  검증 포커스 <span class="badge priv">🔒 교육생 비공개</span>
+                </h3>
+                <span class="sel"><span class="k">회차</span> 2회차 ▾</span>
+              </div>
+              <div class="card" style="padding: 16px">
+                <div class="chips">
+                  <span class="fchip">인증 · 보안</span>
+                  <span class="fchip">API 구조</span>
+                  <span class="fchip">에러 처리</span>
+                  <span class="fchip add">+ 포커스 추가</span>
+                </div>
+                <div
+                  style="
+                    font-size: 12px;
+                    color: var(--c-warning);
+                    margin-top: 12px;
+                  ">
+                  🔒 이 설정은 <b>교육생 화면·API 응답에서 제외</b>됩니다(A4).
+                  미리 알면 게이밍 → 노출 탐지 시 차단. DP 후보 랭킹 가중치로만
+                  사용.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== 응시 현황 ===== -->
+      <div class="sec-label">탭 · 응시 현황 (PLAN-04) — 미응시 벌크 독촉</div>
+      <div class="viewport">
+        <div class="chrome">
+          <span class="tl"><i></i><i></i><i></i></span
+          ><span class="url">iz-get.com/cohorts/7/plan/attendance</span>
+        </div>
+        <div class="app">
+          <div class="topbar">
+            <div class="left">
+              <div class="brand"><span class="mk">◆</span>IZ-Get</div>
+              <div class="cohortsel">
+                <span class="k">기수</span> 7기 · 그린 부트캠프 ▾
+              </div>
+            </div>
+            <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+          </div>
+          <div class="body">
+            <div class="nav">
+              <div class="item"><span class="ic">▦</span>대시보드</div>
+              <div class="item"><span class="ic">◔</span>기수 구성</div>
+              <div class="item"><span class="ic">▧</span>교안</div>
+              <div class="item"><span class="ic">▤</span>프로젝트</div>
+              <div class="item on"><span class="ic">◷</span>측정 계획</div>
+              <div class="item"><span class="ic">△</span>위험 · 분석</div>
+              <div class="item"><span class="ic">◎</span>교육생</div>
+              <div class="item"><span class="ic">✎</span>개입</div>
+              <div class="item"><span class="ic">▥</span>리포트</div>
+            </div>
+            <div class="content">
+              <div class="phead">
+                <div>
+                  <div class="crumb">측정 계획 › 7기</div>
+                  <h2>측정 계획</h2>
+                </div>
+              </div>
+              <div class="tabs">
+                <span class="t">체크포인트</span><span class="t">추출 범위</span
+                ><span class="t">검증 포커스</span
+                ><span class="t on">응시 현황</span>
+              </div>
+              <div class="selrow">
+                <span class="sel"
+                  ><span class="k">회차</span> 2회차 (진행 중) ▾</span
+                ><span class="sel"><span class="k">반</span> 전체 ▾</span
+                ><span class="sel"><span class="k">상태</span> 미응시만 ▾</span>
+                <span
+                  style="
+                    margin-left: auto;
+                    color: var(--c-text-3);
+                    font-size: 12px;
+                  "
+                  >응시 34 / 48 · 미응시 14</span
+                >
+              </div>
+              <div class="bulkbar">
+                <span class="n">2명 선택됨</span
+                ><span class="ba">독촉 발송</span
+                ><span class="clear">선택 해제</span>
+              </div>
+              <div class="card">
+                <table class="tbl">
+                  <thead>
+                    <tr>
+                      <th class="chk"><span class="cbx"></span></th>
+                      <th>학생</th>
+                      <th>반</th>
+                      <th>제출</th>
+                      <th>세션</th>
+                      <th>완료</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="chk"><span class="cbx on"></span></td>
+                      <td class="nm">한도현</td>
+                      <td>A반</td>
+                      <td><span class="badge off">미제출</span></td>
+                      <td><span class="badge off">-</span></td>
+                      <td><span class="badge off">미완료</span></td>
+                    </tr>
+                    <tr>
+                      <td class="chk"><span class="cbx on"></span></td>
+                      <td class="nm">오세훈</td>
+                      <td>C반</td>
+                      <td><span class="badge ok">제출</span></td>
+                      <td><span class="badge warn">진행</span></td>
+                      <td><span class="badge off">미완료</span></td>
+                    </tr>
+                    <tr>
+                      <td class="chk"><span class="cbx"></span></td>
+                      <td class="nm">강민준</td>
+                      <td>A반</td>
+                      <td><span class="badge ok">제출</span></td>
+                      <td><span class="badge ok">완료</span></td>
+                      <td><span class="badge ok">완료</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div
+                style="
+                  font-size: 12px;
+                  color: var(--c-text-3);
+                  margin-top: 8px;
+                ">
+                · 미응시 선택 → 일괄 독촉(AUTH-10). <b>중복 독촉 제한</b>·이미
+                완료자 제외. 응시 집계는 대시보드(DASH-01) 입력.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== STATE MAPPING ===== -->
+      <div class="notes">
+        <h3>상태 ↔ 명세 case 매핑 (PLAN-01 8 + 02 7 + 03 7 + 04 8 = 30)</h3>
+        <p class="hint">비주얼은 정상 탭만. 예외는 이 표가 계약.</p>
+        <div class="grp">체크포인트 (PLAN-01)</div>
+        <div class="tblwrap">
+          <table class="ntbl">
+            <tbody>
+              <tr>
+                <td>K-1</td>
+                <td>존재않는 기수</td>
+                <td><span class="pill danger">danger</span></td>
+                <td>일정 생성 차단</td>
+              </tr>
+              <tr>
+                <td>K-2</td>
+                <td>회차 번호 중복</td>
+                <td><span class="pill danger">danger</span></td>
+                <td>중복 회차 차단</td>
+              </tr>
+              <tr>
+                <td>K-3</td>
+                <td>시작&gt;마감</td>
+                <td><span class="pill danger">danger</span></td>
+                <td>해당 회차 저장 차단</td>
+              </tr>
+              <tr>
+                <td>K-4</td>
+                <td>이전 회차 역순</td>
+                <td><span class="pill danger">danger</span></td>
+                <td>전체 확정 차단·충돌 안내</td>
+              </tr>
+              <tr>
+                <td>K-5</td>
+                <td>동일 시간대 중복</td>
+                <td><span class="pill warning">warning</span></td>
+                <td>충돌 경고</td>
+              </tr>
+              <tr>
+                <td>K-6</td>
+                <td>최종 회차 2건+</td>
+                <td><span class="pill danger">danger</span></td>
+                <td>단일 최종 선택 요청</td>
+              </tr>
+              <tr>
+                <td>K-7</td>
+                <td>최종 회차 미지정</td>
+                <td><span class="pill warning">warning</span></td>
+                <td>마지막 회차 자동 후보</td>
+              </tr>
+              <tr>
+                <td>K-8</td>
+                <td>일부 저장 실패(롤백)</td>
+                <td><span class="pill danger">danger</span></td>
+                <td>전체 롤백/재저장</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="grp">추출 범위 (PLAN-02)</div>
+        <div class="tblwrap">
+          <table class="ntbl">
+            <tbody>
+              <tr>
+                <td>S-1</td>
+                <td>존재않는 프로젝트</td>
+                <td><span class="pill danger">danger</span></td>
+                <td>저장 차단</td>
+              </tr>
+              <tr>
+                <td>S-2</td>
+                <td>허용안된 scope</td>
+                <td><span class="pill danger">danger</span></td>
+                <td>두 값만 허용</td>
+              </tr>
+              <tr>
+                <td>S-3</td>
+                <td>기여분+커밋이메일 부재</td>
+                <td><span class="pill warning">warning</span></td>
+                <td>보류·AUTH-07 등록 요청</td>
+              </tr>
+              <tr>
+                <td>S-4</td>
+                <td>git history 미확보</td>
+                <td><span class="pill warning">warning</span></td>
+                <td>전체코드 폴백 안내</td>
+              </tr>
+              <tr>
+                <td>S-5</td>
+                <td>개인 프로젝트 기여분 선택</td>
+                <td><span class="pill info">info</span></td>
+                <td>허용·전체코드 권장</td>
+              </tr>
+              <tr>
+                <td>S-6</td>
+                <td>저장 실패</td>
+                <td><span class="pill info">-</span></td>
+                <td>기존 scope 유지</td>
+              </tr>
+              <tr>
+                <td>S-7</td>
+                <td>분석 중 범위 변경</td>
+                <td><span class="pill info">info</span></td>
+                <td>다음 재분석부터</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="grp">검증 포커스 (PLAN-03)</div>
+        <div class="tblwrap">
+          <table class="ntbl">
+            <tbody>
+              <tr>
+                <td>F-1</td>
+                <td>존재않는 회차</td>
+                <td><span class="pill danger">danger</span></td>
+                <td>저장 차단</td>
+              </tr>
+              <tr>
+                <td>F-2</td>
+                <td>빈 포커스</td>
+                <td><span class="pill info">-</span></td>
+                <td>기본 가중치 유지</td>
+              </tr>
+              <tr>
+                <td>F-3</td>
+                <td>허용안된 값</td>
+                <td><span class="pill danger">danger</span></td>
+                <td>저장 차단/검토</td>
+              </tr>
+              <tr>
+                <td>F-4</td>
+                <td>중복 영역</td>
+                <td><span class="pill info">-</span></td>
+                <td>중복 제거</td>
+              </tr>
+              <tr>
+                <td>F-5</td>
+                <td>교육생 응답 노출 탐지</td>
+                <td><span class="pill danger">danger</span></td>
+                <td>응답 차단·비노출 재적용</td>
+              </tr>
+              <tr>
+                <td>F-6</td>
+                <td>MEAS-02B 연계 실패</td>
+                <td><span class="pill warning">warning</span></td>
+                <td>설정 유지·가중치 재시도</td>
+              </tr>
+              <tr>
+                <td>F-7</td>
+                <td>분석 중 변경</td>
+                <td><span class="pill info">info</span></td>
+                <td>다음 버전부터</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="grp">응시 현황 (PLAN-04)</div>
+        <div class="tblwrap">
+          <table class="ntbl">
+            <tbody>
+              <tr>
+                <td>A-1</td>
+                <td>진행중 아닌 회차</td>
+                <td><span class="pill danger">danger</span></td>
+                <td>독촉 발송 차단</td>
+              </tr>
+              <tr>
+                <td>A-2</td>
+                <td>미응시 없음</td>
+                <td><span class="pill info">-</span></td>
+                <td>"전원 응시" 표시</td>
+              </tr>
+              <tr>
+                <td>A-3</td>
+                <td>중복 독촉</td>
+                <td><span class="pill info">info</span></td>
+                <td>신규 발송 억제</td>
+              </tr>
+              <tr>
+                <td>A-4</td>
+                <td>연락 채널 부재</td>
+                <td><span class="pill warning">warning</span></td>
+                <td>대상 제외·미전달 기록</td>
+              </tr>
+              <tr>
+                <td>A-5</td>
+                <td>AUTH-10 발송 실패</td>
+                <td><span class="pill warning">warning</span></td>
+                <td>재시도 큐</td>
+              </tr>
+              <tr>
+                <td>A-6</td>
+                <td>일부 발송 실패</td>
+                <td><span class="pill warning">warning</span></td>
+                <td>성공 유지·실패만 재시도</td>
+              </tr>
+              <tr>
+                <td>A-7</td>
+                <td>이미 완료자 포함</td>
+                <td><span class="pill info">info</span></td>
+                <td>재조회 후 독촉 제외</td>
+              </tr>
+              <tr>
+                <td>A-8</td>
+                <td>상태 조회 실패</td>
+                <td><span class="pill warning">warning</span></td>
+                <td>독촉 보류·재집계</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="foot">
+          디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 신규:
+          FinalBadge·ScopeToggle·ChipInput·PrivateBadge · 검증 포커스 교육생
+          비노출(A4) · 웹 기준
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

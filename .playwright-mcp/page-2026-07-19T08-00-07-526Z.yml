@@ -1,0 +1,607 @@
+- generic [ref=f3e2]:
+  - generic [ref=f3e3]:
+    - generic [ref=f3e4]: SC-T02 · P0 · 교육생 · 웹
+    - heading "코드 제출 — 상태별 전량" [level=1] [ref=f3e5]
+    - paragraph [ref=f3e6]: "흐름: 커밋 이메일 검증(AUTH-07) → 코드 제출(MEAS-01) → 분석 대기(MEAS-02A/02B) → 세션(T04). 커밋 이메일은 귀속의 전제(미검증도 제출은 되나 경고, A8). 레포는 팀/학생 단위로 연결(D18) — 팀 프로젝트는 연결된 팀 레포를 쓰고 개인은 본인이 입력. 추출된 질문 내용은 세션 전까지 비노출(A4·A5). 재응시 없음."
+  - generic [ref=f3e7]: S1 · 정상 — 커밋 검증됨(접힘) · 팀 프로젝트(레포 연결됨) 가장 흔한 경로 · 제출만 하면 됨
+  - generic [ref=f3e8]:
+    - generic [ref=f3e9]: iz-get.com/checkpoints/2/submit
+    - generic [ref=f3e15]:
+      - generic [ref=f3e16]:
+        - generic [ref=f3e17]:
+          - generic [ref=f3e18]:
+            - generic [ref=f3e19]: ◆
+            - text: IZ-Get
+          - generic [ref=f3e20]:
+            - generic [ref=f3e21]: 홈
+            - generic [ref=f3e22]: 내 리포트
+        - generic [ref=f3e23]:
+          - generic [ref=f3e24]:
+            - text: 김민준
+            - generic [ref=f3e25]: 7기 · A반
+          - generic [ref=f3e26]: 민
+      - generic [ref=f3e27]:
+        - generic [ref=f3e28] [cursor=pointer]: ← 홈
+        - generic [ref=f3e29]: 코드 제출
+        - generic [ref=f3e30]: 이번 회차 코드를 제출하면 분석이 시작돼요.
+        - generic [ref=f3e31]:
+          - generic [ref=f3e32]:
+            - generic [ref=f3e33]: 회차
+            - generic [ref=f3e34]: 2회차
+          - generic [ref=f3e35]:
+            - generic [ref=f3e36]: 프로젝트
+            - generic [ref=f3e37]:
+              - text: API 서버
+              - generic [ref=f3e38]: 팀 · A조
+          - generic [ref=f3e39]:
+            - generic [ref=f3e40]: 추출 범위
+            - generic [ref=f3e41]: 본인 커밋 기여분
+          - generic [ref=f3e42]:
+            - generic [ref=f3e43]: 응시 마감
+            - generic [ref=f3e44]: D-1 · 04.11 18:00
+        - generic [ref=f3e45]:
+          - generic [ref=f3e46]: ✓ 커밋 이메일 검증됨
+          - generic [ref=f3e47]: minjun.dev@gmail.com
+          - generic [ref=f3e48] [cursor=pointer]: 변경
+        - generic [ref=f3e49]:
+          - generic [ref=f3e50]:
+            - generic [ref=f3e51]: "1"
+            - text: 제출할 코드
+          - generic [ref=f3e52]:
+            - generic [ref=f3e53]:
+              - text: 팀 저장소
+              - generic [ref=f3e54]: 팀에 연결됨
+            - generic [ref=f3e55]:
+              - generic [ref=f3e56]: github.com/izget-7th/team-a-api
+              - generic [ref=f3e57]: 🔗 연결됨
+          - generic [ref=f3e58]: 팀 프로젝트는 팀에 연결된 저장소를 사용해요. 저장소를 바꾸려면 매니저에게 요청하세요. 제출 시점의 최신 커밋이 이번 회차 스냅샷으로 저장됩니다.
+          - generic [ref=f3e59]:
+            - generic [ref=f3e60]: 브랜치 (선택)
+            - generic [ref=f3e61]: 비우면 기본 브랜치(main)
+          - button "제출하기" [ref=f3e62] [cursor=pointer]
+          - generic [ref=f3e63]: 제출 후 기여 분석과 검증 질문 준비가 진행돼요. 준비되면 세션을 시작할 수 있어요.
+  - generic [ref=f3e64]: S2 · 커밋 이메일 미검증(E-6) · 개인 프로젝트(본인 저장소 입력) 검증 단계 펼침 · 미검증도 제출은 허용(A8)
+  - generic [ref=f3e65]:
+    - generic [ref=f3e66]: iz-get.com/checkpoints/2/submit
+    - generic [ref=f3e72]:
+      - generic [ref=f3e73]:
+        - generic [ref=f3e74]:
+          - generic [ref=f3e75]:
+            - generic [ref=f3e76]: ◆
+            - text: IZ-Get
+          - generic [ref=f3e77]:
+            - generic [ref=f3e78]: 홈
+            - generic [ref=f3e79]: 내 리포트
+        - generic [ref=f3e80]:
+          - generic [ref=f3e81]:
+            - text: 김민준
+            - generic [ref=f3e82]: 7기 · A반
+          - generic [ref=f3e83]: 민
+      - generic [ref=f3e84]:
+        - generic [ref=f3e85] [cursor=pointer]: ← 홈
+        - generic [ref=f3e86]: 코드 제출
+        - generic [ref=f3e87]: 먼저 커밋 이메일을 인증하면 기여 분석이 정확해져요.
+        - generic [ref=f3e88]:
+          - generic [ref=f3e89]:
+            - generic [ref=f3e90]: 회차
+            - generic [ref=f3e91]: 2회차
+          - generic [ref=f3e92]:
+            - generic [ref=f3e93]: 프로젝트
+            - generic [ref=f3e94]:
+              - text: 자료구조
+              - generic [ref=f3e95]: 개인
+          - generic [ref=f3e96]:
+            - generic [ref=f3e97]: 추출 범위
+            - generic [ref=f3e98]: 본인 커밋 기여분
+          - generic [ref=f3e99]:
+            - generic [ref=f3e100]: 응시 마감
+            - generic [ref=f3e101]: D-4 · 04.14 18:00
+        - generic [ref=f3e102]:
+          - generic [ref=f3e103]:
+            - generic [ref=f3e104]: "1"
+            - text: GitHub 커밋 이메일
+            - generic [ref=f3e105]: 미검증
+          - generic [ref=f3e106]:
+            - generic [ref=f3e107]: ⚠️
+            - generic [ref=f3e108]: 인증하지 않아도 제출은 되지만, 내 기여로 인식되지 않을 수 있어요. 커밋에 쓰는 이메일과 계정을 연결해 주세요.
+          - generic [ref=f3e109]:
+            - generic [ref=f3e110]: 커밋 이메일
+            - generic [ref=f3e111]: minjun.dev@gmail.com
+          - generic [ref=f3e112]:
+            - button "GitHub로 인증" [ref=f3e113] [cursor=pointer]
+            - button "매니저 승인 요청" [ref=f3e114] [cursor=pointer]
+          - generic [ref=f3e115]: GitHub 인증이 안 되면 매니저가 직접 확인해 줄 수 있어요(승인 전까지 미검증 유지).
+        - generic [ref=f3e116]:
+          - generic [ref=f3e117]:
+            - generic [ref=f3e118]: "2"
+            - text: 제출할 코드
+          - generic [ref=f3e119]:
+            - generic [ref=f3e120] [cursor=pointer]: GitHub 저장소
+            - generic [ref=f3e121] [cursor=pointer]: ZIP 업로드
+          - generic [ref=f3e122]:
+            - generic [ref=f3e123]: 저장소 주소
+            - generic [ref=f3e124]: https://github.com/사용자명/저장소
+          - generic [ref=f3e125]: 개인 프로젝트는 본인 저장소를 입력해요. 비공개 저장소면 접근 권한을 확인하거나 ZIP으로 제출하세요.
+          - button "제출하기" [ref=f3e126] [cursor=pointer]
+  - generic [ref=f3e127]: S3 · ZIP 업로드 방식 git log 필수(귀속 분석용) · OS별 명령 안내 · MEAS-01
+  - generic [ref=f3e128]:
+    - generic [ref=f3e129]: iz-get.com/checkpoints/2/submit
+    - generic [ref=f3e135]:
+      - generic [ref=f3e136]:
+        - generic [ref=f3e137]:
+          - generic [ref=f3e138]:
+            - generic [ref=f3e139]: ◆
+            - text: IZ-Get
+          - generic [ref=f3e140]:
+            - generic [ref=f3e141]: 홈
+            - generic [ref=f3e142]: 내 리포트
+        - generic [ref=f3e143]:
+          - generic [ref=f3e144]:
+            - text: 김민준
+            - generic [ref=f3e145]: 7기 · A반
+          - generic [ref=f3e146]: 민
+      - generic [ref=f3e147]:
+        - generic [ref=f3e148] [cursor=pointer]: ← 홈
+        - generic [ref=f3e149]: 코드 제출
+        - generic [ref=f3e150]: 저장소 접근이 어려우면 ZIP으로 제출할 수 있어요.
+        - generic [ref=f3e151]:
+          - generic [ref=f3e152]:
+            - generic [ref=f3e153]: 회차
+            - generic [ref=f3e154]: 2회차
+          - generic [ref=f3e155]:
+            - generic [ref=f3e156]: 프로젝트
+            - generic [ref=f3e157]:
+              - text: 자료구조
+              - generic [ref=f3e158]: 개인
+          - generic [ref=f3e159]:
+            - generic [ref=f3e160]: 응시 마감
+            - generic [ref=f3e161]: D-4 · 04.14 18:00
+        - generic [ref=f3e162]:
+          - generic [ref=f3e163]: ✓ 커밋 이메일 검증됨
+          - generic [ref=f3e164]: minjun.dev@gmail.com
+          - generic [ref=f3e165] [cursor=pointer]: 변경
+        - generic [ref=f3e166]:
+          - generic [ref=f3e167]:
+            - generic [ref=f3e168]: "1"
+            - text: 제출할 코드
+          - generic [ref=f3e169]:
+            - generic [ref=f3e170] [cursor=pointer]: GitHub 저장소
+            - generic [ref=f3e171] [cursor=pointer]: ZIP 업로드
+          - generic [ref=f3e172]: 여기로 .zip 파일을 끌어놓거나 클릭해서 선택
+          - generic [ref=f3e173]: git log 파일도 함께 올려주세요. 누가 어떤 코드를 썼는지 확인하는 데 필요해요. 아래 명령을 프로젝트 폴더에서 실행하면 파일이 만들어져요.
+          - generic [ref=f3e174]:
+            - generic [ref=f3e175]: git log --all --pretty=fuller > gitlog.txt
+            - generic [ref=f3e176] [cursor=pointer]: 복사
+          - generic [ref=f3e177]: Windows(PowerShell)·macOS·Linux 명령이 각각 안내됩니다.
+          - button "제출하기" [ref=f3e178] [cursor=pointer]
+  - generic [ref=f3e179]: S4 · 제출 완료 · 분석 진행 중 백그라운드 · 단계별 상태 · 추출 내용 비노출
+  - generic [ref=f3e180]:
+    - generic [ref=f3e181]: iz-get.com/submissions/8412
+    - generic [ref=f3e187]:
+      - generic [ref=f3e188]:
+        - generic [ref=f3e189]:
+          - generic [ref=f3e190]:
+            - generic [ref=f3e191]: ◆
+            - text: IZ-Get
+          - generic [ref=f3e192]:
+            - generic [ref=f3e193]: 홈
+            - generic [ref=f3e194]: 내 리포트
+        - generic [ref=f3e195]:
+          - generic [ref=f3e196]:
+            - text: 김민준
+            - generic [ref=f3e197]: 7기 · A반
+          - generic [ref=f3e198]: 민
+      - generic [ref=f3e199]:
+        - generic [ref=f3e200] [cursor=pointer]: ← 홈
+        - generic [ref=f3e201]: 제출 완료 · 분석 중
+        - generic [ref=f3e202]: 코드를 분석하고 검증 질문을 준비하고 있어요.
+        - generic [ref=f3e203]:
+          - generic [ref=f3e204]:
+            - generic [ref=f3e205]: 회차
+            - generic [ref=f3e206]: 2회차
+          - generic [ref=f3e207]:
+            - generic [ref=f3e208]: 제출
+            - generic [ref=f3e209]: 04.11 09:14
+          - generic [ref=f3e210]:
+            - generic [ref=f3e211]: 커밋 이메일
+            - generic [ref=f3e212]: 검증됨
+        - generic [ref=f3e213]:
+          - generic [ref=f3e214]: ✓ 제출됨
+          - generic [ref=f3e216]: github.com/izget-7th/team-a-api · main · a4f9c21 · 04.11 09:14
+        - generic [ref=f3e217]:
+          - generic [ref=f3e218]:
+            - generic [ref=f3e219]: ✓
+            - text: 분석 진행
+          - generic [ref=f3e220]:
+            - generic [ref=f3e221]:
+              - generic [ref=f3e222]: ✓
+              - generic [ref=f3e223]:
+                - text: 코드 가져오기 · 스냅샷 저장
+                - generic [ref=f3e224]: 완료 · 파일 48개
+            - generic [ref=f3e225]:
+              - generic [ref=f3e226]: ✓
+              - generic [ref=f3e227]:
+                - text: 기여 분석 (내 커밋 확인)
+                - generic [ref=f3e228]: 완료 · 본인 커밋 23건
+            - generic [ref=f3e229]:
+              - generic [ref=f3e230]: ◔
+              - generic [ref=f3e231]:
+                - text: 검증 질문 준비
+                - generic [ref=f3e232]: 진행 중… 보통 1~2분 걸려요
+            - generic [ref=f3e233]:
+              - generic [ref=f3e234]: •
+              - generic [ref=f3e235]:
+                - text: 세션 준비
+                - generic [ref=f3e236]: 대기
+          - button "준비 중 · 곧 시작할 수 있어요" [ref=f3e237]
+          - generic [ref=f3e239]: 준비된 질문은 세션을 시작해야 볼 수 있어요. 이 화면을 닫아도 분석은 계속되고, 홈에서 다시 들어올 수 있어요.
+  - generic [ref=f3e240]: S5 · 분석 완료(DP_READY) · 세션 시작 가능 T04 인계 지점 · 세션 톤 선제 완화(D100~103)
+  - generic [ref=f3e241]:
+    - generic [ref=f3e242]: iz-get.com/submissions/8412
+    - generic [ref=f3e248]:
+      - generic [ref=f3e249]:
+        - generic [ref=f3e250]:
+          - generic [ref=f3e251]:
+            - generic [ref=f3e252]: ◆
+            - text: IZ-Get
+          - generic [ref=f3e253]:
+            - generic [ref=f3e254]: 홈
+            - generic [ref=f3e255]: 내 리포트
+        - generic [ref=f3e256]:
+          - generic [ref=f3e257]:
+            - text: 김민준
+            - generic [ref=f3e258]: 7기 · A반
+          - generic [ref=f3e259]: 민
+      - generic [ref=f3e260]:
+        - generic [ref=f3e261] [cursor=pointer]: ← 홈
+        - generic [ref=f3e262]: 검증 세션 준비 완료
+        - generic [ref=f3e263]: 이제 검증 세션을 시작할 수 있어요.
+        - generic [ref=f3e264]:
+          - generic [ref=f3e265]:
+            - generic [ref=f3e266]: 회차
+            - generic [ref=f3e267]: 2회차
+          - generic [ref=f3e268]:
+            - generic [ref=f3e269]: 제출
+            - generic [ref=f3e270]: 04.11 09:14
+          - generic [ref=f3e271]:
+            - generic [ref=f3e272]: 응시 마감
+            - generic [ref=f3e273]: D-1 · 04.11 18:00
+        - generic [ref=f3e274]:
+          - generic [ref=f3e275]:
+            - generic [ref=f3e276]: ✓
+            - text: 준비 완료
+          - generic [ref=f3e277]:
+            - generic [ref=f3e278]:
+              - generic [ref=f3e279]: ✓
+              - generic [ref=f3e280]:
+                - text: 코드 가져오기 · 스냅샷 저장
+                - generic [ref=f3e281]: 완료 · 파일 48개
+            - generic [ref=f3e282]:
+              - generic [ref=f3e283]: ✓
+              - generic [ref=f3e284]:
+                - text: 기여 분석 (내 커밋 확인)
+                - generic [ref=f3e285]: 완료 · 본인 커밋 23건
+            - generic [ref=f3e286]:
+              - generic [ref=f3e287]: ✓
+              - generic [ref=f3e288]:
+                - text: 검증 질문 준비
+                - generic [ref=f3e289]: 완료
+            - generic [ref=f3e290]:
+              - generic [ref=f3e291]: ✓
+              - generic [ref=f3e292]:
+                - text: 세션 준비
+                - generic [ref=f3e293]: 완료
+          - generic [ref=f3e294]:
+            - generic [ref=f3e295]: 🔒
+            - generic [ref=f3e296]: 코드를 보며 이해한 내용을 설명하는 시간이에요. 점수는 표시되지 않아요. 약 10~15분 걸리고, 중간에 나가도 이어서 할 수 있어요.
+          - button "검증 세션 시작하기 →" [ref=f3e297] [cursor=pointer]
+          - button "나중에 하기 (홈으로)" [ref=f3e298] [cursor=pointer]
+  - generic [ref=f3e299]: S6 · 기한 내 이미 제출함 → 재제출 현재 제출물 표시 + 교체 · 마감 후엔 재제출 불가(M-1)
+  - generic [ref=f3e300]:
+    - generic [ref=f3e301]: iz-get.com/checkpoints/2/submit
+    - generic [ref=f3e307]:
+      - generic [ref=f3e308]:
+        - generic [ref=f3e309]:
+          - generic [ref=f3e310]:
+            - generic [ref=f3e311]: ◆
+            - text: IZ-Get
+          - generic [ref=f3e312]:
+            - generic [ref=f3e313]: 홈
+            - generic [ref=f3e314]: 내 리포트
+        - generic [ref=f3e315]:
+          - generic [ref=f3e316]:
+            - text: 김민준
+            - generic [ref=f3e317]: 7기 · A반
+          - generic [ref=f3e318]: 민
+      - generic [ref=f3e319]:
+        - generic [ref=f3e320] [cursor=pointer]: ← 홈
+        - generic [ref=f3e321]: 코드 제출
+        - generic [ref=f3e322]: 이미 제출했어요. 마감 전까지는 새 커밋으로 다시 제출할 수 있어요.
+        - generic [ref=f3e323]:
+          - generic [ref=f3e324]:
+            - generic [ref=f3e325]: 회차
+            - generic [ref=f3e326]: 2회차
+          - generic [ref=f3e327]:
+            - generic [ref=f3e328]: 프로젝트
+            - generic [ref=f3e329]:
+              - text: API 서버
+              - generic [ref=f3e330]: 팀 · A조
+          - generic [ref=f3e331]:
+            - generic [ref=f3e332]: 응시 마감
+            - generic [ref=f3e333]: D-1 · 04.11 18:00
+        - generic [ref=f3e334]:
+          - generic [ref=f3e335]: ✓ 현재 제출물
+          - generic [ref=f3e337]: github.com/izget-7th/team-a-api · main · a4f9c21 · 04.11 09:14
+        - generic [ref=f3e338]:
+          - generic [ref=f3e339]:
+            - generic [ref=f3e340]: ↻
+            - text: 다시 제출
+          - generic [ref=f3e341]:
+            - generic [ref=f3e342]: ℹ️
+            - generic [ref=f3e343]: 다시 제출하면 최신 커밋으로 스냅샷이 교체되고 분석도 다시 시작돼요. 이전 제출물은 기록에 남습니다.
+          - button "최신 커밋으로 다시 제출" [ref=f3e344] [cursor=pointer]
+  - generic [ref=f3e345]: S7 · 오류 — 저장소 접근 불가(M-3) + URL 형식 오류(M-2) 복구 경로 제시(ZIP 전환)
+  - generic [ref=f3e346]:
+    - generic [ref=f3e347]: iz-get.com/checkpoints/2/submit
+    - generic [ref=f3e353]:
+      - generic [ref=f3e354]:
+        - generic [ref=f3e355]:
+          - generic [ref=f3e356]:
+            - generic [ref=f3e357]: ◆
+            - text: IZ-Get
+          - generic [ref=f3e358]:
+            - generic [ref=f3e359]: 홈
+            - generic [ref=f3e360]: 내 리포트
+        - generic [ref=f3e361]:
+          - generic [ref=f3e362]:
+            - text: 김민준
+            - generic [ref=f3e363]: 7기 · A반
+          - generic [ref=f3e364]: 민
+      - generic [ref=f3e365]:
+        - generic [ref=f3e366] [cursor=pointer]: ← 홈
+        - generic [ref=f3e367]: 코드 제출
+        - generic [ref=f3e368]:
+          - generic [ref=f3e369]:
+            - generic [ref=f3e370]: 회차
+            - generic [ref=f3e371]: 2회차
+          - generic [ref=f3e372]:
+            - generic [ref=f3e373]: 프로젝트
+            - generic [ref=f3e374]:
+              - text: 자료구조
+              - generic [ref=f3e375]: 개인
+          - generic [ref=f3e376]:
+            - generic [ref=f3e377]: 응시 마감
+            - generic [ref=f3e378]: D-4 · 04.14 18:00
+        - generic [ref=f3e379]:
+          - generic [ref=f3e380]:
+            - generic [ref=f3e381]: "1"
+            - text: 제출할 코드
+          - generic [ref=f3e382]:
+            - generic [ref=f3e383] [cursor=pointer]: GitHub 저장소
+            - generic [ref=f3e384] [cursor=pointer]: ZIP 업로드
+          - generic [ref=f3e385]:
+            - generic [ref=f3e386]: ⛔
+            - generic [ref=f3e387]: 저장소에 접근할 수 없어요. 비공개 저장소이거나 주소가 잘못됐을 수 있어요. 공개로 바꾸거나 ZIP으로 제출해 주세요.
+          - generic [ref=f3e388]:
+            - generic [ref=f3e389]: 저장소 주소
+            - generic [ref=f3e390]: github.com/minjun/ds-proj
+            - generic [ref=f3e391]: "전체 주소를 입력해 주세요 (예: https://github.com/사용자명/저장소)"
+          - generic [ref=f3e392]:
+            - button "ZIP으로 제출하기" [ref=f3e393] [cursor=pointer]
+            - button "다시 시도" [ref=f3e394] [cursor=pointer]
+          - button "제출하기" [ref=f3e395]
+  - generic [ref=f3e396]: S8 · 분석 실패 — 내 커밋 0건(A-1) 교육생이 스스로 복구 가능한 안내 · 랩의 pstep error 패턴
+  - generic [ref=f3e397]:
+    - generic [ref=f3e398]: iz-get.com/submissions/8412
+    - generic [ref=f3e404]:
+      - generic [ref=f3e405]:
+        - generic [ref=f3e406]:
+          - generic [ref=f3e407]:
+            - generic [ref=f3e408]: ◆
+            - text: IZ-Get
+          - generic [ref=f3e409]:
+            - generic [ref=f3e410]: 홈
+            - generic [ref=f3e411]: 내 리포트
+        - generic [ref=f3e412]:
+          - generic [ref=f3e413]:
+            - text: 김민준
+            - generic [ref=f3e414]: 7기 · A반
+          - generic [ref=f3e415]: 민
+      - generic [ref=f3e416]:
+        - generic [ref=f3e417] [cursor=pointer]: ← 홈
+        - generic [ref=f3e418]: 분석을 계속할 수 없어요
+        - generic [ref=f3e419]: 제출은 저장됐어요. 아래를 확인하면 다시 분석할 수 있어요.
+        - generic [ref=f3e420]:
+          - generic [ref=f3e421]:
+            - generic [ref=f3e422]: 회차
+            - generic [ref=f3e423]: 2회차
+          - generic [ref=f3e424]:
+            - generic [ref=f3e425]: 제출
+            - generic [ref=f3e426]: 04.11 09:14
+          - generic [ref=f3e427]:
+            - generic [ref=f3e428]: 커밋 이메일
+            - generic [ref=f3e429]: 미검증
+        - generic [ref=f3e430]:
+          - generic [ref=f3e431]:
+            - generic [ref=f3e432]: "!"
+            - text: 분석 진행
+          - generic [ref=f3e433]:
+            - generic [ref=f3e434]:
+              - generic [ref=f3e435]: ✓
+              - generic [ref=f3e436]:
+                - text: 코드 가져오기 · 스냅샷 저장
+                - generic [ref=f3e437]: 완료 · 파일 48개
+            - generic [ref=f3e438]:
+              - generic [ref=f3e439]: ✕
+              - generic [ref=f3e440]:
+                - text: 기여 분석 (내 커밋 확인)
+                - generic [ref=f3e441]: 내 이메일로 된 커밋을 찾지 못했어요
+            - generic [ref=f3e442]:
+              - generic [ref=f3e443]: •
+              - generic [ref=f3e444]:
+                - text: 검증 질문 준비
+                - generic [ref=f3e445]: 대기
+            - generic [ref=f3e446]:
+              - generic [ref=f3e447]: •
+              - generic [ref=f3e448]:
+                - text: 세션 준비
+                - generic [ref=f3e449]: 대기
+          - generic [ref=f3e450]:
+            - generic [ref=f3e451]: ⚠️
+            - generic [ref=f3e452]: 커밋에 사용한 이메일이 계정과 다를 수 있어요. 커밋 이메일을 확인·인증하면 다시 분석할 수 있어요. 계속 안 되면 매니저에게 문의해 주세요.
+          - button "커밋 이메일 확인하기" [ref=f3e453] [cursor=pointer]
+          - button "다시 분석 시도" [ref=f3e454] [cursor=pointer]
+  - generic [ref=f3e455]:
+    - heading "상태 ↔ 명세 case 매핑 (MEAS-01 6 + AUTH-07 8 + MEAS-02A/B 6 = 20)" [level=3] [ref=f3e456]
+    - paragraph [ref=f3e457]: 예외는 이 표가 계약. 위 화면은 대표 경로·대표 오류만 렌더(나머지는 같은 패턴의 문구 차이).
+    - generic [ref=f3e458]: 코드 제출 (MEAS-01)
+    - table [ref=f3e460]:
+      - rowgroup [ref=f3e461]:
+        - row [ref=f3e462]:
+          - columnheader "#" [ref=f3e463]
+          - columnheader "상태" [ref=f3e464]
+          - columnheader "표현" [ref=f3e465]
+          - columnheader "다음 행동" [ref=f3e466]
+          - columnheader "화면" [ref=f3e467]
+      - rowgroup [ref=f3e468]:
+        - row [ref=f3e469]:
+          - cell "M-1" [ref=f3e470]
+          - cell "제출 기한 초과" [ref=f3e471]
+          - cell "warning" [ref=f3e472]
+          - cell "지각 허용 시 기록 / 미허용 시 차단" [ref=f3e474]
+          - cell "S6 주석" [ref=f3e475]
+        - row [ref=f3e476]:
+          - cell "M-2" [ref=f3e477]
+          - cell "GitHub URL 형식 오류" [ref=f3e478]
+          - cell "danger" [ref=f3e479]
+          - cell "필드 오류 · 유효 URL 요청" [ref=f3e481]
+          - cell "✔ S7" [ref=f3e482]
+        - row [ref=f3e483]:
+          - cell "M-3" [ref=f3e484]
+          - cell "저장소 접근 불가" [ref=f3e485]
+          - cell "warning" [ref=f3e486]
+          - cell "FETCH_FAILED · ZIP 전환 안내" [ref=f3e488]
+          - cell "✔ S7" [ref=f3e489]
+        - row [ref=f3e490]:
+          - cell "M-4" [ref=f3e491]
+          - cell "ZIP 형식·용량 실패" [ref=f3e492]
+          - cell "danger" [ref=f3e493]
+          - cell "업로드 중단·실패 항목" [ref=f3e495]
+          - cell "S3 패턴" [ref=f3e496]
+        - row [ref=f3e497]:
+          - cell "M-5" [ref=f3e498]
+          - cell "ZIP 해제 실패/금지 항목" [ref=f3e499]
+          - cell "danger" [ref=f3e500]
+          - cell "안전 검증 실패 사유" [ref=f3e502]
+          - cell "S3 패턴" [ref=f3e503]
+        - row [ref=f3e504]:
+          - cell "M-6" [ref=f3e505]
+          - cell "분석 대상 파일 부재" [ref=f3e506]
+          - cell "danger" [ref=f3e507]
+          - cell "유효 파일 재제출" [ref=f3e509]
+          - cell "S8 패턴" [ref=f3e510]
+    - generic [ref=f3e511]: 커밋 이메일 (AUTH-07)
+    - table [ref=f3e513]:
+      - rowgroup [ref=f3e514]:
+        - row [ref=f3e515]:
+          - columnheader "#" [ref=f3e516]
+          - columnheader "상태" [ref=f3e517]
+          - columnheader "표현" [ref=f3e518]
+          - columnheader "다음 행동" [ref=f3e519]
+          - columnheader "화면" [ref=f3e520]
+      - rowgroup [ref=f3e521]:
+        - row [ref=f3e522]:
+          - cell "E-1" [ref=f3e523]
+          - cell "OAuth 실패" [ref=f3e524]
+          - cell "info" [ref=f3e525]
+          - cell "매니저 승인 요청 폴백" [ref=f3e527]
+          - cell "✔ S2" [ref=f3e528]
+        - row [ref=f3e529]:
+          - cell "E-2" [ref=f3e530]
+          - cell "OAuth 미제공 이메일" [ref=f3e531]
+          - cell "info" [ref=f3e532]
+          - cell "매니저 수동 확인" [ref=f3e534]
+          - cell "✔ S2" [ref=f3e535]
+        - row [ref=f3e536]:
+          - cell "E-3" [ref=f3e537]
+          - cell "이메일 형식 오류" [ref=f3e538]
+          - cell "danger" [ref=f3e539]
+          - cell "필드 오류 · 재입력" [ref=f3e541]
+          - cell "S7 패턴" [ref=f3e542]
+        - row [ref=f3e543]:
+          - cell "E-4" [ref=f3e544]
+          - cell "동일 이메일 중복 등록" [ref=f3e545]
+          - cell "warning" [ref=f3e546]
+          - cell "기존 상태 반환" [ref=f3e548]
+          - cell "S2 패턴" [ref=f3e549]
+        - row [ref=f3e550]:
+          - cell "E-5" [ref=f3e551]
+          - cell "타 교육생 검증 이메일" [ref=f3e552]
+          - cell "danger" [ref=f3e553]
+          - cell "자동 검증 차단·매니저 검토" [ref=f3e555]
+          - cell "S2 패턴" [ref=f3e556]
+        - row [ref=f3e557]:
+          - cell "E-6" [ref=f3e558]
+          - cell "미검증 이메일 사용" [ref=f3e559]
+          - cell "warning" [ref=f3e560]
+          - cell "제출 허용 · 귀속 경고 표기(A8)" [ref=f3e562]
+          - cell "✔ S2" [ref=f3e563]
+        - row [ref=f3e564]:
+          - cell "E-7" [ref=f3e565]
+          - cell "매니저 승인 거부" [ref=f3e566]
+          - cell "warning" [ref=f3e567]
+          - cell "verified=false 유지" [ref=f3e569]
+          - cell "S2 패턴" [ref=f3e570]
+        - row [ref=f3e571]:
+          - cell "E-8" [ref=f3e572]
+          - cell "검증 상태 저장 실패" [ref=f3e573]
+          - cell "warning" [ref=f3e574]
+          - cell "재시도" [ref=f3e576]
+          - cell "S2 패턴" [ref=f3e577]
+    - generic [ref=f3e578]: 분석 (MEAS-02A/02B · 백그라운드)
+    - table [ref=f3e580]:
+      - rowgroup [ref=f3e581]:
+        - row [ref=f3e582]:
+          - columnheader "#" [ref=f3e583]
+          - columnheader "상태" [ref=f3e584]
+          - columnheader "표현" [ref=f3e585]
+          - columnheader "다음 행동" [ref=f3e586]
+          - columnheader "화면" [ref=f3e587]
+      - rowgroup [ref=f3e588]:
+        - row [ref=f3e589]:
+          - cell "A-1" [ref=f3e590]
+          - cell "귀속 커밋 0건" [ref=f3e591]
+          - cell "warning" [ref=f3e592]
+          - cell "ATTRIBUTION_REQUIRED · 커밋 이메일 재확인" [ref=f3e594]
+          - cell "✔ S8" [ref=f3e595]
+        - row [ref=f3e596]:
+          - cell "A-2" [ref=f3e597]
+          - cell "git history 부재" [ref=f3e598]
+          - cell "info" [ref=f3e599]
+          - cell "전체코드 폴백(scope_fallback) 안내" [ref=f3e601]
+          - cell "S4 패턴" [ref=f3e602]
+        - row [ref=f3e603]:
+          - cell "A-3" [ref=f3e604]
+          - cell "분석 가능 코드 부재" [ref=f3e605]
+          - cell "danger" [ref=f3e606]
+          - cell "제출물 재검증" [ref=f3e608]
+          - cell "S8 패턴" [ref=f3e609]
+        - row [ref=f3e610]:
+          - cell "A-4" [ref=f3e611]
+          - cell "DP 후보 미생성" [ref=f3e612]
+          - cell "warning" [ref=f3e613]
+          - cell "범위 확대·재시도" [ref=f3e615]
+          - cell "S8 패턴" [ref=f3e616]
+        - row [ref=f3e617]:
+          - cell "A-5" [ref=f3e618]
+          - cell "유효 DP < 예산 N" [ref=f3e619]
+          - cell "info" [ref=f3e620]
+          - cell "확보 수량으로 세션 축소(교육생엔 비노출)" [ref=f3e622]
+          - cell "S5 내부" [ref=f3e623]
+        - row [ref=f3e624]:
+          - cell "A-6" [ref=f3e625]
+          - cell "LLM 추출 실패" [ref=f3e626]
+          - cell "warning" [ref=f3e627]
+          - cell "재시도 · 지속 실패 시 분석 실패" [ref=f3e629]
+          - cell "S8 패턴" [ref=f3e630]
+    - generic [ref=f3e631]: "디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 신규: ContextStrip·CommitEmailField(검증 시 접힘)·MethodToggle(모드별 콘텐츠 분기)·AnalysisProgress(done·now·wait·error)·SubmittedCard · 레포는 팀/학생 단위 연결(D18 — 팀=연결된 레포 잠금, 개인=직접 입력) · 추출 질문 내용 비노출(A4·A5) · 세션 톤 선제 완화(D100~103) · 재응시 없음 · 웹 기준"

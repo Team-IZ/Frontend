@@ -1,0 +1,498 @@
+- generic [ref=f3e2]:
+  - complementary [ref=f3e3]:
+    - generic [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - generic [ref=f3e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=f3e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=f3e8]:
+      - generic [ref=f3e9]:
+        - generic [ref=f3e10]: shared
+        - button "로그인 shared/login.html" [ref=f3e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=f3e13]: shared/login.html
+      - generic [ref=f3e14]:
+        - generic [ref=f3e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=f3e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=f3e18]: ▸
+      - generic [ref=f3e19]:
+        - generic [ref=f3e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=f3e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=f3e23]: 총괄
+          - generic [ref=f3e24]: ▸
+      - generic [ref=f3e25]:
+        - generic [ref=f3e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=f3e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=f3e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=f3e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=f3e31]: manager/dashboard.html
+        - generic [ref=f3e32]:
+          - button "프로젝트 ▸" [ref=f3e33] [cursor=pointer]:
+            - text: 프로젝트
+            - generic [ref=f3e34]: ▸
+          - generic [ref=f3e35]:
+            - button "프로젝트 목록 컬렉션" [ref=f3e36] [cursor=pointer]
+            - button "프로젝트 생성 모달 · 요구사항" [ref=f3e37] [cursor=pointer]
+            - generic [ref=f3e38]: "프로젝트 상세 · 예: API 서버"
+            - button "개요 요구사항 O/X" [ref=f3e39] [cursor=pointer]
+            - button "팀 · 레포 단위 확정" [ref=f3e40] [cursor=pointer]
+            - button "측정 계획 +체크포인트" [ref=f3e41] [cursor=pointer]
+            - button "결과 → 리포트" [ref=f3e42] [cursor=pointer]
+            - button "개인형 · 학생별 레포 변형" [ref=f3e43] [cursor=pointer]
+            - button "상태 ↔ case 매핑 총합" [ref=f3e44] [cursor=pointer]
+        - button "위험 · 분석 manager/risk-analysis.html" [ref=f3e45] [cursor=pointer]:
+          - text: 위험 · 분석
+          - generic [ref=f3e46]: manager/risk-analysis.html
+        - button "코호트 히트맵 manager/heatmap.html" [ref=f3e47] [cursor=pointer]:
+          - text: 코호트 히트맵
+          - generic [ref=f3e48]: manager/heatmap.html
+        - button "교육생 리스트 manager/trainee-list.html" [ref=f3e49] [cursor=pointer]:
+          - text: 교육생 리스트
+          - generic [ref=f3e50]: manager/trainee-list.html
+        - button "개별 교육생 상세 manager/trainee-detail.html" [ref=f3e51] [cursor=pointer]:
+          - text: 개별 교육생 상세
+          - generic [ref=f3e52]: manager/trainee-detail.html
+        - button "개입 관리 manager/intervention.html" [ref=f3e53] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=f3e54]: manager/intervention.html
+        - button "리포트 manager/report.html" [ref=f3e55] [cursor=pointer]:
+          - text: 리포트
+          - generic [ref=f3e56]: manager/report.html
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=f3e57] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=f3e58]: manager/appeal-disclosure.html
+      - generic [ref=f3e59]:
+        - generic [ref=f3e60]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=f3e62] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=f3e63]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=f3e64] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=f3e65]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=f3e66] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=f3e67]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=f3e68] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=f3e69]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=f3e70] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=f3e71]: trainee/result.html
+  - main [ref=f3e72]:
+    - generic [ref=f3e73]:
+      - generic [ref=f3e74]: 프로젝트 · 상태 ↔ case 매핑
+      - generic [ref=f3e75]: manager/project-workspace.html#cases
+      - link "새 탭에서 열기 ↗" [ref=f3e76] [cursor=pointer]:
+        - /url: manager/project-workspace.html#cases
+    - iframe [ref=f3e77]:
+      - generic [ref=f4e2]:
+        - generic [ref=f4e3]:
+          - generic [ref=f4e4]: iz-get.com/cohorts/7/projects
+          - generic [ref=f4e10]:
+            - generic [ref=f4e11]:
+              - generic [ref=f4e12]:
+                - generic [ref=f4e13]:
+                  - generic [ref=f4e14]: ◆
+                  - text: IZ-Get
+                - generic [ref=f4e15] [cursor=pointer]:
+                  - generic [ref=f4e16]: 기관
+                  - text: 그린 부트캠프
+                  - generic [ref=f4e17]: · 현재
+                  - text: 7기 ▾
+              - generic [ref=f4e18]:
+                - text: 박지현 · 총괄 매니저
+                - generic [ref=f4e19]: 박
+            - generic [ref=f4e20]:
+              - generic [ref=f4e21]:
+                - generic [ref=f4e22]:
+                  - generic [ref=f4e23]: ▦
+                  - text: 대시보드
+                - generic [ref=f4e24]:
+                  - generic [ref=f4e25]: ⚙
+                  - text: 운영 관리
+                  - generic [ref=f4e26]: 총괄
+                - generic [ref=f4e27]:
+                  - generic [ref=f4e28]: ▤
+                  - text: 프로젝트
+                - generic [ref=f4e29]:
+                  - generic [ref=f4e30]: ◎
+                  - text: 교육생
+                - generic [ref=f4e31]:
+                  - generic [ref=f4e32]: △
+                  - text: 위험 · 분석
+                - generic [ref=f4e33]:
+                  - generic [ref=f4e34]: ✎
+                  - text: 개입
+                - generic [ref=f4e35]:
+                  - generic [ref=f4e36]: ▥
+                  - text: 리포트
+                - generic [ref=f4e37]:
+                  - generic [ref=f4e38]: ▧
+                  - text: 교안
+              - generic [ref=f4e39]:
+                - generic [ref=f4e40]:
+                  - generic [ref=f4e41]:
+                    - generic [ref=f4e42]: ← 프로젝트 목록
+                    - generic [ref=f4e43]:
+                      - generic [ref=f4e44]: API 서버
+                      - generic [ref=f4e45]: 팀
+                      - generic [ref=f4e47] [cursor=pointer]:
+                        - generic [ref=f4e48]: 프로젝트 전환
+                        - text: ▾
+                  - generic [ref=f4e49]: A반 · 03.20 ~ 04.10 · 추출 기본 본인커밋
+                - generic [ref=f4e50]:
+                  - generic [ref=f4e51] [cursor=pointer]: 목록
+                  - generic [ref=f4e52] [cursor=pointer]: 개요
+                  - generic [ref=f4e53] [cursor=pointer]: 팀 · 레포
+                  - generic [ref=f4e54] [cursor=pointer]: 측정 계획
+                  - generic [ref=f4e55] [cursor=pointer]: 결과
+                  - generic [ref=f4e56] [cursor=pointer]: 개인형
+                - text: ✓ ✓
+        - generic [ref=f4e57]:
+          - heading "상태 ↔ 명세 case 매핑 · 총합 (프로젝트 워크스페이스 · 총괄 전용)" [level=3] [ref=f4e58]
+          - paragraph [ref=f4e59]: "전체 55건 통합 계약(마스터). 각 탭 하단 '이 탭의 상태·case' 박스엔 발췌만 — 여기는 총합. 소속 경계(D78·D80): 요구사항 O/X=프로젝트(개요), 팀·레포=단위 확정, 질문 초점=회차(측정계획). FR: ORG-03(프로젝트) · ORG-02(팀) · AUTH-07(커밋) · PLAN-01~04(체크포인트) · RPT-04(리포트)."
+          - generic [ref=f4e60]: 목록 (컬렉션)
+          - table [ref=f4e62]:
+            - rowgroup [ref=f4e63]:
+              - row [ref=f4e64]:
+                - columnheader "#" [ref=f4e65]
+                - columnheader "상태" [ref=f4e66]
+                - columnheader "표현" [ref=f4e67]
+                - columnheader "다음 행동" [ref=f4e68]
+            - rowgroup [ref=f4e69]:
+              - row [ref=f4e70]:
+                - cell "L-1" [ref=f4e71]
+                - cell "프로젝트 0 (신규 기수)" [ref=f4e72]
+                - cell "empty" [ref=f4e73]
+                - cell "\"첫 프로젝트를 만드세요\" + [+ 생성]" [ref=f4e75]
+              - row [ref=f4e76]:
+                - cell "L-2" [ref=f4e77]
+                - cell "검색·필터 결과 없음" [ref=f4e78]
+                - cell "-" [ref=f4e79]
+                - cell "\"결과 없음\" 빈 상태" [ref=f4e81]
+              - row [ref=f4e82]:
+                - cell "L-3" [ref=f4e83]
+                - cell "프로젝트 대량" [ref=f4e84]
+                - cell "-" [ref=f4e85]
+                - cell "검색·필터·페이지네이션" [ref=f4e87]
+          - generic [ref=f4e88]: 프로젝트 생성 · 요구사항 (ORG-03 · 개요 탭)
+          - table [ref=f4e90]:
+            - rowgroup [ref=f4e91]:
+              - row [ref=f4e92]:
+                - columnheader "#" [ref=f4e93]
+                - columnheader "상태" [ref=f4e94]
+                - columnheader "표현" [ref=f4e95]
+                - columnheader "다음 행동" [ref=f4e96]
+            - rowgroup [ref=f4e97]:
+              - row [ref=f4e98]:
+                - cell "P-1" [ref=f4e99]
+                - cell "존재않는 기수 / 허용안된 유형" [ref=f4e100]
+                - cell "danger" [ref=f4e101]
+                - cell "저장 차단(개인·팀만)" [ref=f4e103]
+              - row [ref=f4e104]:
+                - cell "P-2" [ref=f4e105]
+                - cell "프로젝트명 누락·중복" [ref=f4e106]
+                - cell "danger" [ref=f4e107]
+                - cell "필드 오류·재입력" [ref=f4e109]
+              - row [ref=f4e110]:
+                - cell "P-3" [ref=f4e111]
+                - cell "대상 반 미선택" [ref=f4e112]
+                - cell "danger" [ref=f4e113]
+                - cell "저장 차단" [ref=f4e115]
+              - row [ref=f4e116]:
+                - cell "P-4" [ref=f4e117]
+                - cell "기간 시작>마감" [ref=f4e118]
+                - cell "danger" [ref=f4e119]
+                - cell "기간 재입력" [ref=f4e121]
+              - row [ref=f4e122]:
+                - cell "P-5" [ref=f4e123]
+                - cell "요구사항 0건" [ref=f4e124]
+                - cell "info" [ref=f4e125]
+                - cell "생성 가능 · 요구사항 검증만 없음(질문 생성 무관)" [ref=f4e127]
+              - row [ref=f4e128]:
+                - cell "P-6" [ref=f4e129]
+                - cell "요구사항 미충족(X)·비고 없음" [ref=f4e130]
+                - cell "warning" [ref=f4e131]
+                - cell "대체 구현이면 비고 기록 권장" [ref=f4e133]
+              - row [ref=f4e134]:
+                - cell "P-7" [ref=f4e135]
+                - cell "판정 대기(미제출 단위)" [ref=f4e136]
+                - cell "info" [ref=f4e137]
+                - cell "O/X \"—\" 검증 대기" [ref=f4e139]
+              - row [ref=f4e140]:
+                - cell "P-8" [ref=f4e141]
+                - cell "생성 실패(롤백)" [ref=f4e142]
+                - cell "danger" [ref=f4e143]
+                - cell "요구사항·설정 미저장·재시도" [ref=f4e145]
+          - generic [ref=f4e146]: 팀 편성 (ORG-02 · 팀·레포 탭)
+          - table [ref=f4e148]:
+            - rowgroup [ref=f4e149]:
+              - row [ref=f4e150]:
+                - columnheader "#" [ref=f4e151]
+                - columnheader "상태" [ref=f4e152]
+                - columnheader "표현" [ref=f4e153]
+                - columnheader "다음 행동" [ref=f4e154]
+            - rowgroup [ref=f4e155]:
+              - row [ref=f4e156]:
+                - cell "T-1" [ref=f4e157]
+                - cell "존재않는 기수/프로젝트" [ref=f4e158]
+                - cell "danger" [ref=f4e159]
+                - cell "팀 생성 차단" [ref=f4e161]
+              - row [ref=f4e162]:
+                - cell "T-2" [ref=f4e163]
+                - cell "중복 팀명" [ref=f4e164]
+                - cell "danger" [ref=f4e165]
+                - cell "필드 오류" [ref=f4e167]
+              - row [ref=f4e168]:
+                - cell "T-3" [ref=f4e169]
+                - cell "미소속 교육생 배정" [ref=f4e170]
+                - cell "danger" [ref=f4e171]
+                - cell "대상 제외 안내" [ref=f4e173]
+              - row [ref=f4e174]:
+                - cell "T-4" [ref=f4e175]
+                - cell "동일 시점 중복 소속" [ref=f4e176]
+                - cell "danger" [ref=f4e177]
+                - cell "신규 배정 차단·기존 확인" [ref=f4e179]
+              - row [ref=f4e180]:
+                - cell "T-5" [ref=f4e181]
+                - cell "재배정 기존 없음" [ref=f4e182]
+                - cell "info" [ref=f4e183]
+                - cell "신규 배정·이력 점검" [ref=f4e185]
+              - row [ref=f4e186]:
+                - cell "T-6" [ref=f4e187]
+                - cell "to_at > from_at 역전" [ref=f4e188]
+                - cell "danger" [ref=f4e189]
+                - cell "이력 무결성 오류·차단" [ref=f4e191]
+              - row [ref=f4e192]:
+                - cell "T-7" [ref=f4e193]
+                - cell "일부 배정 저장 실패" [ref=f4e194]
+                - cell "warning" [ref=f4e195]
+                - cell "실패만 롤백·성공/실패 분리" [ref=f4e197]
+              - row [ref=f4e198]:
+                - cell "T-8" [ref=f4e199]
+                - cell "활성 소속 있는 팀 삭제" [ref=f4e200]
+                - cell "danger" [ref=f4e201]
+                - cell "삭제 차단·재배정/종료 요청" [ref=f4e203]
+          - generic [ref=f4e204]: 레포 연결 (ORG-03 · AUTH-07 · 팀·레포 탭)
+          - table [ref=f4e206]:
+            - rowgroup [ref=f4e207]:
+              - row [ref=f4e208]:
+                - columnheader "#" [ref=f4e209]
+                - columnheader "상태" [ref=f4e210]
+                - columnheader "표현" [ref=f4e211]
+                - columnheader "다음 행동" [ref=f4e212]
+            - rowgroup [ref=f4e213]:
+              - row [ref=f4e214]:
+                - cell "R-1" [ref=f4e215]
+                - cell "레포 URL 형식 오류" [ref=f4e216]
+                - cell "danger" [ref=f4e217]
+                - cell "필드 오류·유효 URL 요청" [ref=f4e219]
+              - row [ref=f4e220]:
+                - cell "R-2" [ref=f4e221]
+                - cell "비공개 레포 접근 실패" [ref=f4e222]
+                - cell "warning" [ref=f4e223]
+                - cell "임시 저장·접근 권한 안내" [ref=f4e225]
+              - row [ref=f4e226]:
+                - cell "R-3" [ref=f4e227]
+                - cell "커밋 이메일 미등록" [ref=f4e228]
+                - cell "warning" [ref=f4e229]
+                - cell "매핑 보류·AUTH-07 등록 요청" [ref=f4e231]
+              - row [ref=f4e232]:
+                - cell "R-4" [ref=f4e233]
+                - cell "미검증 커밋 이메일" [ref=f4e234]
+                - cell "warning" [ref=f4e235]
+                - cell "매핑 유지·귀속 경고 배지" [ref=f4e237]
+              - row [ref=f4e238]:
+                - cell "R-5" [ref=f4e239]
+                - cell "동일 레포 중복" [ref=f4e240]
+                - cell "warning" [ref=f4e241]
+                - cell "중복 경고·명시 승인" [ref=f4e243]
+          - generic [ref=f4e244]: 체크포인트 일정 (PLAN-01 · 측정 계획 탭)
+          - table [ref=f4e246]:
+            - rowgroup [ref=f4e247]:
+              - row [ref=f4e248]:
+                - columnheader "#" [ref=f4e249]
+                - columnheader "상태" [ref=f4e250]
+                - columnheader "표현" [ref=f4e251]
+                - columnheader "다음 행동" [ref=f4e252]
+            - rowgroup [ref=f4e253]:
+              - row [ref=f4e254]:
+                - cell "K-1" [ref=f4e255]
+                - cell "존재않는 기수" [ref=f4e256]
+                - cell "danger" [ref=f4e257]
+                - cell "일정 생성 차단" [ref=f4e259]
+              - row [ref=f4e260]:
+                - cell "K-2" [ref=f4e261]
+                - cell "회차 번호 중복" [ref=f4e262]
+                - cell "danger" [ref=f4e263]
+                - cell "중복 회차 차단" [ref=f4e265]
+              - row [ref=f4e266]:
+                - cell "K-3" [ref=f4e267]
+                - cell "측정일 시작>마감" [ref=f4e268]
+                - cell "danger" [ref=f4e269]
+                - cell "해당 회차 저장 차단" [ref=f4e271]
+              - row [ref=f4e272]:
+                - cell "K-4" [ref=f4e273]
+                - cell "이전 회차 역순" [ref=f4e274]
+                - cell "danger" [ref=f4e275]
+                - cell "전체 확정 차단·충돌 안내" [ref=f4e277]
+              - row [ref=f4e278]:
+                - cell "K-5" [ref=f4e279]
+                - cell "동일 시간대 중복" [ref=f4e280]
+                - cell "warning" [ref=f4e281]
+                - cell "충돌 경고" [ref=f4e283]
+              - row [ref=f4e284]:
+                - cell "K-6" [ref=f4e285]
+                - cell "최종 회차 2건+" [ref=f4e286]
+                - cell "danger" [ref=f4e287]
+                - cell "단일 최종 회차 선택 요청" [ref=f4e289]
+              - row [ref=f4e290]:
+                - cell "K-7" [ref=f4e291]
+                - cell "최종 회차 미지정" [ref=f4e292]
+                - cell "warning" [ref=f4e293]
+                - cell "마지막 회차 자동 후보 제시" [ref=f4e295]
+              - row [ref=f4e296]:
+                - cell "K-8" [ref=f4e297]
+                - cell "일부 저장 실패(롤백)" [ref=f4e298]
+                - cell "danger" [ref=f4e299]
+                - cell "전체 롤백/재저장 대상" [ref=f4e301]
+          - generic [ref=f4e302]: 추출 범위 (PLAN-02 · 측정 계획 탭)
+          - table [ref=f4e304]:
+            - rowgroup [ref=f4e305]:
+              - row [ref=f4e306]:
+                - columnheader "#" [ref=f4e307]
+                - columnheader "상태" [ref=f4e308]
+                - columnheader "표현" [ref=f4e309]
+                - columnheader "다음 행동" [ref=f4e310]
+            - rowgroup [ref=f4e311]:
+              - row [ref=f4e312]:
+                - cell "S-1" [ref=f4e313]
+                - cell "존재않는 프로젝트" [ref=f4e314]
+                - cell "danger" [ref=f4e315]
+                - cell "저장 차단" [ref=f4e317]
+              - row [ref=f4e318]:
+                - cell "S-2" [ref=f4e319]
+                - cell "허용안된 scope" [ref=f4e320]
+                - cell "danger" [ref=f4e321]
+                - cell "두 값만 허용(전체코드/본인커밋)" [ref=f4e323]
+              - row [ref=f4e324]:
+                - cell "S-3" [ref=f4e325]
+                - cell "본인커밋+커밋이메일 부재" [ref=f4e326]
+                - cell "warning" [ref=f4e327]
+                - cell "저장 보류·AUTH-07 등록 요청" [ref=f4e329]
+              - row [ref=f4e330]:
+                - cell "S-4" [ref=f4e331]
+                - cell "git history 미확보" [ref=f4e332]
+                - cell "warning" [ref=f4e333]
+                - cell "전체코드 폴백 가능 안내" [ref=f4e335]
+          - generic [ref=f4e336]: 질문 초점 (PLAN-03 · 측정 계획 탭 · 구 "검증 포커스/결정 지점")
+          - table [ref=f4e338]:
+            - rowgroup [ref=f4e339]:
+              - row [ref=f4e340]:
+                - columnheader "#" [ref=f4e341]
+                - columnheader "상태" [ref=f4e342]
+                - columnheader "표현" [ref=f4e343]
+                - columnheader "다음 행동" [ref=f4e344]
+            - rowgroup [ref=f4e345]:
+              - row [ref=f4e346]:
+                - cell "F-1" [ref=f4e347]
+                - cell "존재않는 회차" [ref=f4e348]
+                - cell "danger" [ref=f4e349]
+                - cell "저장 차단" [ref=f4e351]
+              - row [ref=f4e352]:
+                - cell "F-2" [ref=f4e353]
+                - cell "질문 초점 0건" [ref=f4e354]
+                - cell "info" [ref=f4e355]
+                - cell "AI가 기여분에서 중요 지점 질문수만큼 자율 추출(제한 아님)" [ref=f4e357]
+              - row [ref=f4e358]:
+                - cell "F-3" [ref=f4e359]
+                - cell "허용안된 값" [ref=f4e360]
+                - cell "danger" [ref=f4e361]
+                - cell "저장 차단·관리자 검토" [ref=f4e363]
+              - row [ref=f4e364]:
+                - cell "F-4" [ref=f4e365]
+                - cell "중복 영역" [ref=f4e366]
+                - cell "-" [ref=f4e367]
+                - cell "중복 제거" [ref=f4e369]
+              - row [ref=f4e370]:
+                - cell "F-5" [ref=f4e371]
+                - cell "교육생 응답 노출 탐지" [ref=f4e372]
+                - cell "danger" [ref=f4e373]
+                - cell "응답 차단·비노출 재적용(A4)" [ref=f4e375]
+              - row [ref=f4e376]:
+                - cell "F-6" [ref=f4e377]
+                - cell "MEAS-02B 연계 실패" [ref=f4e378]
+                - cell "warning" [ref=f4e379]
+                - cell "설정 유지·가중치 재시도" [ref=f4e381]
+          - generic [ref=f4e382]: 응시 현황 (PLAN-04 · 측정 계획 탭)
+          - table [ref=f4e384]:
+            - rowgroup [ref=f4e385]:
+              - row [ref=f4e386]:
+                - columnheader "#" [ref=f4e387]
+                - columnheader "상태" [ref=f4e388]
+                - columnheader "표현" [ref=f4e389]
+                - columnheader "다음 행동" [ref=f4e390]
+            - rowgroup [ref=f4e391]:
+              - row [ref=f4e392]:
+                - cell "A-1" [ref=f4e393]
+                - cell "미응시 존재(진행 중 회차)" [ref=f4e394]
+                - cell "warning" [ref=f4e395]
+                - cell "미응시만 필터 → 벌크 독촉" [ref=f4e397]
+              - row [ref=f4e398]:
+                - cell "A-2" [ref=f4e399]
+                - cell "중복 독촉" [ref=f4e400]
+                - cell "warning" [ref=f4e401]
+                - cell "재발송 제한" [ref=f4e403]
+              - row [ref=f4e404]:
+                - cell "A-3" [ref=f4e405]
+                - cell "연락 채널 없음" [ref=f4e406]
+                - cell "-" [ref=f4e407]
+                - cell "대상 제외·안내" [ref=f4e409]
+              - row [ref=f4e410]:
+                - cell "A-4" [ref=f4e411]
+                - cell "레포 미연결 팀(JIT 미충족)" [ref=f4e412]
+                - cell "warning" [ref=f4e413]
+                - cell "그 회차 응시 불가·레포 연결 유도" [ref=f4e415]
+              - row [ref=f4e416]:
+                - cell "A-5" [ref=f4e417]
+                - cell "응시 커버리지 < 분모" [ref=f4e418]
+                - cell "info" [ref=f4e419]
+                - cell "응시 X/N 표시(레포 커버리지와 별개)" [ref=f4e421]
+          - generic [ref=f4e422]: 결과 · 리포트 (RPT-04 · 결과 탭) / 개인형
+          - table [ref=f4e424]:
+            - rowgroup [ref=f4e425]:
+              - row [ref=f4e426]:
+                - columnheader "#" [ref=f4e427]
+                - columnheader "상태" [ref=f4e428]
+                - columnheader "표현" [ref=f4e429]
+                - columnheader "다음 행동" [ref=f4e430]
+            - rowgroup [ref=f4e431]:
+              - row [ref=f4e432]:
+                - cell "RP-1" [ref=f4e433]
+                - cell "회차 미도래" [ref=f4e434]
+                - cell "info" [ref=f4e435]
+                - cell "\"예정\"·리포트 없음" [ref=f4e437]
+              - row [ref=f4e438]:
+                - cell "RP-2" [ref=f4e439]
+                - cell "회차 종료 → 자동 생성" [ref=f4e440]
+                - cell "info" [ref=f4e441]
+                - cell "체크포인트 리포트 자동생성·SC-M08 연결" [ref=f4e443]
+              - row [ref=f4e444]:
+                - cell "RP-3" [ref=f4e445]
+                - cell "프로젝트 경계 넘는 diff" [ref=f4e446]
+                - cell "warning" [ref=f4e447]
+                - cell "콘텐츠 변화 표시·위험은 코호트 잔차" [ref=f4e449]
+              - row [ref=f4e450]:
+                - cell "CL-1" [ref=f4e451]
+                - cell "학생 미제출(개인형)" [ref=f4e452]
+                - cell "warning" [ref=f4e453]
+                - cell "벌크 독촉·레포 안내 재발송" [ref=f4e455]
+              - row [ref=f4e456]:
+                - cell "CL-2" [ref=f4e457]
+                - cell "커밋 이메일 미검증(개인형)" [ref=f4e458]
+                - cell "warning" [ref=f4e459]
+                - cell "귀속 경고·SC-T02 검증" [ref=f4e461]

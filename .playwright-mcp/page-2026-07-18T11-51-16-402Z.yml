@@ -1,0 +1,164 @@
+- generic [ref=f6e2]:
+  - generic [ref=f6e3]:
+    - generic [ref=f6e4]: SC-M13 · P0/P1 · manager/project-workspace · 웹
+    - heading "프로젝트 워크스페이스 저작=총괄 · 실행=담당" [level=1] [ref=f6e5]
+    - paragraph [ref=f6e6]: "2층 구조: 목록(컬렉션)에서 프로젝트 하나를 클릭 → 상세(4탭)로 드릴다운. 목록엔 탭바·컨텍스트바 없음, 상세에만 탭바[개요(요구사항 O/X=프로젝트)·팀·레포(단위 N 확정)·측정 계획(질문 초점=회차)·결과] + 컨텍스트 바. 개인형은 팀·레포의 개인 프로젝트 변형(학생별 레포). 운영 관리와 같은 \"메뉴 하나 = 화면 하나\". 각 화면 하단에 상태·case 발췌, 전량은 상태 ↔ case 매핑(총합). 근거: D77·D78·D80·D81."
+  - generic [ref=f6e7]:
+    - generic [ref=f6e8]: iz-get.com/cohorts/7/projects/api/plan
+    - generic [ref=f6e14]:
+      - generic [ref=f6e15]:
+        - generic [ref=f6e16]:
+          - generic [ref=f6e17]:
+            - generic [ref=f6e18]: ◆
+            - text: IZ-Get
+          - generic [ref=f6e19] [cursor=pointer]:
+            - generic [ref=f6e20]: 기관
+            - text: 그린 부트캠프
+            - generic [ref=f6e21]: · 현재
+            - text: 7기 ▾
+        - generic [ref=f6e22]:
+          - text: 박지현 · 총괄 매니저
+          - generic [ref=f6e23]: 박
+      - generic [ref=f6e24]:
+        - generic [ref=f6e25]:
+          - generic [ref=f6e26]:
+            - generic [ref=f6e27]: ▦
+            - text: 대시보드
+          - generic [ref=f6e28]:
+            - generic [ref=f6e29]: ⚙
+            - text: 운영 관리
+            - generic [ref=f6e30]: 총괄
+          - generic [ref=f6e31]:
+            - generic [ref=f6e32]: ▧
+            - text: 교안
+          - generic [ref=f6e33]:
+            - generic [ref=f6e34]: ▤
+            - text: 프로젝트
+          - generic [ref=f6e35]:
+            - generic [ref=f6e36]: ◎
+            - text: 교육생
+          - generic [ref=f6e37]:
+            - generic [ref=f6e38]: △
+            - text: 분석 · 진단
+          - generic [ref=f6e39]:
+            - generic [ref=f6e40]: ✎
+            - text: 개입
+          - generic [ref=f6e41]:
+            - generic [ref=f6e42]: ▥
+            - text: 리포트
+        - generic [ref=f6e43]:
+          - generic [ref=f6e44]:
+            - generic [ref=f6e45]:
+              - generic [ref=f6e46]: ← 프로젝트 목록
+              - generic [ref=f6e47]:
+                - generic [ref=f6e48]: API 서버
+                - generic [ref=f6e49]: 팀
+                - generic [ref=f6e51] [cursor=pointer]:
+                  - generic [ref=f6e52]: 프로젝트 전환
+                  - text: ▾
+            - generic [ref=f6e53]: A반 · 03.20 ~ 04.10 · 추출 기본 본인커밋
+          - generic [ref=f6e54]:
+            - generic [ref=f6e55] [cursor=pointer]: 개요
+            - generic [ref=f6e56] [cursor=pointer]: 팀 · 레포
+            - generic [ref=f6e57] [cursor=pointer]: 측정 계획
+            - generic [ref=f6e58] [cursor=pointer]: 결과
+          - text: ✓ ✓
+          - generic [ref=f6e59]:
+            - generic [ref=f6e60]: 독립 화면 SC-M03(측정 계획)의 프로젝트 컨텍스트 진입. 위계상 프로젝트 하위, 화면·정의서는 독립(D78).
+            - generic [ref=f6e61]: "◔ 권한 분리(D90): 측정 설계 = 총괄 총괄 — 회차 수·질문 초점(측정 축)·질문수(PLAN-01·03)는 프로젝트 생성 시 파생·총괄 조정(담당이 자기 채점 잣대를 못 바꾸게). 체크포인트 열기·추출 범위 = 담당 담당 — 그 측정 축을 상속받아 이 반 진도에 맞춰 각 회차를 언제 여는지(측정일·오픈), 그리고 추출 범위(PLAN-02, 전체코드/본인커밋기여분)는 회차 실행 파라미터라 담당(D90 후속 확정). 요구사항(O/X)은 프로젝트 소속이라 [개요]에 있음. 응시 분모 N(=4팀)은 [팀·레포]에서 상속(팀 편성도 담당), 레포는 각 체크포인트 실행 시점 JIT."
+            - generic [ref=f6e62]:
+              - generic [ref=f6e63]:
+                - generic [ref=f6e64]: 체크포인트
+                - generic [ref=f6e65]: 2 개
+                - generic [ref=f6e66]: CP3 · CP4 (API 1·2회차)
+              - generic [ref=f6e67]:
+                - generic [ref=f6e68]: 응시 분모
+                - generic [ref=f6e69]: 4 팀
+                - generic [ref=f6e70]: "[팀·레포]에서 상속"
+              - generic [ref=f6e71]:
+                - generic [ref=f6e72]: 응시 커버리지 · 최신(CP3)
+                - generic [ref=f6e73]: 3/4팀
+                - generic [ref=f6e74]: 레포 커버리지(4/4)와 별개 값
+            - generic [ref=f6e75]:
+              - heading "체크포인트 2개· API 서버 · 누적 순번 CP3~4" [level=3] [ref=f6e76]
+              - button "+ 체크포인트(회차) 열기담당" [ref=f6e77] [cursor=pointer]
+            - table [ref=f6e79]:
+              - rowgroup [ref=f6e80]:
+                - row [ref=f6e81]:
+                  - columnheader "체크포인트" [ref=f6e82]
+                  - columnheader "프로젝트 · 회차" [ref=f6e83]
+                  - columnheader "측정일" [ref=f6e84]
+                  - columnheader "질문 초점 · 비우면 AI 자율" [ref=f6e85]
+                  - columnheader "질문 수" [ref=f6e86]
+                  - columnheader "응시(팀)" [ref=f6e87]
+                  - columnheader "상태" [ref=f6e88]
+                  - columnheader [ref=f6e89]
+              - rowgroup [ref=f6e90]:
+                - row [ref=f6e91]:
+                  - cell "체크포인트 3" [ref=f6e92]
+                  - cell "API 서버 · 1회차" [ref=f6e93]
+                  - cell "04.03" [ref=f6e94]
+                  - cell "책임 분리 반례·예외" [ref=f6e95]:
+                    - generic [ref=f6e96]: 책임 분리
+                    - generic [ref=f6e97]: 반례·예외
+                  - cell "4" [ref=f6e98]
+                  - cell "3 / 4" [ref=f6e99]
+                  - cell "진행 중" [ref=f6e100]
+                  - cell "응시 보기" [ref=f6e102]
+                - row [ref=f6e103]:
+                  - cell "체크포인트 4 최종" [ref=f6e104]:
+                    - text: 체크포인트 4
+                    - generic [ref=f6e105]: 최종
+                  - cell "API 서버 · 2회차" [ref=f6e106]
+                  - cell "04.10" [ref=f6e107]
+                  - cell "미지정 → AI 자율 추출" [ref=f6e108]:
+                    - generic [ref=f6e109]: 미지정
+                    - text: → AI 자율 추출
+                  - cell "5" [ref=f6e110]
+                  - cell "—" [ref=f6e111]
+                  - cell "예정" [ref=f6e112]
+                  - cell "지정" [ref=f6e114]
+            - generic [ref=f6e115]: · 체크포인트 번호는 트랙 누적(앞 프로젝트 CLI 2회차=CP1·2 → API 서버는 CP3부터·D76). 응시(팀) X/4 분모는 단위, 분자는 실제 응시. 최종 회차 단 1건(등급=B3). 질문 수(예산 N)는 회차별(기본 4·D28). 질문 초점 없으면 AI 자율 추출.
+      - text: ✓ ✓ ✓
+  - generic [ref=f6e117]:
+    - generic [ref=f6e118]:
+      - generic [ref=f6e119]: 현재 탭 · 측정 계획 — 상태 · case (체크포인트 PLAN-01~04)
+      - generic [ref=f6e120] [cursor=pointer]: 총합 →
+    - generic [ref=f6e121]:
+      - generic [ref=f6e122]: K-2
+      - generic [ref=f6e123]: danger
+      - generic [ref=f6e124]: 회차 번호 중복 — 중복 회차 차단
+    - generic [ref=f6e125]:
+      - generic [ref=f6e126]: K-3
+      - generic [ref=f6e127]: danger
+      - generic [ref=f6e128]: 측정일 시작>마감 — 해당 회차 저장 차단
+    - generic [ref=f6e129]:
+      - generic [ref=f6e130]: K-4
+      - generic [ref=f6e131]: danger
+      - generic [ref=f6e132]: 이전 회차 역순 — 전체 확정 차단·충돌 구간 안내
+    - generic [ref=f6e133]:
+      - generic [ref=f6e134]: K-6
+      - generic [ref=f6e135]: danger
+      - generic [ref=f6e136]: 최종 회차 2건+ — 단일 최종 회차 선택 요청
+    - generic [ref=f6e137]:
+      - generic [ref=f6e138]: S-3
+      - generic [ref=f6e139]: warning
+      - generic [ref=f6e140]: 본인커밋+커밋이메일 부재 — 저장 보류·AUTH-07 등록 요청
+    - generic [ref=f6e141]:
+      - generic [ref=f6e142]: F-5
+      - generic [ref=f6e143]: danger
+      - generic [ref=f6e144]: 질문 초점 교육생 노출 탐지 — 응답 차단·비노출 재적용
+    - generic [ref=f6e145]:
+      - generic [ref=f6e146]: A-2
+      - generic [ref=f6e147]: warning
+      - generic [ref=f6e148]: 중복 독촉 — 재발송 제한
+  - generic [ref=f6e149]:
+    - heading "이 화면의 데이터 플로우 (D77 다이아몬드) · 개념 경계" [level=3] [ref=f6e150]
+    - generic [ref=f6e151]: 단계 · 의존
+    - paragraph [ref=f6e152]: ① 개요(프로젝트·유형 + 요구사항 O/X=프로젝트) → ② 팀·레포(단위 N 확정 = 응시 분모) → ③ 측정 계획(질문 초점=회차, 프로젝트만 있으면 계획) → ④ 결과. ②③(레포∥체크포인트) 병렬, ⑤실행에서 스냅샷 수렴.
+    - generic [ref=f6e153]: 요구사항 ≠ 질문 초점 (D80)
+    - paragraph [ref=f6e154]: "요구사항(프로젝트): \"목적대로 제대로 했나\" — 필수 조건(JWT·PostgreSQL) 단위별 O/X+비고. 질문 초점(회차·구 \"결정 지점\"/\"검증 포커스\" 통합): \"질문을 어디 치중할까\" — 비우면 AI 자율 추출, 지정하면 그 영역 치중. 판정 대상 vs 질문 방향으로 별개."
+    - generic [ref=f6e155]: 허브 ≠ 모놀리식 (D78)
+    - paragraph [ref=f6e156]: "워크스페이스는 프로젝트 컨텍스트 허브 + 탭. 각 탭은 자기 SC-ID: 개요·팀레포=SC-M13, 측정계획=SC-M03, 결과=SC-M08. 위계(측정계획⊂프로젝트)와 화면 분해는 별개 축."
+    - generic [ref=f6e157]: 권한
+    - paragraph [ref=f6e158]: "저작 = 총괄, 실행 = 담당(FB-F5·D90). 총괄: 프로젝트 생성·요구사항 정의/편집·측정 설계(회차 수·질문 초점=측정 축)=무엇을 잴지(측정 무결성·담당이 자기 잣대 못 바꾸게). 담당: 팀·레포 편성·체크포인트 열기(이 반 진도에 맞춰 언제)·독촉·모니터링·개입=이 반에서 언제·누구를(규모상 반마다 생기는 운영을 총괄이 다 할 수 없음). 회차 수는 총괄 설계지만 담당이 가감 제안 가능(코호트 비교 흔들림 방지). 관련: D75·D76·D77·D78·D80·D90."

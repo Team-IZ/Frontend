@@ -1,0 +1,241 @@
+- generic [ref=f8e2]:
+  - complementary [ref=f8e3]:
+    - generic [ref=f8e4]:
+      - generic [ref=f8e5]:
+        - generic [ref=f8e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=f8e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=f8e8]:
+      - generic [ref=f8e9]:
+        - generic [ref=f8e10]: shared
+        - button "로그인 shared/login.html" [ref=f8e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=f8e13]: shared/login.html
+      - generic [ref=f8e14]:
+        - generic [ref=f8e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=f8e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=f8e18]: ▸
+      - generic [ref=f8e19]:
+        - generic [ref=f8e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=f8e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=f8e23]: 총괄
+          - generic [ref=f8e24]: ▸
+      - generic [ref=f8e25]:
+        - generic [ref=f8e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=f8e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=f8e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=f8e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=f8e31]: manager/dashboard.html
+        - button "교안 목록 manager/curriculum.html · SC-M12" [ref=f8e32] [cursor=pointer]:
+          - text: 교안 목록
+          - generic [ref=f8e33]: manager/curriculum.html · SC-M12
+        - button "프로젝트 ▸" [ref=f8e35] [cursor=pointer]:
+          - text: 프로젝트
+          - generic [ref=f8e36]: ▸
+        - button "분석 · 진단 ▸" [ref=f8e38] [cursor=pointer]:
+          - text: 분석 · 진단
+          - generic [ref=f8e39]: ▸
+        - button "교육생 ▸" [ref=f8e41] [cursor=pointer]:
+          - text: 교육생
+          - generic [ref=f8e42]: ▸
+        - button "개입 관리 manager/intervention.html" [ref=f8e43] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=f8e44]: manager/intervention.html
+        - button "리포트 ▸" [ref=f8e46] [cursor=pointer]:
+          - text: 리포트
+          - generic [ref=f8e47]: ▸
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=f8e48] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=f8e49]: manager/appeal-disclosure.html
+      - generic [ref=f8e50]:
+        - generic [ref=f8e51]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=f8e53] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=f8e54]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=f8e55] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=f8e56]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=f8e57] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=f8e58]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=f8e59] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=f8e60]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=f8e61] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=f8e62]: trainee/result.html
+  - main [ref=f8e63]:
+    - generic [ref=f8e64]:
+      - generic [ref=f8e65]: 교안 목록
+      - generic [ref=f8e66]: manager/curriculum.html#list
+      - link "새 탭에서 열기 ↗" [ref=f8e67] [cursor=pointer]:
+        - /url: manager/curriculum.html#list
+    - iframe [ref=f8e68]:
+      - generic [ref=f9e4]:
+        - generic [ref=f9e5]: iz-get.com/courses/backend-4/curriculum
+        - generic [ref=f9e11]:
+          - generic [ref=f9e12]:
+            - generic [ref=f9e13]:
+              - generic [ref=f9e14]:
+                - generic [ref=f9e15]: ◆
+                - text: IZ-Get
+              - generic [ref=f9e16]:
+                - generic [ref=f9e17]: 과정
+                - text: 백엔드 부트캠프 · 4기 ▾
+            - generic [ref=f9e18]:
+              - text: 박지현 · 매니저
+              - generic [ref=f9e19]: 박
+          - generic [ref=f9e20]:
+            - generic [ref=f9e21]:
+              - generic [ref=f9e22]:
+                - generic [ref=f9e23]: ▦
+                - text: 대시보드
+              - generic [ref=f9e24]:
+                - generic [ref=f9e25]: ◔
+                - text: 기수 구성
+              - generic [ref=f9e26]:
+                - generic [ref=f9e27]: ▧
+                - text: 교안
+              - generic [ref=f9e28]:
+                - generic [ref=f9e29]: ▤
+                - text: 프로젝트
+              - generic [ref=f9e30]:
+                - generic [ref=f9e31]: △
+                - text: 분석 · 진단
+              - generic [ref=f9e32]:
+                - generic [ref=f9e33]: ◎
+                - text: 교육생
+              - generic [ref=f9e34]:
+                - generic [ref=f9e35]: ✎
+                - text: 개입
+              - generic [ref=f9e36]:
+                - generic [ref=f9e37]: ▥
+                - text: 리포트
+              - generic [ref=f9e38]:
+                - generic [ref=f9e39]: ⚖
+                - text: 이의 · 공개
+            - generic [ref=f9e40]:
+              - generic [ref=f9e41]:
+                - generic [ref=f9e42]: 교안 › 백엔드 부트캠프 · 4기
+                - heading "교안 관리" [level=2] [ref=f9e43]
+              - generic [ref=f9e44]:
+                - generic [ref=f9e45]:
+                  - text: 교안 목록
+                  - generic [ref=f9e46]: 총 6개
+                - button "+ 교안 등록" [ref=f9e47] [cursor=pointer]
+              - generic [ref=f9e48]:
+                - generic [ref=f9e49]: 🔍 교안명 · 주제 검색
+                - generic [ref=f9e50] [cursor=pointer]: 차수 전체 ▾
+                - generic [ref=f9e51] [cursor=pointer]: 추출 상태 전체 ▾
+                - generic [ref=f9e52] [cursor=pointer]: 매핑 검수 전체 ▾
+                - generic [ref=f9e53] [cursor=pointer]: 정렬 최근 수정순 ▾
+              - table [ref=f9e55]:
+                - rowgroup [ref=f9e56]:
+                  - row [ref=f9e57]:
+                    - columnheader "교안명" [ref=f9e58]
+                    - columnheader "과정 · 차수" [ref=f9e59]
+                    - columnheader "유형" [ref=f9e60]
+                    - columnheader "버전" [ref=f9e61]
+                    - columnheader "추출 상태" [ref=f9e62]
+                    - columnheader "매핑 검수" [ref=f9e63]
+                    - columnheader "최종 수정" [ref=f9e64]
+                    - columnheader [ref=f9e65]
+                - rowgroup [ref=f9e66]:
+                  - row [ref=f9e67] [cursor=pointer]:
+                    - cell "JWT · 인증 인증 · 토큰 수명 · 세션" [ref=f9e68]:
+                      - text: JWT · 인증
+                      - generic [ref=f9e69]: 인증 · 토큰 수명 · 세션
+                    - cell "백엔드 · 4기" [ref=f9e70]
+                    - cell "PDF" [ref=f9e71]
+                    - cell "v3" [ref=f9e72]
+                    - cell [ref=f9e73]
+                    - cell [ref=f9e76]
+                    - cell "07-10" [ref=f9e79]
+                    - cell "⋯" [ref=f9e80]
+                  - row [ref=f9e81] [cursor=pointer]:
+                    - cell "반례 · 예외 처리 가이드 edge case · 방어적 프로그래밍" [ref=f9e82]:
+                      - text: 반례 · 예외 처리 가이드
+                      - generic [ref=f9e83]: edge case · 방어적 프로그래밍
+                    - cell "백엔드 · 4기" [ref=f9e84]
+                    - cell "PDF" [ref=f9e85]
+                    - cell "v2" [ref=f9e86]
+                    - cell [ref=f9e87]
+                    - cell [ref=f9e90]
+                    - cell "07-12" [ref=f9e93]
+                    - cell "검수 →⋯" [ref=f9e94]
+                  - row [ref=f9e95] [cursor=pointer]:
+                    - cell "설계 대안 비교 트레이드오프 · 아키텍처" [ref=f9e96]:
+                      - text: 설계 대안 비교
+                      - generic [ref=f9e97]: 트레이드오프 · 아키텍처
+                    - cell "백엔드 · 4기" [ref=f9e98]
+                    - cell "PDF" [ref=f9e99]
+                    - cell "v1" [ref=f9e100]
+                    - cell [ref=f9e101]
+                    - cell [ref=f9e104]
+                    - cell "07-11" [ref=f9e107]
+                    - cell "⋯" [ref=f9e108]
+                  - row [ref=f9e109] [cursor=pointer]:
+                    - cell "REST API 설계 리소스 · 상태코드 · 규약" [ref=f9e110]:
+                      - text: REST API 설계
+                      - generic [ref=f9e111]: 리소스 · 상태코드 · 규약
+                    - cell "백엔드 · 4기" [ref=f9e112]
+                    - cell "PDF" [ref=f9e113]
+                    - cell "v1" [ref=f9e114]
+                    - cell [ref=f9e115]
+                    - cell "—" [ref=f9e118]
+                    - cell "07-09" [ref=f9e120]
+                    - cell "재처리⋯" [ref=f9e121]
+                  - row [ref=f9e122] [cursor=pointer]:
+                    - cell "동시성 · 경합 락 · 트랜잭션 격리" [ref=f9e123]:
+                      - text: 동시성 · 경합
+                      - generic [ref=f9e124]: 락 · 트랜잭션 격리
+                    - cell "백엔드 · 4기" [ref=f9e125]
+                    - cell "PDF" [ref=f9e126]
+                    - cell "v1" [ref=f9e127]
+                    - cell [ref=f9e128]
+                    - cell "—" [ref=f9e131]
+                    - cell "07-13" [ref=f9e133]
+                    - cell "⋯" [ref=f9e134]
+                  - row [ref=f9e135] [cursor=pointer]:
+                    - cell "상태 관리 기초방금 등록 생명주기 · 불변성" [ref=f9e136]:
+                      - text: 상태 관리 기초방금 등록
+                      - generic [ref=f9e137]: 생명주기 · 불변성
+                    - cell "백엔드 · 4기" [ref=f9e138]
+                    - cell "PDF" [ref=f9e139]
+                    - cell "v1" [ref=f9e140]
+                    - cell [ref=f9e141]
+                    - cell "—" [ref=f9e144]
+                    - cell "07-13" [ref=f9e146]
+                    - cell "⋯" [ref=f9e147]
+              - generic [ref=f9e148]:
+                - generic [ref=f9e149]: 6개 중 1–6
+                - generic [ref=f9e150]: "1"
+              - generic [ref=f9e152]: "· 행 클릭 → 교안 상세(구조 추출·매핑 승인, 별도 화면·후속). 상태 머신: 업로드 → 추출 중 → 추출 완료 / 추출 실패 → 매핑 대기 → 검수 대기 → 승인. 정의 안 된 전이는 차단. 추출 실패 자료는 재처리·삭제만 가능(원본 유지). 승인된 교안은 활성 매핑 연결 확인 후에만 삭제. 권한 밖 과정 접근 차단(테넌트 격리). 자동확정 금지 — 매핑은 매니저 승인 전까지 추천 상태."
+              - generic [ref=f9e154]:
+                - generic [ref=f9e155]:
+                  - generic [ref=f9e156]: 이 화면 · 상태 · case (CUR-03 · 등록 관리 중 목록 관련)
+                  - generic [ref=f9e157] [cursor=pointer]: 상태 ↔ case 매핑 총합 → (후속)
+                - generic [ref=f9e158]:
+                  - generic [ref=f9e159]: 03-4
+                  - generic [ref=f9e160]: 중복 차단
+                  - generic [ref=f9e161]: 동일 과정·차수·버전 중복 — 신규 등록 차단, 기존 항목 확인 유도
+                - generic [ref=f9e162]:
+                  - generic [ref=f9e163]: 03-7
+                  - generic [ref=f9e164]: 재처리만
+                  - generic [ref=f9e165]: 구조 추출 실패 — 추출 실패 상태, 원본 유지한 채 재처리만 허용
+                - generic [ref=f9e166]:
+                  - generic [ref=f9e167]: 03-8
+                  - generic [ref=f9e168]: 전이 차단
+                  - generic [ref=f9e169]: 정의 안 된 상태 전이 — 변경 차단, 현재/허용 다음 상태 안내
+                - generic [ref=f9e170]:
+                  - generic [ref=f9e171]: 03-9
+                  - generic [ref=f9e172]: 삭제 차단
+                  - generic [ref=f9e173]: 승인·활성 매핑 사용 중 삭제 — 차단, 연결 해제 절차 안내
+                - generic [ref=f9e174]:
+                  - generic [ref=f9e175]: 03-10
+                  - generic [ref=f9e176]: "403"
+                  - generic [ref=f9e177]: 권한 없는 과정 접근 — 요청 차단(테넌트 격리·SYS-02)

@@ -1,0 +1,264 @@
+- generic [ref=f11e2]:
+  - complementary [ref=f11e3]:
+    - generic [ref=f11e4]:
+      - generic [ref=f11e5]:
+        - generic [ref=f11e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=f11e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=f11e8]:
+      - generic [ref=f11e9]:
+        - generic [ref=f11e10]: shared
+        - button "로그인 shared/login.html" [ref=f11e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=f11e13]: shared/login.html
+      - generic [ref=f11e14]:
+        - generic [ref=f11e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=f11e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=f11e18]: ▸
+      - generic [ref=f11e19]:
+        - generic [ref=f11e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=f11e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=f11e23]: 총괄
+          - generic [ref=f11e24]: ▸
+      - generic [ref=f11e25]:
+        - generic [ref=f11e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=f11e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=f11e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=f11e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=f11e31]: manager/dashboard.html
+        - button "교안 ▸" [ref=f11e33] [cursor=pointer]:
+          - text: 교안
+          - generic [ref=f11e34]: ▸
+        - button "프로젝트 ▸" [ref=f11e36] [cursor=pointer]:
+          - text: 프로젝트
+          - generic [ref=f11e37]: ▸
+        - button "코호트 분석 manager/risk-analysis.html" [ref=f11e38] [cursor=pointer]:
+          - text: 코호트 분석
+          - generic [ref=f11e39]: manager/risk-analysis.html
+        - button "코호트 히트맵 manager/heatmap.html" [ref=f11e40] [cursor=pointer]:
+          - text: 코호트 히트맵
+          - generic [ref=f11e41]: manager/heatmap.html
+        - button "교육생 리스트 manager/trainee-list.html" [ref=f11e42] [cursor=pointer]:
+          - text: 교육생 리스트
+          - generic [ref=f11e43]: manager/trainee-list.html
+        - button "개별 교육생 상세 manager/trainee-detail.html" [ref=f11e44] [cursor=pointer]:
+          - text: 개별 교육생 상세
+          - generic [ref=f11e45]: manager/trainee-detail.html
+        - button "개입 관리 manager/intervention.html" [ref=f11e46] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=f11e47]: manager/intervention.html
+        - button "리포트 ▸" [ref=f11e49] [cursor=pointer]:
+          - text: 리포트
+          - generic [ref=f11e50]: ▸
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=f11e51] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=f11e52]: manager/appeal-disclosure.html
+      - generic [ref=f11e53]:
+        - generic [ref=f11e54]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=f11e56] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=f11e57]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=f11e58] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=f11e59]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=f11e60] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=f11e61]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=f11e62] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=f11e63]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=f11e64] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=f11e65]: trainee/result.html
+  - main [ref=f11e66]:
+    - generic [ref=f11e67]:
+      - generic [ref=f11e68]: 교육생 리스트
+      - generic [ref=f11e69]: manager/trainee-list.html
+      - link "새 탭에서 열기 ↗" [ref=f11e70] [cursor=pointer]:
+        - /url: manager/trainee-list.html
+    - iframe [ref=f11e71]:
+      - generic [ref=f12e2]:
+        - generic [ref=f12e3]:
+          - generic [ref=f12e4]: SC-M11 · P0 · 매니저 · 웹
+          - heading "교육생 리스트 (디렉터리)" [level=1] [ref=f12e5]
+          - paragraph [ref=f12e6]: 사람을 찾아 상세로 가는 통로 — 정체성(이름·반·팀)이 척추, 계정·이번 회차 상태는 가벼운 보조. 점수·위험 정렬은 없음(그건 대시보드 SC-M01·상세 SC-M06 소관). v1은 매니저가 자기 기관 내 모든 교육생을 봄(권한 토글 없음 · AUTH-11 세밀 통제는 고도화 보류). 페이지네이션 중앙.
+        - generic [ref=f12e7]: 교육생 디렉터리
+        - generic [ref=f12e8]:
+          - generic [ref=f12e9]: iz-get.com/cohorts/7/trainees
+          - generic [ref=f12e15]:
+            - generic [ref=f12e16]:
+              - generic [ref=f12e17]:
+                - generic [ref=f12e18]:
+                  - generic [ref=f12e19]: ◆
+                  - text: IZ-Get
+                - generic [ref=f12e20]:
+                  - generic [ref=f12e21]: 기수
+                  - text: 7기 · 그린 부트캠프 ▾
+              - generic [ref=f12e22]:
+                - text: 박지현 · 매니저
+                - generic [ref=f12e23]: 박
+            - generic [ref=f12e24]:
+              - generic [ref=f12e25]:
+                - generic [ref=f12e26]:
+                  - generic [ref=f12e27]: ▦
+                  - text: 대시보드
+                - generic [ref=f12e28]:
+                  - generic [ref=f12e29]: ◔
+                  - text: 기수 구성
+                - generic [ref=f12e30]:
+                  - generic [ref=f12e31]: ▧
+                  - text: 교안
+                - generic [ref=f12e32]:
+                  - generic [ref=f12e33]: ▤
+                  - text: 프로젝트
+                - generic [ref=f12e34]:
+                  - generic [ref=f12e35]: △
+                  - text: 코호트 분석
+                - generic [ref=f12e36]:
+                  - generic [ref=f12e37]: ◎
+                  - text: 교육생
+                - generic [ref=f12e38]:
+                  - generic [ref=f12e39]: ✎
+                  - text: 개입
+                - generic [ref=f12e40]:
+                  - generic [ref=f12e41]: ▥
+                  - text: 리포트
+                - generic [ref=f12e42]:
+                  - generic [ref=f12e43]: ⚖
+                  - text: 이의 · 공개
+              - generic [ref=f12e44]:
+                - generic [ref=f12e46]:
+                  - generic [ref=f12e47]: 교육생 › 7기
+                  - heading "교육생 48명" [level=2] [ref=f12e48]
+                - generic [ref=f12e49]:
+                  - generic [ref=f12e50]: 🔍 이름 · 이메일 검색
+                  - generic [ref=f12e51]:
+                    - generic [ref=f12e52]: 반
+                    - text: 전체 ▾
+                  - generic [ref=f12e53]:
+                    - generic [ref=f12e54]: 계정
+                    - text: 전체 ▾
+                  - generic [ref=f12e55]:
+                    - generic [ref=f12e56]: 정렬
+                    - text: 이름순 ▾
+                  - generic [ref=f12e57]: 1–20 / 48명
+                - table [ref=f12e59]:
+                  - rowgroup [ref=f12e60]:
+                    - row [ref=f12e61]:
+                      - columnheader "교육생 ↕" [ref=f12e62]
+                      - columnheader "반" [ref=f12e63]
+                      - columnheader "계정" [ref=f12e64]
+                      - columnheader [ref=f12e65]
+                  - rowgroup [ref=f12e66]:
+                    - row [ref=f12e67]:
+                      - cell "강 강민준 minjun@ex.com" [ref=f12e68]:
+                        - generic [ref=f12e69]:
+                          - generic [ref=f12e70]: 강
+                          - generic [ref=f12e71]:
+                            - generic [ref=f12e72]: 강민준
+                            - generic [ref=f12e73]: minjun@ex.com
+                      - cell "A반" [ref=f12e74]
+                      - cell "활성" [ref=f12e75]
+                      - cell "›" [ref=f12e77]
+                    - row [ref=f12e78]:
+                      - cell "김 김서연 seoyeon@ex.com" [ref=f12e79]:
+                        - generic [ref=f12e80]:
+                          - generic [ref=f12e81]: 김
+                          - generic [ref=f12e82]:
+                            - generic [ref=f12e83]: 김서연
+                            - generic [ref=f12e84]: seoyeon@ex.com
+                      - cell "A반" [ref=f12e85]
+                      - cell "활성" [ref=f12e86]
+                      - cell "›" [ref=f12e88]
+                    - row [ref=f12e89]:
+                      - cell "서 서지우 jiwoo@ex.com" [ref=f12e90]:
+                        - generic [ref=f12e91]:
+                          - generic [ref=f12e92]: 서
+                          - generic [ref=f12e93]:
+                            - generic [ref=f12e94]: 서지우
+                            - generic [ref=f12e95]: jiwoo@ex.com
+                      - cell "B반" [ref=f12e96]
+                      - cell "초대됨" [ref=f12e97]
+                      - cell "›" [ref=f12e99]
+                    - row [ref=f12e100]:
+                      - cell "한 한도현 dohyun@ex.com" [ref=f12e101]:
+                        - generic [ref=f12e102]:
+                          - generic [ref=f12e103]: 한
+                          - generic [ref=f12e104]:
+                            - generic [ref=f12e105]: 한도현
+                            - generic [ref=f12e106]: dohyun@ex.com
+                      - cell "A반" [ref=f12e107]
+                      - cell "활성" [ref=f12e108]
+                      - cell "›" [ref=f12e110]
+                    - row [ref=f12e111]:
+                      - cell "오 오세훈 sehun@ex.com" [ref=f12e112]:
+                        - generic [ref=f12e113]:
+                          - generic [ref=f12e114]: 오
+                          - generic [ref=f12e115]:
+                            - generic [ref=f12e116]: 오세훈
+                            - generic [ref=f12e117]: sehun@ex.com
+                      - cell "C반" [ref=f12e118]
+                      - cell "비활성" [ref=f12e119]
+                      - cell "›" [ref=f12e121]
+                - generic [ref=f12e123]:
+                  - generic [ref=f12e124]: ‹
+                  - generic [ref=f12e125]: "1"
+                  - generic [ref=f12e126]: "2"
+                  - generic [ref=f12e127]: "3"
+                  - generic [ref=f12e128]: ›
+                - generic [ref=f12e129]: "· 순수 명부(FB-L3): 정체성·계정 상태만(이름·반·계정) — 반은 안정적 소속이라 유지, 팀·이번 회차는 시변 상태라 제거(계속 바뀌는 값을 정적 리스트에 고정 표시하면 혼란). 팀·회차별 현황은 대시보드(SC-M01) 소관. 위험도 정렬은 없음 — 위험 우선순위도 대시보드. 행 클릭 → 개별 상세(SC-M06)."
+        - generic [ref=f12e130]:
+          - heading "상태 ↔ 명세 case 매핑 (DASH-17 8 · AUTH-11 고도화 보류)" [level=3] [ref=f12e131]
+          - paragraph [ref=f12e132]: v1은 기관 내 개방(D20) → AUTH-11 세밀 열람 통제 7건은 고도화 보류. SYS-02 테넌트 격리만 유지. 비주얼은 정상 목록만.
+          - table [ref=f12e134]:
+            - rowgroup [ref=f12e135]:
+              - row [ref=f12e136]:
+                - cell "L-1" [ref=f12e137]
+                - cell "검색 결과 없음" [ref=f12e138]
+                - cell "-" [ref=f12e139]
+                - cell "\"결과 없음\" 안내" [ref=f12e141]
+              - row [ref=f12e142]:
+                - cell "L-2" [ref=f12e143]
+                - cell "페이지 범위 초과" [ref=f12e144]
+                - cell "-" [ref=f12e145]
+                - cell "마지막 유효 페이지/빈 결과" [ref=f12e147]
+              - row [ref=f12e148]:
+                - cell "L-3" [ref=f12e149]
+                - cell "유효하지 않은 반 필터" [ref=f12e150]
+                - cell "danger" [ref=f12e151]
+                - cell "필터 거부·허용 값 안내" [ref=f12e153]
+              - row [ref=f12e154]:
+                - cell "L-4" [ref=f12e155]
+                - cell "이름 검색어 과도·비정상" [ref=f12e156]
+                - cell "info" [ref=f12e157]
+                - cell "입력 정규화 또는 거부" [ref=f12e159]
+              - row [ref=f12e160]:
+                - cell "L-5" [ref=f12e161]
+                - cell "타 기관 교육생 포함(격리)" [ref=f12e162]
+                - cell "danger" [ref=f12e163]
+                - cell "범위 밖 제거 (SYS-02)" [ref=f12e165]
+              - row [ref=f12e166]:
+                - cell "L-6" [ref=f12e167]
+                - cell "반/팀 조회 실패" [ref=f12e168]
+                - cell "info" [ref=f12e169]
+                - cell "필터 비활성·기본 목록" [ref=f12e171]
+              - row [ref=f12e172]:
+                - cell "L-7" [ref=f12e173]
+                - cell "위험도 정렬 요청" [ref=f12e174]
+                - cell "info" [ref=f12e175]
+                - cell "거부·\"SC-M01 사용\" 유도" [ref=f12e177]
+              - row [ref=f12e178]:
+                - cell "L-8" [ref=f12e179]
+                - cell "대량 페이지 요청" [ref=f12e180]
+                - cell "info" [ref=f12e181]
+                - cell "최대 페이지 크기 제한" [ref=f12e183]
+              - row [ref=f12e184]:
+                - cell "—" [ref=f12e185]
+                - cell "AUTH-11 타 매니저 이력 통제 (7건)" [ref=f12e186]
+                - cell "보류" [ref=f12e187]
+                - cell "고도화 이관 — v1 기관 내 개방(D20)" [ref=f12e189]
+          - generic [ref=f12e190]: "디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 디렉터리 재프레이밍(정체성 우선) · 권한 토글 제거(D20) · 페이지네이션 중앙(D22) · 위험도 정렬 배제(DASH-17) · 웹 기준"

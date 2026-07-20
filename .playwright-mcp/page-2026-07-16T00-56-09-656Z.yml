@@ -1,0 +1,305 @@
+- generic [ref=f5e2]:
+  - complementary [ref=f5e3]:
+    - generic [ref=f5e4]:
+      - generic [ref=f5e5]:
+        - generic [ref=f5e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=f5e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=f5e8]:
+      - generic [ref=f5e9]:
+        - generic [ref=f5e10]: shared
+        - button "로그인 shared/login.html" [ref=f5e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=f5e13]: shared/login.html
+      - generic [ref=f5e14]:
+        - generic [ref=f5e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=f5e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=f5e18]: ▸
+      - generic [ref=f5e19]:
+        - generic [ref=f5e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=f5e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=f5e23]: 총괄
+          - generic [ref=f5e24]: ▸
+      - generic [ref=f5e25]:
+        - generic [ref=f5e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=f5e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=f5e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=f5e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=f5e31]: manager/dashboard.html
+        - button "프로젝트 ▸" [ref=f5e33] [cursor=pointer]:
+          - text: 프로젝트
+          - generic [ref=f5e34]: ▸
+        - button "위험 · 분석 manager/risk-analysis.html" [ref=f5e35] [cursor=pointer]:
+          - text: 위험 · 분석
+          - generic [ref=f5e36]: manager/risk-analysis.html
+        - button "코호트 히트맵 manager/heatmap.html" [ref=f5e37] [cursor=pointer]:
+          - text: 코호트 히트맵
+          - generic [ref=f5e38]: manager/heatmap.html
+        - button "교육생 리스트 manager/trainee-list.html" [ref=f5e39] [cursor=pointer]:
+          - text: 교육생 리스트
+          - generic [ref=f5e40]: manager/trainee-list.html
+        - button "개별 교육생 상세 manager/trainee-detail.html" [ref=f5e41] [cursor=pointer]:
+          - text: 개별 교육생 상세
+          - generic [ref=f5e42]: manager/trainee-detail.html
+        - button "개입 관리 manager/intervention.html" [ref=f5e43] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=f5e44]: manager/intervention.html
+        - generic [ref=f5e45]:
+          - button "리포트 ▸" [ref=f5e46] [cursor=pointer]:
+            - text: 리포트
+            - generic [ref=f5e47]: ▸
+          - generic [ref=f5e48]:
+            - button "종합 리포트 RPT-01 · 기수" [ref=f5e49] [cursor=pointer]
+            - button "체크포인트 RPT-04 · 회차별" [ref=f5e50] [cursor=pointer]
+            - button "개인 최종 RPT-02" [ref=f5e51] [cursor=pointer]
+            - button "상태 ↔ case 매핑 총합" [ref=f5e52] [cursor=pointer]
+        - button "교안 ▸" [ref=f5e54] [cursor=pointer]:
+          - text: 교안
+          - generic [ref=f5e55]: ▸
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=f5e56] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=f5e57]: manager/appeal-disclosure.html
+      - generic [ref=f5e58]:
+        - generic [ref=f5e59]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=f5e61] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=f5e62]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=f5e63] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=f5e64]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=f5e65] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=f5e66]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=f5e67] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=f5e68]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=f5e69] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=f5e70]: trainee/result.html
+  - main [ref=f5e71]:
+    - generic [ref=f5e72]:
+      - generic [ref=f5e73]: 리포트 · 체크포인트
+      - generic [ref=f5e74]: manager/report.html#checkpoints
+      - link "새 탭에서 열기 ↗" [ref=f5e75] [cursor=pointer]:
+        - /url: manager/report.html#checkpoints
+    - iframe [ref=f5e76]:
+      - generic [ref=f6e2]:
+        - text: → → ◔ ◔ ◔ ◔ ◔ ◔
+        - generic [ref=f6e3]:
+          - generic [ref=f6e4]: iz-get.com/cohorts/7/reports/checkpoints
+          - generic [ref=f6e10]:
+            - generic [ref=f6e11]:
+              - generic [ref=f6e12]:
+                - generic [ref=f6e13]:
+                  - generic [ref=f6e14]: ◆
+                  - text: IZ-Get
+                - generic [ref=f6e15]:
+                  - generic [ref=f6e16]: 기수
+                  - text: 7기 ▾
+              - generic [ref=f6e17]:
+                - text: 박지현 · 매니저
+                - generic [ref=f6e18]: 박
+            - generic [ref=f6e19]:
+              - generic [ref=f6e20]:
+                - generic [ref=f6e21]:
+                  - generic [ref=f6e22]: ▦
+                  - text: 대시보드
+                - generic [ref=f6e23]:
+                  - generic [ref=f6e24]: ◔
+                  - text: 기수 구성
+                - generic [ref=f6e25]:
+                  - generic [ref=f6e26]: ▤
+                  - text: 프로젝트
+                - generic [ref=f6e27]:
+                  - generic [ref=f6e28]: △
+                  - text: 위험 · 분석
+                - generic [ref=f6e29]:
+                  - generic [ref=f6e30]: ◎
+                  - text: 교육생
+                - generic [ref=f6e31]:
+                  - generic [ref=f6e32]: ✎
+                  - text: 개입
+                - generic [ref=f6e33]:
+                  - generic [ref=f6e34]: ▥
+                  - text: 리포트
+                - generic [ref=f6e35]:
+                  - generic [ref=f6e36]: ▧
+                  - text: 교안
+              - generic [ref=f6e37]:
+                - generic [ref=f6e39]:
+                  - generic [ref=f6e40]: 리포트 › 7기
+                  - heading "리포트" [level=2] [ref=f6e41]
+                - generic [ref=f6e42]:
+                  - generic [ref=f6e43]: 종합 리포트
+                  - generic [ref=f6e44]: 체크포인트 3
+                  - generic [ref=f6e45]: 개인 최종 리포트
+                - generic [ref=f6e46]:
+                  - generic [ref=f6e47]:
+                    - generic [ref=f6e48] [cursor=pointer]:
+                      - generic [ref=f6e49]: 체크포인트 3 · API 서버 1회차
+                      - generic [ref=f6e50]: 자동생성 · 07-12 14:03
+                    - generic [ref=f6e52] [cursor=pointer]:
+                      - generic [ref=f6e53]: 체크포인트 2 · CLI 과제 2회차
+                      - generic [ref=f6e54]: 자동생성 · 06-28 14:01
+                    - generic [ref=f6e56] [cursor=pointer]:
+                      - generic [ref=f6e57]: 체크포인트 1 · CLI 과제 1회차
+                      - generic [ref=f6e58]: diff 없음(최초 체크포인트)
+                  - generic [ref=f6e60]:
+                    - generic [ref=f6e61]:
+                      - generic [ref=f6e62]: 체크포인트 2 (CLI 과제 2회차) · 직전(체크포인트 1) 대비 변화
+                      - generic [ref=f6e63]:
+                        - generic [ref=f6e64]: 종합과 동일 집계
+                        - button "PDF 내보내기" [ref=f6e65] [cursor=pointer]
+                    - generic [ref=f6e66]:
+                      - generic [ref=f6e67]: "단계 · 검증 포커스: 반례·예외 처리"
+                      - generic [ref=f6e68]: 기준 · 체크포인트 1 (CLI 과제 1회차)
+                      - generic [ref=f6e69]: 자동생성 · 06-28 14:01
+                      - generic [ref=f6e70]: 집계 · SSOT v06-28
+                      - generic [ref=f6e71]: ✓ 매니저 알림 발송됨
+                    - generic [ref=f6e72]: 응시 현황
+                    - generic [ref=f6e73]:
+                      - generic [ref=f6e74]:
+                        - generic [ref=f6e75]: "22"
+                        - generic [ref=f6e76]: 응시 완료
+                      - generic [ref=f6e77]:
+                        - generic [ref=f6e78]: "2"
+                        - generic [ref=f6e79]: 미응시 · 명단 ↗
+                      - generic [ref=f6e80]:
+                        - generic [ref=f6e81]: "24"
+                        - generic [ref=f6e82]: 총원
+                      - generic [ref=f6e83]:
+                        - generic [ref=f6e84]: ±0
+                        - generic [ref=f6e85]: 직전 대비 응시 변화
+                    - generic [ref=f6e86]: AI 변화 요약
+                    - generic [ref=f6e87]:
+                      - paragraph [ref=f6e88]: 직전 체크포인트 대비 기수 평균이 3.1 → 3.4로 상승. 개입 대상 8명 중 3명이 이번 체크포인트 취약 축 회복. 다만 이번 검증 포커스인 반례·예외 처리에서 신규 하락자 2명 발생. 응시 이탈은 없음.
+                      - generic [ref=f6e89]: ⚠ 원본 집계값과 일치 검증을 통과한 문장만 노출. AI 요약 실패 시 아래 정형 지표는 그대로 유지(case7).
+                    - generic [ref=f6e90]: 이번 체크포인트 스냅샷 · 직전 대비 (SSOT 재사용)
+                    - table [ref=f6e91]:
+                      - rowgroup [ref=f6e92]:
+                        - row [ref=f6e93]:
+                          - columnheader "지표" [ref=f6e94]
+                          - columnheader "이번(체크포인트 2)" [ref=f6e95]
+                          - columnheader "직전(체크포인트 1)" [ref=f6e96]
+                          - columnheader "Δ" [ref=f6e97]
+                          - columnheader [ref=f6e98]
+                        - row [ref=f6e99]:
+                          - cell "기수 평균 총점" [ref=f6e100]
+                          - cell "3.4" [ref=f6e101]
+                          - cell "3.1" [ref=f6e102]
+                          - cell "▲ +0.3" [ref=f6e103]
+                          - cell [ref=f6e104]:
+                            - button "◔ 근거" [ref=f6e105] [cursor=pointer]
+                        - row [ref=f6e106]:
+                          - cell "코드이해" [ref=f6e107]
+                          - cell "3.8" [ref=f6e108]
+                          - cell "3.6" [ref=f6e109]
+                          - cell "▲ +0.2" [ref=f6e110]
+                          - cell [ref=f6e111]
+                        - row [ref=f6e112]:
+                          - cell "반례대응 · 취약" [ref=f6e113]
+                          - cell "2.6" [ref=f6e114]
+                          - cell "2.9" [ref=f6e115]
+                          - cell "▼ −0.3" [ref=f6e116]
+                          - cell [ref=f6e117]:
+                            - button "◔ 근거" [ref=f6e118] [cursor=pointer]
+                        - row [ref=f6e119]:
+                          - cell "자기수정" [ref=f6e120]
+                          - cell "3.2" [ref=f6e121]
+                          - cell "3.1" [ref=f6e122]
+                          - cell "▲ +0.1" [ref=f6e123]
+                          - cell [ref=f6e124]
+                        - row [ref=f6e125]:
+                          - cell "회복률(누적·완료 기준)" [ref=f6e126]
+                          - cell "73%" [ref=f6e127]
+                          - cell "64%" [ref=f6e128]
+                          - cell "▲ +9%p" [ref=f6e129]
+                          - cell [ref=f6e130]:
+                            - button "◔ 근거" [ref=f6e131] [cursor=pointer]
+                    - generic [ref=f6e132]: 변화 하이라이트 · 대상 명단 (조치 가능)
+                    - generic [ref=f6e133]:
+                      - generic [ref=f6e134]:
+                        - generic [ref=f6e135]: 회복 개선
+                        - generic [ref=f6e136]: 개입 대상 중 3명 취약 축 회복
+                        - generic [ref=f6e137]: +3명
+                      - generic [ref=f6e138]:
+                        - generic [ref=f6e139] [cursor=pointer]: 김민준 ↗
+                        - generic [ref=f6e140] [cursor=pointer]: 이서준 ↗
+                        - generic [ref=f6e141] [cursor=pointer]: 한지우 ↗
+                      - generic [ref=f6e142]:
+                        - generic [ref=f6e143]: 위험 증가
+                        - generic [ref=f6e144]: 반례대응 신규 하락자
+                        - generic [ref=f6e145]: +2명
+                      - generic [ref=f6e146]:
+                        - generic [ref=f6e147] [cursor=pointer]: 강민준 → 위험·분석 ↗
+                        - generic [ref=f6e148] [cursor=pointer]: 서지우 → 위험·분석 ↗
+                      - generic [ref=f6e149]:
+                        - generic [ref=f6e150]: 응시 변화
+                        - generic [ref=f6e151]: 미응시 2명 (직전과 동일)
+                        - generic [ref=f6e152]: ±0
+                      - generic [ref=f6e153]:
+                        - generic [ref=f6e154] [cursor=pointer]: 최유진 ↗
+                        - generic [ref=f6e155] [cursor=pointer]: 정하늘 ↗
+                    - generic [ref=f6e156]: 취약 축 → 교안 위치 안내 (처방 · CUR-02 승인 매핑)
+                    - generic [ref=f6e157]:
+                      - generic [ref=f6e158]: 반례대응
+                      - generic [ref=f6e159]: 교안 「반례·예외 처리」 · 모듈 3.2 · p.14~18
+                      - generic [ref=f6e160] [cursor=pointer]: 교안 화면 ▸
+                    - generic [ref=f6e161]: ※ 위치 안내까지만 — 문제·처방 콘텐츠 생성은 배제(MEAS-07). 이 안내는 교육생 리포트(SC-T05)에도 노출. 교안 매핑 미승인 상태면 이 블록 생략(MEAS-07 규칙) · 매핑·승인은 [교안] 화면(SC-M12·CUR-02, P1 예정).
+                    - generic [ref=f6e162]: 이번 체크포인트에 판정된 개입 (회복률의 근거)
+                    - generic [ref=f6e163]:
+                      - generic [ref=f6e164]:
+                        - generic [ref=f6e165]: INTV#312
+                        - text: 김민준 · 반례대응 멘토링
+                        - generic [ref=f6e166]: 회복 2→3
+                      - generic [ref=f6e167]:
+                        - generic [ref=f6e168]: INTV#308
+                        - text: 이서준 · 자기수정 코칭
+                        - generic [ref=f6e169]: 회복 2→3
+                      - generic [ref=f6e170]:
+                        - generic [ref=f6e171]: INTV#305
+                        - text: 오세훈 · 반례대응 과제
+                        - generic [ref=f6e172]: 미회복 2→2
+                      - generic [ref=f6e173]:
+                        - generic [ref=f6e174]: INTV#318
+                        - text: 박준호 · 신규 개입(이번 체크포인트 시작)
+                        - generic [ref=f6e175]: 다음 체크포인트 판정
+                    - generic [ref=f6e177]:
+                      - generic [ref=f6e178]:
+                        - generic [ref=f6e179]: 이 화면 · 상태 · case (RPT-04 · 체크포인트 자동생성)
+                        - link "상태 ↔ case 매핑 총합 →" [ref=f6e180] [cursor=pointer]:
+                          - /url: "#cases"
+                      - generic [ref=f6e181]:
+                        - generic [ref=f6e182]: 04-1
+                        - generic [ref=f6e183]: 실패 기록
+                        - generic [ref=f6e184]: 자동 생성 실패 — 실패 기록·매니저 알림(무단 누락 금지)
+                      - generic [ref=f6e185]:
+                        - generic [ref=f6e186]: 04-2
+                        - generic [ref=f6e187]: diff 생략
+                        - generic [ref=f6e188]: 직전 스냅샷 없음(최초 체크포인트) — diff 없이 최초 스냅샷만('diff 없음' 표기)
+                      - generic [ref=f6e189]:
+                        - generic [ref=f6e190]: 04-3
+                        - generic [ref=f6e191]: 생성 중단
+                        - generic [ref=f6e192]: RPT-01 공통 집계 실패 — 집계 실패 시 체크포인트 생성 중단
+                      - generic [ref=f6e193]:
+                        - generic [ref=f6e194]: 04-4
+                        - generic [ref=f6e195]: 공통값 우선
+                        - generic [ref=f6e196]: 독립 계산값 불일치 — 공통 집계값 우선 적용(B8)
+                      - generic [ref=f6e197]:
+                        - generic [ref=f6e198]: 04-5
+                        - generic [ref=f6e199]: 단일 버전
+                        - generic [ref=f6e200]: 동일 회차 중복 생성 — 활성 버전 단일 유지
+                      - generic [ref=f6e201]:
+                        - generic [ref=f6e202]: 04-6
+                        - generic [ref=f6e203]: 재생성
+                        - generic [ref=f6e204]: 생성 이벤트 누락 — 누락 회차 재생성
+                      - generic [ref=f6e205]:
+                        - generic [ref=f6e206]: 04-7
+                        - generic [ref=f6e207]: 지표 유지
+                        - generic [ref=f6e208]: AI 요약 실패 — 정형 지표는 유지, 요약만 빈 상태(case7)
+                    - generic [ref=f6e209]: · 회차 종료 이벤트로 자동 생성 + 매니저 알림(무단 누락 금지·case1). 모든 수치는 종합 리포트와 동일 SSOT(B8) · [근거] → RPT-05 패널 · 명단 → SC-M06/M04 드릴. 최초 체크포인트는 직전 스냅샷이 없어 diff 생략(case2), AI 요약 실패 시 정형 지표 유지(case7).
+        - text: ◔ ◔

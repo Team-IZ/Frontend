@@ -1,0 +1,232 @@
+- generic [ref=f3e2]:
+  - complementary [ref=f3e3]:
+    - generic [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - generic [ref=f3e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=f3e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=f3e8]:
+      - generic [ref=f3e9]:
+        - generic [ref=f3e10]: shared
+        - button "로그인 shared/login.html" [ref=f3e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=f3e13]: shared/login.html
+      - generic [ref=f3e14]:
+        - generic [ref=f3e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=f3e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=f3e18]: ▸
+      - generic [ref=f3e19]:
+        - generic [ref=f3e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=f3e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=f3e23]: 총괄
+          - generic [ref=f3e24]: ▸
+      - generic [ref=f3e25]:
+        - generic [ref=f3e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=f3e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=f3e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=f3e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=f3e31]: manager/dashboard.html
+        - button "프로젝트 ▸" [ref=f3e33] [cursor=pointer]:
+          - text: 프로젝트
+          - generic [ref=f3e34]: ▸
+        - button "위험 · 분석 manager/risk-analysis.html" [ref=f3e35] [cursor=pointer]:
+          - text: 위험 · 분석
+          - generic [ref=f3e36]: manager/risk-analysis.html
+        - button "코호트 히트맵 manager/heatmap.html" [ref=f3e37] [cursor=pointer]:
+          - text: 코호트 히트맵
+          - generic [ref=f3e38]: manager/heatmap.html
+        - button "교육생 리스트 manager/trainee-list.html" [ref=f3e39] [cursor=pointer]:
+          - text: 교육생 리스트
+          - generic [ref=f3e40]: manager/trainee-list.html
+        - button "개별 교육생 상세 manager/trainee-detail.html" [ref=f3e41] [cursor=pointer]:
+          - text: 개별 교육생 상세
+          - generic [ref=f3e42]: manager/trainee-detail.html
+        - button "개입 관리 manager/intervention.html" [ref=f3e43] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=f3e44]: manager/intervention.html
+        - button "리포트 ▸" [ref=f3e46] [cursor=pointer]:
+          - text: 리포트
+          - generic [ref=f3e47]: ▸
+        - generic [ref=f3e48]:
+          - button "교안 ▸" [ref=f3e49] [cursor=pointer]:
+            - text: 교안
+            - generic [ref=f3e50]: ▸
+          - generic [ref=f3e51]:
+            - button "교안 목록 CUR-03 · 컬렉션" [ref=f3e52] [cursor=pointer]
+            - button "교안 등록 업로드" [ref=f3e53] [cursor=pointer]
+            - button "구조 추출 CUR-01 · 모듈 인덱스" [ref=f3e54] [cursor=pointer]
+            - button "매핑 승인 CUR-02 · 실패유형↔모듈" [ref=f3e55] [cursor=pointer]
+            - button "상태 ↔ case 매핑 총합" [ref=f3e56] [cursor=pointer]
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=f3e57] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=f3e58]: manager/appeal-disclosure.html
+      - generic [ref=f3e59]:
+        - generic [ref=f3e60]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=f3e62] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=f3e63]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=f3e64] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=f3e65]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=f3e66] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=f3e67]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=f3e68] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=f3e69]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=f3e70] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=f3e71]: trainee/result.html
+  - main [ref=f3e72]:
+    - generic [ref=f3e73]:
+      - generic [ref=f3e74]: 교안 · 매핑 승인
+      - generic [ref=f3e75]: manager/curriculum.html#mapping
+      - link "새 탭에서 열기 ↗" [ref=f3e76] [cursor=pointer]:
+        - /url: manager/curriculum.html#mapping
+    - iframe [ref=f3e77]:
+      - generic [ref=f4e4]:
+        - generic [ref=f4e5]: iz-get.com/cohorts/7/curriculum/2/mapping
+        - generic [ref=f4e11]:
+          - generic [ref=f4e12]:
+            - generic [ref=f4e13]:
+              - generic [ref=f4e14]:
+                - generic [ref=f4e15]: ◆
+                - text: IZ-Get
+              - generic [ref=f4e16]:
+                - generic [ref=f4e17]: 기수
+                - text: 7기 ▾
+            - generic [ref=f4e18]:
+              - text: 박지현 · 총괄 매니저
+              - generic [ref=f4e19]: 박
+          - generic [ref=f4e20]:
+            - generic [ref=f4e21]:
+              - generic [ref=f4e22]:
+                - generic [ref=f4e23]: ▦
+                - text: 대시보드
+              - generic [ref=f4e24]:
+                - generic [ref=f4e25]: ◔
+                - text: 기수 구성
+              - generic [ref=f4e26]:
+                - generic [ref=f4e27]: ▤
+                - text: 프로젝트
+              - generic [ref=f4e28]:
+                - generic [ref=f4e29]: △
+                - text: 위험 · 분석
+              - generic [ref=f4e30]:
+                - generic [ref=f4e31]: ◎
+                - text: 교육생
+              - generic [ref=f4e32]:
+                - generic [ref=f4e33]: ✎
+                - text: 개입
+              - generic [ref=f4e34]:
+                - generic [ref=f4e35]: ▥
+                - text: 리포트
+              - generic [ref=f4e36]:
+                - generic [ref=f4e37]: ▧
+                - text: 교안
+            - generic [ref=f4e38]:
+              - generic [ref=f4e40]:
+                - generic [ref=f4e41]: 교안 › 7기 › 반례 · 예외 처리 가이드
+                - heading "교안 관리" [level=2] [ref=f4e42]
+              - generic [ref=f4e43]:
+                - generic [ref=f4e44] [cursor=pointer]: 목록
+                - generic [ref=f4e45] [cursor=pointer]: 구조 추출
+                - generic [ref=f4e46] [cursor=pointer]: 매핑 승인
+              - generic [ref=f4e47]:
+                - generic [ref=f4e48]:
+                  - generic [ref=f4e49]: 실패유형 → 모듈·페이지 매핑 · v2
+                  - generic [ref=f4e50]: 승인 시 규칙 버전 저장 → MEAS-07 위치 안내에 사용
+                - generic [ref=f4e52]: REVIEW_PENDING
+              - generic [ref=f4e54]: ✓ 승인·재선택 로그는 정답 라벨로 축적되어 사후 임계값 보정에 사용. 승인 전까지는 추천 상태로만 유지 — 자동확정 금지(FR-8.2 동일 원칙, 신뢰도 오차의 피해 제한).
+              - generic [ref=f4e55]:
+                - generic [ref=f4e56]:
+                  - generic [ref=f4e57] [cursor=pointer]:
+                    - generic [ref=f4e58]: 반례대응
+                    - generic [ref=f4e59]: 검수 대기
+                  - generic [ref=f4e61] [cursor=pointer]:
+                    - generic [ref=f4e62]: 자기수정
+                    - generic [ref=f4e63]: 후보 검토
+                  - generic [ref=f4e65] [cursor=pointer]:
+                    - generic [ref=f4e66]: 대안비교
+                    - generic [ref=f4e67]: 승인됨
+                  - generic [ref=f4e69] [cursor=pointer]:
+                    - generic [ref=f4e70]: 코드이해
+                    - generic [ref=f4e71]: 후보 없음
+                  - generic [ref=f4e73] [cursor=pointer]:
+                    - generic [ref=f4e74]: 의사소통
+                    - generic [ref=f4e75]: 후보 없음
+                - generic [ref=f4e77]:
+                  - generic [ref=f4e78]: 「반례대응」 추천 모듈 · 객관 신호 병행 표시 (LLM 자기신뢰도 단독 확정 금지)
+                  - generic [ref=f4e79]:
+                    - generic [ref=f4e80]:
+                      - generic [ref=f4e81]: 추천 1위3.2 반례 · 예외 처리
+                      - generic [ref=f4e82]: p.14 ~ 18
+                    - generic [ref=f4e83]:
+                      - generic [ref=f4e84]:
+                        - generic [ref=f4e85]: 키워드 겹침
+                        - generic [ref=f4e86]: "8"
+                      - generic [ref=f4e87]:
+                        - generic [ref=f4e88]: 임베딩 유사도
+                        - generic [ref=f4e89]: "0.81"
+                      - generic [ref=f4e90]:
+                        - generic [ref=f4e91]: LLM 순위
+                        - generic [ref=f4e92]: 1위
+                      - generic [ref=f4e93]:
+                        - generic [ref=f4e94]: 상류 품질
+                        - generic [ref=f4e95]: 정상
+                    - generic [ref=f4e96]:
+                      - button "이 매핑 승인" [ref=f4e97] [cursor=pointer]
+                      - button "다른 모듈로 재선택" [ref=f4e98] [cursor=pointer]
+                      - generic [ref=f4e99]: 승인 → 판정유형→모듈·페이지 + 규칙 버전 저장
+                  - generic [ref=f4e100]:
+                    - generic [ref=f4e101]:
+                      - generic [ref=f4e102]: 추천 2위3.3 방어적 프로그래밍
+                      - generic [ref=f4e103]: p.19 ~ 24
+                    - generic [ref=f4e104]:
+                      - generic [ref=f4e105]:
+                        - generic [ref=f4e106]: 키워드 겹침
+                        - generic [ref=f4e107]: "5"
+                      - generic [ref=f4e108]:
+                        - generic [ref=f4e109]: 임베딩 유사도
+                        - generic [ref=f4e110]: "0.72"
+                      - generic [ref=f4e111]:
+                        - generic [ref=f4e112]: LLM 순위
+                        - generic [ref=f4e113]: 2위
+                      - generic [ref=f4e114]:
+                        - generic [ref=f4e115]: 상류 품질
+                        - generic [ref=f4e116]: 저신뢰
+                    - button "이 모듈로 매핑" [ref=f4e118] [cursor=pointer]
+                  - generic [ref=f4e119]:
+                    - text: ⚠ 3.3 모듈은 상류
+                    - generic [ref=f4e120]: fallback 상태
+                    - text: — 저신뢰 경고. 객관 신호 계산 실패 시 추천은 유지하되 '검토 필요' 표시(case4). LLM 자기신뢰도만 있으면 단독 확정 금지(case3).
+                  - generic [ref=f4e121]: · 승인된 매핑(판정유형→모듈·페이지) → MEAS-07 교육생 리포트의 교안 위치 안내에 사용(리포트 "취약축→교안 위치"의 실제 소스). 존재 안 하는 모듈 선택 시 저장 차단(case7). 승인 전 자동확정 요청 차단(case6). 임계값 실물 검증 전엔 [가정값] 유지(case8).
+              - generic [ref=f4e123]:
+                - generic [ref=f4e124]:
+                  - generic [ref=f4e125]: 이 화면 · 상태 · case (CUR-02 · 매핑 승인)
+                  - link "상태 ↔ case 매핑 총합 →" [ref=f4e126] [cursor=pointer]:
+                    - /url: "#cases"
+                - generic [ref=f4e127]:
+                  - generic [ref=f4e128]: 02-1
+                  - generic [ref=f4e129]: 생성 차단
+                  - generic [ref=f4e130]: CUR-01 모듈 목록 부재 — 매핑 생성 차단
+                - generic [ref=f4e131]:
+                  - generic [ref=f4e132]: 02-2
+                  - generic [ref=f4e133]: 저신뢰 경고
+                  - generic [ref=f4e134]: 상류 fallback 상태 — 검수 화면에 저신뢰 경고 표시
+                - generic [ref=f4e135]:
+                  - generic [ref=f4e136]: 02-3
+                  - generic [ref=f4e137]: 단독 금지
+                  - generic [ref=f4e138]: LLM 자기신뢰도만 존재 — 단독 확정 금지
+                - generic [ref=f4e139]:
+                  - generic [ref=f4e140]: 02-6
+                  - generic [ref=f4e141]: 자동확정 차단
+                  - generic [ref=f4e142]: 승인 전 자동확정 요청 — 차단(FR-8.2)
+                - generic [ref=f4e143]:
+                  - generic [ref=f4e144]: 02-7
+                  - generic [ref=f4e145]: 저장 차단
+                  - generic [ref=f4e146]: 존재 안 하는 모듈 선택 — 저장 차단

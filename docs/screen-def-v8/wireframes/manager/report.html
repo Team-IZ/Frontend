@@ -1,0 +1,788 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-M08 · 리포트 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-nav:#1e2436; --c-nav-2:#2a3147; --c-nav-text:#aeb4c6;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:900px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:460px}
+
+  .app{display:flex;flex-direction:column;min-height:600px}
+  .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
+  .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700;font-size:var(--fs-base)}
+  .topbar .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .cohortsel{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:5px var(--sp-3);font-size:var(--fs-sm);color:var(--c-text);background:var(--c-surface-2)}
+  .cohortsel .k{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+  .body{display:flex;flex:1}
+  .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
+  .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
+  .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
+  .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-6);min-width:0}
+  .phead{margin-bottom:var(--sp-4);display:flex;align-items:flex-end;justify-content:space-between;gap:var(--sp-4)}
+  .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
+  .tabs{display:flex;gap:var(--sp-5);border-bottom:1px solid var(--c-border);margin-bottom:var(--sp-5)}
+  .tabs .t{padding:var(--sp-2) 0;font-size:var(--fs-sm);color:var(--c-text-2);border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tabs .t.on{color:var(--c-primary);border-color:var(--c-primary);font-weight:600}
+
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-xs);cursor:pointer;padding:7px 12px}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong)}
+  .btn.sm{padding:5px 10px;font-size:11px}
+
+  /* ===== report doc layout (RPT-01) ===== */
+  .rephead{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5);margin-bottom:var(--sp-4);display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);flex-wrap:wrap}
+  .rephead .meta .scope{font-weight:700;font-size:var(--fs-lg)}
+  .rephead .meta .sub{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .rephead .acts{display:flex;gap:var(--sp-2);align-items:center}
+  .ssot{font-size:11px;font-weight:600;color:var(--c-info);background:var(--c-info-soft);border-radius:20px;padding:3px 10px}
+
+  .replayout{display:grid;grid-template-columns:170px 1fr;gap:var(--sp-5);align-items:start}
+  .toc{position:sticky;top:var(--sp-4);font-size:var(--fs-sm)}
+  .toc .tl{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--c-text-3);margin-bottom:var(--sp-2)}
+  .toc a{display:block;color:var(--c-text-2);text-decoration:none;padding:5px var(--sp-3);border-radius:var(--r-sm);border-left:2px solid transparent}
+  .toc a.on{color:var(--c-primary);font-weight:600;border-color:var(--c-primary);background:var(--c-primary-soft)}
+  .repdoc{display:flex;flex-direction:column;gap:var(--sp-4);min-width:0}
+  .repsec{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5)}
+  .repsec h3{font-size:var(--fs-base);margin-bottom:var(--sp-3);display:flex;align-items:center;gap:var(--sp-2)}
+  .repsec h3 .n{width:20px;height:20px;border-radius:var(--r-sm);background:var(--c-primary-soft);color:var(--c-primary);font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+
+  .aibox{background:var(--c-info-soft);border:1px solid #cfe0f0;border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5)}
+  .aibox .k{font-size:11px;font-weight:700;color:var(--c-info);letter-spacing:.02em;margin-bottom:var(--sp-2);display:flex;align-items:center;gap:6px}
+  .aibox p{font-size:var(--fs-sm);color:var(--c-text);line-height:1.7}
+  .aibox .warn{margin-top:var(--sp-3);font-size:var(--fs-xs);color:var(--c-warning);background:var(--c-warning-soft);border-radius:var(--r-sm);padding:6px 10px}
+  .propose{margin-top:var(--sp-3);border-top:1px dashed var(--c-border-strong);padding-top:var(--sp-3)}
+  .propose .k{color:var(--c-primary)}
+  .propose ul{list-style:none;font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.7}
+  .propose li{padding-left:16px;position:relative}
+  .propose li::before{content:"→";position:absolute;left:0;color:var(--c-primary)}
+
+  /* metric with on-demand evidence chip (RPT-05) */
+  .mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-3)}
+  .mcard{border:1px solid var(--c-border);border-radius:var(--r-sm);padding:var(--sp-3) var(--sp-4);background:var(--c-surface-2)}
+  .mcard .lab{font-size:var(--fs-xs);color:var(--c-text-3)}
+  .mcard .num{font-size:var(--fs-2xl);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;margin:2px 0 1px}
+  .mcard .num small{font-size:var(--fs-sm);font-weight:600;color:var(--c-text-3)}
+  .natfreq{font-size:11px;color:var(--c-text-3)}
+  .evbtn{border:1px solid var(--c-border-strong);background:#fff;color:var(--c-info);font-size:10px;font-weight:600;border-radius:20px;padding:2px 8px;cursor:pointer;margin-top:6px}
+  .evbtn::before{content:"◔ ";}
+
+  /* distribution bars */
+  .dist{display:flex;align-items:flex-end;gap:6px;height:88px;padding-top:var(--sp-2)}
+  .dist .b{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+  .dist .b .bar{width:100%;background:var(--c-primary);border-radius:3px 3px 0 0;opacity:.85}
+  .dist .b .bx{font-size:10px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .dist .b .cap{font-size:10px;color:var(--c-text-3)}
+  .distnote{font-size:11px;color:var(--c-text-3);margin-top:var(--sp-2)}
+
+  /* growth sparkline row */
+  .weak{display:flex;flex-direction:column;gap:var(--sp-2)}
+  .weakrow{display:flex;align-items:center;gap:var(--sp-3);font-size:var(--fs-sm)}
+  .weakrow .ax{width:96px;color:var(--c-text-2)}
+  .weakrow .track{flex:1;height:8px;border-radius:20px;background:#eef0f3;overflow:hidden}
+  .weakrow .track .fill{display:block;height:100%;border-radius:20px}
+  .weakrow .track .fill.lo{background:var(--c-danger)}
+  .weakrow .track .fill.mid{background:var(--c-warning)}
+  .weakrow .track .fill.hi{background:var(--c-success)}
+  .weakrow .v{width:118px;text-align:right;color:var(--c-text-3);font-size:11px}
+  .weakrow .v b{color:var(--c-text)}
+
+  /* ===== checkpoint tab (RPT-04) ===== */
+  .cklayout{display:grid;grid-template-columns:216px 1fr;gap:var(--sp-5);align-items:start}
+  .cklist{display:flex;flex-direction:column;gap:var(--sp-2)}
+  .ckitem{border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);background:var(--c-surface);cursor:pointer}
+  .ckitem.on{border-color:var(--c-primary);background:var(--c-primary-soft)}
+  .ckitem .rc{font-weight:700;font-size:var(--fs-sm)}
+  .ckitem .st{font-size:11px;color:var(--c-text-3);margin-top:2px;display:flex;align-items:center;gap:5px}
+  .dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+  .dot.ok{background:var(--c-success)}.dot.warn{background:var(--c-warning)}.dot.pend{background:var(--c-text-3)}
+  .cksnap{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-5)}
+  .cksnap .hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-3);flex-wrap:wrap;gap:var(--sp-2)}
+  .cksnap .hd .t{font-weight:700;font-size:var(--fs-lg)}
+  .difflist{display:flex;flex-direction:column;gap:var(--sp-2);margin-top:var(--sp-3)}
+  .diff{display:flex;align-items:center;gap:var(--sp-3);border:1px solid var(--c-border);border-radius:var(--r-sm);padding:var(--sp-2) var(--sp-3);font-size:var(--fs-sm)}
+  .diff .tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap}
+  .diff.up .tag{background:var(--c-success-soft);color:var(--c-success)}
+  .diff.down .tag{background:var(--c-danger-soft);color:var(--c-danger)}
+  .diff.flat .tag{background:#eef0f3;color:var(--c-text-2)}
+  .diff .txt{color:var(--c-text-2)}
+  .diff .txt b{color:var(--c-text)}
+  .diff .d{margin-left:auto;font-family:var(--mono);font-size:12px;font-variant-numeric:tabular-nums}
+  .diff.up .d{color:var(--c-success)}.diff.down .d{color:var(--c-danger)}
+  .ckmeta{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 4px}
+  .ckmeta .m{font-size:11px;color:var(--c-text-2);background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:20px;padding:3px 10px}
+  .ckmeta .m b{color:var(--c-text)}
+  .ckh{font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);text-transform:uppercase;letter-spacing:.03em;margin:20px 0 8px}
+  .attend{display:flex;gap:8px}
+  .attend .a{flex:1;border:1px solid var(--c-border);border-radius:var(--r-sm);padding:8px 12px;background:var(--c-surface-2)}
+  .attend .a .n{font-size:var(--fs-lg);font-weight:700;font-variant-numeric:tabular-nums}
+  .attend .a .l{font-size:11px;color:var(--c-text-3)}
+  .attend .a.warn{background:var(--c-warning-soft);border-color:#e6d3a8}
+  .attend .a.warn .n{color:var(--c-warning)}
+  .snaptbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .snaptbl th,.snaptbl td{padding:7px var(--sp-3);border-bottom:1px solid var(--c-border)}
+  .snaptbl th{font-size:var(--fs-xs);color:var(--c-text-3);font-weight:600;text-align:left}
+  .snaptbl td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+  .snaptbl td.prev{text-align:right;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .snaptbl td.dl{text-align:right;font-family:var(--mono);font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+  .snaptbl td.dl.up{color:var(--c-success)}.snaptbl td.dl.down{color:var(--c-danger)}.snaptbl td.dl.flat{color:var(--c-text-3)}
+  .snaptbl td.ev{text-align:right;width:52px}
+  .namechips{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 6px 4px}
+  .nc{font-size:11px;background:#fff;border:1px solid var(--c-border-strong);border-radius:20px;padding:2px 9px;color:var(--c-text-2);cursor:pointer}
+  .nc:hover{border-color:var(--c-primary);color:var(--c-primary)}
+  .ivjudge{display:flex;flex-direction:column;gap:6px}
+  .ivj{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);border:1px solid var(--c-border);border-radius:var(--r-sm);padding:7px 12px}
+  .ivj .r{margin-left:auto;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;white-space:nowrap}
+  .ivj .r.ok{background:var(--c-success-soft);color:var(--c-success)}
+  .ivj .r.no{background:var(--c-danger-soft);color:var(--c-danger)}
+  .ivj .r.wait{background:#eef0f3;color:var(--c-text-3)}
+
+  /* ===== final report tab (RPT-02) ===== */
+  .fnlayout{display:grid;grid-template-columns:220px 1fr;gap:var(--sp-5);align-items:start}
+  .stulist{display:flex;flex-direction:column;gap:var(--sp-1)}
+  .stuitem{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--c-border);border-radius:var(--r-md);padding:9px var(--sp-3);background:var(--c-surface);cursor:pointer;font-size:var(--fs-sm)}
+  .stuitem.on{border-color:var(--c-primary);background:var(--c-primary-soft)}
+  .stuitem .nm{font-weight:600}
+  .stuitem .badge{font-size:10px;font-weight:600;padding:1px 7px;border-radius:20px}
+  .stuitem .badge.done{background:var(--c-success-soft);color:var(--c-success)}
+  .stuitem .badge.wait{background:#eef0f3;color:var(--c-text-3)}
+  .repcard{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-5)}
+  .repcard .rtop{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-4);flex-wrap:wrap;margin-bottom:var(--sp-4)}
+  .repcard .who .nm{font-weight:700;font-size:var(--fs-lg)}
+  .repcard .who .sub{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:2px}
+  .grade{font-size:var(--fs-2xl);font-weight:800;letter-spacing:-.02em}
+  .grade.A{color:var(--c-success)}
+  .verbar{display:inline-flex;border:1px solid var(--c-border-strong);border-radius:20px;overflow:hidden;font-size:11px}
+  .verbar span{padding:5px 12px;cursor:pointer;color:var(--c-text-2)}
+  .verbar span.on{background:var(--c-primary);color:#fff;font-weight:600}
+  .axtbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .axtbl th,.axtbl td{text-align:left;padding:8px var(--sp-3);border-bottom:1px solid var(--c-border)}
+  .axtbl th{font-size:var(--fs-xs);color:var(--c-text-3);font-weight:600}
+  .axtbl td.spark{width:150px}
+  .axtbl .g{font-weight:700;font-variant-numeric:tabular-nums}
+  .sl{display:inline-block;width:150px;height:26px;vertical-align:middle}
+  .strengths{display:flex;gap:var(--sp-3);margin-top:var(--sp-4);flex-wrap:wrap}
+  .stbox{flex:1;min-width:200px;border:1px solid var(--c-border);border-radius:var(--r-sm);padding:var(--sp-3) var(--sp-4)}
+  .stbox .k{font-size:var(--fs-xs);font-weight:700;margin-bottom:var(--sp-1)}
+  .stbox.pos .k{color:var(--c-success)}.stbox.neg .k{color:var(--c-warning)}
+  .stbox p{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.6}
+  .redact{font-size:11px;color:var(--c-text-3);background:#eef0f3;border-radius:var(--r-sm);padding:6px 10px;margin-top:var(--sp-3)}
+
+  /* ===== RPT-05 evidence panel ===== */
+  .backdrop{position:absolute;inset:0;background:rgba(20,24,31,.28)}
+  .evpanel{position:absolute;top:0;right:0;bottom:0;width:396px;background:#fff;border-left:1px solid var(--c-border-strong);box-shadow:-14px 0 40px rgba(20,24,31,.14);display:flex;flex-direction:column}
+  .evpanel .eh{padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between}
+  .evpanel .eh .t{font-weight:700}
+  .evpanel .eh .x{color:var(--c-text-3);cursor:pointer;font-size:16px}
+  .evpanel .eb{padding:var(--sp-5);overflow-y:auto;display:flex;flex-direction:column;gap:var(--sp-4)}
+  .evrow{display:flex;flex-direction:column;gap:3px}
+  .evrow .k{font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);text-transform:uppercase;letter-spacing:.03em}
+  .evrow .v{font-size:var(--fs-sm);color:var(--c-text)}
+  .evrow .formula{font-family:var(--mono);font-size:12px;background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-sm);padding:8px 10px;color:var(--c-text)}
+  .evrow .rec{font-size:var(--fs-xs);color:var(--c-text-2);border-left:2px solid var(--c-border-strong);padding-left:10px;line-height:1.6}
+  .evmatch{font-size:11px;font-weight:600;color:var(--c-success);background:var(--c-success-soft);border-radius:20px;padding:3px 10px;align-self:flex-start}
+  /* evidence: decision-oriented */
+  .evtrust{display:flex;align-items:center;gap:12px;font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-sm);padding:9px 12px}
+  .evtrust b{color:var(--c-text);font-variant-numeric:tabular-nums}
+  .evtrust .ok{color:var(--c-success);font-weight:600}
+  .evg{border:1px solid var(--c-border);border-radius:var(--r-sm);padding:10px 12px}
+  .evg .gh{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .evg .gh .lab{font-size:var(--fs-sm);font-weight:700}
+  .evg.ok{border-color:#bfe3ce;background:#f5fbf8}.evg.ok .lab{color:var(--c-success)}
+  .evg.no{border-color:#e6c3bd;background:#fdf5f4}.evg.no .lab{color:var(--c-danger)}
+  .evg.wait{background:var(--c-surface-2)}.evg.wait .lab{color:var(--c-text-3)}
+  .evg .act{font-size:11px;font-weight:600;color:var(--c-primary);cursor:pointer}
+  .method{display:flex;flex-direction:column;gap:6px}
+  .method .mr{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm)}
+  .method .mr .nm{width:68px;color:var(--c-text-2)}
+  .method .mr .track{flex:1;height:7px;background:#eef0f3;border-radius:20px;overflow:hidden}
+  .method .mr .track .f{display:block;height:100%;background:var(--c-success);border-radius:20px}
+  .method .mr .rt{width:58px;text-align:right;font-size:11px;font-variant-numeric:tabular-nums;color:var(--c-text-2)}
+  .method .mr .rt b{color:var(--c-text)}
+  .evnote{font-size:11px;color:var(--c-text-3);line-height:1.7;border-top:1px solid var(--c-border);padding-top:10px}
+  /* trigger affordance */
+  .num.clk{cursor:pointer;border-bottom:2px dotted var(--c-border-strong)}
+  .evbtn.strong{background:var(--c-info-soft);color:var(--c-info);border-color:#cfe0f0;font-weight:700;padding:4px 10px}
+  .evhint{font-size:11px;color:var(--c-info);background:var(--c-info-soft);border-radius:var(--r-sm);padding:8px 12px;margin-bottom:12px}
+  /* personal report: 총평 + 지원 이력 */
+  .summary{background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-md);padding:14px 18px;margin-bottom:16px}
+  .summary .k{font-size:11px;font-weight:700;color:var(--c-text-3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
+  .summary p{font-size:var(--fs-sm);color:var(--c-text);line-height:1.75}
+  .summary p b{color:var(--c-primary)}
+  .support{display:flex;flex-direction:column;gap:6px;margin-top:16px}
+  .support .sh{font-size:11px;font-weight:700;color:var(--c-text-3);text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px}
+  .support .si{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);border:1px solid var(--c-border);border-radius:var(--r-sm);padding:7px 12px}
+  .support .si .tp{font-size:11px;font-weight:600;background:var(--c-info-soft);color:var(--c-info);padding:2px 8px;border-radius:20px;white-space:nowrap}
+  .support .si .res{margin-left:auto;font-size:11px;color:var(--c-success);font-weight:700;white-space:nowrap}
+
+  .emptybox{border:1px dashed var(--c-border-strong);border-radius:var(--r-md);padding:var(--sp-6);text-align:center;color:var(--c-text-3);font-size:var(--fs-sm);background:var(--c-surface-2)}
+
+  /* notes / state table */
+  .notes{margin-top:var(--sp-8);background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-5) var(--sp-6)}
+  .notes h3{font-size:var(--fs-lg);margin-bottom:var(--sp-1)}
+  .notes .grp{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--c-text-3);margin:var(--sp-5) 0 var(--sp-2)}
+  .notes .hint{font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-2)}
+  .tblwrap{overflow-x:auto}
+  .ntbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm);min-width:560px}
+  .ntbl td,.ntbl th{text-align:left;padding:var(--sp-2) var(--sp-3);border-bottom:1px solid var(--c-border);vertical-align:top}
+  .ntbl th{font-size:var(--fs-xs);color:var(--c-text-3)}
+  .ntbl td:first-child{width:54px;color:var(--c-text-3);font-weight:600}
+  .pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
+  .pill.block{background:var(--c-danger-soft);color:var(--c-danger)}
+  .pill.hold{background:var(--c-warning-soft);color:var(--c-warning)}
+  .pill.keep{background:var(--c-info-soft);color:var(--c-info)}
+  .pill.na{background:#eef0f3;color:var(--c-text-3)}
+  .foot{margin-top:var(--sp-5);font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.7}
+
+  /* iframe(index) 임베드 시 — 사이드바 하위메뉴 하나당 화면 하나 (해시 라우팅) */
+  body.embedded .doc-head, body.embedded .sec-label{display:none}
+  body.embedded .page{padding:var(--sp-4) var(--sp-5)}
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  body.embedded .notes{margin-top:0}
+
+  /* 페이지별 상태·case 박스 (project-workspace casewrap와 동일 규격) */
+  .casewrap{margin-top:var(--sp-5)}
+  .casebox{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5)}
+  .casebox .ct{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--c-text-3);margin-bottom:var(--sp-2);display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3)}
+  .casebox .ct .all{color:var(--c-primary);cursor:pointer;text-transform:none;letter-spacing:0;text-decoration:none;font-weight:600;white-space:nowrap}
+  .casebox .cr{display:flex;gap:var(--sp-3);align-items:baseline;padding:7px 0;font-size:var(--fs-sm);border-top:1px solid var(--c-border)}
+  .casebox .cr:first-of-type{border-top:0}
+  .casebox .cr .cn{flex:0 0 42px;color:var(--c-text-3);font-size:var(--fs-xs);font-variant-numeric:tabular-nums}
+  .casebox .cr .pill{flex:0 0 auto}
+  .casebox .cr .cd{flex:1;color:var(--c-text-2)}
+  .casebox .cr .cd b{color:var(--c-text)}
+
+  /* 취약 축 → 교안 위치 안내 (CUR-02 승인 매핑 소비 · MEAS-07) */
+  .curpoint{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid #cfe0f0;background:var(--c-info-soft);border-radius:var(--r-md);padding:10px 14px;font-size:var(--fs-sm)}
+  .curpoint .cp-ax{font-weight:700;color:var(--c-info);background:#fff;border:1px solid #cfe0f0;border-radius:20px;padding:2px 10px;white-space:nowrap}
+  .curpoint .cp-loc{font-weight:600;color:var(--c-text)}
+  .curpoint .cp-loc b{color:var(--c-info)}
+  .curpoint .cp-go{margin-left:auto;font-size:11px;font-weight:600;color:var(--c-info);white-space:nowrap;cursor:pointer}
+  .cp-note{font-size:11px;color:var(--c-text-3);margin-top:6px;line-height:1.6}
+  .curpoint.pend{background:var(--c-surface-2);border-color:var(--c-border)}
+  .curpoint.pend .cp-ax{color:var(--c-text-3);border-color:var(--c-border)}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">SC-M08 · P0(개인 최종)/P1 · 매니저 · 웹</span>
+    <h1>리포트</h1>
+    <p>세 종류의 리포트를 한 화면에서. <b>종합(기수)</b>=RPT-01 공통 집계 SSOT로 분포·추이·취약단계·개입효과·회복률 + AI 요약·커리큘럼 제안. <b>체크포인트</b>=RPT-04, 회차(측정 라운드) 종료마다 자동생성 · 직전 체크포인트 대비 diff. 체크포인트=기수(트랙) 전체 측정 타임라인 위치(1..N), 회차=프로젝트 내 라운드. <b>개인 최종</b>=RPT-02 5축 최종등급·강약점, 매니저용/교육생 공개버전 분리(GOV-03). <b>모든 수치는 클릭해야 근거가 뜬다</b>(RPT-05 온디맨드 — '근거 없는 수치 금지'의 유일 예외·A2). RPT-01↔RPT-04 동일 지표는 <b>같은 값</b>이어야 함(집계 SSOT·B8).</p>
+  </div>
+
+  <!-- ============ 탭1 · 종합 리포트 (RPT-01) ============ -->
+  <div class="sec-label">탭 · 종합 리포트 (RPT-01 · 기수 · 공통 집계 SSOT · 문서형 + 앵커 목차)</div>
+  <div class="rpage" id="page-summary">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/reports/comprehensive</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item on"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+        </div>
+        <div class="content">
+          <div class="phead"><div><div class="crumb">리포트 › 7기</div><h2>리포트</h2></div></div>
+          <div class="tabs"><span class="t on" data-tab="summary">종합 리포트</span><span class="t" data-tab="checkpoints">체크포인트 <span style="font-size:11px;color:var(--c-text-3)">3</span></span><span class="t" data-tab="final">개인 최종 리포트</span></div>
+
+          <div class="rephead">
+            <div class="meta"><div class="scope">7기 종합 리포트 · 백엔드 4기</div><div class="sub">과정 범위 전체 · 체크포인트 1~3 누적 · 최신 집계 2026-07-12 14:03 스냅샷</div></div>
+            <div class="acts"><span class="ssot">단일 집계원천(SSOT)</span><button class="btn ghost sm">PDF 내보내기</button></div>
+          </div>
+          <div class="evhint">◔ 각 지표의 <b>[근거·명단 ▸]</b>을 누르면 우측에서 그 수치를 만든 <b>실제 명단·이력</b>이 열림. 클릭 전에는 렌더링 안 함(RPT-05 온디맨드 · A2 유일 예외).</div>
+
+          <div class="replayout">
+            <div class="toc">
+              <div class="tl">목차</div>
+              <a class="on">AI 요약·제안</a>
+              <a>이해도 분포</a>
+              <a>성장 추이</a>
+              <a>취약 단계</a>
+              <a>개입 효과·회복률</a>
+            </div>
+            <div class="repdoc">
+
+              <div class="repsec">
+                <h3><span class="n">S</span>AI 자연어 요약 · 커리큘럼 보완 제안</h3>
+                <div class="aibox">
+                  <div class="k">◈ AI 요약</div>
+                  <p>체크포인트 3 누적 기준 기수 평균 총점은 완만한 상승세이나, <b>반례대응 축이 체크포인트 2 이후 정체</b>되어 상위·하위 격차가 벌어지는 중. 개입을 받은 8명 중 5명이 다음 체크포인트에 회복해 <b>회복률은 표본 대비 양호</b>. 응시 이탈은 관찰되지 않음.</p>
+                  <div class="warn">⚠ AI 요약 수치는 <b>원본 집계값과 일치 검증을 통과한 문장만</b> 노출. 불일치 문단은 재생성, AI 요약 실패 시 아래 정형 지표는 그대로 유지됨.</div>
+                  <div class="propose">
+                    <div class="k" style="font-size:11px;font-weight:700;letter-spacing:.02em;margin-bottom:6px">▸ 커리큘럼 보완 제안</div>
+                    <ul>
+                      <li>체크포인트 2 직후 <b>반례·예외 처리</b> 집중 세션 추가 검토 (정체 구간)</li>
+                      <li>하위 분포 대상 <b>보충 교안</b> 배치 — 격차 확대 억제</li>
+                    </ul>
+                    <div style="font-size:11px;color:var(--c-text-3);margin-top:8px">제안은 참고용 — 채택 시 교안·규칙 개선(환류)으로 연결.</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="repsec">
+                <h3><span class="n">1</span>이해도 분포 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· 최신 체크포인트 총점 구간별 인원</span></h3>
+                <div class="dist">
+                  <div class="b"><span class="bx">1</span><span class="bar" style="height:12%"></span><span class="cap">1.0~1.9</span></div>
+                  <div class="b"><span class="bx">3</span><span class="bar" style="height:30%"></span><span class="cap">2.0~2.9</span></div>
+                  <div class="b"><span class="bx">6</span><span class="bar" style="height:60%"></span><span class="cap">3.0~3.4</span></div>
+                  <div class="b"><span class="bx">8</span><span class="bar" style="height:88%"></span><span class="cap">3.5~3.9</span></div>
+                  <div class="b"><span class="bx">4</span><span class="bar" style="height:44%"></span><span class="cap">4.0~4.4</span></div>
+                  <div class="b"><span class="bx">2</span><span class="bar" style="height:22%"></span><span class="cap">4.5~5.0</span></div>
+                </div>
+                <div class="distnote">유효 표본 24명 · <b>결측 2명은 분포에서 제외 병기</b>(일부 데이터 부족 시 항목 생략·표기·case1). 구간은 회차 스냅샷 기준(B1).</div>
+                <button class="evbtn">근거·명단 ▸</button>
+              </div>
+
+              <div class="repsec">
+                <h3><span class="n">2</span>성장 추이 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· 체크포인트별 기수 평균 총점</span></h3>
+                <svg viewBox="0 0 420 96" width="100%" height="96" preserveAspectRatio="none" style="max-width:520px">
+                  <line x1="0" y1="72" x2="420" y2="72" stroke="#e2e5ea"/>
+                  <line x1="0" y1="40" x2="420" y2="40" stroke="#eef0f3"/>
+                  <polyline points="30,58 210,44 390,34" fill="none" stroke="#3a4db8" stroke-width="2.5"/>
+                  <circle cx="30" cy="58" r="4" fill="#3a4db8"/><circle cx="210" cy="44" r="4" fill="#3a4db8"/><circle cx="390" cy="34" r="4" fill="#3a4db8"/>
+                  <text x="30" y="90" font-size="10" fill="#8b929c" text-anchor="middle">CP1 · 3.1</text>
+                  <text x="210" y="90" font-size="10" fill="#8b929c" text-anchor="middle">CP2 · 3.4</text>
+                  <text x="390" y="90" font-size="10" fill="#8b929c" text-anchor="middle">CP3 · 3.6</text>
+                </svg>
+                <div class="distnote" style="margin-top:8px">축 눈금은 실제 점수 범위 기준(0부터 아님) — 변화폭 왜곡 방지. <button class="evbtn">근거·명단 ▸</button></div>
+              </div>
+
+              <div class="repsec">
+                <h3><span class="n">3</span>취약 단계 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· 축별 기수 평균 (5축)</span></h3>
+                <div class="weak">
+                  <div class="weakrow"><span class="ax">코드이해</span><span class="track"><span class="fill hi" style="width:76%"></span></span><span class="v"><b>3.8</b> / 5.0</span></div>
+                  <div class="weakrow"><span class="ax">자기수정</span><span class="track"><span class="fill mid" style="width:64%"></span></span><span class="v"><b>3.2</b> / 5.0</span></div>
+                  <div class="weakrow"><span class="ax">반례대응</span><span class="track"><span class="fill lo" style="width:52%"></span></span><span class="v"><b>2.6</b> · 취약 단계</span></div>
+                  <div class="weakrow"><span class="ax">대안비교</span><span class="track"><span class="fill mid" style="width:60%"></span></span><span class="v"><b>3.0</b> / 5.0</span></div>
+                  <div class="weakrow"><span class="ax">의사소통</span><span class="track"><span class="fill hi" style="width:72%"></span></span><span class="v"><b>3.6</b> / 5.0</span></div>
+                </div>
+                <div class="distnote"><b>반례대응</b>이 기수 전체 최약 단계 — AI 제안의 근거. <button class="evbtn">근거·명단 ▸</button></div>
+              </div>
+
+              <div class="repsec">
+                <h3><span class="n">4</span>개입 효과 · 회복률</h3>
+                <div class="mgrid">
+                  <div class="mcard"><div class="lab">누적 개입</div><div class="num clk">14<small> 건</small></div><div class="natfreq">진행 3 · 완료 11</div><button class="evbtn">근거·명단 ▸</button></div>
+                  <div class="mcard"><div class="lab">회복률 <span style="color:var(--c-text-3)">(완료 기준)</span></div><div class="num clk">73<small>%</small></div><div class="natfreq">완료 11건 중 <b>8건</b> 다음 회차 회복</div><button class="evbtn">근거·명단 ▸</button></div>
+                  <div class="mcard"><div class="lab">응시 변화</div><div class="num clk">±0<small> 명</small></div><div class="natfreq">이탈·미응시 없음</div><button class="evbtn">근거·명단 ▸</button></div>
+                </div>
+                <div class="distnote" style="margin-top:10px">회복률은 <b>자연빈도 병기</b>(8/11) — 표본이 적으면 백분율을 제한하고 분수만 표시(표본 부족 회복률·case4·B4). 진행 중 개입은 효과 판정 전이라 분모 제외.</div>
+              </div>
+
+            </div>
+          </div>
+          <div class="foot" style="margin-top:16px">· <b>공통 집계 함수 SSOT</b> — 여기 수치는 체크포인트(RPT-04)·대시보드와 동일 함수 산출. 값이 다르면 노출 차단(B8·case2). export 실패 시 원본 리포트 보존(case6).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="casewrap">
+    <div class="casebox">
+      <div class="ct"><span>이 화면 · 상태 · case (RPT-01 · 종합)</span><a class="all" href="#cases">상태 ↔ case 매핑 총합 →</a></div>
+      <div class="cr"><span class="cn">01-1</span><span class="pill hold">항목 생략</span><span class="cd"><b>일부 데이터 부족</b> — 해당 항목 생략·결측 병기(분포 결측 제외)</span></div>
+      <div class="cr"><span class="cn">01-2</span><span class="pill block">노출 차단</span><span class="cd"><b>근거 없는 수치</b> — trace 없으면 수치 자체 렌더 안 함(A2)</span></div>
+      <div class="cr"><span class="cn">01-3</span><span class="pill hold">문단 재생성</span><span class="cd"><b>AI 요약 수치 불일치</b> — 불일치 문단만 재생성, 정형 지표 유지</span></div>
+      <div class="cr"><span class="cn">01-4</span><span class="pill hold">백분율 제한</span><span class="cd"><b>표본 부족 회복률</b> — 백분율 대신 자연빈도(분수)만(B4)</span></div>
+      <div class="cr"><span class="cn">01-5</span><span class="pill block">확정 중단</span><span class="cd"><b>공통 집계 함수 실패</b> — 리포트 확정 중단·재시도·매니저 알림</span></div>
+      <div class="cr"><span class="cn">01-6</span><span class="pill keep">원본 보존</span><span class="cd"><b>export 실패</b> — PDF 실패해도 원본 리포트 보존·재시도 안내</span></div>
+      <div class="cr"><span class="cn">01-7</span><span class="pill keep">SSOT 강제</span><span class="cd"><b>RPT-04와 독립 계산 요청</b> — 공통 집계 재사용 강제, 별도 계산 금지(B8)</span></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ============ 탭2 · 체크포인트 (RPT-04) ============ -->
+  <div class="sec-label">탭 · 체크포인트 리포트 (RPT-04 · 회차 종료마다 자동생성 · 직전 체크포인트 대비 diff)</div>
+  <div class="rpage" id="page-checkpoints">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/reports/checkpoints</span></div>
+    <div class="app" style="min-height:520px">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item on"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+        </div>
+        <div class="content">
+          <div class="phead"><div><div class="crumb">리포트 › 7기</div><h2>리포트</h2></div></div>
+          <div class="tabs"><span class="t" data-tab="summary">종합 리포트</span><span class="t on" data-tab="checkpoints">체크포인트 <span style="font-size:11px;color:var(--c-text-3)">3</span></span><span class="t" data-tab="final">개인 최종 리포트</span></div>
+          <div class="cklayout">
+            <div class="cklist">
+              <div class="ckitem"><div class="rc">체크포인트 3 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· API 서버 1회차</span></div><div class="st"><span class="dot ok"></span>자동생성 · 07-12 14:03</div></div>
+              <div class="ckitem on"><div class="rc">체크포인트 2 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· CLI 과제 2회차</span></div><div class="st"><span class="dot ok"></span>자동생성 · 06-28 14:01</div></div>
+              <div class="ckitem"><div class="rc">체크포인트 1 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· CLI 과제 1회차</span></div><div class="st"><span class="dot warn"></span>diff 없음(최초 체크포인트)</div></div>
+            </div>
+            <div class="cksnap">
+              <div class="hd">
+                <div class="t">체크포인트 2 (CLI 과제 2회차) · 직전(체크포인트 1) 대비 변화</div>
+                <div class="acts" style="display:flex;gap:8px;align-items:center"><span class="ssot">종합과 동일 집계</span><button class="btn ghost sm">PDF 내보내기</button></div>
+              </div>
+              <div class="ckmeta">
+                <span class="m">단계 · <b>검증 포커스: 반례·예외 처리</b></span>
+                <span class="m">기준 · <b>체크포인트 1</b> (CLI 과제 1회차)</span>
+                <span class="m">자동생성 · 06-28 14:01</span>
+                <span class="m">집계 · <b>SSOT v06-28</b></span>
+                <span class="m" style="color:var(--c-success)">✓ 매니저 알림 발송됨</span>
+              </div>
+
+              <div class="ckh">응시 현황</div>
+              <div class="attend">
+                <div class="a"><div class="n">22</div><div class="l">응시 완료</div></div>
+                <div class="a warn"><div class="n">2</div><div class="l">미응시 · 명단 ↗</div></div>
+                <div class="a"><div class="n">24</div><div class="l">총원</div></div>
+                <div class="a"><div class="n">±0</div><div class="l">직전 대비 응시 변화</div></div>
+              </div>
+
+              <div class="ckh">AI 변화 요약</div>
+              <div class="aibox" style="padding:14px 18px">
+                <p style="font-size:13px">직전 체크포인트 대비 <b>기수 평균이 3.1 → 3.4로 상승</b>. 개입 대상 8명 중 3명이 이번 체크포인트 취약 축 회복. 다만 이번 검증 포커스인 <b>반례·예외 처리에서 신규 하락자 2명</b> 발생. 응시 이탈은 없음.</p>
+                <div class="warn" style="margin-top:8px">⚠ 원본 집계값과 일치 검증을 통과한 문장만 노출. AI 요약 실패 시 아래 정형 지표는 그대로 유지(case7).</div>
+              </div>
+
+              <div class="ckh">이번 체크포인트 스냅샷 · 직전 대비 (SSOT 재사용)</div>
+              <table class="snaptbl">
+                <tr><th>지표</th><th style="text-align:right">이번(체크포인트 2)</th><th style="text-align:right">직전(체크포인트 1)</th><th style="text-align:right">Δ</th><th></th></tr>
+                <tr><td>기수 평균 총점</td><td class="num">3.4</td><td class="prev">3.1</td><td class="dl up">▲ +0.3</td><td class="ev"><button class="evbtn" style="padding:2px 6px">근거</button></td></tr>
+                <tr><td>코드이해</td><td class="num">3.8</td><td class="prev">3.6</td><td class="dl up">▲ +0.2</td><td class="ev"></td></tr>
+                <tr><td>반례대응 <span style="font-size:11px;color:var(--c-danger)">· 취약</span></td><td class="num">2.6</td><td class="prev">2.9</td><td class="dl down">▼ −0.3</td><td class="ev"><button class="evbtn" style="padding:2px 6px">근거</button></td></tr>
+                <tr><td>자기수정</td><td class="num">3.2</td><td class="prev">3.1</td><td class="dl up">▲ +0.1</td><td class="ev"></td></tr>
+                <tr><td>회복률(누적·완료 기준)</td><td class="num">73%</td><td class="prev">64%</td><td class="dl up">▲ +9%p</td><td class="ev"><button class="evbtn" style="padding:2px 6px">근거</button></td></tr>
+              </table>
+
+              <div class="ckh">변화 하이라이트 · 대상 명단 (조치 가능)</div>
+              <div class="difflist">
+                <div class="diff up"><span class="tag">회복 개선</span><span class="txt">개입 대상 중 <b>3명</b> 취약 축 회복</span><span class="d">+3명</span></div>
+                <div class="namechips"><span class="nc">김민준 ↗</span><span class="nc">이서준 ↗</span><span class="nc">한지우 ↗</span></div>
+                <div class="diff down"><span class="tag">위험 증가</span><span class="txt"><b>반례대응</b> 신규 하락자</span><span class="d">+2명</span></div>
+                <div class="namechips"><span class="nc">강민준 → 분석·진단 ↗</span><span class="nc">서지우 → 분석·진단 ↗</span></div>
+                <div class="diff flat"><span class="tag">응시 변화</span><span class="txt">미응시 2명 (직전과 동일)</span><span class="d">±0</span></div>
+                <div class="namechips"><span class="nc">최유진 ↗</span><span class="nc">정하늘 ↗</span></div>
+              </div>
+
+              <div class="ckh">취약 축 → 교안 위치 안내 (처방 · CUR-02 승인 매핑)</div>
+              <div class="curpoint">
+                <span class="cp-ax">반례대응</span>
+                <span class="cp-loc">교안 「반례·예외 처리」 · 모듈 <b>3.2</b> · <b>p.14~18</b></span>
+                <span class="cp-go">교안 화면 ▸</span>
+              </div>
+              <div class="cp-note">※ 위치 <b>안내까지만</b> — 문제·처방 콘텐츠 생성은 배제(MEAS-07). 이 안내는 교육생 리포트(SC-T05)에도 노출. <b>교안 매핑 미승인 상태면 이 블록 생략</b>(MEAS-07 규칙) · 매핑·승인은 [교안] 화면(SC-M12·CUR-02, P1 예정).</div>
+
+              <div class="ckh">이번 체크포인트에 판정된 개입 (회복률의 근거)</div>
+              <div class="ivjudge">
+                <div class="ivj"><b>INTV#312</b> 김민준 · 반례대응 멘토링 <span class="r ok">회복 2→3</span></div>
+                <div class="ivj"><b>INTV#308</b> 이서준 · 자기수정 코칭 <span class="r ok">회복 2→3</span></div>
+                <div class="ivj"><b>INTV#305</b> 오세훈 · 반례대응 과제 <span class="r no">미회복 2→2</span></div>
+                <div class="ivj" style="color:var(--c-text-3)"><b>INTV#318</b> 박준호 · 신규 개입(이번 체크포인트 시작) <span class="r wait">다음 체크포인트 판정</span></div>
+              </div>
+
+              <div class="foot" style="margin-top:16px">· 회차 종료 이벤트로 <b>자동 생성</b> + 매니저 알림(무단 누락 금지·case1). 모든 수치는 종합 리포트와 <b>동일 SSOT</b>(B8) · [근거] → RPT-05 패널 · 명단 → SC-M06/M04 드릴. 최초 체크포인트는 직전 스냅샷이 없어 <b>diff 생략</b>(case2), AI 요약 실패 시 정형 지표 유지(case7).</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="casewrap">
+    <div class="casebox">
+      <div class="ct"><span>이 화면 · 상태 · case (RPT-04 · 체크포인트 자동생성)</span><a class="all" href="#cases">상태 ↔ case 매핑 총합 →</a></div>
+      <div class="cr"><span class="cn">04-1</span><span class="pill block">실패 기록</span><span class="cd"><b>자동 생성 실패</b> — 실패 기록·매니저 알림(무단 누락 금지)</span></div>
+      <div class="cr"><span class="cn">04-2</span><span class="pill hold">diff 생략</span><span class="cd"><b>직전 스냅샷 없음(최초 체크포인트)</b> — diff 없이 최초 스냅샷만('diff 없음' 표기)</span></div>
+      <div class="cr"><span class="cn">04-3</span><span class="pill block">생성 중단</span><span class="cd"><b>RPT-01 공통 집계 실패</b> — 집계 실패 시 체크포인트 생성 중단</span></div>
+      <div class="cr"><span class="cn">04-4</span><span class="pill keep">공통값 우선</span><span class="cd"><b>독립 계산값 불일치</b> — 공통 집계값 우선 적용(B8)</span></div>
+      <div class="cr"><span class="cn">04-5</span><span class="pill keep">단일 버전</span><span class="cd"><b>동일 회차 중복 생성</b> — 활성 버전 단일 유지</span></div>
+      <div class="cr"><span class="cn">04-6</span><span class="pill hold">재생성</span><span class="cd"><b>생성 이벤트 누락</b> — 누락 회차 재생성</span></div>
+      <div class="cr"><span class="cn">04-7</span><span class="pill keep">지표 유지</span><span class="cd"><b>AI 요약 실패</b> — 정형 지표는 유지, 요약만 빈 상태(case7)</span></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ============ 탭3 · 개인 최종 리포트 (RPT-02) ============ -->
+  <div class="sec-label">탭 · 개인 최종 리포트 (RPT-02 · 최종회차 완료자 · 매니저/교육생 버전 분리)</div>
+  <div class="rpage" id="page-final">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/reports/final</span></div>
+    <div class="app" style="min-height:560px">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item on"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+        </div>
+        <div class="content">
+          <div class="phead"><div><div class="crumb">리포트 › 7기</div><h2>리포트</h2></div></div>
+          <div class="tabs"><span class="t" data-tab="summary">종합 리포트</span><span class="t" data-tab="checkpoints">체크포인트 <span style="font-size:11px;color:var(--c-text-3)">3</span></span><span class="t on" data-tab="final">개인 최종 리포트</span></div>
+          <div class="fnlayout">
+            <div class="stulist">
+              <div class="stuitem on"><span class="nm">김서연</span><span class="badge done">완료</span></div>
+              <div class="stuitem"><span class="nm">이도윤</span><span class="badge done">완료</span></div>
+              <div class="stuitem"><span class="nm">박준호</span><span class="badge done">완료</span></div>
+              <div class="stuitem"><span class="nm">최유진</span><span class="badge wait">최종 미완료</span></div>
+              <div class="stuitem"><span class="nm">정하늘</span><span class="badge wait">최종 미완료</span></div>
+            </div>
+            <div class="repcard">
+              <div class="rtop">
+                <div class="who"><div class="nm">김서연 · 최종 리포트</div><div class="sub">A반 · 백엔드 4기 · 체크포인트 3(최종회차)까지 완료 · 생성 2026-07-12</div></div>
+                <div style="text-align:right"><div class="grade A">A</div><div style="font-size:10px;color:var(--c-text-3)">최종회차 등급(B3)</div></div>
+              </div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap">
+                <div class="verbar"><span class="on">매니저용</span><span>교육생 공개용</span></div>
+                <div style="font-size:11px;color:var(--c-text-3)">지금은 <b>매니저용</b> — 루브릭·채점 근거 포함. 공개용은 GOV-03 허용 범위만.</div>
+              </div>
+              <div class="summary">
+                <div class="k">총평 · 성장 서사</div>
+                <p>코드이해·의사소통을 처음부터 안정적으로 갖춘 교육생. 초반 약점이던 <b>반례대응이 체크포인트 2를 기점으로 뚜렷이 회복</b>(2.0→3.6)하며 전체 등급을 끌어올림. 남은 과제는 대안비교 — 정답에 빨리 도달하지만 다른 접근을 비교·검토하는 습관은 아직 얕음. 전반적으로 <b>약점을 스스로 메우는 회복 탄력성</b>이 강점.</p>
+              </div>
+              <table class="axtbl">
+                <tr><th>5축</th><th class="spark">체크포인트 추이</th><th>최종</th><th>비고</th></tr>
+                <tr><td>코드이해</td><td class="spark"><svg class="sl" viewBox="0 0 150 26" preserveAspectRatio="none"><polyline points="6,18 75,12 144,6" fill="none" stroke="#1f8a5b" stroke-width="2"/></svg></td><td class="g">4.2</td><td style="color:var(--c-text-3);font-size:12px">강점</td></tr>
+                <tr><td>자기수정</td><td class="spark"><svg class="sl" viewBox="0 0 150 26" preserveAspectRatio="none"><polyline points="6,16 75,14 144,10" fill="none" stroke="#3a4db8" stroke-width="2"/></svg></td><td class="g">3.8</td><td style="color:var(--c-text-3);font-size:12px">상승</td></tr>
+                <tr><td>반례대응</td><td class="spark"><svg class="sl" viewBox="0 0 150 26" preserveAspectRatio="none"><polyline points="6,20 75,10 144,8" fill="none" stroke="#3a4db8" stroke-width="2"/></svg></td><td class="g">3.6</td><td style="color:var(--c-success);font-size:12px">주요 전환 · 체크포인트 2 개입 후 ↑</td></tr>
+                <tr><td>대안비교</td><td class="spark"><svg class="sl" viewBox="0 0 150 26" preserveAspectRatio="none"><polyline points="6,14 75,15 144,13" fill="none" stroke="#b3771a" stroke-width="2"/></svg></td><td class="g">3.1</td><td style="color:var(--c-warning);font-size:12px">보완 영역</td></tr>
+                <tr><td>의사소통</td><td class="spark"><svg class="sl" viewBox="0 0 150 26" preserveAspectRatio="none"><polyline points="6,12 75,9 144,7" fill="none" stroke="#1f8a5b" stroke-width="2"/></svg></td><td class="g">4.0</td><td style="color:var(--c-text-3);font-size:12px">강점</td></tr>
+              </table>
+              <div class="strengths">
+                <div class="stbox pos"><div class="k">강점 영역</div><p>코드이해·의사소통이 전 체크포인트 안정적 상위. 반례대응은 체크포인트 2에서 뚜렷한 전환.</p></div>
+                <div class="stbox neg"><div class="k">보완 영역</div><p>대안비교가 정체 — 다양한 접근 비교 연습 권장.</p></div>
+              </div>
+              <div class="support">
+                <div class="sh">보완 축 → 교안 위치 안내 (처방 · CUR-02 승인 매핑)</div>
+                <div class="curpoint">
+                  <span class="cp-ax">대안비교</span>
+                  <span class="cp-loc">교안 「설계 대안 비교」 · 모듈 <b>5.1</b> · <b>p.42~47</b></span>
+                  <span class="cp-go">교안 화면 ▸</span>
+                </div>
+                <div class="curpoint pend">
+                  <span class="cp-ax">자기수정</span>
+                  <span class="cp-loc" style="color:var(--c-text-3)">교안 매핑 미승인 — 위치 안내 생략(MEAS-07)</span>
+                  <span class="cp-go" style="color:var(--c-text-3)">매핑 승인 필요</span>
+                </div>
+                <div class="cp-note">※ 위치 <b>안내까지만</b>(문제 생성 배제·MEAS-07) · 교육생 공개용에도 동일 노출(강점 축은 처방 없음) · 매핑·승인은 [교안] 화면(SC-M12·CUR-02, P1 예정).</div>
+              </div>
+              <div class="support">
+                <div class="sh">받은 지원 · 개입 이력</div>
+                <div class="si"><span class="tp">멘토링</span> 체크포인트 2 · 반례대응 집중 코칭 (INTV#312) <span class="res">회복 2.0→3.6</span></div>
+                <div class="si" style="color:var(--c-text-3)"><span class="tp" style="background:#eef0f3;color:var(--c-text-3)">기록 없음</span> 그 외 체크포인트는 별도 개입 없이 자체 유지</div>
+              </div>
+              <div class="redact">🔒 매니저용에만 표시: 루브릭 항목별 채점 근거·프롬프트. <b>교육생 공개용으로 전환하면 이 블록과 내부 근거는 자동 제거</b>(A5·case6). GOV-03 미지정 시 교육생용 기본 비공개(case4).</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="casewrap">
+    <div class="casebox">
+      <div class="ct"><span>이 화면 · 상태 · case (RPT-02 · 개인 최종)</span><a class="all" href="#cases">상태 ↔ case 매핑 총합 →</a></div>
+      <div class="cr"><span class="cn">02-1</span><span class="pill block">생성 차단</span><span class="cd"><b>최종 회차 미완료</b> — 목록에 '최종 미완료' 배지, 리포트 생성 불가</span></div>
+      <div class="cr"><span class="cn">02-2</span><span class="pill hold">결측 표시</span><span class="cd"><b>일부 회차 점수 결측</b> — 결측 구간 표시 후 산출 가능한 추이만</span></div>
+      <div class="cr"><span class="cn">02-3</span><span class="pill hold">등급 제외</span><span class="cd"><b>최종 등급 부재</b> — 등급 항목 제외, 추이·강약점만 생성</span></div>
+      <div class="cr"><span class="cn">02-4</span><span class="pill hold">기본 비공개</span><span class="cd"><b>GOV-03 미지정</b> — 교육생용 리포트 기본 비공개 적용</span></div>
+      <div class="cr"><span class="cn">02-5</span><span class="pill keep">매니저용만</span><span class="cd"><b>교육생 비공개 설정</b> — 매니저용 유지, 교육생 화면 미노출(T05)</span></div>
+      <div class="cr"><span class="cn">02-6</span><span class="pill block">항목 제거</span><span class="cd"><b>루브릭·채점 근거 노출 탐지</b> — 항목 제거 후 공개 범위 재검증(A5)</span></div>
+      <div class="cr"><span class="cn">02-7</span><span class="pill keep">활성 버전</span><span class="cd"><b>리포트 중복 생성 요청</b> — 최신 활성 버전 반환 또는 신규 버전 정책</span></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ============ RPT-05 근거 온디맨드 패널 (상태) ============ -->
+  <div class="sec-label">상태 · RPT-05 근거 온디맨드 패널 ('회복률 73%' 클릭 시 · 클릭 전엔 렌더링 안 함 · A2 유일 예외)</div>
+  <div class="rpage" id="page-evidence">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/reports/comprehensive#recovery</span></div>
+    <div class="app" style="min-height:520px">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item on"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+        </div>
+        <div class="content">
+          <div class="phead"><div><div class="crumb">리포트 › 7기 › 개입 효과</div><h2>리포트</h2></div></div>
+          <div class="evhint">◔ 밑줄 친 <b>수치</b> 또는 그 아래 <b>[근거·명단]</b>을 누르면 → 우측에서 그 숫자를 만든 <b>실제 명단·이력</b> 패널이 열림. 클릭 전에는 렌더링하지 않음(RPT-05·A2 유일 예외).</div>
+          <div class="repsec" style="max-width:560px">
+            <h3><span class="n">4</span>개입 효과 · 회복률</h3>
+            <div class="mgrid" style="grid-template-columns:repeat(2,1fr)">
+              <div class="mcard"><div class="lab">회복률 (완료 기준)</div><div class="num clk" style="border-color:var(--c-info)">73<small>%</small></div><div class="natfreq">완료 11건 중 <b>8건</b></div><button class="evbtn strong">근거·명단 ▸</button></div>
+              <div class="mcard"><div class="lab">누적 개입</div><div class="num clk">14<small> 건</small></div><div class="natfreq">진행 3 · 완료 11</div><button class="evbtn">근거·명단 ▸</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="backdrop"></div>
+      <div class="evpanel">
+        <div class="eh"><span class="t">근거 · 회복률 73%</span><span class="x">✕</span></div>
+        <div class="eb">
+          <div class="evtrust"><span class="ok">✓ 일치 검증됨</span><span>표본 <b>11건</b> · 완료·판정 기준</span><span style="color:var(--c-text-3)">진행 3건 제외</span></div>
+
+          <div class="evg no">
+            <div class="gh"><span class="lab">미회복 3건 · 조치 대상</span><span class="act">모두 재개입 검토 ↗</span></div>
+            <div class="namechips" style="margin:0">
+              <span class="nc">오세훈 · 반례대응 2→2 ↗</span>
+              <span class="nc">박서준 · 자기수정 2→2 ↗</span>
+              <span class="nc">이하늘 · 반례대응 3→3 ↗</span>
+            </div>
+          </div>
+
+          <div class="evg ok">
+            <div class="gh"><span class="lab">회복 8건</span><span class="act">전체 명단 ↗</span></div>
+            <div class="namechips" style="margin:0">
+              <span class="nc">김민준 2→3</span><span class="nc">이서준 2→3</span><span class="nc">한지우 2→3</span>
+              <span class="nc" style="color:var(--c-text-3)">… 외 5명</span>
+            </div>
+          </div>
+
+          <div class="evg wait">
+            <div class="gh"><span class="lab">판정 대기 3건</span></div>
+            <div style="font-size:12px;color:var(--c-text-3)">진행 중 개입 — 다음 회차에 회복 판정, 현재 분모에서 제외됨.</div>
+          </div>
+
+          <div class="evrow" style="margin-top:2px"><span class="k">개입 방식별 회복 효과</span></div>
+          <div class="method">
+            <div class="mr"><span class="nm">멘토링</span><span class="track"><span class="f" style="width:100%"></span></span><span class="rt"><b>4</b>/4</span></div>
+            <div class="mr"><span class="nm">1:1 코칭</span><span class="track"><span class="f" style="width:67%"></span></span><span class="rt"><b>2</b>/3</span></div>
+            <div class="mr"><span class="nm">보충 과제</span><span class="track"><span class="f" style="width:50%;background:var(--c-warning)"></span></span><span class="rt"><b>2</b>/4</span></div>
+          </div>
+          <div style="font-size:11px;color:var(--c-primary);margin-top:4px">→ 이 기수에선 <b>멘토링</b> 회복률이 가장 높음. 다음 개입 방식 선택 시 참고.</div>
+
+          <div class="evnote">회복률 = 회복 8 ÷ 완료·판정 11 = 73%. 각 개입의 다음 정규 회차 기준 판정 · 표본 적으면 분수만(B4) · 집계 SSOT v07-12(버전 불일치 시 선택 버전 재조회·case6).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="casewrap">
+    <div class="casebox">
+      <div class="ct"><span>이 화면 · 상태 · case (RPT-05 · 근거 온디맨드)</span><a class="all" href="#cases">상태 ↔ case 매핑 총합 →</a></div>
+      <div class="cr"><span class="cn">05-1</span><span class="pill block">차단</span><span class="cd"><b>클릭 전 근거 렌더 요청</b> — 클릭 전 근거 데이터 렌더링 금지(성능·정보과다)</span></div>
+      <div class="cr"><span class="cn">05-2</span><span class="pill hold">집계 불가</span><span class="cd"><b>근거 데이터 없음</b> — 패널에 '집계 불가' 상태 표시</span></div>
+      <div class="cr"><span class="cn">05-3</span><span class="pill block">패널 차단</span><span class="cd"><b>수치 ↔ 근거 불일치</b> — 패널 노출 차단(불일치 수치 신뢰 불가)</span></div>
+      <div class="cr"><span class="cn">05-4</span><span class="pill hold">페이지네이션</span><span class="cd"><b>대량 이력</b> — 원본 이력 페이지네이션 적용</span></div>
+      <div class="cr"><span class="cn">05-5</span><span class="pill block">열람 차단</span><span class="cd"><b>권한 없음</b> — 담당 범위 밖 근거 열람 차단(테넌트 격리)</span></div>
+      <div class="cr"><span class="cn">05-6</span><span class="pill hold">버전 재조회</span><span class="cd"><b>리포트 버전 불일치</b> — 선택 버전 기준 근거 재조회</span></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ============ 상태 매핑 (게이트 A) ============ -->
+  <div class="notes rpage" id="page-cases">
+    <h3>상태별 UI — 예외 case 전량 (게이트 A)</h3>
+    <div class="hint">RPT-01 7 + RPT-02 7 + RPT-04 7 + RPT-05 6 = <b>27</b>. (RPT-03 면담 체크리스트는 SC-M06 소관.)</div>
+
+    <div class="grp">RPT-01 · 종합 리포트</div>
+    <div class="tblwrap"><table class="ntbl">
+      <tr><th>#</th><th>상태</th><th>처리</th><th>표현 / 다음 행동</th></tr>
+      <tr><td>1</td><td>일부 데이터 부족</td><td><span class="pill hold">항목 생략·표기</span></td><td>해당 항목 생략하고 결측 병기(분포에서 결측 2명 제외 표시)</td></tr>
+      <tr><td>2</td><td>근거 없는 수치</td><td><span class="pill block">노출 차단</span></td><td>근거 trace 없으면 수치 자체를 렌더 안 함(A2)</td></tr>
+      <tr><td>3</td><td>AI 요약 수치 불일치</td><td><span class="pill hold">문단 재생성</span></td><td>불일치 문단만 재생성, 정형 지표는 유지</td></tr>
+      <tr><td>4</td><td>표본 부족 회복률</td><td><span class="pill hold">백분율 제한</span></td><td>백분율 대신 자연빈도(분수)만 표시(B4)</td></tr>
+      <tr><td>5</td><td>공통 집계 함수 실패</td><td><span class="pill block">확정 중단</span></td><td>리포트 확정 중단·재시도, 매니저 알림</td></tr>
+      <tr><td>6</td><td>export 실패</td><td><span class="pill keep">원본 보존</span></td><td>PDF 실패해도 원본 리포트 보존, 재시도 안내</td></tr>
+      <tr><td>7</td><td>RPT-04와 독립 계산 요청</td><td><span class="pill keep">SSOT 강제</span></td><td>공통 집계 재사용 강제 — 별도 계산 금지(B8)</td></tr>
+    </table></div>
+
+    <div class="grp">RPT-02 · 개인 최종 리포트</div>
+    <div class="tblwrap"><table class="ntbl">
+      <tr><th>#</th><th>상태</th><th>처리</th><th>표현 / 다음 행동</th></tr>
+      <tr><td>1</td><td>최종 회차 미완료</td><td><span class="pill block">생성 차단</span></td><td>목록에 '최종 미완료' 배지, 리포트 생성 불가</td></tr>
+      <tr><td>2</td><td>일부 회차 점수 결측</td><td><span class="pill hold">결측 표시</span></td><td>결측 구간 표시 후 산출 가능한 추이만 구성</td></tr>
+      <tr><td>3</td><td>최종 등급 부재</td><td><span class="pill hold">등급 제외</span></td><td>등급 항목 제외, 성장 추이·강약점만 생성</td></tr>
+      <tr><td>4</td><td>GOV-03 미지정</td><td><span class="pill hold">기본 비공개</span></td><td>교육생용 리포트 기본 비공개 적용</td></tr>
+      <tr><td>5</td><td>교육생 비공개 설정</td><td><span class="pill keep">매니저용만</span></td><td>매니저용 유지, 교육생 화면 미노출(T05)</td></tr>
+      <tr><td>6</td><td>루브릭·채점 근거 노출 탐지</td><td><span class="pill block">항목 제거</span></td><td>해당 항목 제거 후 공개 범위 재검증(A5)</td></tr>
+      <tr><td>7</td><td>리포트 중복 생성 요청</td><td><span class="pill keep">활성 버전</span></td><td>최신 활성 버전 반환 또는 신규 버전 정책</td></tr>
+    </table></div>
+
+    <div class="grp">RPT-04 · 체크포인트 리포트 자동생성</div>
+    <div class="tblwrap"><table class="ntbl">
+      <tr><th>#</th><th>상태</th><th>처리</th><th>표현 / 다음 행동</th></tr>
+      <tr><td>1</td><td>자동 생성 실패</td><td><span class="pill block">실패 기록</span></td><td>실패 기록 및 매니저 알림(무단 누락 금지)</td></tr>
+      <tr><td>2</td><td>직전 스냅샷 없음(최초 체크포인트)</td><td><span class="pill hold">diff 생략</span></td><td>diff 없이 최초 스냅샷만 ('diff 없음' 표기)</td></tr>
+      <tr><td>3</td><td>RPT-01 공통 집계 실패</td><td><span class="pill block">생성 중단</span></td><td>집계 실패 시 체크포인트 생성 중단</td></tr>
+      <tr><td>4</td><td>독립 계산값 불일치</td><td><span class="pill keep">공통값 우선</span></td><td>공통 집계값 우선 적용(B8)</td></tr>
+      <tr><td>5</td><td>동일 회차 중복 생성</td><td><span class="pill keep">단일 버전</span></td><td>활성 버전 단일 유지</td></tr>
+      <tr><td>6</td><td>생성 이벤트 누락</td><td><span class="pill hold">재생성</span></td><td>누락 회차 재생성</td></tr>
+      <tr><td>7</td><td>AI 요약 실패</td><td><span class="pill keep">정형 지표 유지</span></td><td>정형 지표는 유지, 요약만 빈 상태</td></tr>
+    </table></div>
+
+    <div class="grp">RPT-05 · 리포트 근거 온디맨드 열람</div>
+    <div class="tblwrap"><table class="ntbl">
+      <tr><th>#</th><th>상태</th><th>처리</th><th>표현 / 다음 행동</th></tr>
+      <tr><td>1</td><td>클릭 전 근거 렌더 요청</td><td><span class="pill block">차단</span></td><td>클릭 전 근거 데이터 렌더링 금지(성능·정보과다)</td></tr>
+      <tr><td>2</td><td>근거 데이터 없음</td><td><span class="pill hold">집계 불가 표시</span></td><td>패널에 '집계 불가' 상태 표시</td></tr>
+      <tr><td>3</td><td>수치 ↔ 근거 불일치</td><td><span class="pill block">패널 차단</span></td><td>패널 노출 차단(불일치 수치 신뢰 불가)</td></tr>
+      <tr><td>4</td><td>대량 이력</td><td><span class="pill hold">페이지네이션</span></td><td>원본 이력 페이지네이션 적용</td></tr>
+      <tr><td>5</td><td>권한 없음</td><td><span class="pill block">열람 차단</span></td><td>담당 범위 밖 근거 열람 차단(테넌트 격리)</td></tr>
+      <tr><td>6</td><td>리포트 버전 불일치</td><td><span class="pill hold">버전 재조회</span></td><td>선택 버전 기준 근거 재조회</td></tr>
+    </table></div>
+
+    <div class="foot">· 게이트 A: 27 case = 27 상태 행 ✅ · 모든 수치는 RPT-05 온디맨드 근거(클릭 전 비렌더) · RPT-01↔04 동일 지표 SSOT 일치(B8) · 최종 등급은 최종회차만(B3) · 교육생 공개용은 루브릭·채점근거 제거(A5·GOV-03) · 표본 부족 회복률은 자연빈도(B4) · 담당 기수·기관 범위(SYS-02·AUTH-09).</div>
+  </div>
+
+</div>
+<script>
+  // 사이드바 하위메뉴(#summary·#checkpoints·#final·#cases) 하나당 화면 하나 — project-workspace와 동일 해시 라우팅
+  var PAGE = { summary:"page-summary", checkpoints:"page-checkpoints", final:"page-final", evidence:"page-evidence", cases:"page-cases" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "summary";
+    var id = PAGE[h] || "page-summary";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  document.addEventListener("click", function(e){
+    var nav = e.target.closest(".tabs .t[data-tab]");
+    if(nav){ location.hash = nav.getAttribute("data-tab"); return; }
+    // "교안 화면 ▸" → SC-M12 교안 목록(매핑 승인 화면은 후속, 현재 목록만 제작)
+    var cg = e.target.closest(".cp-go");
+    if(cg){ var dst = "manager/curriculum.html#list";
+      if(window.self !== window.top) parent.postMessage({ iznav: dst }, "*");
+      else location.href = "curriculum.html#list";
+      return; }
+  });
+  // iframe(index) 안이면 문서 헤더·sec-label 숨김 → 화면 하나만
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+</script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+- generic [ref=f1e2]:
+    - complementary [ref=f1e3]:
+        - generic [ref=f1e4]:
+            - generic [ref=f1e5]:
+                - generic [ref=f1e6]: ◆
+                - text: IZ-Get 화면정의
+            - generic [ref=f1e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+        - navigation [ref=f1e8]:
+            - generic [ref=f1e9]:
+                - generic [ref=f1e10]: shared
+                - button "로그인 shared/login.html" [ref=f1e12] [cursor=pointer]:
+                    - text: 로그인
+                    - generic [ref=f1e13]: shared/login.html
+            - generic [ref=f1e14]:
+                - generic [ref=f1e15]: superadmin
+                - button "플랫폼 콘솔 ▸" [ref=f1e17] [cursor=pointer]:
+                    - text: 플랫폼 콘솔
+                    - generic [ref=f1e18]: ▸
+            - generic [ref=f1e19]:
+                - generic [ref=f1e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+                - button "운영 관리 총괄 ▸" [ref=f1e22] [cursor=pointer]:
+                    - text: 운영 관리
+                    - generic [ref=f1e23]: 총괄
+                    - generic [ref=f1e24]: ▸
+            - generic [ref=f1e25]:
+                - generic [ref=f1e26]: 매니저(담당) · 총괄도 동일하게 봄
+                - button "매니저 회원가입 manager/signup.html" [ref=f1e28] [cursor=pointer]:
+                    - text: 매니저 회원가입
+                    - generic [ref=f1e29]: manager/signup.html
+                - button "대시보드 manager/dashboard.html" [ref=f1e30] [cursor=pointer]:
+                    - text: 대시보드
+                    - generic [ref=f1e31]: manager/dashboard.html
+                - generic [ref=f1e32]:
+                    - button "프로젝트 ▸" [ref=f1e33] [cursor=pointer]:
+                        - text: 프로젝트
+                        - generic [ref=f1e34]: ▸
+                    - generic [ref=f1e35]:
+                        - button "프로젝트 목록 컬렉션" [ref=f1e36] [cursor=pointer]
+                        - button "프로젝트 생성 모달 · 요구사항" [ref=f1e37] [cursor=pointer]
+                        - generic [ref=f1e38]: "프로젝트 상세 · 예: API 서버"
+                        - button "개요 요구사항 O/X" [ref=f1e39] [cursor=pointer]
+                        - button "요구사항 편집 모달" [ref=f1e40] [cursor=pointer]
+                        - button "팀 · 레포 단위 확정" [ref=f1e41] [cursor=pointer]
+                        - button "팀 추가 모달" [ref=f1e42] [cursor=pointer]
+                        - button "자동 배분 모달" [ref=f1e43] [cursor=pointer]
+                        - button "측정 계획 회차 지정" [ref=f1e44] [cursor=pointer]
+                        - button "체크포인트 지정 모달" [ref=f1e45] [cursor=pointer]
+                        - button "결과 → 리포트" [ref=f1e46] [cursor=pointer]
+                        - button "개인형 · 학생별 레포 변형" [ref=f1e47] [cursor=pointer]
+                        - button "벌크 독촉·안내 모달" [ref=f1e48] [cursor=pointer]
+                        - button "상태 ↔ case 매핑 총합" [ref=f1e49] [cursor=pointer]
+                - button "위험 · 분석 manager/risk-analysis.html" [ref=f1e50] [cursor=pointer]:
+                    - text: 위험 · 분석
+                    - generic [ref=f1e51]: manager/risk-analysis.html
+                - button "코호트 히트맵 manager/heatmap.html" [ref=f1e52] [cursor=pointer]:
+                    - text: 코호트 히트맵
+                    - generic [ref=f1e53]: manager/heatmap.html
+                - button "교육생 리스트 manager/trainee-list.html" [ref=f1e54] [cursor=pointer]:
+                    - text: 교육생 리스트
+                    - generic [ref=f1e55]: manager/trainee-list.html
+                - button "개별 교육생 상세 manager/trainee-detail.html" [ref=f1e56] [cursor=pointer]:
+                    - text: 개별 교육생 상세
+                    - generic [ref=f1e57]: manager/trainee-detail.html
+                - button "개입 관리 manager/intervention.html" [ref=f1e58] [cursor=pointer]:
+                    - text: 개입 관리
+                    - generic [ref=f1e59]: manager/intervention.html
+                - button "리포트 manager/report.html" [ref=f1e60] [cursor=pointer]:
+                    - text: 리포트
+                    - generic [ref=f1e61]: manager/report.html
+                - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=f1e62] [cursor=pointer]:
+                    - text: 이의 검토 · 열람 범위
+                    - generic [ref=f1e63]: manager/appeal-disclosure.html
+            - generic [ref=f1e64]:
+                - generic [ref=f1e65]: trainee
+                - button "교육생 계정 활성화 trainee/activation.html" [ref=f1e67] [cursor=pointer]:
+                    - text: 교육생 계정 활성화
+                    - generic [ref=f1e68]: trainee/activation.html
+                - button "홈(회차·응시) trainee/home.html" [ref=f1e69] [cursor=pointer]:
+                    - text: 홈(회차·응시)
+                    - generic [ref=f1e70]: trainee/home.html
+                - button "코드 제출 trainee/submission.html" [ref=f1e71] [cursor=pointer]:
+                    - text: 코드 제출
+                    - generic [ref=f1e72]: trainee/submission.html
+                - button "검증 세션 trainee/session.html" [ref=f1e73] [cursor=pointer]:
+                    - text: 검증 세션
+                    - generic [ref=f1e74]: trainee/session.html
+                - button "결과 리포트 trainee/result.html" [ref=f1e75] [cursor=pointer]:
+                    - text: 결과 리포트
+                    - generic [ref=f1e76]: trainee/result.html
+    - main [ref=f1e77]:
+        - generic [ref=f1e78]:
+            - generic [ref=f1e79]: 프로젝트 상세 · 요구사항 편집
+            - generic [ref=f1e80]: manager/project-workspace.html#req
+            - link "새 탭에서 열기 ↗" [ref=f1e81] [cursor=pointer]:
+                - /url: manager/project-workspace.html#req
+        - iframe [ref=f1e82]:
+            - generic [ref=f2e2]:
+                - generic [ref=f2e3]:
+                    - generic [ref=f2e4]: iz-get.com/cohorts/7/projects/api/overview
+                    - generic [ref=f2e10]:
+                        - generic [ref=f2e11]:
+                            - generic [ref=f2e12]:
+                                - generic [ref=f2e13]:
+                                    - generic [ref=f2e14]: ◆
+                                    - text: IZ-Get
+                                - generic [ref=f2e15] [cursor=pointer]:
+                                    - generic [ref=f2e16]: 기관
+                                    - text: 그린 부트캠프
+                                    - generic [ref=f2e17]: · 현재
+                                    - text: 7기 ▾
+                            - generic [ref=f2e18]:
+                                - text: 박지현 · 총괄 매니저
+                                - generic [ref=f2e19]: 박
+                        - generic [ref=f2e20]:
+                            - generic [ref=f2e21]:
+                                - generic [ref=f2e22]:
+                                    - generic [ref=f2e23]: ▦
+                                    - text: 대시보드
+                                - generic [ref=f2e24]:
+                                    - generic [ref=f2e25]: ⚙
+                                    - text: 운영 관리
+                                    - generic [ref=f2e26]: 총괄
+                                - generic [ref=f2e27]:
+                                    - generic [ref=f2e28]: ▤
+                                    - text: 프로젝트
+                                - generic [ref=f2e29]:
+                                    - generic [ref=f2e30]: ◎
+                                    - text: 교육생
+                                - generic [ref=f2e31]:
+                                    - generic [ref=f2e32]: △
+                                    - text: 위험 · 분석
+                                - generic [ref=f2e33]:
+                                    - generic [ref=f2e34]: ✎
+                                    - text: 개입
+                                - generic [ref=f2e35]:
+                                    - generic [ref=f2e36]: ▥
+                                    - text: 리포트
+                                - generic [ref=f2e37]:
+                                    - generic [ref=f2e38]: ▧
+                                    - text: 교안
+                            - generic [ref=f2e39]:
+                                - generic [ref=f2e40]:
+                                    - generic [ref=f2e41]:
+                                        - generic [ref=f2e42]: ← 프로젝트 목록
+                                        - generic [ref=f2e43]:
+                                            - generic [ref=f2e44]: API 서버
+                                            - generic [ref=f2e45]: 팀
+                                            - generic [ref=f2e47] [cursor=pointer]:
+                                                - generic [ref=f2e48]: 프로젝트 전환
+                                                - text: ▾
+                                    - generic [ref=f2e49]: A반 · 03.20 ~ 04.10 · 추출 기본 본인커밋
+                                - generic [ref=f2e50]:
+                                    - generic [ref=f2e51] [cursor=pointer]: 목록
+                                    - generic [ref=f2e52] [cursor=pointer]: 개요
+                                    - generic [ref=f2e53] [cursor=pointer]: 팀 · 레포
+                                    - generic [ref=f2e54] [cursor=pointer]: 측정 계획
+                                    - generic [ref=f2e55] [cursor=pointer]: 결과
+                                    - generic [ref=f2e56] [cursor=pointer]: 개인형
+                                - generic [ref=f2e57]:
+                                    - generic [ref=f2e58]:
+                                        - generic [ref=f2e59]:
+                                            - generic [ref=f2e60]: 유형
+                                            - generic [ref=f2e61]: 팀 프로젝트
+                                        - generic [ref=f2e62]:
+                                            - generic [ref=f2e63]: 대상 반
+                                            - generic [ref=f2e64]: A반
+                                        - generic [ref=f2e65]:
+                                            - generic [ref=f2e66]: 기간
+                                            - generic [ref=f2e67]: 03.20 ~ 04.10
+                                        - generic [ref=f2e68]:
+                                            - generic [ref=f2e69]: 단위(분모)
+                                            - generic [ref=f2e70]: 4팀 팀·레포 →
+                                        - generic [ref=f2e71]:
+                                            - generic [ref=f2e72]: 추출 범위 기본값
+                                            - generic [ref=f2e73]: 본인커밋기여분 · 회차 상속
+                                        - generic [ref=f2e74]:
+                                            - generic [ref=f2e75]: 회차 수
+                                            - generic [ref=f2e76]: 2회차 측정 계획 →
+                                    - generic [ref=f2e77]:
+                                        - generic [ref=f2e78]:
+                                            - heading "요구사항 충족 · 프로젝트 필수 조건 · 단위별 O/X 검증 (실행 후 산출)" [level=3] [ref=f2e79]
+                                            - button "요구사항 편집" [ref=f2e80] [cursor=pointer]
+                                        - table [ref=f2e82]:
+                                            - rowgroup [ref=f2e83]:
+                                                - row [ref=f2e84]:
+                                                    - columnheader "단위" [ref=f2e85]
+                                                    - columnheader "JWT 토큰 인증" [ref=f2e86]
+                                                    - columnheader "H2 사용" [ref=f2e87]
+                                                    - columnheader "REST 규약" [ref=f2e88]
+                                                    - columnheader "비고" [ref=f2e89]
+                                            - rowgroup [ref=f2e90]:
+                                                - row [ref=f2e91]:
+                                                    - cell "팀 A" [ref=f2e92]
+                                                    - cell "O" [ref=f2e93]
+                                                    - cell "O" [ref=f2e95]
+                                                    - cell "O" [ref=f2e97]
+                                                    - cell "—" [ref=f2e99]
+                                                - row [ref=f2e100]:
+                                                    - cell "팀 B" [ref=f2e101]
+                                                    - cell "O" [ref=f2e102]
+                                                    - cell "X" [ref=f2e104]
+                                                    - cell "O" [ref=f2e106]
+                                                    - cell "H2 권장이었으나 PostgreSQL로 고도화" [ref=f2e108]
+                                                - row [ref=f2e109]:
+                                                    - cell "팀 C" [ref=f2e110]
+                                                    - cell "X" [ref=f2e111]
+                                                    - cell "O" [ref=f2e113]
+                                                    - cell "O" [ref=f2e115]
+                                                    - cell "세션 기반 인증으로 대체" [ref=f2e117]
+                                                - row [ref=f2e118]:
+                                                    - cell "팀 D" [ref=f2e119]
+                                                    - cell "—" [ref=f2e120]
+                                                    - cell "—" [ref=f2e122]
+                                                    - cell "—" [ref=f2e124]
+                                                    - cell "미제출 · 검증 대기" [ref=f2e126]
+                                        - generic [ref=f2e127]: · 요구사항 = "목적대로 제대로 했는가"(프로젝트 소속). 조건별 O/X + 비고(더 나은 대체 구현은 X여도 비고로 인정). 질문 초점과 별개 — 요구사항="무엇을 갖췄나(준수)", 질문 초점="무엇을 물을까(질문 방향)". 조건은 생성 시 정의, 판정은 실행 후 자동. 조건 없어도 생성 가능(그땐 요구사항 검증만 없음).
+                                    - generic [ref=f2e128]:
+                                        - generic [ref=f2e129]:
+                                            - heading "회차 구성 요약 · 질문 초점·추출 범위는 [측정 계획]에서 지정 (읽기전용)" [level=3] [ref=f2e130]
+                                            - button "측정 계획 열기 →" [ref=f2e131] [cursor=pointer]
+                                        - table [ref=f2e133]:
+                                            - rowgroup [ref=f2e134]:
+                                                - row [ref=f2e135]:
+                                                    - columnheader "회차" [ref=f2e136]
+                                                    - columnheader "질문 초점 · 비우면 AI 자율" [ref=f2e137]
+                                                    - columnheader "추출 범위" [ref=f2e138]
+                                            - rowgroup [ref=f2e139]:
+                                                - row [ref=f2e140]:
+                                                    - cell "API 서버 · 1회차" [ref=f2e141]
+                                                    - cell "책임 분리 반례·예외" [ref=f2e142]:
+                                                        - generic [ref=f2e143]: 책임 분리
+                                                        - generic [ref=f2e144]: 반례·예외
+                                                    - cell "본인커밋" [ref=f2e145]
+                                                - row [ref=f2e146]:
+                                                    - cell "API 서버 · 2회차 최종" [ref=f2e147]:
+                                                        - text: API 서버 · 2회차
+                                                        - generic [ref=f2e148]: 최종
+                                                    - cell "미지정 → AI가 기여분에서 자율 추출" [ref=f2e149]:
+                                                        - generic [ref=f2e150]: 미지정
+                                                        - text: → AI가 기여분에서 자율 추출
+                                                    - cell "본인커밋" [ref=f2e151]
+                                        - generic [ref=f2e152]: "· 질문 초점 = 질문을 어디에 치중할지(회차 소속·PLAN-03). 비우면 AI가 각자 기여분에서 중요 지점을 질문수만큼 자율 추출(제한 아님). 지정하면(예: CSS·디자인) 그 영역 치중. 교육생 비노출(A4·FB-F6). 편집은 [측정 계획] 탭."
+                                - text: ✓ ✓
+                        - generic [ref=f2e154]:
+                            - generic [ref=f2e155]:
+                                - heading "요구사항 편집 · API 서버 · O/X 검증 조건" [level=3] [ref=f2e156]
+                                - generic [ref=f2e157] [cursor=pointer]: ✕
+                            - generic [ref=f2e159]:
+                                - generic [ref=f2e160]:
+                                    - text: 필수 조건
+                                    - generic [ref=f2e161]: · 각 조건을 단위별로 O/X 검증 · 실행 후 자동 판정
+                                - generic [ref=f2e162]:
+                                    - generic [ref=f2e163]:
+                                        - generic [ref=f2e164]: JWT 토큰 인증
+                                        - generic [ref=f2e165]: 사용 여부 O/X
+                                        - generic [ref=f2e166] [cursor=pointer]: ✕
+                                    - generic [ref=f2e167]:
+                                        - generic [ref=f2e168]: H2 사용
+                                        - generic [ref=f2e169]: 사용 여부 O/X
+                                        - generic [ref=f2e170] [cursor=pointer]: ✕
+                                    - generic [ref=f2e171]:
+                                        - generic [ref=f2e172]: REST 규약 준수
+                                        - generic [ref=f2e173]: 사용 여부 O/X
+                                        - generic [ref=f2e174] [cursor=pointer]: ✕
+                                    - generic [ref=f2e175] [cursor=pointer]: + 조건 추가
+                                - generic [ref=f2e176]: 조건 변경은 다음 판정부터 반영. 이미 매겨진 O/X는 재실행 시 갱신. 대체 구현(H2 대신 PostgreSQL 등)은 X + 비고. 질문 초점(질문 방향)과 별개 — 회차별로 [측정 계획].
+                            - generic [ref=f2e177]:
+                                - generic [ref=f2e178]: 판정 결과는 [개요] 요구사항 충족 매트릭스에 반영
+                                - generic [ref=f2e179]:
+                                    - button "취소" [ref=f2e180] [cursor=pointer]
+                                    - button "저장" [ref=f2e181] [cursor=pointer]
+                        - text: ✓ ✓ ✓
+                - generic [ref=f2e183]:
+                    - generic [ref=f2e184]:
+                        - generic [ref=f2e185]: 현재 탭 · 개요 — 상태 · case (프로젝트 생성 ORG-03 + 요구사항 검증)
+                        - generic [ref=f2e186] [cursor=pointer]: 총합 →
+                    - generic [ref=f2e187]:
+                        - generic [ref=f2e188]: P-1
+                        - generic [ref=f2e189]: danger
+                        - generic [ref=f2e190]: 존재않는 기수 / 허용안된 유형 — 저장 차단(개인·팀만 허용)
+                    - generic [ref=f2e191]:
+                        - generic [ref=f2e192]: P-2
+                        - generic [ref=f2e193]: danger
+                        - generic [ref=f2e194]: 프로젝트명 누락·중복 — 필드 오류·재입력
+                    - generic [ref=f2e195]:
+                        - generic [ref=f2e196]: P-3
+                        - generic [ref=f2e197]: danger
+                        - generic [ref=f2e198]: 대상 반 미선택 — 저장 차단
+                    - generic [ref=f2e199]:
+                        - generic [ref=f2e200]: P-4
+                        - generic [ref=f2e201]: danger
+                        - generic [ref=f2e202]: 기간 시작>마감 — 기간 재입력
+                    - generic [ref=f2e203]:
+                        - generic [ref=f2e204]: P-5
+                        - generic [ref=f2e205]: info
+                        - generic [ref=f2e206]: 요구사항 0건 — 생성 가능. 실행 시 요구사항 검증만 없음(질문 생성은 무관·AI 자율)
+                    - generic [ref=f2e207]:
+                        - generic [ref=f2e208]: P-6
+                        - generic [ref=f2e209]: warning
+                        - generic [ref=f2e210]: 요구사항 미충족(X) · 비고 없음 — 대체 구현이면 비고 기록 권장
+                    - generic [ref=f2e211]:
+                        - generic [ref=f2e212]: P-7
+                        - generic [ref=f2e213]: info
+                        - generic [ref=f2e214]: 판정 대기(미제출 단위) — O/X "—" 검증 대기 표시
+                    - generic [ref=f2e215]:
+                        - generic [ref=f2e216]: P-8
+                        - generic [ref=f2e217]: danger
+                        - generic [ref=f2e218]: 생성 실패(롤백) — 요구사항·설정 미저장·재시도

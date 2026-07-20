@@ -1,0 +1,262 @@
+- generic [ref=f23e2]:
+  - generic [ref=f23e3]:
+    - generic [ref=f23e4]: SC-M13 · P0/P1 · manager/project-workspace · 웹
+    - heading "프로젝트 워크스페이스 저작=총괄 · 실행=담당" [level=1] [ref=f23e5]
+    - paragraph [ref=f23e6]: "2층 구조: 목록(컬렉션)에서 프로젝트 하나를 클릭 → 상세(4탭)로 드릴다운. 목록엔 탭바·컨텍스트바 없음, 상세에만 탭바[개요(요구사항 O/X=프로젝트)·팀·레포(단위 N 확정)·측정 계획(질문 초점=회차)·결과] + 컨텍스트 바. 개인형은 팀·레포의 개인 프로젝트 변형(학생별 레포). 운영 관리와 같은 \"메뉴 하나 = 화면 하나\". 각 화면 하단에 상태·case 발췌, 전량은 상태 ↔ case 매핑(총합). 근거: D77·D78·D80·D81."
+  - generic [ref=f23e7]:
+    - generic [ref=f23e8]: iz-get.com/cohorts/7/projects/api/overview
+    - generic [ref=f23e14]:
+      - generic [ref=f23e15]:
+        - generic [ref=f23e16]:
+          - generic [ref=f23e17]:
+            - generic [ref=f23e18]: ◆
+            - text: IZ-Get
+          - generic [ref=f23e19] [cursor=pointer]:
+            - generic [ref=f23e20]: 기관
+            - text: 그린 부트캠프
+            - generic [ref=f23e21]: · 현재
+            - text: 7기 ▾
+        - generic [ref=f23e22]:
+          - generic "D90 권한 경계 데모 — 저작=총괄/실행=담당" [ref=f23e23] [cursor=pointer]:
+            - generic [ref=f23e24]: 총괄 뷰
+            - generic [ref=f23e25]: 담당 뷰
+          - generic [ref=f23e26]:
+            - text: 박지현 · 총괄 매니저
+            - generic [ref=f23e27]: 박
+      - generic [ref=f23e28]:
+        - generic [ref=f23e29]:
+          - generic [ref=f23e30]:
+            - generic [ref=f23e31]: ▦
+            - text: 대시보드
+          - generic [ref=f23e32]:
+            - generic [ref=f23e33]: ⚙
+            - text: 운영 관리
+            - generic [ref=f23e34]: 총괄
+          - generic [ref=f23e35]:
+            - generic [ref=f23e36]: ▧
+            - text: 교안
+          - generic [ref=f23e37]:
+            - generic [ref=f23e38]: ▤
+            - text: 프로젝트
+          - generic [ref=f23e39]:
+            - generic [ref=f23e40]: ◎
+            - text: 교육생
+          - generic [ref=f23e41]:
+            - generic [ref=f23e42]: △
+            - text: 분석 · 진단
+          - generic [ref=f23e43]:
+            - generic [ref=f23e44]: ✎
+            - text: 개입
+          - generic [ref=f23e45]:
+            - generic [ref=f23e46]: ▥
+            - text: 리포트
+        - generic [ref=f23e47]:
+          - generic [ref=f23e48]:
+            - generic [ref=f23e49]:
+              - generic [ref=f23e50]: ← 프로젝트 목록
+              - generic [ref=f23e51]:
+                - generic [ref=f23e52]: API 서버
+                - generic [ref=f23e53]: 팀
+                - generic [ref=f23e55] [cursor=pointer]:
+                  - generic [ref=f23e56]: 프로젝트 전환
+                  - text: ▾
+            - generic [ref=f23e57]: A반 · 03.20 ~ 04.10 · 추출 기본 본인커밋
+          - generic [ref=f23e58]:
+            - generic [ref=f23e59] [cursor=pointer]: 개요
+            - generic [ref=f23e60] [cursor=pointer]: 팀 · 레포
+            - generic [ref=f23e61] [cursor=pointer]: 측정 계획
+            - generic [ref=f23e62] [cursor=pointer]: 결과
+          - generic [ref=f23e63]:
+            - generic [ref=f23e64]:
+              - generic [ref=f23e65]:
+                - generic [ref=f23e66]: 유형
+                - generic [ref=f23e67]: 팀 프로젝트
+              - generic [ref=f23e68]:
+                - generic [ref=f23e69]: 대상 반
+                - generic [ref=f23e70]: A반
+              - generic [ref=f23e71]:
+                - generic [ref=f23e72]: 기간
+                - generic [ref=f23e73]: 03.20 ~ 04.10
+              - generic [ref=f23e74]:
+                - generic [ref=f23e75]: 단위(분모)
+                - generic [ref=f23e76]: 4팀 팀·레포 →
+              - generic [ref=f23e77]:
+                - generic [ref=f23e78]: 추출 범위 기본값
+                - generic [ref=f23e79]: 본인커밋기여분 · 회차 상속
+              - generic [ref=f23e80]:
+                - generic [ref=f23e81]: 회차 수
+                - generic [ref=f23e82]: 2회차 측정 계획 →
+            - generic [ref=f23e83]:
+              - generic [ref=f23e84]:
+                - heading "요구사항 충족 · 프로젝트 필수 조건 · 단위별 O/X 검증 (실행 후 산출)" [level=3] [ref=f23e85]
+                - button "요구사항 편집총괄" [ref=f23e87] [cursor=pointer]
+              - table [ref=f23e89]:
+                - rowgroup [ref=f23e90]:
+                  - row [ref=f23e91]:
+                    - columnheader "단위" [ref=f23e92]
+                    - columnheader "JWT 토큰 인증" [ref=f23e93]
+                    - columnheader "PostgreSQL 사용" [ref=f23e94]
+                    - columnheader "REST 규약" [ref=f23e95]
+                    - columnheader "비고" [ref=f23e96]
+                - rowgroup [ref=f23e97]:
+                  - row [ref=f23e98]:
+                    - cell "팀 A" [ref=f23e99]
+                    - cell "O" [ref=f23e100]
+                    - cell "O" [ref=f23e102]
+                    - cell "O" [ref=f23e104]
+                    - cell "—" [ref=f23e106]
+                  - row [ref=f23e107]:
+                    - cell "팀 B" [ref=f23e108]
+                    - cell "O" [ref=f23e109]
+                    - cell "X" [ref=f23e111]
+                    - cell "O" [ref=f23e113]
+                    - cell "H2 권장이었으나 PostgreSQL로 고도화" [ref=f23e115]
+                  - row [ref=f23e116]:
+                    - cell "팀 C" [ref=f23e117]
+                    - cell "X" [ref=f23e118]
+                    - cell "O" [ref=f23e120]
+                    - cell "O" [ref=f23e122]
+                    - cell "세션 기반 인증으로 대체" [ref=f23e124]
+                  - row [ref=f23e125]:
+                    - cell "팀 D" [ref=f23e126]
+                    - cell "—" [ref=f23e127]
+                    - cell "—" [ref=f23e129]
+                    - cell "—" [ref=f23e131]
+                    - cell "미제출 · 검증 대기" [ref=f23e133]
+              - generic [ref=f23e134]: · 요구사항 = "목적대로 제대로 했는가"(프로젝트 소속). 조건별 O/X + 비고(더 나은 대체 구현은 X여도 비고로 인정). 질문 초점과 별개 — 요구사항="무엇을 갖췄나(준수)", 질문 초점="무엇을 물을까(질문 방향)". 조건은 생성 시 정의, 판정은 실행 후 자동. 조건 없어도 생성 가능(그땐 요구사항 검증만 없음).
+            - generic [ref=f23e135]:
+              - generic [ref=f23e136]:
+                - heading "회차 구성 요약 · 질문 초점·추출 범위는 [측정 계획]에서 지정 (읽기전용)" [level=3] [ref=f23e137]
+                - button "측정 계획 열기 →" [ref=f23e138] [cursor=pointer]
+              - table [ref=f23e140]:
+                - rowgroup [ref=f23e141]:
+                  - row [ref=f23e142]:
+                    - columnheader "회차" [ref=f23e143]
+                    - columnheader "질문 초점 · 비우면 AI 자율" [ref=f23e144]
+                    - columnheader "추출 범위" [ref=f23e145]
+                - rowgroup [ref=f23e146]:
+                  - row [ref=f23e147]:
+                    - cell "API 서버 · 1회차" [ref=f23e148]
+                    - cell "책임 분리 반례·예외" [ref=f23e149]:
+                      - generic [ref=f23e150]: 책임 분리
+                      - generic [ref=f23e151]: 반례·예외
+                    - cell "본인커밋" [ref=f23e152]
+                  - row [ref=f23e153]:
+                    - cell "API 서버 · 2회차 최종" [ref=f23e154]:
+                      - text: API 서버 · 2회차
+                      - generic [ref=f23e155]: 최종
+                    - cell "미지정 → AI가 기여분에서 자율 추출" [ref=f23e156]:
+                      - generic [ref=f23e157]: 미지정
+                      - text: → AI가 기여분에서 자율 추출
+                    - cell "본인커밋" [ref=f23e158]
+              - generic [ref=f23e159]: "· 질문 초점 = 질문을 어디에 치중할지(회차 소속·PLAN-03). 비우면 AI가 각자 기여분에서 중요 지점을 질문수만큼 자율 추출(제한 아님). 지정하면(예: CSS·디자인) 그 영역 치중. 교육생 비노출(A4·FB-F6). 편집은 [측정 계획] 탭."
+            - generic [ref=f23e160]:
+              - generic [ref=f23e161]:
+                - heading "적용 교안 총괄 · 리포트 위치 안내(MEAS-07)에 쓰임 · 선택(비워도 됨·D91)" [level=3] [ref=f23e162]
+                - button "+ 교안 연결총괄" [ref=f23e164] [cursor=pointer]
+              - table [ref=f23e166]:
+                - rowgroup [ref=f23e167]:
+                  - row [ref=f23e168]:
+                    - columnheader "연결된 교안" [ref=f23e169]
+                    - columnheader "버전" [ref=f23e170]
+                    - columnheader "커버 기술영역" [ref=f23e171]
+                    - columnheader [ref=f23e172]
+                - rowgroup [ref=f23e173]:
+                  - row [ref=f23e174]:
+                    - cell "Kubernetes와 CICD" [ref=f23e175]
+                    - cell "v2" [ref=f23e176]
+                    - cell "컨테이너 오케스트레이션 서비스 노출 CICD" [ref=f23e177]:
+                      - generic [ref=f23e178]: 컨테이너 오케스트레이션
+                      - generic [ref=f23e179]: 서비스 노출
+                      - generic [ref=f23e180]: CICD
+                    - cell "연결 해제" [ref=f23e181]
+                  - row [ref=f23e182]:
+                    - cell "AWS 핵심 서비스" [ref=f23e183]
+                    - cell "v3" [ref=f23e184]
+                    - cell "클라우드 인프라 네트워킹" [ref=f23e185]:
+                      - generic [ref=f23e186]: 클라우드 인프라
+                      - generic [ref=f23e187]: 네트워킹
+                    - cell "연결 해제" [ref=f23e188]
+              - generic [ref=f23e189]: "· 커버리지: 이 프로젝트 기술영역 4개 중 3 커버 · 관측성·모니터링 미커버 — 관련 교안 추가 연결 권장. 미연결이어도 프로젝트는 정상(그 경우 리포트 위치 안내만 생략·D91). 실제 축→위치 매핑은 [교안]에서 자동(D96 자동 연결). 교안 라이브러리·등록은 [교안] 메뉴."
+          - text: ✓ ✓
+      - generic [ref=f23e191]:
+        - generic [ref=f23e192]:
+          - heading "교안 연결 · API 서버 · 이 기수 교안 라이브러리에서 선택" [level=3] [ref=f23e193]
+          - generic [ref=f23e194] [cursor=pointer]: ✕
+        - generic [ref=f23e196]:
+          - generic [ref=f23e197]:
+            - text: 연결할 교안
+            - generic [ref=f23e198]: · 다중 선택 · 리포트가 이 교안으로 위치 안내(MEAS-07)
+          - generic [ref=f23e199]:
+            - generic [ref=f23e200] [cursor=pointer]:
+              - generic [ref=f23e201]: ✓
+              - generic [ref=f23e202]:
+                - text: Kubernetes와 CICD v2
+                - generic [ref=f23e203]: 컨테이너 오케스트레이션 · 서비스 노출 · CICD
+            - generic [ref=f23e204] [cursor=pointer]:
+              - generic [ref=f23e205]: ✓
+              - generic [ref=f23e206]:
+                - text: AWS 핵심 서비스 v3
+                - generic [ref=f23e207]: 클라우드 인프라 · 네트워킹
+            - generic [ref=f23e210] [cursor=pointer]:
+              - text: Microservice 아키텍처 v1
+              - generic [ref=f23e211]: 서비스 분해 · API 게이트웨이 · 사가
+            - generic [ref=f23e214] [cursor=pointer]:
+              - text: 클라우드 현대화 이해 서비스 v1
+              - generic [ref=f23e215]: 클라우드 네이티브 · IaaS/PaaS/SaaS
+            - generic [ref=f23e218]:
+              - text: Docker 컨테이너 기초 v1
+              - generic [ref=f23e219]: 추출 실패 · 연결 불가(재분석 필요)
+          - generic [ref=f23e220]: 비워도 됨 — 미연결이면 이 프로젝트 리포트에 위치 안내만 생략(측정·피드백은 그대로·D91). 새 교안은 [교안] 메뉴 → 등록에서. 연결 후 축→섹션 매핑은 [교안]에서 자동(고신뢰 자동·저신뢰 확인 권장·D96).
+        - generic [ref=f23e221]:
+          - generic [ref=f23e222]: 2개 선택됨 · 커버 기술영역 3/4(관측성 미커버)
+          - generic [ref=f23e223]:
+            - button "취소" [ref=f23e224] [cursor=pointer]
+            - button "연결 저장" [ref=f23e225] [cursor=pointer]
+      - text: ✓ ✓ ✓
+  - generic [ref=f23e227]:
+    - generic [ref=f23e228]:
+      - generic [ref=f23e229]: 현재 탭 · 개요 — 상태 · case (프로젝트 생성 ORG-03 + 요구사항 검증)
+      - generic [ref=f23e230] [cursor=pointer]: 총합 →
+    - generic [ref=f23e231]:
+      - generic [ref=f23e232]: P-1
+      - generic [ref=f23e233]: danger
+      - generic [ref=f23e234]: 존재않는 기수 / 허용안된 유형 — 저장 차단(개인·팀만 허용)
+    - generic [ref=f23e235]:
+      - generic [ref=f23e236]: P-2
+      - generic [ref=f23e237]: danger
+      - generic [ref=f23e238]: 프로젝트명 누락·중복 — 필드 오류·재입력
+    - generic [ref=f23e239]:
+      - generic [ref=f23e240]: P-3
+      - generic [ref=f23e241]: danger
+      - generic [ref=f23e242]: 대상 반 미선택 — 저장 차단
+    - generic [ref=f23e243]:
+      - generic [ref=f23e244]: P-4
+      - generic [ref=f23e245]: danger
+      - generic [ref=f23e246]: 기간 시작>마감 — 기간 재입력
+    - generic [ref=f23e247]:
+      - generic [ref=f23e248]: P-5
+      - generic [ref=f23e249]: info
+      - generic [ref=f23e250]: 요구사항 0건 — 생성 가능. 실행 시 요구사항 검증만 없음(질문 생성은 무관·AI 자율)
+    - generic [ref=f23e251]:
+      - generic [ref=f23e252]: P-6
+      - generic [ref=f23e253]: warning
+      - generic [ref=f23e254]: 요구사항 미충족(X) · 비고 없음 — 대체 구현이면 비고 기록 권장
+    - generic [ref=f23e255]:
+      - generic [ref=f23e256]: P-7
+      - generic [ref=f23e257]: info
+      - generic [ref=f23e258]: 판정 대기(미제출 단위) — O/X "—" 검증 대기 표시
+    - generic [ref=f23e259]:
+      - generic [ref=f23e260]: P-8
+      - generic [ref=f23e261]: danger
+      - generic [ref=f23e262]: 생성 실패(롤백) — 요구사항·설정 미저장·재시도
+  - generic [ref=f23e263]:
+    - heading "이 화면의 데이터 플로우 (D77 다이아몬드) · 개념 경계" [level=3] [ref=f23e264]
+    - generic [ref=f23e265]: 단계 · 의존
+    - paragraph [ref=f23e266]: ① 개요(프로젝트·유형 + 요구사항 O/X=프로젝트) → ② 팀·레포(단위 N 확정 = 응시 분모) → ③ 측정 계획(질문 초점=회차, 프로젝트만 있으면 계획) → ④ 결과. ②③(레포∥체크포인트) 병렬, ⑤실행에서 스냅샷 수렴.
+    - generic [ref=f23e267]: 요구사항 ≠ 질문 초점 (D80)
+    - paragraph [ref=f23e268]: "요구사항(프로젝트): \"목적대로 제대로 했나\" — 필수 조건(JWT·PostgreSQL) 단위별 O/X+비고. 질문 초점(회차·구 \"결정 지점\"/\"검증 포커스\" 통합): \"질문을 어디 치중할까\" — 비우면 AI 자율 추출, 지정하면 그 영역 치중. 판정 대상 vs 질문 방향으로 별개."
+    - generic [ref=f23e269]: 허브 ≠ 모놀리식 (D78)
+    - paragraph [ref=f23e270]: "워크스페이스는 프로젝트 컨텍스트 허브 + 탭. 각 탭은 자기 SC-ID: 개요·팀레포=SC-M13, 측정계획=SC-M03, 결과=SC-M08. 위계(측정계획⊂프로젝트)와 화면 분해는 별개 축."
+    - generic [ref=f23e271]: 권한
+    - paragraph [ref=f23e272]: "저작 = 총괄, 실행 = 담당(FB-F5·D90). 총괄: 프로젝트 생성·요구사항 정의/편집·측정 설계(회차 수·질문 초점=측정 축)=무엇을 잴지(측정 무결성·담당이 자기 잣대 못 바꾸게). 담당: 팀·레포 편성·체크포인트 열기(이 반 진도에 맞춰 언제)·독촉·모니터링·개입=이 반에서 언제·누구를(규모상 반마다 생기는 운영을 총괄이 다 할 수 없음). 회차 수는 총괄 설계지만 담당이 가감 제안 가능(코호트 비교 흔들림 방지). 관련: D75·D76·D77·D78·D80·D90."

@@ -1,0 +1,307 @@
+- generic [ref=f4e2]:
+  - generic [ref=f4e3]:
+    - generic [ref=f4e4]: SC-T04 · P0 · 교육생 · 웹 · 제품 핵심
+    - heading "검증 세션 (코드 종속형) — 상태별 전량" [level=1] [ref=f4e5]
+    - paragraph [ref=f4e6]: 제출 코드를 근거로 한 소크라틱 검증. 왼쪽 = 지금 질문의 근거 코드(고정), 오른쪽 = 질답. 코드 없이는 답할 수 없는 질문만(MEAS-06). 진행 표시는 결정지점 = 정직한 분수(고정 예산 N, D102), 깊이 = 비분수 인디케이터(적응형이라 분모 없음, D101). 깊이는 L1 기본 → L2 대안·트레이드오프 → L3 반례로 "이해의 종류"를 캐는 축이지 난이도가 아니며(D101), 5축 채점은 세션이 끝난 뒤 대화 전체에 적용된다(D100) — 세션 중 점수·평가·루브릭은 절대 비노출(A5).
+  - generic [ref=f4e7]: V0 · 시작 전 — 기대치 셋업 시험 불안 완화 = 측정 노이즈 감소 · 깊이를 "기본 절차"로 프레이밍(D101)
+  - generic [ref=f4e8]:
+    - generic [ref=f4e9]: iz-get.com/sessions/9920
+    - generic [ref=f4e15]:
+      - generic [ref=f4e16]:
+        - generic [ref=f4e17]:
+          - generic [ref=f4e18]: ◆
+          - text: IZ-Get
+        - generic [ref=f4e19]: 2회차 · API 서버
+      - generic [ref=f4e20]: 시작 전
+      - button "← 나가기" [ref=f4e22] [cursor=pointer]
+    - generic [ref=f4e24]:
+      - heading "검증 세션을 시작할게요" [level=2] [ref=f4e25]
+      - generic [ref=f4e26]: 제출한 코드를 함께 보면서, 어떻게 만들었는지 이야기하는 시간이에요.
+      - generic [ref=f4e27]:
+        - generic [ref=f4e28]:
+          - generic [ref=f4e29]: 💬
+          - generic [ref=f4e30]: 시험이 아니에요. 맞히는 게 아니라 이해한 대로 설명하면 됩니다. 모르는 부분은 모른다고 해도 괜찮아요.
+        - generic [ref=f4e31]:
+          - generic [ref=f4e32]: 🔍
+          - generic [ref=f4e33]: 질문 4개를 다룹니다. 각 질문마다 보통 2단계로 조금 더 깊이 들어가요 — 잘 답해도 다음 단계 질문이 이어지니 걱정하지 마세요.
+        - generic [ref=f4e34]:
+          - generic [ref=f4e35]: 🔒
+          - generic [ref=f4e36]: 점수·평가는 이 화면에 표시되지 않아요. 결과는 세션이 끝난 뒤 리포트에서 확인합니다.
+        - generic [ref=f4e37]:
+          - generic [ref=f4e38]: ⏱️
+          - generic [ref=f4e39]: 약 10~15분 걸려요. 중간에 나가도 답한 곳까지 저장되고, 이어서 할 수 있어요.
+      - button "시작하기 →" [ref=f4e40] [cursor=pointer]
+      - generic [ref=f4e41]: 왼쪽에 질문과 관련된 코드가 함께 표시됩니다.
+  - generic [ref=f4e42]: V1 · 정상 — 질답 진행 결정지점 2/4(정직 분수) · 깊이 2단계째(비분수) · 근거 코드 하이라이트
+  - generic [ref=f4e43]:
+    - generic [ref=f4e44]: iz-get.com/sessions/9920
+    - generic [ref=f4e50]:
+      - generic [ref=f4e51]:
+        - generic [ref=f4e52]:
+          - generic [ref=f4e53]: ◆
+          - text: IZ-Get
+        - generic [ref=f4e54]: 2회차 · API 서버
+      - generic [ref=f4e55]:
+        - generic [ref=f4e56]:
+          - generic [ref=f4e57]: 결정지점
+          - generic [ref=f4e63]: 2 / 4
+        - generic [ref=f4e64]:
+          - generic [ref=f4e65]: 깊이
+          - generic [ref=f4e70]: 2단계째
+        - generic [ref=f4e71]: 남은 12:40
+      - button "나가기 (저장됨)" [ref=f4e72] [cursor=pointer]
+    - generic [ref=f4e73]:
+      - generic [ref=f4e74]:
+        - generic [ref=f4e75]:
+          - generic [ref=f4e76]: auth/token.py · verify_token()
+          - generic [ref=f4e77]: 지금 질문의 근거 코드
+        - generic [ref=f4e78]:
+          - generic [ref=f4e79]:
+            - generic [ref=f4e80]: "18"
+            - generic [ref=f4e81]: "def verify_token(token: str) -> User:"
+          - generic [ref=f4e82]:
+            - generic [ref=f4e83]: "19"
+            - generic [ref=f4e84]: payload = jwt.decode(
+          - generic [ref=f4e85]:
+            - generic [ref=f4e86]: "20"
+            - generic [ref=f4e87]: token, SECRET, algorithms=["HS256"])
+          - generic [ref=f4e88]:
+            - generic [ref=f4e89]: "21"
+            - generic [ref=f4e90]: user = db.get(payload["sub"])
+          - generic [ref=f4e91]:
+            - generic [ref=f4e92]: "22"
+            - generic [ref=f4e93]: "return user # 만료·서명 검증 예외 처리 없음"
+          - generic [ref=f4e94]: "23"
+          - generic [ref=f4e96]:
+            - generic [ref=f4e97]: "24"
+            - generic [ref=f4e98]: "@app.get(\"/me\")"
+          - generic [ref=f4e99]:
+            - generic [ref=f4e100]: "25"
+            - generic [ref=f4e101]: "def me(user = Depends(verify_token)):"
+          - generic [ref=f4e102]:
+            - generic [ref=f4e103]: "26"
+            - generic [ref=f4e104]: return user
+        - generic [ref=f4e105]: 이 부분의 요구사항 · 인증이 필요한 엔드포인트는 만료·위변조 토큰을 거부해야 함
+      - generic [ref=f4e106]:
+        - generic [ref=f4e107]:
+          - generic [ref=f4e108]: 결정지점 1 · 완료
+          - generic [ref=f4e109]:
+            - generic [ref=f4e110]: ◆ 검증 질문
+            - generic [ref=f4e111]:
+              - text: 데이터베이스 연결을 싱글턴으로 두신 이유를 코드 기준으로 설명해 주세요.
+              - generic [ref=f4e112] [cursor=pointer]: ↳ db/session.py:12
+          - generic [ref=f4e113]: 요청마다 커넥션을 새로 만들면 풀이 금방 고갈돼서, 앱 전체에서 하나만 쓰도록 했습니다.
+          - generic [ref=f4e115]: 결정지점 2 · 진행 중
+          - generic [ref=f4e116]:
+            - generic [ref=f4e117]: ◆ 검증 질문 · 1단계
+            - generic [ref=f4e118]:
+              - text: 20번 줄에서 jwt.decode를 호출할 때, 만료된 토큰이 들어오면 어떻게 되나요? 코드 기준으로 설명해 주세요.
+              - generic [ref=f4e119] [cursor=pointer]: ↳ auth/token.py:20
+          - generic [ref=f4e120]: jwt.decode가 ExpiredSignatureError를 던지는데, 지금은 try/except가 없어서 500 에러가 날 것 같습니다.
+          - generic [ref=f4e122]:
+            - generic [ref=f4e123]: ◆ 검증 질문 · 2단계
+            - generic [ref=f4e124]:
+              - text: 그 예외를 처리한다고 할 때, 여기서 401을 반환하는 방식과 미들웨어에서 일괄 처리하는 방식 중 어느 쪽을 택하겠어요? 각각 무엇이 좋고 무엇이 아쉬운지 짚어 주세요.
+              - generic [ref=f4e125] [cursor=pointer]: ↳ auth/token.py:20-22
+        - generic [ref=f4e126]:
+          - generic [ref=f4e127]: 답변을 입력하세요…
+          - button "제출" [ref=f4e128] [cursor=pointer]
+        - generic [ref=f4e129]: 🔒 답변에 대한 평가·점수는 이 화면에 표시되지 않아요. 결과는 세션이 끝난 뒤 리포트에서 확인합니다.
+  - generic [ref=f4e130]: V2 · 다음 질문 준비 중 LLM 지연 완충 · 입력 비활성 · 랩 검증 패턴(V-6 재생성도 동일 표시)
+  - generic [ref=f4e131]:
+    - generic [ref=f4e132]: iz-get.com/sessions/9920
+    - generic [ref=f4e138]:
+      - generic [ref=f4e139]:
+        - generic [ref=f4e140]:
+          - generic [ref=f4e141]: ◆
+          - text: IZ-Get
+        - generic [ref=f4e142]: 2회차 · API 서버
+      - generic [ref=f4e143]:
+        - generic [ref=f4e144]:
+          - generic [ref=f4e145]: 결정지점
+          - generic [ref=f4e151]: 2 / 4
+        - generic [ref=f4e152]:
+          - generic [ref=f4e153]: 깊이
+          - generic [ref=f4e158]: 2단계째
+        - generic [ref=f4e159]: 남은 11:58
+      - button "나가기 (저장됨)" [ref=f4e160] [cursor=pointer]
+    - generic [ref=f4e161]:
+      - generic [ref=f4e162]:
+        - generic [ref=f4e163]:
+          - generic [ref=f4e164]: auth/token.py · verify_token()
+          - generic [ref=f4e165]: 지금 질문의 근거 코드
+        - generic [ref=f4e166]:
+          - generic [ref=f4e167]:
+            - generic [ref=f4e168]: "18"
+            - generic [ref=f4e169]: "def verify_token(token: str) -> User:"
+          - generic [ref=f4e170]:
+            - generic [ref=f4e171]: "19"
+            - generic [ref=f4e172]: payload = jwt.decode(
+          - generic [ref=f4e173]:
+            - generic [ref=f4e174]: "20"
+            - generic [ref=f4e175]: token, SECRET, algorithms=["HS256"])
+          - generic [ref=f4e176]:
+            - generic [ref=f4e177]: "21"
+            - generic [ref=f4e178]: user = db.get(payload["sub"])
+          - generic [ref=f4e179]:
+            - generic [ref=f4e180]: "22"
+            - generic [ref=f4e181]: "return user # 만료·서명 검증 예외 처리 없음"
+        - generic [ref=f4e182]: 이 부분의 요구사항 · 인증이 필요한 엔드포인트는 만료·위변조 토큰을 거부해야 함
+      - generic [ref=f4e183]:
+        - generic [ref=f4e184]:
+          - generic [ref=f4e185]: 결정지점 2 · 진행 중
+          - generic [ref=f4e186]:
+            - generic [ref=f4e187]: ◆ 검증 질문 · 2단계
+            - generic [ref=f4e188]:
+              - text: 그 예외를 처리한다고 할 때, 여기서 401을 반환하는 방식과 미들웨어에서 일괄 처리하는 방식 중 어느 쪽을 택하겠어요?
+              - generic [ref=f4e189] [cursor=pointer]: ↳ auth/token.py:20-22
+          - generic [ref=f4e190]: 미들웨어가 나을 것 같습니다. 인증이 필요한 엔드포인트가 늘어나도 예외 처리를 한 곳에서 관리할 수 있으니까요. 대신 엔드포인트별로 다른 응답을 주기는 어려워집니다.
+          - generic [ref=f4e197]: 다음 질문을 준비하고 있어요…
+        - generic [ref=f4e198]:
+          - generic [ref=f4e199]: 질문을 기다리는 중…
+          - button "제출" [ref=f4e200] [cursor=pointer]
+        - generic [ref=f4e201]: 🔒 답변에 대한 평가·점수는 이 화면에 표시되지 않아요. 결과는 세션이 끝난 뒤 리포트에서 확인합니다.
+  - generic [ref=f4e202]: V3 · 전체 결정지점 소진 → 세션 종료 5축 채점은 여기서 시작(D100) · 점수는 T05에서
+  - generic [ref=f4e203]:
+    - generic [ref=f4e204]: iz-get.com/sessions/9920/complete
+    - generic [ref=f4e210]:
+      - generic [ref=f4e211]:
+        - generic [ref=f4e212]:
+          - generic [ref=f4e213]: ◆
+          - text: IZ-Get
+        - generic [ref=f4e214]: 2회차 · API 서버
+      - generic [ref=f4e216]:
+        - generic [ref=f4e217]: 결정지점
+        - generic [ref=f4e223]: 4 / 4
+    - generic [ref=f4e225]:
+      - generic [ref=f4e226]: ✓
+      - heading "수고했어요, 세션이 끝났어요" [level=2] [ref=f4e227]
+      - paragraph [ref=f4e228]: 답변해 준 내용을 바탕으로 결과를 정리하고 있어요.준비되면 리포트에서 확인할 수 있어요.
+      - button "홈으로 가기" [ref=f4e230] [cursor=pointer]
+      - generic [ref=f4e231]: 결과 공개 범위는 매니저 설정에 따라 달라질 수 있어요.
+  - generic [ref=f4e232]: V4 · 시간 상한 초과(V-4) 완료 결정지점 기준 저장 · 손실 최소 · 비난 없는 문구
+  - generic [ref=f4e233]:
+    - generic [ref=f4e234]: iz-get.com/sessions/9920/complete
+    - generic [ref=f4e240]:
+      - generic [ref=f4e241]:
+        - generic [ref=f4e242]:
+          - generic [ref=f4e243]: ◆
+          - text: IZ-Get
+        - generic [ref=f4e244]: 2회차 · API 서버
+      - generic [ref=f4e246]:
+        - generic [ref=f4e247]: 결정지점
+        - generic [ref=f4e253]: 3 / 4
+    - generic [ref=f4e255]:
+      - generic [ref=f4e256]: ⏱
+      - heading "세션 시간이 끝났어요" [level=2] [ref=f4e257]
+      - paragraph [ref=f4e258]: 지금까지 답한 결정지점 3개까지 저장했어요. 답한 내용은 그대로 결과에 반영됩니다.
+      - button "홈으로 가기" [ref=f4e259] [cursor=pointer]
+      - generic [ref=f4e260]: 남은 질문은 이번 회차 결과에 포함되지 않아요.
+  - generic [ref=f4e261]: V5 · 네트워크 중단(V-5) 마지막 완료 턴부터 복구 · 세션 바 유지(맥락 보존)
+  - generic [ref=f4e262]:
+    - generic [ref=f4e263]: iz-get.com/sessions/9920
+    - generic [ref=f4e269]:
+      - generic [ref=f4e270]:
+        - generic [ref=f4e271]:
+          - generic [ref=f4e272]: ◆
+          - text: IZ-Get
+        - generic [ref=f4e273]: 2회차 · API 서버
+      - generic [ref=f4e274]:
+        - generic [ref=f4e275]:
+          - generic [ref=f4e276]: 결정지점
+          - generic [ref=f4e282]: 2 / 4
+        - generic [ref=f4e283]:
+          - generic [ref=f4e284]: 깊이
+          - generic [ref=f4e289]: 2단계째
+        - generic [ref=f4e290]: 일시 정지
+      - button "나가기 (저장됨)" [ref=f4e291] [cursor=pointer]
+    - generic [ref=f4e292]:
+      - text: ⚠️ 연결이 끊겼어요. 답한 곳까지 저장돼 있어요.
+      - generic [ref=f4e293] [cursor=pointer]: 다시 연결
+    - generic [ref=f4e294]:
+      - generic [ref=f4e295]:
+        - generic [ref=f4e296]:
+          - generic [ref=f4e297]: auth/token.py · verify_token()
+          - generic [ref=f4e298]: 지금 질문의 근거 코드
+        - generic [ref=f4e299]:
+          - generic [ref=f4e300]:
+            - generic [ref=f4e301]: "18"
+            - generic [ref=f4e302]: "def verify_token(token: str) -> User:"
+          - generic [ref=f4e303]:
+            - generic [ref=f4e304]: "19"
+            - generic [ref=f4e305]: payload = jwt.decode(
+          - generic [ref=f4e306]:
+            - generic [ref=f4e307]: "20"
+            - generic [ref=f4e308]: token, SECRET, algorithms=["HS256"])
+          - generic [ref=f4e309]:
+            - generic [ref=f4e310]: "21"
+            - generic [ref=f4e311]: user = db.get(payload["sub"])
+        - generic [ref=f4e312]: 이 부분의 요구사항 · 인증이 필요한 엔드포인트는 만료·위변조 토큰을 거부해야 함
+      - generic [ref=f4e313]:
+        - generic [ref=f4e314]:
+          - generic [ref=f4e315]: 결정지점 2 · 진행 중
+          - generic [ref=f4e316]:
+            - generic [ref=f4e317]: ◆ 검증 질문 · 2단계
+            - generic [ref=f4e318]:
+              - text: 401 반환과 미들웨어 일괄 처리 중 어느 쪽을 택하겠어요?
+              - generic [ref=f4e319] [cursor=pointer]: ↳ auth/token.py:20-22
+          - generic [ref=f4e320]: 여기까지 저장됐어요. 다시 연결하면 이어서 답할 수 있어요.
+        - generic [ref=f4e321]:
+          - generic [ref=f4e322]: 연결이 끊겨 지금은 입력할 수 없어요
+          - button "제출" [ref=f4e323] [cursor=pointer]
+        - generic [ref=f4e324]: 🔒 답변에 대한 평가·점수는 이 화면에 표시되지 않아요.
+  - generic [ref=f4e325]:
+    - heading "상태 ↔ 명세 case 매핑 (MEAS-06 6)" [level=3] [ref=f4e326]
+    - paragraph [ref=f4e327]: 교육생에겐 내부 오류가 "일시 오류 / 다음 질문"으로만 보인다(A5 — 채점·평가·루브릭 비노출). 내부 실패는 표가 계약.
+    - table [ref=f4e329]:
+      - rowgroup [ref=f4e330]:
+        - row [ref=f4e331]:
+          - columnheader "#" [ref=f4e332]
+          - columnheader "상태" [ref=f4e333]
+          - columnheader "표현" [ref=f4e334]
+          - columnheader "교육생에게 보이는 것 / 처리" [ref=f4e335]
+          - columnheader "화면" [ref=f4e336]
+      - rowgroup [ref=f4e337]:
+        - row [ref=f4e338]:
+          - cell "—" [ref=f4e339]
+          - cell "정상(질답 진행)" [ref=f4e340]
+          - cell "—" [ref=f4e341]
+          - cell "근거 코드 + 대화 + 입력" [ref=f4e342]
+          - cell "✔ V1" [ref=f4e343]
+        - row [ref=f4e344]:
+          - cell "V-1" [ref=f4e345]
+          - cell "DP.type≠CODE 유입" [ref=f4e346]
+          - cell "danger" [ref=f4e347]
+          - cell "세션 시작 차단(데이터 계약 오류) · 교육생엔 \"일시 오류\"" [ref=f4e349]
+          - cell "V0 차단" [ref=f4e350]
+        - row [ref=f4e351]:
+          - cell "V-2" [ref=f4e352]
+          - cell "원본 코드 위치 부재" [ref=f4e353]
+          - cell "skip" [ref=f4e354]
+          - cell "해당 결정지점 건너뛰기/재분석 · 교육생엔 다음 질문으로" [ref=f4e356]
+          - cell "V1 패턴" [ref=f4e357]
+        - row [ref=f4e358]:
+          - cell "V-3" [ref=f4e359]
+          - cell "근거 없이 질문 생성" [ref=f4e360]
+          - cell "폐기" [ref=f4e361]
+          - cell "질문 폐기·재생성(교육생 비노출) · \"준비 중\" 표시" [ref=f4e363]
+          - cell "✔ V2" [ref=f4e364]
+        - row [ref=f4e365]:
+          - cell "V-4" [ref=f4e366]
+          - cell "세션 시간 상한 초과" [ref=f4e367]
+          - cell "warning" [ref=f4e368]
+          - cell "\"시간이 끝났어요 · N개까지 저장\" · 완료 DP 기준 저장" [ref=f4e370]
+          - cell "✔ V4" [ref=f4e371]
+        - row [ref=f4e372]:
+          - cell "V-5" [ref=f4e373]
+          - cell "네트워크 중단" [ref=f4e374]
+          - cell "warning" [ref=f4e375]
+          - cell "\"연결이 끊겼어요 · 저장됨\" · 마지막 완료 턴부터 복구" [ref=f4e377]
+          - cell "✔ V5" [ref=f4e378]
+        - row [ref=f4e379]:
+          - cell "V-6" [ref=f4e380]
+          - cell "질문 생성 실패" [ref=f4e381]
+          - cell "warning" [ref=f4e382]
+          - cell "동일 원본 기반 재생성 · 교육생엔 \"준비 중\"(V2와 동일)" [ref=f4e384]
+          - cell "✔ V2" [ref=f4e385]
+    - generic [ref=f4e386]: "디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 신규: SessionBar(DP 분수+깊이 비분수+타이머)·IntroGate·CodePanel(근거 하이라이트)·TurnBubble(근거 줄 연결)·DPSeparator·TypingIndicator·AnswerInput·EndCard · 측정 규칙: 결정지점=고정 예산 N(정직 분수, D102) / 깊이=적응형 비분수(D101) / 5축 채점은 세션 후 대화 전체(D100) / 난이도 노브 없음(D103) · 레이아웃 규율: 고정 높이 컨테이너 + 각 패널 자체 스크롤(긴 코드에서 페이지 전체가 밀려 입력창이 사라지는 문제 차단 — 랩 실구동 검증) · 타이머는 평소 은은·임박 시에만 경고(시험 불안 완화) · 채점·평가 비노출(A5) · 웹 기준"

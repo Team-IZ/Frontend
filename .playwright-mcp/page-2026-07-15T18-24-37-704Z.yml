@@ -1,0 +1,93 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: SC-M08 · P0(개인 최종)/P1 · 매니저 · 웹
+    - heading "리포트" [level=1] [ref=e5]
+    - paragraph [ref=e6]: "3종 리포트 = 대등한 독립 페이지(사이드바 하위메뉴 하나 = 화면 하나, 탭바 없음). 해시로 전환: #summary 종합(RPT-01·기수 집계 SSOT) / #checkpoints 체크포인트(RPT-04·회차 종료마다 자동생성·직전 대비 diff·좌 리스트→우 상세) / #final 개인 최종(RPT-02·5축 최종등급·매니저/교육생 버전 GOV-03) / #cases 상태 매핑(27건). 모든 수치는 클릭해야 근거(RPT-05·A2). RPT-01↔04 동일 지표는 같은 값(SSOT·B8). 프로젝트 워크스페이스 결과 탭 → 이리로 딥링크(D78)."
+  - generic [ref=e7]:
+    - generic [ref=e8]: iz-get.com/cohorts/7/reports/comprehensive
+    - generic [ref=e14]:
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - generic [ref=e17]:
+            - generic [ref=e18]: ◆
+            - text: IZ-Get
+          - generic [ref=e19]:
+            - generic [ref=e20]: 기수
+            - text: 7기 ▾
+        - generic [ref=e21]:
+          - text: 박지현 · 매니저
+          - generic [ref=e22]: 박
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - generic [ref=e26]: ▦
+            - text: 대시보드
+          - generic [ref=e27]:
+            - generic [ref=e28]: ⚙
+            - text: 운영 관리
+            - generic [ref=e29]: 총괄
+          - generic [ref=e30]:
+            - generic [ref=e31]: ▤
+            - text: 프로젝트
+          - generic [ref=e32]:
+            - generic [ref=e33]: ◎
+            - text: 교육생
+          - generic [ref=e34]:
+            - generic [ref=e35]: △
+            - text: 위험 · 분석
+          - generic [ref=e36]:
+            - generic [ref=e37]: ✎
+            - text: 개입
+          - generic [ref=e38]:
+            - generic [ref=e39]: ▥
+            - text: 리포트
+          - generic [ref=e40]:
+            - generic [ref=e41]: ▧
+            - text: 교안
+        - generic [ref=e42]:
+          - generic [ref=e44]:
+            - generic [ref=e45]: 리포트 › 7기 › 종합
+            - heading "종합 리포트" [level=2] [ref=e46]
+          - generic [ref=e47]:
+            - generic [ref=e48]:
+              - generic [ref=e49]:
+                - generic [ref=e50]: 7기 종합 리포트 · 백엔드 4기
+                - generic [ref=e51]: 과정 범위 전체 · 체크포인트 1~3 누적 · 최신 집계 2026-07-12 14:03 스냅샷
+              - generic [ref=e52]:
+                - generic [ref=e53]: 단일 집계원천(SSOT)
+                - button "PDF 내보내기" [ref=e54] [cursor=pointer]
+            - generic [ref=e55]: ◔ 각 지표의 [근거·명단 ▸]을 누르면 우측에서 그 수치를 만든 실제 명단·이력이 열림. 클릭 전에는 렌더링 안 함(RPT-05 온디맨드 · A2 유일 예외).
+            - generic [ref=e56]:
+              - generic [ref=e57]:
+                - generic [ref=e58]: 섹션
+                - generic [ref=e59] [cursor=pointer]: AI 요약·제안
+                - generic [ref=e60] [cursor=pointer]: 이해도 분포
+                - generic [ref=e61] [cursor=pointer]: 성장 추이
+                - generic [ref=e62] [cursor=pointer]: 취약 단계
+                - generic [ref=e63] [cursor=pointer]: 개입 효과·회복률
+              - generic [ref=e64]:
+                - generic [ref=e65]:
+                  - heading "S AI 자연어 요약 · 커리큘럼 보완 제안" [level=3] [ref=e66]:
+                    - generic [ref=e67]: S
+                    - text: AI 자연어 요약 · 커리큘럼 보완 제안
+                  - generic [ref=e68]:
+                    - generic [ref=e69]: ◈ AI 요약
+                    - paragraph [ref=e70]: 체크포인트 3 누적 기준 기수 평균 총점은 완만한 상승세이나, 반례대응 축이 체크포인트 2 이후 정체되어 상위·하위 격차가 벌어지는 중. 개입을 받은 8명 중 5명이 다음 체크포인트에 회복해 회복률은 표본 대비 양호. 응시 이탈은 관찰되지 않음.
+                    - generic [ref=e71]: ⚠ AI 요약 수치는 원본 집계값과 일치 검증을 통과한 문장만 노출. 불일치 문단은 재생성, 실패 시 아래 정형 지표는 유지됨.
+                    - generic [ref=e72]:
+                      - generic [ref=e73]: ▸ 커리큘럼 보완 제안
+                      - list [ref=e74]:
+                        - listitem [ref=e75]: → 체크포인트 2 직후 반례·예외 처리 집중 세션 추가 검토 (정체 구간)
+                        - listitem [ref=e76]: → 하위 분포 대상 보충 교안 배치 — 격차 확대 억제
+                      - generic [ref=e77]: 제안은 참고용 — 채택 시 교안·규칙 개선(환류)으로 연결.
+                - text: ◔ ◔ ◔ ◔ ◔ ◔
+            - generic [ref=e78]: · 공통 집계 함수 SSOT — 여기 수치는 체크포인트(RPT-04)·대시보드와 동일 함수 산출. 값이 다르면 노출 차단(B8·case2). export 실패 시 원본 리포트 보존(case6).
+          - text: ◔ ◔ ◔
+  - generic [ref=e79]:
+    - heading "이 화면의 위치 · 연결" [level=3] [ref=e80]
+    - generic [ref=e81]: 3종 리포트
+    - paragraph [ref=e82]: 종합(RPT-01·기수 전체) / 체크포인트(RPT-04·회차별 자동생성·직전 대비 diff) / 개인 최종(RPT-02·최종회차 등급). 모두 공통 집계 SSOT(B8).
+    - generic [ref=e83]: 프로젝트 워크스페이스 결과 탭 → 여기 (D78·D82)
+    - paragraph [ref=e84]: "리포트는 SC-M08 소유. 프로젝트 워크스페이스 [결과] 탭은 이리로 딥링크: 체크포인트 행 → #checkpoints, \"전체 리포트(기수)\" → #summary. 워크스페이스는 리포트를 소유·중복 생성하지 않음."
+    - generic [ref=e85]: 온디맨드 근거
+    - paragraph [ref=e86]: "모든 수치는 클릭해야 근거 패널(RPT-05). 클릭 전 비렌더(A2 유일 예외). 상태 27건은 #cases(상태 ↔ case 매핑)."

@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-M13 · 프로젝트 · 팀 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-hover:#31429e; --c-primary-soft:#eef0fb;
+    --c-nav:#1e2436; --c-nav-2:#2a3147; --c-nav-text:#aeb4c6;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:840px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  .app{display:flex;flex-direction:column;min-height:560px}
+  .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
+  .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700;font-size:var(--fs-base)}
+  .topbar .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .cohortsel{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:5px var(--sp-3);font-size:var(--fs-sm);color:var(--c-text);background:var(--c-surface-2)}
+  .cohortsel .k{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+  .body{display:flex;flex:1}
+  .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
+  .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
+  .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
+  .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-6)}
+  .phead{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--sp-4)}
+  .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead .crumb{font-size:var(--fs-sm);color:var(--c-text-3);margin-bottom:var(--sp-1)}
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-sm);cursor:pointer;padding:8px var(--sp-4)}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong)}
+  .btn.sm{padding:6px var(--sp-3);font-size:var(--fs-xs)}
+  .fsbar{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3);flex-wrap:wrap}
+  .sel{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--c-border-strong);border-radius:var(--r-md);padding:6px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text);background:#fff}
+  .sel .k{color:var(--c-text-3)}
+
+  .card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .tbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .tbl th,.tbl td{text-align:left;padding:10px var(--sp-4);border-bottom:1px solid var(--c-border)}
+  .tbl th{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);font-weight:600;background:var(--c-surface-2)}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl tr.click:hover{background:var(--c-surface-2)}
+  .tbl .nm{font-weight:600}
+  .mono{font-family:ui-monospace,Menlo,monospace;font-size:var(--fs-xs);color:var(--c-text-2)}
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .badge.ok{background:var(--c-success-soft);color:var(--c-success)}
+  .badge.off{background:#eef0f3;color:var(--c-text-3)}
+  .badge.warn{background:var(--c-warning-soft);color:var(--c-warning)}
+  .badge.info{background:var(--c-info-soft);color:var(--c-info)}
+  .badge.type{background:var(--c-primary-soft);color:var(--c-primary)}
+  .chev{color:var(--c-text-3)}
+  .link{color:var(--c-primary);font-size:var(--fs-xs);cursor:pointer}
+  .cbx{width:15px;height:15px;border:1.5px solid var(--c-border-strong);border-radius:4px;display:inline-block;vertical-align:-2px;flex:0 0 auto}
+  .cbx.on{background:var(--c-primary);border-color:var(--c-primary);position:relative}
+  .cbx.on::after{content:"✓";color:#fff;font-size:10px;position:absolute;top:-2px;left:2px}
+  .tbl td.chk,.tbl th.chk{width:38px}
+  .bulkbar{display:flex;align-items:center;gap:var(--sp-3);background:var(--c-primary-soft);border:1px solid var(--c-primary);border-radius:var(--r-md);padding:8px var(--sp-4);margin-bottom:var(--sp-3)}
+  .bulkbar .n{font-weight:700;color:var(--c-primary);font-size:var(--fs-sm)}
+  .bulkbar .ba{border:1px solid var(--c-primary);background:#fff;color:var(--c-primary);border-radius:var(--r-md);padding:5px 10px;font-size:var(--fs-xs);cursor:pointer}
+  .bulkbar .clear{margin-left:auto;color:var(--c-text-2);font-size:var(--fs-xs);cursor:pointer}
+  .poolact{margin-top:var(--sp-2);border-top:1px dashed var(--c-border-strong);padding-top:var(--sp-2)}
+  .poolact .mini{width:100%;border:1px solid var(--c-primary);background:#fff;color:var(--c-primary);border-radius:var(--r-md);padding:6px;font-size:var(--fs-xs);font-weight:600;cursor:pointer}
+  .acts{display:flex;gap:var(--sp-2)}
+
+  /* overview strip */
+  .ovstrip{display:flex;gap:var(--sp-6);background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5);margin-bottom:var(--sp-5);flex-wrap:wrap}
+  .ovstrip .k{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
+  .ovstrip .v{font-size:var(--fs-sm);font-weight:600}
+
+  /* team builder */
+  .bhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-3)}
+  .bhead h3{font-size:var(--fs-base);font-weight:700}
+  .bhead h3 .c{color:var(--c-text-3);font-weight:400;font-size:var(--fs-sm);margin-left:6px}
+  .teams{display:flex;gap:var(--sp-4);flex-wrap:wrap;align-items:flex-start}
+  .teamcol{flex:0 0 230px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-3)}
+  .teamcol.pool{background:var(--c-surface-2);border-style:dashed}
+  .teamcol h4{font-size:var(--fs-sm);font-weight:700;margin-bottom:var(--sp-2);display:flex;justify-content:space-between}
+  .teamcol h4 .cnt{color:var(--c-text-3);font-weight:400;font-size:var(--fs-xs)}
+  .repo{display:flex;align-items:center;gap:6px;background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-sm);padding:5px 8px;font-size:11px;color:var(--c-text-2);margin-bottom:var(--sp-3)}
+  .teamcol.pool .repo{display:none}
+  .repo .g{color:var(--c-text-3)}
+  .chip{display:flex;align-items:center;gap:6px;background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:20px;padding:4px 10px;font-size:var(--fs-xs);margin-bottom:6px}
+  .teamcol.pool .chip{background:#fff}
+  .chip .dot{width:6px;height:6px;border-radius:50%;background:var(--c-success)}
+  .chip .dot.w{background:var(--c-warning)}
+  .addteam{flex:0 0 230px;border:1px dashed var(--c-border-strong);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;color:var(--c-text-3);font-size:var(--fs-sm);min-height:80px}
+
+  .notes{margin-top:var(--sp-8);background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-5) var(--sp-6)}
+  .notes h3{font-size:var(--fs-lg);margin-bottom:var(--sp-1)}
+  .notes .grp{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--c-text-3);margin:var(--sp-5) 0 var(--sp-2)}
+  .notes .hint{font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-2)}
+  .tblwrap{overflow-x:auto}
+  .ntbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm);min-width:520px}
+  .ntbl th,.ntbl td{text-align:left;padding:var(--sp-2) var(--sp-3);border-bottom:1px solid var(--c-border)}
+  .ntbl td:first-child{width:52px;color:var(--c-text-3)}
+  .pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
+  .pill.danger{background:var(--c-danger-soft);color:var(--c-danger)}
+  .pill.warning{background:var(--c-warning-soft);color:var(--c-warning)}
+  .pill.info{background:var(--c-info-soft);color:var(--c-info)}
+  .foot{margin-top:var(--sp-5);font-size:var(--fs-xs);color:var(--c-text-3)}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">SC-M13 · P0 · 매니저 · 웹</span>
+    <h1>프로젝트 · 팀 <span style="font-size:12px;color:#2f6bb0;vertical-align:4px">워크스페이스 경유 진입</span></h1>
+    <div style="background:#eaf2fa;border:1px solid #2f6bb0;border-radius:10px;padding:12px 16px;margin:12px 0;font-size:13px;color:#2f6bb0;line-height:1.6">ℹ <b>이 화면(개요·팀·레포)은 <a href="project-workspace.html" style="color:#2f6bb0;font-weight:700">프로젝트 워크스페이스</a>의 [개요]·[팀·레포] 탭으로 진입합니다</b>(D77·D78). <b>SC-M13 정의서는 독립 화면으로 유지</b>(ORG-03 프로젝트 + ORG-02 팀 = 예외 16건) — 워크스페이스는 프로젝트 컨텍스트를 고정하는 <b>허브</b>일 뿐, 이 화면을 흡수한 게 아님. 측정계획은 별개 화면(SC-M03), 결과는 SC-M08. 이 단독 레이아웃은 컨텍스트 스위처 없는 구 버전 참고용.</div>
+    <p>SC-M02에서 분리된 <b>운영 화면</b>(D18). 프로젝트는 기수 내내 여러 개(개인/팀). <b>레포는 프로젝트가 아니라 팀별·학생별</b> — 목록엔 유형·대상 반·<b>기간</b>·레포 연결 현황(N/M)만, URL은 팀 카드/학생별에서. <b>팀은 프로젝트마다 새로 편성</b>(D16).</p>
+  </div>
+
+  <!-- ===== 뷰 1: 프로젝트 목록 ===== -->
+  <div class="sec-label">뷰 1 · 프로젝트 목록</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 · 그린 부트캠프 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div>
+          <div class="item"><span class="ic">◔</span>기수 구성</div>
+          <div class="item"><span class="ic">▧</span>교안</div>
+          <div class="item on"><span class="ic">▤</span>프로젝트</div>
+          <div class="item"><span class="ic">◷</span>측정 계획</div>
+          <div class="item"><span class="ic">△</span>위험 · 분석</div>
+          <div class="item"><span class="ic">◎</span>교육생</div>
+          <div class="item"><span class="ic">✎</span>개입</div>
+          <div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content">
+          <div class="phead"><div><div class="crumb">프로젝트 › 7기</div><h2>프로젝트</h2></div><button class="btn">+ 프로젝트 생성</button></div>
+          <div class="fsbar"><span class="sel"><span class="k">반</span> 전체 ▾</span><span class="sel"><span class="k">유형</span> 전체 ▾</span><span class="sel"><span class="k">상태</span> 전체 ▾</span></div>
+          <div class="card"><table class="tbl">
+            <thead><tr><th>프로젝트</th><th>유형</th><th>대상 반</th><th>기간</th><th>레포 연결</th><th>상태</th><th></th></tr></thead>
+            <tbody>
+              <tr class="click"><td class="nm">CLI 과제</td><td><span class="badge type">개인</span></td><td>A반</td><td>03.04 ~ 03.18</td><td>18 / 18</td><td><span class="badge ok">완료</span></td><td class="chev">›</td></tr>
+              <tr class="click"><td class="nm">API 서버</td><td><span class="badge type">팀</span></td><td>A반</td><td>03.20 ~ 04.10</td><td>4 / 4팀</td><td><span class="badge ok">진행</span></td><td class="chev">›</td></tr>
+              <tr class="click"><td class="nm">풀스택</td><td><span class="badge type">팀</span></td><td>전체</td><td>04.14 ~ 05.09</td><td><span class="badge warn">2 / 5팀</span></td><td><span class="badge off">준비</span></td><td class="chev">›</td></tr>
+            </tbody>
+          </table></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 뷰 2: 팀 프로젝트 상세 ===== -->
+  <div class="sec-label">뷰 2 · 프로젝트 상세 (팀 프로젝트 — 팀 편성)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects/2</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 · 그린 부트캠프 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div>
+          <div class="item"><span class="ic">◔</span>기수 구성</div>
+          <div class="item"><span class="ic">▧</span>교안</div>
+          <div class="item on"><span class="ic">▤</span>프로젝트</div>
+          <div class="item"><span class="ic">◷</span>측정 계획</div>
+          <div class="item"><span class="ic">△</span>위험 · 분석</div>
+          <div class="item"><span class="ic">◎</span>교육생</div>
+          <div class="item"><span class="ic">✎</span>개입</div>
+          <div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content">
+          <div class="phead"><div><div class="crumb">프로젝트 › <b>API 서버</b></div><h2>API 서버 <span class="badge type" style="vertical-align:3px">팀</span></h2></div></div>
+          <div class="ovstrip">
+            <div><div class="k">대상 반</div><div class="v">A반</div></div>
+            <div><div class="k">기간</div><div class="v">03.20 ~ 04.10</div></div>
+            <div><div class="k">추출 범위</div><div class="v">본인커밋기여분 <span class="link">측정 계획</span></div></div>
+            <div><div class="k">요구사항</div><div class="v">연결됨 <span class="link">보기</span></div></div>
+            <div><div class="k">팀 · 레포</div><div class="v">4팀 / 4개 연결</div></div>
+          </div>
+          <div class="bhead"><h3>팀 편성 <span class="c">이 프로젝트 전용 · 다음 프로젝트는 새로</span></h3><div class="acts"><button class="btn sm ghost">⚄ 자동 배분</button><button class="btn sm">+ 팀 추가</button></div></div>
+          <div class="teams">
+            <div class="teamcol">
+              <h4>팀 A <span class="cnt">3명</span></h4>
+              <div class="repo"><span class="g">repo</span> github.com/…/api-a</div>
+              <div class="chip"><span class="dot"></span>강민준</div>
+              <div class="chip"><span class="dot"></span>김서연</div>
+              <div class="chip"><span class="dot w"></span>한도현 · 커밋 미검증</div>
+            </div>
+            <div class="teamcol">
+              <h4>팀 B <span class="cnt">2명</span></h4>
+              <div class="repo"><span class="g">repo</span> github.com/…/api-b</div>
+              <div class="chip"><span class="dot"></span>이서연</div>
+              <div class="chip"><span class="dot"></span>박준호</div>
+            </div>
+            <div class="teamcol pool">
+              <h4>미배정 <span class="cnt">2명 · 2 선택</span></h4>
+              <div class="chip"><span class="cbx on"></span>정하늘</div>
+              <div class="chip"><span class="cbx on"></span>오지훈</div>
+              <div class="poolact"><button class="mini">선택 2명 → 팀 배정 ▾</button></div>
+            </div>
+            <div class="addteam">+ 팀 추가</div>
+          </div>
+          <div style="font-size:12px;color:var(--c-text-3);margin-top:12px">· <b>자동 배분</b>(균등/랜덤)으로 미배정을 팀에 한 번에, 또는 풀에서 <b>다중 선택 → 팀 배정</b>. 개별 이동도 유지. 각 팀이 자기 레포(팀별 다름). 재배정은 이력 보존(from/to). 커밋 미검증 팀원은 귀속 경고(AUTH-07 · A8).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 뷰 3: 개인 프로젝트 상세 ===== -->
+  <div class="sec-label">뷰 3 · 프로젝트 상세 (개인 프로젝트 — 학생별 레포)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects/1</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 · 그린 부트캠프 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div>
+          <div class="item"><span class="ic">◔</span>기수 구성</div>
+          <div class="item"><span class="ic">▧</span>교안</div>
+          <div class="item on"><span class="ic">▤</span>프로젝트</div>
+          <div class="item"><span class="ic">◷</span>측정 계획</div>
+          <div class="item"><span class="ic">△</span>위험 · 분석</div>
+          <div class="item"><span class="ic">◎</span>교육생</div>
+          <div class="item"><span class="ic">✎</span>개입</div>
+          <div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content">
+          <div class="phead"><div><div class="crumb">프로젝트 › <b>CLI 과제</b></div><h2>CLI 과제 <span class="badge type" style="vertical-align:3px">개인</span></h2></div></div>
+          <div class="ovstrip">
+            <div><div class="k">대상 반</div><div class="v">A반</div></div>
+            <div><div class="k">기간</div><div class="v">03.04 ~ 03.18</div></div>
+            <div><div class="k">추출 범위</div><div class="v">전체코드 <span class="link">측정 계획</span></div></div>
+            <div><div class="k">요구사항</div><div class="v">연결됨 <span class="link">보기</span></div></div>
+            <div><div class="k">레포 연결</div><div class="v">18 / 18명</div></div>
+          </div>
+          <div class="bhead"><h3>학생별 레포 <span style="color:var(--c-text-3);font-weight:400;font-size:13px">· 미제출 1</span></h3></div>
+          <div class="bulkbar"><span class="n">1명 선택됨</span><span class="ba">제출 독촉</span><span class="ba">레포 안내 재발송</span><span class="clear">선택 해제</span></div>
+          <div class="card"><table class="tbl">
+            <thead><tr><th class="chk"><span class="cbx"></span></th><th>학생</th><th>레포 URL</th><th>커밋 이메일</th><th>제출</th></tr></thead>
+            <tbody>
+              <tr><td class="chk"><span class="cbx"></span></td><td class="nm">강민준</td><td class="mono">github.com/minjun/cli</td><td><span class="badge ok">검증됨</span></td><td><span class="badge ok">제출</span></td></tr>
+              <tr><td class="chk"><span class="cbx"></span></td><td class="nm">김서연</td><td class="mono">github.com/seoyeon/cli</td><td><span class="badge ok">검증됨</span></td><td><span class="badge ok">제출</span></td></tr>
+              <tr><td class="chk"><span class="cbx on"></span></td><td class="nm">한도현</td><td class="mono">github.com/dohyun/cli</td><td><span class="badge warn">미검증</span></td><td><span class="badge off">미제출</span></td></tr>
+            </tbody>
+          </table></div>
+          <div style="font-size:12px;color:var(--c-text-3);margin-top:12px">· 개인 프로젝트는 학생마다 레포가 다름 → 학생 단위 입력. 체크박스로 <b>미제출·미검증만 일괄 독촉/안내</b>. 미검증 커밋은 귀속 경고(AUTH-07).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== STATE MAPPING ===== -->
+  <div class="notes">
+    <h3>상태 ↔ 명세 case 매핑 (ORG-03 8 + ORG-02 8 = 16)</h3>
+    <p class="hint">SC-M02에서 이관. 비주얼은 정상 뷰만.</p>
+    <div class="grp">프로젝트 (ORG-03)</div>
+    <div class="tblwrap"><table class="ntbl"><tbody>
+      <tr><td>P-1</td><td>기수/유형 오류</td><td><span class="pill danger">danger</span></td><td>저장 차단(개인/팀만)</td></tr>
+      <tr><td>P-2</td><td>레포 URL 형식 오류</td><td><span class="pill danger">danger</span></td><td>유효 URL 요청</td></tr>
+      <tr><td>P-3</td><td>비공개 레포 접근 실패</td><td><span class="pill warning">warning</span></td><td>임시 저장·접근 권한 안내</td></tr>
+      <tr><td>P-4</td><td>요구사항 부재</td><td><span class="pill warning">warning</span></td><td>"DP 추출 제한" 안내</td></tr>
+      <tr><td>P-5</td><td>커밋 이메일 미등록</td><td><span class="pill warning">warning</span></td><td>매핑 보류·AUTH-07 등록 요청</td></tr>
+      <tr><td>P-6</td><td>미검증 커밋 이메일</td><td><span class="pill warning">warning</span></td><td>매핑 유지·귀속 경고 배지</td></tr>
+      <tr><td>P-7</td><td>동일 레포 중복</td><td><span class="pill warning">warning</span></td><td>중복 경고·명시 승인</td></tr>
+      <tr><td>P-8</td><td>정상/빈(프로젝트 0)</td><td><span class="pill">기본</span></td><td>목록 / "첫 프로젝트를 만드세요"</td></tr>
+    </tbody></table></div>
+    <div class="grp">팀 (ORG-02)</div>
+    <div class="tblwrap"><table class="ntbl"><tbody>
+      <tr><td>T-1</td><td>존재않는 기수/프로젝트</td><td><span class="pill danger">danger</span></td><td>팀 생성 차단</td></tr>
+      <tr><td>T-2</td><td>중복 팀명</td><td><span class="pill danger">danger</span></td><td>재입력</td></tr>
+      <tr><td>T-3</td><td>미소속 교육생 배정</td><td><span class="pill danger">danger</span></td><td>대상 제외 안내</td></tr>
+      <tr><td>T-4</td><td>동일 시점 중복 소속</td><td><span class="pill danger">danger</span></td><td>신규 배정 차단·기존 확인</td></tr>
+      <tr><td>T-5</td><td>재배정 기존 없음</td><td><span class="pill info">info</span></td><td>신규 배정·이력 점검</td></tr>
+      <tr><td>T-6</td><td>to_at&gt;from_at 역전</td><td><span class="pill danger">danger</span></td><td>이력 무결성 오류·차단</td></tr>
+      <tr><td>T-7</td><td>일부 배정 저장 실패</td><td><span class="pill warning">warning</span></td><td>실패 롤백·성공/실패 분리</td></tr>
+      <tr><td>T-8</td><td>활성 소속 있는 팀 삭제</td><td><span class="pill danger">danger</span></td><td>삭제 차단·재배정/종료 요청</td></tr>
+    </tbody></table></div>
+    <div class="foot">디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 신규: TeamBuilder·MemberChip·RepoField·TypeToggle · 레포=팀/학생 단위(D18) · 팀=프로젝트 종속(D16) · 웹 기준</div>
+  </div>
+</div>
+</body>
+</html>

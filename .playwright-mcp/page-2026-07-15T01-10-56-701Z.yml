@@ -1,0 +1,135 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: SC-M02(총괄) · P0 · manager/lead-only/program-admin · 웹
+    - heading "운영 관리 총괄 전용" [level=1] [ref=e5]
+    - paragraph [ref=e6]: "총괄 매니저(ORG_MANAGE) 전용 콘솔 — 한 화면 4탭. 담당 매니저 nav엔 이 항목이 아예 안 뜬다. 탭은 담김 계층(기수⊃반⊃교육생) + 개설 선행 순: ① 기수(기관 전체·생성/종료) ② 반(선택 기수·편성) ③ 명단(선택 기수·교육생 등록/배정) ④ 매니저(기관 전체·인력, 트리 밖 가로지름). 담당은 편성이 아니라 '교육생'에서 자기 학생만 조회·지도. 근거: 조직 구조를 정하는 것만 총괄 + 스코프별 배치(D66·D67·D68·D70)."
+  - generic [ref=e7]: 운영 관리 · 총괄 전용 — 한 화면 4탭 (기수 › 반 › 명단 › 매니저 · 탭 클릭 이동)
+  - generic [ref=e8]:
+    - generic [ref=e9]: iz-get.com/admin/cohorts/7/classes
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - generic [ref=e19]: ◆
+            - text: IZ-Get
+          - generic [ref=e21] [cursor=pointer]:
+            - generic [ref=e22]: 기관
+            - text: 그린 부트캠프
+            - generic [ref=e23]: · 현재
+            - generic [ref=e24]: 7기
+            - text: ▾
+        - generic [ref=e25]:
+          - text: 박지현 · 총괄 매니저
+          - generic [ref=e26]: 박
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e29]:
+            - generic [ref=e30]: ▦
+            - text: 대시보드
+          - generic [ref=e31]:
+            - generic [ref=e32]: ⚙
+            - text: 운영 관리
+            - generic [ref=e33]: 총괄
+          - generic [ref=e34]:
+            - generic [ref=e35]: ◎
+            - text: 교육생
+          - generic [ref=e36]:
+            - generic [ref=e37]: ◷
+            - text: 측정 계획
+          - generic [ref=e38]:
+            - generic [ref=e39]: ▤
+            - text: 프로젝트
+          - generic [ref=e40]:
+            - generic [ref=e41]: △
+            - text: 위험 · 분석
+          - generic [ref=e42]:
+            - generic [ref=e43]: ✎
+            - text: 개입
+          - generic [ref=e44]:
+            - generic [ref=e45]: ▥
+            - text: 리포트
+          - generic [ref=e46]:
+            - generic [ref=e47]: ▧
+            - text: 교안
+        - generic [ref=e48]:
+          - generic [ref=e49]:
+            - heading "운영 관리" [level=2] [ref=e50]
+            - generic [ref=e51]: 총괄 전용
+            - generic [ref=e52]: 담당 매니저 nav엔 비노출
+          - generic [ref=e53]:
+            - generic [ref=e54] [cursor=pointer]:
+              - text: 기수
+              - generic [ref=e55]: "3"
+            - generic [ref=e56] [cursor=pointer]:
+              - text: 반
+              - generic [ref=e57]: "3"
+            - generic [ref=e58] [cursor=pointer]:
+              - text: 명단
+              - generic [ref=e59]: "48"
+            - generic [ref=e60] [cursor=pointer]:
+              - text: 매니저
+              - generic [ref=e61]: "3"
+          - text: ↕
+          - generic [ref=e63]:
+            - generic [ref=e64]:
+              - heading "반 3개· 7기 · 담당 필요 1" [level=3] [ref=e65]:
+                - text: 반 3개
+                - generic [ref=e66]: · 7기 · 담당 필요 1
+              - button "+ 반 추가" [ref=e67] [cursor=pointer]
+            - generic [ref=e68]:
+              - generic [ref=e69]: 🔍 반 검색
+              - generic [ref=e70]:
+                - generic [ref=e71]: 담당
+                - text: 전체 ▾
+              - generic [ref=e72]:
+                - generic [ref=e73]: 정렬
+                - text: 반명순 ▾
+            - table [ref=e75]:
+              - rowgroup [ref=e76]:
+                - row [ref=e77]:
+                  - columnheader "반 ↕" [ref=e78]
+                  - columnheader "담당 매니저" [ref=e79]
+                  - columnheader "인원" [ref=e80]
+                  - columnheader "구성" [ref=e81]
+                  - columnheader [ref=e82]
+              - rowgroup [ref=e83]:
+                - row [ref=e84] [cursor=pointer]:
+                  - cell "A반" [ref=e85]
+                  - cell "박지현, 이도윤" [ref=e86]
+                  - cell "18" [ref=e87]
+                  - cell "편성 완료" [ref=e88]
+                  - cell "담당 변경 · 명단 →" [ref=e90]
+                - row [ref=e91] [cursor=pointer]:
+                  - cell "B반" [ref=e92]
+                  - cell "이도윤" [ref=e93]
+                  - cell "16" [ref=e94]
+                  - cell "편성 완료" [ref=e95]
+                  - cell "담당 변경 · 명단 →" [ref=e97]
+                - row [ref=e98] [cursor=pointer]:
+                  - cell "C반" [ref=e99]
+                  - cell "담당 없음" [ref=e100]
+                  - cell "14" [ref=e102]
+                  - cell "담당 필요" [ref=e103]
+                  - cell "담당 배정 · 명단 →" [ref=e105]
+            - generic [ref=e106]:
+              - generic [ref=e107]: 1–3 / 3개
+              - generic [ref=e108]:
+                - generic [ref=e109] [cursor=pointer]: ‹
+                - generic [ref=e110] [cursor=pointer]: "1"
+                - generic [ref=e111] [cursor=pointer]: ›
+          - text: ↕ ↕
+  - generic [ref=e113]:
+    - generic [ref=e114]: 현재 탭 · 반 — 상태 · case (편성 D16)
+    - generic [ref=e115]:
+      - generic [ref=e116]: C-1
+      - generic [ref=e117]: danger
+      - generic [ref=e118]: 반명 중복 — 재입력
+    - generic [ref=e119]:
+      - generic [ref=e120]: C-3
+      - generic [ref=e121]: info
+      - generic [ref=e122]: 담당 매니저 미배정 반 — "담당 없음" 배지 + 배정 유도
+    - generic [ref=e123]:
+      - generic [ref=e124]: C-7
+      - generic [ref=e125]: "-"
+      - generic [ref=e126]: 반 대량(수십~수백) — 검색·정렬·페이지네이션
+  - generic [ref=e127]: "· 인터랙션: 탭(기수·반·명단·매니저)은 클릭 전환 — 한 화면 안에서 연결됨. [+ 기수 생성]·[+ 매니저 초대]는 그 자리에서 모달 오픈. 위 '현재 탭 상태·case'는 탭 따라 바뀜. 전체 총합은 사이드바 '상태 ↔ case 매핑'에서만. 확정 시 각각 Cohort 생성+AUTH-06 초대 / ManagerAssignment+권한 부여 + AuditLog. 모든 실행은 총괄만(ORG_MANAGE)."

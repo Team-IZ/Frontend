@@ -1,0 +1,546 @@
+- generic [ref=f15e2]:
+  - complementary [ref=f15e3]:
+    - generic [ref=f15e4]:
+      - generic [ref=f15e5]:
+        - generic [ref=f15e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=f15e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=f15e8]:
+      - generic [ref=f15e9]:
+        - generic [ref=f15e10]: shared
+        - button "로그인 shared/login.html" [ref=f15e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=f15e13]: shared/login.html
+      - generic [ref=f15e14]:
+        - generic [ref=f15e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=f15e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=f15e18]: ▸
+      - generic [ref=f15e19]:
+        - generic [ref=f15e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=f15e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=f15e23]: 총괄
+          - generic [ref=f15e24]: ▸
+      - generic [ref=f15e25]:
+        - generic [ref=f15e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=f15e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=f15e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=f15e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=f15e31]: manager/dashboard.html
+        - button "교안 ▸" [ref=f15e33] [cursor=pointer]:
+          - text: 교안
+          - generic [ref=f15e34]: ▸
+        - button "프로젝트 ▸" [ref=f15e36] [cursor=pointer]:
+          - text: 프로젝트
+          - generic [ref=f15e37]: ▸
+        - button "코호트 분석 manager/risk-analysis.html" [ref=f15e38] [cursor=pointer]:
+          - text: 코호트 분석
+          - generic [ref=f15e39]: manager/risk-analysis.html
+        - button "코호트 히트맵 manager/heatmap.html" [ref=f15e40] [cursor=pointer]:
+          - text: 코호트 히트맵
+          - generic [ref=f15e41]: manager/heatmap.html
+        - button "교육생 리스트 manager/trainee-list.html" [ref=f15e42] [cursor=pointer]:
+          - text: 교육생 리스트
+          - generic [ref=f15e43]: manager/trainee-list.html
+        - button "개별 교육생 상세 manager/trainee-detail.html" [ref=f15e44] [cursor=pointer]:
+          - text: 개별 교육생 상세
+          - generic [ref=f15e45]: manager/trainee-detail.html
+        - button "개입 관리 manager/intervention.html" [ref=f15e46] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=f15e47]: manager/intervention.html
+        - button "리포트 ▸" [ref=f15e49] [cursor=pointer]:
+          - text: 리포트
+          - generic [ref=f15e50]: ▸
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=f15e51] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=f15e52]: manager/appeal-disclosure.html
+      - generic [ref=f15e53]:
+        - generic [ref=f15e54]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=f15e56] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=f15e57]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=f15e58] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=f15e59]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=f15e60] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=f15e61]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=f15e62] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=f15e63]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=f15e64] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=f15e65]: trainee/result.html
+  - main [ref=f15e66]:
+    - generic [ref=f15e67]:
+      - generic [ref=f15e68]: 이의 검토 · 열람 범위
+      - generic [ref=f15e69]: manager/appeal-disclosure.html
+      - link "새 탭에서 열기 ↗" [ref=f15e70] [cursor=pointer]:
+        - /url: manager/appeal-disclosure.html
+    - iframe [ref=f15e71]:
+      - generic [ref=f16e2]:
+        - generic [ref=f16e3]:
+          - generic [ref=f16e4]: SC-M09 · P0(GOV-03)/P1 · 매니저 · 웹
+          - heading "이의 검토 · 열람 범위" [level=1] [ref=f16e5]
+          - paragraph [ref=f16e6]: 두 가지 거버넌스 작업. 이의 검토(GOV-01) = 교육생이 채점에 이의를 제기하면, 원본 판정과 이의 사유를 나란히 대조해 유지/수정 결정. 원본은 불변, 수정은 before·after·reason로 AuditLog에 남고, 교육생에게는 매니저가 고른 근거 발췌만 공개(A6). 열람 범위(GOV-03) = 기수별 교육생 공개 수준(전체/요약/비공개) 설정, 처방·루브릭 자동 제거. 모든 확정은 매니저 명시 액션 — 자동확정 금지(GOV-02).
+        - generic [ref=f16e7]: 탭 · 이의 검토 (GOV-01 · 원본 vs 이의 대조 + 고정 판정 패널)
+        - generic [ref=f16e8]:
+          - generic [ref=f16e9]: iz-get.com/cohorts/7/appeals
+          - generic [ref=f16e15]:
+            - generic [ref=f16e16]:
+              - generic [ref=f16e17]:
+                - generic [ref=f16e18]:
+                  - generic [ref=f16e19]: ◆
+                  - text: IZ-Get
+                - generic [ref=f16e20]:
+                  - generic [ref=f16e21]: 기수
+                  - text: 7기 ▾
+              - generic [ref=f16e22]:
+                - text: 박지현 · 매니저
+                - generic [ref=f16e23]: 박
+            - generic [ref=f16e24]:
+              - generic [ref=f16e25]:
+                - generic [ref=f16e26]:
+                  - generic [ref=f16e27]: ▦
+                  - text: 대시보드
+                - generic [ref=f16e28]:
+                  - generic [ref=f16e29]: ◔
+                  - text: 기수 구성
+                - generic [ref=f16e30]:
+                  - generic [ref=f16e31]: ▧
+                  - text: 교안
+                - generic [ref=f16e32]:
+                  - generic [ref=f16e33]: ▤
+                  - text: 프로젝트
+                - generic [ref=f16e34]:
+                  - generic [ref=f16e35]: △
+                  - text: 코호트 분석
+                - generic [ref=f16e36]:
+                  - generic [ref=f16e37]: ◎
+                  - text: 교육생
+                - generic [ref=f16e38]:
+                  - generic [ref=f16e39]: ✎
+                  - text: 개입
+                - generic [ref=f16e40]:
+                  - generic [ref=f16e41]: ▥
+                  - text: 리포트
+                - generic [ref=f16e42]:
+                  - generic [ref=f16e43]: ⚖
+                  - text: 이의 · 공개
+              - generic [ref=f16e44]:
+                - generic [ref=f16e45]:
+                  - generic [ref=f16e46]: 이의 · 공개 › 7기
+                  - heading "이의 검토 · 열람 범위" [level=2] [ref=f16e47]
+                - generic [ref=f16e48]:
+                  - generic [ref=f16e49]: 이의 검토 대기 3
+                  - generic [ref=f16e50]: 열람 범위
+                - generic [ref=f16e51]:
+                  - generic [ref=f16e52]:
+                    - generic [ref=f16e53]:
+                      - generic [ref=f16e54]: 검토 대기 3
+                      - text: · 완료 12
+                    - generic [ref=f16e55]:
+                      - generic [ref=f16e56] [cursor=pointer]:
+                        - generic [ref=f16e57]:
+                          - generic [ref=f16e58]: 김서연
+                          - generic [ref=f16e59]: 검토 대기
+                        - generic [ref=f16e60]: 2회차 · 반례대응 축
+                        - generic [ref=f16e61]: "\"세션에서 경계값 테스트를 언급했는데 반영이 안 된 것 같습니다.\""
+                      - generic [ref=f16e62] [cursor=pointer]:
+                        - generic [ref=f16e63]:
+                          - generic [ref=f16e64]: 이도윤
+                          - generic [ref=f16e65]: 검토 대기
+                        - generic [ref=f16e66]: 2회차 · 대안비교 축
+                        - generic [ref=f16e67]: "\"다른 접근을 두 가지 제시했는데 점수에 반영되지 않았습니다.\""
+                      - generic [ref=f16e68] [cursor=pointer]:
+                        - generic [ref=f16e69]:
+                          - generic [ref=f16e70]: 박준호
+                          - generic [ref=f16e71]: 검토 대기
+                        - generic [ref=f16e72]: 1회차 · 코드이해 축
+                        - generic [ref=f16e73]: "\"질문 의도를 오해해서 답했는데 재검토 부탁드립니다.\""
+                      - generic [ref=f16e74] [cursor=pointer]:
+                        - generic [ref=f16e75]:
+                          - generic [ref=f16e76]: 최유진
+                          - generic [ref=f16e77]: 수정됨
+                        - generic [ref=f16e78]: 2회차 · 반례대응 · 2→3
+                      - generic [ref=f16e79] [cursor=pointer]:
+                        - generic [ref=f16e80]:
+                          - generic [ref=f16e81]: 정하늘
+                          - generic [ref=f16e82]: 유지
+                        - generic [ref=f16e83]: 1회차 · 자기수정
+                  - generic [ref=f16e84]:
+                    - generic [ref=f16e85]:
+                      - generic [ref=f16e86]: 김서연 2회차 · 반례대응 축 이의
+                      - generic [ref=f16e87]: 검토 대기
+                    - generic [ref=f16e88]:
+                      - generic [ref=f16e89]:
+                        - generic [ref=f16e90]:
+                          - generic [ref=f16e91]: 원본 판정
+                          - generic [ref=f16e92]: 🔒 불변
+                        - generic [ref=f16e93]:
+                          - generic [ref=f16e94]: 반례대응 2/ 5
+                          - generic [ref=f16e95]:
+                            - generic [ref=f16e96]: 교육생 원본 응답 (발췌)
+                            - paragraph [ref=f16e97]: "\"예외 케이스는 try-catch로 잡고, 실패하면 기본값을 반환하도록 했습니다.\""
+                          - generic [ref=f16e98]:
+                            - generic [ref=f16e99]: 채점 근거 인용 (ENG-01 축별)
+                            - paragraph [ref=f16e100]:
+                              - text: "\"방어 코드는 존재하나, 어떤"
+                              - button "반례 상황(빈 입력·경계값·동시성)" [ref=f16e101] [cursor=pointer]
+                              - text: 을 가정했는지 스스로 제시·설명하지 못함. 근거 인용 부족."
+                          - generic [ref=f16e102]: 채점 버전 v2.1 · 편향완화 스왑 적용 · 2회차 스냅샷 (DASH-16 조회)
+                      - generic [ref=f16e103]:
+                        - generic [ref=f16e104]: 교육생 이의 사유
+                        - generic [ref=f16e106]:
+                          - paragraph [ref=f16e107]:
+                            - text: "\"세션에서"
+                            - button "경계값 테스트(빈 배열·최대 길이)" [ref=f16e108] [cursor=pointer]
+                            - text: 를 언급했는데 반영되지 않은 것 같습니다.
+                            - button "동시성" [ref=f16e109] [cursor=pointer]
+                            - text: 은 이 과제 범위가 아니라고 생각했습니다."
+                          - generic [ref=f16e110]: 제출 2026-07-10 14:22 · 원본 이의 레코드 불변 저장
+                    - generic [ref=f16e111]:
+                      - generic [ref=f16e112]:
+                        - generic [ref=f16e113]: 참조 코드 · 전체(반례 상황 근거)
+                        - generic [ref=f16e114]: validate/order_items.py
+                      - generic [ref=f16e115]:
+                        - generic [ref=f16e116]:
+                          - generic [ref=f16e117]: "31"
+                          - generic [ref=f16e118]: "def validate_items(items: list[Item]) -> None:"
+                        - generic [ref=f16e119]:
+                          - generic [ref=f16e120]: "32"
+                          - generic [ref=f16e121]: "if len(items) == 0 or len(items) > MAX_ITEMS:"
+                        - generic [ref=f16e122]:
+                          - generic [ref=f16e123]: "33"
+                          - generic [ref=f16e124]: raise ValueError("invalid item count")
+                        - generic [ref=f16e125]:
+                          - generic [ref=f16e126]: "34"
+                          - generic [ref=f16e127]: "for item in items:"
+                        - generic [ref=f16e128]:
+                          - generic [ref=f16e129]: "35"
+                          - generic [ref=f16e130]: "stock = inventory.get(item.sku) # 동시 차감 시 경합 가능"
+                        - generic [ref=f16e131]:
+                          - generic [ref=f16e132]: "36"
+                          - generic [ref=f16e133]: "stock.reserve(item.qty) # 락 없음"
+                        - generic [ref=f16e134]:
+                          - generic [ref=f16e135]: "37"
+                          - generic [ref=f16e136]: return None
+                    - generic [ref=f16e137]: · 경계값 테스트(밑줄) 클릭 → 32-33행 하이라이트. 동시성 클릭 → 35-36행 하이라이트. 원본 판정 인용 클릭 → 두 구간 전체. 논쟁의 실제 근거를 바로 대조(FB-L6).
+                    - generic [ref=f16e138]:
+                      - generic [ref=f16e139]: 판정 — 원본 근거와 이의 사유를 비교해 결정. 세션 로그 재확인 후 유지 또는 수정.
+                      - generic [ref=f16e140]:
+                        - button "판정 유지" [ref=f16e141] [cursor=pointer]
+                        - button "판정 수정 ▸" [ref=f16e142] [cursor=pointer]
+                    - generic [ref=f16e143]: · 원본 채점·이의 레코드는 불변. 판정 유지/수정 모두 검토자·시각을 AuditLog에 남김(GOV-01). 확정은 매니저 명시 액션만, 시스템 자동확정 차단(GOV-02). 교육생 공개는 매니저가 고른 근거 발췌만(A6).
+        - generic [ref=f16e144]: 상태 · [판정 수정 ▸] 클릭 시 (before·after·reason + 교육생 공개 발췌 + AuditLog · 자동확정 금지)
+        - generic [ref=f16e145]:
+          - generic [ref=f16e146]: iz-get.com/cohorts/7/appeals/김서연#edit
+          - generic [ref=f16e152]:
+            - generic [ref=f16e153]:
+              - generic [ref=f16e154]:
+                - generic [ref=f16e155]:
+                  - generic [ref=f16e156]: ◆
+                  - text: IZ-Get
+                - generic [ref=f16e157]:
+                  - generic [ref=f16e158]: 기수
+                  - text: 7기 ▾
+              - generic [ref=f16e159]:
+                - text: 박지현 · 매니저
+                - generic [ref=f16e160]: 박
+            - generic [ref=f16e161]:
+              - generic [ref=f16e162]:
+                - generic [ref=f16e163]:
+                  - generic [ref=f16e164]: ▦
+                  - text: 대시보드
+                - generic [ref=f16e165]:
+                  - generic [ref=f16e166]: ◔
+                  - text: 기수 구성
+                - generic [ref=f16e167]:
+                  - generic [ref=f16e168]: ▧
+                  - text: 교안
+                - generic [ref=f16e169]:
+                  - generic [ref=f16e170]: ▤
+                  - text: 프로젝트
+                - generic [ref=f16e171]:
+                  - generic [ref=f16e172]: △
+                  - text: 코호트 분석
+                - generic [ref=f16e173]:
+                  - generic [ref=f16e174]: ◎
+                  - text: 교육생
+                - generic [ref=f16e175]:
+                  - generic [ref=f16e176]: ✎
+                  - text: 개입
+                - generic [ref=f16e177]:
+                  - generic [ref=f16e178]: ▥
+                  - text: 리포트
+                - generic [ref=f16e179]:
+                  - generic [ref=f16e180]: ⚖
+                  - text: 이의 · 공개
+              - generic [ref=f16e182]:
+                - generic [ref=f16e183]: 판정 수정 · 김서연 · 반례대응 축
+                - generic [ref=f16e184]:
+                  - generic [ref=f16e185]:
+                    - generic [ref=f16e186]: before (원본·불변)
+                    - generic [ref=f16e187]: 2 / 5
+                  - generic [ref=f16e188]: →
+                  - generic [ref=f16e189]:
+                    - generic [ref=f16e190]: after (수정값)
+                    - generic [ref=f16e191]:
+                      - generic [ref=f16e192]:
+                        - button "−" [ref=f16e193] [cursor=pointer]
+                        - text: "3"
+                        - button "＋" [ref=f16e194] [cursor=pointer]
+                      - text: / 5
+                - generic [ref=f16e195]:
+                  - generic [ref=f16e196]: 수정 사유 *필수 (미입력 시 저장 차단·case5)
+                  - textbox [ref=f16e197]: 세션 로그 재확인 결과 경계값(빈 배열·최대 길이) 테스트를 구두로 제시함이 확인됨. 반례 제시 역량 일부 인정하여 2→3 상향. 동시성 미고려는 과제 범위상 감점 사유 아님.
+                - generic [ref=f16e198]:
+                  - generic [ref=f16e199]: 교육생에게 공개할 근거 발췌 (선택한 항목만 공개 · 자동 전체 공개 차단·A6·case7)
+                  - generic [ref=f16e200]:
+                    - generic [ref=f16e201]: ✓
+                    - generic [ref=f16e202]: "\"경계값 테스트를 구두로 제시함이 확인되어 반례 제시 역량을 일부 인정\" (매니저 작성 발췌)"
+                  - generic [ref=f16e203]:
+                    - generic [ref=f16e204]: ✕
+                    - generic [ref=f16e205]: 내부 루브릭 항목별 채점 근거 · 채점 프롬프트 (공개 불가 · 자동 제외)
+                - generic [ref=f16e206]: "✓ 확정 시 AuditLog 불변 기록: 검토자 박지현 · 시각 · before 2 → after 3 · 사유 전문. AuditLog 저장 실패 시 수정 롤백 또는 확정 보류(GOV-01 case6 · GOV-02 case5)."
+                - generic [ref=f16e207]:
+                  - button "수정 확정" [ref=f16e208] [cursor=pointer]
+                  - button "취소" [ref=f16e209] [cursor=pointer]
+                - generic [ref=f16e210]: ⚖ 자동확정 금지(GOV-02) — 이 판정 변경은 매니저 승인 액션으로만 확정됨. 시스템·AI 자동 확정 경로 차단(case1). 표본 부족을 이유로 매니저의 선택 자체를 봉쇄하지 않음(case7 · 역방향 위반 방지).
+        - generic [ref=f16e211]: 탭 · 열람 범위 (GOV-03 · 기수 교육생 공개 수준 + T05 미리보기 + 설정 이력)
+        - generic [ref=f16e212]:
+          - generic [ref=f16e213]: iz-get.com/cohorts/7/disclosure
+          - generic [ref=f16e219]:
+            - generic [ref=f16e220]:
+              - generic [ref=f16e221]:
+                - generic [ref=f16e222]:
+                  - generic [ref=f16e223]: ◆
+                  - text: IZ-Get
+                - generic [ref=f16e224]:
+                  - generic [ref=f16e225]: 기수
+                  - text: 7기 ▾
+              - generic [ref=f16e226]:
+                - text: 박지현 · 매니저
+                - generic [ref=f16e227]: 박
+            - generic [ref=f16e228]:
+              - generic [ref=f16e229]:
+                - generic [ref=f16e230]:
+                  - generic [ref=f16e231]: ▦
+                  - text: 대시보드
+                - generic [ref=f16e232]:
+                  - generic [ref=f16e233]: ◔
+                  - text: 기수 구성
+                - generic [ref=f16e234]:
+                  - generic [ref=f16e235]: ▧
+                  - text: 교안
+                - generic [ref=f16e236]:
+                  - generic [ref=f16e237]: ▤
+                  - text: 프로젝트
+                - generic [ref=f16e238]:
+                  - generic [ref=f16e239]: △
+                  - text: 코호트 분석
+                - generic [ref=f16e240]:
+                  - generic [ref=f16e241]: ◎
+                  - text: 교육생
+                - generic [ref=f16e242]:
+                  - generic [ref=f16e243]: ✎
+                  - text: 개입
+                - generic [ref=f16e244]:
+                  - generic [ref=f16e245]: ▥
+                  - text: 리포트
+                - generic [ref=f16e246]:
+                  - generic [ref=f16e247]: ⚖
+                  - text: 이의 · 공개
+              - generic [ref=f16e248]:
+                - generic [ref=f16e249]:
+                  - generic [ref=f16e250]: 이의 · 공개 › 7기
+                  - heading "이의 검토 · 열람 범위" [level=2] [ref=f16e251]
+                - generic [ref=f16e252]:
+                  - generic [ref=f16e253]: 이의 검토 대기 3
+                  - generic [ref=f16e254]: 열람 범위
+                - generic [ref=f16e255]: 7기 교육생이 결과 리포트(SC-T05)에서 볼 수 있는 범위를 설정. 설정과 무관하게 처방형 콘텐츠·내부 루브릭·채점 근거는 항상 제거됩니다.
+                - generic [ref=f16e256]:
+                  - generic [ref=f16e257]:
+                    - generic [ref=f16e258]:
+                      - generic [ref=f16e261] [cursor=pointer]:
+                        - generic [ref=f16e262]: 전체 회차 추이 + 강약점 전부
+                        - generic [ref=f16e263]: 회차별 5축 추이·총점·강점/보완 영역까지 교육생에게 공개.
+                      - generic [ref=f16e266] [cursor=pointer]:
+                        - generic [ref=f16e267]: 요약 강약점 요약만
+                        - generic [ref=f16e268]: 최종 강점·보완 영역과 등급만. 회차별 상세 점수는 비공개.
+                      - generic [ref=f16e271] [cursor=pointer]:
+                        - generic [ref=f16e272]: 비공개 결과 미노출 기본값
+                        - generic [ref=f16e273]: 교육생 화면에 결과를 노출하지 않음. 설정 미지정 시 기본 적용.
+                    - generic [ref=f16e274]:
+                      - generic [ref=f16e275]: 설정 이력 (불변 · 버전 기록)
+                      - generic [ref=f16e276]:
+                        - generic [ref=f16e277]: 현재
+                        - generic [ref=f16e278]: 요약
+                        - generic [ref=f16e279]: 박지현
+                        - generic [ref=f16e280]: v3 · 2026-07-12 09:14
+                      - generic [ref=f16e281]:
+                        - generic [ref=f16e282]: 비공개
+                        - generic [ref=f16e283]: 박지현
+                        - generic [ref=f16e284]: v2 · 2026-06-20 11:03
+                      - generic [ref=f16e285]:
+                        - generic [ref=f16e286]: 비공개
+                        - generic [ref=f16e287]: 시스템 기본
+                        - generic [ref=f16e288]: v1 · 2026-06-01 (기수 생성)
+                    - generic [ref=f16e289]:
+                      - button "설정 저장" [ref=f16e290] [cursor=pointer]
+                      - generic [ref=f16e291]: 저장 시 적용 시각·설정자·버전 기록 · 저장 실패 시 기존 설정 유지(case6)
+                  - generic [ref=f16e293]:
+                    - generic [ref=f16e294]: ◉ 교육생 화면 미리보기 — 현재 '요약' 기준 (SC-T05)
+                    - generic [ref=f16e295]:
+                      - generic [ref=f16e296]:
+                        - generic [ref=f16e297]: 최종 등급
+                        - text: A
+                      - generic [ref=f16e298]:
+                        - generic [ref=f16e299]: 강점 영역
+                        - generic [ref=f16e300]: 코드이해
+                        - generic [ref=f16e301]: 의사소통
+                      - generic [ref=f16e302]:
+                        - generic [ref=f16e303]: 보완 영역
+                        - generic [ref=f16e304]: 대안비교
+                      - generic [ref=f16e305]: "비공개 처리됨: 회차별 상세 점수·추이 (요약 레벨). 항상 제거: 내부 루브릭·채점 근거·처방형 콘텐츠(case4·5). 학습 위치 안내까지만, 처방 금지(A6)."
+        - generic [ref=f16e306]:
+          - heading "상태별 UI — 예외 case 전량 (게이트 A)" [level=3] [ref=f16e307]
+          - generic [ref=f16e308]: GOV-01 7 + GOV-03 8 + GOV-02 7 = 22. (GOV-02는 전역 계약 — 판정·설정 확정의 대표 적용처로 이 화면에 명시.)
+          - generic [ref=f16e309]: GOV-01 · 이의제기 · 판정 수정
+          - table [ref=f16e311]:
+            - rowgroup [ref=f16e312]:
+              - row [ref=f16e313]:
+                - columnheader "#" [ref=f16e314]
+                - columnheader "상태" [ref=f16e315]
+                - columnheader "처리" [ref=f16e316]
+                - columnheader "표현 / 다음 행동" [ref=f16e317]
+              - row [ref=f16e318]:
+                - cell "1" [ref=f16e319]
+                - cell "이의 사유 미입력" [ref=f16e320]
+                - cell "제출 차단" [ref=f16e321]
+                - cell "교육생 측 제출 차단(T05), 목록에 미도달" [ref=f16e323]
+              - row [ref=f16e324]:
+                - cell "2" [ref=f16e325]
+                - cell "중복 이의" [ref=f16e326]
+                - cell "기존 상태 반환" [ref=f16e327]
+                - cell "동일 채점 재이의 시 기존 이의 상태 표시" [ref=f16e329]
+              - row [ref=f16e330]:
+                - cell "3" [ref=f16e331]
+                - cell "교육생 직접 점수 수정 요청" [ref=f16e332]
+                - cell "차단" [ref=f16e333]
+                - cell "점수 수정은 매니저만 — 교육생 경로 차단" [ref=f16e335]
+              - row [ref=f16e336]:
+                - cell "4" [ref=f16e337]
+                - cell "매니저 권한 없음" [ref=f16e338]
+                - cell "수정 차단" [ref=f16e339]
+                - cell "담당 기수 아님/RBAC 미충족 시 수정 버튼 비활성" [ref=f16e341]
+              - row [ref=f16e342]:
+                - cell "5" [ref=f16e343]
+                - cell "수정 사유 미입력" [ref=f16e344]
+                - cell "저장 차단" [ref=f16e345]
+                - cell "reason 필수 — 미입력 시 수정 확정 불가" [ref=f16e347]
+              - row [ref=f16e348]:
+                - cell "6" [ref=f16e349]
+                - cell "AuditLog 저장 실패" [ref=f16e350]
+                - cell "롤백/보류" [ref=f16e351]
+                - cell "수정 롤백 또는 확정 보류(이력 없는 변경 금지)" [ref=f16e353]
+              - row [ref=f16e354]:
+                - cell "7" [ref=f16e355]
+                - cell "자동 전체 근거 공개 요청" [ref=f16e356]
+                - cell "차단" [ref=f16e357]
+                - cell "발췌만 공개 — 전체 자동 공개 차단(A6)" [ref=f16e359]
+          - generic [ref=f16e360]: GOV-03 · 교육생 열람 범위 통제
+          - table [ref=f16e362]:
+            - rowgroup [ref=f16e363]:
+              - row [ref=f16e364]:
+                - columnheader "#" [ref=f16e365]
+                - columnheader "상태" [ref=f16e366]
+                - columnheader "처리" [ref=f16e367]
+                - columnheader "표현 / 다음 행동" [ref=f16e368]
+              - row [ref=f16e369]:
+                - cell "1" [ref=f16e370]
+                - cell "설정 미지정" [ref=f16e371]
+                - cell "기본 비공개" [ref=f16e372]
+                - cell "미설정 기수는 비공개로 적용" [ref=f16e374]
+              - row [ref=f16e375]:
+                - cell "2" [ref=f16e376]
+                - cell "허용 안 된 범위값" [ref=f16e377]
+                - cell "저장 차단" [ref=f16e378]
+                - cell "전체/요약/비공개 값만 허용" [ref=f16e380]
+              - row [ref=f16e381]:
+                - cell "3" [ref=f16e382]
+                - cell "기수 관리 권한 없음" [ref=f16e383]
+                - cell "변경 차단" [ref=f16e384]
+                - cell "담당 아님 시 설정 변경 불가" [ref=f16e386]
+              - row [ref=f16e387]:
+                - cell "4" [ref=f16e388]
+                - cell "처방형 콘텐츠 탐지" [ref=f16e389]
+                - cell "콘텐츠 제거" [ref=f16e390]
+                - cell "공개 데이터에서 처방형 콘텐츠 제거" [ref=f16e392]
+              - row [ref=f16e393]:
+                - cell "5" [ref=f16e394]
+                - cell "내부 루브릭·채점 근거 탐지" [ref=f16e395]
+                - cell "제거·재검증" [ref=f16e396]
+                - cell "공개 데이터에서 제거 후 재검증(A6)" [ref=f16e398]
+              - row [ref=f16e399]:
+                - cell "6" [ref=f16e400]
+                - cell "설정 저장 실패" [ref=f16e401]
+                - cell "기존 유지" [ref=f16e402]
+                - cell "실패 시 마지막 확정 설정 유지" [ref=f16e404]
+              - row [ref=f16e405]:
+                - cell "7" [ref=f16e406]
+                - cell "설정 변경 중 교육생 조회" [ref=f16e407]
+                - cell "확정 버전 응답" [ref=f16e408]
+                - cell "마지막 확정 설정 버전 기준 응답" [ref=f16e410]
+              - row [ref=f16e411]:
+                - cell "8" [ref=f16e412]
+                - cell "비공개에서 공개 요청" [ref=f16e413]
+                - cell "응답 차단" [ref=f16e414]
+                - cell "비공개 설정 시 공개 요청 거부" [ref=f16e416]
+          - generic [ref=f16e417]: GOV-02 · 자동확정 금지 (전역 계약 · 이 화면 판정/설정 확정에 적용)
+          - table [ref=f16e419]:
+            - rowgroup [ref=f16e420]:
+              - row [ref=f16e421]:
+                - columnheader "#" [ref=f16e422]
+                - columnheader "상태" [ref=f16e423]
+                - columnheader "처리" [ref=f16e424]
+                - columnheader "표현 / 다음 행동" [ref=f16e425]
+              - row [ref=f16e426]:
+                - cell "1" [ref=f16e427]
+                - cell "AI·시스템 자동 확정 요청" [ref=f16e428]
+                - cell "차단" [ref=f16e429]
+                - cell "추천 상태로만 유지, 자동 확정 경로 차단" [ref=f16e431]
+              - row [ref=f16e432]:
+                - cell "2" [ref=f16e433]
+                - cell "명시적 매니저 액션 부재" [ref=f16e434]
+                - cell "상태 변경 차단" [ref=f16e435]
+                - cell "승인 클릭 없으면 판정·설정 변경 안 됨" [ref=f16e437]
+              - row [ref=f16e438]:
+                - cell "3" [ref=f16e439]
+                - cell "권한 없음" [ref=f16e440]
+                - cell "확정 차단" [ref=f16e441]
+                - cell "RBAC 미충족 시 확정 불가" [ref=f16e443]
+              - row [ref=f16e444]:
+                - cell "4" [ref=f16e445]
+                - cell "선행 조건 미충족" [ref=f16e446]
+                - cell "승인 보류" [ref=f16e447]
+                - cell "선행 조건 충족까지 승인 보류" [ref=f16e449]
+              - row [ref=f16e450]:
+                - cell "5" [ref=f16e451]
+                - cell "AuditLog 실패" [ref=f16e452]
+                - cell "확정 롤백" [ref=f16e453]
+                - cell "확정 롤백(이력 없는 확정 금지)" [ref=f16e455]
+              - row [ref=f16e456]:
+                - cell "6" [ref=f16e457]
+                - cell "중복 승인" [ref=f16e458]
+                - cell "멱등 처리" [ref=f16e459]
+                - cell "중복 승인은 멱등 처리, 이중 반영 방지" [ref=f16e461]
+              - row [ref=f16e462]:
+                - cell "7" [ref=f16e463]
+                - cell "표본 부족으로 매니저 선택 봉쇄" [ref=f16e464]
+                - cell "봉쇄 금지" [ref=f16e465]
+                - cell "표본 부족을 이유로 매니저 선택 차단 금지(역방향 위반 방지)" [ref=f16e467]
+          - generic [ref=f16e468]: "· 게이트 A: 22 case = 22 상태 행 ✅ · 원본 채점·이의 레코드 불변, 수정은 before/after/reason + AuditLog(GOV-01) · 확정은 매니저 명시 액션만(GOV-02) · 교육생 공개는 발췌만·처방 금지·위치 안내까지(A6) · 열람 기본 비공개·처방/루브릭 자동 제거(GOV-03) · 담당 기수·기관 범위(SYS-02·AUTH-09)."

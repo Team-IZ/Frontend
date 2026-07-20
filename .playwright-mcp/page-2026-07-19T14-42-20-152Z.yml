@@ -1,0 +1,249 @@
+- generic [ref=f3e2]:
+  - complementary [ref=f3e3]:
+    - generic [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - generic [ref=f3e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=f3e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=f3e8]:
+      - generic [ref=f3e9]:
+        - generic [ref=f3e10]: shared
+        - button "로그인 shared/login.html" [ref=f3e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=f3e13]: shared/login.html
+      - generic [ref=f3e14]:
+        - generic [ref=f3e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=f3e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=f3e18]: ▸
+      - generic [ref=f3e19]:
+        - generic [ref=f3e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=f3e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=f3e23]: 총괄
+          - generic [ref=f3e24]: ▸
+      - generic [ref=f3e25]:
+        - generic [ref=f3e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=f3e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=f3e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=f3e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=f3e31]: manager/dashboard.html
+        - generic [ref=f3e32]:
+          - button "교안 ▸" [ref=f3e33] [cursor=pointer]:
+            - text: 교안
+            - generic [ref=f3e34]: ▸
+          - generic [ref=f3e70]:
+            - button "교안 목록 CUR-03 · 컬렉션" [ref=f3e71] [cursor=pointer]
+            - button "교안 등록 CUR-03 · 업로드" [ref=f3e72] [cursor=pointer]
+            - button "교안 구성 CUR-01 · 목차" [ref=f3e73] [cursor=pointer]
+            - button "교안 연결 CUR-02 · 자동+확인" [ref=f3e74] [cursor=pointer]
+        - button "프로젝트 ▸" [ref=f3e36] [cursor=pointer]:
+          - text: 프로젝트
+          - generic [ref=f3e37]: ▸
+        - button "분석 · 진단 ▸" [ref=f3e39] [cursor=pointer]:
+          - text: 분석 · 진단
+          - generic [ref=f3e40]: ▸
+        - button "교육생 ▸" [ref=f3e42] [cursor=pointer]:
+          - text: 교육생
+          - generic [ref=f3e43]: ▸
+        - button "개입 관리 manager/intervention.html" [ref=f3e44] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=f3e45]: manager/intervention.html
+        - button "리포트 ▸" [ref=f3e47] [cursor=pointer]:
+          - text: 리포트
+          - generic [ref=f3e48]: ▸
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=f3e49] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=f3e50]: manager/appeal-disclosure.html
+      - generic [ref=f3e51]:
+        - generic [ref=f3e52]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=f3e54] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=f3e55]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=f3e56] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=f3e57]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=f3e58] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=f3e59]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=f3e60] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=f3e61]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=f3e62] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=f3e63]: trainee/result.html
+  - main [ref=f3e64]:
+    - generic [ref=f3e65]:
+      - generic [ref=f3e66]: 교안 · 목록
+      - generic [ref=f3e67]: manager/curriculum.html#list
+      - link "새 탭에서 열기 ↗" [ref=f3e68] [cursor=pointer]:
+        - /url: manager/curriculum.html#list
+    - iframe [ref=f3e69]:
+      - generic [ref=f4e143]:
+        - generic [ref=f4e144]:
+          - generic [ref=f4e145]: iz-get.com/cohorts/7/curriculum
+          - generic [ref=f4e151]:
+            - generic [ref=f4e152]:
+              - generic [ref=f4e153]:
+                - generic [ref=f4e154]:
+                  - generic [ref=f4e155]: ◆
+                  - text: IZ-Get
+                - generic [ref=f4e156]:
+                  - generic [ref=f4e157]: 기수
+                  - text: 7기 ▾
+              - generic [ref=f4e158]:
+                - generic "열람=총괄·담당 / 저작=총괄" [ref=f4e159] [cursor=pointer]:
+                  - generic [ref=f4e160]: 총괄 뷰
+                  - generic [ref=f4e161]: 담당 뷰
+                - generic [ref=f4e162]:
+                  - text: 박지현 · 총괄 매니저
+                  - generic [ref=f4e163]: 박
+            - generic [ref=f4e164]:
+              - generic [ref=f4e165]:
+                - generic [ref=f4e166]:
+                  - generic [ref=f4e167]: ▦
+                  - text: 대시보드
+                - generic [ref=f4e168]:
+                  - generic [ref=f4e169]: ◔
+                  - text: 기수 구성
+                - generic [ref=f4e170]:
+                  - generic [ref=f4e171]: ▧
+                  - text: 교안
+                - generic [ref=f4e172]:
+                  - generic [ref=f4e173]: ▤
+                  - text: 프로젝트
+                - generic [ref=f4e174]:
+                  - generic [ref=f4e175]: △
+                  - text: 분석 · 진단
+                - generic [ref=f4e176]:
+                  - generic [ref=f4e177]: ◎
+                  - text: 교육생
+                - generic [ref=f4e178]:
+                  - generic [ref=f4e179]: ✎
+                  - text: 개입
+                - generic [ref=f4e180]:
+                  - generic [ref=f4e181]: ▥
+                  - text: 리포트
+                - generic [ref=f4e182]:
+                  - generic [ref=f4e183]: ⚖
+                  - text: 이의 · 공개
+              - generic [ref=f4e184]:
+                - generic [ref=f4e185]:
+                  - generic [ref=f4e186]: 교안 › 7기
+                  - heading "교안 관리" [level=2] [ref=f4e187]
+                - generic [ref=f4e188]:
+                  - generic [ref=f4e189]:
+                    - text: 교안 목록
+                    - generic [ref=f4e190]: 총 6개
+                  - button "+ 교안 등록총괄" [ref=f4e192] [cursor=pointer]
+                - generic [ref=f4e193]:
+                  - generic [ref=f4e194]: 🔍 교안명 · 주제 검색
+                  - generic [ref=f4e195] [cursor=pointer]: 추출 상태 전체 ▾
+                  - generic [ref=f4e196] [cursor=pointer]: 매핑 검수 전체 ▾
+                  - generic [ref=f4e197] [cursor=pointer]: 적용 프로젝트 전체 ▾
+                  - generic [ref=f4e198] [cursor=pointer]: 정렬 최근 수정순 ▾
+                - table [ref=f4e200]:
+                  - rowgroup [ref=f4e201]:
+                    - row [ref=f4e202]:
+                      - columnheader "교안명" [ref=f4e203]
+                      - columnheader "유형" [ref=f4e204]
+                      - columnheader "버전" [ref=f4e205]
+                      - columnheader "추출 상태" [ref=f4e206]
+                      - columnheader "매핑 검수" [ref=f4e207]
+                      - columnheader "적용 프로젝트" [ref=f4e208]
+                      - columnheader "최종 수정" [ref=f4e209]
+                      - columnheader [ref=f4e210]
+                  - rowgroup [ref=f4e211]:
+                    - row [ref=f4e212] [cursor=pointer]:
+                      - cell "Kubernetes와 CICD K8s 아키텍처 · 컨테이너 배포 · Service/Ingress · CICD · 76p" [ref=f4e213]:
+                        - text: Kubernetes와 CICD
+                        - generic [ref=f4e214]: K8s 아키텍처 · 컨테이너 배포 · Service/Ingress · CICD · 76p
+                      - cell "PDF" [ref=f4e215]
+                      - cell "v2" [ref=f4e216]
+                      - cell [ref=f4e217]
+                      - cell [ref=f4e220]
+                      - cell "MSA 배포 실습" [ref=f4e223]
+                      - cell "06-18" [ref=f4e225]
+                      - cell "검수 →⋯" [ref=f4e226]
+                    - row [ref=f4e227] [cursor=pointer]:
+                      - cell "클라우드 현대화 이해 서비스 클라우드 네이티브 · IaaS/PaaS/SaaS · 마이그레이션 · 151p" [ref=f4e228]:
+                        - text: 클라우드 현대화 이해 서비스
+                        - generic [ref=f4e229]: 클라우드 네이티브 · IaaS/PaaS/SaaS · 마이그레이션 · 151p
+                      - cell "PDF" [ref=f4e230]
+                      - cell "v1" [ref=f4e231]
+                      - cell [ref=f4e232]
+                      - cell [ref=f4e235]
+                      - cell "클라우드 전환 PJT" [ref=f4e238]
+                      - cell "06-19" [ref=f4e240]
+                      - cell "⋯" [ref=f4e241]
+                    - row [ref=f4e242] [cursor=pointer]:
+                      - cell "AWS 핵심 서비스 EC2 · VPC · IAM · S3 · RDS" [ref=f4e243]:
+                        - text: AWS 핵심 서비스
+                        - generic [ref=f4e244]: EC2 · VPC · IAM · S3 · RDS
+                      - cell "PDF" [ref=f4e245]
+                      - cell "v3" [ref=f4e246]
+                      - cell [ref=f4e247]
+                      - cell [ref=f4e250]
+                      - cell "클라우드 전환 PJT MSA 배포 실습" [ref=f4e253]:
+                        - generic [ref=f4e254]: 클라우드 전환 PJT
+                        - generic [ref=f4e255]: MSA 배포 실습
+                      - cell "06-15" [ref=f4e256]
+                      - cell "⋯" [ref=f4e257]
+                    - row [ref=f4e258] [cursor=pointer]:
+                      - cell "Docker 컨테이너 기초 이미지 · 레지스트리 · Dockerfile" [ref=f4e259]:
+                        - text: Docker 컨테이너 기초
+                        - generic [ref=f4e260]: 이미지 · 레지스트리 · Dockerfile
+                      - cell "PDF" [ref=f4e261]
+                      - cell "v1" [ref=f4e262]
+                      - cell [ref=f4e263]
+                      - cell "—" [ref=f4e266]
+                      - cell "MSA 배포 실습" [ref=f4e268]
+                      - cell "06-12" [ref=f4e270]
+                      - cell "재처리⋯" [ref=f4e271]
+                    - row [ref=f4e272] [cursor=pointer]:
+                      - cell "Microservice 아키텍처 서비스 분해 · API 게이트웨이 · 사가" [ref=f4e273]:
+                        - text: Microservice 아키텍처
+                        - generic [ref=f4e274]: 서비스 분해 · API 게이트웨이 · 사가
+                      - cell "PDF" [ref=f4e275]
+                      - cell "v1" [ref=f4e276]
+                      - cell [ref=f4e277]
+                      - cell "—" [ref=f4e280]
+                      - cell "— 미연결" [ref=f4e282]
+                      - cell "06-19" [ref=f4e283]
+                      - cell "⋯" [ref=f4e284]
+                    - row [ref=f4e285] [cursor=pointer]:
+                      - cell "Terraform IaC 입문방금 등록 HCL · provider · state" [ref=f4e286]:
+                        - text: Terraform IaC 입문방금 등록
+                        - generic [ref=f4e287]: HCL · provider · state
+                      - cell "PDF" [ref=f4e288]
+                      - cell "v1" [ref=f4e289]
+                      - cell [ref=f4e290]
+                      - cell "—" [ref=f4e293]
+                      - cell "— 미연결" [ref=f4e295]
+                      - cell "06-19" [ref=f4e296]
+                      - cell "⋯" [ref=f4e297]
+                - generic [ref=f4e298]:
+                  - generic [ref=f4e299]: 6개 중 1–6
+                  - generic [ref=f4e300]: "1"
+        - generic [ref=f4e303]:
+          - generic [ref=f4e304]:
+            - generic [ref=f4e305]: 이 화면 · 상태 · case (CUR-03 · 등록 관리 중 목록 관련 — 등록 검증 03-1~6은 등록 화면)
+            - generic [ref=f4e306] [cursor=pointer]: 상태 ↔ case 매핑 총합 → (후속)
+          - generic [ref=f4e307]:
+            - generic [ref=f4e308]: 03-7
+            - generic [ref=f4e309]: 재처리만
+            - generic [ref=f4e310]: 구조 추출 실패 — 추출 실패 상태, 원본 유지한 채 재처리만 허용
+          - generic [ref=f4e311]:
+            - generic [ref=f4e312]: 03-8
+            - generic [ref=f4e313]: 전이 차단
+            - generic [ref=f4e314]: 정의 안 된 상태 전이 — 변경 차단, 현재/허용 다음 상태 안내
+          - generic [ref=f4e315]:
+            - generic [ref=f4e316]: 03-9
+            - generic [ref=f4e317]: 삭제 차단
+            - generic [ref=f4e318]: 활성 연결 매핑 사용 중 삭제(자동 연결됨 포함) — 차단, 연결 해제 절차 안내
+          - generic [ref=f4e319]:
+            - generic [ref=f4e320]: 03-10
+            - generic [ref=f4e321]: "403"
+            - generic [ref=f4e322]: 배정 밖 기수 교안 접근 — 요청 차단(테넌트 격리·SYS-02)

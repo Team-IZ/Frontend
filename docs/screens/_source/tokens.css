@@ -1,0 +1,118 @@
+/* ============================================================
+   IZ 와이어프레임 — 캐노니컬 디자인 토큰 (단일 소스)
+   ============================================================
+   이 파일은 링크되지 않는다 — Artifact CSP가 외부 스타일시트를 막으므로
+   각 SC-*.html은 이 블록을 자기 <style> 안에 그대로 복사해 자립형을 유지한다
+   (design-system-anchor.md §1 자립형 원칙). 이 파일은 "복사할 정답"이다.
+
+   설계 원칙 (design-standards.md C2 감사에서 확정됨):
+   같은 의미에 다른 이름을 만들지 않는다. 토큰은 "의미축(tone)" 6개 —
+   red·amber·green·gray·blue·accent — 로만 존재한다. "위험"·"표면"·
+   "실패" 같은 도메인 이름의 토큰(--risk-text, --grade-surface 등)은
+   만들지 않는다 — 실제로 SC-M01이 --risk-*/--imbalance-*/--ace-*를
+   만들었다가 6축 어휘로 되돌린 사고가 있었다(design-standards.md C2).
+   도메인 의미는 토큰이 아니라 "캐노니컬 컴포넌트 클래스"가 담당한다
+   (아래 §2) — 그래서 화면마다 원값(raw token)을 직접 골라 쓰다 색이
+   갈리는 사고(SC-M08 표면=purple, SC-T05 배너=purple)가 원천 차단된다.
+   ============================================================ */
+
+/* ---------- §1. 톤 원시값 (6축, 이름 하나씩) ---------- */
+:root {
+  /* 중립 */
+  --bg: #fff;
+  --surface: #faf9fb;
+  --text-title: #08060d;
+  --text-body: #6b6375;
+  --text-faint: #9b95a3;   /* 흐린 보조 텍스트 · 단위 표기 (구 --text-muted 통합) */
+  --placeholder: #7c7386;
+  --border: oklch(0.922 0 0);              /* 장식적 구획 — WCAG 대상 아님 */
+  --border-interactive: #8f8a97;           /* 입력·컨트롤 경계 — 3:1 필수(실측 3.36) */
+  --shadow: rgba(0,0,0,0.1) 0 10px 15px -3px, rgba(0,0,0,0.05) 0 4px 6px -2px;
+
+  /* 브랜드 (채움/텍스트 분리 — 혼용 금지) */
+  --accent-fill: rgba(170,59,255,1);       /* 채움·보더·아이콘 전용. 텍스트 대비 4.39 미달 */
+  --accent-bg: rgba(170,59,255,0.1);
+  --accent-border: rgba(170,59,255,0.5);
+  --accent-solid: #7e22ce;                 /* 텍스트 전용(6.98:1). 링크·강조 문구·배지 글자·Primary 텍스트 */
+
+  /* 위험·차단 */
+  --red-text: #b91c1c; --red-bg: #fee2e2; --red-border: #fca5a5;
+  /* 주의·보류 (amber만 800 — 700은 헤드룸 없이 4.51로 겨우 통과, 렌더 편차에 취약) */
+  --amber-text: #92400e; --amber-bg: #fef3c7;
+  /* 정상·완료 */
+  --green-text: #15803d; --green-bg: #dcfce7;
+  /* 중립·미시작 */
+  --gray-text: #5b6270; --gray-bg: #f3f4f6;
+  /* 진행 중 */
+  --blue-text: #1d4ed8; --blue-bg: #dbeafe;
+}
+
+/* ---------- §2. 캐노니컬 컴포넌트 클래스 ----------
+   도메인 의미는 여기서만 결정된다. 화면은 raw 토큰(--amber-bg 등)을
+   직접 badge/banner/grade에 새로 연결하지 않고, 아래 클래스를 그대로 쓴다.
+   새 도메인 상태가 생기면 여기에 한 줄 추가 — 화면에서 즉석으로 색을
+   고르지 않는다. */
+
+/* --- 배지 (design-standards.md C3 — 의미축 6종, 도메인 라벨은 텍스트로) --- */
+.badge { display:inline-flex; align-items:center; gap:4px; font-size:12px; font-weight:600;
+  padding:2px 9px; border-radius:999px; line-height:1.4; }
+.badge-risk     { color:var(--red-text);   background:var(--red-bg); }    /* 위험 시그널·실패·필수 미입력 */
+.badge-warn     { color:var(--amber-text); background:var(--amber-bg); } /* 불균형·정체·재발송 필요·표본 부족 */
+.badge-ok       { color:var(--green-text); background:var(--green-bg); } /* 완료·회복·활성·에이스 */
+.badge-neutral  { color:var(--gray-text);  background:var(--gray-bg); }  /* 미시작·해당없음·대기·기각 */
+.badge-progress { color:var(--blue-text);  background:var(--blue-bg); }  /* 분석 중·세션 진행 중 */
+.badge-accent   { color:var(--accent-solid); background:var(--accent-bg); border:1px solid var(--accent-border); } /* 팀 이상·최종 회차·추천·역할 */
+
+/* --- 배너 (§7 빈상태/에러/로딩 공통 패턴 — 배지 팔레트 재사용, 새 색 금지) --- */
+.banner { display:flex; flex-direction:column; gap:4px; border-radius:12px; padding:16px 20px; border:1px solid transparent; }
+.banner-title { font-size:15px; font-weight:700; color:var(--text-title); }
+.banner-desc  { font-size:14px; color:var(--text-body); }
+.banner--success { background:var(--green-bg); }
+.banner--warn    { background:var(--amber-bg); }
+.banner--error   { background:var(--red-bg); border-color:var(--red-border); }
+.banner--neutral { background:var(--gray-bg); } /* 공개범위 배너(GOV-03) 등 정보성 안내는 기본 neutral */
+
+/* --- 최종 등급 히어로 (ENG-01·A4 — 소유/표면/미흡, 최종 회차에만) --- */
+.grade-hero .g { font-size:1.5rem; font-weight:700; padding:8px 18px; border-radius:10px; border:1px solid; }
+.grade-hero .g.owned        { color:var(--green-text); background:var(--green-bg); border-color:var(--green-text); }
+.grade-hero .g.surface      { color:var(--amber-text); background:var(--amber-bg); border-color:var(--amber-text); }
+.grade-hero .g.insufficient { color:var(--red-text);   background:var(--red-bg);   border-color:var(--red-text); }
+
+/* --- 개입 상태 (대기/진행/완료) --- */
+.status-pending  { color:var(--gray-text);  background:var(--gray-bg); }
+.status-progress { color:var(--blue-text);  background:var(--blue-bg); }
+.status-done     { color:var(--green-text); background:var(--green-bg); }
+
+/* --- 개입 효과 판정 (P1·INTV-06 — 회복/부분회복/미회복/악화/판정대기) --- */
+.effect-recovered   { color:var(--green-text); background:var(--green-bg); }
+.effect-partial     { color:var(--amber-text); background:var(--amber-bg); }
+.effect-unrecovered { color:var(--gray-text);  background:var(--gray-bg); }
+.effect-worsened    { color:var(--red-text);   background:var(--red-bg); }
+.effect-judging     { color:var(--gray-text);  background:var(--gray-bg); }
+
+/* --- Primary 버튼 (앵커 §9 — 화면당 1개, 강조 배경 틴트 + accent-solid 텍스트) --- */
+.btn-primary { background:var(--accent-bg); border:1px solid var(--accent-border); color:var(--accent-solid); border-radius:8px; font-weight:600; cursor:pointer; }
+.btn-secondary { background:transparent; border:1px solid var(--border); color:var(--text-title); border-radius:8px; font-weight:500; cursor:pointer; }
+
+/* --- 미구현(P1/P2) 자리 표시 --- */
+.not-yet, .p1-placeholder { color:var(--gray-text); cursor:not-allowed; }
+.p1-placeholder { border:1px dashed var(--border); opacity:0.4; }
+
+/* ---------- §3. 접근성 상수 (design-standards.md C6 — 파일당 3개 전부) ---------- */
+:focus-visible { outline:2px solid var(--accent-solid); outline-offset:2px; border-radius:4px; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration:0.01ms !important; animation-iteration-count:1 !important; transition-duration:0.01ms !important; }
+}
+
+/* ---------- §4. 고정 목업 상수 (전 화면 동일해야 함) ----------
+   design-system-anchor.md §10 위반(A02가 "이즈커리어 부트캠프", T01이
+   "코드스쿼드"만 표기해 A01/A02/T01/T02~T05가 서로 다른 서비스처럼
+   보였던 사고)의 재발 방지용 하드코딩 상수. 새 화면 작성 시 아래
+   문자열을 그대로 복사한다 — 즉석에서 지어내지 않는다. */
+/*
+  기관명:   IZ · 코드스쿼드
+  기수명:   7기 백엔드 부트캠프
+  매니저:   김매니저 (manager@codesquad.io)
+  교육생:   (인증 플로우) trainee@student.io
+  "오늘":   2026-07-13 — 목업 날짜는 반드시 이 날짜 이전이어야 한다
+*/

@@ -1,0 +1,466 @@
+- generic [ref=f12e2]:
+  - generic [ref=f12e3]:
+    - generic [ref=f12e4]: SC-M12 · P1 · 매니저 · 웹 · 목록 화면
+    - heading "교안 관리 — 목록" [level=1] [ref=f12e5]
+    - paragraph [ref=f12e6]: "교안은 프로젝트가 아니라 기수 자산(D85·B10·D91) — 선택된 기수 스코프에서 교안·버전 단위로 등록하는 콘텐츠 라이브러리다. 프로젝트와는 선택적 다대다 참조(D91): 프로젝트 생성 시 관련 교안을 링크(비워도 됨) → 리포트가 그 프로젝트의 취약축을 정확한 교안으로 안내(MEAS-07). 권한: 열람=총괄·담당 둘 다 / 저작(등록·재처리·매핑 검수·삭제)=총괄만(측정 처방 경로 저작이라 무결성·D90 계열, 담당은 배정 기수 열람). 상태 머신 업로드 → 추출 중 → 추출 완료 / 추출 실패 → 매핑 대기 → 검수 대기 → 승인(CUR-03). 이 화면은 컬렉션(마스터), 상세(구조 추출·매핑 승인)는 후속. 상단 셸·기수 선택기는 전 화면 통일(기수 7기)."
+  - generic [ref=f12e7]: 화면 · 교안 목록 (CUR-03 · 컬렉션 · 상태 머신)
+  - generic [ref=f12e9]:
+    - generic [ref=f12e10]: iz-get.com/cohorts/7/curriculum
+    - generic [ref=f12e16]:
+      - generic [ref=f12e17]:
+        - generic [ref=f12e18]:
+          - generic [ref=f12e19]:
+            - generic [ref=f12e20]: ◆
+            - text: IZ-Get
+          - generic [ref=f12e21]:
+            - generic [ref=f12e22]: 기수
+            - text: 7기 ▾
+        - generic [ref=f12e23]:
+          - generic "열람=총괄·담당 / 저작=총괄 (D91)" [ref=f12e24] [cursor=pointer]:
+            - generic [ref=f12e25]: 총괄 뷰
+            - generic [ref=f12e26]: 담당 뷰
+          - generic [ref=f12e27]:
+            - text: 박지현 · 총괄 매니저
+            - generic [ref=f12e28]: 박
+      - generic [ref=f12e29]:
+        - generic [ref=f12e30]:
+          - generic [ref=f12e31]:
+            - generic [ref=f12e32]: ▦
+            - text: 대시보드
+          - generic [ref=f12e33]:
+            - generic [ref=f12e34]: ◔
+            - text: 기수 구성
+          - generic [ref=f12e35]:
+            - generic [ref=f12e36]: ▧
+            - text: 교안
+          - generic [ref=f12e37]:
+            - generic [ref=f12e38]: ▤
+            - text: 프로젝트
+          - generic [ref=f12e39]:
+            - generic [ref=f12e40]: △
+            - text: 분석 · 진단
+          - generic [ref=f12e41]:
+            - generic [ref=f12e42]: ◎
+            - text: 교육생
+          - generic [ref=f12e43]:
+            - generic [ref=f12e44]: ✎
+            - text: 개입
+          - generic [ref=f12e45]:
+            - generic [ref=f12e46]: ▥
+            - text: 리포트
+          - generic [ref=f12e47]:
+            - generic [ref=f12e48]: ⚖
+            - text: 이의 · 공개
+        - generic [ref=f12e49]:
+          - generic [ref=f12e50]:
+            - generic [ref=f12e51]: 교안 › 7기
+            - heading "교안 관리" [level=2] [ref=f12e52]
+          - generic [ref=f12e53]:
+            - generic [ref=f12e54]:
+              - text: 교안 목록
+              - generic [ref=f12e55]: 총 6개
+            - button "+ 교안 등록총괄" [ref=f12e57] [cursor=pointer]
+          - generic [ref=f12e58]:
+            - generic [ref=f12e59]: 🔍 교안명 · 주제 검색
+            - generic [ref=f12e60] [cursor=pointer]: 추출 상태 전체 ▾
+            - generic [ref=f12e61] [cursor=pointer]: 매핑 검수 전체 ▾
+            - generic [ref=f12e62] [cursor=pointer]: 적용 프로젝트 전체 ▾
+            - generic [ref=f12e63] [cursor=pointer]: 정렬 최근 수정순 ▾
+          - table [ref=f12e65]:
+            - rowgroup [ref=f12e66]:
+              - row [ref=f12e67]:
+                - columnheader "교안명" [ref=f12e68]
+                - columnheader "유형" [ref=f12e69]
+                - columnheader "버전" [ref=f12e70]
+                - columnheader "추출 상태" [ref=f12e71]
+                - columnheader "매핑 검수" [ref=f12e72]
+                - columnheader "적용 프로젝트" [ref=f12e73]
+                - columnheader "최종 수정" [ref=f12e74]
+                - columnheader [ref=f12e75]
+            - rowgroup [ref=f12e76]:
+              - row [ref=f12e77] [cursor=pointer]:
+                - cell "JWT · 인증 인증 · 토큰 수명 · 세션" [ref=f12e78]:
+                  - text: JWT · 인증
+                  - generic [ref=f12e79]: 인증 · 토큰 수명 · 세션
+                - cell "PDF" [ref=f12e80]
+                - cell "v3" [ref=f12e81]
+                - cell [ref=f12e82]
+                - cell [ref=f12e85]
+                - cell "API 서버" [ref=f12e88]
+                - cell "07-10" [ref=f12e90]
+                - cell "⋯" [ref=f12e91]
+              - row [ref=f12e92] [cursor=pointer]:
+                - cell "반례 · 예외 처리 가이드 edge case · 방어적 프로그래밍" [ref=f12e93]:
+                  - text: 반례 · 예외 처리 가이드
+                  - generic [ref=f12e94]: edge case · 방어적 프로그래밍
+                - cell "PDF" [ref=f12e95]
+                - cell "v2" [ref=f12e96]
+                - cell [ref=f12e97]
+                - cell [ref=f12e100]
+                - cell "API 서버 풀스택" [ref=f12e103]:
+                  - generic [ref=f12e104]: API 서버
+                  - generic [ref=f12e105]: 풀스택
+                - cell "07-12" [ref=f12e106]
+                - cell "검수 →⋯" [ref=f12e107]
+              - row [ref=f12e108] [cursor=pointer]:
+                - cell "설계 대안 비교 트레이드오프 · 아키텍처" [ref=f12e109]:
+                  - text: 설계 대안 비교
+                  - generic [ref=f12e110]: 트레이드오프 · 아키텍처
+                - cell "PDF" [ref=f12e111]
+                - cell "v1" [ref=f12e112]
+                - cell [ref=f12e113]
+                - cell [ref=f12e116]
+                - cell "풀스택" [ref=f12e119]
+                - cell "07-11" [ref=f12e121]
+                - cell "⋯" [ref=f12e122]
+              - row [ref=f12e123] [cursor=pointer]:
+                - cell "REST API 설계 리소스 · 상태코드 · 규약" [ref=f12e124]:
+                  - text: REST API 설계
+                  - generic [ref=f12e125]: 리소스 · 상태코드 · 규약
+                - cell "PDF" [ref=f12e126]
+                - cell "v1" [ref=f12e127]
+                - cell [ref=f12e128]
+                - cell "—" [ref=f12e131]
+                - cell "API 서버" [ref=f12e133]
+                - cell "07-09" [ref=f12e135]
+                - cell "재처리⋯" [ref=f12e136]
+              - row [ref=f12e137] [cursor=pointer]:
+                - cell "동시성 · 경합 락 · 트랜잭션 격리" [ref=f12e138]:
+                  - text: 동시성 · 경합
+                  - generic [ref=f12e139]: 락 · 트랜잭션 격리
+                - cell "PDF" [ref=f12e140]
+                - cell "v1" [ref=f12e141]
+                - cell [ref=f12e142]
+                - cell "—" [ref=f12e145]
+                - cell "— 미연결" [ref=f12e147]
+                - cell "07-13" [ref=f12e148]
+                - cell "⋯" [ref=f12e149]
+              - row [ref=f12e150] [cursor=pointer]:
+                - cell "상태 관리 기초방금 등록 생명주기 · 불변성" [ref=f12e151]:
+                  - text: 상태 관리 기초방금 등록
+                  - generic [ref=f12e152]: 생명주기 · 불변성
+                - cell "PDF" [ref=f12e153]
+                - cell "v1" [ref=f12e154]
+                - cell [ref=f12e155]
+                - cell "—" [ref=f12e158]
+                - cell "— 미연결" [ref=f12e160]
+                - cell "07-13" [ref=f12e161]
+                - cell "⋯" [ref=f12e162]
+          - generic [ref=f12e163]:
+            - generic [ref=f12e164]: 6개 중 1–6
+            - generic [ref=f12e165]: "1"
+          - generic [ref=f12e167]: "· 행 클릭 → 교안 상세(구조 추출·매핑 승인 열람, 별도 화면·후속) — 열람은 담당도 가능, 저작(등록·재처리·검수·삭제) 액션은 총괄만(담당 뷰에선 잠김). 적용 프로젝트 = 이 교안을 참조하는 프로젝트(선택적 링크·프로젝트 생성 시 총괄이 지정, 미연결도 정상 — 그 경우 위치 안내만 생략). 상태 머신: 업로드 → 추출 중 → 추출 완료 / 추출 실패 → 매핑 대기 → 검수 대기 → 승인. 정의 안 된 전이 차단. 추출 실패는 재처리·삭제만(원본 유지). 승인 교안은 활성 매핑 연결 확인 후 삭제. 배정 밖 기수 교안 접근 차단(테넌트 격리). 자동확정 금지 — 매핑은 승인 전까지 추천 상태. 교안→문제 출제는 보류(차별성·이해도 검증 정렬, D85)."
+          - generic [ref=f12e169]:
+            - generic [ref=f12e170]:
+              - generic [ref=f12e171]: 이 화면 · 상태 · case (CUR-03 · 등록 관리 중 목록 관련)
+              - generic [ref=f12e172] [cursor=pointer]: 상태 ↔ case 매핑 총합 → (후속)
+            - generic [ref=f12e173]:
+              - generic [ref=f12e174]: 03-4
+              - generic [ref=f12e175]: 중복 차단
+              - generic [ref=f12e176]: 기수 내 동일 교안·버전 중복 — 신규 등록 차단, 기존 항목 확인 유도
+            - generic [ref=f12e177]:
+              - generic [ref=f12e178]: 03-7
+              - generic [ref=f12e179]: 재처리만
+              - generic [ref=f12e180]: 구조 추출 실패 — 추출 실패 상태, 원본 유지한 채 재처리만 허용
+            - generic [ref=f12e181]:
+              - generic [ref=f12e182]: 03-8
+              - generic [ref=f12e183]: 전이 차단
+              - generic [ref=f12e184]: 정의 안 된 상태 전이 — 변경 차단, 현재/허용 다음 상태 안내
+            - generic [ref=f12e185]:
+              - generic [ref=f12e186]: 03-9
+              - generic [ref=f12e187]: 삭제 차단
+              - generic [ref=f12e188]: 승인·활성 매핑 사용 중 삭제 — 차단, 연결 해제 절차 안내
+            - generic [ref=f12e189]:
+              - generic [ref=f12e190]: 03-10
+              - generic [ref=f12e191]: "403"
+              - generic [ref=f12e192]: 배정 밖 기수 교안 접근 — 요청 차단(테넌트 격리·SYS-02)
+  - generic [ref=f12e193]: 화면 · 교안 상세 › 구조 추출 (CUR-01 · 모듈 인덱스 · 신뢰도)
+  - generic [ref=f12e195]:
+    - generic [ref=f12e196]: iz-get.com/cohorts/7/curriculum/2/structure
+    - generic [ref=f12e202]:
+      - generic [ref=f12e203]:
+        - generic [ref=f12e204]:
+          - generic [ref=f12e205]:
+            - generic [ref=f12e206]: ◆
+            - text: IZ-Get
+          - generic [ref=f12e207]:
+            - generic [ref=f12e208]: 기수
+            - text: 7기 ▾
+        - generic [ref=f12e209]:
+          - generic "열람=총괄·담당 / 저작=총괄 (D91)" [ref=f12e210] [cursor=pointer]:
+            - generic [ref=f12e211]: 총괄 뷰
+            - generic [ref=f12e212]: 담당 뷰
+          - generic [ref=f12e213]:
+            - text: 박지현 · 총괄 매니저
+            - generic [ref=f12e214]: 박
+      - generic [ref=f12e215]:
+        - generic [ref=f12e216]:
+          - generic [ref=f12e217]:
+            - generic [ref=f12e218]: ▦
+            - text: 대시보드
+          - generic [ref=f12e219]:
+            - generic [ref=f12e220]: ◔
+            - text: 기수 구성
+          - generic [ref=f12e221]:
+            - generic [ref=f12e222]: ▧
+            - text: 교안
+          - generic [ref=f12e223]:
+            - generic [ref=f12e224]: ▤
+            - text: 프로젝트
+          - generic [ref=f12e225]:
+            - generic [ref=f12e226]: △
+            - text: 분석 · 진단
+          - generic [ref=f12e227]:
+            - generic [ref=f12e228]: ◎
+            - text: 교육생
+          - generic [ref=f12e229]:
+            - generic [ref=f12e230]: ✎
+            - text: 개입
+          - generic [ref=f12e231]:
+            - generic [ref=f12e232]: ▥
+            - text: 리포트
+          - generic [ref=f12e233]:
+            - generic [ref=f12e234]: ⚖
+            - text: 이의 · 공개
+        - generic [ref=f12e235]:
+          - generic [ref=f12e236]:
+            - generic [ref=f12e237]:
+              - generic [ref=f12e238] [cursor=pointer]: ← 교안 목록
+              - generic [ref=f12e239]:
+                - text: 반례 · 예외 처리 가이드
+                - generic [ref=f12e240]: v2
+              - generic [ref=f12e241]: "PDF · 최종 수정 07-12 · 적용 프로젝트: API 서버 · 풀스택"
+            - generic [ref=f12e242] [cursor=pointer]: 다른 교안 전환 ▾
+          - generic [ref=f12e243]:
+            - generic [ref=f12e244] [cursor=pointer]: 구조 추출
+            - generic [ref=f12e245] [cursor=pointer]: 매핑 승인
+          - generic [ref=f12e246]:
+            - generic [ref=f12e247]: 추출 완료
+            - generic [ref=f12e248]: 휴리스틱 + LLM 하이브리드
+            - generic [ref=f12e249]: 모듈 4개 · 30p
+            - button "↻ 재처리총괄" [ref=f12e251] [cursor=pointer]
+          - generic [ref=f12e252]: ℹ 경량 모듈 인덱스(모듈명·페이지 범위·주제 키워드만 추출, 원문 미보존). 추출 신뢰도는 매핑 승인(CUR-02)의 상류 품질 신호로 그대로 전달돼 저신뢰 경고 근거가 됩니다(데이터 캐스케이드 방지).
+          - table [ref=f12e254]:
+            - rowgroup [ref=f12e255]:
+              - row [ref=f12e256]:
+                - columnheader "모듈" [ref=f12e257]
+                - columnheader "페이지" [ref=f12e258]
+                - columnheader "주제 키워드" [ref=f12e259]
+                - columnheader "추출 신뢰도" [ref=f12e260]
+            - rowgroup [ref=f12e261]:
+              - row [ref=f12e262]:
+                - cell "예외 처리 기초" [ref=f12e263]
+                - cell "p.1–8" [ref=f12e264]
+                - cell "try/catch 예외 전파 스택 트레이스" [ref=f12e265]:
+                  - generic [ref=f12e266]: try/catch
+                  - generic [ref=f12e267]: 예외 전파
+                  - generic [ref=f12e268]: 스택 트레이스
+                - cell "92" [ref=f12e269]
+              - row [ref=f12e274]:
+                - cell "방어적 프로그래밍" [ref=f12e275]
+                - cell "p.9–16" [ref=f12e276]
+                - cell "입력 검증 경계값 사전조건" [ref=f12e277]:
+                  - generic [ref=f12e278]: 입력 검증
+                  - generic [ref=f12e279]: 경계값
+                  - generic [ref=f12e280]: 사전조건
+                - cell "88" [ref=f12e281]
+              - row [ref=f12e286]:
+                - cell "반례 설계" [ref=f12e287]
+                - cell "p.17–24" [ref=f12e288]
+                - cell "edge case 테스트 케이스 실패 유도" [ref=f12e289]:
+                  - generic [ref=f12e290]: edge case
+                  - generic [ref=f12e291]: 테스트 케이스
+                  - generic [ref=f12e292]: 실패 유도
+                - cell "76" [ref=f12e293]
+              - row [ref=f12e298]:
+                - cell "복구 전략 폴백 경계" [ref=f12e299]
+                - cell "p.25–30" [ref=f12e300]
+                - cell "롤백 재시도" [ref=f12e301]:
+                  - generic [ref=f12e302]: 롤백
+                  - generic [ref=f12e303]: 재시도
+                - cell "58" [ref=f12e304]
+          - generic [ref=f12e309]: · 모듈 경계는 제목 신호 + LLM 경계 추론. 복구 전략은 제목 신호 약해 휴리스틱 폴백(경계 임시·신뢰도 58%) — 매핑 시 저신뢰 경고 대상. 추출 실패(암호화·텍스트 실패)면 재처리만(원본 유지). 재처리·재추출은 총괄(담당 뷰 잠김).
+          - generic [ref=f12e311]:
+            - generic [ref=f12e312]: 이 화면 · 상태 · case (CUR-01 · 구조 추출 7건)
+            - generic [ref=f12e314]:
+              - generic [ref=f12e315]: 01-1
+              - generic [ref=f12e316]: 폴백
+              - generic [ref=f12e317]: 제목 신호 없음 — 전체 문서 단일 모듈 폴백·fallback_used=true
+            - generic [ref=f12e318]:
+              - generic [ref=f12e319]: 01-2
+              - generic [ref=f12e320]: 재처리
+              - generic [ref=f12e321]: PDF 텍스트 추출 실패 — 실패 상태, 재처리 등록
+            - generic [ref=f12e322]:
+              - generic [ref=f12e323]: 01-3
+              - generic [ref=f12e324]: 차단
+              - generic [ref=f12e325]: 암호화 PDF — 처리 차단
+            - generic [ref=f12e326]:
+              - generic [ref=f12e327]: 01-4
+              - generic [ref=f12e328]: 보조 추출
+              - generic [ref=f12e329]: 폰트·위치 정보 불완전 — 텍스트 순서 기반 보조 추출
+            - generic [ref=f12e330]:
+              - generic [ref=f12e331]: 01-5
+              - generic [ref=f12e332]: 임시 경계
+              - generic [ref=f12e333]: "LLM 경계 추론 실패 — 휴리스틱 경계 임시 모듈(예: 복구 전략)"
+            - generic [ref=f12e334]:
+              - generic [ref=f12e335]: 01-6
+              - generic [ref=f12e336]: 정규화
+              - generic [ref=f12e337]: 페이지 범위 중첩·역전 — 정규화 후 재검증
+            - generic [ref=f12e338]:
+              - generic [ref=f12e339]: 01-7
+              - generic [ref=f12e340]: 전달 차단
+              - generic [ref=f12e341]: 상류 품질 상태 저장 실패 — 하류(CUR-02) 전달 차단·캐스케이드 방지
+  - generic [ref=f12e342]: 화면 · 교안 상세 › 매핑 승인 (CUR-02 · 실패유형↔모듈 · 4신호 검수)
+  - generic [ref=f12e344]:
+    - generic [ref=f12e345]: iz-get.com/cohorts/7/curriculum/2/mapping
+    - generic [ref=f12e351]:
+      - generic [ref=f12e352]:
+        - generic [ref=f12e353]:
+          - generic [ref=f12e354]:
+            - generic [ref=f12e355]: ◆
+            - text: IZ-Get
+          - generic [ref=f12e356]:
+            - generic [ref=f12e357]: 기수
+            - text: 7기 ▾
+        - generic [ref=f12e358]:
+          - generic "열람=총괄·담당 / 저작=총괄 (D91)" [ref=f12e359] [cursor=pointer]:
+            - generic [ref=f12e360]: 총괄 뷰
+            - generic [ref=f12e361]: 담당 뷰
+          - generic [ref=f12e362]:
+            - text: 박지현 · 총괄 매니저
+            - generic [ref=f12e363]: 박
+      - generic [ref=f12e364]:
+        - generic [ref=f12e365]:
+          - generic [ref=f12e366]:
+            - generic [ref=f12e367]: ▦
+            - text: 대시보드
+          - generic [ref=f12e368]:
+            - generic [ref=f12e369]: ◔
+            - text: 기수 구성
+          - generic [ref=f12e370]:
+            - generic [ref=f12e371]: ▧
+            - text: 교안
+          - generic [ref=f12e372]:
+            - generic [ref=f12e373]: ▤
+            - text: 프로젝트
+          - generic [ref=f12e374]:
+            - generic [ref=f12e375]: △
+            - text: 분석 · 진단
+          - generic [ref=f12e376]:
+            - generic [ref=f12e377]: ◎
+            - text: 교육생
+          - generic [ref=f12e378]:
+            - generic [ref=f12e379]: ✎
+            - text: 개입
+          - generic [ref=f12e380]:
+            - generic [ref=f12e381]: ▥
+            - text: 리포트
+          - generic [ref=f12e382]:
+            - generic [ref=f12e383]: ⚖
+            - text: 이의 · 공개
+        - generic [ref=f12e384]:
+          - generic [ref=f12e385]:
+            - generic [ref=f12e386]:
+              - generic [ref=f12e387] [cursor=pointer]: ← 교안 목록
+              - generic [ref=f12e388]:
+                - text: 반례 · 예외 처리 가이드
+                - generic [ref=f12e389]: v2
+              - generic [ref=f12e390]: "매핑 검수: 5개 실패유형 중 3 승인 · 1 검수 대기 · 1 후보 없음"
+            - generic [ref=f12e391] [cursor=pointer]: 다른 교안 전환 ▾
+          - generic [ref=f12e392]:
+            - generic [ref=f12e393] [cursor=pointer]: 구조 추출
+            - generic [ref=f12e394] [cursor=pointer]: 매핑 승인
+          - generic [ref=f12e395]: ⚠ 자동 확정 금지(CUR-02·GOV-02). LLM은 순위만 제안 — 매니저가 승인해야 매핑 확정. 승인·재선택 기록은 정답 라벨로 축적돼 임계값을 사후 보정. 임계값은 현재 [가정값](검증 사례 0건 · 골든셋 확보 후 확정). 승인·재선택 액션은 총괄.
+          - generic [ref=f12e396]:
+            - generic [ref=f12e397]:
+              - generic [ref=f12e398] [cursor=pointer]:
+                - generic [ref=f12e399]: 반례대응
+                - generic [ref=f12e400]: 검수 대기
+              - generic [ref=f12e403] [cursor=pointer]:
+                - generic [ref=f12e404]: 자기수정
+                - generic [ref=f12e405]: 매핑 대기
+              - generic [ref=f12e408] [cursor=pointer]:
+                - generic [ref=f12e409]: 대안비교
+                - generic [ref=f12e410]: 승인됨
+              - generic [ref=f12e413] [cursor=pointer]:
+                - generic [ref=f12e414]: 코드이해
+                - generic [ref=f12e415]: 승인됨
+              - generic [ref=f12e418] [cursor=pointer]:
+                - generic [ref=f12e419]: 의사소통
+                - generic [ref=f12e420]: 후보 없음 · 수동 지정
+            - generic [ref=f12e422]:
+              - generic [ref=f12e423]: 반례대응 → 추천 모듈 (4신호 병렬 · llm_rank는 보조 1/4)
+              - generic [ref=f12e424]:
+                - generic [ref=f12e425]:
+                  - text: 반례 설계
+                  - generic [ref=f12e426]: p.17–24
+                - generic [ref=f12e427]:
+                  - generic [ref=f12e428]:
+                    - generic [ref=f12e429]: 키워드 겹침
+                    - generic [ref=f12e431]: "85"
+                  - generic [ref=f12e432]:
+                    - generic [ref=f12e433]: 임베딩 유사도
+                    - generic [ref=f12e435]: "78"
+                  - generic [ref=f12e436]:
+                    - generic [ref=f12e437]: LLM 순위
+                    - generic [ref=f12e439]: 1위
+                    - generic [ref=f12e440]: 보조 1/4
+                  - generic [ref=f12e441]:
+                    - generic [ref=f12e442]: 상류 품질
+                    - generic [ref=f12e444]: "76"
+                - generic [ref=f12e445]:
+                  - button "이 매핑 승인총괄" [ref=f12e446] [cursor=pointer]
+                  - button "다른 모듈로 재선택" [ref=f12e447] [cursor=pointer]
+              - generic [ref=f12e448]: 차순위 후보 (재선택 시)
+              - generic [ref=f12e449]:
+                - generic [ref=f12e450]:
+                  - text: 방어적 프로그래밍
+                  - generic [ref=f12e451]: p.9–16
+                - generic [ref=f12e452]:
+                  - generic [ref=f12e453]:
+                    - generic [ref=f12e454]: 키워드 겹침
+                    - generic [ref=f12e456]: "52"
+                  - generic [ref=f12e457]:
+                    - generic [ref=f12e458]: 임베딩 유사도
+                    - generic [ref=f12e460]: "61"
+                  - generic [ref=f12e461]:
+                    - generic [ref=f12e462]: LLM 순위
+                    - generic [ref=f12e464]: 2위
+                    - generic [ref=f12e465]: 보조 1/4
+                  - generic [ref=f12e466]:
+                    - generic [ref=f12e467]: 상류 품질
+                    - generic [ref=f12e469]: "88"
+          - generic [ref=f12e471]:
+            - generic [ref=f12e472]: 이 화면 · 상태 · case (CUR-02 · 매핑 승인 8건)
+            - generic [ref=f12e474]:
+              - generic [ref=f12e475]: 02-1
+              - generic [ref=f12e476]: 생성 차단
+              - generic [ref=f12e477]: CUR-01 모듈 목록 부재 — 매핑 생성 차단
+            - generic [ref=f12e478]:
+              - generic [ref=f12e479]: 02-2
+              - generic [ref=f12e480]: 저신뢰 경고
+              - generic [ref=f12e481]: 상류 fallback 상태 — 검수 화면에 저신뢰 경고(복구 전략 58%)
+            - generic [ref=f12e482]:
+              - generic [ref=f12e483]: 02-3
+              - generic [ref=f12e484]: 단독 금지
+              - generic [ref=f12e485]: LLM 자기신뢰도만 존재 — 단독 확정 금지, 객관 신호 병행 필수
+            - generic [ref=f12e486]:
+              - generic [ref=f12e487]: 02-4
+              - generic [ref=f12e488]: 검토 필요
+              - generic [ref=f12e489]: 객관 신호 계산 실패 — 추천 유지·검토 필요 표시
+            - generic [ref=f12e490]:
+              - generic [ref=f12e491]: 02-5
+              - generic [ref=f12e492]: 수동 지정
+              - generic [ref=f12e493]: 매핑 후보 없음 — 수동 지정 유도(의사소통)
+            - generic [ref=f12e494]:
+              - generic [ref=f12e495]: 02-6
+              - generic [ref=f12e496]: 차단
+              - generic [ref=f12e497]: 승인 전 자동확정 요청 — 차단(GOV-02·FR-8.2)
+            - generic [ref=f12e498]:
+              - generic [ref=f12e499]: 02-7
+              - generic [ref=f12e500]: 저장 차단
+              - generic [ref=f12e501]: 존재하지 않는 모듈 선택 — 저장 차단
+            - generic [ref=f12e502]:
+              - generic [ref=f12e503]: 02-8
+              - generic [ref=f12e504]: 가정값 유지
+              - generic [ref=f12e505]: 임계값 실물 검증 전 확정 요청 — [가정값] 유지·골든셋 후 확정

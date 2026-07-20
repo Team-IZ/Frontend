@@ -1,0 +1,585 @@
+- generic [ref=f22e2]:
+  - generic [ref=f22e3]:
+    - generic [ref=f22e4]: SC-M12 · P1 · 매니저 · 웹 · 목록 화면
+    - heading "교안 관리 — 목록" [level=1] [ref=f22e5]
+    - paragraph [ref=f22e6]: "교안은 프로젝트가 아니라 기수 자산(D85·B10·D91) — 선택된 기수 스코프에서 교안·버전 단위로 등록하는 콘텐츠 라이브러리다. 프로젝트와는 선택적 다대다 참조(D91): 프로젝트 생성 시 관련 교안을 링크(비워도 됨) → 리포트가 그 프로젝트의 취약축을 정확한 교안으로 안내(MEAS-07). 권한: 열람=총괄·담당 둘 다 / 저작(등록·재처리·매핑 검수·삭제)=총괄만(측정 처방 경로 저작이라 무결성·D90 계열, 담당은 배정 기수 열람). 상태 머신 업로드 → 추출 중 → 추출 완료 / 추출 실패 → 매핑 대기 → 검수 대기 → 승인(CUR-03). 이 화면은 컬렉션(마스터), 상세(교안 구성·교안 연결)는 드릴다운. 상단 셸·기수 선택기는 전 화면 통일(기수 7기)."
+  - generic [ref=f22e7]: 화면 · 교안 목록 (CUR-03 · 컬렉션 · 상태 머신)
+  - generic [ref=f22e9]:
+    - generic [ref=f22e10]: iz-get.com/cohorts/7/curriculum
+    - generic [ref=f22e16]:
+      - generic [ref=f22e17]:
+        - generic [ref=f22e18]:
+          - generic [ref=f22e19]:
+            - generic [ref=f22e20]: ◆
+            - text: IZ-Get
+          - generic [ref=f22e21]:
+            - generic [ref=f22e22]: 기수
+            - text: 7기 ▾
+        - generic [ref=f22e23]:
+          - generic "열람=총괄·담당 / 저작=총괄 (D91)" [ref=f22e24] [cursor=pointer]:
+            - generic [ref=f22e25]: 총괄 뷰
+            - generic [ref=f22e26]: 담당 뷰
+          - generic [ref=f22e27]:
+            - text: 박지현 · 총괄 매니저
+            - generic [ref=f22e28]: 박
+      - generic [ref=f22e29]:
+        - generic [ref=f22e30]:
+          - generic [ref=f22e31]:
+            - generic [ref=f22e32]: ▦
+            - text: 대시보드
+          - generic [ref=f22e33]:
+            - generic [ref=f22e34]: ◔
+            - text: 기수 구성
+          - generic [ref=f22e35]:
+            - generic [ref=f22e36]: ▧
+            - text: 교안
+          - generic [ref=f22e37]:
+            - generic [ref=f22e38]: ▤
+            - text: 프로젝트
+          - generic [ref=f22e39]:
+            - generic [ref=f22e40]: △
+            - text: 분석 · 진단
+          - generic [ref=f22e41]:
+            - generic [ref=f22e42]: ◎
+            - text: 교육생
+          - generic [ref=f22e43]:
+            - generic [ref=f22e44]: ✎
+            - text: 개입
+          - generic [ref=f22e45]:
+            - generic [ref=f22e46]: ▥
+            - text: 리포트
+          - generic [ref=f22e47]:
+            - generic [ref=f22e48]: ⚖
+            - text: 이의 · 공개
+        - generic [ref=f22e49]:
+          - generic [ref=f22e50]:
+            - generic [ref=f22e51]: 교안 › 7기
+            - heading "교안 관리" [level=2] [ref=f22e52]
+          - generic [ref=f22e53]:
+            - generic [ref=f22e54]:
+              - text: 교안 목록
+              - generic [ref=f22e55]: 총 6개
+            - button "+ 교안 등록총괄" [ref=f22e57] [cursor=pointer]
+          - generic [ref=f22e58]:
+            - generic [ref=f22e59]: 🔍 교안명 · 주제 검색
+            - generic [ref=f22e60] [cursor=pointer]: 추출 상태 전체 ▾
+            - generic [ref=f22e61] [cursor=pointer]: 매핑 검수 전체 ▾
+            - generic [ref=f22e62] [cursor=pointer]: 적용 프로젝트 전체 ▾
+            - generic [ref=f22e63] [cursor=pointer]: 정렬 최근 수정순 ▾
+          - table [ref=f22e65]:
+            - rowgroup [ref=f22e66]:
+              - row [ref=f22e67]:
+                - columnheader "교안명" [ref=f22e68]
+                - columnheader "유형" [ref=f22e69]
+                - columnheader "버전" [ref=f22e70]
+                - columnheader "추출 상태" [ref=f22e71]
+                - columnheader "매핑 검수" [ref=f22e72]
+                - columnheader "적용 프로젝트" [ref=f22e73]
+                - columnheader "최종 수정" [ref=f22e74]
+                - columnheader [ref=f22e75]
+            - rowgroup [ref=f22e76]:
+              - row [ref=f22e77] [cursor=pointer]:
+                - cell "Kubernetes와 CICD K8s 아키텍처 · 컨테이너 배포 · Service/Ingress · CICD · 76p" [ref=f22e78]:
+                  - text: Kubernetes와 CICD
+                  - generic [ref=f22e79]: K8s 아키텍처 · 컨테이너 배포 · Service/Ingress · CICD · 76p
+                - cell "PDF" [ref=f22e80]
+                - cell "v2" [ref=f22e81]
+                - cell [ref=f22e82]
+                - cell [ref=f22e85]
+                - cell "MSA 배포 실습" [ref=f22e88]
+                - cell "06-18" [ref=f22e90]
+                - cell "검수 →⋯" [ref=f22e91]
+              - row [ref=f22e92] [cursor=pointer]:
+                - cell "클라우드 현대화 이해 서비스 클라우드 네이티브 · IaaS/PaaS/SaaS · 마이그레이션 · 151p" [ref=f22e93]:
+                  - text: 클라우드 현대화 이해 서비스
+                  - generic [ref=f22e94]: 클라우드 네이티브 · IaaS/PaaS/SaaS · 마이그레이션 · 151p
+                - cell "PDF" [ref=f22e95]
+                - cell "v1" [ref=f22e96]
+                - cell [ref=f22e97]
+                - cell [ref=f22e100]
+                - cell "클라우드 전환 PJT" [ref=f22e103]
+                - cell "06-19" [ref=f22e105]
+                - cell "⋯" [ref=f22e106]
+              - row [ref=f22e107] [cursor=pointer]:
+                - cell "AWS 핵심 서비스 EC2 · VPC · IAM · S3 · RDS" [ref=f22e108]:
+                  - text: AWS 핵심 서비스
+                  - generic [ref=f22e109]: EC2 · VPC · IAM · S3 · RDS
+                - cell "PDF" [ref=f22e110]
+                - cell "v3" [ref=f22e111]
+                - cell [ref=f22e112]
+                - cell [ref=f22e115]
+                - cell "클라우드 전환 PJT MSA 배포 실습" [ref=f22e118]:
+                  - generic [ref=f22e119]: 클라우드 전환 PJT
+                  - generic [ref=f22e120]: MSA 배포 실습
+                - cell "06-15" [ref=f22e121]
+                - cell "⋯" [ref=f22e122]
+              - row [ref=f22e123] [cursor=pointer]:
+                - cell "Docker 컨테이너 기초 이미지 · 레지스트리 · Dockerfile" [ref=f22e124]:
+                  - text: Docker 컨테이너 기초
+                  - generic [ref=f22e125]: 이미지 · 레지스트리 · Dockerfile
+                - cell "PDF" [ref=f22e126]
+                - cell "v1" [ref=f22e127]
+                - cell [ref=f22e128]
+                - cell "—" [ref=f22e131]
+                - cell "MSA 배포 실습" [ref=f22e133]
+                - cell "06-12" [ref=f22e135]
+                - cell "재처리⋯" [ref=f22e136]
+              - row [ref=f22e137] [cursor=pointer]:
+                - cell "Microservice 아키텍처 서비스 분해 · API 게이트웨이 · 사가" [ref=f22e138]:
+                  - text: Microservice 아키텍처
+                  - generic [ref=f22e139]: 서비스 분해 · API 게이트웨이 · 사가
+                - cell "PDF" [ref=f22e140]
+                - cell "v1" [ref=f22e141]
+                - cell [ref=f22e142]
+                - cell "—" [ref=f22e145]
+                - cell "— 미연결" [ref=f22e147]
+                - cell "06-19" [ref=f22e148]
+                - cell "⋯" [ref=f22e149]
+              - row [ref=f22e150] [cursor=pointer]:
+                - cell "Terraform IaC 입문방금 등록 HCL · provider · state" [ref=f22e151]:
+                  - text: Terraform IaC 입문방금 등록
+                  - generic [ref=f22e152]: HCL · provider · state
+                - cell "PDF" [ref=f22e153]
+                - cell "v1" [ref=f22e154]
+                - cell [ref=f22e155]
+                - cell "—" [ref=f22e158]
+                - cell "— 미연결" [ref=f22e160]
+                - cell "06-19" [ref=f22e161]
+                - cell "⋯" [ref=f22e162]
+          - generic [ref=f22e163]:
+            - generic [ref=f22e164]: 6개 중 1–6
+            - generic [ref=f22e165]: "1"
+          - generic [ref=f22e167]: "· 행 클릭 → 교안 상세(교안 구성·교안 연결 열람) — 열람은 담당도 가능, 저작(등록·재처리·연결 수정·삭제) 액션은 총괄만(담당 뷰에선 잠김). 적용 프로젝트 = 이 교안을 참조하는 프로젝트(선택적 링크·프로젝트 생성 시 총괄이 지정, 미연결도 정상 — 그 경우 위치 안내만 생략). 상태 머신: 업로드 → 추출 중 → 추출 완료 / 추출 실패 → 자동 연결(고신뢰) / 확인 권장(저신뢰). 추출 실패는 재처리·삭제만(원본 유지). 활성 연결 교안은 연결 확인 후 삭제. 배정 밖 기수 교안 접근 차단(테넌트 격리). 위치 안내는 넛지라 자동 연결이 기본 — 저신뢰만 확인 권장, 매니저 오버라이드 가능(자동확정 금지 GOV-02는 측정에만). 교안→문제 출제는 보류(D85)."
+          - generic [ref=f22e169]:
+            - generic [ref=f22e170]:
+              - generic [ref=f22e171]: 이 화면 · 상태 · case (CUR-03 · 등록 관리 중 목록 관련)
+              - generic [ref=f22e172] [cursor=pointer]: 상태 ↔ case 매핑 총합 → (후속)
+            - generic [ref=f22e173]:
+              - generic [ref=f22e174]: 03-4
+              - generic [ref=f22e175]: 중복 차단
+              - generic [ref=f22e176]: 기수 내 동일 교안·버전 중복 — 신규 등록 차단, 기존 항목 확인 유도
+            - generic [ref=f22e177]:
+              - generic [ref=f22e178]: 03-7
+              - generic [ref=f22e179]: 재처리만
+              - generic [ref=f22e180]: 구조 추출 실패 — 추출 실패 상태, 원본 유지한 채 재처리만 허용
+            - generic [ref=f22e181]:
+              - generic [ref=f22e182]: 03-8
+              - generic [ref=f22e183]: 전이 차단
+              - generic [ref=f22e184]: 정의 안 된 상태 전이 — 변경 차단, 현재/허용 다음 상태 안내
+            - generic [ref=f22e185]:
+              - generic [ref=f22e186]: 03-9
+              - generic [ref=f22e187]: 삭제 차단
+              - generic [ref=f22e188]: 승인·활성 매핑 사용 중 삭제 — 차단, 연결 해제 절차 안내
+            - generic [ref=f22e189]:
+              - generic [ref=f22e190]: 03-10
+              - generic [ref=f22e191]: "403"
+              - generic [ref=f22e192]: 배정 밖 기수 교안 접근 — 요청 차단(테넌트 격리·SYS-02)
+  - generic [ref=f22e193]: 화면 · 교안 등록 (CUR-03 · PDF 업로드 → 자동 분석 · 총괄 전용)
+  - generic [ref=f22e195]:
+    - generic [ref=f22e196]: iz-get.com/cohorts/7/curriculum/new
+    - generic [ref=f22e202]:
+      - generic [ref=f22e203]:
+        - generic [ref=f22e204]:
+          - generic [ref=f22e205]:
+            - generic [ref=f22e206]: ◆
+            - text: IZ-Get
+          - generic [ref=f22e207]:
+            - generic [ref=f22e208]: 기수
+            - text: 7기 ▾
+        - generic [ref=f22e209]:
+          - generic "열람=총괄·담당 / 저작=총괄 (D91)" [ref=f22e210] [cursor=pointer]:
+            - generic [ref=f22e211]: 총괄 뷰
+            - generic [ref=f22e212]: 담당 뷰
+          - generic [ref=f22e213]:
+            - text: 박지현 · 총괄 매니저
+            - generic [ref=f22e214]: 박
+      - generic [ref=f22e215]:
+        - generic [ref=f22e216]:
+          - generic [ref=f22e217]:
+            - generic [ref=f22e218]: ▦
+            - text: 대시보드
+          - generic [ref=f22e219]:
+            - generic [ref=f22e220]: ◔
+            - text: 기수 구성
+          - generic [ref=f22e221]:
+            - generic [ref=f22e222]: ▧
+            - text: 교안
+          - generic [ref=f22e223]:
+            - generic [ref=f22e224]: ▤
+            - text: 프로젝트
+          - generic [ref=f22e225]:
+            - generic [ref=f22e226]: △
+            - text: 분석 · 진단
+          - generic [ref=f22e227]:
+            - generic [ref=f22e228]: ◎
+            - text: 교육생
+          - generic [ref=f22e229]:
+            - generic [ref=f22e230]: ✎
+            - text: 개입
+          - generic [ref=f22e231]:
+            - generic [ref=f22e232]: ▥
+            - text: 리포트
+          - generic [ref=f22e233]:
+            - generic [ref=f22e234]: ⚖
+            - text: 이의 · 공개
+        - generic [ref=f22e235]:
+          - generic [ref=f22e236]:
+            - generic [ref=f22e237]: ← 교안 목록 › 등록
+            - heading "교안 등록 총괄" [level=2] [ref=f22e238]
+          - generic [ref=f22e239]:
+            - generic [ref=f22e240]:
+              - generic [ref=f22e241]: ⬆
+              - generic [ref=f22e242]: PDF를 끌어다 놓거나 클릭해 선택
+              - generic [ref=f22e243]: 현재 PDF만 지원 (pptx·docx·스캔본은 보류) · 최대 50MB
+              - generic [ref=f22e244]:
+                - generic [ref=f22e245]: 📄 AI_Kubernetes와 CICD_교안.pdf · 2.4MB
+                - generic [ref=f22e246] [cursor=pointer]: ✕
+            - generic [ref=f22e247]:
+              - generic [ref=f22e248]: 교안명 *
+              - generic [ref=f22e249]: Kubernetes와 CICD
+            - generic [ref=f22e250]:
+              - generic [ref=f22e251]: 주제 · 설명 · 선택
+              - generic [ref=f22e252]: "예: K8s 아키텍처 · 컨테이너 배포 · Service/Ingress · CICD"
+              - generic [ref=f22e253]: 검색·목록 표시용. 비워도 됨(분석이 섹션·주제를 자동 추출).
+            - generic [ref=f22e254]:
+              - generic [ref=f22e255]:
+                - generic [ref=f22e256]: 유형
+                - generic [ref=f22e257]: PDF
+              - generic [ref=f22e258]:
+                - generic [ref=f22e259]: 버전
+                - generic [ref=f22e260]: v2 · 기존 v1 있음 → 자동 증가
+                - generic [ref=f22e261]: 같은 교안 재업로드 시 기존 버전 보존, 새 버전으로 등록.
+            - generic [ref=f22e262]:
+              - generic [ref=f22e263]: 적용 프로젝트 · 선택 (D91 · 비워도 됨)
+              - generic [ref=f22e264]:
+                - generic [ref=f22e265]:
+                  - text: MSA 배포 실습
+                  - generic [ref=f22e266] [cursor=pointer]: ✕
+                - generic [ref=f22e267] [cursor=pointer]: + 프로젝트 연결
+              - generic [ref=f22e268]: 연결하면 그 프로젝트 리포트가 이 교안으로 위치 안내(MEAS-07). 나중에 연결해도 됨.
+            - generic [ref=f22e269]: ℹ 업로드하면 UPLOADED → 자동 분석(추출 중)이 바로 시작됩니다. 대용량 PDF는 나눠서 분석되며, 완료되면 [교안 구성]에 섹션·주제가, [교안 연결]에 기술영역↔섹션 자동 매핑이 뜹니다. 실패 시 재분석.
+            - generic [ref=f22e270]:
+              - button "업로드 · 자동 분석 시작총괄" [ref=f22e271] [cursor=pointer]
+              - button "취소" [ref=f22e272] [cursor=pointer]
+          - generic [ref=f22e274]:
+            - generic [ref=f22e275]: 이 화면 · 상태 · case (CUR-03 · 등록 관련)
+            - generic [ref=f22e277]:
+              - generic [ref=f22e278]: 03-1
+              - generic [ref=f22e279]: 형식 차단
+              - generic [ref=f22e280]: 지원 안 하는 파일 형식 — 업로드 차단·허용 형식 안내(현재 PDF)
+            - generic [ref=f22e281]:
+              - generic [ref=f22e282]: 03-2
+              - generic [ref=f22e283]: 용량 차단
+              - generic [ref=f22e284]: 파일 용량 초과 — 저장 중단·최대 허용 용량 안내
+            - generic [ref=f22e285]:
+              - generic [ref=f22e286]: 03-3
+              - generic [ref=f22e287]: 누락 표시
+              - generic [ref=f22e288]: 필수 메타 누락(교안명) — 등록 중단·누락 항목 표시
+            - generic [ref=f22e289]:
+              - generic [ref=f22e290]: 03-4
+              - generic [ref=f22e291]: 중복 차단
+              - generic [ref=f22e292]: 기수 내 동일 교안·버전 중복 — 등록 차단·기존 항목 확인 유도
+            - generic [ref=f22e293]:
+              - generic [ref=f22e294]: 03-5
+              - generic [ref=f22e295]: 재시도
+              - generic [ref=f22e296]: 파일 저장소 업로드 실패 — DB 미기록·재시도 가능 상태
+            - generic [ref=f22e297]:
+              - generic [ref=f22e298]: 03-6
+              - generic [ref=f22e299]: 롤백
+              - generic [ref=f22e300]: DB 저장 실패 — 임시 파일 정리·트랜잭션 롤백
+  - generic [ref=f22e301]: 화면 · 교안 상세 › 교안 구성 (CUR-01 · 매니저용 목차 · 섹션·주제·페이지)
+  - generic [ref=f22e303]:
+    - generic [ref=f22e304]: iz-get.com/cohorts/7/curriculum/2/structure
+    - generic [ref=f22e310]:
+      - generic [ref=f22e311]:
+        - generic [ref=f22e312]:
+          - generic [ref=f22e313]:
+            - generic [ref=f22e314]: ◆
+            - text: IZ-Get
+          - generic [ref=f22e315]:
+            - generic [ref=f22e316]: 기수
+            - text: 7기 ▾
+        - generic [ref=f22e317]:
+          - generic "열람=총괄·담당 / 저작=총괄 (D91)" [ref=f22e318] [cursor=pointer]:
+            - generic [ref=f22e319]: 총괄 뷰
+            - generic [ref=f22e320]: 담당 뷰
+          - generic [ref=f22e321]:
+            - text: 박지현 · 총괄 매니저
+            - generic [ref=f22e322]: 박
+      - generic [ref=f22e323]:
+        - generic [ref=f22e324]:
+          - generic [ref=f22e325]:
+            - generic [ref=f22e326]: ▦
+            - text: 대시보드
+          - generic [ref=f22e327]:
+            - generic [ref=f22e328]: ◔
+            - text: 기수 구성
+          - generic [ref=f22e329]:
+            - generic [ref=f22e330]: ▧
+            - text: 교안
+          - generic [ref=f22e331]:
+            - generic [ref=f22e332]: ▤
+            - text: 프로젝트
+          - generic [ref=f22e333]:
+            - generic [ref=f22e334]: △
+            - text: 분석 · 진단
+          - generic [ref=f22e335]:
+            - generic [ref=f22e336]: ◎
+            - text: 교육생
+          - generic [ref=f22e337]:
+            - generic [ref=f22e338]: ✎
+            - text: 개입
+          - generic [ref=f22e339]:
+            - generic [ref=f22e340]: ▥
+            - text: 리포트
+          - generic [ref=f22e341]:
+            - generic [ref=f22e342]: ⚖
+            - text: 이의 · 공개
+        - generic [ref=f22e343]:
+          - generic [ref=f22e344]:
+            - generic [ref=f22e345]:
+              - generic [ref=f22e346] [cursor=pointer]: ← 교안 목록
+              - generic [ref=f22e347]:
+                - text: Kubernetes와 CICD
+                - generic [ref=f22e348]: v2
+              - generic [ref=f22e349]: "PDF · 76p · 최종 수정 06-18 · 적용 프로젝트: MSA 배포 실습"
+            - generic [ref=f22e350] [cursor=pointer]: 다른 교안 전환 ▾
+          - generic [ref=f22e351]:
+            - generic [ref=f22e352] [cursor=pointer]: 교안 구성
+            - generic [ref=f22e353] [cursor=pointer]: 교안 연결
+          - generic [ref=f22e354]:
+            - generic [ref=f22e355]: 분석 완료
+            - generic [ref=f22e356]: 6개 섹션 · 76p
+            - button "↻ 재분석총괄" [ref=f22e358] [cursor=pointer]
+          - generic [ref=f22e359]: ℹ 이 교안에 무엇이 어느 위치에 있는지 한눈에 — 섹션·주제·페이지. 축별 정확한 위치·근거는 [교안 연결]에서 확인한다. 대용량 PDF는 나눠서 자동 분석되며, 실패 섹션은 재분석 대상.
+          - table [ref=f22e361]:
+            - rowgroup [ref=f22e362]:
+              - row [ref=f22e363]:
+                - columnheader "섹션" [ref=f22e364]
+                - columnheader "페이지" [ref=f22e365]
+                - columnheader "주요 주제" [ref=f22e366]
+            - rowgroup [ref=f22e367]:
+              - row [ref=f22e368]:
+                - cell "Kubernetes 아키텍처" [ref=f22e369]
+                - cell "p.5–20" [ref=f22e370]
+                - cell "Master/Worker Node API Server etcd kubelet" [ref=f22e371]:
+                  - generic [ref=f22e372]: Master/Worker Node
+                  - generic [ref=f22e373]: API Server
+                  - generic [ref=f22e374]: etcd
+                  - generic [ref=f22e375]: kubelet
+              - row [ref=f22e376]:
+                - cell "컨테이너 배포" [ref=f22e377]
+                - cell "p.21–34" [ref=f22e378]
+                - cell "Pod ReplicaSet Deployment YAML kubectl" [ref=f22e379]:
+                  - generic [ref=f22e380]: Pod
+                  - generic [ref=f22e381]: ReplicaSet
+                  - generic [ref=f22e382]: Deployment
+                  - generic [ref=f22e383]: YAML
+                  - generic [ref=f22e384]: kubectl
+              - row [ref=f22e385]:
+                - cell "컨테이너 통신" [ref=f22e386]
+                - cell "p.35–46" [ref=f22e387]
+                - cell "Service ClusterIP/NodePort LoadBalancer Ingress" [ref=f22e388]:
+                  - generic [ref=f22e389]: Service
+                  - generic [ref=f22e390]: ClusterIP/NodePort
+                  - generic [ref=f22e391]: LoadBalancer
+                  - generic [ref=f22e392]: Ingress
+              - row [ref=f22e393]:
+                - cell "컨테이너 볼륨·환경변수" [ref=f22e394]
+                - cell "p.47–53" [ref=f22e395]
+                - cell "Volume PV/PVC ConfigMap Secret" [ref=f22e396]:
+                  - generic [ref=f22e397]: Volume
+                  - generic [ref=f22e398]: PV/PVC
+                  - generic [ref=f22e399]: ConfigMap
+                  - generic [ref=f22e400]: Secret
+              - row [ref=f22e401]:
+                - cell "CICD Pipeline" [ref=f22e402]
+                - cell "p.54–70" [ref=f22e403]
+                - cell "DevOps CI CD 애자일" [ref=f22e404]:
+                  - generic [ref=f22e405]: DevOps
+                  - generic [ref=f22e406]: CI
+                  - generic [ref=f22e407]: CD
+                  - generic [ref=f22e408]: 애자일
+              - row [ref=f22e409]:
+                - cell "AWS CICD" [ref=f22e410]
+                - cell "p.71–74" [ref=f22e411]
+                - cell "CodePipeline 릴리즈 프로세스" [ref=f22e412]:
+                  - generic [ref=f22e413]: CodePipeline
+                  - generic [ref=f22e414]: 릴리즈 프로세스
+          - generic [ref=f22e415]: · 매니저용 목차 — 이 교안의 섹션·주제·위치 파악용. 상세 위치(정확 페이지)·원문 근거는 축별로 [교안 연결]에서. 분석 실패(암호화·텍스트 추출 불가) 시 재분석만(원본 유지). 재분석은 총괄(담당 뷰 잠김). 대용량 PDF 분할 처리·품질 감사 등 처리 내부는 매니저 화면에서 감춤(엔지니어링 telemetry).
+          - generic [ref=f22e417]:
+            - generic [ref=f22e418]: 이 화면 · 상태 · case (CUR-01 · 구조 추출 7건 — 대부분 시스템 자동 처리, 매니저엔 결과만)
+            - generic [ref=f22e420]:
+              - generic [ref=f22e421]: 01-1
+              - generic [ref=f22e422]: 폴백
+              - generic [ref=f22e423]: 제목 신호 없음 — 전체 문서 단일 섹션 폴백(내부 처리)
+            - generic [ref=f22e424]:
+              - generic [ref=f22e425]: 01-2
+              - generic [ref=f22e426]: 재분석
+              - generic [ref=f22e427]: PDF 텍스트 추출 실패 — 실패 상태, 재분석 등록(매니저 노출)
+            - generic [ref=f22e428]:
+              - generic [ref=f22e429]: 01-3
+              - generic [ref=f22e430]: 차단
+              - generic [ref=f22e431]: "암호화 PDF — 처리 차단(매니저 노출: 재분석 불가 안내)"
+            - generic [ref=f22e432]:
+              - generic [ref=f22e433]: 01-4
+              - generic [ref=f22e434]: 보조 추출
+              - generic [ref=f22e435]: 폰트·위치 정보 불완전 — 텍스트 순서 기반 보조 추출(내부 처리)
+            - generic [ref=f22e436]:
+              - generic [ref=f22e437]: 01-5
+              - generic [ref=f22e438]: 임시 경계
+              - generic [ref=f22e439]: LLM 경계 추론 실패 — 휴리스틱 경계 임시 섹션(내부 처리)
+            - generic [ref=f22e440]:
+              - generic [ref=f22e441]: 01-6
+              - generic [ref=f22e442]: 정규화
+              - generic [ref=f22e443]: 페이지 범위 중첩·역전 — 정규화 후 재검증(내부 처리)
+            - generic [ref=f22e444]:
+              - generic [ref=f22e445]: 01-7
+              - generic [ref=f22e446]: 전달 차단
+              - generic [ref=f22e447]: 상류 품질 상태 저장 실패 — 하류(매핑) 전달 차단·캐스케이드 방지(내부, 매핑 화면에 저신뢰 경고로만 표면화)
+  - generic [ref=f22e448]: 화면 · 교안 상세 › 교안 연결 (CUR-02 · 자동 매핑 기본 + 저신뢰만 확인 권장 · 축→위치는 규칙)
+  - generic [ref=f22e450]:
+    - generic [ref=f22e451]: iz-get.com/cohorts/7/curriculum/2/mapping
+    - generic [ref=f22e457]:
+      - generic [ref=f22e458]:
+        - generic [ref=f22e459]:
+          - generic [ref=f22e460]:
+            - generic [ref=f22e461]: ◆
+            - text: IZ-Get
+          - generic [ref=f22e462]:
+            - generic [ref=f22e463]: 기수
+            - text: 7기 ▾
+        - generic [ref=f22e464]:
+          - generic "열람=총괄·담당 / 저작=총괄 (D91)" [ref=f22e465] [cursor=pointer]:
+            - generic [ref=f22e466]: 총괄 뷰
+            - generic [ref=f22e467]: 담당 뷰
+          - generic [ref=f22e468]:
+            - text: 박지현 · 총괄 매니저
+            - generic [ref=f22e469]: 박
+      - generic [ref=f22e470]:
+        - generic [ref=f22e471]:
+          - generic [ref=f22e472]:
+            - generic [ref=f22e473]: ▦
+            - text: 대시보드
+          - generic [ref=f22e474]:
+            - generic [ref=f22e475]: ◔
+            - text: 기수 구성
+          - generic [ref=f22e476]:
+            - generic [ref=f22e477]: ▧
+            - text: 교안
+          - generic [ref=f22e478]:
+            - generic [ref=f22e479]: ▤
+            - text: 프로젝트
+          - generic [ref=f22e480]:
+            - generic [ref=f22e481]: △
+            - text: 분석 · 진단
+          - generic [ref=f22e482]:
+            - generic [ref=f22e483]: ◎
+            - text: 교육생
+          - generic [ref=f22e484]:
+            - generic [ref=f22e485]: ✎
+            - text: 개입
+          - generic [ref=f22e486]:
+            - generic [ref=f22e487]: ▥
+            - text: 리포트
+          - generic [ref=f22e488]:
+            - generic [ref=f22e489]: ⚖
+            - text: 이의 · 공개
+        - generic [ref=f22e490]:
+          - generic [ref=f22e491]:
+            - generic [ref=f22e492]:
+              - generic [ref=f22e493] [cursor=pointer]: ← 교안 목록
+              - generic [ref=f22e494]:
+                - text: Kubernetes와 CICD
+                - generic [ref=f22e495]: v2
+              - generic [ref=f22e496]: "기술영역 연결: 자동 연결 2 · 확인 권장 1 · 미커버 1 · 승인 없이 리포트에 위치 안내 제공 중"
+            - generic [ref=f22e497] [cursor=pointer]: 다른 교안 전환 ▾
+          - generic [ref=f22e498]:
+            - generic [ref=f22e499] [cursor=pointer]: 교안 구성
+            - generic [ref=f22e500] [cursor=pointer]: 교안 연결
+          - generic [ref=f22e501]: ✓ 자동 연결이 기본입니다. 교안↔프로젝트 연결만 하면 AI가 기술영역↔섹션을 자동 매핑해 리포트 위치 안내를 바로 제공 — 승인 노동 없음. 저신뢰 매핑만 "확인 권장"으로 소수 표시, 매니저는 그것만 흘긋 보면 됨. 언제든 수정·연결 해제 가능. 위치 안내는 넛지라 자동 기본 — 자동확정 금지(GOV-02)는 측정(채점·위험 판정)에만 적용, 넛지엔 오버라이드로 거버넌스.
+          - generic [ref=f22e502]:
+            - generic [ref=f22e503]:
+              - generic [ref=f22e504] [cursor=pointer]:
+                - generic [ref=f22e505]: 컨테이너 오케스트레이션
+                - generic [ref=f22e506]: ✓ 자동 연결됨
+              - generic [ref=f22e507] [cursor=pointer]:
+                - generic [ref=f22e508]: 서비스 노출 · 네트워킹
+                - generic [ref=f22e509]: ✓ 자동 연결됨
+              - generic [ref=f22e510] [cursor=pointer]:
+                - generic [ref=f22e511]: CICD 파이프라인
+                - generic [ref=f22e512]: ⚠ 확인 권장
+              - generic [ref=f22e513] [cursor=pointer]:
+                - generic [ref=f22e514]: 관측성 · 모니터링
+                - generic [ref=f22e515]: 미커버 · 이 교안 밖
+            - generic [ref=f22e516]:
+              - generic [ref=f22e517]: CICD 파이프라인 → 자동 매핑된 교안 섹션 (신뢰도 낮아 확인 권장)
+              - generic [ref=f22e518]:
+                - generic [ref=f22e519]:
+                  - text: CICD Pipeline
+                  - generic [ref=f22e520]: p.54–70
+                - generic [ref=f22e521]: “CI는 코드 변경을 자주 통합·자동 빌드/테스트하고, CD는 검증된 산출물을 자동 배포한다. DevOps는 개발·운영의 협업으로…”
+                - generic [ref=f22e522]:
+                  - generic [ref=f22e523]:
+                    - generic [ref=f22e524]: 내용 일치
+                    - generic [ref=f22e526]: "64"
+                    - generic [ref=f22e527]: AI 자동
+                  - generic [ref=f22e528]:
+                    - generic [ref=f22e529]: 출처 신뢰도
+                    - generic [ref=f22e531]: "82"
+                - generic [ref=f22e532]: ⚠ 저신뢰 자동 매핑 — 위치 안내 잠정 보류 · 매니저 확인 시 활성
+                - generic [ref=f22e533]:
+                  - button "이대로 연결 확정총괄" [ref=f22e534] [cursor=pointer]
+                  - button "다른 섹션으로" [ref=f22e535] [cursor=pointer]
+                  - button "연결 안 함" [ref=f22e536] [cursor=pointer]
+              - generic [ref=f22e537]: 참고 · 자동 연결된 나머지 (무액션 · 리포트 제공 중)
+              - generic [ref=f22e538]:
+                - generic [ref=f22e539]:
+                  - text: 서비스 노출·네트워킹 → 컨테이너 통신 (Service·Ingress)
+                  - generic [ref=f22e540]: p.35–46
+                - generic [ref=f22e541]: ✓ 자동 연결됨 · 리포트에 위치 안내 제공 중 (내용 일치 89 · 출처 92) — 수정하려면 클릭
+          - generic [ref=f22e542]:
+            - heading "축 → 교안 위치 규칙 고정 · 승인 대상 아님" [level=4] [ref=f22e543]:
+              - text: 축 → 교안 위치 규칙
+              - generic [ref=f22e544]: 고정 · 승인 대상 아님
+            - generic [ref=f22e545]:
+              - generic [ref=f22e546]: 반례대응 → 섹션의 주의 · 반례 부분
+              - generic [ref=f22e547]: 코드이해 → 개념 설명 부분
+              - generic [ref=f22e548]: 대안비교 → 비교 · 트레이드오프 부분
+              - generic [ref=f22e549]: 자기수정 → 복구 · 수정 부분
+              - generic [ref=f22e550]: 의사소통 → 교안 위치 안내 대상 아님(코드 설명 능력)
+            - generic [ref=f22e551]: "🔎 학생별 정확 위치는 리포트 시점 검색으로. 예: \"서비스 노출에서 대안비교 취약(ClusterIP vs LoadBalancer vs Ingress 선택 근거 부족)\" → 연결된 [서비스 노출·네트워킹 → 컨테이너 통신 섹션] 범위 안에서 그 학생 세션 근거와 가장 가까운 비교·트레이드오프 위치를 좁혀 안내. 매니저는 무한한 학생 케이스를 일일이 매핑하지 않고, 고신뢰는 자동 연결·저신뢰만 확인하면 된다."
+          - generic [ref=f22e553]:
+            - generic [ref=f22e554]: 이 화면 · 상태 · case (CUR-02 · 교안 연결 8건)
+            - generic [ref=f22e556]:
+              - generic [ref=f22e557]: 02-1
+              - generic [ref=f22e558]: 연결 불가
+              - generic [ref=f22e559]: 교안 구성(섹션) 부재 — 자동 매핑 불가·분석 먼저
+            - generic [ref=f22e560]:
+              - generic [ref=f22e561]: 02-2
+              - generic [ref=f22e562]: 확인 권장
+              - generic [ref=f22e563]: 자동 매핑 신뢰도 낮음 — 위치 안내 잠정 보류·"확인 권장" 표시(매니저 확인 시 활성)
+            - generic [ref=f22e564]:
+              - generic [ref=f22e565]: 02-3
+              - generic [ref=f22e566]: 고신뢰 자동
+              - generic [ref=f22e567]: 내용 일치·출처 신뢰도 높음 — 자동 연결·리포트 즉시 제공(무액션, 오버라이드 가능)
+            - generic [ref=f22e568]:
+              - generic [ref=f22e569]: 02-4
+              - generic [ref=f22e570]: 검토 필요
+              - generic [ref=f22e571]: 내용 일치 계산 실패 — 자동 연결 보류·확인 권장
+            - generic [ref=f22e572]:
+              - generic [ref=f22e573]: 02-5
+              - generic [ref=f22e574]: 미커버
+              - generic [ref=f22e575]: 기술영역에 맞는 섹션 없음 — 미커버 표기·위치 안내 없음(수동 지정 선택 가능)
+            - generic [ref=f22e576]:
+              - generic [ref=f22e577]: 02-6
+              - generic [ref=f22e578]: 오버라이드
+              - generic [ref=f22e579]: 매니저 수정·연결 해제 — 언제든 자동 매핑 덮어쓰기·이력 저장(거버넌스=게이트 아닌 오버라이드)
+            - generic [ref=f22e580]:
+              - generic [ref=f22e581]: 02-7
+              - generic [ref=f22e582]: 저장 차단
+              - generic [ref=f22e583]: 존재하지 않는 섹션 수동 지정 — 저장 차단
+            - generic [ref=f22e584]:
+              - generic [ref=f22e585]: 02-8
+              - generic [ref=f22e586]: 가정값 유지
+              - generic [ref=f22e587]: 정확도 기준 실물 검증 전 — [가정값]으로 자동 매핑·골든셋 후 임계값 보정

@@ -1,0 +1,214 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]: shared
+        - button "로그인 shared/login.html" [ref=e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=e13]: shared/login.html
+      - generic [ref=e14]:
+        - generic [ref=e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=e18]: ▸
+      - generic [ref=e19]:
+        - generic [ref=e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=e23]: 총괄
+          - generic [ref=e24]: ▸
+      - generic [ref=e25]:
+        - generic [ref=e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=e31]: manager/dashboard.html
+        - button "프로젝트 ▸" [ref=e33] [cursor=pointer]:
+          - text: 프로젝트
+          - generic [ref=e34]: ▸
+        - button "위험 · 분석 manager/risk-analysis.html" [ref=e35] [cursor=pointer]:
+          - text: 위험 · 분석
+          - generic [ref=e36]: manager/risk-analysis.html
+        - button "코호트 히트맵 manager/heatmap.html" [ref=e37] [cursor=pointer]:
+          - text: 코호트 히트맵
+          - generic [ref=e38]: manager/heatmap.html
+        - button "교육생 리스트 manager/trainee-list.html" [ref=e39] [cursor=pointer]:
+          - text: 교육생 리스트
+          - generic [ref=e40]: manager/trainee-list.html
+        - button "개별 교육생 상세 manager/trainee-detail.html" [ref=e41] [cursor=pointer]:
+          - text: 개별 교육생 상세
+          - generic [ref=e42]: manager/trainee-detail.html
+        - button "개입 관리 manager/intervention.html" [ref=e43] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=e44]: manager/intervention.html
+        - generic [ref=e45]:
+          - button "리포트 ▸" [ref=e46] [cursor=pointer]:
+            - text: 리포트
+            - generic [ref=e47]: ▸
+          - generic [ref=e48]:
+            - button "종합 리포트 RPT-01 · 기수" [ref=e49] [cursor=pointer]
+            - button "체크포인트 RPT-04 · 회차별" [ref=e50] [cursor=pointer]
+            - button "개인 최종 RPT-02" [ref=e51] [cursor=pointer]
+            - button "상태 ↔ case 매핑 총합" [ref=e52] [cursor=pointer]
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=e53] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=e54]: manager/appeal-disclosure.html
+      - generic [ref=e55]:
+        - generic [ref=e56]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=e58] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=e59]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=e60] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=e61]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=e62] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=e63]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=e64] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=e65]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=e66] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=e67]: trainee/result.html
+  - main [ref=e68]:
+    - generic [ref=e69]:
+      - generic [ref=e70]: 리포트 · 개인 최종
+      - generic [ref=e71]: manager/report.html#final
+      - link "새 탭에서 열기 ↗" [ref=e72] [cursor=pointer]:
+        - /url: manager/report.html#final
+    - iframe [ref=e73]:
+      - generic [ref=f1e3]:
+        - generic [ref=f1e4]: iz-get.com/cohorts/7/reports/final
+        - generic [ref=f1e10]:
+          - generic [ref=f1e11]:
+            - generic [ref=f1e12]:
+              - generic [ref=f1e13]:
+                - generic [ref=f1e14]: ◆
+                - text: IZ-Get
+              - generic [ref=f1e15]:
+                - generic [ref=f1e16]: 기수
+                - text: 7기 ▾
+            - generic [ref=f1e17]:
+              - text: 박지현 · 매니저
+              - generic [ref=f1e18]: 박
+          - generic [ref=f1e19]:
+            - generic [ref=f1e20]:
+              - generic [ref=f1e21]:
+                - generic [ref=f1e22]: ▦
+                - text: 대시보드
+              - generic [ref=f1e23]:
+                - generic [ref=f1e24]: ⚙
+                - text: 운영 관리
+                - generic [ref=f1e25]: 총괄
+              - generic [ref=f1e26]:
+                - generic [ref=f1e27]: ▤
+                - text: 프로젝트
+              - generic [ref=f1e28]:
+                - generic [ref=f1e29]: ◎
+                - text: 교육생
+              - generic [ref=f1e30]:
+                - generic [ref=f1e31]: △
+                - text: 위험 · 분석
+              - generic [ref=f1e32]:
+                - generic [ref=f1e33]: ✎
+                - text: 개입
+              - generic [ref=f1e34]:
+                - generic [ref=f1e35]: ▥
+                - text: 리포트
+              - generic [ref=f1e36]:
+                - generic [ref=f1e37]: ▧
+                - text: 교안
+            - generic [ref=f1e38]:
+              - generic [ref=f1e40]:
+                - generic [ref=f1e41]: 리포트 › 7기 › 개인 최종
+                - heading "개인 최종 리포트" [level=2] [ref=f1e42]
+              - text: → → ◔ ◔ ◔ ◔ ◔ ◔ ◔ ◔ ◔
+              - generic [ref=f1e44]:
+                - generic [ref=f1e45]:
+                  - generic [ref=f1e46] [cursor=pointer]:
+                    - generic [ref=f1e47]: 김서연
+                    - generic [ref=f1e48]: 완료
+                  - generic [ref=f1e49] [cursor=pointer]:
+                    - generic [ref=f1e50]: 이도윤
+                    - generic [ref=f1e51]: 완료
+                  - generic [ref=f1e52] [cursor=pointer]:
+                    - generic [ref=f1e53]: 박준호
+                    - generic [ref=f1e54]: 완료
+                  - generic [ref=f1e55] [cursor=pointer]:
+                    - generic [ref=f1e56]: 최유진
+                    - generic [ref=f1e57]: 최종 미완료
+                  - generic [ref=f1e58] [cursor=pointer]:
+                    - generic [ref=f1e59]: 정하늘
+                    - generic [ref=f1e60]: 최종 미완료
+                - generic [ref=f1e61]:
+                  - generic [ref=f1e62]:
+                    - generic [ref=f1e63]:
+                      - generic [ref=f1e64]: 김서연 · 최종 리포트
+                      - generic [ref=f1e65]: A반 · 백엔드 4기 · 체크포인트 3(최종회차)까지 완료 · 생성 2026-07-12
+                    - generic [ref=f1e66]:
+                      - generic [ref=f1e67]: A
+                      - generic [ref=f1e68]: 최종회차 등급(B3)
+                  - generic [ref=f1e69]:
+                    - generic [ref=f1e70]:
+                      - generic [ref=f1e71] [cursor=pointer]: 매니저용
+                      - generic [ref=f1e72] [cursor=pointer]: 교육생 공개용
+                    - generic [ref=f1e73]: 지금은 매니저용 — 루브릭·채점 근거 포함. 공개용은 GOV-03 허용 범위만.
+                  - generic [ref=f1e74]:
+                    - generic [ref=f1e75]: 총평 · 성장 서사
+                    - paragraph [ref=f1e76]: 코드이해·의사소통을 처음부터 안정적으로 갖춘 교육생. 초반 약점이던 반례대응이 체크포인트 2를 기점으로 뚜렷이 회복(2.0→3.6)하며 전체 등급을 끌어올림. 남은 과제는 대안비교 — 정답에 빨리 도달하지만 다른 접근을 비교·검토하는 습관은 아직 얕음. 전반적으로 약점을 스스로 메우는 회복 탄력성이 강점.
+                  - table [ref=f1e77]:
+                    - rowgroup [ref=f1e78]:
+                      - row [ref=f1e79]:
+                        - columnheader "5축" [ref=f1e80]
+                        - columnheader "체크포인트 추이" [ref=f1e81]
+                        - columnheader "최종" [ref=f1e82]
+                        - columnheader "비고" [ref=f1e83]
+                      - row [ref=f1e84]:
+                        - cell "코드이해" [ref=f1e85]
+                        - cell [ref=f1e86]
+                        - cell "4.2" [ref=f1e89]
+                        - cell "강점" [ref=f1e90]
+                      - row [ref=f1e91]:
+                        - cell "자기수정" [ref=f1e92]
+                        - cell [ref=f1e93]
+                        - cell "3.8" [ref=f1e96]
+                        - cell "상승" [ref=f1e97]
+                      - row [ref=f1e98]:
+                        - cell "반례대응" [ref=f1e99]
+                        - cell [ref=f1e100]
+                        - cell "3.6" [ref=f1e103]
+                        - cell "주요 전환 · 체크포인트 2 개입 후 ↑" [ref=f1e104]
+                      - row [ref=f1e105]:
+                        - cell "대안비교" [ref=f1e106]
+                        - cell [ref=f1e107]
+                        - cell "3.1" [ref=f1e110]
+                        - cell "보완 영역" [ref=f1e111]
+                      - row [ref=f1e112]:
+                        - cell "의사소통" [ref=f1e113]
+                        - cell [ref=f1e114]
+                        - cell "4.0" [ref=f1e117]
+                        - cell "강점" [ref=f1e118]
+                  - generic [ref=f1e119]:
+                    - generic [ref=f1e120]:
+                      - generic [ref=f1e121]: 강점 영역
+                      - paragraph [ref=f1e122]: 코드이해·의사소통이 전 체크포인트 안정적 상위. 반례대응은 체크포인트 2에서 뚜렷한 전환.
+                    - generic [ref=f1e123]:
+                      - generic [ref=f1e124]: 보완 영역
+                      - paragraph [ref=f1e125]: 대안비교가 정체 — 다양한 접근 비교 연습 권장.
+                  - generic [ref=f1e126]:
+                    - generic [ref=f1e127]: 받은 지원 · 개입 이력
+                    - generic [ref=f1e128]:
+                      - generic [ref=f1e129]: 멘토링
+                      - text: 체크포인트 2 · 반례대응 집중 코칭 (INTV#312)
+                      - generic [ref=f1e130]: 회복 2.0→3.6
+                    - generic [ref=f1e131]:
+                      - generic [ref=f1e132]: 기록 없음
+                      - text: 그 외 체크포인트는 별도 개입 없이 자체 유지
+                  - generic [ref=f1e133]: "🔒 매니저용에만 표시: 루브릭 항목별 채점 근거·프롬프트. 교육생 공개용으로 전환하면 이 블록과 내부 근거는 자동 제거(A5·case6). GOV-03 미지정 시 교육생용 기본 비공개(case4)."

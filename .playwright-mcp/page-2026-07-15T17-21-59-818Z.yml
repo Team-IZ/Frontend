@@ -1,0 +1,251 @@
+- generic [ref=f3e2]:
+  - complementary [ref=f3e3]:
+    - generic [ref=f3e4]:
+      - generic [ref=f3e5]:
+        - generic [ref=f3e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=f3e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=f3e8]:
+      - generic [ref=f3e9]:
+        - generic [ref=f3e10]: shared
+        - button "로그인 shared/login.html" [ref=f3e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=f3e13]: shared/login.html
+      - generic [ref=f3e14]:
+        - generic [ref=f3e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=f3e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=f3e18]: ▸
+      - generic [ref=f3e19]:
+        - generic [ref=f3e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=f3e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=f3e23]: 총괄
+          - generic [ref=f3e24]: ▸
+      - generic [ref=f3e25]:
+        - generic [ref=f3e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=f3e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=f3e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=f3e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=f3e31]: manager/dashboard.html
+        - generic [ref=f3e32]:
+          - button "프로젝트 ▸" [ref=f3e33] [cursor=pointer]:
+            - text: 프로젝트
+            - generic [ref=f3e34]: ▸
+          - generic [ref=f3e35]:
+            - button "프로젝트 목록 컬렉션" [ref=f3e36] [cursor=pointer]
+            - button "프로젝트 생성 모달 · 요구사항" [ref=f3e37] [cursor=pointer]
+            - generic [ref=f3e38]: "프로젝트 상세 · 예: API 서버"
+            - button "개요 요구사항 O/X" [ref=f3e39] [cursor=pointer]
+            - button "팀 · 레포 단위 확정" [ref=f3e40] [cursor=pointer]
+            - button "측정 계획 +체크포인트" [ref=f3e41] [cursor=pointer]
+            - button "결과 → 리포트" [ref=f3e42] [cursor=pointer]
+            - button "개인형 · 학생별 레포 변형" [ref=f3e43] [cursor=pointer]
+            - button "상태 ↔ case 매핑 총합" [ref=f3e44] [cursor=pointer]
+        - button "위험 · 분석 manager/risk-analysis.html" [ref=f3e45] [cursor=pointer]:
+          - text: 위험 · 분석
+          - generic [ref=f3e46]: manager/risk-analysis.html
+        - button "코호트 히트맵 manager/heatmap.html" [ref=f3e47] [cursor=pointer]:
+          - text: 코호트 히트맵
+          - generic [ref=f3e48]: manager/heatmap.html
+        - button "교육생 리스트 manager/trainee-list.html" [ref=f3e49] [cursor=pointer]:
+          - text: 교육생 리스트
+          - generic [ref=f3e50]: manager/trainee-list.html
+        - button "개별 교육생 상세 manager/trainee-detail.html" [ref=f3e51] [cursor=pointer]:
+          - text: 개별 교육생 상세
+          - generic [ref=f3e52]: manager/trainee-detail.html
+        - button "개입 관리 manager/intervention.html" [ref=f3e53] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=f3e54]: manager/intervention.html
+        - button "리포트 manager/report.html" [ref=f3e55] [cursor=pointer]:
+          - text: 리포트
+          - generic [ref=f3e56]: manager/report.html
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=f3e57] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=f3e58]: manager/appeal-disclosure.html
+      - generic [ref=f3e59]:
+        - generic [ref=f3e60]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=f3e62] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=f3e63]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=f3e64] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=f3e65]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=f3e66] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=f3e67]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=f3e68] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=f3e69]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=f3e70] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=f3e71]: trainee/result.html
+  - main [ref=f3e72]:
+    - generic [ref=f3e73]:
+      - generic [ref=f3e74]: 프로젝트 상세 · 팀·레포
+      - generic [ref=f3e75]: manager/project-workspace.html#teams
+      - link "새 탭에서 열기 ↗" [ref=f3e76] [cursor=pointer]:
+        - /url: manager/project-workspace.html#teams
+    - iframe [ref=f3e77]:
+      - generic [ref=f4e2]:
+        - generic [ref=f4e3]:
+          - generic [ref=f4e4]: iz-get.com/cohorts/7/projects/api/teams
+          - generic [ref=f4e10]:
+            - generic [ref=f4e11]:
+              - generic [ref=f4e12]:
+                - generic [ref=f4e13]:
+                  - generic [ref=f4e14]: ◆
+                  - text: IZ-Get
+                - generic [ref=f4e15] [cursor=pointer]:
+                  - generic [ref=f4e16]: 기관
+                  - text: 그린 부트캠프
+                  - generic [ref=f4e17]: · 현재
+                  - text: 7기 ▾
+              - generic [ref=f4e18]:
+                - text: 박지현 · 총괄 매니저
+                - generic [ref=f4e19]: 박
+            - generic [ref=f4e20]:
+              - generic [ref=f4e21]:
+                - generic [ref=f4e22]:
+                  - generic [ref=f4e23]: ▦
+                  - text: 대시보드
+                - generic [ref=f4e24]:
+                  - generic [ref=f4e25]: ⚙
+                  - text: 운영 관리
+                  - generic [ref=f4e26]: 총괄
+                - generic [ref=f4e27]:
+                  - generic [ref=f4e28]: ▤
+                  - text: 프로젝트
+                - generic [ref=f4e29]:
+                  - generic [ref=f4e30]: ◎
+                  - text: 교육생
+                - generic [ref=f4e31]:
+                  - generic [ref=f4e32]: △
+                  - text: 위험 · 분석
+                - generic [ref=f4e33]:
+                  - generic [ref=f4e34]: ✎
+                  - text: 개입
+                - generic [ref=f4e35]:
+                  - generic [ref=f4e36]: ▥
+                  - text: 리포트
+                - generic [ref=f4e37]:
+                  - generic [ref=f4e38]: ▧
+                  - text: 교안
+              - generic [ref=f4e39]:
+                - generic [ref=f4e40]:
+                  - generic [ref=f4e41]:
+                    - generic [ref=f4e42]: ← 프로젝트 목록
+                    - generic [ref=f4e43]:
+                      - generic [ref=f4e44]: API 서버
+                      - generic [ref=f4e45]: 팀
+                      - generic [ref=f4e47] [cursor=pointer]:
+                        - generic [ref=f4e48]: 프로젝트 전환
+                        - text: ▾
+                  - generic [ref=f4e49]: A반 · 03.20 ~ 04.10 · 추출 기본 본인커밋
+                - generic [ref=f4e50]:
+                  - generic [ref=f4e51] [cursor=pointer]: 목록
+                  - generic [ref=f4e52] [cursor=pointer]: 개요
+                  - generic [ref=f4e53] [cursor=pointer]: 팀 · 레포
+                  - generic [ref=f4e54] [cursor=pointer]: 측정 계획
+                  - generic [ref=f4e55] [cursor=pointer]: 결과
+                  - generic [ref=f4e56] [cursor=pointer]: 개인형
+                - generic [ref=f4e462]:
+                  - generic [ref=f4e463]:
+                    - generic [ref=f4e464]:
+                      - generic [ref=f4e465]: 제출 단위(팀)
+                      - generic [ref=f4e466]: 4 팀
+                      - generic [ref=f4e467]: 여기서 확정 = 응시 분모 N
+                    - generic [ref=f4e468]:
+                      - generic [ref=f4e469]: 레포 커버리지
+                      - generic [ref=f4e470]: 4/4팀
+                      - generic [ref=f4e471]: 연결됨 · 측정 실행 가능
+                    - generic [ref=f4e472]:
+                      - generic [ref=f4e473]: 미배정 교육생
+                      - generic [ref=f4e474]: 2 명
+                      - generic [ref=f4e475]: 풀에서 팀 배정 필요
+                  - generic [ref=f4e476]:
+                    - heading "팀 편성 · 이 프로젝트 전용 · 다음 프로젝트는 새로" [level=3] [ref=f4e477]
+                    - generic [ref=f4e478]:
+                      - button "⚄ 자동 배분" [ref=f4e479] [cursor=pointer]
+                      - button "+ 팀 추가" [ref=f4e480] [cursor=pointer]
+                  - generic [ref=f4e481]:
+                    - generic [ref=f4e482]:
+                      - heading "팀 A 3명" [level=4] [ref=f4e483]:
+                        - text: 팀 A
+                        - generic [ref=f4e484]: 3명
+                      - generic [ref=f4e485]:
+                        - generic [ref=f4e486]: repo
+                        - text: …/api-a
+                      - generic [ref=f4e487]: 강민준
+                      - generic [ref=f4e489]: 김서연
+                      - generic [ref=f4e491]: 한도현 · 커밋 미검증
+                    - generic [ref=f4e493]:
+                      - heading "팀 B 2명" [level=4] [ref=f4e494]:
+                        - text: 팀 B
+                        - generic [ref=f4e495]: 2명
+                      - generic [ref=f4e496]:
+                        - generic [ref=f4e497]: repo
+                        - text: …/api-b
+                      - generic [ref=f4e498]: 이서연
+                      - generic [ref=f4e500]: 박준호
+                    - generic [ref=f4e502]:
+                      - heading "팀 C 3명" [level=4] [ref=f4e503]:
+                        - text: 팀 C
+                        - generic [ref=f4e504]: 3명
+                      - generic [ref=f4e505]:
+                        - generic [ref=f4e506]: repo
+                        - text: …/api-c
+                      - generic [ref=f4e507]: 정우성
+                      - generic [ref=f4e509]: 손예진
+                      - generic [ref=f4e511]: 주지훈
+                    - generic [ref=f4e513]:
+                      - heading "미배정 2명 · 2 선택" [level=4] [ref=f4e514]:
+                        - text: 미배정
+                        - generic [ref=f4e515]: 2명 · 2 선택
+                      - generic [ref=f4e516]:
+                        - generic [ref=f4e517] [cursor=pointer]: ✓
+                        - text: 정하늘
+                      - generic [ref=f4e518]:
+                        - generic [ref=f4e519] [cursor=pointer]: ✓
+                        - text: 오지훈
+                      - button "선택 2명 → 팀 배정 ▾" [ref=f4e521] [cursor=pointer]
+                    - generic [ref=f4e522] [cursor=pointer]: + 팀 추가
+                  - generic [ref=f4e523]: · 팀 편성 = 명단(운영관리)에서 골라담기(D75와 동형). 자동 배분(균등/랜덤) 또는 풀 다중선택 → 팀 배정. 각 팀이 자기 레포(팀별 다름). 여기서 단위 4팀이 확정돼야 [측정 계획]의 응시 분모가 생김. 재배정은 이력 보존(from/to·D16). 커밋 미검증은 귀속 경고(AUTH-07·A8). 개인 프로젝트는 [개인형] 탭 = 학생별 레포.
+        - generic [ref=f4e525]:
+          - generic [ref=f4e526]:
+            - generic [ref=f4e527]: 현재 탭 · 팀·레포 — 상태 · case (팀 편성 ORG-02 + 레포 연결)
+            - generic [ref=f4e528] [cursor=pointer]: 총합 →
+          - generic [ref=f4e529]:
+            - generic [ref=f4e530]: T-1
+            - generic [ref=f4e531]: danger
+            - generic [ref=f4e532]: 존재않는 기수/프로젝트 — 팀 생성 차단
+          - generic [ref=f4e533]:
+            - generic [ref=f4e534]: T-2
+            - generic [ref=f4e535]: danger
+            - generic [ref=f4e536]: 중복 팀명 — 필드 오류
+          - generic [ref=f4e537]:
+            - generic [ref=f4e538]: T-3
+            - generic [ref=f4e539]: danger
+            - generic [ref=f4e540]: 미소속 교육생 배정 — 대상 제외 안내
+          - generic [ref=f4e541]:
+            - generic [ref=f4e542]: T-4
+            - generic [ref=f4e543]: danger
+            - generic [ref=f4e544]: 동일 시점 중복 소속 — 신규 배정 차단·기존 확인
+          - generic [ref=f4e545]:
+            - generic [ref=f4e546]: T-6
+            - generic [ref=f4e547]: danger
+            - generic [ref=f4e548]: to_at > from_at 역전 — 이력 무결성 오류·차단
+          - generic [ref=f4e549]:
+            - generic [ref=f4e550]: T-7
+            - generic [ref=f4e551]: warning
+            - generic [ref=f4e552]: 일부 배정 저장 실패 — 실패만 롤백·성공/실패 분리
+          - generic [ref=f4e553]:
+            - generic [ref=f4e554]: R-2
+            - generic [ref=f4e555]: warning
+            - generic [ref=f4e556]: 비공개 레포 접근 실패 — 임시 저장·접근 권한 안내
+          - generic [ref=f4e557]:
+            - generic [ref=f4e558]: R-4
+            - generic [ref=f4e559]: warning
+            - generic [ref=f4e560]: 미검증 커밋 이메일 — 매핑 유지·귀속 경고 배지(AUTH-07)

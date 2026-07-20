@@ -1,0 +1,206 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]: ◆
+        - text: IZ-Get 화면정의
+      - generic [ref=e7]: "권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.총괄 = 매니저 전부 + 운영 관리 하나 더."
+    - navigation [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]: shared
+        - button "로그인 shared/login.html" [ref=e12] [cursor=pointer]:
+          - text: 로그인
+          - generic [ref=e13]: shared/login.html
+      - generic [ref=e14]:
+        - generic [ref=e15]: superadmin
+        - button "플랫폼 콘솔 ▸" [ref=e17] [cursor=pointer]:
+          - text: 플랫폼 콘솔
+          - generic [ref=e18]: ▸
+        - generic [ref=e71]:
+          - button "기관 목록" [ref=e72] [cursor=pointer]
+          - button "기관 생성 모달" [ref=e73] [cursor=pointer]
+          - button "기관 상세 · 개요" [ref=e74] [cursor=pointer]
+          - button "매니저 관리" [ref=e75] [cursor=pointer]
+          - button "총괄 매니저 초대 모달" [ref=e76] [cursor=pointer]
+          - button "사용량 · AI 비용" [ref=e77] [cursor=pointer]
+          - button "설정" [ref=e78] [cursor=pointer]
+          - button "상태 ↔ case 매핑" [ref=e79] [cursor=pointer]
+      - generic [ref=e19]:
+        - generic [ref=e20]: 총괄 매니저 · 아래 매니저 전부 + 관리 하나 더
+        - button "운영 관리 총괄 ▸" [ref=e22] [cursor=pointer]:
+          - text: 운영 관리
+          - generic [ref=e23]: 총괄
+          - generic [ref=e24]: ▸
+      - generic [ref=e25]:
+        - generic [ref=e26]: 매니저(담당) · 총괄도 동일하게 봄
+        - button "매니저 회원가입 manager/signup.html" [ref=e28] [cursor=pointer]:
+          - text: 매니저 회원가입
+          - generic [ref=e29]: manager/signup.html
+        - button "대시보드 manager/dashboard.html" [ref=e30] [cursor=pointer]:
+          - text: 대시보드
+          - generic [ref=e31]: manager/dashboard.html
+        - button "프로젝트 워크스페이스 허브 · 컨텍스트+탭 manager/project-workspace.html" [ref=e32] [cursor=pointer]:
+          - text: 프로젝트 워크스페이스 허브 · 컨텍스트+탭
+          - generic [ref=e33]: manager/project-workspace.html
+        - button "↳ 개요·팀·레포 SC-M13 manager/projects-teams.html" [ref=e34] [cursor=pointer]:
+          - text: ↳ 개요·팀·레포 SC-M13
+          - generic [ref=e35]: manager/projects-teams.html
+        - button "↳ 측정 계획 SC-M03 manager/measurement-plan.html" [ref=e36] [cursor=pointer]:
+          - text: ↳ 측정 계획 SC-M03
+          - generic [ref=e37]: manager/measurement-plan.html
+        - button "위험 · 분석 manager/risk-analysis.html" [ref=e38] [cursor=pointer]:
+          - text: 위험 · 분석
+          - generic [ref=e39]: manager/risk-analysis.html
+        - button "코호트 히트맵 manager/heatmap.html" [ref=e40] [cursor=pointer]:
+          - text: 코호트 히트맵
+          - generic [ref=e41]: manager/heatmap.html
+        - button "교육생 리스트 manager/trainee-list.html" [ref=e42] [cursor=pointer]:
+          - text: 교육생 리스트
+          - generic [ref=e43]: manager/trainee-list.html
+        - button "개별 교육생 상세 manager/trainee-detail.html" [ref=e44] [cursor=pointer]:
+          - text: 개별 교육생 상세
+          - generic [ref=e45]: manager/trainee-detail.html
+        - button "개입 관리 manager/intervention.html" [ref=e46] [cursor=pointer]:
+          - text: 개입 관리
+          - generic [ref=e47]: manager/intervention.html
+        - button "리포트 manager/report.html" [ref=e48] [cursor=pointer]:
+          - text: 리포트
+          - generic [ref=e49]: manager/report.html
+        - button "이의 검토 · 열람 범위 manager/appeal-disclosure.html" [ref=e50] [cursor=pointer]:
+          - text: 이의 검토 · 열람 범위
+          - generic [ref=e51]: manager/appeal-disclosure.html
+      - generic [ref=e52]:
+        - generic [ref=e53]: trainee
+        - button "교육생 계정 활성화 trainee/activation.html" [ref=e55] [cursor=pointer]:
+          - text: 교육생 계정 활성화
+          - generic [ref=e56]: trainee/activation.html
+        - button "홈(회차·응시) trainee/home.html" [ref=e57] [cursor=pointer]:
+          - text: 홈(회차·응시)
+          - generic [ref=e58]: trainee/home.html
+        - button "코드 제출 trainee/submission.html" [ref=e59] [cursor=pointer]:
+          - text: 코드 제출
+          - generic [ref=e60]: trainee/submission.html
+        - button "검증 세션 trainee/session.html" [ref=e61] [cursor=pointer]:
+          - text: 검증 세션
+          - generic [ref=e62]: trainee/session.html
+        - button "결과 리포트 trainee/result.html" [ref=e63] [cursor=pointer]:
+          - text: 결과 리포트
+          - generic [ref=e64]: trainee/result.html
+  - main [ref=e65]:
+    - generic [ref=e66]:
+      - generic [ref=e67]: 플랫폼 콘솔 · 기관 상세 개요
+      - generic [ref=e68]: superadmin/console.html#p3
+      - link "새 탭에서 열기 ↗" [ref=e69] [cursor=pointer]:
+        - /url: superadmin/console.html#p3
+    - iframe [ref=e70]:
+      - generic [ref=f1e2]:
+        - generic [ref=f1e3]:
+          - generic [ref=f1e4]: SC-S01 · P0 · 슈퍼어드민 · 웹 콘솔
+          - heading "슈퍼어드민 플랫폼 콘솔" [level=1] [ref=f1e5]
+          - paragraph [ref=f1e6]: 운영사(IZ-Get) 전용. 기관 중심 마스터-디테일 — 기관 목록(뷰1) 생성·조회, 기관 상세(뷰2) 탭(개요·총괄 매니저·사용량·AI 비용·설정). 슈퍼어드민은 기관 프로비저닝 + 첫 총괄 매니저 초대까지만 — 기수 개설·담당 매니저 초대·기수 배정은 총괄이 매니저 앱에서(테넌트 경계·D63). 명세(SYS-01) + B2B 설계(D12·D15·D63). 고객용 SC-A02와 별도 셸.
+        - generic [ref=f1e7]:
+          - generic [ref=f1e8]: 뷰 2 · 기관 상세 — ① 개요 탭
+          - generic [ref=f1e9]:
+            - generic [ref=f1e10]: iz-get.com/admin/orgs/greencompany
+            - generic [ref=f1e16]:
+              - generic [ref=f1e17]:
+                - generic [ref=f1e18]:
+                  - generic [ref=f1e19]: ◆
+                  - text: IZ-Get
+                  - generic [ref=f1e20]: 플랫폼 콘솔
+                - generic [ref=f1e21]:
+                  - text: 김운영 · 슈퍼어드민
+                  - generic [ref=f1e22]: 운
+              - generic [ref=f1e23]:
+                - generic [ref=f1e24]:
+                  - generic [ref=f1e25]: 플랫폼
+                  - generic [ref=f1e26]:
+                    - generic [ref=f1e27]: ▤
+                    - text: 기관
+                  - generic [ref=f1e28]:
+                    - generic [ref=f1e29]: ◈
+                    - text: 슈퍼어드민 관리
+                  - generic [ref=f1e30]:
+                    - generic [ref=f1e31]: ⚙
+                    - text: 설정
+                - generic [ref=f1e32]:
+                  - generic [ref=f1e34]:
+                    - generic [ref=f1e35]: 기관 › 그린컴퍼니 부트캠프
+                    - heading "그린컴퍼니 부트캠프 활성" [level=2] [ref=f1e36]:
+                      - text: 그린컴퍼니 부트캠프
+                      - generic [ref=f1e37]: 활성
+                  - generic [ref=f1e38]:
+                    - generic [ref=f1e39]: 개요
+                    - generic [ref=f1e40]: 매니저 관리
+                    - generic [ref=f1e41]: 사용량 · AI 비용
+                    - generic [ref=f1e42]: 설정
+                  - generic [ref=f1e43]:
+                    - generic [ref=f1e44]:
+                      - generic [ref=f1e45]: 기수
+                      - generic [ref=f1e46]: "3"
+                      - generic [ref=f1e47]: 진행 2 · 종료 1
+                    - generic [ref=f1e48]:
+                      - generic [ref=f1e49]: 교육생
+                      - generic [ref=f1e50]: "148"
+                      - generic [ref=f1e51]: 활성 세션 6
+                    - generic [ref=f1e52]:
+                      - generic [ref=f1e53]: 이번 달 AI 비용
+                      - generic [ref=f1e54]: $412
+                      - generic [ref=f1e55]: 예산 $600 대비 69%
+                    - generic [ref=f1e58]:
+                      - generic [ref=f1e59]: 저장량
+                      - generic [ref=f1e60]: 9.4 GB
+                      - generic [ref=f1e61]: 전월 대비 +8%
+                  - generic [ref=f1e62]:
+                    - generic [ref=f1e63]:
+                      - generic [ref=f1e64]: org_id
+                      - generic [ref=f1e65]: org_grn_4f21
+                    - generic [ref=f1e66]:
+                      - generic [ref=f1e67]: 상태
+                      - generic [ref=f1e68]: 활성
+                    - generic [ref=f1e70]:
+                      - generic [ref=f1e71]: 생성일
+                      - generic [ref=f1e72]: 2026-03-02
+                    - generic [ref=f1e73]:
+                      - generic [ref=f1e74]: 총괄 매니저
+                      - generic [ref=f1e75]: 박지현
+                    - generic [ref=f1e76]:
+                      - generic [ref=f1e77]: 데이터 보존기간
+                      - generic [ref=f1e78]: 180일
+                    - generic [ref=f1e79]:
+                      - generic [ref=f1e80]: 공개 범위 기본값
+                      - generic [ref=f1e81]: 요약 (GOV-03)
+                  - generic [ref=f1e82]: 기수 · 읽기전용 — 생성·설정은 매니저(SC-M02)
+                  - table [ref=f1e84]:
+                    - rowgroup [ref=f1e85]:
+                      - row [ref=f1e86]:
+                        - columnheader "기수" [ref=f1e87]
+                        - columnheader "상태" [ref=f1e88]
+                        - columnheader "교육생" [ref=f1e89]
+                        - columnheader "기간" [ref=f1e90]
+                        - columnheader "담당 매니저" [ref=f1e91]
+                    - rowgroup [ref=f1e92]:
+                      - row [ref=f1e93]:
+                        - cell "8기" [ref=f1e94]
+                        - cell "진행 중" [ref=f1e95]
+                        - cell "52" [ref=f1e97]
+                        - cell "2026-06 ~ 09" [ref=f1e98]
+                        - cell "박지현 · 이도윤" [ref=f1e99]
+                      - row [ref=f1e100]:
+                        - cell "7기" [ref=f1e101]
+                        - cell "진행 중" [ref=f1e102]
+                        - cell "48" [ref=f1e104]
+                        - cell "2026-05 ~ 08" [ref=f1e105]
+                        - cell "박지현" [ref=f1e106]
+                      - row [ref=f1e107]:
+                        - cell "6기" [ref=f1e108]
+                        - cell "종료" [ref=f1e109]
+                        - cell "48" [ref=f1e111]
+                        - cell "2026-02 ~ 05" [ref=f1e112]
+                        - cell "박지현" [ref=f1e113]
+                  - generic [ref=f1e114]: 기수 생성·설정은 슈퍼어드민이 하지 않는다 — 매니저가 SC-M02에서. 여기선 지원·과금 맥락의 읽기전용 가시성만.
+          - generic [ref=f1e115]:
+            - generic [ref=f1e116]: 이 화면의 상태 · case
+            - generic [ref=f1e117]:
+              - generic [ref=f1e118]: —
+              - generic [ref=f1e119]: 읽기전용 조회 화면 — 자체 예외 없음. 기수 생성·설정 예외는 매니저 앱(SC-M02), 사용량 집계 실패는 '사용량 · AI 비용' 탭 참조.

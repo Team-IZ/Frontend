@@ -1,0 +1,236 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: SC-T01 · P0 · 교육생 · 웹 · v2
+    - heading "교육생 홈 (회차 · 응시 상태)" [level=1] [ref=e5]
+    - paragraph [ref=e6]: "\"지금 뭘 해야 하나\"를 진행 중 회차 카드 + 단일 CTA로. v2 보완: ① 활성 카드 CTA가 파생상태 기계에 정직(분석중이면 세션 버튼 대신 \"분석 중\"), ② 활성 회차 1..N 스택(개인+팀 동시 진행), ③ 세션 톤 선제 완화(\"설명하는 시간 · 점수 비노출\", D100~103), ④ 마감은 임박 시에만 경고색, ⑤ 지난 회차는 최근 몇 건 + 전체는 내 리포트. 채점·루브릭·시그널 비노출(A5), 결과는 GOV-03 열람 범위."
+  - generic [ref=e7]: A · 정상 — 활성 2개(세션 대기 + 분석 중) · 미검증 배너
+  - generic [ref=e8]:
+    - generic [ref=e9]: iz-get.com/home
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - generic [ref=e19]: ◆
+            - text: IZ-Get
+          - generic [ref=e20]:
+            - generic [ref=e21]: 홈
+            - generic [ref=e22]: 내 리포트
+        - generic [ref=e23]:
+          - generic [ref=e24]:
+            - text: 김민준
+            - generic [ref=e25]: 7기 · A반
+          - generic [ref=e26]: 민
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - heading "안녕하세요, 김민준님" [level=2] [ref=e29]
+          - paragraph [ref=e30]: 검증을 이어갈 회차가 2개 있어요.
+        - generic [ref=e31]:
+          - text: ⚠️ GitHub 커밋 이메일이 아직 인증되지 않았어요. 인증해야 기여 분석이 정확해집니다.
+          - generic [ref=e32] [cursor=pointer]: 지금 인증
+        - generic [ref=e33]:
+          - text: 진행 중
+          - generic [ref=e34]: · 2
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - generic [ref=e37]:
+              - text: 2회차
+              - generic [ref=e38]: 검증 세션 차례
+            - generic [ref=e39]: 응시 마감 D-1 · 04.11 18:00
+          - generic [ref=e40]: API 서버팀 · A조
+          - generic [ref=e41]:
+            - generic [ref=e42]:
+              - generic [ref=e43]: ✓
+              - generic [ref=e44]: 코드 제출
+              - generic [ref=e45]: 완료
+            - generic [ref=e46]:
+              - generic [ref=e47]: "2"
+              - generic [ref=e48]: 검증 세션
+              - generic [ref=e49]: 지금 차례
+            - generic [ref=e50]:
+              - generic [ref=e51]: "3"
+              - generic [ref=e52]: 결과 리포트
+              - generic [ref=e53]: 세션 후
+          - generic [ref=e54]: 🔒 코드를 보며 이해한 내용을 설명하는 시간이에요. 점수는 표시되지 않아요.
+          - button "검증 세션 시작하기 →" [ref=e55] [cursor=pointer]
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - generic [ref=e58]:
+              - text: 2회차
+              - generic [ref=e59]: 분석 중
+            - generic [ref=e60]: 응시 마감 D-4 · 04.14 18:00
+          - generic [ref=e61]: 개인 과제 · 자료구조개인
+          - generic [ref=e62]:
+            - generic [ref=e63]:
+              - generic [ref=e64]: ✓
+              - generic [ref=e65]: 코드 제출
+              - generic [ref=e66]: 완료
+            - generic [ref=e67]:
+              - generic [ref=e68]: ◔
+              - generic [ref=e69]: 검증 세션
+              - generic [ref=e70]: 준비 중
+            - generic [ref=e71]:
+              - generic [ref=e72]: "3"
+              - generic [ref=e73]: 결과 리포트
+              - generic [ref=e74]: 세션 후
+          - generic [ref=e75]: 제출한 코드를 분석하고 있어요. 준비되면 바로 세션을 시작할 수 있어요.
+          - button "분석 중 · 곧 시작할 수 있어요" [ref=e76]
+        - generic [ref=e78]:
+          - text: 예정
+          - generic [ref=e79]: · 2
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - generic [ref=e82]: 3회차
+            - generic [ref=e83]: 측정 05.09 · 응시 05.09~05.10
+          - generic [ref=e84]: 예정
+        - generic [ref=e86]:
+          - generic [ref=e87]:
+            - generic [ref=e88]:
+              - text: 4회차
+              - generic [ref=e89]: 최종
+            - generic [ref=e90]: 측정 06.06 · 최종 등급은 이 회차 후
+          - generic [ref=e91]: 예정
+        - generic [ref=e93]:
+          - text: 지난 회차
+          - generic [ref=e94] [cursor=pointer]: 전체 보기 → 내 리포트
+        - generic [ref=e95]:
+          - generic [ref=e96]:
+            - generic [ref=e97]: 1회차
+            - generic [ref=e98]: 측정 03.18 · 완료
+          - generic [ref=e99]:
+            - generic [ref=e100]: 완료
+            - generic [ref=e101] [cursor=pointer]: 결과 리포트 보기 →
+  - generic [ref=e102]: B · 변형 — 미제출(H-3) / 세션 이어하기(H-7) / 결과 비공개(H-9) / 빈 상태(H-1)
+  - generic [ref=e103]:
+    - generic [ref=e104]: iz-get.com/home
+    - generic [ref=e110]:
+      - generic [ref=e111]:
+        - generic [ref=e112]:
+          - generic [ref=e113]:
+            - generic [ref=e114]: ◆
+            - text: IZ-Get
+          - generic [ref=e115]:
+            - generic [ref=e116]: 홈
+            - generic [ref=e117]: 내 리포트
+        - generic [ref=e118]:
+          - generic [ref=e119]:
+            - text: 김민준
+            - generic [ref=e120]: 7기 · A반
+          - generic [ref=e121]: 민
+      - generic [ref=e122]:
+        - generic [ref=e123]: 진행 중 · CTA가 상태에 정직
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - generic [ref=e126]:
+              - text: 3회차
+              - generic [ref=e127]: 코드 제출 차례
+            - generic [ref=e128]: 응시 마감 D-5 · 05.10 18:00
+          - generic [ref=e129]: API 서버팀 · A조
+          - generic [ref=e130]:
+            - generic [ref=e131]:
+              - generic [ref=e132]: "1"
+              - generic [ref=e133]: 코드 제출
+              - generic [ref=e134]: 지금 차례
+            - generic [ref=e135]:
+              - generic [ref=e136]: "2"
+              - generic [ref=e137]: 검증 세션
+              - generic [ref=e138]: 제출 후
+            - generic [ref=e139]:
+              - generic [ref=e140]: "3"
+              - generic [ref=e141]: 결과 리포트
+              - generic [ref=e142]: 세션 후
+          - generic [ref=e143]: 이번 회차 커밋을 제출하면 분석이 시작돼요.
+          - button "코드 제출하기 →" [ref=e144] [cursor=pointer]
+        - generic [ref=e145]:
+          - generic [ref=e146]:
+            - generic [ref=e147]:
+              - text: 2회차
+              - generic [ref=e148]: 세션 진행 중
+            - generic [ref=e149]: 응시 마감 D-1 · 04.11 18:00
+          - generic [ref=e150]: 개인 과제 · 자료구조개인
+          - generic [ref=e151]:
+            - generic [ref=e152]:
+              - generic [ref=e153]: ✓
+              - generic [ref=e154]: 코드 제출
+              - generic [ref=e155]: 완료
+            - generic [ref=e156]:
+              - generic [ref=e157]: "2"
+              - generic [ref=e158]: 검증 세션
+              - generic [ref=e159]: 이어서
+            - generic [ref=e160]:
+              - generic [ref=e161]: "3"
+              - generic [ref=e162]: 결과 리포트
+              - generic [ref=e163]: 세션 후
+          - generic [ref=e164]: 🔒 답변한 곳까지 저장돼 있어요. 이어서 진행하면 됩니다.
+          - button "세션 이어하기 →" [ref=e165] [cursor=pointer]
+        - generic [ref=e166]: 지난 회차
+        - generic [ref=e167]:
+          - generic [ref=e168]:
+            - generic [ref=e169]: 1회차
+            - generic [ref=e170]: 측정 03.18 · 완료
+          - generic [ref=e171]:
+            - generic [ref=e172]: 완료
+            - generic [ref=e173]: 🔒 결과가 아직 공개되지 않았어요
+        - generic [ref=e174]: 진행/예정 회차 없음 (H-1)
+        - generic [ref=e175]: 지금은 예정된 회차가 없어요. 새 회차가 열리면 여기에 표시됩니다.
+  - generic [ref=e176]:
+    - heading "파생 상태 (연계 FR 없음 — 인접 FR에서 파생)" [level=3] [ref=e177]
+    - paragraph [ref=e178]: SC-T01은 직접 명세 case가 없다(게이트 A는 MEAS·GOV-03 소관). 대신 아래 상태를 정의. 활성 카드 CTA는 이 표의 상태에 1:1로 묶인다.
+    - table [ref=e180]:
+      - rowgroup [ref=e181]:
+        - row [ref=e182]:
+          - columnheader "#" [ref=e183]
+          - columnheader "상태" [ref=e184]
+          - columnheader "표현" [ref=e185]
+          - columnheader "활성 카드 CTA / 다음 행동" [ref=e186]
+      - rowgroup [ref=e187]:
+        - row [ref=e188]:
+          - cell "H-1" [ref=e189]
+          - cell "진행/예정 회차 없음" [ref=e190]
+          - cell "-" [ref=e191]
+          - cell "빈 상태 \"예정된 회차가 없어요\"" [ref=e193]
+        - row [ref=e194]:
+          - cell "H-2" [ref=e195]
+          - cell "커밋 이메일 미검증" [ref=e196]
+          - cell "warning" [ref=e197]
+          - cell "상단 배너 + [지금 인증] (AUTH-07)" [ref=e199]
+        - row [ref=e200]:
+          - cell "H-3" [ref=e201]
+          - cell "미제출 · 기한 내" [ref=e202]
+          - cell "info" [ref=e203]
+          - cell "CTA [코드 제출하기] (→T02)" [ref=e205]
+        - row [ref=e206]:
+          - cell "H-4" [ref=e207]
+          - cell "응시 기한 임박(D-1/당일)" [ref=e208]
+          - cell "warning" [ref=e209]
+          - cell "마감 라인만 경고색(평소 차분)" [ref=e211]
+        - row [ref=e212]:
+          - cell "H-5" [ref=e213]
+          - cell "응시 기한 마감" [ref=e214]
+          - cell "-" [ref=e215]
+          - cell "\"마감됨\" · 제출 불가(재응시 없음)" [ref=e217]
+        - row [ref=e218]:
+          - cell "H-6" [ref=e219]
+          - cell "제출 완료 · 세션 대기" [ref=e220]
+          - cell "info" [ref=e221]
+          - cell "CTA [검증 세션 시작하기] (→T04)" [ref=e223]
+        - row [ref=e224]:
+          - cell "H-7" [ref=e225]
+          - cell "세션 진행 중" [ref=e226]
+          - cell "warning" [ref=e227]
+          - cell "CTA [세션 이어하기] · 저장 지점 안내" [ref=e229]
+        - row [ref=e230]:
+          - cell "H-8" [ref=e231]
+          - cell "회차 완료 · 결과 공개" [ref=e232]
+          - cell "info" [ref=e233]
+          - cell "[결과 리포트 보기] (→T05)" [ref=e235]
+        - row [ref=e236]:
+          - cell "H-9" [ref=e237]
+          - cell "회차 완료 · 결과 비공개" [ref=e238]
+          - cell "잠금" [ref=e239]
+          - cell "\"결과가 아직 공개되지 않았어요\" (GOV-03)" [ref=e241]
+        - row [ref=e242]:
+          - cell "H-10" [ref=e243]
+          - cell "분석 진행 중(제출 후)" [ref=e244]
+          - cell "info" [ref=e245]
+          - cell "CTA 비활성 \"분석 중 · 곧 시작\" (거짓 어포던스 차단)" [ref=e247]
+    - generic [ref=e248]: "v2 변경: 활성 카드 CTA↔파생상태 정직 매핑(H-10 분석중 비활성) · 활성 1..N 스택(개인+팀 동시) · 세션 톤 선제 완화(D100~103) · 마감 임박 시에만 경고색 · 지난 회차 최근+전체는 내 리포트 · 매니저 전용 비노출(A5)·GOV-03 열람 범위"

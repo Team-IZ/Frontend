@@ -1,0 +1,142 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: SC-M02b(총괄) · P0 · manager/lead-only/roster-assign · 웹
+    - heading "명단 · 반 배정 총괄 전용" [level=1] [ref=e5]
+    - paragraph [ref=e6]: "운영 관리(SC-M02) 명단 탭의 벌크 배정과 같은 파이프라인이지만 반 정원·담당을 좌측 레일로 동시에 보며 여러 번 반복 배정하기 위한 전용 화면. 대상은 현재 기수의 미배정 교육생(기본 필터) — 체크로 고르고 왼쪽 반을 클릭하면 그 자리에서 배정. 명단 탭의 \"반 배정\" 팝오버와 동일 액션(같은 결과물)이라 어느 쪽에서 해도 무방하며, 이 화면은 대량·반복 배정에 최적화. 근거: C-2(교육생 반 미배정)·C-5(벌크 반 배정 실행)."
+  - generic [ref=e7]: 운영 관리 · 명단 · 반 배정 — 선택 기수 · 체크 후 반 클릭으로 즉시 배정
+  - generic [ref=e8]:
+    - generic [ref=e9]: iz-get.com/admin/cohorts/7/trainees/assign
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - generic [ref=e19]: ◆
+            - text: IZ-Get
+          - generic [ref=e21] [cursor=pointer]:
+            - generic [ref=e22]: 기관
+            - text: 그린 부트캠프
+            - generic [ref=e23]: · 현재
+            - generic [ref=e24]: 7기
+            - text: ▾
+        - generic [ref=e25]:
+          - text: 박지현 · 총괄 매니저
+          - generic [ref=e26]: 박
+      - generic [ref=e27]:
+        - generic [ref=e28]:
+          - generic [ref=e29]:
+            - generic [ref=e30]: ▦
+            - text: 대시보드
+          - generic [ref=e31]:
+            - generic [ref=e32]: ⚙
+            - text: 운영 관리
+            - generic [ref=e33]: 총괄
+          - generic [ref=e34]:
+            - generic [ref=e35]: ◎
+            - text: 교육생
+          - generic [ref=e36]:
+            - generic [ref=e37]: ◷
+            - text: 측정 계획
+          - generic [ref=e38]:
+            - generic [ref=e39]: ▤
+            - text: 프로젝트
+          - generic [ref=e40]:
+            - generic [ref=e41]: △
+            - text: 위험 · 분석
+          - generic [ref=e42]:
+            - generic [ref=e43]: ✎
+            - text: 개입
+          - generic [ref=e44]:
+            - generic [ref=e45]: ▥
+            - text: 리포트
+          - generic [ref=e46]:
+            - generic [ref=e47]: ▧
+            - text: 교안
+        - generic [ref=e48]:
+          - generic [ref=e49]:
+            - heading "명단 · 반 배정" [level=2] [ref=e50]
+            - generic [ref=e51]: 총괄 전용
+            - link "← 명단으로" [ref=e52] [cursor=pointer]:
+              - /url: program-admin.html#tab-roster
+          - generic [ref=e53]:
+            - generic [ref=e54]:
+              - generic [ref=e55]: 반 · 7기
+              - button "A반 박지현, 이도윤 18명" [ref=e56] [cursor=pointer]:
+                - generic [ref=e57]:
+                  - generic [ref=e58]: A반
+                  - generic [ref=e59]: 박지현, 이도윤
+                - generic [ref=e60]: 18명
+              - button "B반 이도윤 16명" [ref=e61] [cursor=pointer]:
+                - generic [ref=e62]:
+                  - generic [ref=e63]: B반
+                  - generic [ref=e64]: 이도윤
+                - generic [ref=e65]: 16명
+              - button "C반 담당 없음 14명" [ref=e66] [cursor=pointer]:
+                - generic [ref=e67]:
+                  - generic [ref=e68]: C반
+                  - generic [ref=e69]: 담당 없음
+                - generic [ref=e70]: 14명
+            - generic [ref=e71]:
+              - heading "배정 대상 3명· 7기 · 미배정만" [level=4] [ref=e73]:
+                - text: 배정 대상 3명
+                - generic [ref=e74]: · 7기 · 미배정만
+              - generic [ref=e75]:
+                - generic [ref=e76]: 🔍 이름 · 이메일 검색
+                - generic [ref=e77]:
+                  - generic [ref=e78]: 상태
+                  - text: 미배정만 ▾
+              - table [ref=e80]:
+                - rowgroup [ref=e81]:
+                  - row [ref=e82]:
+                    - columnheader [ref=e83]
+                    - columnheader "교육생 ↕" [ref=e85]
+                    - columnheader "소속 반" [ref=e86]
+                    - columnheader "계정 상태" [ref=e87]
+                - rowgroup [ref=e88]:
+                  - row [ref=e89]:
+                    - cell [ref=e90]
+                    - cell "한 한도현 dohyun@ex.com" [ref=e92]:
+                      - generic [ref=e93]:
+                        - generic [ref=e94]: 한
+                        - generic [ref=e95]:
+                          - generic [ref=e96]: 한도현
+                          - generic [ref=e97]: dohyun@ex.com
+                    - cell "미배정" [ref=e98]
+                    - cell "활성" [ref=e100]
+                  - row [ref=e102]:
+                    - cell [ref=e103]
+                    - cell "정 정하늘 haneul@ex.com" [ref=e105]:
+                      - generic [ref=e106]:
+                        - generic [ref=e107]: 정
+                        - generic [ref=e108]:
+                          - generic [ref=e109]: 정하늘
+                          - generic [ref=e110]: haneul@ex.com
+                    - cell "미배정" [ref=e111]
+                    - cell "초대됨" [ref=e113]
+                  - row [ref=e115]:
+                    - cell [ref=e116]
+                    - cell "오 오지훈 jihoon@ex.com" [ref=e118]:
+                      - generic [ref=e119]:
+                        - generic [ref=e120]: 오
+                        - generic [ref=e121]:
+                          - generic [ref=e122]: 오지훈
+                          - generic [ref=e123]: jihoon@ex.com
+                    - cell "미배정" [ref=e124]
+                    - cell "활성" [ref=e126]
+              - generic [ref=e128]:
+                - generic [ref=e129]: 1–3 / 3명
+                - generic [ref=e130]: "1"
+  - generic [ref=e132]:
+    - generic [ref=e133]: 이 화면의 상태 · case
+    - generic [ref=e134]:
+      - generic [ref=e135]: C-2
+      - generic [ref=e136]: info
+      - generic [ref=e137]: 교육생 반 미배정 — 기본 필터로 이 화면에 진입시켜 배정
+    - generic [ref=e138]:
+      - generic [ref=e139]: C-5
+      - generic [ref=e140]: info
+      - generic [ref=e141]: 벌크 반 배정 실행 — 체크 → 반 클릭 → 결과 토스트 "N명 X반 배정됨 · 실행 취소"(3초)
+    - generic [ref=e142]:
+      - generic [ref=e143]: C-8
+      - generic [ref=e144]: info
+      - generic [ref=e145]: 미선택 상태로 반 클릭 — 배정 안 하고 안내만("먼저 교육생을 선택하세요")
+  - generic [ref=e146]: "· 인터랙션: 체크박스로 대상 선택 → 좌측 레일 하이라이트(\"armed\" 상태) → 반 클릭 시 즉시 배정 + 토스트, 선택 자동 해제. 반복 가능(다시 체크 → 다른 반 클릭). 확정 시 Enrollment.classId 갱신 + AuditLog. 모든 실행은 총괄만(ORG_MANAGE). 담당 매니저는 자기 담당 반 인원만 '교육생'에서 조회(이 화면 접근 불가)."

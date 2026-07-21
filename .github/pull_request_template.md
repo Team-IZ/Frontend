@@ -1,4 +1,4 @@
-<!-- 제목 형식: [feat] add login page UI -->
+<!-- 제목 형식: [Feat] Add Login Page UI  (규약 docs/handbook/git-convention.md §3) -->
 
 ## 작업 내용
 

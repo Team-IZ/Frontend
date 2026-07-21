@@ -48,6 +48,26 @@ PR 올리기 **전에** develop를 머지해 충돌을 미리 푼다. 충돌 상
 
 등록: GitHub → Issues → New issue → 제목 + Assignees 본인 → 번호 확인.
 
+### 제목 형식 — `[Tag] Title Case`
+
+이슈와 PR 제목은 **의미 있는 단어의 첫 글자를 대문자로** 쓴다.
+관사(`a` `an` `the`)·등위접속사(`and` `or` `but`)·짧은 전치사(`of` `in` `to` `for`)는
+소문자. 단 **첫 단어와 마지막 단어는 항상 대문자**.
+
+```
+[Chore] Project Settings
+[Feat] Login Page and Password Reset
+[Fix] Token Refresh Loop in Auth Context
+[Refactor] Extract Cohort Scope Into a Store
+```
+
+태그는 커밋 type과 같은 어휘를 쓴다 — `[Feat]` `[Fix]` `[Refactor]` `[Style]`
+`[Docs]` `[Chore]` `[Remove]`.
+
+> **커밋 메시지는 반대다.** 커밋은 소문자 명령형(`feat: add login API`)이고
+> 훅이 검사한다. 이슈·PR은 GitHub에서 사람이 읽는 제목이라 Title Case를 쓴다.
+> 이 규칙은 훅으로 막을 수 없어(GitHub 쪽) 이슈 템플릿의 기본 제목으로만 유도한다.
+
 이슈가 커밋·PR과 온라인에서 어떻게 연결되고 뭐가 보이는지 → `issue-and-branch-online.md`.
 
 ## 4. 커밋 본문 · PR
@@ -72,7 +92,7 @@ chore: enable ts strict, prettier, path alias
 
 ### PR
 
-제목: `[feat] add login page UI`
+제목: `[Feat] Add Login Page UI` — 이슈와 같은 형식(§3).
 
 본문에 반드시 — ① 작업 내용 요약 ② 리뷰어가 볼 포인트 ③ `closes #번호`(머지 시 이슈 자동 종료)
 

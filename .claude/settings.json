@@ -1,7 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "mcp__plugin_playwright_playwright__browser_console_messages"
-    ]
+    "allow": ["mcp__plugin_playwright_playwright__browser_console_messages"]
   }
 }

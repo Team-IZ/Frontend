@@ -1,0 +1,13 @@
+dist
+node_modules
+package-lock.json
+
+# 도구가 만드는 캐시
+.impeccable
+
+# 마크다운은 사람이 쓰는 산문. 포매터가 한글 표를 글자수 기준으로 재정렬하면
+# raw 가독성이 오히려 나빠진다(렌더 결과는 어차피 같다).
+**/*.md
+
+# 와이어프레임 = 손으로 튜닝한 정적 목업. 리포맷 대상이 아니다.
+docs/plan/screen/wireframe

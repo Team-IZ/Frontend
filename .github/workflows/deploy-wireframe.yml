@@ -1,0 +1,33 @@
+name: Deploy wireframe
+
+# 와이어프레임 카탈로그를 GitHub Pages로 발행한다.
+# 소스는 docs/plan/screen/wireframe/ 하나뿐 — gh-pages 브랜치로 복사하지 않는다.
+on:
+  push:
+    branches: [planning]
+    paths: ['docs/plan/screen/wireframe/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/plan/screen/wireframe
+      - id: deploy
+        uses: actions/deploy-pages@v4

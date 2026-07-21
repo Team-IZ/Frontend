@@ -11,3 +11,6 @@ package-lock.json
 
 # 와이어프레임 = 손으로 튜닝한 정적 목업. 리포맷 대상이 아니다.
 docs/plan/screen/wireframe
+
+# 생성물 — 포맷하면 생성기 출력과 달라져 드리프트 검사가 깨진다
+docs/dev/design-system.html

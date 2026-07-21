@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-M06 · 개별 교육생 상세 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-nav:#1e2436; --c-nav-2:#2a3147; --c-nav-text:#aeb4c6;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px; --fs-3xl:34px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    --shadow-pop:0 12px 40px rgba(20,24,31,.18);
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:860px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+  /* 해시 라우팅 — 임베디드(쇼케이스 iframe)에선 한 케이스만 표시 */
+  body.embedded .doc-head, body.embedded .sec-label{display:none}
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  /* 상황 요약 히어로 — 상태별 색만 다름, 구조 동일 */
+  .hero{display:flex;align-items:center;gap:var(--sp-4);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5);margin-bottom:var(--sp-5);border:1px solid}
+  .hero .ic{font-size:20px}
+  .hero .txt{flex:1}.hero .txt b{font-size:var(--fs-base)}
+  .hero .txt .sub{font-size:var(--fs-xs);color:var(--c-text-2);margin-top:2px}
+  .hero .act{border:0;border-radius:var(--r-md);padding:9px 16px;font-size:var(--fs-sm);font-weight:600;cursor:pointer;white-space:nowrap;color:#fff}
+  .hero.risk{background:var(--c-danger-soft);border-color:#e6c3bd}.hero.risk b{color:var(--c-danger)}.hero.risk .act{background:var(--c-danger)}
+  .hero.ace{background:var(--c-success-soft);border-color:#bfe3ce}.hero.ace b{color:var(--c-success)}.hero.ace .act{background:var(--c-success)}
+  .stateview.hidden{display:none}
+  /* 상태 버전 전환기 (데모 · 실제 앱은 학생 상태에 맞는 버전 자동 표시) */
+  .statebar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:var(--sp-4);font-size:11px;align-items:center}
+  .statebar .lbl{color:var(--c-text-3);font-weight:600;margin-right:2px}
+  .statebar .sc{padding:3px 10px;border-radius:20px;background:#eef0f3;color:var(--c-text-2);cursor:pointer;border:1px solid transparent}
+  .statebar .sc:hover{border-color:var(--c-border-strong)}
+  .statebar .sc.on{background:var(--c-primary);color:#fff;font-weight:600}
+  .mini b{color:var(--c-text)}
+
+  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  .app{display:flex;flex-direction:column;min-height:600px;position:relative}
+  .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
+  .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700;font-size:var(--fs-base)}
+  .topbar .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .cohortsel{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:5px var(--sp-3);font-size:var(--fs-sm);color:var(--c-text);background:var(--c-surface-2)}
+  .cohortsel .k{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+  .body{display:flex;flex:1}
+  .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
+  .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
+  .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
+  .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-6)}
+
+  .dhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-4)}
+  .dhead .who{display:flex;align-items:center;gap:var(--sp-3)}
+  .dhead .who .av{width:44px;height:44px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:16px}
+  .dhead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
+  .dhead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .dhead .meta{font-size:var(--fs-sm);color:var(--c-text-2)}
+  .dhead .meta .proj{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .mbtn{border:1px solid var(--c-primary);background:var(--c-primary-soft);color:var(--c-primary);border-radius:var(--r-md);padding:8px 14px;font-size:var(--fs-sm);font-weight:600;cursor:pointer}
+  .tabs{display:flex;gap:var(--sp-5);border-bottom:1px solid var(--c-border);margin-bottom:var(--sp-5)}
+  .tabs .t{padding:var(--sp-2) 0;font-size:var(--fs-sm);color:var(--c-text-2);border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tabs .t.on{color:var(--c-primary);border-color:var(--c-primary);font-weight:600}
+
+  .panel{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-5);margin-bottom:var(--sp-4)}
+  .panel .ph{display:flex;align-items:center;justify-content:space-between;font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);margin-bottom:var(--sp-4)}
+  .panel .ph .fx{font-weight:400;text-transform:none;letter-spacing:0;margin-right:auto;margin-left:8px}
+  .panel .ph .leg{display:flex;gap:var(--sp-4);text-transform:none;letter-spacing:0;font-weight:400}
+  .panel .ph .leg .k{display:inline-flex;align-items:center;gap:5px;color:var(--c-text-2)}
+  .panel .ph .leg .sw{width:14px;height:3px;border-radius:2px}
+  .panel .ph .leg .sw.dash{background:repeating-linear-gradient(90deg,#8b929c,#8b929c 3px,transparent 3px,transparent 6px)}
+  .up{color:var(--c-success)} .dn{color:var(--c-danger)} .fl{color:var(--c-text-3)}
+  .spark{flex:0 0 60px;height:20px}
+  .gap{font-weight:700;margin-left:4px}
+  .gap.hi{color:var(--c-success)} .gap.mid{color:var(--c-text-3)} .gap.lo{color:var(--c-danger)}
+
+  /* ① 상태 배지(위험/에이스만) — 이미 정의된 .hero 재사용, risk/ace 색만 유지, 미사용 변형(newbie/active/recover/steady)은 제거 */
+
+  /* ② 데이터 신뢰도 경고 — 문제 있을 때만, 별도 스트립(사람 신호와 분리) */
+  .confbadge{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--c-danger);border-radius:var(--r-md);padding:var(--sp-2) var(--sp-4);font-size:var(--fs-xs);color:var(--c-danger);margin-bottom:var(--sp-4)}
+  .confbadge b{color:var(--c-danger)}
+
+  /* ④ 상담 중 컨텍스트 라인 — 항상(있으면) */
+  .ivline{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);color:var(--c-text-2);background:var(--c-info-soft);border:1px solid #bcd4ea;border-radius:var(--r-md);padding:var(--sp-2) var(--sp-4);margin-bottom:var(--sp-4)}
+  .ivline .ivdot{width:8px;height:8px;border-radius:50%;background:var(--c-info);flex:0 0 auto}
+  .ivline .ivgo{margin-left:auto;color:var(--c-info);font-weight:600;text-decoration:none;white-space:nowrap}
+
+  /* ⑤ 세션 참여 팩트 — 모든 학생 공통 */
+  .factline{font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-4)}
+  .factline b{color:var(--c-text)}
+
+  /* 일반 학생 안내 */
+  .normnote{font-size:var(--fs-sm);color:var(--c-text-3);background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-4)}
+
+  /* ⑥ 5축 통합표 — 레이더·별도 총점그래프 대체(유일한 5축 정보원) */
+  .axtbl{display:flex;flex-direction:column}
+  .axr{display:flex;align-items:center;gap:var(--sp-3);padding:9px 0;border-bottom:1px solid var(--c-border)}
+  .axr:last-child{border-bottom:0}
+  .axr .ax{width:76px;font-weight:600;font-size:var(--fs-sm)}
+  .axr .sc5{font-size:var(--fs-xl);font-weight:700;font-variant-numeric:tabular-nums;width:44px;text-align:right}
+  .axr .sc5 .of{font-size:var(--fs-xs);color:var(--c-text-3);font-weight:400}
+  .axr .dl{font-size:var(--fs-sm);font-weight:600;width:32px}
+  .axr .gapv{font-size:var(--fs-xs);color:var(--c-text-3);width:130px;text-align:right;margin-left:auto}
+  .axr.hl-bad{background:var(--c-danger-soft);margin:0 -12px;padding:9px 12px;border-radius:8px}
+  .axr.hl-bad .ax{color:var(--c-danger)}
+  .axr.hl-bad .sc5{color:var(--c-danger)}
+  .axr.hl-good{background:var(--c-success-soft);margin:0 -12px;padding:9px 12px;border-radius:8px}
+  .axr.hl-good .ax{color:var(--c-success)}
+  .axr.hl-good .sc5{color:var(--c-success)}
+  .axnote{font-size:11px;color:var(--c-text-3);margin-top:10px}
+
+  .imb{background:var(--c-warning-soft);border:1px solid #e6d3a8;border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5)}
+  .imb .h{font-weight:700;color:var(--c-warning);font-size:var(--fs-sm);margin-bottom:var(--sp-2)}
+  .imb .h .ctx{font-weight:400;color:var(--c-text-3);font-size:var(--fs-xs)}
+  .imb p{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.6}
+  .imb .cross{display:flex;gap:var(--sp-2);margin-top:var(--sp-3);flex-wrap:wrap}
+  .imb .cx{font-size:11px;font-weight:600;background:#fff;border:1px solid #e6d3a8;color:var(--c-warning);border-radius:20px;padding:3px 10px}
+  .disc{margin-top:var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-3);cursor:pointer;text-decoration:underline}
+  .discbox{margin-top:var(--sp-3);background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .discbox .warn{color:var(--c-warning);font-weight:600}
+
+  /* session */
+  .subsel{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3);font-size:var(--fs-sm);color:var(--c-text-2);flex-wrap:wrap}
+  .sel{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--c-border-strong);border-radius:var(--r-md);padding:6px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text);background:#fff}
+  .sel .k{color:var(--c-text-3)}
+  .slegend{display:flex;gap:var(--sp-4);font-size:11px;color:var(--c-text-3);margin-left:auto;flex-wrap:wrap}
+  .slegend b{color:var(--c-text-2)}
+  .dp{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);margin-bottom:var(--sp-2);overflow:hidden}
+  .dp.weak{border-color:#e6c3bd}
+  .dphead{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) var(--sp-4);cursor:pointer}
+  .dphead .topic{flex:1;font-weight:600;font-size:var(--fs-sm)}
+  .dphead .ref{font-family:var(--mono);font-size:11px;color:var(--c-primary)}
+  .pips{display:flex;gap:4px}
+  .pips .p{font-size:10px;font-weight:700;width:24px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;background:#eef0f3;color:var(--c-text-3)}
+  .pips .p.done{background:var(--c-success-soft);color:var(--c-success)}
+  .pips .p.brk{background:var(--c-danger-soft);color:var(--c-danger)}
+  .und{font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px}
+  .und.solid{background:var(--c-success-soft);color:var(--c-success)}
+  .und.partial{background:var(--c-warning-soft);color:var(--c-warning)}
+  .und.surface{background:var(--c-danger-soft);color:var(--c-danger)}
+  .dpbody{border-top:1px solid var(--c-border);padding:var(--sp-4);background:var(--c-surface-2)}
+  .turn .q{font-size:var(--fs-sm);font-weight:600}
+  .turn .a{font-size:var(--fs-sm);color:var(--c-text-2);background:#fff;border:1px solid var(--c-border);padding:8px 12px;border-radius:6px;margin-top:4px}
+  .turn .ev{font-size:11px;color:var(--c-text-3);margin-top:4px}.turn .ev b{color:var(--c-text-2)}
+
+  /* intervention + memo */
+  /* 개입 탭 · 반반 2열 (통일 카드) */
+  .cols{display:flex;gap:var(--sp-5);align-items:stretch;flex-wrap:wrap}
+  .icard{flex:1;min-width:320px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-5)}
+  .colh{font-size:15px;font-weight:700;color:var(--c-text);margin-bottom:var(--sp-4)}
+  .colh .sub{font-size:var(--fs-xs);font-weight:400;color:var(--c-text-3)}
+  .tlitem{display:flex;gap:var(--sp-3);padding-bottom:var(--sp-4);position:relative}
+  .tlitem::before{content:"";position:absolute;left:9px;top:22px;bottom:0;width:2px;background:var(--c-border)}
+  .tlitem:last-child{padding-bottom:0}.tlitem:last-child::before{display:none}
+  .tldot{width:20px;height:20px;border-radius:50%;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;font-size:11px;z-index:1}
+  .tldot.rec{background:var(--c-success-soft);color:var(--c-success)}
+  .tldot.pend{background:var(--c-warning-soft);color:var(--c-warning)}
+  .tlbody .tit{font-weight:600;font-size:var(--fs-sm);color:var(--c-text)}
+  .tlbody .m{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:2px}
+  .tlbody .out{font-size:var(--fs-xs);font-weight:600;margin-top:4px}
+  /* memo */
+  .startbtns{display:flex;gap:var(--sp-2);margin-bottom:var(--sp-3)}
+  .sbtn{flex:1;border-radius:var(--r-md);padding:9px;font-size:var(--fs-sm);font-weight:600;cursor:pointer}
+  .sbtn.prim{border:1px solid var(--c-primary);background:var(--c-primary);color:#fff}
+  .sbtn.ghost{border:1px solid var(--c-border-strong);background:#fff;color:var(--c-text-2)}
+  .ta2{min-height:148px;border:1px solid var(--c-border-strong);border-radius:var(--r-md);background:var(--c-surface-2);padding:var(--sp-3);font-size:var(--fs-sm);color:var(--c-text-2);white-space:pre-line;line-height:1.65}
+  .savebar{display:flex;justify-content:flex-end;margin-top:var(--sp-3)}
+  .savebtn{background:var(--c-primary);color:#fff;border:0;border-radius:var(--r-md);padding:9px 20px;font-size:var(--fs-sm);font-weight:600;cursor:pointer}
+  .memodiv{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);margin:var(--sp-5) 0 var(--sp-3);padding-top:var(--sp-4);border-top:1px solid var(--c-border)}
+  .mitem{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.6}
+  .mitem .who{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:5px}
+  /* 인간 층 타임라인 */
+  .addlog{display:flex;align-items:center;gap:var(--sp-2);border:1px dashed var(--c-border-strong);border-radius:var(--r-md);padding:10px var(--sp-4);color:var(--c-text-3);font-size:var(--fs-sm);cursor:pointer;margin-bottom:var(--sp-4)}
+  .addlog .prep{margin-left:auto;font-size:11px;font-weight:600;color:var(--c-primary);background:var(--c-primary-soft);border-radius:20px;padding:3px 10px}
+  .logstream{position:relative;padding-left:var(--sp-5)}
+  .logstream::before{content:"";position:absolute;left:5px;top:6px;bottom:6px;width:2px;background:var(--c-border)}
+  .logitem{position:relative;padding-bottom:var(--sp-5)}
+  .logitem:last-child{padding-bottom:0}
+  .logitem::before{content:"";position:absolute;left:-22px;top:5px;width:10px;height:10px;border-radius:50%;background:#fff;border:2px solid var(--c-border-strong)}
+  .logitem.meet::before{border-color:var(--c-primary)}
+  .logtop{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:5px;flex-wrap:wrap}
+  .ltag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+  .ltag.meet{background:var(--c-primary-soft);color:var(--c-primary)}
+  .ltag.obs{background:#eef0f3;color:var(--c-text-2)}
+  .ltag.intv{background:var(--c-info-soft);color:var(--c-info)}
+  .logdate{font-size:11px;color:var(--c-text-3)}
+  .loglink{font-size:11px;color:var(--c-primary);cursor:pointer;margin-left:auto}
+  .logbody{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.6}
+  /* 개입별 활동 카드 */
+  .ivcard{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-5);margin-bottom:var(--sp-4)}
+  .ivcard.active{border-color:#cdd4f2}
+  .ivhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-3)}
+  .ivhead .l{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap}
+  .ivtype{font-size:var(--fs-base);font-weight:700}
+  .ivstat{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .ivstat.prog{background:var(--c-info-soft);color:var(--c-info)}
+  .ivstat.done{background:var(--c-success-soft);color:var(--c-success)}
+  .ivmeta{font-size:var(--fs-xs);color:var(--c-text-3)}
+  .iveff{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+  .iveff.pend{background:#eef0f3;color:var(--c-text-3)}
+  .iveff.rec{background:var(--c-success-soft);color:var(--c-success)}
+  .ivbasis{font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);border-radius:var(--r-md);padding:8px 12px;margin-bottom:var(--sp-3)}
+  .ivbasis b{color:var(--c-text)}
+  .actlabel{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);margin-bottom:var(--sp-2)}
+  .addact{display:flex;align-items:center;gap:var(--sp-2);border:1px dashed var(--c-border-strong);border-radius:var(--r-md);padding:9px var(--sp-3);color:var(--c-primary);font-size:var(--fs-sm);font-weight:600;cursor:pointer;margin-top:var(--sp-3)}
+  .act{padding:9px 0;border-top:1px solid var(--c-border)}
+  .act .atop{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:3px}
+  .act .abody{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.55}
+  .genmemo{background:var(--c-surface-2);border:1px dashed var(--c-border-strong);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5)}
+
+  /* slide-over panel (면담) */
+  .overlay{position:absolute;inset:0;background:rgba(20,24,31,.28);display:flex;justify-content:flex-end}
+  .slide{width:400px;background:#fff;box-shadow:var(--shadow-pop);display:flex;flex-direction:column}
+  .slide .sh{display:flex;align-items:center;justify-content:space-between;padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--c-border)}
+  .slide .sh h4{font-size:var(--fs-lg)}
+  .slide .sh .x{color:var(--c-text-3);cursor:pointer;font-size:18px}
+  .slide .sb{padding:var(--sp-5);overflow:auto;flex:1}
+  .slide .note{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:var(--sp-4)}
+  .qitem{border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-3)}
+  .qitem .qq{font-size:var(--fs-sm);font-weight:600}
+  .qitem .basis{font-size:11px;color:var(--c-text-3);margin-top:4px}
+  .qitem .basis b{color:var(--c-warning)}
+
+  .notes{margin-top:var(--sp-8);background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-5) var(--sp-6)}
+  .notes h3{font-size:var(--fs-lg);margin-bottom:var(--sp-1)}
+  .notes .grp{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--c-text-3);margin:var(--sp-5) 0 var(--sp-2)}
+  .notes .hint{font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-2)}
+  .tblwrap{overflow-x:auto}
+  .ntbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm);min-width:500px}
+  .ntbl td,.ntbl th{text-align:left;padding:var(--sp-2) var(--sp-3);border-bottom:1px solid var(--c-border)}
+  .ntbl td:first-child{width:44px;color:var(--c-text-3)}
+  .pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
+  .pill.danger{background:var(--c-danger-soft);color:var(--c-danger)}
+  .pill.warning{background:var(--c-warning-soft);color:var(--c-warning)}
+  .pill.info{background:var(--c-info-soft);color:var(--c-info)}
+  .pill.na{background:#eef0f3;color:var(--c-text-3)}
+  .foot{margin-top:var(--sp-5);font-size:var(--fs-xs);color:var(--c-text-3)}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">SC-M06 · P0 · 매니저 전용 · 웹</span>
+    <h1>개별 교육생 상세 (면담 준비 도시에)</h1>
+    <p>명세 목적 = "면담 전 통합 상세"(DASH-16). 3탭: <b>종합</b>(종합점수 추이 + 레이더 + 축별 + 신호) · <b>세션</b>(무너진 지점) · <b>개입</b>(이력·메모). 통계 기호(σ) 대신 평이한 말, 기수 평균은 <b>회차 스냅샷</b>(B1) 명시. 세션 상태는 한글(견고/부분/표면). 귀속 탭 제거 → 불균형 신호로만(코드량 ≠ 실력·B5).</p>
+  </div>
+
+  <!-- ===== 종합 탭 (컴포넌트 스택 고정: 상태배지→신뢰도경고→포커스축그래프→상담중라인→세션참여팩트→5축표→귀속카드. 값만 학생마다 다름) ===== -->
+  <div class="sec-label">탭 · 종합 (3예시: 위험 · 에이스 · 일반 · 뼈대 동일)</div>
+  <div class="rpage on" id="page-overview">
+  <div class="stateview" data-state="risk">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/trainees/minjun</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content">
+          <div class="dhead">
+            <div class="who"><span class="av">강</span><div><div class="crumb">교육생 › 강민준</div><h2 style="line-height:1.1">강민준</h2><div class="meta">7기 · A반 · 활성 <span class="proj">· 참여 프로젝트: MSA 배포 실습(팀A) · API 서버(팀C)</span></div></div></div>
+          </div>
+          <div class="tabs"><span class="t on">종합</span><span class="t">세션</span><span class="t">개입</span></div>
+          <div class="statebar"><span class="lbl">데모 예시</span><span class="sc on" data-go="risk">위험</span><span class="sc" data-go="ace">에이스</span><span class="sc" data-go="normal">일반</span></div>
+
+          <!-- ① 상태 배지 — 위험/에이스만. 일반은 이 블록 자체가 없음 -->
+          <div class="hero risk">
+            <span class="ic">⚠️</span>
+            <div class="txt"><b>반례대응이 2점으로 2회 연속 하락(4 → 2), 기수 평균 3.4보다 1.4점 낮습니다.</b><div class="sub">실패 케이스·엣지 대응이 약해지는 중. 다른 4축은 상승세라 국소적 취약. <b>지금 개입 검토 권장</b>(DASH-05 즉시).</div></div>
+            <button class="act">개입 생성 →</button>
+          </div>
+
+          <!-- ② 데이터 신뢰도 경고 — 문제 있을 때만(채점 안정성 DASH-06 · 커밋귀속 AUTH-07). 없으면 안 뜸 -->
+          <div class="confbadge">⚠ <b>데이터 신뢰도 주의</b> · 커밋 이메일 미검증(AUTH-07) — 기여 관련 수치는 확정 전 검증 필요</div>
+
+          <!-- ③ 포커스 축 그래프 — 헤드라인이 지목한 그 축 하나만. 5개 뭉뚱그린 총점 아님 -->
+          <div class="panel">
+            <div class="ph">반례대응 추이 <span class="fx" style="color:var(--c-danger)">· 위험 신호 축</span> <span class="leg"><span class="k"><span class="sw" style="background:#c0392b"></span>강민준</span><span class="k"><span class="sw dash"></span>기수 평균</span></span></div>
+            <svg width="100%" viewBox="0 0 480 140" preserveAspectRatio="xMidYMid meet" style="max-width:480px">
+              <g stroke="#eef0f3" stroke-width="1"><line x1="36" y1="30" x2="460" y2="30"/><line x1="36" y1="60" x2="460" y2="60"/><line x1="36" y1="90" x2="460" y2="90"/><line x1="36" y1="120" x2="460" y2="120"/></g>
+              <g font-size="10" fill="#8b929c" font-family="sans-serif"><text x="30" y="33" text-anchor="end">5</text><text x="30" y="63" text-anchor="end">3</text><text x="30" y="123" text-anchor="end">0</text></g>
+              <g font-size="11" fill="#5a616b" font-family="sans-serif" text-anchor="middle"><text x="60" y="136">1회차</text><text x="250" y="136">2회차</text><text x="440" y="136" fill="#8b929c">3회차 예정</text></g>
+              <polyline points="60,55 250,58" fill="none" stroke="#8b929c" stroke-width="2" stroke-dasharray="5 3"/><g fill="#8b929c"><circle cx="60" cy="55" r="3"/><circle cx="250" cy="58" r="3"/></g>
+              <polyline points="60,60 250,108" fill="none" stroke="#c0392b" stroke-width="2.5"/><g fill="#c0392b"><circle cx="60" cy="60" r="4"/><circle cx="250" cy="108" r="4"/></g>
+              <g font-size="11" font-weight="700" fill="#c0392b" font-family="sans-serif"><text x="60" y="50" text-anchor="middle">4</text><text x="250" y="124" text-anchor="middle">2</text></g>
+            </svg>
+            <div style="font-size:11px;color:var(--c-text-3);margin-top:4px">· 다른 4축은 이 회차 상승세 — 이 축만 국소적으로 취약(전체 5축은 아래 표에서 확인). 결측 회차는 선으로 잇지 않음(T-2).</div>
+          </div>
+
+          <!-- ④ 상담 중 컨텍스트 — 진행 중인 개입 있으면 항상 표시(상태와 무관) -->
+          <div class="ivline"><span class="ivdot"></span> <b>진행 중인 개입:</b> 면담(04.12 시작) · 효과는 다음 회차 판정 <a href="#" class="ivgo">개입 탭에서 보기 →</a></div>
+
+          <!-- ⑤ 세션 참여 팩트 — 모든 학생 공통, 상태 무관 -->
+          <div class="factline">📋 이번 회차(2회차) <b>응시 완료</b> · 마지막 세션 04.18 · 소요 14분</div>
+
+          <!-- ⑥ 5축 통합표 — 유일한 5축 정보원(레이더 없음, 총점 그래프 없음) -->
+          <div class="panel">
+            <div class="ph">5축 상세 · 2회차</div>
+            <div class="axtbl">
+              <div class="axr"><span class="ax">코드이해</span><span class="sc5">4<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,10" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="10" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.4<b class="gap mid">+0.6</b></span></div>
+              <div class="axr"><span class="ax">설계논리</span><span class="sc5">5<span class="of">/5</span></span><span class="dl up">▲1</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,14 54,4" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="4" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.6<b class="gap hi">+1.4</b></span></div>
+              <div class="axr"><span class="ax">대안비교</span><span class="sc5">4<span class="of">/5</span></span><span class="dl up">▲1</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,15 54,8" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="8" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.6<b class="gap mid">+0.4</b></span></div>
+              <div class="axr hl-bad"><span class="ax">반례대응</span><span class="sc5">2<span class="of">/5</span></span><span class="dl dn">▼2</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,6 54,16" fill="none" stroke="#c0392b" stroke-width="2"/><circle cx="54" cy="16" r="2.3" fill="#c0392b"/></svg><span class="gapv">평균 3.4<b class="gap lo">−1.4</b></span></div>
+              <div class="axr"><span class="ax">자기수정</span><span class="sc5">4<span class="of">/5</span></span><span class="dl up">▲1</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,14 54,8" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="8" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.5<b class="gap mid">+0.5</b></span></div>
+              <div class="axnote">· Δ=직전 회차 대비. 오른쪽 기수평균은 2회차 스냅샷(B1)과의 차이, 같은 5점 단위. 정밀 통계편차는 마우스오버. 회차 2개부터 계산(표본 부족 시 "—", DASH-08).</div>
+            </div>
+          </div>
+
+          <!-- ⑦ 귀속 신호(조건부) — 3조건 동시충족 시만, 순수 서술형(신뢰도 경고는 위 ②로 분리됨) -->
+          <div class="imb">
+            <div class="h">⚠ 기여·이해도 불균형 <span class="ctx">MSA 배포 실습 · 팀A · 서술형</span></div>
+            <p>팀 내 기여량이 낮은 편이지만, <b>낮은 기여량이 곧 낮은 실력을 뜻하진 않습니다.</b> 이 신호는 기여량 단독이 아니라 아래 세 조건이 <b>동시에</b> 충족될 때만 표시됩니다.</p>
+            <div class="cross"><span class="cx">기여 편차 (팀 하위)</span><span class="cx">＋ 이해도 저조 (반례대응 2)</span><span class="cx">＋ 지속성 (2회차)</span></div>
+            <div class="disc">▸ 기여 원시 데이터 보기 (참고용)</div>
+            <div class="discbox"><span class="warn">참고용 · 판정값 아님(B5).</span> 실질 변경 라인 142(팀 평균 310) · 변경 파일 6(11) · 커밋 막판 집중. 자동생성·포맷팅 제외. <b>코드량은 설명 변수일 뿐, 품질·적극성의 지표가 아님.</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="stateview hidden" data-state="ace">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/trainees/seoyeon</span></div>
+    <div class="app">
+      <div class="topbar"><div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div><div class="me">박지현 · 매니저 <span class="av">박</span></div></div>
+      <div class="body">
+        <div class="nav"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div></div>
+        <div class="content">
+          <div class="dhead"><div class="who"><span class="av">김</span><div><div class="crumb">교육생 › 김서연</div><h2 style="line-height:1.1">김서연</h2><div class="meta">7기 · A반 · 활성 <span class="proj">· 참여 프로젝트: MSA 배포 실습(팀A)</span></div></div></div></div>
+          <div class="tabs"><span class="t on">종합</span><span class="t">세션</span><span class="t">개입</span></div>
+          <div class="statebar"><span class="lbl">데모 예시</span><span class="sc" data-go="risk">위험</span><span class="sc on" data-go="ace">에이스</span><span class="sc" data-go="normal">일반</span></div>
+
+          <!-- ① 상태 배지 -->
+          <div class="hero ace">
+            <span class="ic">★</span>
+            <div class="txt"><b>대안비교가 5점 만점 · 2회 연속 기수 최상위권입니다(기수 평균 3.6보다 1.4점 높음).</b><div class="sub">근거를 스스로 제시하는 설명력이 뛰어남. 다른 축도 전반 상위. <b>멘토 후보로 검토</b>할 만함(DASH-12 · 자동 배치 아님).</div></div>
+          </div>
+
+          <!-- ② 신뢰도 경고 없음(문제 없어 미표시) -->
+
+          <!-- ③ 포커스 축 그래프 — 강점 축 -->
+          <div class="panel">
+            <div class="ph">대안비교 추이 <span class="fx" style="color:var(--c-success)">· 강점 축</span> <span class="leg"><span class="k"><span class="sw" style="background:#1f8a5b"></span>김서연</span><span class="k"><span class="sw dash"></span>기수 평균</span></span></div>
+            <svg width="100%" viewBox="0 0 480 140" preserveAspectRatio="xMidYMid meet" style="max-width:480px">
+              <g stroke="#eef0f3" stroke-width="1"><line x1="36" y1="30" x2="460" y2="30"/><line x1="36" y1="60" x2="460" y2="60"/><line x1="36" y1="90" x2="460" y2="90"/><line x1="36" y1="120" x2="460" y2="120"/></g>
+              <g font-size="10" fill="#8b929c" font-family="sans-serif"><text x="30" y="33" text-anchor="end">5</text><text x="30" y="63" text-anchor="end">3</text><text x="30" y="123" text-anchor="end">0</text></g>
+              <g font-size="11" fill="#5a616b" font-family="sans-serif" text-anchor="middle"><text x="60" y="136">1회차</text><text x="250" y="136">2회차</text><text x="440" y="136" fill="#8b929c">3회차 예정</text></g>
+              <polyline points="60,58 250,55" fill="none" stroke="#8b929c" stroke-width="2" stroke-dasharray="5 3"/><g fill="#8b929c"><circle cx="60" cy="58" r="3"/><circle cx="250" cy="55" r="3"/></g>
+              <polyline points="60,35 250,30" fill="none" stroke="#1f8a5b" stroke-width="2.5"/><g fill="#1f8a5b"><circle cx="60" cy="35" r="4"/><circle cx="250" cy="30" r="4"/></g>
+              <g font-size="11" font-weight="700" fill="#1f8a5b" font-family="sans-serif"><text x="60" y="27" text-anchor="middle">4</text><text x="250" y="22" text-anchor="middle">5</text></g>
+            </svg>
+            <div style="font-size:11px;color:var(--c-text-3);margin-top:4px">· 기수 평균을 꾸준히 상회. 표본 근거와 함께 표시(자동 후보 배지 없음·DASH-12).</div>
+          </div>
+
+          <!-- ④ 상담 라인 없음(진행 중 개입 없어 미표시) -->
+
+          <!-- ⑤ 세션 참여 팩트 -->
+          <div class="factline">📋 이번 회차(2회차) <b>응시 완료</b> · 마지막 세션 04.17 · 소요 11분</div>
+
+          <!-- ⑥ 5축 통합표 -->
+          <div class="panel">
+            <div class="ph">5축 상세 · 2회차 <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--c-success)">· 전 축 기수 평균 이상</span></div>
+            <div class="axtbl">
+              <div class="axr"><span class="ax">코드이해</span><span class="sc5">5<span class="of">/5</span></span><span class="dl up">▲1</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,4" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="4" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.4<b class="gap hi">+1.6</b></span></div>
+              <div class="axr"><span class="ax">설계논리</span><span class="sc5">5<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,6 54,6" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="6" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.6<b class="gap hi">+1.4</b></span></div>
+              <div class="axr hl-good"><span class="ax">대안비교</span><span class="sc5">5<span class="of">/5</span></span><span class="dl up">▲1</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,4" fill="none" stroke="#1f8a5b" stroke-width="2"/><circle cx="54" cy="4" r="2.3" fill="#1f8a5b"/></svg><span class="gapv">평균 3.6<b class="gap hi">+1.4</b></span></div>
+              <div class="axr"><span class="ax">반례대응</span><span class="sc5">4<span class="of">/5</span></span><span class="dl up">▲1</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,14 54,8" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="8" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.4<b class="gap hi">+0.6</b></span></div>
+              <div class="axr"><span class="ax">자기수정</span><span class="sc5">4<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,8 54,8" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="8" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.5<b class="gap mid">+0.5</b></span></div>
+              <div class="axnote">· 5축 전반 강점이라 표에서 바로 확인. 불균형 카드는 조건 미충족이라 미표시(아래 ⑦ 참고).</div>
+            </div>
+          </div>
+
+          <!-- ⑦ 귀속 카드 없음(3조건 미충족 — 정상, 표시 자체가 없음) -->
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="stateview hidden" data-state="normal">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/trainees/yujin</span></div>
+    <div class="app">
+      <div class="topbar"><div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div><div class="me">박지현 · 매니저 <span class="av">박</span></div></div>
+      <div class="body">
+        <div class="nav"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div></div>
+        <div class="content">
+          <div class="dhead"><div class="who"><span class="av">정</span><div><div class="crumb">교육생 › 정유진</div><h2 style="line-height:1.1">정유진</h2><div class="meta">7기 · A반 · 활성 <span class="proj">· 참여 프로젝트: MSA 배포 실습(팀A)</span></div></div></div></div>
+          <div class="tabs"><span class="t on">종합</span><span class="t">세션</span><span class="t">개입</span></div>
+          <div class="statebar"><span class="lbl">데모 예시</span><span class="sc" data-go="risk">위험</span><span class="sc" data-go="ace">에이스</span><span class="sc on" data-go="normal">일반</span></div>
+
+          <!-- ①②③④ 전부 없음 — 일반 학생은 배지·포커스그래프·경고·상담라인 아무것도 없이 아래 공통 정보만 -->
+          <div class="normnote">특이 신호 없음 — 위험·강점 판정 모두 미해당(DASH-03 낮은 우선순위). 아래는 모든 학생에게 공통으로 보이는 기본 정보입니다.</div>
+
+          <!-- ⑤ 세션 참여 팩트 -->
+          <div class="factline">📋 이번 회차(2회차) <b>응시 완료</b> · 마지막 세션 04.16 · 소요 15분</div>
+
+          <!-- ⑥ 5축 통합표 -->
+          <div class="panel">
+            <div class="ph">5축 상세 · 2회차 <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--c-text-3)">· 전 축 평균 ±0.6 이내</span></div>
+            <div class="axtbl">
+              <div class="axr"><span class="ax">코드이해</span><span class="sc5">4<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,10" fill="none" stroke="#5a616b" stroke-width="2"/><circle cx="54" cy="10" r="2.3" fill="#5a616b"/></svg><span class="gapv">평균 3.4<b class="gap mid">+0.6</b></span></div>
+              <div class="axr"><span class="ax">설계논리</span><span class="sc5">4<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,10" fill="none" stroke="#5a616b" stroke-width="2"/><circle cx="54" cy="10" r="2.3" fill="#5a616b"/></svg><span class="gapv">평균 3.6<b class="gap mid">+0.4</b></span></div>
+              <div class="axr"><span class="ax">대안비교</span><span class="sc5">3<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,10" fill="none" stroke="#5a616b" stroke-width="2"/><circle cx="54" cy="10" r="2.3" fill="#5a616b"/></svg><span class="gapv">평균 3.6<b class="gap mid">−0.6</b></span></div>
+              <div class="axr"><span class="ax">반례대응</span><span class="sc5">4<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,10" fill="none" stroke="#5a616b" stroke-width="2"/><circle cx="54" cy="10" r="2.3" fill="#5a616b"/></svg><span class="gapv">평균 3.4<b class="gap mid">+0.6</b></span></div>
+              <div class="axr"><span class="ax">자기수정</span><span class="sc5">3<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,10" fill="none" stroke="#5a616b" stroke-width="2"/><circle cx="54" cy="10" r="2.3" fill="#5a616b"/></svg><span class="gapv">평균 3.5<b class="gap mid">−0.5</b></span></div>
+              <div class="axnote">· 위험·강점 어느 쪽도 아니라 강조 행 없음. 대부분의 학생이 이 상태(소음 최소화).</div>
+            </div>
+          </div>
+
+          <!-- ⑦ 귀속 카드 없음 -->
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  </div>
+  <!-- ===== 세션 탭 ===== -->
+  <div class="sec-label">탭 · 세션 (질문 예산 N=4 · 적응형 depth · 무너진 지점 강조)</div>
+  <div class="rpage" id="page-session">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/trainees/minjun/sessions/2</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content">
+          <div class="dhead"><div class="who"><span class="av">강</span><div><div class="crumb">교육생 › 강민준</div><h2 style="line-height:1.1">강민준</h2><div class="meta">7기 · A반 · 활성 <span class="proj">· MSA 배포 실습(팀A) · API 서버(팀C)</span></div></div></div></div>
+          <div class="tabs"><span class="t">종합</span><span class="t on">세션</span><span class="t">개입</span></div>
+          <div class="subsel">
+            <span class="sel"><span class="k">회차</span> 2회차 ▾</span>
+            <span style="color:var(--c-text-3);font-size:12px">질문 4개 (회차 설정값 · SC-M03) · 소요 14분(상한 20분)</span>
+            <span class="slegend">
+              <span><b>도달 depth</b> L1 기본 › L2 대안 › L3 반례 (멈춘 곳)</span>
+              <span><b>이해</b> <span class="und solid">견고</span> <span class="und partial">부분</span> <span class="und surface">표면</span></span>
+            </span>
+          </div>
+
+          <div class="dp"><div class="dphead"><span class="topic">토큰 만료 예외 처리</span><span class="ref">auth/token.py:20</span><span class="pips"><span class="p done">L1</span><span class="p done">L2</span><span class="p done">L3</span></span><span class="und solid">견고</span></div></div>
+
+          <div class="dp weak">
+            <div class="dphead"><span class="topic">인증 방식 대안 비교 (401 vs 미들웨어)</span><span class="ref">auth/token.py:20-22</span><span class="pips"><span class="p done">L1</span><span class="p brk">L2</span><span class="p">L3</span></span><span class="und surface">표면</span></div>
+            <div class="dpbody">
+              <div class="turn"><div class="q">L2 — 401 반환 vs 미들웨어 일괄 처리, 트레이드오프는?</div><div class="a">미들웨어가 더 편할 것 같은데 이유는 잘 모르겠어요. 그냥 한 군데서 처리하니까요.</div><div class="ev">↳ <b>대안비교</b> 축 근거 · 원본 인용 · L2에서 근거 없이 표면적이라 <b>여기서 중단</b>(L3 미도달) · 취약 유형: 트레이드오프 미인지</div></div>
+            </div>
+          </div>
+
+          <div class="dp"><div class="dphead"><span class="topic">DB 조회 실패 처리</span><span class="ref">auth/token.py:21</span><span class="pips"><span class="p done">L1</span><span class="p done">L2</span><span class="p">L3</span></span><span class="und partial">부분</span></div></div>
+          <div class="dp"><div class="dphead"><span class="topic">동시 요청·토큰 재사용</span><span class="ref">auth/token.py:19</span><span class="pips"><span class="p done">L1</span><span class="p done">L2</span><span class="p">L3</span></span><span class="und solid">견고</span></div></div>
+
+          <div style="font-size:11px;color:var(--c-text-3);margin-top:8px">· depth는 <b>적응형</b>: 견고하면 조기 종료(단 최소 L2 1회), 약하면 심화. 15개 강제 아님. <b>표면 지점이 경고색으로 튐</b> → "어디서 막혔나" 즉시 스캔. 판정·근거는 매니저 전용(교육생 비노출).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ===== 개입 탭 ===== -->
+  <div class="sec-label">탭 · 개입 (이력 + 메모)</div>
+  <div class="rpage" id="page-intervention">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/trainees/minjun#intv</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content">
+          <div class="dhead"><div class="who"><span class="av">강</span><div><div class="crumb">교육생 › 강민준</div><h2 style="line-height:1.1">강민준</h2><div class="meta">7기 · A반 · 활성 <span class="proj">· MSA 배포 실습(팀A) · API 서버(팀C)</span></div></div></div></div>
+          <div class="tabs"><span class="t">종합</span><span class="t">세션</span><span class="t on">개입</span></div>
+          <!-- 개입별 활동 카드: 근거·활동 기록·효과가 한 덩어리 -->
+          <div class="ivcard active">
+            <div class="ivhead">
+              <div class="l"><span class="ivtype">면담</span><span class="ivstat prog">진행 중</span></div>
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;color:var(--c-text-3)">효과는 완료 후 다음 회차에 판정</span><button class="addact" style="margin:0;padding:5px 12px;border-style:solid;border-color:var(--c-primary)">완료로 →</button></div>
+            </div>
+            <div class="ivmeta" style="margin-bottom:10px">04.12 시작 · 담당 박지현</div>
+            <div class="ivbasis">근거 시그널 · 위험 · <b>반례대응</b> 4→2 (2회차) <span class="loglink" style="margin-left:6px">시그널 ↗</span></div>
+            <div class="actlabel">활동 기록</div>
+            <div class="act" style="border-top:0">
+              <div class="atop"><span class="ltag meet">면담</span><span class="logdate">04.12 · 박지현</span></div>
+              <div class="abody">예외 처리 개념을 어려워함. 학습 페이스는 버겁지 않다고 하나, 막힐 때 질문을 잘 안 하는 편. 다음 회차 전 예외 처리 교안 함께 보기로.</div>
+            </div>
+            <div class="addact">＋ 면담·관찰 기록 추가</div>
+          </div>
+
+          <div class="ivcard">
+            <div class="ivhead">
+              <div class="l"><span class="ivtype">멘토링</span><span class="ivstat done">완료</span></div>
+              <span class="iveff rec">회복 · 설계논리 4→5</span>
+            </div>
+            <div class="ivmeta" style="margin-bottom:10px">03.20 ~ 04.02 · 담당 박지현</div>
+            <div class="ivbasis">근거 시그널 · 위험 · <b>설계논리</b> 저조 <span class="loglink" style="margin-left:6px">시그널 ↗</span></div>
+            <div class="actlabel">활동 기록</div>
+            <div class="act" style="border-top:0">
+              <div class="atop"><span class="ltag meet">멘토링 후기</span><span class="logdate">03.20 · 박지현</span></div>
+              <div class="abody">설계 의도를 스스로 설명하도록 유도. 대안 비교에 자신감이 붙음.</div>
+            </div>
+            <div class="addact">＋ 기록 추가</div>
+          </div>
+
+          <!-- 개입 없는 순수 관찰/메모 -->
+          <div class="genmemo">
+            <div class="actlabel" style="margin-bottom:12px">일반 메모 <span style="font-weight:400;text-transform:none;letter-spacing:0">· 개입과 무관한 관찰 (INTV-08 비연결 메모)</span></div>
+            <div class="act" style="border-top:0;padding-top:0">
+              <div class="atop"><span class="ltag obs">관찰</span><span class="logdate">03.28 · 박지현</span></div>
+              <div class="abody">최근 커밋이 마감에 몰림. 번아웃 조짐은 아직 없어 보임.</div>
+            </div>
+            <div class="addact" style="color:var(--c-text-2);border-color:var(--c-border)">＋ 일반 관찰 메모</div>
+          </div>
+          <div style="font-size:11px;color:var(--c-text-3);margin-top:12px">· <b>같은 Intervention 레코드</b>가 여기(이 학생 맥락)와 개입 관리(SC-M07 전체 목록)에 함께 보임 — 생성은 시그널에서, <b>진행/완료·기록 추가는 양쪽 어디서나</b>. 각 카드에 근거·활동·효과가 한 덩어리. 효과 판정은 <b>완료 후 다음 회차</b>에만(진행 중엔 없음). <b>[＋ 면담·관찰 기록 추가]</b> 시 면담이면 AI 요약·확인 체크리스트 프리필(RPT-03). 개입 무관 관찰은 하단 일반 메모(INTV-08 비연결). 작성자·시각 보존, 학생 비공개.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="sec-label">상태 ↔ case 매핑 (총합)</div>
+  <div class="rpage" id="page-cases">
+  <div class="notes">
+    <h3>상태 ↔ 명세 case 매핑 (DASH-16·ENG-02/03·RPT-03·INTV-08)</h3>
+    <p class="hint">근거·귀속 데이터는 탭 제거 후 종합·세션에 흡수 — 커버리지 유지, IA 개선(D21). <b>역할 분리(D38):</b> [개입 생성]→SC-M07 생성 폼 프리필(같은 생성 흐름의 시그널 진입), 면담 준비·상담 메모는 이 화면(개입 탭)에서 준비·기록. 별도 개입 시스템 아님.</p>
+    <div class="grp">종합·추이·불균형 신호 (DASH-16 · ENG-02/03)</div>
+    <div class="tblwrap"><table class="ntbl"><tbody>
+      <tr><td>D-1</td><td>조회 권한 없는 교육생</td><td><span class="pill danger">danger</span></td><td>상세 차단(SYS-02 격리)</td></tr>
+      <tr><td>D-2</td><td>일부 회차 결측</td><td><span class="pill info">info</span></td><td>추이 라인 결측 구간 끊김·레이더 결측 축 회색</td></tr>
+      <tr><td>D-4</td><td>채점 근거 부재</td><td><span class="pill info">info</span></td><td>근거 없음·ENG-01 점검</td></tr>
+      <tr><td>D-5</td><td>귀속 미수행</td><td><span class="pill na">-</span></td><td>불균형 신호 카드 미표시</td></tr>
+      <tr><td>D-7</td><td>삭제·비활성 교육생</td><td><span class="pill na">배지</span></td><td>수정 제한</td></tr>
+      <tr><td>T-1</td><td>1회차 단독(표본 부족)</td><td><span class="pill info">info</span></td><td>추이·기수대비 미산출·표본 부족(B4)</td></tr>
+      <tr><td>G-3</td><td>기여량 단독 프리라이더 요청</td><td><span class="pill danger">danger</span></td><td>확정 차단·서술형·교차 3조건 필수(B5)</td></tr>
+      <tr><td>G-4</td><td>커밋 이메일 미검증(귀속 신뢰도)</td><td><span class="pill danger">danger</span></td><td>기여 카드에 정확도 주의 경고·확정 판단 전 검증 유도(AUTH-07·A8)</td></tr>
+    </tbody></table></div>
+    <div class="grp">세션 이해 상태 모델 (MEAS-06) · 면담(RPT-03) · 메모(INTV-08)</div>
+    <div class="tblwrap"><table class="ntbl"><tbody>
+      <tr><td>상태</td><td>도달 depth</td><td colspan="2">L1 기본 종속 / L2 대안·트레이드오프 / L3 반례·극단 (멈춘 곳 표시)</td></tr>
+      <tr><td>상태</td><td>이해</td><td colspan="2"><span class="pill info">견고</span> / <span class="pill warning">부분</span> / <span class="pill danger">표면</span> + 취약 유형</td></tr>
+      <tr><td>D-3</td><td>세션 전문 부재</td><td><span class="pill na">-</span></td><td>세션 탭 데이터 없음</td></tr>
+      <tr><td>R-1</td><td>세션 로그 없음</td><td><span class="pill na">-</span></td><td>면담 버튼 비활성</td></tr>
+      <tr><td>R-2</td><td>자동 생성 요청</td><td><span class="pill danger">danger</span></td><td>차단(온디맨드만)</td></tr>
+      <tr><td>M-3</td><td>빈 메모</td><td><span class="pill danger">danger</span></td><td>저장 차단</td></tr>
+      <tr><td>M-6</td><td>수정 시 원작성 보존</td><td><span class="pill info">info</span></td><td>작성자·시각 보존·이력 추가</td></tr>
+    </tbody></table></div>
+    <div class="foot">디자인 토큰: docs/plan/screen/definition/_source/design-tokens.md · 종합점수 추이(D27)·σ 평이화(D24)·회차 스냅샷 라벨(B1)·한글 이해 상태(D25)·N 적응형(D26) · 상태별 적응 요약(D106) · 매니저 전용 · 웹 기준</div>
+  </div>
+  </div>
+</div>
+<script>
+  // 해시 라우팅 (report·program-admin과 동일) — 탭 단위 4뷰: 종합·세션·개입·상태매핑
+  var PAGE = { overview:"page-overview", session:"page-session", intervention:"page-intervention", cases:"page-cases" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "overview";
+    var id = PAGE[h] || "page-overview";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  // 종합 탭 안의 상태 버전 전환 (데모) — statebar 칩 클릭 시 해당 상태 stateview만 표시
+  function showState(st){
+    document.querySelectorAll("#page-overview .stateview").forEach(function(v){
+      v.classList.toggle("hidden", v.getAttribute("data-state") !== st);
+    });
+  }
+  document.addEventListener("click", function(e){
+    var chip = e.target.closest(".statebar .sc");
+    if(chip){ showState(chip.getAttribute("data-go")); return; }
+  });
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+</script>
+</body>
+</html>

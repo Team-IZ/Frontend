@@ -1,0 +1,15 @@
+# 줄바꿈을 저장소 차원에서 통일한다.
+# core.autocrlf는 사람마다 다른 로컬 설정이라 신뢰할 수 없다 — Windows에서
+# CRLF로 커밋되면 "저장만 했는데 파일 전체가 바뀐" diff가 나온다.
+# .editorconfig·.vscode는 에디터 설정이라 git의 체크아웃/커밋 변환은 막지 못한다.
+* text=auto eol=lf
+
+# 바이너리 — 줄바꿈 변환 금지(변환되면 파일이 깨진다)
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.pdf binary

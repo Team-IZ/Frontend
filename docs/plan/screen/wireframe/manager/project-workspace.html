@@ -1,0 +1,1016 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>SC-M13 · 프로젝트 워크스페이스 — 와이어프레임</title>
+    <style>
+      :root {
+        --c-bg: #f4f5f7; --c-surface: #ffffff; --c-surface-2: #fafbfc;
+        --c-border: #e2e5ea; --c-border-strong: #cfd4dc;
+        --c-text: #181b20; --c-text-2: #5a616b; --c-text-3: #8b929c;
+        --c-primary: #3a4db8; --c-primary-hover: #31429e; --c-primary-soft: #eef0fb;
+        --c-nav: #1e2436; --c-nav-2: #2a3147; --c-nav-text: #aeb4c6;
+        --c-danger: #c0392b; --c-danger-soft: #fbeceb;
+        --c-warning: #b3771a; --c-warning-soft: #fbf3e6;
+        --c-success: #1f8a5b; --c-success-soft: #e8f5ee;
+        --c-info: #2f6bb0; --c-info-soft: #eaf2fa;
+        --r-sm: 6px; --r-md: 10px; --r-lg: 14px;
+        --fs-xs: 12px; --fs-sm: 13px; --fs-base: 14px; --fs-lg: 16px; --fs-xl: 20px; --fs-2xl: 26px;
+        --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 24px; --sp-6: 32px; --sp-8: 48px;
+        --shadow-card: 0 1px 2px rgba(20,24,31,.05), 0 10px 34px rgba(20,24,31,.09);
+        --font: -apple-system, "Apple SD Gothic Neo", system-ui, "Segoe UI", sans-serif;
+      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body { font-family: var(--font); color: var(--c-text); background: var(--c-bg); font-size: var(--fs-base); line-height: 1.5; -webkit-font-smoothing: antialiased; }
+      .page { max-width: 1320px; margin: 0 auto; padding: var(--sp-8) var(--sp-5); }
+      .doc-head { margin-bottom: var(--sp-6); }
+      .doc-head .id { display: inline-block; font-size: var(--fs-xs); font-weight: 700; letter-spacing: .04em; color: var(--c-primary); background: var(--c-primary-soft); padding: 3px 8px; border-radius: var(--r-sm); }
+      .doc-head h1 { font-size: var(--fs-2xl); margin: var(--sp-3) 0 var(--sp-2); letter-spacing: -.01em; }
+      .doc-head p { color: var(--c-text-2); font-size: var(--fs-sm); max-width: 900px; }
+      /* iframe(index) 안에서는 문서 헤더·설명 노트 숨김 → 사이드바 메뉴 하나 = 화면 하나 */
+      body.embedded .doc-head, body.embedded #flow-notes { display: none; }
+      body.embedded .page { padding: var(--sp-4) var(--sp-5); }
+
+      .viewport { border: 1px solid var(--c-border-strong); border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-card); background: #fff; position: relative; }
+      .chrome { height: 36px; background: #eceef1; border-bottom: 1px solid var(--c-border); display: flex; align-items: center; gap: var(--sp-2); padding: 0 var(--sp-4); }
+      .chrome .tl { display: flex; gap: 6px; } .chrome .tl i { width: 11px; height: 11px; border-radius: 50%; background: #cfd4dc; display: block; }
+      .chrome .url { flex: 1; height: 22px; background: #fff; border: 1px solid var(--c-border); border-radius: 20px; font-size: var(--fs-xs); color: var(--c-text-3); display: flex; align-items: center; padding: 0 var(--sp-3); margin-left: var(--sp-3); max-width: 460px; }
+
+      .app { display: flex; flex-direction: column; min-height: 720px; }
+      .topbar { height: 54px; background: var(--c-surface); border-bottom: 1px solid var(--c-border); display: flex; align-items: center; justify-content: space-between; padding: 0 var(--sp-5); }
+      .topbar .left { display: flex; align-items: center; gap: var(--sp-4); }
+      .brand { display: flex; align-items: center; gap: var(--sp-2); font-weight: 700; }
+      .brand .mk { width: 26px; height: 26px; border-radius: 7px; background: var(--c-primary); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; }
+      .cohortsel { display: flex; align-items: center; gap: var(--sp-2); border: 1px solid var(--c-border-strong); border-radius: 20px; padding: 5px var(--sp-3); font-size: var(--fs-sm); background: var(--c-surface-2); cursor: pointer; }
+      .cohortsel .k { color: var(--c-text-3); font-size: var(--fs-xs); }
+      .me { display: flex; align-items: center; gap: var(--sp-2); font-size: var(--fs-sm); color: var(--c-text-2); }
+      .me .av { width: 28px; height: 28px; border-radius: 50%; background: var(--c-primary-soft); color: var(--c-primary); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+      .body { display: flex; flex: 1; }
+      .nav { width: 184px; background: var(--c-nav); padding: var(--sp-4) var(--sp-3); flex: 0 0 184px; }
+      .nav .item { display: flex; align-items: center; gap: var(--sp-2); padding: 9px var(--sp-3); border-radius: var(--r-md); color: var(--c-nav-text); font-size: var(--fs-sm); margin-bottom: 2px; }
+      .nav .item.on { background: var(--c-nav-2); color: #fff; font-weight: 600; }
+      .nav .item .ic { width: 15px; text-align: center; opacity: .85; font-size: 12px; }
+      .nav .item .lead-tag { margin-left: auto; font-size: 9px; font-weight: 700; color: var(--c-warning); }
+      /* 권한 역할 태그 — 저작=총괄, 실행=담당 (FB-F5·D90) */
+      .rtag { font-size: 9px; font-weight: 700; border-radius: 20px; padding: 1px 7px; vertical-align: 1px; margin-left: 5px; white-space: nowrap; }
+      .rtag.lead { color: var(--c-warning); background: var(--c-warning-soft); border: 1px solid #e6d3a8; }
+      .rtag.mgr { color: var(--c-info); background: var(--c-info-soft); border: 1px solid #cfe0f0; }
+      /* 교안 연결 피커 (D91) */
+      .curpick { display: flex; flex-direction: column; gap: 6px; }
+      .curopt { display: flex; align-items: flex-start; gap: 10px; border: 1px solid var(--c-border); border-radius: var(--r-md); padding: 10px 12px; cursor: pointer; }
+      .curopt.on { border-color: var(--c-primary); background: var(--c-primary-soft); }
+      .curopt.dis { opacity: .55; cursor: not-allowed; }
+      .curopt .ck { flex: 0 0 18px; height: 18px; border: 1px solid var(--c-border-strong); border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; background: #fff; margin-top: 1px; }
+      .curopt.on .ck { background: var(--c-primary); border-color: var(--c-primary); }
+      .curopt .ci b { font-size: var(--fs-sm); }
+      .curopt .ci .cv { font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--c-text-3); margin-left: 4px; }
+      .curopt .ci .cc { font-size: 11px; color: var(--c-text-3); margin-top: 2px; }
+      /* 관점 전환(데모) — 담당 뷰에서 총괄 전용 액션 읽기전용 게이팅 (D90 후속) */
+      .roletoggle { display: inline-flex; border: 1px solid var(--c-border-strong); border-radius: 20px; overflow: hidden; font-size: 11px; margin-right: var(--sp-3); cursor: pointer; }
+      .roletoggle span { padding: 5px 11px; color: var(--c-text-2); }
+      .roletoggle span.on { background: var(--c-primary); color: #fff; font-weight: 600; }
+      .lead-gate { display: none; align-items: center; gap: 4px; font-size: 11px; color: var(--c-text-3); margin-left: var(--sp-2); white-space: nowrap; }
+      body.role-mgr .lead-only { opacity: .4; pointer-events: none; }
+      body.role-mgr .lead-gate { display: inline-flex; }
+      .content { flex: 1; background: var(--c-bg); padding: var(--sp-5) var(--sp-6); min-width: 0; }
+
+      .crumb { font-size: var(--fs-xs); color: var(--c-text-3); margin-bottom: 2px; }
+      .phead { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); margin-bottom: var(--sp-4); }
+      .phead h2 { font-size: var(--fs-xl); letter-spacing: -.01em; }
+      .projsel { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--c-border-strong); border-radius: 20px; padding: 4px var(--sp-3); font-size: var(--fs-sm); background: var(--c-surface-2); cursor: pointer; margin-left: var(--sp-2); }
+      .projsel .k { color: var(--c-text-3); font-size: var(--fs-xs); }
+      .back { font-size: var(--fs-xs); color: var(--c-primary); text-decoration: none; cursor: pointer; }
+
+      .tabs { display: flex; gap: var(--sp-5); border-bottom: 1px solid var(--c-border); margin-bottom: var(--sp-5); }
+      .tabs .t { padding: var(--sp-2) 0; font-size: var(--fs-sm); color: var(--c-text-2); border-bottom: 2px solid transparent; margin-bottom: -1px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+      .tabs .t.on { color: var(--c-primary); border-color: var(--c-primary); font-weight: 600; }
+      .tabs.hide { display: none; }
+      .tpane { display: none; } .tpane.on { display: block; }
+      /* 목록(컬렉션) 모드 헤더 — 상세 진입 전 */
+      .listhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-4); }
+      .listhead h2 { font-size: var(--fs-xl); letter-spacing: -.01em; } .listhead h2 .tot { font-weight: 400; color: var(--c-text-2); font-size: var(--fs-base); margin-left: 6px; }
+      .listhead .crumb { font-size: var(--fs-xs); color: var(--c-text-3); margin-bottom: 2px; }
+
+      .bhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--sp-3); }
+      .bhead h3 { font-size: var(--fs-base); font-weight: 700; }
+      .bhead h3 .tot { font-weight: 400; color: var(--c-text-2); margin-left: 6px; font-variant-numeric: tabular-nums; }
+      .bhead h3 .meta { font-weight: 400; color: var(--c-text-3); font-size: var(--fs-sm); margin-left: 4px; }
+      .bhead .acts { display: flex; gap: var(--sp-2); }
+      .block { margin-bottom: var(--sp-6); } .block:last-child { margin-bottom: 0; }
+      .btn { border: 0; border-radius: var(--r-md); background: var(--c-primary); color: #fff; font-weight: 600; font-size: var(--fs-sm); cursor: pointer; padding: 8px var(--sp-4); }
+      .btn.ghost { background: #fff; color: var(--c-text-2); border: 1px solid var(--c-border-strong); }
+      .btn.sm { padding: 6px var(--sp-3); font-size: var(--fs-xs); }
+
+      /* 상세 컨텍스트 바 */
+      .ctxbar { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-md); padding: 10px var(--sp-4); margin-bottom: var(--sp-4); }
+      .ctxbar.hide { display: none; }
+      .ctxbar .cmeta { font-size: var(--fs-xs); color: var(--c-text-3); }
+
+      /* 개요 스트립 */
+      .ovstrip { display: flex; flex-wrap: wrap; gap: var(--sp-5); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5); margin-bottom: var(--sp-5); }
+      .ovstrip > div { min-width: 90px; }
+      .ovstrip .k { font-size: var(--fs-xs); color: var(--c-text-3); margin-bottom: 3px; }
+      .ovstrip .v { font-size: var(--fs-sm); font-weight: 600; }
+      .link { color: var(--c-primary); font-size: var(--fs-xs); cursor: pointer; }
+
+      .metrics { display: flex; gap: var(--sp-3); margin-bottom: var(--sp-4); flex-wrap: wrap; }
+      .metric { flex: 1; min-width: 150px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-md); padding: var(--sp-3) var(--sp-4); }
+      .metric .ml { font-size: var(--fs-xs); color: var(--c-text-3); margin-bottom: 4px; }
+      .metric .mv { font-size: var(--fs-xl); font-weight: 700; font-variant-numeric: tabular-nums; }
+      .metric .mv small { font-size: var(--fs-sm); color: var(--c-text-3); font-weight: 400; }
+      .metric .ms { font-size: 11px; color: var(--c-text-3); margin-top: 2px; }
+      .metric.warn { border-color: var(--c-warning); background: var(--c-warning-soft); }
+      .metric.warn .mv { color: var(--c-warning); }
+
+      .toolbar { display: flex; align-items: center; gap: var(--sp-2); margin-bottom: var(--sp-3); flex-wrap: wrap; }
+      .sel { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--c-border-strong); border-radius: var(--r-md); padding: 7px var(--sp-3); font-size: var(--fs-xs); background: #fff; }
+      .sel .k { color: var(--c-text-3); }
+      .search { width: 220px; height: 36px; border: 1px solid var(--c-border-strong); border-radius: var(--r-md); background: var(--c-surface-2); color: var(--c-text-3); font-size: var(--fs-sm); display: flex; align-items: center; padding: 0 var(--sp-3); }
+
+      .card { background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-md); overflow: hidden; }
+      .tbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
+      .tbl th, .tbl td { text-align: left; padding: 10px var(--sp-4); border-bottom: 1px solid var(--c-border); }
+      .tbl th { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .03em; color: var(--c-text-3); font-weight: 600; background: var(--c-surface-2); }
+      .tbl tr:last-child td { border-bottom: 0; }
+      .tbl td.num { text-align: right; font-variant-numeric: tabular-nums; } .tbl th.num { text-align: right; }
+      .tbl td.ctr, .tbl th.ctr { text-align: center; }
+      .ox { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; font-size: 12px; font-weight: 800; }
+      .ox.o { background: var(--c-success-soft); color: var(--c-success); }
+      .ox.x { background: var(--c-danger-soft); color: var(--c-danger); }
+      .ox.pend { background: #eef0f3; color: var(--c-text-3); font-weight: 400; }
+      .tbl .nm { font-weight: 600; }
+      .tbl tr.click:hover { background: var(--c-surface-2); cursor: pointer; }
+      .chev { color: var(--c-text-3); }
+      .tbl .sub { font-size: 11px; color: var(--c-text-3); }
+      .badge { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+      .badge.ok { background: var(--c-success-soft); color: var(--c-success); }
+      .badge.off { background: #eef0f3; color: var(--c-text-3); }
+      .badge.warn { background: var(--c-warning-soft); color: var(--c-warning); }
+      .badge.info { background: var(--c-info-soft); color: var(--c-info); }
+      .badge.type { background: var(--c-primary-soft); color: var(--c-primary); }
+      .badge.final { background: var(--c-warning-soft); color: var(--c-warning); }
+
+      /* 팀 편성 */
+      .teams { display: flex; gap: var(--sp-3); align-items: flex-start; flex-wrap: wrap; }
+      .teamcol { flex: 1; min-width: 180px; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-md); padding: var(--sp-3); }
+      .teamcol.pool { border-style: dashed; background: var(--c-surface-2); }
+      .teamcol h4 { font-size: var(--fs-sm); display: flex; align-items: center; gap: 6px; margin-bottom: var(--sp-2); }
+      .teamcol h4 .cnt { margin-left: auto; font-size: var(--fs-xs); color: var(--c-text-3); font-weight: 400; }
+      .repo { display: flex; align-items: center; gap: 6px; background: var(--c-surface-2); border: 1px solid var(--c-border); border-radius: var(--r-sm); padding: 4px 8px; font-size: 11px; color: var(--c-text-2); margin-bottom: var(--sp-2); }
+      .repo .g { color: var(--c-text-3); }
+      .chip { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: var(--r-sm); font-size: var(--fs-sm); }
+      .chip:hover { background: var(--c-surface-2); }
+      .chip .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--c-success); flex: 0 0 auto; }
+      .chip .dot.w { background: var(--c-warning); }
+      .cbx { width: 16px; height: 16px; border: 1.5px solid var(--c-border-strong); border-radius: 4px; display: inline-block; flex: 0 0 auto; cursor: pointer; position: relative; }
+      .cbx.on { background: var(--c-primary); border-color: var(--c-primary); }
+      .cbx.on::after { content: "✓"; color: #fff; font-size: 11px; font-weight: 800; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+      .poolact { margin-top: var(--sp-2); }
+      .mini { border: 1px solid var(--c-primary); background: var(--c-primary); color: #fff; border-radius: var(--r-sm); padding: 6px 10px; font-size: var(--fs-xs); font-weight: 600; cursor: pointer; width: 100%; }
+      .addteam { flex: 0 0 auto; align-self: stretch; min-width: 120px; border: 1px dashed var(--c-border-strong); border-radius: var(--r-md); color: var(--c-primary); font-size: var(--fs-sm); display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+      .gatenote { font-size: 12px; color: var(--c-info); background: var(--c-info-soft); border: 1px solid var(--c-info); border-radius: var(--r-md); padding: 10px 14px; margin-bottom: 16px; line-height: 1.6; }
+      .gatenote b { color: var(--c-info); }
+      .foot { margin-top: var(--sp-4); font-size: var(--fs-xs); color: var(--c-text-3); max-width: 920px; line-height: 1.7; }
+      .foot b { color: var(--c-text-2); }
+
+      .popwrap { position: relative; display: inline-block; }
+      .popover { position: absolute; top: calc(100% + 6px); left: 0; z-index: 6; background: #fff; border: 1px solid var(--c-border-strong); border-radius: var(--r-md); box-shadow: var(--shadow-card); padding: 6px; min-width: 220px; }
+      .popover.hidden { display: none; }
+      .popover .pt { font-size: var(--fs-xs); color: var(--c-text-3); padding: 6px 8px 8px; }
+      .popover .opt { display: flex; align-items: center; gap: 8px; width: 100%; text-align: left; border: 0; background: none; font-family: inherit; font-size: var(--fs-sm); color: var(--c-text); padding: 8px; border-radius: 6px; cursor: pointer; }
+      .popover .opt:hover { background: var(--c-primary-soft); }
+      .popover .opt .c { margin-left: auto; font-size: var(--fs-xs); color: var(--c-text-3); }
+
+      /* 모달 */
+      .backdrop { position: absolute; inset: 0; background: rgba(20,24,31,.42); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; z-index: 20; overflow: auto; }
+      .backdrop.hidden { display: none; }
+      .dialog { width: 560px; max-width: 100%; background: #fff; border-radius: var(--r-lg); box-shadow: var(--shadow-card); overflow: hidden; }
+      .dialog .dh { display: flex; align-items: center; justify-content: space-between; padding: var(--sp-4) var(--sp-5); border-bottom: 1px solid var(--c-border); }
+      .dialog .dh h3 { font-size: var(--fs-lg); } .dialog .dh .x { color: var(--c-text-3); cursor: pointer; font-size: 18px; line-height: 1; }
+      .dialog .db { padding: var(--sp-5); max-height: 62vh; overflow: auto; }
+      .dialog .df { display: flex; align-items: center; justify-content: space-between; gap: var(--sp-3); padding: var(--sp-3) var(--sp-5); border-top: 1px solid var(--c-border); background: var(--c-surface-2); }
+      .fld { margin-bottom: var(--sp-4); } .fld:last-child { margin-bottom: 0; }
+      .fld > .fl { font-size: var(--fs-sm); font-weight: 600; margin-bottom: 5px; display: flex; align-items: center; gap: 6px; }
+      .fld .fl .req { color: var(--c-danger); font-size: 11px; } .fld .fl .hint { font-weight: 400; color: var(--c-text-3); font-size: var(--fs-xs); }
+      .inp { width: 100%; height: 38px; border: 1px solid var(--c-border-strong); border-radius: var(--r-md); padding: 0 var(--sp-3); font-size: var(--fs-sm); background: #fff; color: var(--c-text); display: flex; align-items: center; }
+      .row2 { display: flex; gap: var(--sp-3); } .row2 > * { flex: 1; }
+      .toggle { display: inline-flex; border: 1px solid var(--c-border-strong); border-radius: var(--r-md); overflow: hidden; }
+      .toggle .tg { padding: 8px 18px; font-size: var(--fs-sm); cursor: pointer; background: #fff; color: var(--c-text-2); border-right: 1px solid var(--c-border); }
+      .toggle .tg:last-child { border-right: 0; } .toggle .tg.on { background: var(--c-primary); color: #fff; font-weight: 600; }
+      .radio { display: flex; gap: var(--sp-3); } .radio .rd { display: flex; align-items: center; gap: 7px; font-size: var(--fs-sm); border: 1px solid var(--c-border-strong); border-radius: var(--r-md); padding: 8px 12px; cursor: pointer; flex: 1; }
+      .radio .rd.on { border-color: var(--c-primary); background: var(--c-primary-soft); color: var(--c-primary); font-weight: 600; }
+      .radio .rd .mk { width: 14px; height: 14px; border: 1.5px solid var(--c-border-strong); border-radius: 50%; flex: 0 0 auto; }
+      .radio .rd.on .mk { border-color: var(--c-primary); border-width: 4px; }
+      .reqrows { display: flex; flex-direction: column; gap: 6px; }
+      .reqrow { display: flex; gap: 6px; align-items: center; }
+      .reqrow .rk { flex: 0 0 160px; } .reqrow .rv { flex: 1; } .reqrow .del { color: var(--c-text-3); cursor: pointer; font-size: 13px; padding: 0 4px; }
+      .addrow { align-self: flex-start; font-size: var(--fs-xs); color: var(--c-primary); border: 1px dashed var(--c-primary); border-radius: var(--r-sm); padding: 5px 10px; cursor: pointer; margin-top: 2px; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+      .fchip { display: inline-flex; align-items: center; gap: 5px; font-size: var(--fs-xs); background: var(--c-info-soft); color: var(--c-info); border-radius: 20px; padding: 4px 10px; } .fchip .x { cursor: pointer; opacity: .6; }
+      .fchip.add { background: #fff; border: 1px dashed var(--c-border-strong); color: var(--c-text-3); cursor: pointer; }
+      .fwarn { font-size: 11px; color: var(--c-warning); margin-top: 4px; }
+      .autotag { font-size: 10px; font-weight: 700; color: var(--c-info); background: var(--c-info-soft); padding: 1px 6px; border-radius: 4px; }
+
+      /* 이 탭의 상태·case 발췌 박스 */
+      .casewrap { margin-top: var(--sp-4); }
+      .casebox { display: none; background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-md); padding: var(--sp-4) var(--sp-5); }
+      .casebox.on { display: block; }
+      .casebox .ct { font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--c-text-3); margin-bottom: var(--sp-2); display: flex; align-items: center; justify-content: space-between; }
+      .casebox .ct .all { color: var(--c-primary); cursor: pointer; text-transform: none; letter-spacing: 0; }
+      .casebox .cr { display: flex; gap: var(--sp-3); align-items: baseline; padding: 7px 0; font-size: var(--fs-sm); border-top: 1px solid var(--c-border); }
+      .casebox .cr:first-of-type { border-top: 0; }
+      .casebox .cr .cn { flex: 0 0 42px; color: var(--c-text-3); font-size: var(--fs-xs); font-variant-numeric: tabular-nums; }
+      .casebox .cr .pill { flex: 0 0 auto; }
+      .casebox .cr .cd { flex: 1; color: var(--c-text-2); }
+      .casebox .cr .cd b { color: var(--c-text); }
+
+      .pill { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 20px; }
+      .pill.danger { background: var(--c-danger-soft); color: var(--c-danger); }
+      .pill.warning { background: var(--c-warning-soft); color: var(--c-warning); }
+      .pill.info { background: var(--c-info-soft); color: var(--c-info); }
+
+      .notes { margin-top: var(--sp-6); background: var(--c-surface); border: 1px solid var(--c-border); border-radius: var(--r-lg); padding: var(--sp-5) var(--sp-6); }
+      .notes h3 { font-size: var(--fs-lg); margin-bottom: var(--sp-2); }
+      .notes .grp { font-size: var(--fs-xs); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--c-text-3); margin: var(--sp-5) 0 var(--sp-2); }
+      .notes .hint { font-size: var(--fs-sm); color: var(--c-text-2); margin-bottom: var(--sp-2); }
+      .notes p { font-size: var(--fs-sm); color: var(--c-text-2); margin-bottom: 6px; }
+      .tblwrap { overflow-x: auto; }
+      .ntbl { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); min-width: 560px; }
+      .ntbl th, .ntbl td { text-align: left; padding: var(--sp-2) var(--sp-3); border-bottom: 1px solid var(--c-border); }
+      .ntbl th { font-size: var(--fs-xs); text-transform: uppercase; letter-spacing: .03em; color: var(--c-text-3); font-weight: 600; }
+      .ntbl td:first-child { width: 52px; color: var(--c-text-3); font-variant-numeric: tabular-nums; }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="doc-head">
+        <span class="id">SC-M13 · P0/P1 · manager/project-workspace · 웹</span>
+        <h1>프로젝트 워크스페이스 <span style="font-size:12px;color:var(--c-warning);vertical-align:4px">저작=총괄 · 실행=담당</span></h1>
+        <p>
+          <b>2층 구조:</b> <b>목록(컬렉션)</b>에서 프로젝트 하나를 클릭 → <b>상세(4탭)</b>로 드릴다운. 목록엔 탭바·컨텍스트바 없음, 상세에만 탭바[<b>개요</b>(요구사항 O/X=프로젝트)·<b>팀·레포</b>(단위 N 확정)·<b>측정 계획</b>(질문 초점=회차)·<b>결과</b>] + 컨텍스트 바. 개인형은 <b>팀·레포의 개인 프로젝트 변형</b>(학생별 레포). 운영 관리와 같은 "메뉴 하나 = 화면 하나". 각 화면 하단에 <b>상태·case</b> 발췌, 전량은 <b>상태 ↔ case 매핑(총합)</b>. 근거: D77·D78·D80·D81.
+        </p>
+      </div>
+
+      <div class="viewport" id="vp">
+        <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url" id="url">iz-get.com/cohorts/7/projects</span></div>
+        <div class="app">
+          <div class="topbar">
+            <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기관</span> 그린 부트캠프 <span class="k">· 현재</span> 7기 ▾</div></div>
+            <div style="display:flex;align-items:center">
+              <span class="roletoggle" id="role-toggle" title="D90 권한 경계 데모 — 저작=총괄/실행=담당"><span class="on" data-role="lead">총괄 뷰</span><span data-role="mgr">담당 뷰</span></span>
+              <div class="me" id="me-label">박지현 · 총괄 매니저 <span class="av">박</span></div>
+            </div>
+          </div>
+          <div class="body">
+            <div class="nav" id="nav"></div>
+            <div class="content">
+              <!-- 상세 컨텍스트 바 (목록/개인형 탭에선 숨김) -->
+              <div class="ctxbar" id="ctxbar">
+                <div>
+                  <div class="crumb"><a class="back" data-tab="list">← 프로젝트 목록</a></div>
+                  <div style="display:flex;align-items:center;gap:6px;margin-top:2px">
+                    <b style="font-size:var(--fs-lg)" id="ctx-name">API 서버</b>
+                    <span class="badge type" id="ctx-type">팀</span>
+                    <span class="popwrap">
+                      <span class="projsel" id="projsel-btn"><span class="k">프로젝트 전환</span> ▾</span>
+                      <div class="popover hidden" id="proj-pop">
+                        <div class="pt">이 기수의 다른 프로젝트로 전환</div>
+                        <button class="opt">CLI 과제 <span class="c">개인 · 완료</span></button>
+                        <button class="opt">API 서버 <span class="c">팀 · 진행</span></button>
+                        <button class="opt">풀스택 <span class="c">팀 · 준비</span></button>
+                      </div>
+                    </span>
+                  </div>
+                </div>
+                <div class="cmeta" id="ctx-meta">A반 · 03.20 ~ 04.10 · 추출 기본 본인커밋</div>
+              </div>
+
+              <div class="tabs" id="tabs">
+                <div class="t on" data-tab="overview">개요</div>
+                <div class="t" data-tab="teams">팀 · 레포</div>
+                <div class="t" data-tab="plan">측정 계획</div>
+                <div class="t" data-tab="result">결과</div>
+              </div>
+
+              <!-- 컬렉션(목록) — 상세 진입 전 상위 화면 -->
+              <div class="tpane" id="list">
+                <div class="listhead"><div><div class="crumb">프로젝트 › 7기</div><h2>프로젝트 <span class="tot">4개</span></h2></div><div style="display:flex;align-items:center"><button class="btn lead-only" id="new-proj">+ 프로젝트 생성<span class="rtag lead">총괄</span></button><span class="lead-gate">🔒 총괄이 운영관리에서 생성 · 담당은 열람만</span></div></div>
+                <div style="font-size:12px;color:var(--c-text-3);margin-bottom:12px">프로젝트 하나를 클릭하면 <b>상세(개요·팀·레포·측정 계획·결과 4탭)</b>로 진입합니다.</div>
+                <div class="toolbar">
+                  <span class="search">🔍 프로젝트명 검색</span>
+                  <span class="sel"><span class="k">반</span> 전체 ▾</span>
+                  <span class="sel"><span class="k">유형</span> 전체 ▾</span>
+                  <span class="sel"><span class="k">상태</span> 전체 ▾</span>
+                </div>
+                <div class="card"><table class="tbl">
+                  <thead><tr><th>프로젝트</th><th>유형</th><th>대상 반</th><th>기간</th><th>단위 · 레포 커버리지</th><th>회차</th><th>상태</th><th></th></tr></thead>
+                  <tbody>
+                    <tr class="click" data-tab="overview"><td class="nm">CLI 과제</td><td><span class="badge type">개인</span></td><td>A반</td><td>03.04 ~ 03.18</td><td>18명 · 레포 18/18</td><td>2회차</td><td><span class="badge ok">완료</span></td><td class="chev">›</td></tr>
+                    <tr class="click" data-tab="overview"><td class="nm">API 서버</td><td><span class="badge type">팀</span></td><td>A반</td><td>03.20 ~ 04.10</td><td>4팀 · 레포 4/4</td><td>2회차</td><td><span class="badge ok">진행</span></td><td class="chev">›</td></tr>
+                    <tr class="click" data-tab="overview"><td class="nm">풀스택</td><td><span class="badge type">팀</span></td><td>전체</td><td>04.14 ~ 05.09</td><td>5팀 · <span class="badge warn">레포 2/5</span></td><td>미설정</td><td><span class="badge off">준비</span></td><td class="chev">›</td></tr>
+                    <tr class="click" data-tab="overview" style="background:var(--c-primary-soft)"><td class="nm">웹 서비스 <span class="badge info" style="font-size:10px">방금 생성</span></td><td><span class="badge type">팀</span></td><td>B반</td><td>05.12 ~ 05.30</td><td><span class="badge off">팀 미편성</span> · <span class="sub">단위(분모) 없음</span></td><td>미설정</td><td><span class="badge off">준비</span></td><td class="chev">›</td></tr>
+                  </tbody>
+                </table></div>
+                <div class="foot">· <b>갓 생성(팀·레포 미정) 표기(D78):</b> <b>개인</b>은 단위=학생이라 생성 즉시 <b>N명·레포 0/N</b>(분모 있음). <b>팀</b>은 편성 전까지 단위 없어 <b>"팀 미편성·분모 없음"</b> → 상세 [팀·레포]에서 편성해야 분모 생김. "단위·레포 커버리지" = 레포 커버리지(준비 신호), 응시 커버리지(체크포인트별)와 별개(D77).</div>
+              </div>
+
+              <!-- 탭: 개요 -->
+              <div class="tpane on" id="overview">
+                <div class="ovstrip">
+                  <div><div class="k">유형</div><div class="v">팀 프로젝트</div></div>
+                  <div><div class="k">대상 반</div><div class="v">A반</div></div>
+                  <div><div class="k">기간</div><div class="v">03.20 ~ 04.10</div></div>
+                  <div><div class="k">단위(분모)</div><div class="v">4팀 <span class="link" data-tab="teams">팀·레포 →</span></div></div>
+                  <div><div class="k">추출 범위 기본값</div><div class="v" style="color:var(--c-text-3)">본인커밋기여분 <span style="font-size:10px">· 회차 상속</span></div></div>
+                  <div><div class="k">회차 수</div><div class="v">2회차 <span class="link" data-tab="plan">측정 계획 →</span></div></div>
+                </div>
+                <div class="block">
+                  <div class="bhead"><h3>요구사항 충족 <span class="meta">· 프로젝트 필수 조건 · 단위별 O/X 검증 (실행 후 산출)</span></h3><div style="display:flex;align-items:center"><button class="btn ghost lead-only" id="req-btn">요구사항 편집<span class="rtag lead">총괄</span></button><span class="lead-gate">🔒 총괄 전용</span></div></div>
+                  <div class="card"><table class="tbl">
+                    <thead><tr><th>단위</th><th class="ctr">JWT 토큰 인증</th><th class="ctr">PostgreSQL 사용</th><th class="ctr">REST 규약</th><th>비고</th></tr></thead>
+                    <tbody>
+                      <tr><td class="nm">팀 A</td><td class="ctr"><span class="ox o">O</span></td><td class="ctr"><span class="ox o">O</span></td><td class="ctr"><span class="ox o">O</span></td><td class="sub">—</td></tr>
+                      <tr><td class="nm">팀 B</td><td class="ctr"><span class="ox o">O</span></td><td class="ctr"><span class="ox x">X</span></td><td class="ctr"><span class="ox o">O</span></td><td class="sub">H2 권장이었으나 PostgreSQL로 고도화</td></tr>
+                      <tr><td class="nm">팀 C</td><td class="ctr"><span class="ox x">X</span></td><td class="ctr"><span class="ox o">O</span></td><td class="ctr"><span class="ox o">O</span></td><td class="sub">세션 기반 인증으로 대체</td></tr>
+                      <tr><td class="nm">팀 D</td><td class="ctr"><span class="ox pend">—</span></td><td class="ctr"><span class="ox pend">—</span></td><td class="ctr"><span class="ox pend">—</span></td><td class="sub">미제출 · 검증 대기</td></tr>
+                    </tbody>
+                  </table></div>
+                  <div class="foot">· <b>요구사항 = "목적대로 제대로 했는가"</b>(프로젝트 소속). 조건별 <b>O/X</b> + <b>비고</b>(더 나은 대체 구현은 X여도 비고로 인정). <b>질문 초점과 별개</b> — 요구사항="무엇을 갖췄나(준수)", 질문 초점="무엇을 물을까(질문 방향)". 조건은 생성 시 정의, 판정은 실행 후 자동. 조건 없어도 생성 가능(그땐 요구사항 검증만 없음).</div>
+                </div>
+                <div class="block">
+                  <div class="bhead"><h3>회차 구성 요약 <span class="meta">· 질문 초점·추출 범위는 [측정 계획]에서 지정 (읽기전용)</span></h3><button class="btn ghost" data-tab="plan">측정 계획 열기 →</button></div>
+                  <div class="card"><table class="tbl">
+                    <thead><tr><th>회차</th><th>질문 초점 <span class="sub" style="font-weight:400">· 비우면 AI 자율</span></th><th>추출 범위</th></tr></thead>
+                    <tbody>
+                      <tr><td class="nm">API 서버 · 1회차</td><td><span class="badge info">책임 분리</span> <span class="badge info">반례·예외</span></td><td class="sub">본인커밋</td></tr>
+                      <tr><td class="nm">API 서버 · 2회차 <span class="badge final">최종</span></td><td><span class="badge off">미지정</span> <span class="sub">→ AI가 기여분에서 자율 추출</span></td><td class="sub">본인커밋</td></tr>
+                    </tbody>
+                  </table></div>
+                  <div class="foot">· <b>질문 초점 = 질문을 어디에 치중할지</b>(회차 소속·PLAN-03). 비우면 <b>AI가 각자 기여분에서 중요 지점을 질문수만큼 자율 추출</b>(제한 아님). 지정하면(예: CSS·디자인) 그 영역 치중. 교육생 비노출(A4·FB-F6). 편집은 [측정 계획] 탭.</div>
+                </div>
+                <div class="block">
+                  <div class="bhead"><h3>교안 범위 한정 <span class="rtag lead">총괄</span> <span class="meta">· 선택 · 비워두면 기수 전체 교안에서 자동 안내(D103)</span></h3><div style="display:flex;align-items:center"><button class="btn ghost lead-only" id="curlink-btn">교안 한정<span class="rtag lead">총괄</span></button><span class="lead-gate">🔒 총괄 전용</span></div></div>
+                  <div class="card"><table class="tbl">
+                    <thead><tr><th>한정된 교안</th><th>버전</th><th>다루는 주제</th><th></th></tr></thead>
+                    <tbody>
+                      <tr><td class="nm">Kubernetes와 CICD</td><td class="sub">v2</td><td><span class="badge info">컨테이너 오케스트레이션</span> <span class="badge info">서비스 노출</span> <span class="badge info">CICD</span></td><td style="text-align:right"><span class="link lead-only">한정 해제</span></td></tr>
+                      <tr><td class="nm">AWS 핵심 서비스</td><td class="sub">v3</td><td><span class="badge info">클라우드 인프라</span> <span class="badge info">네트워킹</span></td><td style="text-align:right"><span class="link lead-only">한정 해제</span></td></tr>
+                    </tbody>
+                  </table></div>
+                  <div class="foot">· <b>보통은 비워둡니다.</b> 비우면 이 반 학생이 취약할 때 <b>기수 전체 교안에서 가장 맞는 위치를 자동 안내</b>(MEAS-07·D103). <b>한정은 예외 도구</b>입니다. 프론트/백엔드가 섞인 기수에서 <b>특정 프로젝트를 특정 교안으로만 좁히고 싶을 때</b>만 지정하세요. 위 2개로 한정하면 나머지 교안은 이 프로젝트 안내에서 제외됩니다. 주제·커버리지 편집은 <b>[교안]</b> 상세에서.</div>
+                </div>
+              </div>
+
+              <!-- 탭: 팀 · 레포 -->
+              <div class="tpane" id="teams">
+                <div class="metrics">
+                  <div class="metric"><div class="ml">제출 단위(팀)</div><div class="mv">4<small> 팀</small></div><div class="ms">여기서 확정 = 응시 분모 N</div></div>
+                  <div class="metric"><div class="ml">레포 커버리지</div><div class="mv">4<small>/4팀</small></div><div class="ms">연결됨 · 측정 실행 가능</div></div>
+                  <div class="metric"><div class="ml">미배정 교육생</div><div class="mv">2<small> 명</small></div><div class="ms">풀에서 팀 배정 필요</div></div>
+                </div>
+                <div class="bhead"><h3>팀 편성 <span class="rtag mgr">담당</span> <span class="meta">· 이 프로젝트 전용 · 다음 프로젝트는 새로</span></h3><div class="acts"><button class="btn ghost" id="auto-btn">⚄ 자동 배분</button><button class="btn" id="teamadd-btn">+ 팀 추가</button></div></div>
+                <div class="teams">
+                  <div class="teamcol">
+                    <h4>팀 A <span class="cnt">3명</span></h4>
+                    <div class="repo"><span class="g">repo</span> …/api-a</div>
+                    <div class="chip"><span class="dot"></span>강민준</div>
+                    <div class="chip"><span class="dot"></span>김서연</div>
+                    <div class="chip"><span class="dot w"></span>한도현 · 커밋 미검증</div>
+                  </div>
+                  <div class="teamcol">
+                    <h4>팀 B <span class="cnt">2명</span></h4>
+                    <div class="repo"><span class="g">repo</span> …/api-b</div>
+                    <div class="chip"><span class="dot"></span>이서연</div>
+                    <div class="chip"><span class="dot"></span>박준호</div>
+                  </div>
+                  <div class="teamcol">
+                    <h4>팀 C <span class="cnt">3명</span></h4>
+                    <div class="repo"><span class="g">repo</span> …/api-c</div>
+                    <div class="chip"><span class="dot"></span>정우성</div>
+                    <div class="chip"><span class="dot"></span>손예진</div>
+                    <div class="chip"><span class="dot"></span>주지훈</div>
+                  </div>
+                  <div class="teamcol pool">
+                    <h4>미배정 <span class="cnt">2명 · 2 선택</span></h4>
+                    <div class="chip"><span class="cbx on"></span>정하늘</div>
+                    <div class="chip"><span class="cbx on"></span>오지훈</div>
+                    <div class="poolact"><button class="mini" id="teamadd-btn2">선택 2명 → 팀 배정</button></div>
+                  </div>
+                  <div class="addteam" id="teamadd-btn3">+ 팀 추가</div>
+                </div>
+                <div class="foot">· <b>팀 편성 = 명단(운영관리)에서 골라담기</b>(D75와 동형). 자동 배분(균등/랜덤) 또는 풀 다중선택 → 팀 배정. 각 팀이 자기 레포(팀별 다름). <b>여기서 단위 4팀이 확정돼야</b> [측정 계획]의 응시 분모가 생김. 재배정은 이력 보존(from/to·D16). 커밋 미검증은 귀속 경고(AUTH-07·A8). 개인 프로젝트는 [개인형] 탭 = 학생별 레포.</div>
+              </div>
+
+              <!-- 탭: 측정 계획 -->
+              <div class="tpane" id="plan">
+                <div style="font-size:12px;color:var(--c-text-3);margin-bottom:10px">독립 화면 <b style="color:var(--c-primary)">SC-M03(측정 계획)</b>의 프로젝트 컨텍스트 진입. 위계상 프로젝트 하위, 화면·정의서는 독립(D78).</div>
+                <div class="gatenote">◔ <b>권한 분리(D90):</b> <b>측정 설계 = 총괄</b> <span class="rtag lead">총괄</span> — 회차 수·질문 초점(측정 축)·질문수(PLAN-01·03)는 프로젝트 생성 시 파생·총괄 조정(담당이 자기 채점 잣대를 못 바꾸게). <b>체크포인트 열기·추출 범위 = 담당</b> <span class="rtag mgr">담당</span> — 그 측정 축을 상속받아 <b>이 반 진도에 맞춰 각 회차를 언제 여는지(측정일·오픈)</b>, 그리고 <b>추출 범위(PLAN-02, 전체코드/본인커밋기여분)</b>는 회차 실행 파라미터라 담당(D90 후속 확정). <span style="color:var(--c-text-2)">요구사항(O/X)은 프로젝트 소속이라 [개요]에 있음.</span> <b>응시 분모 N(=4팀)은 [팀·레포]에서 상속</b>(팀 편성도 담당), 레포는 각 체크포인트 실행 시점 JIT.</div>
+                <div class="metrics">
+                  <div class="metric"><div class="ml">체크포인트</div><div class="mv">2<small> 개</small></div><div class="ms">CP3 · CP4 (API 1·2회차)</div></div>
+                  <div class="metric"><div class="ml">응시 분모</div><div class="mv">4<small> 팀</small></div><div class="ms">[팀·레포]에서 상속</div></div>
+                  <div class="metric warn"><div class="ml">응시 커버리지 · 최신(CP3)</div><div class="mv">3<small>/4팀</small></div><div class="ms">레포 커버리지(4/4)와 별개 값</div></div>
+                </div>
+                <div class="bhead"><h3>체크포인트 <span class="tot">2개</span><span class="meta">· API 서버 · 누적 순번 CP3~4</span></h3><button class="btn" id="new-cp">+ 체크포인트(회차) 열기<span class="rtag mgr">담당</span></button></div>
+                <div class="card"><table class="tbl">
+                  <thead><tr><th>체크포인트</th><th>프로젝트 · 회차</th><th>측정일</th><th>질문 초점 <span class="sub" style="font-weight:400">· 비우면 AI 자율</span></th><th class="num">질문 수</th><th>공개 범위</th><th>응시(팀)</th><th>상태</th><th></th></tr></thead>
+                  <tbody>
+                    <tr><td class="nm">체크포인트 3</td><td>API 서버 · 1회차</td><td>04.03</td><td><span class="badge info">책임 분리</span> <span class="badge info">반례·예외</span></td><td class="num">4</td><td><span class="badge info">요약</span></td><td>3 / 4</td><td><span class="badge warn">진행 중</span></td><td><span class="link">응시 보기</span></td></tr>
+                    <tr><td class="nm">체크포인트 4 <span class="badge final">최종</span></td><td>API 서버 · 2회차</td><td>04.10</td><td><span class="badge off">미지정</span> <span class="sub">→ AI 자율 추출</span></td><td class="num">5</td><td><span class="badge off">비공개</span></td><td>—</td><td><span class="badge off">예정</span></td><td><span class="link">지정</span></td></tr>
+                  </tbody>
+                </table></div>
+                <div class="foot">· 체크포인트 번호는 <b>트랙 누적</b>(앞 프로젝트 CLI 2회차=CP1·2 → API 서버는 CP3부터·D76). 응시(팀) X/4 분모는 단위, 분자는 실제 응시. 최종 회차 단 1건(등급=B3). 질문 수(예산 N)는 회차별(기본 4·D28). 질문 초점 없으면 AI 자율 추출. <b>공개 범위</b>(GOV-03)는 회차별 설정(기본 비공개), 여기 컬럼으로 현황·모달에서 변경 — 별도 화면 아님(D121, 옛 SC-M09 흡수).</div>
+              </div>
+
+              <!-- 탭: 결과 -->
+              <div class="tpane" id="result">
+                <div style="font-size:12px;color:var(--c-text-3);margin-bottom:10px"><b style="color:var(--c-primary)">SC-M08(리포트)</b>로의 프로젝트 스코프 링크 — 워크스페이스가 리포트를 소유하지 않음(D78).</div>
+                <div class="bhead"><h3>결과 <span class="meta">· 이 프로젝트의 체크포인트 리포트</span></h3><button class="btn ghost" data-report="manager/report.html#summary">전체 리포트(기수) →</button></div>
+                <div class="card"><table class="tbl">
+                  <thead><tr><th>체크포인트</th><th>프로젝트 · 회차</th><th>생성</th><th>직전 대비</th><th>상태</th><th></th></tr></thead>
+                  <tbody>
+                    <tr class="click" data-report="manager/report.html#checkpoints"><td class="nm">체크포인트 3</td><td>API 서버 · 1회차</td><td>04.03 자동생성</td><td>vs CP2(CLI 2회차) <span class="sub">· 프로젝트 경계</span></td><td><span class="badge ok">완료</span></td><td class="chev">›</td></tr>
+                    <tr><td class="nm">체크포인트 4</td><td>API 서버 · 2회차</td><td>—</td><td>—</td><td><span class="badge off">예정</span></td><td class="chev">›</td></tr>
+                  </tbody>
+                </table></div>
+                <div class="foot">· 회차 종료마다 체크포인트 리포트 자동생성(RPT-04) → <b>SC-M08 리포트</b>로 연결. 직전 대비 diff가 프로젝트 경계를 넘으면(CP3 vs CP2) 콘텐츠 변화 표시 — 위험 판정은 코호트 상대 잔차(FB-L2).</div>
+              </div>
+
+              <!-- 탭: 개인형 (변형) -->
+              <div class="tpane" id="cli">
+                <div style="font-size:12px;color:var(--c-text-3);margin-bottom:10px"><b>개인 프로젝트(예: CLI 과제)의 [팀·레포] 변형.</b> 개인은 단위=학생(명단에 이미 존재)이라 팀 편성을 건너뛰고 바로 학생별 레포. 나머지 탭(개요·측정계획·결과)은 팀 프로젝트와 동일 구조.</div>
+                <div class="metrics">
+                  <div class="metric"><div class="ml">제출 단위(개인)</div><div class="mv">18<small> 명</small></div><div class="ms">개인=학생이 단위(팀 편성 없음)</div></div>
+                  <div class="metric"><div class="ml">레포 커버리지</div><div class="mv">18<small>/18</small></div><div class="ms">전원 연결</div></div>
+                </div>
+                <div class="bhead"><h3>학생별 레포 <span class="tot">18명</span><span class="meta">· 미제출 0</span></h3><button class="btn ghost" id="notify-btn">벌크 독촉·안내</button></div>
+                <div class="card"><table class="tbl">
+                  <thead><tr><th>교육생</th><th>레포</th><th>커밋</th><th>상태</th></tr></thead>
+                  <tbody>
+                    <tr><td class="nm">김서연</td><td class="sub">github.com/…/cli-kim</td><td>연결됨</td><td><span class="badge ok">제출</span></td></tr>
+                    <tr><td class="nm">이도윤</td><td class="sub">github.com/…/cli-lee</td><td>연결됨</td><td><span class="badge ok">제출</span></td></tr>
+                    <tr><td class="nm">박준호</td><td class="sub">github.com/…/cli-park</td><td>연결됨</td><td><span class="badge ok">제출</span></td></tr>
+                  </tbody>
+                </table></div>
+                <div class="foot">· 응시 분모 N = 18명. 개인 프로젝트는 팀 편성 단계 생략(단위=학생). 요구사항 O/X·질문 초점·결과는 팀 프로젝트와 동일하게 [개요]·[측정 계획]·[결과]에서.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 프로젝트 생성 모달 (ORG-03) -->
+          <div class="backdrop hidden" id="new-modal">
+            <div class="dialog">
+              <div class="dh"><h3>프로젝트 생성 <span style="font-size:12px;color:var(--c-text-3);font-weight:400">· 7기 · B반</span></h3><span class="x" id="new-close">✕</span></div>
+              <div class="db">
+                <div class="fld">
+                  <div class="fl">프로젝트명 <span class="req">필수</span></div>
+                  <div class="inp">웹 서비스</div>
+                </div>
+                <div class="fld">
+                  <div class="fl">유형 <span class="hint">· 단위(학생/팀)와 이후 플로우를 가름</span></div>
+                  <div class="toggle"><span class="tg">개인</span><span class="tg on">팀</span></div>
+                  <div class="fwarn" style="color:var(--c-info)">ℹ 팀 선택 → 생성 후 [팀·레포]에서 편성해야 단위(분모) 확정. 개인 선택 시 단위=반 인원, 팀 편성 생략.</div>
+                </div>
+                <div class="row2">
+                  <div class="fld" style="flex:1">
+                    <div class="fl">대상 반 <span class="hint">· 측정 모집단</span></div>
+                    <div class="inp">B반 ▾</div>
+                  </div>
+                  <div class="fld" style="flex:1.4">
+                    <div class="fl">기간 <span class="hint">· 회차(체크포인트) 기한의 상·하한</span></div>
+                    <div class="row2"><div class="inp">2026-05-12</div><div class="inp">2026-05-30</div></div>
+                  </div>
+                </div>
+                <div class="fld">
+                  <div class="fl">요구사항 <span class="hint">· 이 프로젝트의 필수 조건 · 실행 후 단위별 O/X 검증 · 선택</span></div>
+                  <div class="reqrows">
+                    <div class="reqrow"><div class="inp rk">JWT 토큰 인증</div><div class="inp rv" style="color:var(--c-text-3)">사용 여부 O/X 판정</div><span class="del">✕</span></div>
+                    <div class="reqrow"><div class="inp rk">PostgreSQL 사용</div><div class="inp rv" style="color:var(--c-text-3)">사용 여부 O/X 판정</div><span class="del">✕</span></div>
+                    <div class="reqrow"><div class="inp rk">REST 규약 준수</div><div class="inp rv" style="color:var(--c-text-3)">사용 여부 O/X 판정</div><span class="del">✕</span></div>
+                    <span class="addrow">+ 요구사항 추가</span>
+                  </div>
+                  <div class="fwarn" style="color:var(--c-text-3)">"목적대로 제대로 했는가"를 조건별 O/X로 검증. 대체 구현(H2 대신 PostgreSQL 등)은 X + <b>비고</b>. 비워도 생성 가능(요구사항 검증만 없음). <span style="color:var(--c-info)">질문 초점(질문 방향)과는 별개 — 회차별로 [측정 계획]에서.</span></div>
+                </div>
+                <div style="background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-md);padding:12px 14px;font-size:12px;color:var(--c-text-2);line-height:1.6">
+                  <b>여기까지가 프로젝트 생성(ORG-03) — 정체성 + 요구사항(O/X).</b> <b>질문 초점·추출 범위·회차 일정</b>은 회차마다 다르므로 회차(체크포인트) 소속 → 생성 후 <b>[측정 계획]에서 체크포인트 지정 시</b>. <span style="color:var(--c-text-3)">추출 범위 기본값만 유형 따라 자동(팀=본인커밋 / 개인=전체코드).</span>
+                </div>
+              </div>
+              <div class="df">
+                <span style="font-size:11px;color:var(--c-text-3)">생성 후 → 팀·레포는 <b>[팀·레포]</b>, 질문 초점·회차는 <b>[측정 계획]</b></span>
+                <div style="display:flex;gap:8px"><button class="btn ghost" id="new-cancel">취소</button><button class="btn">프로젝트 생성</button></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 체크포인트(회차) 지정 모달 (PLAN-01~03) -->
+          <div class="backdrop hidden" id="cp-modal">
+            <div class="dialog">
+              <div class="dh"><h3>체크포인트(회차) 지정 <span style="font-size:12px;color:var(--c-text-3);font-weight:400">· API 서버 · 다음 회차</span></h3><span class="x" id="cp-close">✕</span></div>
+              <div class="db">
+                <div class="row2">
+                  <div class="fld" style="flex:1">
+                    <div class="fl">프로젝트 내 회차 <span class="autotag">자동</span></div>
+                    <div class="inp" style="color:var(--c-text-2)">API 서버 · 2회차</div>
+                  </div>
+                  <div class="fld" style="flex:1">
+                    <div class="fl">누적 체크포인트 번호 <span class="autotag">자동</span> <span class="hint">· 트랙 누적(D76)</span></div>
+                    <div class="inp" style="color:var(--c-text-2)">체크포인트 4</div>
+                  </div>
+                </div>
+                <div class="row2">
+                  <div class="fld" style="flex:1.2">
+                    <div class="fl">측정일(마감) <span class="req">필수</span> <span class="hint">· 프로젝트 기간 내</span></div>
+                    <div class="inp">2026-04-10</div>
+                  </div>
+                  <div class="fld" style="flex:1">
+                    <div class="fl">최종 회차 <span class="hint">· 등급 부여(B3) · 프로젝트당 1건</span></div>
+                    <div class="toggle"><span class="tg">일반</span><span class="tg on">최종</span></div>
+                  </div>
+                </div>
+                <div class="fld">
+                  <div class="fl">질문 초점 <span class="hint">· 이 회차 질문을 어디에 치중할지 · 선택 · 교육생 비노출(FB-F6·A4)</span></div>
+                  <div class="chips">
+                    <span class="fchip">상태 관리 <span class="x">✕</span></span>
+                    <span class="fchip add">+ 초점 추가</span>
+                  </div>
+                  <div class="fwarn" style="color:var(--c-text-3)">비우면 <b>AI가 각자 기여분에서 중요 지점을 질문수만큼 자율 추출</b>(제한 아님). 지정하면(예: CSS·디자인 / 성능 / API 연결) 그 영역 치중. <span style="color:var(--c-info)">"무엇을 물을까"이지 "무엇을 갖췄나(요구사항 O/X)"가 아님.</span></div>
+                </div>
+                <div class="row2">
+                  <div class="fld" style="flex:1.4">
+                    <div class="fl">추출 범위 <span class="rtag mgr">담당</span> <span class="hint">· 기본=프로젝트 상속 · 오버라이드(PLAN-02)</span></div>
+                    <div class="radio">
+                      <span class="rd"><span class="mk"></span>전체 코드</span>
+                      <span class="rd on"><span class="mk"></span>본인 커밋 기여분 <span class="sub">(상속)</span></span>
+                    </div>
+                  </div>
+                  <div class="fld" style="flex:.6">
+                    <div class="fl">질문 수 <span class="hint">· 예산(D28)</span></div>
+                    <div class="inp">5</div>
+                  </div>
+                </div>
+                <div class="fld">
+                  <div class="fl">결과 공개 범위 <span class="rtag mgr">담당</span> <span class="hint">· 교육생이 결과 리포트(SC-T05)에서 보는 범위 · GOV-03 · 기본 비공개</span></div>
+                  <div class="radio">
+                    <span class="rd on"><span class="mk"></span>비공개 <span class="sub">(기본·결과 미노출)</span></span>
+                    <span class="rd"><span class="mk"></span>요약 <span class="sub">(강약점만)</span></span>
+                    <span class="rd"><span class="mk"></span>전체 <span class="sub">(강약점+궤적)</span></span>
+                  </div>
+                  <div class="fwarn" style="color:var(--c-text-3)">어느 설정이든 <b>내부 루브릭·채점 근거·점수 공식·처방형 콘텐츠는 항상 제거</b>(A6). 저장은 매니저 명시 액션·버전 기록(GOV-02). <span style="color:var(--c-info)">결과를 검토한 뒤 열면 됩니다 — 지금은 비공개로 두고 나중에 이 회차를 수정해 공개.</span> <span class="link" id="cp-preview">교육생 화면 미리보기 →</span></div>
+                </div>
+              </div>
+              <div class="df">
+                <span style="font-size:11px;color:var(--c-text-3)">지정 후 → 회차 도래 시 교육생 응시 · 종료 시 리포트 자동생성(RPT-04) · 공개 범위는 언제든 이 회차 수정에서 변경</span>
+                <div style="display:flex;gap:8px"><button class="btn ghost" id="cp-cancel">취소</button><button class="btn">회차 지정</button></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 요구사항 편집 모달 (ORG-03 · 개요) -->
+          <div class="backdrop hidden" id="req-modal">
+            <div class="dialog">
+              <div class="dh"><h3>요구사항 편집 <span style="font-size:12px;color:var(--c-text-3);font-weight:400">· API 서버 · O/X 검증 조건</span></h3><span class="x" id="req-close">✕</span></div>
+              <div class="db">
+                <div class="fld">
+                  <div class="fl">필수 조건 <span class="hint">· 각 조건을 단위별로 O/X 검증 · 실행 후 자동 판정</span></div>
+                  <div class="reqrows">
+                    <div class="reqrow"><div class="inp rk">JWT 토큰 인증</div><div class="inp rv" style="color:var(--c-text-3)">사용 여부 O/X</div><span class="del">✕</span></div>
+                    <div class="reqrow"><div class="inp rk">PostgreSQL 사용</div><div class="inp rv" style="color:var(--c-text-3)">사용 여부 O/X</div><span class="del">✕</span></div>
+                    <div class="reqrow"><div class="inp rk">REST 규약 준수</div><div class="inp rv" style="color:var(--c-text-3)">사용 여부 O/X</div><span class="del">✕</span></div>
+                    <span class="addrow">+ 조건 추가</span>
+                  </div>
+                  <div class="fwarn" style="color:var(--c-text-3)">조건 변경은 <b>다음 판정부터</b> 반영. 이미 매겨진 O/X는 재실행 시 갱신. 대체 구현(H2 대신 PostgreSQL 등)은 X + 비고. <span style="color:var(--c-info)">질문 초점(질문 방향)과 별개 — 회차별로 [측정 계획].</span></div>
+                </div>
+              </div>
+              <div class="df">
+                <span style="font-size:11px;color:var(--c-text-3)">판정 결과는 [개요] 요구사항 충족 매트릭스에 반영</span>
+                <div style="display:flex;gap:8px"><button class="btn ghost" id="req-cancel">취소</button><button class="btn">저장</button></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 교안 범위 한정 모달 (D103 프로젝트↔교안 선택적 좁히기 · 총괄) -->
+          <div class="backdrop hidden" id="curlink-modal">
+            <div class="dialog">
+              <div class="dh"><h3>교안 범위 한정 <span style="font-size:12px;color:var(--c-text-3);font-weight:400">· API 서버 · 이 기수 교안 라이브러리에서 선택</span></h3><span class="x" id="curlink-close">✕</span></div>
+              <div class="db">
+                <div class="fld">
+                  <div class="fl">이 프로젝트에서 쓸 교안만 선택 <span class="hint">· 다중 선택 · 선택한 교안으로만 안내 범위를 좁힘</span></div>
+                  <div class="curpick">
+                    <label class="curopt on"><span class="ck">✓</span><div class="ci"><b>Kubernetes와 CICD</b> <span class="cv">v2</span><div class="cc">컨테이너 오케스트레이션 · 서비스 노출 · CICD</div></div></label>
+                    <label class="curopt on"><span class="ck">✓</span><div class="ci"><b>AWS 핵심 서비스</b> <span class="cv">v3</span><div class="cc">클라우드 인프라 · 네트워킹</div></div></label>
+                    <label class="curopt"><span class="ck"></span><div class="ci"><b>Microservice 아키텍처</b> <span class="cv">v1</span><div class="cc">서비스 분해 · API 게이트웨이 · 사가</div></div></label>
+                    <label class="curopt"><span class="ck"></span><div class="ci"><b>클라우드 현대화 이해 서비스</b> <span class="cv">v1</span><div class="cc">클라우드 네이티브 · IaaS/PaaS/SaaS</div></div></label>
+                    <label class="curopt dis"><span class="ck"></span><div class="ci"><b>Docker 컨테이너 기초</b> <span class="cv">v1</span><div class="cc" style="color:var(--c-danger)">추출 실패 · 한정 대상 불가(재분석 필요)</div></div></label>
+                  </div>
+                  <div class="fwarn" style="color:var(--c-text-3)"><b>아무것도 안 고르면 기수 전체 교안이 안내 대상</b>(권장·D103). 여기서 고르면 <b>고른 교안으로만</b> 이 프로젝트 안내를 한정합니다. 새 교안은 <b>[교안] 메뉴 → 등록</b>에서, 주제 편집은 [교안] 상세에서.</div>
+                </div>
+              </div>
+              <div class="df">
+                <span style="font-size:11px;color:var(--c-text-3)">2개 한정 · 이 2개 주제로 커버 3/4(관측성 미커버)</span>
+                <div style="display:flex;gap:8px"><button class="btn ghost" id="curlink-cancel">취소</button><button class="btn">한정 저장</button></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 팀 추가 모달 (ORG-02 · 팀·레포) -->
+          <div class="backdrop hidden" id="team-add-modal">
+            <div class="dialog">
+              <div class="dh"><h3>팀 추가 <span style="font-size:12px;color:var(--c-text-3);font-weight:400">· API 서버 · 미배정에서 골라담기</span></h3><span class="x" id="team-add-close">✕</span></div>
+              <div class="db">
+                <div class="fld">
+                  <div class="fl">팀명 <span class="req">필수</span></div>
+                  <div class="inp">팀 D</div>
+                </div>
+                <div class="fld">
+                  <div class="fl">팀원 <span class="hint">· 미배정 풀에서 선택(D75 골라담기) · 동일 시점 중복 소속 금지</span></div>
+                  <div class="card" style="padding:6px">
+                    <div class="chip"><span class="cbx on"></span>정하늘</div>
+                    <div class="chip"><span class="cbx on"></span>오지훈</div>
+                    <div class="chip"><span class="cbx"></span>한지민 <span class="sub">· 이미 팀 A</span></div>
+                  </div>
+                </div>
+                <div class="fld">
+                  <div class="fl">레포 URL <span class="hint">· 선택 · 나중에 연결 가능(실행 시 JIT)</span></div>
+                  <div class="inp" style="color:var(--c-text-3)">github.com/org/api-d</div>
+                  <div class="fwarn" style="color:var(--c-text-3)">비공개 레포는 접근 권한 확인 필요(R-2). 커밋 이메일 미검증 시 귀속 경고(R-4).</div>
+                </div>
+              </div>
+              <div class="df">
+                <span style="font-size:11px;color:var(--c-text-3)">추가 시 단위(팀) 수 증가 → [측정 계획] 응시 분모에 반영</span>
+                <div style="display:flex;gap:8px"><button class="btn ghost" id="team-add-cancel">취소</button><button class="btn">팀 추가</button></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 자동 배분 모달 (D19 · 팀·레포) -->
+          <div class="backdrop hidden" id="team-auto-modal">
+            <div class="dialog">
+              <div class="dh"><h3>자동 배분 <span style="font-size:12px;color:var(--c-text-3);font-weight:400">· 미배정 2명 → 팀</span></h3><span class="x" id="team-auto-close">✕</span></div>
+              <div class="db">
+                <div class="fld">
+                  <div class="fl">배분 전략</div>
+                  <div class="radio">
+                    <span class="rd on"><span class="mk"></span>균등 <span class="sub">(팀 인원 최소 편차)</span></span>
+                    <span class="rd"><span class="mk"></span>랜덤</span>
+                  </div>
+                </div>
+                <div class="fld">
+                  <div class="fl">대상 <span class="hint">· 미배정만 · 기존 팀은 유지</span></div>
+                  <div class="inp" style="color:var(--c-text-2)">미배정 2명 (정하늘 · 오지훈)</div>
+                </div>
+                <div class="fld">
+                  <div class="fl">미리보기 <span class="hint">· 실행 전 확인</span></div>
+                  <div class="card" style="padding:8px 12px;font-size:var(--fs-sm);color:var(--c-text-2)">
+                    정하늘 → 팀 B(2→3명) · 오지훈 → 팀 A(3→4명)
+                  </div>
+                </div>
+              </div>
+              <div class="df">
+                <span style="font-size:11px;color:var(--c-text-3)">각 배정은 이력 보존(from_at·D16)</span>
+                <div style="display:flex;gap:8px"><button class="btn ghost" id="team-auto-cancel">취소</button><button class="btn">배분 실행</button></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 벌크 독촉·안내 모달 (D19·AUTH-10 · 개인형) -->
+          <div class="backdrop hidden" id="notify-modal">
+            <div class="dialog">
+              <div class="dh"><h3>벌크 독촉 · 안내 <span style="font-size:12px;color:var(--c-text-3);font-weight:400">· CLI 과제</span></h3><span class="x" id="notify-close">✕</span></div>
+              <div class="db">
+                <div class="fld">
+                  <div class="fl">유형</div>
+                  <div class="toggle"><span class="tg on">제출 독촉</span><span class="tg">레포 안내 재발송</span></div>
+                </div>
+                <div class="fld">
+                  <div class="fl">대상 <span class="hint">· 상태 필터 → 다중 선택</span></div>
+                  <div class="card" style="padding:6px">
+                    <div class="chip"><span class="cbx on"></span>미제출 3명 <span class="sub">· 김하늘 · 박도윤 · 이서준</span></div>
+                    <div class="chip"><span class="cbx"></span>커밋 미검증 1명 <span class="sub">· 최민서</span></div>
+                  </div>
+                </div>
+                <div class="fwarn" style="color:var(--c-text-3)">중복 독촉 제한(A-2) — 최근 발송 대상은 자동 제외. 연락 채널 없는 대상 제외(A-3).</div>
+              </div>
+              <div class="df">
+                <span style="font-size:11px;color:var(--c-text-3)">발송 이력 저장(AUTH-10)</span>
+                <div style="display:flex;gap:8px"><button class="btn ghost" id="notify-cancel">취소</button><button class="btn">3명에게 발송</button></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 이 탭의 상태·case 발췌 (탭 전환 시 함께 전환) -->
+      <div class="casewrap">
+        <div class="casebox on" data-for="list">
+          <div class="ct"><span>현재 탭 · 목록 — 상태 · case</span><span class="all" data-tab="cases">상태 ↔ case 매핑 총합 →</span></div>
+          <div class="cr"><span class="cn">L-1</span><span class="pill info">empty</span><span class="cd"><b>프로젝트 0 (신규 기수)</b> — "첫 프로젝트를 만드세요" + [+ 프로젝트 생성]</span></div>
+          <div class="cr"><span class="cn">L-2</span><span class="pill info">-</span><span class="cd"><b>검색·필터 결과 없음</b> — "결과 없음" 빈 상태</span></div>
+          <div class="cr"><span class="cn">L-3</span><span class="pill info">-</span><span class="cd"><b>프로젝트 대량</b> — 검색·반/유형/상태 필터·페이지네이션으로 스코프 축소</span></div>
+        </div>
+        <div class="casebox" data-for="overview">
+          <div class="ct"><span>현재 탭 · 개요 — 상태 · case (프로젝트 생성 ORG-03 + 요구사항 검증)</span><span class="all" data-tab="cases">총합 →</span></div>
+          <div class="cr"><span class="cn">P-1</span><span class="pill danger">danger</span><span class="cd"><b>존재않는 기수 / 허용안된 유형</b> — 저장 차단(개인·팀만 허용)</span></div>
+          <div class="cr"><span class="cn">P-2</span><span class="pill danger">danger</span><span class="cd"><b>프로젝트명 누락·중복</b> — 필드 오류·재입력</span></div>
+          <div class="cr"><span class="cn">P-3</span><span class="pill danger">danger</span><span class="cd"><b>대상 반 미선택</b> — 저장 차단</span></div>
+          <div class="cr"><span class="cn">P-4</span><span class="pill danger">danger</span><span class="cd"><b>기간 시작&gt;마감</b> — 기간 재입력</span></div>
+          <div class="cr"><span class="cn">P-5</span><span class="pill info">info</span><span class="cd"><b>요구사항 0건</b> — 생성 가능. 실행 시 요구사항 검증만 없음(질문 생성은 무관·AI 자율)</span></div>
+          <div class="cr"><span class="cn">P-6</span><span class="pill warning">warning</span><span class="cd"><b>요구사항 미충족(X) · 비고 없음</b> — 대체 구현이면 비고 기록 권장</span></div>
+          <div class="cr"><span class="cn">P-7</span><span class="pill info">info</span><span class="cd"><b>판정 대기(미제출 단위)</b> — O/X "—" 검증 대기 표시</span></div>
+          <div class="cr"><span class="cn">P-8</span><span class="pill danger">danger</span><span class="cd"><b>생성 실패(롤백)</b> — 요구사항·설정 미저장·재시도</span></div>
+        </div>
+        <div class="casebox" data-for="teams">
+          <div class="ct"><span>현재 탭 · 팀·레포 — 상태 · case (팀 편성 ORG-02 + 레포 연결)</span><span class="all" data-tab="cases">총합 →</span></div>
+          <div class="cr"><span class="cn">T-1</span><span class="pill danger">danger</span><span class="cd"><b>존재않는 기수/프로젝트</b> — 팀 생성 차단</span></div>
+          <div class="cr"><span class="cn">T-2</span><span class="pill danger">danger</span><span class="cd"><b>중복 팀명</b> — 필드 오류</span></div>
+          <div class="cr"><span class="cn">T-3</span><span class="pill danger">danger</span><span class="cd"><b>미소속 교육생 배정</b> — 대상 제외 안내</span></div>
+          <div class="cr"><span class="cn">T-4</span><span class="pill danger">danger</span><span class="cd"><b>동일 시점 중복 소속</b> — 신규 배정 차단·기존 확인</span></div>
+          <div class="cr"><span class="cn">T-6</span><span class="pill danger">danger</span><span class="cd"><b>to_at &gt; from_at 역전</b> — 이력 무결성 오류·차단</span></div>
+          <div class="cr"><span class="cn">T-7</span><span class="pill warning">warning</span><span class="cd"><b>일부 배정 저장 실패</b> — 실패만 롤백·성공/실패 분리</span></div>
+          <div class="cr"><span class="cn">R-2</span><span class="pill warning">warning</span><span class="cd"><b>비공개 레포 접근 실패</b> — 임시 저장·접근 권한 안내</span></div>
+          <div class="cr"><span class="cn">R-4</span><span class="pill warning">warning</span><span class="cd"><b>미검증 커밋 이메일</b> — 매핑 유지·귀속 경고 배지(AUTH-07)</span></div>
+        </div>
+        <div class="casebox" data-for="plan">
+          <div class="ct"><span>현재 탭 · 측정 계획 — 상태 · case (체크포인트 PLAN-01~04)</span><span class="all" data-tab="cases">총합 →</span></div>
+          <div class="cr"><span class="cn">K-2</span><span class="pill danger">danger</span><span class="cd"><b>회차 번호 중복</b> — 중복 회차 차단</span></div>
+          <div class="cr"><span class="cn">K-3</span><span class="pill danger">danger</span><span class="cd"><b>측정일 시작&gt;마감</b> — 해당 회차 저장 차단</span></div>
+          <div class="cr"><span class="cn">K-4</span><span class="pill danger">danger</span><span class="cd"><b>이전 회차 역순</b> — 전체 확정 차단·충돌 구간 안내</span></div>
+          <div class="cr"><span class="cn">K-6</span><span class="pill danger">danger</span><span class="cd"><b>최종 회차 2건+</b> — 단일 최종 회차 선택 요청</span></div>
+          <div class="cr"><span class="cn">S-3</span><span class="pill warning">warning</span><span class="cd"><b>본인커밋+커밋이메일 부재</b> — 저장 보류·AUTH-07 등록 요청</span></div>
+          <div class="cr"><span class="cn">F-5</span><span class="pill danger">danger</span><span class="cd"><b>질문 초점 교육생 노출 탐지</b> — 응답 차단·비노출 재적용</span></div>
+          <div class="cr"><span class="cn">A-2</span><span class="pill warning">warning</span><span class="cd"><b>중복 독촉</b> — 재발송 제한</span></div>
+        </div>
+        <div class="casebox" data-for="result">
+          <div class="ct"><span>현재 탭 · 결과 — 상태 · case (리포트 RPT-04)</span><span class="all" data-tab="cases">총합 →</span></div>
+          <div class="cr"><span class="cn">RP-1</span><span class="pill info">info</span><span class="cd"><b>회차 미도래</b> — "예정" 표시·리포트 없음</span></div>
+          <div class="cr"><span class="cn">RP-2</span><span class="pill info">info</span><span class="cd"><b>회차 종료 → 자동 생성</b> — 체크포인트 리포트 자동생성(RPT-04)·SC-M08 연결</span></div>
+          <div class="cr"><span class="cn">RP-3</span><span class="pill warning">warning</span><span class="cd"><b>프로젝트 경계 넘는 diff</b> — 콘텐츠 변화 표시(CP3 vs CP2)·위험은 코호트 잔차로</span></div>
+        </div>
+        <div class="casebox" data-for="cli">
+          <div class="ct"><span>현재 탭 · 개인형 — 상태 · case (학생별 레포)</span><span class="all" data-tab="cases">총합 →</span></div>
+          <div class="cr"><span class="cn">CL-1</span><span class="pill warning">warning</span><span class="cd"><b>학생 미제출</b> — 벌크 독촉·레포 안내 재발송(D19)</span></div>
+          <div class="cr"><span class="cn">CL-2</span><span class="pill warning">warning</span><span class="cd"><b>커밋 이메일 미검증</b> — 귀속 경고·교육생 SC-T02에서 검증</span></div>
+        </div>
+      </div>
+
+      <!-- 상태 ↔ case 매핑 · 총합 (해시 #cases) -->
+      <div class="notes" id="cases" style="display:none">
+        <h3>상태 ↔ 명세 case 매핑 · 총합 (프로젝트 워크스페이스 · 저작=총괄 / 실행=담당)</h3>
+        <p class="hint">
+          전체 55건 통합 계약(마스터). 각 탭 하단 '이 탭의 상태·case' 박스엔 발췌만 — 여기는 총합.
+          <b>소속 경계(D78·D80):</b> 요구사항 O/X=프로젝트(개요), 팀·레포=단위 확정, 질문 초점=회차(측정계획).
+          FR: ORG-03(프로젝트) · ORG-02(팀) · AUTH-07(커밋) · PLAN-01~04(체크포인트) · RPT-04(리포트).
+        </p>
+
+        <div class="grp">목록 (컬렉션)</div>
+        <div class="tblwrap"><table class="ntbl">
+          <thead><tr><th>#</th><th>상태</th><th>표현</th><th>다음 행동</th></tr></thead>
+          <tbody>
+            <tr><td>L-1</td><td>프로젝트 0 (신규 기수)</td><td><span class="pill info">empty</span></td><td>"첫 프로젝트를 만드세요" + [+ 생성]</td></tr>
+            <tr><td>L-2</td><td>검색·필터 결과 없음</td><td><span class="pill info">-</span></td><td>"결과 없음" 빈 상태</td></tr>
+            <tr><td>L-3</td><td>프로젝트 대량</td><td><span class="pill info">-</span></td><td>검색·필터·페이지네이션</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="grp">프로젝트 생성 · 요구사항 (ORG-03 · 개요 탭)</div>
+        <div class="tblwrap"><table class="ntbl">
+          <thead><tr><th>#</th><th>상태</th><th>표현</th><th>다음 행동</th></tr></thead>
+          <tbody>
+            <tr><td>P-1</td><td>존재않는 기수 / 허용안된 유형</td><td><span class="pill danger">danger</span></td><td>저장 차단(개인·팀만)</td></tr>
+            <tr><td>P-2</td><td>프로젝트명 누락·중복</td><td><span class="pill danger">danger</span></td><td>필드 오류·재입력</td></tr>
+            <tr><td>P-3</td><td>대상 반 미선택</td><td><span class="pill danger">danger</span></td><td>저장 차단</td></tr>
+            <tr><td>P-4</td><td>기간 시작&gt;마감</td><td><span class="pill danger">danger</span></td><td>기간 재입력</td></tr>
+            <tr><td>P-5</td><td>요구사항 0건</td><td><span class="pill info">info</span></td><td>생성 가능 · 요구사항 검증만 없음(질문 생성 무관)</td></tr>
+            <tr><td>P-6</td><td>요구사항 미충족(X)·비고 없음</td><td><span class="pill warning">warning</span></td><td>대체 구현이면 비고 기록 권장</td></tr>
+            <tr><td>P-7</td><td>판정 대기(미제출 단위)</td><td><span class="pill info">info</span></td><td>O/X "—" 검증 대기</td></tr>
+            <tr><td>P-8</td><td>생성 실패(롤백)</td><td><span class="pill danger">danger</span></td><td>요구사항·설정 미저장·재시도</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="grp">팀 편성 (ORG-02 · 팀·레포 탭)</div>
+        <div class="tblwrap"><table class="ntbl">
+          <thead><tr><th>#</th><th>상태</th><th>표현</th><th>다음 행동</th></tr></thead>
+          <tbody>
+            <tr><td>T-1</td><td>존재않는 기수/프로젝트</td><td><span class="pill danger">danger</span></td><td>팀 생성 차단</td></tr>
+            <tr><td>T-2</td><td>중복 팀명</td><td><span class="pill danger">danger</span></td><td>필드 오류</td></tr>
+            <tr><td>T-3</td><td>미소속 교육생 배정</td><td><span class="pill danger">danger</span></td><td>대상 제외 안내</td></tr>
+            <tr><td>T-4</td><td>동일 시점 중복 소속</td><td><span class="pill danger">danger</span></td><td>신규 배정 차단·기존 확인</td></tr>
+            <tr><td>T-5</td><td>재배정 기존 없음</td><td><span class="pill info">info</span></td><td>신규 배정·이력 점검</td></tr>
+            <tr><td>T-6</td><td>to_at &gt; from_at 역전</td><td><span class="pill danger">danger</span></td><td>이력 무결성 오류·차단</td></tr>
+            <tr><td>T-7</td><td>일부 배정 저장 실패</td><td><span class="pill warning">warning</span></td><td>실패만 롤백·성공/실패 분리</td></tr>
+            <tr><td>T-8</td><td>활성 소속 있는 팀 삭제</td><td><span class="pill danger">danger</span></td><td>삭제 차단·재배정/종료 요청</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="grp">레포 연결 (ORG-03 · AUTH-07 · 팀·레포 탭)</div>
+        <div class="tblwrap"><table class="ntbl">
+          <thead><tr><th>#</th><th>상태</th><th>표현</th><th>다음 행동</th></tr></thead>
+          <tbody>
+            <tr><td>R-1</td><td>레포 URL 형식 오류</td><td><span class="pill danger">danger</span></td><td>필드 오류·유효 URL 요청</td></tr>
+            <tr><td>R-2</td><td>비공개 레포 접근 실패</td><td><span class="pill warning">warning</span></td><td>임시 저장·접근 권한 안내</td></tr>
+            <tr><td>R-3</td><td>커밋 이메일 미등록</td><td><span class="pill warning">warning</span></td><td>매핑 보류·AUTH-07 등록 요청</td></tr>
+            <tr><td>R-4</td><td>미검증 커밋 이메일</td><td><span class="pill warning">warning</span></td><td>매핑 유지·귀속 경고 배지</td></tr>
+            <tr><td>R-5</td><td>동일 레포 중복</td><td><span class="pill warning">warning</span></td><td>중복 경고·명시 승인</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="grp">체크포인트 일정 (PLAN-01 · 측정 계획 탭)</div>
+        <div class="tblwrap"><table class="ntbl">
+          <thead><tr><th>#</th><th>상태</th><th>표현</th><th>다음 행동</th></tr></thead>
+          <tbody>
+            <tr><td>K-1</td><td>존재않는 기수</td><td><span class="pill danger">danger</span></td><td>일정 생성 차단</td></tr>
+            <tr><td>K-2</td><td>회차 번호 중복</td><td><span class="pill danger">danger</span></td><td>중복 회차 차단</td></tr>
+            <tr><td>K-3</td><td>측정일 시작&gt;마감</td><td><span class="pill danger">danger</span></td><td>해당 회차 저장 차단</td></tr>
+            <tr><td>K-4</td><td>이전 회차 역순</td><td><span class="pill danger">danger</span></td><td>전체 확정 차단·충돌 안내</td></tr>
+            <tr><td>K-5</td><td>동일 시간대 중복</td><td><span class="pill warning">warning</span></td><td>충돌 경고</td></tr>
+            <tr><td>K-6</td><td>최종 회차 2건+</td><td><span class="pill danger">danger</span></td><td>단일 최종 회차 선택 요청</td></tr>
+            <tr><td>K-7</td><td>최종 회차 미지정</td><td><span class="pill warning">warning</span></td><td>마지막 회차 자동 후보 제시</td></tr>
+            <tr><td>K-8</td><td>일부 저장 실패(롤백)</td><td><span class="pill danger">danger</span></td><td>전체 롤백/재저장 대상</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="grp">추출 범위 (PLAN-02 · 측정 계획 탭)</div>
+        <div class="tblwrap"><table class="ntbl">
+          <thead><tr><th>#</th><th>상태</th><th>표현</th><th>다음 행동</th></tr></thead>
+          <tbody>
+            <tr><td>S-1</td><td>존재않는 프로젝트</td><td><span class="pill danger">danger</span></td><td>저장 차단</td></tr>
+            <tr><td>S-2</td><td>허용안된 scope</td><td><span class="pill danger">danger</span></td><td>두 값만 허용(전체코드/본인커밋)</td></tr>
+            <tr><td>S-3</td><td>본인커밋+커밋이메일 부재</td><td><span class="pill warning">warning</span></td><td>저장 보류·AUTH-07 등록 요청</td></tr>
+            <tr><td>S-4</td><td>git history 미확보</td><td><span class="pill warning">warning</span></td><td>전체코드 폴백 가능 안내</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="grp">질문 초점 (PLAN-03 · 측정 계획 탭 · 구 "검증 포커스/결정 지점")</div>
+        <div class="tblwrap"><table class="ntbl">
+          <thead><tr><th>#</th><th>상태</th><th>표현</th><th>다음 행동</th></tr></thead>
+          <tbody>
+            <tr><td>F-1</td><td>존재않는 회차</td><td><span class="pill danger">danger</span></td><td>저장 차단</td></tr>
+            <tr><td>F-2</td><td>질문 초점 0건</td><td><span class="pill info">info</span></td><td>AI가 기여분에서 중요 지점 질문수만큼 자율 추출(제한 아님)</td></tr>
+            <tr><td>F-3</td><td>허용안된 값</td><td><span class="pill danger">danger</span></td><td>저장 차단·관리자 검토</td></tr>
+            <tr><td>F-4</td><td>중복 영역</td><td><span class="pill info">-</span></td><td>중복 제거</td></tr>
+            <tr><td>F-5</td><td>교육생 응답 노출 탐지</td><td><span class="pill danger">danger</span></td><td>응답 차단·비노출 재적용(A4)</td></tr>
+            <tr><td>F-6</td><td>MEAS-02B 연계 실패</td><td><span class="pill warning">warning</span></td><td>설정 유지·가중치 재시도</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="grp">응시 현황 (PLAN-04 · 측정 계획 탭)</div>
+        <div class="tblwrap"><table class="ntbl">
+          <thead><tr><th>#</th><th>상태</th><th>표현</th><th>다음 행동</th></tr></thead>
+          <tbody>
+            <tr><td>A-1</td><td>미응시 존재(진행 중 회차)</td><td><span class="pill warning">warning</span></td><td>미응시만 필터 → 벌크 독촉</td></tr>
+            <tr><td>A-2</td><td>중복 독촉</td><td><span class="pill warning">warning</span></td><td>재발송 제한</td></tr>
+            <tr><td>A-3</td><td>연락 채널 없음</td><td><span class="pill info">-</span></td><td>대상 제외·안내</td></tr>
+            <tr><td>A-4</td><td>레포 미연결 팀(JIT 미충족)</td><td><span class="pill warning">warning</span></td><td>그 회차 응시 불가·레포 연결 유도</td></tr>
+            <tr><td>A-5</td><td>응시 커버리지 &lt; 분모</td><td><span class="pill info">info</span></td><td>응시 X/N 표시(레포 커버리지와 별개)</td></tr>
+          </tbody>
+        </table></div>
+
+        <div class="grp">결과 · 리포트 (RPT-04 · 결과 탭) / 개인형</div>
+        <div class="tblwrap"><table class="ntbl">
+          <thead><tr><th>#</th><th>상태</th><th>표현</th><th>다음 행동</th></tr></thead>
+          <tbody>
+            <tr><td>RP-1</td><td>회차 미도래</td><td><span class="pill info">info</span></td><td>"예정"·리포트 없음</td></tr>
+            <tr><td>RP-2</td><td>회차 종료 → 자동 생성</td><td><span class="pill info">info</span></td><td>체크포인트 리포트 자동생성·SC-M08 연결</td></tr>
+            <tr><td>RP-3</td><td>프로젝트 경계 넘는 diff</td><td><span class="pill warning">warning</span></td><td>콘텐츠 변화 표시·위험은 코호트 잔차</td></tr>
+            <tr><td>CL-1</td><td>학생 미제출(개인형)</td><td><span class="pill warning">warning</span></td><td>벌크 독촉·레포 안내 재발송</td></tr>
+            <tr><td>CL-2</td><td>커밋 이메일 미검증(개인형)</td><td><span class="pill warning">warning</span></td><td>귀속 경고·SC-T02 검증</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="notes" id="flow-notes">
+        <h3>이 화면의 데이터 플로우 (D77 다이아몬드) · 개념 경계</h3>
+        <div class="grp">단계 · 의존</div>
+        <p>① 개요(프로젝트·유형 + <b>요구사항 O/X</b>=프로젝트) → ② 팀·레포(단위 N 확정 = 응시 분모) → ③ 측정 계획(<b>질문 초점</b>=회차, 프로젝트만 있으면 계획) → ④ 결과. ②③(레포∥체크포인트) 병렬, ⑤실행에서 스냅샷 수렴.</p>
+        <div class="grp">요구사항 ≠ 질문 초점 (D80)</div>
+        <p><b>요구사항</b>(프로젝트): "목적대로 제대로 했나" — 필수 조건(JWT·PostgreSQL) 단위별 <b>O/X</b>+비고. <b>질문 초점</b>(회차·구 "결정 지점"/"검증 포커스" 통합): "질문을 어디 치중할까" — 비우면 AI 자율 추출, 지정하면 그 영역 치중. 판정 대상 vs 질문 방향으로 별개.</p>
+        <div class="grp">허브 ≠ 모놀리식 (D78)</div>
+        <p>워크스페이스는 프로젝트 컨텍스트 허브 + 탭. 각 탭은 자기 SC-ID: 개요·팀레포=<b>SC-M13</b>, 측정계획=<b>SC-M03</b>, 결과=<b>SC-M08</b>. 위계(측정계획⊂프로젝트)와 화면 분해는 별개 축.</p>
+        <div class="grp">권한</div>
+        <p><b>저작 = 총괄, 실행 = 담당(FB-F5·D90).</b> <b>총괄</b>: 프로젝트 생성·요구사항 정의/편집·측정 설계(회차 수·질문 초점=측정 축)=무엇을 잴지(측정 무결성·담당이 자기 잣대 못 바꾸게). <b>담당</b>: 팀·레포 편성·체크포인트 열기(이 반 진도에 맞춰 언제)·독촉·모니터링·개입=이 반에서 언제·누구를(규모상 반마다 생기는 운영을 총괄이 다 할 수 없음). 회차 수는 총괄 설계지만 담당이 가감 제안 가능(코호트 비교 흔들림 방지). 관련: D75·D76·D77·D78·D80·D90.</p>
+      </div>
+    </div>
+
+    <script>
+      // 좌측 nav (교정 순서 D77): 준비(운영관리·프로젝트) → 실행 → 분석.
+      var NAV = [
+        ["▦","대시보드",""],["⚙","운영 관리","총괄"],["▧","교안",""],["▤","프로젝트","on"],
+        ["◎","교육생",""],["△","분석 · 진단",""],["✎","개입",""],["▥","리포트",""]
+      ];
+      document.getElementById("nav").innerHTML = NAV.map(function(n){
+        var cls = "item" + (n[2]==="on" ? " on" : "");
+        var tag = n[2]==="총괄" ? '<span class="lead-tag">총괄</span>' : "";
+        return '<div class="'+cls+'"><span class="ic">'+n[0]+'</span>'+n[1]+tag+'</div>';
+      }).join("");
+
+      var vp = document.getElementById("vp");
+      var url = document.getElementById("url");
+      var ctxbar = document.getElementById("ctxbar");
+      var newModal = document.getElementById("new-modal");
+      var cpModal = document.getElementById("cp-modal");
+      var projPop = document.getElementById("proj-pop");
+
+      // 탭 → URL 경로 · 상세 여부(컨텍스트 바 표시)
+      var TAB = {
+        list:    { url:"iz-get.com/cohorts/7/projects",              mode:"list" },
+        overview:{ url:"iz-get.com/cohorts/7/projects/api/overview", mode:"detail", tab:"overview" },
+        teams:   { url:"iz-get.com/cohorts/7/projects/api/teams",    mode:"detail", tab:"teams" },
+        plan:    { url:"iz-get.com/cohorts/7/projects/api/plan",     mode:"detail", tab:"plan" },
+        result:  { url:"iz-get.com/cohorts/7/projects/api/reports",  mode:"detail", tab:"result" },
+        cli:     { url:"iz-get.com/cohorts/7/projects/cli/teams",    mode:"detail", tab:"teams", ctx:"cli" }
+      };
+      // 모달 hash → 소속 탭 (닫으면 이 탭으로) · 열기 버튼 id → 모달 hash
+      var MODAL_TAB = { "new":"list", "cp":"plan", "req":"overview", "curlink":"overview", "team-add":"teams", "team-auto":"teams", "notify":"cli" };
+      var OPEN = { "new-proj":"new", "new-cp":"cp", "req-btn":"req", "curlink-btn":"curlink", "teamadd-btn":"team-add", "teamadd-btn2":"team-add", "teamadd-btn3":"team-add", "auto-btn":"team-auto", "notify-btn":"notify" };
+
+      var tabsEl = document.getElementById("tabs");
+      function activateTab(id){
+        var t = TAB[id]; if(!t){ id = "overview"; t = TAB.overview; }
+        var isList = t.mode === "list";
+        // 목록(컬렉션) 모드 = 탭바·컨텍스트바 숨김 / 상세 모드 = 표시
+        if(tabsEl) tabsEl.classList.toggle("hide", isList);
+        if(ctxbar) ctxbar.classList.toggle("hide", isList);
+        var hl = t.tab || id; // 개인형(cli)은 팀·레포 탭을 하이라이트
+        vp.querySelectorAll(".tabs .t").forEach(function(x){ x.classList.toggle("on", x.getAttribute("data-tab")===hl); });
+        vp.querySelectorAll(".tpane").forEach(function(p){ p.classList.toggle("on", p.id===id); });
+        document.querySelectorAll(".casewrap .casebox").forEach(function(c){ c.classList.toggle("on", c.getAttribute("data-for")===id); });
+        // 상세 컨텍스트 (개인 프로젝트 예시면 CLI로 갱신)
+        var cn=document.getElementById("ctx-name"), ct=document.getElementById("ctx-type"), cm=document.getElementById("ctx-meta");
+        if(t.ctx === "cli"){ if(cn)cn.textContent="CLI 과제"; if(ct)ct.textContent="개인"; if(cm)cm.textContent="A반 · 03.04 ~ 03.18 · 추출 전체코드"; }
+        else if(!isList){ if(cn)cn.textContent="API 서버"; if(ct)ct.textContent="팀"; if(cm)cm.textContent="A반 · 03.20 ~ 04.10 · 추출 기본 본인커밋"; }
+        if(url) url.textContent = t.url;
+      }
+      function closeModals(){ document.querySelectorAll(".backdrop").forEach(function(b){ b.classList.add("hidden"); }); }
+
+      function route(){
+        var h = (location.hash || "").slice(1);
+        closeModals();
+        var cases = document.getElementById("cases");
+        var casewrap = document.querySelector(".casewrap");
+        if(h === "cases"){
+          if(casewrap) casewrap.style.display = "none";
+          if(cases){ cases.style.display = "block"; }
+          vp.querySelectorAll(".tpane").forEach(function(p){ p.classList.remove("on"); });
+          window.scrollTo(0,0);
+          return;
+        }
+        if(cases) cases.style.display = "none";
+        if(casewrap) casewrap.style.display = "";
+        if(MODAL_TAB[h]){
+          activateTab(MODAL_TAB[h]);
+          var m = document.getElementById(h + "-modal");
+          if(m) m.classList.remove("hidden");
+        } else {
+          activateTab(h || "list");
+        }
+        window.scrollTo(0,0);
+      }
+
+      // 관점 전환(데모) — 담당 뷰에서 총괄 전용 액션(.lead-only) 읽기전용 게이팅 (D90 후속)
+      var roleToggle = document.getElementById("role-toggle");
+      var meLabel = document.getElementById("me-label");
+      roleToggle.addEventListener("click", function(){
+        var isMgr = document.body.classList.toggle("role-mgr");
+        roleToggle.querySelectorAll("span").forEach(function(s){ s.classList.toggle("on", s.getAttribute("data-role") === (isMgr ? "mgr" : "lead")); });
+        meLabel.innerHTML = isMgr ? '박지현 · 담당 매니저 <span class="av">박</span>' : '박지현 · 총괄 매니저 <span class="av">박</span>';
+      });
+
+      // 클릭 위임 — 팝오버·모달 열기/닫기·탭·토글
+      document.addEventListener("click", function(e){
+        // 담당 뷰에서 총괄 전용 액션 클릭 차단
+        if(document.body.classList.contains("role-mgr") && e.target.closest(".lead-only")){ return; }
+        if(e.target.closest("#projsel-btn")){ if(projPop) projPop.classList.toggle("hidden"); return; }
+        if(projPop && !projPop.classList.contains("hidden") && !e.target.closest("#proj-pop")){ projPop.classList.add("hidden"); }
+        // 모달 열기 버튼 (id → hash)
+        var ob = e.target.closest("[id]");
+        if(ob && OPEN[ob.id]){ location.hash = OPEN[ob.id]; return; }
+        // 모달 닫기 (✕·취소 → 소속 탭)
+        var cb = e.target.closest("[id$='-close'],[id$='-cancel']");
+        if(cb){ location.hash = MODAL_TAB[cb.id.replace(/-close$|-cancel$/,"")] || "list"; return; }
+        // 배경(backdrop) 클릭 → 소속 탭
+        if(e.target.classList.contains("backdrop")){ location.hash = MODAL_TAB[e.target.id.replace("-modal","")] || "list"; return; }
+        // 리포트 화면으로 이동 (결과 탭 → SC-M08 · D78) — iframe이면 부모 index에 요청, 아니면 직접
+        var rep = e.target.closest("[data-report]");
+        if(rep){
+          var dst = rep.getAttribute("data-report");
+          if(window.self !== window.top) parent.postMessage({ iznav: dst }, "*");
+          else location.href = dst.split("/").pop();
+          return;
+        }
+        // 탭·행·링크·case 총합 이동
+        var nav = e.target.closest("[data-tab]");
+        if(nav){ location.hash = nav.getAttribute("data-tab"); return; }
+        // 모달 내 토글/라디오
+        var tg = e.target.closest(".toggle .tg");
+        if(tg){ tg.parentNode.querySelectorAll(".tg").forEach(function(x){ x.classList.remove("on"); }); tg.classList.add("on"); return; }
+        var rd = e.target.closest(".radio .rd");
+        if(rd){ rd.parentNode.querySelectorAll(".rd").forEach(function(x){ x.classList.remove("on"); }); rd.classList.add("on"); return; }
+      });
+
+      // iframe(index) 안이면 문서 헤더·설명 노트 숨김 → 화면 하나만
+      if(window.self !== window.top) document.body.classList.add("embedded");
+      window.addEventListener("hashchange", route);
+      route();
+    </script>
+  </body>
+</html>

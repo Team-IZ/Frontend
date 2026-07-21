@@ -16,7 +16,13 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+    /* Path alias — vite.config.ts의 resolve.alias와 반드시 같이 간다 */
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
     /* Linting */
+    "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,

@@ -1,0 +1,40 @@
+#!/bin/sh
+# 되돌리기 비싼 사고만 차단한다. 규약: docs/handbook/git-convention.md §1·§5
+#  1) main·develop 직접 커밋
+#  2) .env 스테이징 (push되면 히스토리에 남아 키 재발급 외엔 복구 불가)
+
+branch=$(git branch --show-current)
+
+case "$branch" in
+  main|develop)
+    echo "" >&2
+    echo "✗ '$branch' 브랜치에서 직접 커밋할 수 없습니다." >&2
+    echo "  feature/*·fix/* 브랜치를 파고 PR로 머지하세요." >&2
+    echo "  규약: docs/handbook/git-convention.md §1" >&2
+    echo "" >&2
+    exit 1 ;;
+esac
+
+# .env.example·.env.sample·.env.template은 커밋 대상이므로 허용
+leaked=$(git diff --cached --name-only \
+  | grep -E '(^|/)\.env($|\.)' \
+  | grep -vE '\.(example|sample|template)$')
+
+if [ -n "$leaked" ]; then
+  echo "" >&2
+  echo "✗ .env 파일이 스테이징되었습니다 — 커밋 차단." >&2
+  printf '%s\n' "$leaked" | sed 's/^/    /' >&2
+  echo "  git restore --staged <파일> 후 다시 커밋하세요." >&2
+  echo "  이미 push된 적이 있다면 키를 폐기·재발급해야 합니다." >&2
+  echo "" >&2
+  exit 1
+fi
+
+# 이슈 연결 안내(차단 아님 — 오타·포맷팅은 이슈 없이 커밋하는 게 규약 §3)
+if [ -z "$(git config --get "branch.$branch.issue" 2>/dev/null)" ]; then
+  echo "ℹ 이 브랜치에 이슈 번호가 없습니다. 연결하면 (#N)이 자동으로 붙습니다:" >&2
+  echo "    gh issue list" >&2
+  echo "    git config branch.$branch.issue <번호>" >&2
+fi
+
+exit 0

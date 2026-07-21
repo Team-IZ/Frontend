@@ -1,0 +1,33 @@
+#!/bin/sh
+# 브랜치에 등록해 둔 이슈 번호를 커밋 제목 끝에 자동 부착.
+#   등록: git config branch.$(git branch --show-current).issue 3
+#   확인: gh issue list
+# 매 커밋마다 (#N)을 손으로 치지 않기 위한 것. 규약: docs/handbook/git-convention.md §4
+
+msg_file="$1"
+src="$2"
+
+# 머지·squash는 메시지를 git이 만들므로 손대지 않음
+case "$src" in
+  merge|squash) exit 0 ;;
+esac
+
+branch=$(git branch --show-current)
+[ -n "$branch" ] || exit 0
+
+issue=$(git config --get "branch.$branch.issue" 2>/dev/null)
+[ -n "$issue" ] || exit 0
+
+subject=$(head -n1 "$msg_file")
+[ -n "$subject" ] || exit 0
+
+# 주석 줄로 시작(=빈 메시지 템플릿)이면 건너뜀
+case "$subject" in \#*) exit 0 ;; esac
+
+# 이미 이슈 참조가 있으면 존중
+echo "$subject" | grep -qE '\(#[0-9]+\)' && exit 0
+
+awk -v n="$issue" 'NR==1 { printf "%s (#%s)\n", $0, n; next } { print }' "$msg_file" > "$msg_file.izt" \
+  && mv "$msg_file.izt" "$msg_file"
+
+exit 0

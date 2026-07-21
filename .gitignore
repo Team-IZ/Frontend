@@ -24,3 +24,8 @@ dist-ssr
 *.sw?
 
 .env
+# Claude Code 개인 설정 (팀 공유는 .claude/settings.json)
+.claude/settings.local.json
+
+# 도구가 만드는 로컬 캐시
+.impeccable/

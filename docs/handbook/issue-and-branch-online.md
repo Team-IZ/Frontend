@@ -75,12 +75,15 @@ GitHub 검색 필터(이슈 탭 상단 검색창):
 
 ## 부록 · repo 설정 (파일로 안 남는 것 — 여기 못박음)
 
-브랜치 보호·default는 GitHub 웹 설정이라 레포에 커밋되지 않는다. **ruleset을 다시 켤 때 아래대로** 건다.
+브랜치 보호·default는 GitHub 웹 설정이라 레포에 커밋되지 않는다. 현재 걸린 설정:
 
 - **Default branch = `develop`** (Settings → General → Default branch)
-- **보호 대상 = `main` · `develop` 둘 다.** default를 develop으로 옮겼으므로 develop이 무방비가 되지 않게 반드시 둘 다.
-  - 직접 push 금지 (PR 필수)
-  - PR 최소 1인 승인 후 머지 (규약 §4)
+- **ruleset `protect-main-develop`** — 대상 `main` · `develop` **둘 다**. default를 develop으로
+  옮겼으므로 develop이 무방비가 되면 안 된다.
+  - `pull_request` — 직접 push 금지 (PR 필수)
+  - `required_status_checks: verify` — **CI가 빨가면 머지 불가**
+  - `non_fast_forward` · `deletion` — 강제 push·브랜치 삭제 차단
+  - **승인 인원은 0** — 의도적 이탈이다. 이유와 되돌리는 조건은 규약 §4.
 - `main` = 프로덕션 릴리스 전용. develop → main PR로만 승격.
 
 > 훅은 로컬 방어라 `--no-verify`로 뚫린다. **서버 측 최종 방어선은 이 보호 규칙**이므로 반드시 켠 상태를 유지한다.

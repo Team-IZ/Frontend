@@ -42,6 +42,6 @@ React 19 · TypeScript · Vite
 
 - `main` 배포 전용 · `develop` 통합 · 작업은 `feature/*`
 - 커밋: `type: short description (#issue)` — 훅이 검사하고 이슈 번호는 자동 부착
-- PR은 `develop`으로, 최소 1인 리뷰
+- PR은 `develop`으로 (승인 필수 아님 — 필요하면 서로 요청, 이유는 규약 §4)
 
 상세는 [`git-convention.md`](docs/handbook/git-convention.md).

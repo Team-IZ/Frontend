@@ -15,8 +15,13 @@
 | `feature/*` | 기능 개발 | develop에서 분기 |
 | `fix/*` | 버그 수정 | develop에서 분기 |
 | `hotfix/*` | main 긴급 수정 | main에서 분기 |
+| `mockup` | 화면 목업·기획 문서 | 코드 라인 밖. push하면 목업 사이트가 즉시 갱신 |
 
 네이밍은 하이픈: `feature/login-api`, `fix/token-refresh-error`
+
+**`mockup`은 코드 브랜치가 아니다.** 와이어프레임·화면정의서·기획 문서가 사는 곳이고, develop으로 머지하지 않는다.
+`docs/plan/screen/wireframe/`에 변경이 생긴 채로 push하면 <https://team-iz.github.io/Frontend/> 가 자동 갱신된다(`.github/workflows/deploy-wireframe.yml`). 작업 중인 화면도 그대로 공개되므로 팀이 항상 최신을 본다 — 감추고 싶은 단계면 push를 미룬다.
+목업 커밋은 **이슈 번호를 생략해도 된다**(§3의 등록 기준은 코드 작업 기준).
 
 ## 2. 작업 흐름
 

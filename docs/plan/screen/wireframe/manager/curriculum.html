@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-M12 · 교안 관리 — 목록 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-nav:#1e2436; --c-nav-2:#2a3147; --c-nav-text:#aeb4c6;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:900px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  .app{display:flex;flex-direction:column;min-height:600px}
+  .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
+  .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700;font-size:var(--fs-base)}
+  .topbar .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .cohortsel{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:5px var(--sp-3);font-size:var(--fs-sm);color:var(--c-text);background:var(--c-surface-2)}
+  .cohortsel .k{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+  .body{display:flex;flex:1}
+  .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
+  .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
+  .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
+  .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-6);min-width:0}
+  .phead{margin-bottom:var(--sp-4)}
+  .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
+
+  /* 표 헤더 (제목+총개수 좌 / +등록 우) */
+  .lhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-4)}
+  .lhead .ttl{font-size:var(--fs-lg);font-weight:700;display:flex;align-items:baseline;gap:var(--sp-2)}
+  .lhead .ttl .cnt{font-size:var(--fs-xs);font-weight:600;color:var(--c-text-3)}
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-xs);cursor:pointer;padding:8px 13px}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong)}
+  /* 툴바 (검색·필터·정렬 전부 좌) */
+  .ltool{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3);flex-wrap:wrap}
+  .ltool .search{flex:0 0 240px;border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-3);background:var(--c-surface-2)}
+  .ltool .fil{border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);cursor:pointer}
+  .ltool .fil .k{color:var(--c-text-3)}
+  .ltool .sort{margin-left:auto;border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);cursor:pointer}
+  .ltool .sort .k{color:var(--c-text-3)}
+
+  .card{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .dtbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .dtbl th{text-align:left;padding:11px var(--sp-4);font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-weight:600;white-space:nowrap}
+  .dtbl td{padding:12px var(--sp-4);border-bottom:1px solid var(--c-border);vertical-align:middle}
+  .dtbl tr:last-child td{border-bottom:0}
+  .dtbl tr.click{cursor:pointer}
+  .dtbl tr.click:hover{background:var(--c-surface-2)}
+  .dtbl .name b{font-weight:700}
+  .dtbl .name .sub{font-size:11px;color:var(--c-text-3);margin-top:2px}
+  .dtbl .ver{font-family:var(--mono);font-size:12px;color:var(--c-text-2)}
+  .dtbl .date{color:var(--c-text-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .newtag{font-size:9px;font-weight:700;color:var(--c-info);background:var(--c-info-soft);border:1px solid #cfe0f0;border-radius:20px;padding:0 6px;margin-left:5px;vertical-align:1px}
+  .typ{font-size:11px;color:var(--c-text-2)}
+  .typ.hold{color:var(--c-text-3)}
+
+  /* 상태 배지 — 한글 라벨(개발 enum 노출 지양) */
+  .st{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .st .dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+  .st.approved{background:var(--c-success-soft);color:var(--c-success)} .st.approved .dot{background:var(--c-success)}
+  .st.review{background:var(--c-warning-soft);color:var(--c-warning)} .st.review .dot{background:var(--c-warning)}
+  .st.mapping{background:var(--c-info-soft);color:var(--c-info)} .st.mapping .dot{background:var(--c-info)}
+  .st.extracted{background:#eef0f3;color:var(--c-text-2)} .st.extracted .dot{background:var(--c-text-3)}
+  .st.extracting{background:var(--c-info-soft);color:var(--c-info)} .st.extracting .dot{background:var(--c-info);animation:none}
+  .st.uploaded{background:#eef0f3;color:var(--c-text-3)} .st.uploaded .dot{background:var(--c-text-3)}
+  .st.failed{background:var(--c-danger-soft);color:var(--c-danger)} .st.failed .dot{background:var(--c-danger)}
+  .st.na{color:var(--c-text-3);font-weight:400}
+
+  /* 행 액션 (⋯) */
+  .rowact{position:relative;text-align:right;white-space:nowrap}
+  .amini{font-size:11px;font-weight:600;color:var(--c-primary);cursor:pointer;padding:3px 8px;border:1px solid #cfd8ee;border-radius:20px;background:var(--c-primary-soft)}
+  .kebab{color:var(--c-text-3);cursor:pointer;font-size:15px;padding:0 6px;margin-left:6px}
+
+  /* 적용 프로젝트 (프로젝트↔교안 선택적 참조) */
+  .pchip{display:inline-block;font-size:11px;font-weight:600;color:var(--c-text-2);background:var(--c-surface-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:1px 8px;margin:1px 2px}
+  .pnone{font-size:11px;color:var(--c-text-3)}
+
+  /* 역할 태그 + 관점 전환(총괄/담당) — project-workspace와 동일 (D90) */
+  .rtag{font-size:9px;font-weight:700;border-radius:20px;padding:1px 7px;vertical-align:1px;margin-left:5px;white-space:nowrap}
+  .rtag.lead{color:var(--c-warning);background:var(--c-warning-soft);border:1px solid #e6d3a8}
+  .roletoggle{display:inline-flex;border:1px solid var(--c-border-strong);border-radius:20px;overflow:hidden;font-size:11px;margin-right:var(--sp-3);cursor:pointer}
+  .roletoggle span{padding:5px 11px;color:var(--c-text-2)}
+  .roletoggle span.on{background:var(--c-primary);color:#fff;font-weight:600}
+  .lead-gate{display:none;align-items:center;gap:4px;font-size:11px;color:var(--c-text-3);margin-left:var(--sp-2);white-space:nowrap}
+  body.role-mgr .lead-only{opacity:.4;pointer-events:none}
+  body.role-mgr .lead-gate{display:inline-flex}
+
+  /* 푸터 (범위 좌 + 페이저 중앙) */
+  .lfoot{display:flex;align-items:center;margin-top:var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-3)}
+  .lfoot .rng{flex:1}
+  .lfoot .pager{flex:1;display:flex;justify-content:center;gap:6px}
+  .lfoot .pager span{padding:2px 8px;border-radius:6px;cursor:pointer}
+  .lfoot .pager span.on{background:var(--c-primary);color:#fff;font-weight:600}
+  .lfoot .sp{flex:1}
+  .foot b{color:var(--c-text-2)}
+
+  /* 상태 ↔ case (뷰포트 밖) */
+  .casewrap{margin-top:var(--sp-5)}
+  .casebox{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5)}
+  .casebox .ct{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--c-text-3);margin-bottom:var(--sp-2);display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3)}
+  .casebox .ct .all{color:var(--c-primary);cursor:pointer;text-transform:none;letter-spacing:0;font-weight:600;white-space:nowrap}
+  .casebox .cr{display:flex;gap:var(--sp-3);align-items:baseline;padding:7px 0;font-size:var(--fs-sm);border-top:1px solid var(--c-border)}
+  .casebox .cr:first-of-type{border-top:0}
+  .casebox .cr .cn{flex:0 0 42px;color:var(--c-text-3);font-size:var(--fs-xs);font-variant-numeric:tabular-nums}
+  .casebox .cr .pill{flex:0 0 auto;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .casebox .cr .pill.block{background:var(--c-danger-soft);color:var(--c-danger)}
+  .casebox .cr .pill.hold{background:var(--c-warning-soft);color:var(--c-warning)}
+  .casebox .cr .cd{flex:1;color:var(--c-text-2)}
+  .casebox .cr .cd b{color:var(--c-text)}
+
+  /* ===== 교안 상세 (구조 추출 CUR-01 · 매핑 승인 CUR-02) ===== */
+  .ctxbar{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-3);padding-bottom:var(--sp-3);border-bottom:1px solid var(--c-border)}
+  .ctxbar .back{font-size:var(--fs-xs);color:var(--c-primary);cursor:pointer;margin-bottom:3px;display:inline-block}
+  .ctxbar .cname{font-size:var(--fs-lg);font-weight:700;display:flex;align-items:center;gap:var(--sp-2)}
+  .ctxbar .cver{font-family:var(--mono);font-size:12px;color:var(--c-text-2);font-weight:400}
+  .ctxbar .cmeta{font-size:11px;color:var(--c-text-3);margin-top:3px}
+  .ctxbar .cursel{font-size:11px;border:1px solid var(--c-border-strong);border-radius:20px;padding:4px 10px;color:var(--c-text-2);background:var(--c-surface-2);cursor:pointer;white-space:nowrap}
+  /* 추출 품질 배지 + 경고 */
+  .qrow{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3);flex-wrap:wrap}
+  .qbadge{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;background:#eef0f3;color:var(--c-text-2)}
+  .qbadge.ok{background:var(--c-success-soft);color:var(--c-success)}
+  /* 교안 연결 레이아웃 */
+  .quietnote{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:var(--sp-3)}
+  .topicwrap{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .tchip{display:inline-flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--c-text);background:var(--c-surface-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:4px 10px}
+  .tchip .x{color:var(--c-text-3);cursor:pointer;font-size:11px}
+  .tadd{font-size:var(--fs-xs);color:var(--c-primary);background:#fff;border:1px dashed var(--c-border-strong);border-radius:20px;padding:4px 10px;cursor:pointer}
+  /* 축 → 교안 위치 규칙 (고정 · 승인 대상 아님) + 리포트 시점 검색 안내 */
+  .rulebox{margin-top:var(--sp-5);border:1px solid var(--c-border);border-radius:var(--r-md);background:var(--c-surface-2);padding:var(--sp-4) var(--sp-5)}
+  .rulebox h4{font-size:var(--fs-sm);margin-bottom:var(--sp-2);display:flex;align-items:center;gap:6px}
+  .rulebox h4 .fx{font-size:9px;font-weight:700;color:var(--c-text-3);background:#fff;border:1px solid var(--c-border-strong);border-radius:20px;padding:1px 7px}
+  .rulerow{display:flex;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-2)}
+  .rulechip{font-size:11px;color:var(--c-text-2);background:#fff;border:1px solid var(--c-border);border-radius:20px;padding:3px 10px}
+  .rulechip b{color:var(--c-text)}
+  .rulechip.na{color:var(--c-text-3)}
+  /* 커버리지 진단 (프로젝트 측정 주제 ↔ 이 교안 섹션) */
+  .covrow{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);padding:8px 0;border-bottom:1px solid var(--c-border)}
+  .covrow:last-child{border-bottom:0}
+  .covrow .ok{color:var(--c-success);font-weight:700;flex:0 0 14px}
+  .covrow .no{color:var(--c-text-3);font-weight:700;flex:0 0 14px}
+  .covrow .arw{color:var(--c-text-3);font-size:11px}
+  .covrow .dst{color:var(--c-text-2)}
+  .covrow .dst.none{color:var(--c-warning)}
+  .covrow .pg{font-size:11px;color:var(--c-text-3);font-family:var(--mono)}
+  .covrow.miss b{color:var(--c-text-2)}
+
+  /* ===== 교안 등록 폼 (CUR-03 업로드 · 총괄) ===== */
+  .formwrap{max-width:620px}
+  .dropzone{border:2px dashed var(--c-border-strong);border-radius:var(--r-md);background:var(--c-surface-2);padding:var(--sp-6);text-align:center;margin-bottom:var(--sp-5)}
+  .dropzone .ic{font-size:26px;color:var(--c-text-3)}
+  .dropzone .t{font-size:var(--fs-sm);font-weight:600;margin:var(--sp-2) 0 2px}
+  .dropzone .s{font-size:11px;color:var(--c-text-3)}
+  .dropzone .picked{display:inline-flex;align-items:center;gap:8px;margin-top:var(--sp-3);font-size:var(--fs-sm);background:#fff;border:1px solid var(--c-border);border-radius:20px;padding:5px 12px}
+  .dropzone .picked .x{color:var(--c-text-3);cursor:pointer}
+  .fld{margin-bottom:var(--sp-4)}
+  .fld .fl{font-size:var(--fs-xs);font-weight:600;color:var(--c-text-2);margin-bottom:5px;display:block}
+  .fld .fl .req{color:var(--c-danger);margin-left:2px}
+  .fld .fl .opt{color:var(--c-text-3);font-weight:400}
+  .fld .inp{border:1px solid var(--c-border-strong);border-radius:var(--r-md);padding:9px 12px;font-size:var(--fs-sm);color:var(--c-text);background:#fff}
+  .fld .inp.ph{color:var(--c-text-3)}
+  .fld .hint{font-size:11px;color:var(--c-text-3);margin-top:4px}
+  .row2{display:flex;gap:var(--sp-3)}
+  .row2 .fld{flex:1}
+  /* 프로젝트 연결 피커 — project-workspace 교안 연결 모달과 동일 패턴(일관성·D99) */
+  .curpick{display:flex;flex-direction:column;gap:6px}
+  .curopt{display:flex;align-items:flex-start;gap:10px;border:1px solid var(--c-border);border-radius:var(--r-md);padding:9px 12px;cursor:pointer}
+  .curopt.on{border-color:var(--c-primary);background:var(--c-primary-soft)}
+  .curopt.dis{opacity:.55;cursor:not-allowed}
+  .curopt .ck{flex:0 0 18px;height:18px;border:1px solid var(--c-border-strong);border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#fff;background:#fff;margin-top:1px}
+  .curopt.on .ck{background:var(--c-primary);border-color:var(--c-primary)}
+  .curopt .ci b{font-size:var(--fs-sm)}
+  .curopt .ci .cc{font-size:11px;color:var(--c-text-3);margin-top:2px}
+  /* 프로젝트 연결 모달 (스케일 대응 · 검색·스크롤) */
+  .backdrop{position:absolute;inset:0;background:rgba(20,24,31,.4);display:flex;align-items:center;justify-content:center;z-index:20;padding:var(--sp-5)}
+  .backdrop.hidden{display:none}
+  .dialog{background:#fff;border-radius:var(--r-lg);box-shadow:var(--shadow-card);width:100%;max-width:460px;max-height:80%;display:flex;flex-direction:column;overflow:hidden}
+  .dialog .dh{display:flex;align-items:center;justify-content:space-between;padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--c-border)}
+  .dialog .dh h3{font-size:var(--fs-base)}
+  .dialog .dh .x{color:var(--c-text-3);cursor:pointer}
+  .dialog .db{padding:var(--sp-4) var(--sp-5);overflow-y:auto}
+  .dialog .dsearch{border:1px solid var(--c-border-strong);border-radius:20px;padding:8px 12px;font-size:var(--fs-xs);color:var(--c-text-3);background:var(--c-surface-2);margin-bottom:var(--sp-3)}
+  .dialog .df{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-2);padding:var(--sp-3) var(--sp-5);border-top:1px solid var(--c-border)}
+  .dialog .df .cnt{font-size:11px;color:var(--c-text-3)}
+  /* 커버리지 요약 (기수 전체 기준 · 자동 계산) */
+  .covbox{border:1px solid var(--c-border);border-radius:var(--r-md);background:var(--c-surface-2);padding:var(--sp-4) var(--sp-5);margin-top:var(--sp-4)}
+  .covbox .ch{font-size:var(--fs-sm);font-weight:700;margin-bottom:var(--sp-2);display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3)}
+  .covbox .ch .ed{font-size:11px;color:var(--c-text-3);font-weight:400}
+  .covfoot{font-size:11px;color:var(--c-text-3);margin-top:var(--sp-3);padding-top:var(--sp-3);border-top:1px solid var(--c-border);line-height:1.6}
+  .connrow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+  .fnote{font-size:12px;color:var(--c-info);background:var(--c-info-soft);border-radius:var(--r-md);padding:10px 14px;margin:var(--sp-2) 0 var(--sp-4);line-height:1.6}
+  .fbar{display:flex;gap:var(--sp-2);align-items:center;margin-top:var(--sp-5);padding-top:var(--sp-4);border-top:1px solid var(--c-border)}
+
+  body.embedded .doc-head, body.embedded .sec-label{display:none}
+  body.embedded .page{padding:var(--sp-4) var(--sp-5)}
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">SC-M12 · P1 · 매니저 · 웹 · 목록 화면</span>
+    <h1>교안 관리 — 목록</h1>
+    <p>교안은 <b>프로젝트가 아니라 기수 자산</b>(D85·B10·D91) — 선택된 기수 스코프에서 <b>교안·버전</b> 단위로 등록하는 <b>콘텐츠 라이브러리</b>다. <b>프로젝트와는 선택적 다대다 참조</b>(D91): 프로젝트 생성 시 관련 교안을 링크(비워도 됨) → 리포트가 그 프로젝트의 취약축을 정확한 교안으로 안내(MEAS-07). <b>권한: 열람=총괄·담당 둘 다 / 저작(등록·재처리·교안 연결·삭제)=총괄만</b>(측정 처방 경로 저작이라 무결성·D90 계열, 담당은 배정 기수 열람). 상태 머신 <b>업로드 → 추출 중 → 추출 완료 / 추출 실패</b>(CUR-03), 완료 후 <b>섹션마다 다루는 주제를 자동 지정 → 총괄이 편집</b>(CUR-02). 이 화면은 <b>컬렉션(마스터)</b>, 상세(교안 구성·교안 연결)는 드릴다운. 상단 셸·기수 선택기는 전 화면 통일(기수 7기).</p>
+  </div>
+
+  <div class="sec-label">화면 · 교안 목록 (CUR-03 · 컬렉션 · 상태 머신)</div>
+  <div class="rpage" id="page-list">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/curriculum</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div style="display:flex;align-items:center">
+          <span class="roletoggle" title="열람=총괄·담당 / 저작=총괄"><span class="on" data-role="lead">총괄 뷰</span><span data-role="mgr">담당 뷰</span></span>
+          <div class="me me-label">박지현 · 총괄 매니저 <span class="av">박</span></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item on"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교안 › 7기</div><h2>교안 관리</h2></div>
+
+          <div class="lhead">
+            <div class="ttl">교안 목록 <span class="cnt">총 6개</span></div>
+            <div style="display:flex;align-items:center"><button class="btn lead-only" id="new-cur" data-nav="upload">+ 교안 등록<span class="rtag lead">총괄</span></button><span class="lead-gate">🔒 등록·검수는 총괄 · 담당은 열람만</span></div>
+          </div>
+          <div class="ltool">
+            <div class="search">🔍 교안명 · 주제 검색</div>
+            <div class="fil"><span class="k">추출 상태</span> 전체 ▾</div>
+            <div class="fil"><span class="k">주제 지정</span> 전체 ▾</div>
+            <div class="fil"><span class="k">적용 프로젝트</span> 전체 ▾</div>
+            <div class="sort"><span class="k">정렬</span> 최근 수정순 ▾</div>
+          </div>
+
+          <div class="card">
+            <table class="dtbl">
+              <thead><tr>
+                <th>교안명</th><th>유형</th><th>버전</th><th>추출 상태</th><th>주제 지정</th><th>적용 프로젝트</th><th>최종 수정</th><th></th>
+              </tr></thead>
+              <tbody>
+                <tr class="click">
+                  <td class="name"><b>Kubernetes와 CICD</b><div class="sub">K8s 아키텍처 · 컨테이너 배포 · Service/Ingress · CICD · 76p</div></td>
+                  <td class="typ">PDF</td><td class="ver">v2</td>
+                  <td><span class="st extracted"><span class="dot"></span>추출 완료</span></td>
+                  <td><span class="st review"><span class="dot"></span>5 / 6 섹션</span></td>
+                  <td><span class="pchip">MSA 배포 실습</span></td>
+                  <td class="date">06-18</td>
+                  <td class="rowact"><span class="amini lead-only" data-nav="structure">주제 확인 →</span><span class="kebab lead-only">⋯</span></td>
+                </tr>
+                <tr class="click">
+                  <td class="name"><b>클라우드 현대화 이해 서비스</b><div class="sub">클라우드 네이티브 · IaaS/PaaS/SaaS · 마이그레이션 · 151p</div></td>
+                  <td class="typ">PDF</td><td class="ver">v1</td>
+                  <td><span class="st extracted"><span class="dot"></span>추출 완료</span></td>
+                  <td><span class="st approved"><span class="dot"></span>8 / 8 섹션</span></td>
+                  <td><span class="pchip">클라우드 전환 PJT</span></td>
+                  <td class="date">06-19</td>
+                  <td class="rowact"><span class="kebab lead-only">⋯</span></td>
+                </tr>
+                <tr class="click">
+                  <td class="name"><b>AWS 핵심 서비스</b><div class="sub">EC2 · VPC · IAM · S3 · RDS</div></td>
+                  <td class="typ">PDF</td><td class="ver">v3</td>
+                  <td><span class="st extracted"><span class="dot"></span>추출 완료</span></td>
+                  <td><span class="st mapping"><span class="dot"></span>0 / 5 섹션</span></td>
+                  <td><span class="pchip">클라우드 전환 PJT</span><span class="pchip">MSA 배포 실습</span></td>
+                  <td class="date">06-15</td>
+                  <td class="rowact"><span class="kebab lead-only">⋯</span></td>
+                </tr>
+                <tr class="click">
+                  <td class="name"><b>Docker 컨테이너 기초</b><div class="sub">이미지 · 레지스트리 · Dockerfile</div></td>
+                  <td class="typ">PDF</td><td class="ver">v1</td>
+                  <td><span class="st failed"><span class="dot"></span>추출 실패</span></td>
+                  <td><span class="st na">—</span></td>
+                  <td><span class="pchip">MSA 배포 실습</span></td>
+                  <td class="date">06-12</td>
+                  <td class="rowact"><span class="amini lead-only">재처리</span><span class="kebab lead-only">⋯</span></td>
+                </tr>
+                <tr class="click">
+                  <td class="name"><b>Microservice 아키텍처</b><div class="sub">서비스 분해 · API 게이트웨이 · 사가</div></td>
+                  <td class="typ">PDF</td><td class="ver">v1</td>
+                  <td><span class="st extracting"><span class="dot"></span>추출 중…</span></td>
+                  <td><span class="st na">—</span></td>
+                  <td><span class="pnone">— 미연결</span></td>
+                  <td class="date">06-19</td>
+                  <td class="rowact"><span class="kebab lead-only">⋯</span></td>
+                </tr>
+                <tr class="click">
+                  <td class="name"><b>Terraform IaC 입문</b><span class="newtag">방금 등록</span><div class="sub">HCL · provider · state</div></td>
+                  <td class="typ">PDF</td><td class="ver">v1</td>
+                  <td><span class="st uploaded"><span class="dot"></span>업로드됨</span></td>
+                  <td><span class="st na">—</span></td>
+                  <td><span class="pnone">— 미연결</span></td>
+                  <td class="date">06-19</td>
+                  <td class="rowact"><span class="kebab lead-only">⋯</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="lfoot">
+            <div class="rng">6개 중 1–6</div>
+            <div class="pager"><span class="on">1</span></div>
+            <div class="sp"></div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="casewrap">
+    <div class="casebox">
+      <div class="ct"><span>이 화면 · 상태 · case (CUR-03 · 등록 관리 중 목록 관련 — 등록 검증 03-1~6은 등록 화면)</span><span class="all">상태 ↔ case 매핑 총합 → (후속)</span></div>
+      <div class="cr"><span class="cn">03-7</span><span class="pill hold">재처리만</span><span class="cd"><b>구조 추출 실패</b> — 추출 실패 상태, 원본 유지한 채 재처리만 허용</span></div>
+      <div class="cr"><span class="cn">03-8</span><span class="pill block">전이 차단</span><span class="cd"><b>정의 안 된 상태 전이</b> — 변경 차단, 현재/허용 다음 상태 안내</span></div>
+      <div class="cr"><span class="cn">03-9</span><span class="pill block">삭제 차단</span><span class="cd"><b>태그된 섹션 있는 교안 삭제</b> — 차단, 연결 해제 절차 안내</span></div>
+      <div class="cr"><span class="cn">03-10</span><span class="pill block">403</span><span class="cd"><b>배정 밖 기수 교안 접근</b> — 요청 차단(테넌트 격리·SYS-02)</span></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ============ 교안 등록 (CUR-03 · 업로드 · 총괄) ============ -->
+  <div class="sec-label">화면 · 교안 등록 (CUR-03 · PDF 업로드 → 자동 분석 · 총괄 전용)</div>
+  <div class="rpage" id="page-upload">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/curriculum/new</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div style="display:flex;align-items:center">
+          <span class="roletoggle" title="열람=총괄·담당 / 저작=총괄"><span class="on" data-role="lead">총괄 뷰</span><span data-role="mgr">담당 뷰</span></span>
+          <div class="me me-label">박지현 · 총괄 매니저 <span class="av">박</span></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item on"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb"><span class="back" data-nav="list">← 교안 목록</span> › 등록</div><h2>교안 등록 <span class="rtag lead">총괄</span></h2></div>
+
+          <div class="formwrap">
+            <div class="dropzone">
+              <div class="ic">⬆</div>
+              <div class="t">PDF를 끌어다 놓거나 클릭해 선택</div>
+              <div class="s">현재 PDF만 지원 (pptx·docx·스캔본은 보류) · 최대 50MB</div>
+              <div class="picked"><span>📄 AI_Kubernetes와 CICD_교안.pdf · 2.4MB</span><span class="x">✕</span></div>
+            </div>
+
+            <div class="fld">
+              <label class="fl">교안명 <span class="req">*</span></label>
+              <div class="inp">Kubernetes와 CICD</div>
+            </div>
+            <div class="fld">
+              <label class="fl">주제 · 설명 <span class="opt">· 선택</span></label>
+              <div class="inp ph">예: K8s 아키텍처 · 컨테이너 배포 · Service/Ingress · CICD</div>
+              <div class="hint">검색·목록 표시용. 비워도 됨(분석이 섹션·주제를 자동 추출).</div>
+            </div>
+            <div class="row2">
+              <div class="fld">
+                <label class="fl">유형</label>
+                <div class="inp">PDF</div>
+              </div>
+              <div class="fld">
+                <label class="fl">버전</label>
+                <div class="inp">v2 <span style="font-size:11px;color:var(--c-text-3)">· 기존 v1 있음 → 자동 증가</span></div>
+                <div class="hint">같은 교안 재업로드 시 기존 버전 보존, 새 버전으로 등록.</div>
+              </div>
+            </div>
+            <div class="fld">
+              <label class="fl">적용 프로젝트 <span class="opt">· 선택 · 지금 안 해도 됨</span></label>
+              <div class="connrow" style="margin-bottom:6px"><span class="pchip">MSA 배포 실습</span><button class="btn ghost" id="proj-pick" style="padding:5px 11px">+ 프로젝트 연결</button><span style="font-size:11px;color:var(--c-text-3)">1개 선택됨</span></div>
+              <div class="hint">비우고 나중에 프로젝트 개요에서 연결해도 됨.</div>
+            </div>
+
+            <div class="fnote">ℹ 업로드하면 자동 분석이 시작됩니다.</div>
+
+            <div class="fbar">
+              <button class="btn lead-only" id="do-upload">업로드 · 자동 분석 시작<span class="rtag lead">총괄</span></button>
+              <button class="btn ghost" data-nav="list">취소</button>
+              <span class="lead-gate">🔒 교안 등록은 총괄 전용 · 담당은 열람만</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+    <div class="backdrop hidden" id="proj-modal">
+      <div class="dialog">
+        <div class="dh"><h3>프로젝트 연결 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· Kubernetes와 CICD · 이 기수 프로젝트</span></h3><span class="x" id="proj-close">✕</span></div>
+        <div class="db">
+          <div class="dsearch">🔍 프로젝트명 검색</div>
+          <div class="curpick">
+            <label class="curopt on"><span class="ck">✓</span><div class="ci"><b>MSA 배포 실습</b><div class="cc">팀 · A반 · 진행</div></div></label>
+            <label class="curopt"><span class="ck"></span><div class="ci"><b>클라우드 전환 PJT</b><div class="cc">팀 · B반 · 준비</div></div></label>
+            <label class="curopt"><span class="ck"></span><div class="ci"><b>API 서버</b><div class="cc">팀 · A반 · 진행</div></div></label>
+            <label class="curopt"><span class="ck"></span><div class="ci"><b>CLI 과제</b><div class="cc">개인 · A반 · 완료</div></div></label>
+            <label class="curopt"><span class="ck"></span><div class="ci"><b>풀스택 서비스</b><div class="cc">팀 · 전체 · 준비</div></div></label>
+          </div>
+        </div>
+        <div class="df"><span class="cnt">1개 선택됨</span><div style="display:flex;gap:8px"><button class="btn ghost" id="proj-cancel">취소</button><button class="btn" id="proj-save">연결</button></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="casewrap">
+    <div class="casebox">
+      <div class="ct"><span>이 화면 · 상태 · case (CUR-03 · 등록 관련)</span></div>
+      <div class="cr"><span class="cn">03-1</span><span class="pill block">형식 차단</span><span class="cd"><b>지원 안 하는 파일 형식</b> — 업로드 차단·허용 형식 안내(현재 PDF)</span></div>
+      <div class="cr"><span class="cn">03-2</span><span class="pill block">용량 차단</span><span class="cd"><b>파일 용량 초과</b> — 저장 중단·최대 허용 용량 안내</span></div>
+      <div class="cr"><span class="cn">03-3</span><span class="pill hold">누락 표시</span><span class="cd"><b>필수 메타 누락(교안명)</b> — 등록 중단·누락 항목 표시</span></div>
+      <div class="cr"><span class="cn">03-4</span><span class="pill block">중복 차단</span><span class="cd"><b>기수 내 동일 교안·버전 중복</b> — 등록 차단·기존 항목 확인 유도</span></div>
+      <div class="cr"><span class="cn">03-5</span><span class="pill hold">재시도</span><span class="cd"><b>파일 저장소 업로드 실패</b> — DB 미기록·재시도 가능 상태</span></div>
+      <div class="cr"><span class="cn">03-6</span><span class="pill block">롤백</span><span class="cd"><b>DB 저장 실패</b> — 임시 파일 정리·트랜잭션 롤백</span></div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ============ 교안 상세 · 구조 추출 (CUR-01) ============ -->
+  <div class="sec-label">화면 · 교안 상세 › 교안 구성 (CUR-01 · 매니저용 목차 · 섹션·주제·페이지)</div>
+  <div class="rpage" id="page-structure">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/curriculum/2/structure</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div style="display:flex;align-items:center">
+          <span class="roletoggle" title="열람=총괄·담당 / 저작=총괄"><span class="on" data-role="lead">총괄 뷰</span><span data-role="mgr">담당 뷰</span></span>
+          <div class="me me-label">박지현 · 총괄 매니저 <span class="av">박</span></div>
+        </div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item on"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content">
+          <div class="ctxbar">
+            <div>
+              <span class="back" data-nav="list">← 교안 목록</span>
+              <div class="cname">Kubernetes와 CICD <span class="cver">v2</span></div>
+              <div class="cmeta">PDF · 76p · 최종 수정 06-18</div>
+            </div>
+            <span class="cursel">다른 교안 전환 ▾</span>
+          </div>
+
+          <div class="qrow">
+            <span class="qbadge ok">분석 완료</span>
+            <span class="qbadge">6개 섹션 · 76p</span>
+            <div style="margin-left:auto;display:flex;align-items:center"><button class="btn ghost lead-only" id="reextract">↻ 재분석<span class="rtag lead">총괄</span></button><span class="lead-gate">🔒 총괄</span></div>
+          </div>
+
+          <div class="quietnote">주제는 자동으로 추출됩니다. <b>이 기수 학생이 그 주제에서 막히면 이 교안 위치가 안내됩니다</b> — 프로젝트 연결은 필요 없습니다. 틀린 주제만 고치세요.</div>
+
+          <div class="card">
+            <table class="dtbl">
+              <thead><tr><th>섹션</th><th style="width:110px">페이지</th><th>다루는 주제</th></tr></thead>
+              <tbody>
+                <tr><td class="name"><b>Kubernetes 아키텍처</b></td><td class="ver">p.5–20</td><td><div class="topicwrap"><span class="tchip">Master/Worker Node <span class="x lead-only">✕</span></span><span class="tchip">API Server <span class="x lead-only">✕</span></span><span class="tchip">etcd <span class="x lead-only">✕</span></span><span class="tchip">kubelet <span class="x lead-only">✕</span></span><span class="tadd lead-only">+</span></div></td></tr>
+                <tr><td class="name"><b>컨테이너 배포</b></td><td class="ver">p.21–34</td><td><div class="topicwrap"><span class="tchip">Pod <span class="x lead-only">✕</span></span><span class="tchip">ReplicaSet <span class="x lead-only">✕</span></span><span class="tchip">Deployment <span class="x lead-only">✕</span></span><span class="tchip">YAML <span class="x lead-only">✕</span></span><span class="tadd lead-only">+</span></div></td></tr>
+                <tr><td class="name"><b>컨테이너 통신</b></td><td class="ver">p.35–46</td><td><div class="topicwrap"><span class="tchip">Service <span class="x lead-only">✕</span></span><span class="tchip">ClusterIP/NodePort <span class="x lead-only">✕</span></span><span class="tchip">LoadBalancer <span class="x lead-only">✕</span></span><span class="tchip">Ingress <span class="x lead-only">✕</span></span><span class="tadd lead-only">+</span></div></td></tr>
+                <tr><td class="name"><b>컨테이너 볼륨·환경변수</b></td><td class="ver">p.47–53</td><td><div class="topicwrap"><span class="tchip">Volume <span class="x lead-only">✕</span></span><span class="tchip">PV/PVC <span class="x lead-only">✕</span></span><span class="tchip">ConfigMap <span class="x lead-only">✕</span></span><span class="tchip">Secret <span class="x lead-only">✕</span></span><span class="tadd lead-only">+</span></div></td></tr>
+                <tr><td class="name"><b>CICD Pipeline</b></td><td class="ver">p.54–70</td><td><div class="topicwrap"><span class="tchip">DevOps <span class="x lead-only">✕</span></span><span class="tchip">CI <span class="x lead-only">✕</span></span><span class="tchip">CD <span class="x lead-only">✕</span></span><span class="tchip">애자일 <span class="x lead-only">✕</span></span><span class="tadd lead-only">+</span></div></td></tr>
+                <tr><td class="name"><b>AWS CICD</b></td><td class="ver">p.71–74</td><td><div class="topicwrap"><span class="tchip">CodePipeline <span class="x lead-only">✕</span></span><span class="tchip">릴리즈 프로세스 <span class="x lead-only">✕</span></span><span class="tadd lead-only">+</span></div></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="covbox">
+            <div class="ch"><span>이 기수(7기) 프로젝트가 측정하는 주제 <b>12개 중 9개</b>를 이 교안이 커버</span><span class="ed">자동 계산 · 매니저 액션 없음</span></div>
+            <div class="covrow miss"><span class="no">—</span><b>관측성 · 모니터링</b><span class="arw">·</span><b>보안 · 시크릿 관리</b><span class="arw">·</span><b>비용 최적화</b><span class="dst none">— 이 기수 교안 어디에도 없음 · 교안 추가 권장</span></div>
+            <div class="covfoot">특정 프로젝트만 이 교안으로 한정하려면 <b>[프로젝트] → 개요 → 적용 교안</b>에서 지정. 지정 안 하면 기수 전체 교안에서 자동으로 가장 맞는 위치를 찾습니다.</div>
+          </div>
+
+          <div class="rulebox">
+            <h4>축 → 섹션 내 위치 규칙 <span class="fx">고정 · 편집 대상 아님</span></h4>
+            <div class="rulerow">
+              <span class="rulechip"><b>반례대응</b> → 섹션의 <b>주의 · 반례</b> 부분</span>
+              <span class="rulechip"><b>코드이해</b> → <b>개념 설명</b> 부분</span>
+              <span class="rulechip"><b>대안비교</b> → <b>비교 · 트레이드오프</b> 부분</span>
+              <span class="rulechip"><b>자기수정</b> → <b>복구 · 수정</b> 부분</span>
+              <span class="rulechip na"><b>의사소통</b> → 교안 위치 안내 대상 아님(코드 설명 능력)</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="casewrap">
+    <div class="casebox">
+      <div class="ct"><span>이 화면 · 상태 · case (CUR-01 구조 추출 7 + CUR-02 주제·커버리지 8 = 15건)</span></div>
+      <div class="cr"><span class="cn">01-1</span><span class="pill hold">폴백</span><span class="cd"><b>제목 신호 없음</b> — 전체 문서 단일 섹션 폴백(내부 처리)</span></div>
+      <div class="cr"><span class="cn">01-2</span><span class="pill hold">재분석</span><span class="cd"><b>PDF 텍스트 추출 실패</b> — 실패 상태, 재분석 등록(매니저 노출)</span></div>
+      <div class="cr"><span class="cn">01-3</span><span class="pill block">차단</span><span class="cd"><b>암호화 PDF</b> — 처리 차단(매니저 노출: 재분석 불가 안내)</span></div>
+      <div class="cr"><span class="cn">01-4</span><span class="pill hold">보조 추출</span><span class="cd"><b>폰트·위치 정보 불완전</b> — 텍스트 순서 기반 보조 추출(내부 처리)</span></div>
+      <div class="cr"><span class="cn">01-5</span><span class="pill hold">임시 경계</span><span class="cd"><b>LLM 경계 추론 실패</b> — 휴리스틱 경계 임시 섹션(내부 처리)</span></div>
+      <div class="cr"><span class="cn">01-6</span><span class="pill hold">정규화</span><span class="cd"><b>페이지 범위 중첩·역전</b> — 정규화 후 재검증(내부 처리)</span></div>
+      <div class="cr"><span class="cn">01-7</span><span class="pill block">전달 차단</span><span class="cd"><b>섹션 저장 실패</b> — 해당 섹션 안내 대상에서 제외·재분석 유도(캐스케이드 방지)</span></div>
+      <div class="cr"><span class="cn">02-1</span><span class="pill block">지정 차단</span><span class="cd"><b>교안 구성(섹션) 부재</b> — 주제 지정·커버리지 판정 불가·구조 분석 먼저</span></div>
+      <div class="cr"><span class="cn">02-2</span><span class="pill hold">수동 입력</span><span class="cd"><b>추출된 키워드 없음</b> — 자동 주제 비어 있음·매니저 직접 추가 유도</span></div>
+      <div class="cr"><span class="cn">02-3</span><span class="pill hold">주제 저장</span><span class="cd"><b>추출 키워드로 주제 자동 채움(기본값) 또는 매니저가 추가</b> — 즉시 저장·기수 전체 위치 안내에 반영(총괄, 신뢰도 비표시)</span></div>
+      <div class="cr"><span class="cn">02-4</span><span class="pill hold">주제 삭제</span><span class="cd"><b>매니저가 주제 삭제</b> — 그 주제로는 이 섹션 안내 안 됨(총괄)</span></div>
+      <div class="cr"><span class="cn">02-5</span><span class="pill na">미커버 표기</span><span class="cd"><b>기수 프로젝트 주제를 어느 교안도 안 다룸</b> — 미커버 표기·교안 추가 권장(정상, 한 교안이 전부 커버할 필요 없음)</span></div>
+      <div class="cr"><span class="cn">02-6</span><span class="pill na">이력 보존</span><span class="cd"><b>주제 추가·삭제</b> — 행위자·시각 변경 이력 기록</span></div>
+      <div class="cr"><span class="cn">02-7</span><span class="pill block">중복 차단</span><span class="cd"><b>같은 섹션에 중복 주제 추가</b> — 저장 차단</span></div>
+      <div class="cr"><span class="cn">02-8</span><span class="pill hold">범위 한정</span><span class="cd"><b>특정 프로젝트만 이 교안으로 한정</b> — [프로젝트] 개요에서 지정(선택), 미지정이면 기수 전체 교안에서 자동 검색</span></div>
+    </div>
+  </div>
+  </div>
+</div>
+<script>
+  // 마스터-디테일 해시 라우팅 (report·project-workspace와 동일) — 목록 → 교안 상세 드릴 (#mapping은 레거시 별칭)
+  var PAGE = { list:"page-list", upload:"page-upload", structure:"page-structure", mapping:"page-structure" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "list";
+    var id = PAGE[h] || "page-list";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+
+  // 관점 전환(데모) — 담당 뷰에서 총괄 전용 저작 액션(.lead-only) 잠금. 열람은 양쪽 (D91). 클래스 기반이라 전 topbar 동기화
+  function syncRole(isMgr){
+    document.querySelectorAll(".roletoggle").forEach(function(tg){
+      tg.querySelectorAll("span").forEach(function(s){ s.classList.toggle("on", s.getAttribute("data-role") === (isMgr ? "mgr" : "lead")); });
+    });
+    document.querySelectorAll(".me-label").forEach(function(m){
+      m.innerHTML = (isMgr ? "박지현 · 담당 매니저 " : "박지현 · 총괄 매니저 ") + '<span class="av">박</span>';
+    });
+  }
+  document.addEventListener("click", function(e){
+    // 담당 뷰에서 저작 액션(.lead-only) 클릭 차단
+    if(document.body.classList.contains("role-mgr") && e.target.closest(".lead-only")){ e.stopPropagation(); return; }
+    // 관점 토글
+    if(e.target.closest(".roletoggle")){ syncRole(document.body.classList.toggle("role-mgr")); return; }
+    // 프로젝트 연결 모달 열기/닫기 (스케일 대응 · 검색·스크롤)
+    var pm = document.getElementById("proj-modal");
+    if(e.target.closest("#proj-pick")){ if(pm) pm.classList.remove("hidden"); return; }
+    if(e.target.closest("#proj-close,#proj-cancel,#proj-save") || (e.target.classList && e.target.classList.contains("backdrop"))){ if(pm) pm.classList.add("hidden"); return; }
+    // 모달 내 프로젝트 다중 선택 토글
+    var opt = e.target.closest("#proj-modal .curopt");
+    if(opt){ opt.classList.toggle("on"); opt.querySelector(".ck").textContent = opt.classList.contains("on") ? "✓" : ""; var n=document.querySelectorAll("#proj-modal .curopt.on").length; var c=document.querySelector("#proj-modal .cnt"); if(c) c.textContent=n+"개 선택됨"; return; }
+    // 교안 구성 — 주제 칩 삭제(데모)
+    var tx = e.target.closest("#page-structure .tchip .x");
+    if(tx){ tx.closest(".tchip").remove(); return; }
+    // 교안 연결 — 좌측 프로젝트 전환(데모)
+    // 상세 드릴/탭/뒤로 (data-nav) · 목록 행 클릭 → 구조 추출
+    var nv = e.target.closest("[data-nav]");
+    if(nv){ location.hash = nv.getAttribute("data-nav"); return; }
+    var row = e.target.closest("#page-list tr.click");
+    if(row){ location.hash = "structure"; return; }
+  }, true);
+</script>
+</body>
+</html>

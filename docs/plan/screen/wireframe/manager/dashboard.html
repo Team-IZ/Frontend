@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-M01 · 대시보드 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-nav:#1e2436; --c-nav-2:#2a3147; --c-nav-text:#aeb4c6;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:460px}
+
+  .app{display:flex;flex-direction:column;min-height:600px}
+  .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
+  .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700;font-size:var(--fs-base)}
+  .topbar .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .cohortsel{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:5px var(--sp-3);font-size:var(--fs-sm);color:var(--c-text);background:var(--c-surface-2)}
+  .cohortsel .k{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+  .body{display:flex;flex:1}
+  .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
+  .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
+  .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
+  .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-5);min-width:0}
+  .phead{margin-bottom:var(--sp-4);display:flex;align-items:flex-end;justify-content:space-between;gap:var(--sp-3);flex-wrap:wrap}
+  .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
+  .asof{font-size:11px;color:var(--c-text-3)}
+
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-xs);cursor:pointer;padding:7px 12px}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong)}
+  .btn.sm{padding:5px 10px;font-size:11px}
+
+  /* 브리핑 (DASH-02) */
+  .brief{display:flex;align-items:center;gap:var(--sp-3);background:linear-gradient(90deg,var(--c-primary-soft),#fff);border:1px solid #d4d9f2;border-radius:var(--r-md);padding:12px 16px;margin-bottom:var(--sp-4)}
+  .brief .bi{font-size:18px}
+  .brief .bt{flex:1;font-size:var(--fs-sm)}
+  .brief .bt b{color:var(--c-primary)}
+  .brief .bt .sub{font-size:11px;color:var(--c-text-3);margin-top:2px}
+
+  /* 현황 (DASH-01) */
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:var(--sp-2);margin-bottom:var(--sp-5)}
+  .kpi{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:10px 12px}
+  .kpi .l{font-size:11px;color:var(--c-text-3)}
+  .kpi .v{font-size:var(--fs-xl);font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em;margin-top:2px}
+  .kpi .v small{font-size:12px;color:var(--c-text-3);font-weight:600}
+  .kpi.alert .v{color:var(--c-danger)}
+  .kpi.miss .v{font-size:var(--fs-sm);color:var(--c-text-3);font-weight:500}
+  .kpi .l{display:flex;align-items:center;gap:5px}
+  .kpi .src{color:var(--c-text-3);cursor:pointer;font-size:10px;border:1px solid var(--c-border-strong);border-radius:50%;width:14px;height:14px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 14px}
+  .kpi .src:hover{border-color:var(--c-info);color:var(--c-info)}
+  .kpi .kd{font-size:10px;font-weight:600;margin-top:4px;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:4px}
+  .kpi .kd.up{color:var(--c-success)}
+  .kpi .kd.down{color:var(--c-danger)}
+  .kpi .kd.flat,.kpi .kd.na{color:var(--c-text-3);font-weight:400}
+  .kpi .kd .kf{color:var(--c-text-3);font-weight:400}
+  .kpi.degraded{border-color:#e6d3a8;background:var(--c-warning-soft)}
+  .kpi.degraded .v{font-size:var(--fs-sm);color:var(--c-warning);font-weight:600}
+  /* triage filter */
+  .triage{display:flex;align-items:center;gap:6px;margin-bottom:var(--sp-3);flex-wrap:wrap}
+  .tg{font-size:11px;font-weight:600;border:1px solid var(--c-border-strong);border-radius:20px;padding:4px 11px;cursor:pointer;color:var(--c-text-2);background:#fff}
+  .tg.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary)}
+  .tg.now{color:var(--c-danger)}.tg.on.now{background:var(--c-danger);border-color:var(--c-danger);color:#fff}
+  .tgsort{margin-left:auto;font-size:11px;color:var(--c-text-3);cursor:pointer;border:1px solid var(--c-border);border-radius:20px;padding:4px 11px}
+  /* row markers + confidence */
+  .pnew{font-size:9px;font-weight:800;letter-spacing:.03em;color:#fff;background:var(--c-danger);border-radius:20px;padding:1px 6px}
+  .pchg{font-size:9px;font-weight:700;border-radius:20px;padding:1px 7px}
+  .pchg.recov{background:var(--c-success-soft);color:var(--c-success)}
+  .pchg.esc{background:var(--c-danger-soft);color:var(--c-danger)}
+  .conf{font-size:10px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .conf b{color:var(--c-text-2)}
+  /* lineage panel */
+  .lineage{border:1px solid var(--c-border-strong);border-radius:var(--r-md);background:#fff;max-width:560px;overflow:hidden}
+  .lineage .lh{padding:12px 16px;border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between}
+  .lineage .lh .t{font-weight:700}
+  .lineage .lh .x{color:var(--c-text-3);cursor:pointer}
+  .lineage .lb{padding:16px 18px}
+  .lstep{display:flex;gap:12px;position:relative;padding-bottom:16px}
+  .lstep:last-child{padding-bottom:0}
+  .lstep .dot{width:12px;height:12px;border-radius:50%;background:var(--c-primary);flex:0 0 12px;margin-top:3px;z-index:1}
+  .lstep .dot.src{background:var(--c-info)}
+  .lstep .dot.out{background:var(--c-success)}
+  .lstep::before{content:"";position:absolute;left:5px;top:14px;bottom:0;width:2px;background:var(--c-border)}
+  .lstep:last-child::before{display:none}
+  .lstep .lc .sk{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3)}
+  .lstep .lc .sv{font-size:var(--fs-sm);color:var(--c-text);margin-top:1px;line-height:1.5}
+  .lstep .lc .sv b{color:var(--c-primary)}
+  .lstep .lc .sm{font-size:11px;color:var(--c-text-3);margin-top:2px}
+  .ldef{margin-top:12px;font-size:11px;color:var(--c-text-2);background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-sm);padding:8px 12px;line-height:1.6}
+  .ldef b{color:var(--c-text)}
+  .lgap{margin-top:8px;font-size:11px;color:var(--c-warning);background:var(--c-warning-soft);border-radius:var(--r-sm);padding:8px 12px;line-height:1.6}
+
+  .grid2{display:grid;grid-template-columns:1fr 316px;gap:var(--sp-4);align-items:start}
+  .colh{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--c-text-3);margin-bottom:var(--sp-2);display:flex;align-items:center;justify-content:space-between}
+
+  /* 우선순위 인박스 (DASH-03+05+INTV-01) */
+  .inbox{display:flex;flex-direction:column;gap:var(--sp-2)}
+  .prow{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4)}
+  .prow.hi{border-color:#e6c3bd}
+  .ptop{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:6px}
+  .prank{width:22px;height:22px;border-radius:50%;background:var(--c-danger-soft);color:var(--c-danger);font-size:12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex:0 0 22px;font-variant-numeric:tabular-nums}
+  .prank.na{background:#eef0f3;color:var(--c-text-3)}
+  .pnm{font-weight:700}
+  .pcl{font-size:11px;color:var(--c-text-3)}
+  .pprio{margin-left:auto;font-size:11px;color:var(--c-text-2);font-variant-numeric:tabular-nums}
+  .pprio b{color:var(--c-text);font-size:var(--fs-sm)}
+  .pformula{font-family:var(--mono);font-size:10px;color:var(--c-text-3);background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:20px;padding:1px 7px;margin-left:6px}
+  .timing{font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px}
+  .timing.now{background:var(--c-danger-soft);color:var(--c-danger)}
+  .timing.watch{background:#eef0f3;color:var(--c-text-2)}
+  .timing.recov{background:var(--c-success-soft);color:var(--c-success)}
+  .timing.check{background:var(--c-warning-soft);color:var(--c-warning)}
+  .preason{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.55;margin-bottom:6px}
+  .preason b{color:var(--c-text)}
+  .prec{font-size:var(--fs-sm);color:var(--c-text);background:var(--c-info-soft);border:1px solid #cfe0f0;border-radius:var(--r-sm);padding:6px 10px;margin-bottom:8px}
+  .prec b{color:var(--c-info)}
+  .prec .path{font-size:11px;color:var(--c-text-3)}
+  .pfoot{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;border:1px solid var(--c-border)}
+  .badge.stable{background:var(--c-success-soft);color:var(--c-success);border-color:#bfe3ce}
+  .badge.review{background:var(--c-warning-soft);color:var(--c-warning);border-color:#e6d3a8}
+  .badge.bench{background:#fff;color:var(--c-info);border-color:#cfe0f0;cursor:pointer}
+  .badge.sample{background:var(--c-warning-soft);color:var(--c-warning);border-color:#e6d3a8}
+  .pact{margin-left:auto;display:flex;gap:6px}
+
+  /* 보조 레일 */
+  .rail{display:flex;flex-direction:column;gap:var(--sp-3)}
+  .railcard{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4)}
+  .railcard h4{font-size:var(--fs-sm);margin-bottom:var(--sp-3);display:flex;align-items:center;gap:6px}
+  .railcard h4 .fr{font-size:10px;color:var(--c-text-3);font-weight:400}
+  .perf{display:flex;flex-direction:column;gap:10px}
+  .prow2{font-size:var(--fs-xs)}
+  .prow2 .t{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+  .prow2 .t .nm{color:var(--c-text-2)}
+  .prow2 .t .fq{font-weight:700;font-variant-numeric:tabular-nums}
+  .prow2 .t .fq small{color:var(--c-text-3);font-weight:400}
+  .bar{height:6px;background:#eef0f3;border-radius:20px;overflow:hidden}
+  .bar .f{display:block;height:100%;background:var(--c-success);border-radius:20px}
+  .bar .f.part{background:var(--c-warning)}
+  .trust{font-size:10px;color:var(--c-success);font-weight:600}
+  .trust.low{color:var(--c-warning)}
+  .nnote{font-size:10px;color:var(--c-text-3)}
+  .ruleflag{font-size:var(--fs-xs);color:var(--c-warning);background:var(--c-warning-soft);border-radius:var(--r-sm);padding:8px 10px;line-height:1.5}
+  .ruleflag b{color:var(--c-warning)}
+  .stbadges{display:flex;gap:6px;flex-wrap:wrap;font-size:11px;color:var(--c-text-2)}
+  .originlink{font-size:11px;color:var(--c-info);text-decoration:underline;cursor:pointer}
+  /* ===== 3계층: 행동 큐(Hero) ===== */
+  .hero{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5);margin-bottom:var(--sp-4);box-shadow:var(--shadow-card)}
+  .qsum{display:flex;align-items:center;gap:var(--sp-3);padding-bottom:var(--sp-4);border-bottom:1px solid var(--c-border);margin-bottom:var(--sp-4);flex-wrap:wrap}
+  .qsum .bi{font-size:18px}
+  .qsum .t{flex:1;font-size:var(--fs-sm);min-width:220px}
+  .qsum .t b{color:var(--c-primary)}
+  .qsum .t .sub{font-size:11px;color:var(--c-text-3);margin-top:2px}
+  .qsum .chips{display:flex;gap:6px}
+  .qchip{font-size:11px;font-weight:700;border-radius:20px;padding:3px 10px}
+  .qchip.wait{background:var(--c-primary-soft);color:var(--c-primary)}
+  .qchip.now{background:var(--c-danger-soft);color:var(--c-danger)}
+  .qchip.recov{background:var(--c-success-soft);color:var(--c-success)}
+  .qhead{font-size:var(--fs-sm);font-weight:700;margin-bottom:var(--sp-3);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .qhead .auto{font-size:11px;font-weight:400;color:var(--c-info);background:var(--c-info-soft);border-radius:20px;padding:2px 9px}
+  .qlist{display:flex;flex-direction:column;gap:var(--sp-3)}
+  .qcard{border:1px solid var(--c-border-strong);border-radius:var(--r-md);overflow:hidden}
+  .qcard.now{border-color:#e6c3bd}
+  .qcbody{padding:var(--sp-3) var(--sp-4)}
+  .qtop{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+  .qtop .pnm{font-weight:700}
+  .qreason{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.55;margin-bottom:8px}
+  .qreason b{color:var(--c-text)}
+  .qreco{font-size:var(--fs-sm);background:var(--c-info-soft);border:1px solid #cfe0f0;border-radius:var(--r-sm);padding:8px 12px;margin-bottom:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .qreco b{color:var(--c-info)}
+  .qreco .path{font-size:11px;color:var(--c-text-3)}
+  .qreco .dtoggle{margin-left:auto;font-size:11px;color:var(--c-info);cursor:pointer;text-decoration:underline}
+  .qdraft{font-size:var(--fs-sm);color:var(--c-text);background:var(--c-surface-2);border:1px dashed var(--c-border-strong);border-radius:var(--r-sm);padding:10px 12px;margin-bottom:10px;line-height:1.7}
+  .qcfoot{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .qcfoot .ond{font-size:11px;color:var(--c-text-3);display:flex;gap:12px}
+  .qcfoot .ond span{cursor:pointer}
+  .qcfoot .ond span:hover{color:var(--c-info)}
+  .qcfoot .acts{margin-left:auto;display:flex;gap:6px}
+  .btn.confirm{background:var(--c-success)}
+  .batch{margin-top:var(--sp-3);font-size:var(--fs-sm);color:var(--c-text-2);background:var(--c-primary-soft);border:1px solid #d4d9f2;border-radius:var(--r-md);padding:9px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .batch b{font-weight:700;color:var(--c-primary)}
+  .batch button{margin-left:auto}
+  .qgroups{display:flex;flex-direction:column;gap:6px;margin-top:var(--sp-4)}
+  .qgrp{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);color:var(--c-text-2);border:1px solid var(--c-border);border-radius:var(--r-md);padding:9px 14px;cursor:pointer;background:var(--c-surface-2)}
+  .qgrp .cnt{font-weight:700;color:var(--c-text)}
+  .qgrp .tw{font-size:11px;color:var(--c-text-3)}
+  .qgrp .chev{margin-left:auto;color:var(--c-text-3)}
+  /* Tier2 맥락 바 */
+  .ctxbar{display:flex;align-items:center;gap:var(--sp-5);background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:11px 18px;margin-bottom:var(--sp-4);flex-wrap:wrap}
+  .ctxm{font-size:var(--fs-sm);color:var(--c-text-2);display:flex;align-items:center;gap:5px}
+  .ctxm b{color:var(--c-text);font-size:var(--fs-lg);font-variant-numeric:tabular-nums}
+  .ctxm .up{color:var(--c-success);font-size:11px;font-weight:700}
+  .ctxm .down{color:var(--c-danger);font-size:11px;font-weight:700}
+  .ctxm.alert b{color:var(--c-danger)}
+  .ctxbar .more{margin-left:auto;font-size:11px;color:var(--c-info);cursor:pointer}
+  /* 전경 overview 3패널 */
+  .ovrow{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:var(--sp-3);margin-bottom:var(--sp-5)}
+  .ovcard{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:14px 16px}
+  .ovcard h4{font-size:var(--fs-sm);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+  .ovcard h4 .lnk{font-size:11px;color:var(--c-info);cursor:pointer;font-weight:400}
+  .ovcard h4 .now{font-size:11px;font-weight:600;color:var(--c-success)}
+  .ov5{display:flex;flex-direction:column;gap:6px}
+  .ov5 .r{display:flex;align-items:center;gap:8px;font-size:11px}
+  .ov5 .r .ax{width:56px;color:var(--c-text-2)}
+  .ov5 .r .tk{flex:1;height:6px;background:#eef0f3;border-radius:20px;overflow:hidden}
+  .ov5 .r .tk .f{display:block;height:100%;border-radius:20px}
+  .ov5 .r .tk .f.lo{background:var(--c-danger)}.ov5 .r .tk .f.mid{background:var(--c-warning)}.ov5 .r .tk .f.hi{background:var(--c-success)}
+  .ov5 .r .vv{width:64px;text-align:right;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ov5 .r .vv b{color:var(--c-text)}
+  .pipe{display:flex;gap:6px}
+  .pipe .p{flex:1;text-align:center;border:1px solid var(--c-border);border-radius:var(--r-sm);padding:8px 4px;background:var(--c-surface-2)}
+  .pipe .p .n{font-size:var(--fs-lg);font-weight:700;font-variant-numeric:tabular-nums}
+  .pipe .p .pl{font-size:10px;color:var(--c-text-3)}
+  .pipe .p.ok .n{color:var(--c-success)}
+  .pipe .p.wait .n{color:var(--c-primary)}
+  .recorate{margin-top:10px;font-size:11px;color:var(--c-text-3)}
+  .recorate b{color:var(--c-success)}
+  /* Tier3 품질 strip */
+  .metastrip{display:flex;align-items:center;gap:var(--sp-5);background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-md);padding:10px 18px;flex-wrap:wrap}
+  .metastrip .ml{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3)}
+  .metastrip .mi{font-size:var(--fs-sm);color:var(--c-text-2)}
+  .metastrip .mi b{color:var(--c-text);font-variant-numeric:tabular-nums}
+  .metastrip .mi.warn{color:var(--c-warning);font-weight:600}
+  .metastrip .more{margin-left:auto;font-size:11px;color:var(--c-info);cursor:pointer}
+
+  /* 초안 (INTV-02) */
+  .draftbox{border:1px solid var(--c-primary);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5);background:#fff;margin-top:8px}
+  .tree{font-size:11px;color:var(--c-text-3);margin-bottom:12px}
+  .tree b{color:var(--c-info)}
+  .drafttx{width:100%;min-height:120px;border:1px solid var(--c-border-strong);border-radius:var(--r-sm);padding:12px 14px;font-family:inherit;font-size:var(--fs-sm);line-height:1.7;resize:vertical;color:var(--c-text)}
+  .drafttx[contenteditable]{outline:none}
+  .drafttx[contenteditable]:focus{border-color:var(--c-primary)}
+  .slot{background:var(--c-primary-soft);color:var(--c-primary);border-radius:4px;padding:0 3px;font-weight:600}
+  .editflag{font-size:11px;color:var(--c-text-3);margin-top:8px}
+  .draftact{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+
+  /* 벤치마크 (DASH-04) */
+  .benchpanel{border:1px solid var(--c-border-strong);border-radius:var(--r-md);background:#fff;padding:var(--sp-4) var(--sp-5);max-width:520px}
+  .benchpanel .bh{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-3)}
+  .benchpanel .bh .t{font-weight:700}
+  .snapb{font-size:10px;font-weight:600;color:var(--c-info);background:var(--c-info-soft);border-radius:20px;padding:2px 8px}
+  .benchtbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .benchtbl th,.benchtbl td{text-align:right;padding:7px 10px;border-bottom:1px solid var(--c-border)}
+  .benchtbl th:first-child,.benchtbl td:first-child{text-align:left;color:var(--c-text-2)}
+  .benchtbl th{font-size:var(--fs-xs);color:var(--c-text-3);font-weight:600}
+  .benchtbl .up{color:var(--c-success);font-variant-numeric:tabular-nums}
+  .benchtbl .down{color:var(--c-danger);font-variant-numeric:tabular-nums}
+  .modb{font-size:10px;font-weight:600;color:var(--c-warning);background:var(--c-warning-soft);border-radius:20px;padding:1px 7px}
+
+  .notes{margin-top:var(--sp-8);background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-5) var(--sp-6)}
+  .notes h3{font-size:var(--fs-lg);margin-bottom:var(--sp-1)}
+  .notes .grp{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--c-text-3);margin:var(--sp-5) 0 var(--sp-2)}
+  .notes .hint{font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-2)}
+  .tblwrap{overflow-x:auto}
+  .ntbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm);min-width:560px}
+  .ntbl td,.ntbl th{text-align:left;padding:6px var(--sp-3);border-bottom:1px solid var(--c-border);vertical-align:top}
+  .ntbl th{font-size:var(--fs-xs);color:var(--c-text-3)}
+  .ntbl td:first-child{width:44px;color:var(--c-text-3);font-weight:600}
+  .pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
+  .pill.block{background:var(--c-danger-soft);color:var(--c-danger)}
+  .pill.hold{background:var(--c-warning-soft);color:var(--c-warning)}
+  .pill.keep{background:var(--c-info-soft);color:var(--c-info)}
+  .pill.na{background:#eef0f3;color:var(--c-text-3)}
+  .foot{margin-top:var(--sp-4);font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.7}
+  .colcount{columns:2;column-gap:32px}
+  @media(max-width:900px){.colcount{columns:1}.kpis{grid-template-columns:repeat(3,1fr)}.grid2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">SC-M01 · P0 · 매니저 · 웹</span>
+    <h1>대시보드</h1>
+    <p>매니저의 홈이자 <b>모든 화면을 집계</b>하는 화면. <b>3계층</b>으로 먼저 전체 상태를, 그다음 조치를 보여준다. ① <b>기수 전경</b>: 브리핑(DASH-02)+KPI(DASH-01)+이해도 추이+취약 지점+개입 파이프라인. ② <b>확인·조치 필요</b>: Priority 정렬 인박스(DASH-03: Priority=S×(0.5+R), 순위+수식+사유), 각 행에 타이밍(DASH-05·항상 표시)·추천(INTV-01)·초안(INTV-02)·확정 대기 큐. ③ <b>추천 품질</b>(접힌 메타): 성능(DASH-07)·규칙 재검토(INTV-03)·안정성(DASH-06). 지표마다 [ⓘ 출처] 데이터 계보. 확정은 매니저(GOV-02).</p>
+  </div>
+
+  <!-- ===== 메인 대시보드 ===== -->
+  <div class="sec-label">메인 · 3계층 (① 행동 큐=확정 대기: DASH-02·03·05+INTV-01·02 / ② 기수 맥락=DASH-01 접이 / ③ 추천 품질=DASH-06·07+INTV-03 접힌 메타)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/dashboard</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item on"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content">
+          <div class="phead"><div><div class="crumb">대시보드 › 7기</div><h2>대시보드</h2></div><div class="asof">집계 기준 2026-07-12 14:03 · <span style="color:var(--c-warning)">일부 캐시</span></div></div>
+
+          <!-- 브리핑 (DASH-02) -->
+          <div class="brief">
+            <span class="bi">🔔</span>
+            <div class="bt"><b>지난 방문(어제 18:00) 이후</b> 신규 위험 2명(강민준·이서준), 오세훈 회복. <div class="sub">중복·동일 원인 시그널은 요약됨(DASH-02)</div></div>
+            <div style="display:flex;gap:6px;margin-right:8px"><span class="qchip wait">확정 대기 3</span><span class="qchip now">즉시 2</span><span class="qchip recov">회복 1</span></div>
+            <button class="btn ghost sm">브리핑 확인</button>
+          </div>
+
+          <!-- Tier 1 · 기수 전경 (Overview — 대시보드 본질) -->
+          <div class="kpis">
+            <div class="kpi alert"><div class="l">위험 인원 <span class="src" title="출처 보기">ⓘ</span></div><div class="v">3<small>명</small></div><div class="kd up" style="color:var(--c-danger)">▲ +2 신규</div></div>
+            <div class="kpi"><div class="l">이해도 평균 <span class="src" title="출처 보기">ⓘ</span></div><div class="v">3.6<small>/5</small></div><div class="kd up">▲ +0.2 <span class="kf">2→3회차</span></div></div>
+            <div class="kpi"><div class="l">응시율 <span class="src" title="출처 보기">ⓘ</span></div><div class="v">92<small>%</small></div><div class="kd down">▼ −3%p <span class="kf">3회차 due</span></div></div>
+            <div class="kpi alert"><div class="l">활성 시그널 <span class="src" title="출처 보기">ⓘ</span></div><div class="v">7</div><div class="kd flat"><span class="kf">미해소</span></div></div>
+            <div class="kpi"><div class="l">참여도 <span class="src" style="border-color:var(--c-warning);color:var(--c-warning)" title="정의 미확정">ⓘ</span></div><div class="v">82<small>%</small></div><div class="kd flat">정의 확인 필요</div></div>
+            <div class="kpi"><div class="l">팀 진행률 <span class="src" style="border-color:var(--c-warning);color:var(--c-warning)" title="정의 미확정">ⓘ</span></div><div class="v">68<small>%</small></div><div class="kd flat">정의 확인 필요</div></div>
+          </div>
+
+          <div class="ovrow">
+            <div class="ovcard">
+              <h4>이해도 추이 <span class="lnk">회차 비교 ↗</span></h4>
+              <svg viewBox="0 0 260 68" width="100%" height="68" preserveAspectRatio="none">
+                <line x1="0" y1="52" x2="260" y2="52" stroke="#eef0f3"/>
+                <polyline points="24,46 130,38 236,30" fill="none" stroke="#3a4db8" stroke-width="2.5"/>
+                <circle cx="24" cy="46" r="3.5" fill="#3a4db8"></circle><circle cx="130" cy="38" r="3.5" fill="#3a4db8"></circle><circle cx="236" cy="30" r="3.5" fill="#3a4db8"></circle>
+                <text x="24" y="64" font-size="9" fill="#8b929c" text-anchor="middle">1회차 3.1</text>
+                <text x="130" y="64" font-size="9" fill="#8b929c" text-anchor="middle">2회차 3.4</text>
+                <text x="236" y="64" font-size="9" fill="#8b929c" text-anchor="middle">3회차 3.6</text>
+              </svg>
+            </div>
+            <div class="ovcard">
+              <h4>취약 지점 <span class="lnk">히트맵 ↗</span></h4>
+              <div class="ov5">
+                <div class="r"><span class="ax">반례대응</span><span class="tk"><span class="f lo" style="width:52%"></span></span><span class="vv"><b>2.6</b> 최약</span></div>
+                <div class="r"><span class="ax">대안비교</span><span class="tk"><span class="f mid" style="width:60%"></span></span><span class="vv"><b>3.0</b></span></div>
+                <div class="r"><span class="ax">자기수정</span><span class="tk"><span class="f mid" style="width:64%"></span></span><span class="vv"><b>3.2</b></span></div>
+                <div class="r"><span class="ax">코드이해</span><span class="tk"><span class="f hi" style="width:76%"></span></span><span class="vv"><b>3.8</b></span></div>
+              </div>
+            </div>
+            <div class="ovcard">
+              <h4>개입 파이프라인 <span class="lnk">개입 ↗</span></h4>
+              <div class="pipe">
+                <div class="p wait"><div class="n">3</div><div class="pl">대기</div></div>
+                <div class="p"><div class="n">4</div><div class="pl">진행</div></div>
+                <div class="p ok"><div class="n">11</div><div class="pl">완료</div></div>
+              </div>
+              <div class="recorate">완료 개입 회복률 <b>73%</b> (8/11·자연빈도·DASH-07)</div>
+            </div>
+          </div>
+
+          <!-- Tier 2 · 확인·조치 필요 (우선순위 + 확정 대기) -->
+          <div class="colh"><span>확인·조치 필요 · Priority 정렬 (DASH-03)</span><span style="font-weight:400;text-transform:none">7명</span></div>
+          <div class="triage">
+            <span class="tg on">전체 7</span><span class="tg now">확정 대기 3</span><span class="tg">관찰 2</span><span class="tg">회복 1</span><span class="tg">표본 부족 1</span>
+            <span class="tgsort">↕ Priority 순 ▾</span>
+          </div>
+          <div class="qhead" style="margin-bottom:10px">AI가 추천·초안까지 작성함 <span class="auto">확인 후 확정(GOV-02)</span></div>
+          <div class="qlist">
+
+              <div class="qcard now">
+                <div class="qcbody">
+                  <div class="qtop"><span class="prank">1</span><span class="pnm">강민준</span><span class="pnew">NEW</span><span class="pcl">A반</span><span class="timing now">즉시</span><span class="pprio" style="margin-left:auto"><b>Priority 2.4</b><span class="pformula">S 1.8 · R 0.85</span></span></div>
+                  <div class="qreason"><b>반례대응</b> 4→3→2, 2회 연속 하락, 기수 평균보다 크게 낮음. 낮은 축 3개. <span class="conf">· 근거 <b>3회차</b> 표본 · 채점 안정</span></div>
+                  <div class="qreco"><b>추천: 멘토링</b> <span class="path">낮은 축 3개 이상 (결정리스트 1순위 · INTV-01)</span><span class="dtoggle">초안 접기 ▾</span></div>
+                  <div class="qdraft"><span class="slot">강민준</span> 교육생은 <span class="slot">반례대응·자기수정·대안비교</span> 축이 낮아 <span class="slot">멘토링</span>을 제안합니다. 반례·예외 상황을 스스로 설계하는 연습을 1:1로 진행하고, 다음 회차에 회복을 확인합니다. <span style="color:var(--c-text-3);font-size:11px">(AI 초안 · 편집 가능·INTV-02)</span></div>
+                  <div class="qcfoot"><span class="ond"><span>벤치마크 ▾</span><span>근거 원본 ↗</span><span>ⓘ 출처</span></span><div class="acts"><button class="btn confirm sm">✓ 확정 → SC-M07</button><button class="btn ghost sm">수정</button><button class="btn ghost sm">미루기</button></div></div>
+                </div>
+              </div>
+
+              <div class="qcard now">
+                <div class="qcbody">
+                  <div class="qtop"><span class="prank">2</span><span class="pnm">이서준</span><span class="pnew">NEW</span><span class="pcl">B반</span><span class="timing now">즉시</span><span class="pprio" style="margin-left:auto"><b>Priority 1.7</b><span class="pformula">S 1.4 · R 0.80</span></span></div>
+                  <div class="qreason"><b>대안비교</b> 3→2, 특정 기술영역(동시성) 집중 취약. <span class="conf">· 근거 <b>3회차</b> 표본 · 채점 안정</span></div>
+                  <div class="qreco"><b>추천: 보강 세션</b> <span class="path">낮은 축 1~2개+기술영역 집중 (3순위)</span><span class="dtoggle">초안 펼치기 ▸</span></div>
+                  <div class="qcfoot"><span class="ond"><span>벤치마크 ▾</span><span>근거 원본 ↗</span><span>ⓘ 출처</span></span><div class="acts"><button class="btn confirm sm">✓ 확정 → SC-M07</button><button class="btn ghost sm">수정</button><button class="btn ghost sm">미루기</button></div></div>
+                </div>
+              </div>
+
+              <div class="qcard">
+                <div class="qcbody">
+                  <div class="qtop"><span class="prank">3</span><span class="pnm">박준호</span><span class="pcl">A반</span><span class="timing check">이번 주 내</span><span class="pprio" style="margin-left:auto"><b>Priority 1.3</b><span class="pformula">S 1.0 · R 0.76</span></span></div>
+                  <div class="qreason"><b>반례대응</b> 하락, 자기수정 포함. <span class="conf">· 근거 <b>4회차</b> 표본</span></div>
+                  <div class="qreco"><b>추천: 면담</b> <span class="path">낮은 축 1~2개+반례·자기수정 포함 (2순위)</span><span class="dtoggle">초안 펼치기 ▸</span></div>
+                  <div class="qcfoot"><span class="ond"><span>벤치마크 ▾</span><span>ⓘ 출처</span></span><div class="acts"><button class="btn confirm sm">✓ 확정 → SC-M07</button><button class="btn ghost sm">수정</button><button class="btn ghost sm">미루기</button></div></div>
+                </div>
+              </div>
+
+            </div>
+            <div class="batch">⚡ 같은 유형 묶음 검토 — <b>3건을 한 번의 흐름으로 확인·확정</b>(각각 개별 기록·GOV-02)<button class="btn sm">3건 함께 검토 →</button></div>
+
+            <div class="qgroups">
+              <div class="qgrp"><span class="cnt">관찰 중 2</span><span class="tw">서지우(개입 진행·쿨다운) · 정하늘 — 지금 조치 불필요</span><span class="chev">▸</span></div>
+              <div class="qgrp"><span class="cnt">회복 확인 1</span><span class="tw">오세훈 — 자기수정 2→3 회복세, 모니터링 유지</span><span class="chev">▸</span></div>
+              <div class="qgrp"><span class="cnt">표본 부족 1</span><span class="tw">한도현 — 1회차만, 2회차 후 재평가(DASH-08)</span><span class="chev">▸</span></div>
+            </div>
+
+          <!-- Tier 3 · 추천 품질 (접힌 메타) -->
+          <div class="metastrip" style="margin-top:20px">
+            <span class="ml">추천 품질</span>
+            <span class="mi">채점 안정 <b>22</b> · 재검토 <b>2</b> <span style="color:var(--c-text-3)">(DASH-06)</span></span>
+            <span class="mi">멘토링 회복률 <b>73%</b> <span style="color:var(--c-text-3)">(8/11·DASH-07)</span></span>
+            <span class="mi warn">⚠ 규칙 재검토 1 <span style="color:var(--c-text-3);font-weight:400">(INTV-03)</span></span>
+            <span class="more">품질 상세 ▾</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 초안 (INTV-01+02) ===== -->
+  <div class="sec-label">상태 · [초안 보기] — 개입 실행 초안 (INTV-02 슬롯 템플릿 + 편집 + 개입 생성 · INTV-01 트리 근거)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/dashboard#draft-강민준</span></div>
+    <div class="app" style="min-height:auto">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item on"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content">
+          <div class="draftbox">
+            <div style="font-weight:700;margin-bottom:6px">강민준 · 개입 실행 초안</div>
+            <div class="tree">INTV-01 트리 경로: 활성 시그널 → primary_low(≤2) 축 3개 → <b>1순위 멘토링</b> 확정(최초 매칭 1건). 근거 축: 반례대응·자기수정·대안비교.</div>
+            <div class="drafttx" contenteditable="true"><span class="slot">강민준</span> 교육생은 최근 회차에서 <span class="slot">반례대응·자기수정·대안비교</span> 축이 기수 평균 대비 낮아, <span class="slot">멘토링</span> 개입을 제안합니다. 제안 조치: 반례·예외 상황을 스스로 설계하는 연습을 1:1로 진행하고, 다음 회차에 회복 여부를 확인합니다.</div>
+            <div class="editflag">✎ 매니저 편집 가능 — 편집 여부는 별도 플래그로 기록(추천 신뢰도 개선 신호). v1은 사무형 시안 하나, 편집률로 톤 교체 사후 판단.</div>
+            <div class="draftact"><button class="btn">개입 생성 → SC-M07</button><button class="btn ghost">이의제기(INTV-03)</button><button class="btn ghost">닫기</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 벤치마크 (DASH-04) ===== -->
+  <div class="sec-label">상태 · [벤치마크] 온디맨드 패널 (DASH-04 · due_at 스냅샷 고정 · 수정 배지)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/dashboard#bench-강민준</span></div>
+    <div class="app" style="min-height:auto">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item on"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content">
+          <div class="benchpanel">
+            <div class="bh"><span class="t">강민준 · 벤치마크</span><span class="snapb">2회차 due_at 스냅샷 · 고정</span></div>
+            <table class="benchtbl">
+              <tr><th>축</th><th>본인</th><th>기수 평균 대비</th><th>직전 회차 대비</th></tr>
+              <tr><td>반례대응</td><td>2.0</td><td class="down">−1.4</td><td class="down">−1.0</td></tr>
+              <tr><td>자기수정</td><td>2.4</td><td class="down">−0.8</td><td class="down">−0.3</td></tr>
+              <tr><td>대안비교</td><td>2.6</td><td class="down">−0.4</td><td class="up">+0.1</td></tr>
+              <tr><td>코드이해</td><td>3.8</td><td class="up">+0.2</td><td class="up">+0.2</td></tr>
+            </table>
+            <div style="font-size:11px;color:var(--c-text-3);margin-top:12px">· due_at 시점 스냅샷 기준 — 이후 원본 변경돼도 <b>표시값 불변</b>(DASH-04). GOV-01 판정 수정이 있으면 <span class="modb">스냅샷 이후 수정됨</span> 배지 표시. 1회차는 직전 비교 생략, 지각 정책 미확정 시 분모 포함 여부 명시.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 데이터 계보 패널 (지표 [ⓘ 출처] 클릭) ===== -->
+  <div class="sec-label">상태 · 지표 [ⓘ 출처] 클릭 — 데이터 계보 (원천 → 수집 → 처리 → 표시, 매니저 신뢰 + 백엔드 ERD 근거)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/dashboard#lineage-이해도</span></div>
+    <div class="app" style="min-height:auto">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item on"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content" style="display:flex;gap:24px;flex-wrap:wrap">
+          <div class="lineage">
+            <div class="lh"><span class="t">데이터 출처 · 이해도 평균 3.6</span><span class="x">✕</span></div>
+            <div class="lb">
+              <div class="lstep"><span class="dot src"></span><div class="lc"><div class="sk">① 원천 · 어디서 생겼나</div><div class="sv">교육생의 <b>세션 답변</b> (코드 이해 소크라테스 세션)</div><div class="sm">SC-T04 세션 · MEAS-06 · CODE 타입 L1→L2→L3</div></div></div>
+              <div class="lstep"><span class="dot"></span><div class="lc"><div class="sk">② 채점 · 어떻게 점수화</div><div class="sv"><b>ENG-01</b> 5축 LLM-as-judge (코드이해·설계논리·대안비교·반례대응·자기수정)</div><div class="sm">25점 동일가중 · 편향완화 스왑 · 축별 근거 span 인용 · 모델/프롬프트/루브릭 버전 기록</div></div></div>
+              <div class="lstep"><span class="dot"></span><div class="lc"><div class="sk">③ 집계 · 어떻게 합쳐졌나</div><div class="sv">개인 총점 → <b>기수 평균</b> (회차 스냅샷 단위)</div><div class="sm">ENG-02 회차 변화(Δ)와 동일 스냅샷 · 분모 = 응시 완료 24명(결측 2명 제외)</div></div></div>
+              <div class="lstep"><span class="dot out"></span><div class="lc"><div class="sk">④ 표시 · 이 화면</div><div class="sv"><b>DASH-01</b> 통합 현황 KPI · Δ는 직전 회차 대비(ENG-02)</div><div class="sm">기준 2026-07-12 14:03 (3회차 스냅샷) · 근거 없는 값 노출 차단(A2)</div></div></div>
+              <div class="ldef"><b>정의:</b> 5축 평균 점수(개인 총점 ÷ 5)의 기수 전체 평균. <b>분모</b> = 응시 완료 교육생 수. 회차 스냅샷 기준이라 회차가 바뀌면 값이 갱신됨(B1).</div>
+            </div>
+          </div>
+          <div style="max-width:300px">
+            <div style="font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.7"><b>모든 지표에 [ⓘ 출처]</b>가 붙습니다. 매니저는 숫자의 정의·최신성·신뢰도를 한 번에 확인하고, 백엔드는 이 계보가 곧 <b>ERD 데이터 흐름</b>(어느 엔티티·이벤트에서 파생됐는지)입니다.</div>
+            <div class="lgap" style="margin-top:14px">⚠ <b>참여도·팀 진행률</b>은 기능명세서에 <b>정의(분자/분모)가 명시되지 않음</b>. 출처 패널이 "정의 확인 필요"로 표시 — 백엔드 확정 전까지 수치 신뢰 유보. (명세 공백·플래그)</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 상태 매핑 (게이트 A) ===== -->
+  <div class="notes">
+    <h3>상태별 UI — 예외 case 전량 (게이트 A)</h3>
+    <div class="hint">DASH-01 6 + 02 6 + 03 8 + 04 6 + 05 8 + 06 6 + 07 7 + 08 6 + 09 7 + INTV-01 8 + 02 7 + 03 7 = <b>82</b>. (P0 최대 집계 화면.)</div>
+
+    <div class="colcount" style="font-size:var(--fs-xs)">
+      <div class="grp">DASH-01 통합 현황</div>
+      <div class="ntbl-lite">
+        <div>1 조회 권한 없는 기수 → <span class="pill block">요청 차단</span>·권한 내 목록</div>
+        <div>2 일부 지표 결측 → <span class="pill keep">데이터 없음 표시</span>·나머지 유지</div>
+        <div>3 기준 시각 불일치 → 최신 공통 기준 재집계·시각 병기</div>
+        <div>4 시그널 조회 실패 → 일반 지표만·시그널 영역 오류 기록</div>
+        <div>5 전체 결과 없음 → 빈 상태·조건 변경 안내</div>
+        <div>6 대량 집계 지연 → 캐시 우선 표시·갱신 상태 표기</div>
+      </div>
+
+      <div class="grp">DASH-02 자동 브리핑</div>
+      <div>1 신규 위험 없음 → 정상 상태 메시지</div>
+      <div>2 마지막 확인 시각 없음 → 최초 로그인 정책(최근 N일/활성)</div>
+      <div>3 데이터 과다 → 상위 우선순위만 요약·전체 링크</div>
+      <div>4 시그널 조회 실패 → 브리핑 보류·기본 화면</div>
+      <div>5 확인 시각 갱신 실패 → 표시 유지·재시도 등록</div>
+      <div>6 확인한 동일 시그널 재조회 → ID 기준 중복 제거</div>
+
+      <div class="grp">DASH-03 우선순위 정렬</div>
+      <div>1 비교 표본 &lt;2명 → S 생략·<span class="pill hold">DASH-08 표본 부족</span></div>
+      <div>2 기수 σ=0 → S 생략·DASH-08 대체</div>
+      <div>3 5축 일부 누락 → 심각도 확정 유보·누락 명시</div>
+      <div>4 회복 이력 0건 → 라플라스 R=0.5·강제 분기 금지</div>
+      <div>5 회복 이력 조회 실패 → 확정 보류·최근 정상 집계</div>
+      <div>6 근거 문구 생성 실패 → <span class="pill block">순위 표시 차단</span>(A2)</div>
+      <div>7 임의 가중 요청 → 검증 전 동일 가중 유지</div>
+      <div>8 비활성 시그널 포함 → 제외 후 재정렬</div>
+
+      <div class="grp">DASH-04 벤치마크</div>
+      <div>1 1회차(직전 없음) → 직전 비교 생략</div>
+      <div>2 due_at 확정 점수 부재 → 비교값 비표시</div>
+      <div>3 스냅샷 중복 생성 → 활성 스냅샷 단일 유지</div>
+      <div>4 일부 축 누락 → 해당 축 비교 제외</div>
+      <div>5 지각 정책 미확정 → 분모 포함 여부 명시적 표시</div>
+      <div>6 스냅샷 이후 판정 수정 → 원본 불변·<span class="pill keep">수정 배지</span></div>
+
+      <div class="grp">DASH-05 개입 타이밍 문구</div>
+      <div>1 위험도 데이터 부족 → 확정 문구 없이 데이터 부족 표시</div>
+      <div>2 쿨다운 기간 내 → 즉시 개입 대신 경과 관찰 문구</div>
+      <div>3 지표 상충 → 단일 결론 회피·추가 확인 필요</div>
+      <div>4 위험 급상승 → 우선 확인 필요로 상향</div>
+      <div>5 회복 추세 → 회복 확인·모니터링 문구</div>
+      <div>6 템플릿 조회 실패 → 기본 안전 문구·오류 기록</div>
+      <div>7 동일 문구 반복 → 최신 근거만 갱신·중복 알림 억제</div>
+      <div>8 문구 모델 실패 → 규칙 기반 템플릿 대체·이력</div>
+
+      <div class="grp">DASH-06 채점 안정성 배지</div>
+      <div>1 ENG-05 미실행 → 배지 비표시</div>
+      <div>2 결과 불명확 → 재검증 요청</div>
+      <div>3 허용 범위 미설정 → 배지 생성 유보</div>
+      <div>4 채점·검증 버전 불일치 → 기존 배지 제거</div>
+      <div>5 3단계 이상 요청 → <span class="pill block">차단</span>(2상태만)</div>
+      <div>6 결과 조회 실패 → 배지 미표시</div>
+
+      <div class="grp">DASH-07 추천 성능 지표</div>
+      <div>1 데이터 없음 → 지표 자체 생략</div>
+      <div>2 N&lt;5 백분율 요청 → <span class="pill block">차단</span>·진행바만</div>
+      <div>3 회복 미판정 건 → 집계 제외</div>
+      <div>4 동일 건 중복 결과 → 최신 유효 판정만</div>
+      <div>5 분모 0 → 회복률 계산 생략</div>
+      <div>6 원본 이력 누락 → 해당 건 제외·불완전 표시</div>
+      <div>7 집계 실패 → 이전 정상 집계 유지 또는 비노출</div>
+
+      <div class="grp">DASH-08 표본부족 배지</div>
+      <div>1 완료 회차 조회 실패 → 확정 차단·보수적 표본 부족</div>
+      <div>2 1회차 자동 확정 요청 → <span class="pill block">차단</span></div>
+      <div>3 매니저 다른 유형·사유 미입력 → 저장 차단</div>
+      <div>4 미완료 회차 포함 → 집계 제외</div>
+      <div>5 회차 중복 기록 → 고유 회차 재집계</div>
+      <div>6 플래그 누락 성능 집계 → 보류·데이터 보완</div>
+
+      <div class="grp">DASH-09 채점 근거 원본</div>
+      <div>1 매니저 권한 없음 → <span class="pill block">원본 열람 차단</span></div>
+      <div>2 원본 응답 부재 → 검토 필요 표시</div>
+      <div>3 버전 필드 누락 → ENG-01 데이터 계약 오류</div>
+      <div>4 교육생 프롬프트·루브릭 요청 → 비공개 유지</div>
+      <div>5 발췌·원본 불일치 → 공개 차단</div>
+      <div>6 자동 전체 공개 요청 → 차단</div>
+      <div>7 채점 버전 다수 → 활성 버전 우선·선택 제공</div>
+
+      <div class="grp">INTV-01 개입 유형 추천</div>
+      <div>1 복수 조건 충족 → 결정리스트 최초 매칭만</div>
+      <div>2 5축 일부 결측 → 결측 의존 분기 제외·유보 검토</div>
+      <div>3 기수 σ=0 → relative_low 생략·primary_low만</div>
+      <div>4 팀편차 데이터 부재 → 팀조정 분기 제외</div>
+      <div>5 추천 근거 부재 → <span class="pill block">추천 생성 차단</span></div>
+      <div>6 규칙 버전 부재 → 추천 중단</div>
+      <div>7 어떤 분기도 미매칭 → 모니터링 유지</div>
+      <div>8 병렬 규칙 중복 추천 → 저장 차단</div>
+
+      <div class="grp">INTV-02 실행 초안</div>
+      <div>1 일부 슬롯 누락 → 누락 문구만 생략·나머지 구성</div>
+      <div>2 추천 결과 부재 → <span class="pill block">초안 차단</span>·INTV-01 선행 요청</div>
+      <div>3 템플릿 조회 실패 → 기본 템플릿 적용</div>
+      <div>4 전체 슬롯 부재 → 자동 초안 중단</div>
+      <div>5 편집 저장 실패 → 기존 초안 유지·재저장 요청</div>
+      <div>6 편집 플래그 저장 실패 → 초안 유지·신호 기록만 재시도</div>
+      <div>7 과도한 편집 길이 → 최대 길이 제한</div>
+
+      <div class="grp">INTV-03 추천 이의제기</div>
+      <div>1 이견 사유 미입력 → <span class="pill block">제출 차단</span></div>
+      <div>2 추천 누적 &lt;5건 → 개별 이의 저장·재검토 유보</div>
+      <div>3 최근 이력 집계 실패 → 이의 저장·플래그 보류</div>
+      <div>4 동일 추천 중복 이의 → 기존 반환 또는 사유 병합</div>
+      <div>5 규칙 버전 부재 → 이의 저장·재검토 연결 보류</div>
+      <div>6 플래그 저장 실패 → 이의 유지·재시도</div>
+      <div>7 플래그 후 자동 규칙 변경 요청 → <span class="pill block">차단</span>·사람 검토</div>
+    </div>
+
+    <div class="foot">· 게이트 A: 82 case = 82 상태 항목 ✅ · <b>근거 없는 순위·수치·시그널 금지</b>(A2) · Priority=S×(0.5+R)(DASH-03) · 타이밍 문구는 <b>항상 표시·상태만 전환·방치해도 안 사라짐</b>(A7·DASH-05) · INTV-01 결정리스트 배타·최초 1건 · 확정은 <b>매니저 명시 액션</b>(GOV-02), 표본 부족이 매니저 선택 봉쇄 안 함(DASH-08) · 자연빈도 우선·N&lt;5 진행바(DASH-07) · 근거 원본 매니저 전용(DASH-09) · 담당 기수·기관 범위(SYS-02·AUTH-09).</div>
+  </div>
+
+</div>
+</body>
+</html>

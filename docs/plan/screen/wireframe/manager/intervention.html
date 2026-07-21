@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-M07 · 개입 관리 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-nav:#1e2436; --c-nav-2:#2a3147; --c-nav-text:#aeb4c6;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    --shadow-pop:0 12px 40px rgba(20,24,31,.18);
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:860px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  .app{display:flex;flex-direction:column;min-height:560px;position:relative}
+  .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
+  .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700;font-size:var(--fs-base)}
+  .topbar .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .cohortsel{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:5px var(--sp-3);font-size:var(--fs-sm);color:var(--c-text);background:var(--c-surface-2)}
+  .cohortsel .k{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+  .body{display:flex;flex:1}
+  .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
+  .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
+  .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
+  .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-6)}
+
+  .phead{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--sp-4)}
+  .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-sm);cursor:pointer;padding:9px 16px}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong)}
+
+  .alertbar{display:flex;align-items:center;gap:var(--sp-2);background:var(--c-warning-soft);border:1px solid #e6d3a8;border-radius:var(--r-md);padding:9px var(--sp-4);font-size:var(--fs-sm);color:var(--c-warning);margin-bottom:var(--sp-4)}
+  .alertbar b{font-weight:700}
+  .alertbar .link{margin-left:auto;color:var(--c-warning);text-decoration:underline;cursor:pointer;font-size:var(--fs-xs)}
+
+  .toolbar{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3);flex-wrap:wrap}
+  .sel{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--c-border-strong);border-radius:var(--r-md);padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text);background:#fff}
+  .sel .k{color:var(--c-text-3)}
+  .toolbar .grow{flex:1}
+  .toolbar .cnt{font-size:var(--fs-xs);color:var(--c-text-3)}
+
+  .card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .tbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .tbl th,.tbl td{text-align:left;padding:11px var(--sp-4);border-bottom:1px solid var(--c-border)}
+  .tbl th{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);font-weight:600;background:var(--c-surface-2)}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl tr.click:hover{background:var(--c-surface-2);cursor:pointer}
+  .tbl .nm{font-weight:600}
+  .tbl .sub{font-size:11px;color:var(--c-text-3)}
+  .sig{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap}
+  .sig.risk{background:var(--c-danger-soft);color:var(--c-danger)}
+  .sig.imb{background:var(--c-warning-soft);color:var(--c-warning)}
+  .sig.team{background:var(--c-info-soft);color:var(--c-info)}
+  .ty{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--c-primary-soft);color:var(--c-primary)}
+  .st{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .st.wait{background:#eef0f3;color:var(--c-text-2)}
+  .st.prog{background:var(--c-info-soft);color:var(--c-info)}
+  .st.done{background:var(--c-success-soft);color:var(--c-success)}
+  .elapse{font-variant-numeric:tabular-nums}
+  .elapse.stall{color:var(--c-danger);font-weight:600}
+  .eff{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .eff.rec{background:var(--c-success-soft);color:var(--c-success)}
+  .eff.part{background:var(--c-warning-soft);color:var(--c-warning)}
+  .eff.no{background:var(--c-danger-soft);color:var(--c-danger)}
+  .eff.pend{background:#eef0f3;color:var(--c-text-3)}
+  .eff.dash{color:var(--c-text-3)}
+  .statebtn{border:1px solid var(--c-border-strong);background:#fff;color:var(--c-primary);border-radius:var(--r-sm);font-size:11px;font-weight:600;padding:4px 9px;cursor:pointer}
+  .pager{display:flex;justify-content:center;margin-top:var(--sp-4)}
+  .pager .pages{display:flex;gap:4px}
+  .pager .pg{min-width:30px;height:30px;padding:0 6px;border:1px solid var(--c-border);border-radius:var(--r-sm);display:inline-flex;align-items:center;justify-content:center;background:#fff;font-size:var(--fs-sm);color:var(--c-text-2)}
+  .pager .pg.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary);font-weight:600}
+
+  /* side panel */
+  .overlay{position:absolute;inset:0;background:rgba(20,24,31,.28);display:flex;justify-content:flex-end}
+  .side{width:410px;background:#fff;box-shadow:var(--shadow-pop);display:flex;flex-direction:column}
+  .sideh{display:flex;align-items:center;justify-content:space-between;padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--c-border)}
+  .sideh h4{font-size:var(--fs-lg)}.sideh .x{color:var(--c-text-3);cursor:pointer;font-size:18px}
+  .sideb{padding:var(--sp-5);overflow:auto;flex:1}
+  .evbox{background:var(--c-danger-soft);border:1px solid #e6c3bd;border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-5)}
+  .evbox .h{font-size:11px;font-weight:700;color:var(--c-danger);text-transform:uppercase;letter-spacing:.03em;margin-bottom:6px}
+  .evbox .r{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.6}.evbox .r b{color:var(--c-text)}
+  .flabel{font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);margin:var(--sp-4) 0 var(--sp-2)}
+  .radios{display:flex;flex-direction:column;gap:var(--sp-2)}
+  .radio{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border);border-radius:var(--r-md);padding:9px 12px;font-size:var(--fs-sm);cursor:pointer}
+  .radio.on{border-color:var(--c-primary);background:var(--c-primary-soft)}
+  .radio .dot{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--c-border-strong);flex:0 0 auto}
+  .radio.on .dot{border-color:var(--c-primary);border-width:5px}
+  .radio .rec{margin-left:auto;font-size:10px;font-weight:700;background:var(--c-primary);color:#fff;padding:2px 7px;border-radius:20px}
+  .radio .path{font-size:11px;color:var(--c-text-3)}
+  .fsel{height:40px;border:1px solid var(--c-border-strong);border-radius:var(--r-md);background:var(--c-surface-2);font-size:var(--fs-sm);color:var(--c-text);display:flex;align-items:center;padding:0 var(--sp-3);justify-content:space-between}
+  .fta{min-height:70px;border:1px solid var(--c-border-strong);border-radius:var(--r-md);background:var(--c-surface-2);color:var(--c-text-3);font-size:var(--fs-sm);padding:var(--sp-3)}
+  .sidef{display:flex;justify-content:flex-end;gap:var(--sp-2);padding:var(--sp-4) var(--sp-5);border-top:1px solid var(--c-border)}
+  .sigrow{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-2)}
+  .nm2{font-weight:600;font-size:var(--fs-sm);margin-bottom:4px}
+  .nm2 .sub{font-size:11px;color:var(--c-text-3);font-weight:400}
+  .pickbtn{border:1px solid var(--c-primary);background:var(--c-primary-soft);color:var(--c-primary);border-radius:var(--r-sm);font-size:var(--fs-xs);font-weight:600;padding:6px 12px;cursor:pointer;white-space:nowrap}
+  /* export dialog */
+  .expchk{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);padding:8px 0}
+  .expchk .cb{width:16px;height:16px;border:1.5px solid var(--c-border-strong);border-radius:4px}
+  .expchk .cb.on{background:var(--c-primary);border-color:var(--c-primary);position:relative}
+  .expchk .cb.on::after{content:"✓";color:#fff;font-size:11px;position:absolute;top:-2px;left:2px}
+  .expchk .cb.off{background:#f0f1f4;border-style:dashed}
+  .expwarn{font-size:11px;color:var(--c-warning);background:var(--c-warning-soft);border-radius:var(--r-md);padding:var(--sp-3);margin-top:var(--sp-3)}
+  /* detail rows */
+  .drow{display:flex;justify-content:space-between;font-size:var(--fs-sm);padding:9px 0;border-bottom:1px solid var(--c-border)}
+  .drow .k{color:var(--c-text-3)}.drow .v{font-weight:600}
+  .steps{display:flex;gap:6px;margin:var(--sp-3) 0}
+  .step{flex:1;text-align:center;font-size:11px;font-weight:600;padding:7px;border-radius:var(--r-md);border:1px solid var(--c-border);color:var(--c-text-3)}
+  .step.done{background:var(--c-success-soft);border-color:#bfe3cf;color:var(--c-success)}
+  .step.now{background:var(--c-primary-soft);border-color:#cdd4f2;color:var(--c-primary)}
+  .effcard{background:var(--c-success-soft);border:1px solid #bfe3cf;border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-top:var(--sp-4);font-size:var(--fs-sm);color:var(--c-success)}
+  .lnk{color:var(--c-primary);font-size:var(--fs-sm);cursor:pointer}
+  /* detail: activity + draft + assignee */
+  .dtitle{display:flex;align-items:center;gap:var(--sp-2)}
+  .dtitle .ty2{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:var(--c-primary-soft);color:var(--c-primary)}
+  .draft{background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.6}
+  .aitem{padding:10px 0;border-top:1px solid var(--c-border)}
+  .aitem:first-child{border-top:0}
+  .aitem .at{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:3px}
+  .atag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+  .atag.meet{background:var(--c-primary-soft);color:var(--c-primary)}
+  .atag.obs{background:#eef0f3;color:var(--c-text-2)}
+  .adate{font-size:11px;color:var(--c-text-3)}
+  .abody2{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.55}
+  .addbtn{display:flex;align-items:center;gap:6px;border:1px dashed var(--c-border-strong);border-radius:var(--r-md);padding:8px var(--sp-3);color:var(--c-primary);font-size:var(--fs-sm);font-weight:600;cursor:pointer;margin-top:var(--sp-2)}
+  .assign{display:flex;align-items:center;justify-content:space-between}
+  .assign .chg{font-size:var(--fs-xs);color:var(--c-primary);cursor:pointer}
+
+  .notes{margin-top:var(--sp-8);background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-5) var(--sp-6)}
+  .notes h3{font-size:var(--fs-lg);margin-bottom:var(--sp-1)}
+  .notes .grp{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--c-text-3);margin:var(--sp-5) 0 var(--sp-2)}
+  .notes .hint{font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-2)}
+  .tblwrap{overflow-x:auto}
+  .ntbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm);min-width:520px}
+  .ntbl td,.ntbl th{text-align:left;padding:var(--sp-2) var(--sp-3);border-bottom:1px solid var(--c-border)}
+  .ntbl td:first-child{width:52px;color:var(--c-text-3)}
+  .pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
+  .pill.danger{background:var(--c-danger-soft);color:var(--c-danger)}
+  .pill.warning{background:var(--c-warning-soft);color:var(--c-warning)}
+  .pill.na{background:#eef0f3;color:var(--c-text-3)}
+  .foot{margin-top:var(--sp-5);font-size:var(--fs-xs);color:var(--c-text-3)}
+
+  /* 회복률 집계(1급 정보 · D131) — 유형×축 회복률, 목록보다 먼저 */
+  .agg{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5);margin-bottom:var(--sp-4);box-shadow:var(--shadow-card)}
+  .agg .ah{display:flex;align-items:baseline;gap:8px;margin-bottom:var(--sp-3)}
+  .agg .ah b{font-size:var(--fs-lg);font-weight:800}
+  .agg .ah .mut{font-size:11px;color:var(--c-text-3)}
+  .agg .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--sp-3)}
+  .agg .cell{border:1px solid var(--c-border);border-radius:var(--r-md);padding:10px 12px;background:var(--c-surface-2)}
+  .agg .cell .ty{font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);margin-bottom:6px}
+  .agg .cell .rate{font-size:var(--fs-xl);font-weight:800;line-height:1;letter-spacing:-.01em}
+  .agg .cell .rate.hi{color:var(--c-success)}
+  .agg .cell .rate.mid{color:var(--c-warning)}
+  .agg .cell .rate.lo{color:var(--c-danger)}
+  .agg .cell .rate.na{color:var(--c-text-3)}
+  .agg .cell .n{font-size:11px;color:var(--c-text-3);margin-top:2px}
+  .agg .cell .top{font-size:10px;color:var(--c-text-3);margin-top:6px;border-top:1px solid var(--c-border);padding-top:6px}
+  .agg .cell .top b{color:var(--c-text-2)}
+  .createhint{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--c-text-3);background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-md);padding:8px 12px;margin-bottom:var(--sp-3)}
+
+  /* 해시 라우팅 — 사이드바 하위메뉴 하나당 화면 하나(M04/M06/M11과 동일 패턴 · D131) */
+  body.embedded .doc-head, body.embedded .sec-label{display:none}
+  body.embedded .page{padding:var(--sp-4) var(--sp-5)}
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">SC-M07 · P0/P1 · 매니저 · 웹</span>
+    <h1>개입 관리</h1>
+    <p>개입(면담·멘토링·보강·팀조정·모니터링)을 <b>실행하고 효과를 검증</b>하는 화면. 이 화면의 핵심 질문 = <b>"무슨 개입을 하고 있고, 뭐가 효과 있었나"</b> → <b>유형×축 회복률 집계를 1급 정보로 앞세운 정보-우선 테이블</b>(D131). <b>생성 진입점은 M07에 없다</b> — 근거 없는 개입 차단(시그널-개입 연결 필수)은 위험 트리아지(M04)·조치 큐(M01)·개별 상세(M06)가 이미 더 잘함, M07은 그 결과를 추적·검증만(D131). 자동확정 금지.</p>
+  </div>
+
+  <!-- ===== 개입 목록 ===== -->
+  <div class="sec-label">개입 목록 (회복률 집계 · 효과 · 경과 · 방치)</div>
+  <div class="rpage on" id="page-list">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/interventions</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item on"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content">
+          <div class="phead"><div><div class="crumb">개입 › 7기</div><h2>개입 관리</h2></div></div>
+          <div class="agg">
+            <div class="ah"><b>유형별 회복률</b><span class="mut">완료 개입만 · 회복=Δ≥1 AND post≥3(B7) · DASH-07 성능 지표와 같은 원천</span></div>
+            <div class="grid">
+              <div class="cell"><div class="ty">면담</div><div class="rate hi">71%</div><div class="n">5/7 완료</div><div class="top">최다 축 · <b>반례대응</b></div></div>
+              <div class="cell"><div class="ty">멘토링</div><div class="rate hi">80%</div><div class="n">4/5 완료</div><div class="top">최다 축 · <b>설계논리</b></div></div>
+              <div class="cell"><div class="ty">보강</div><div class="rate lo">25%</div><div class="n">1/4 완료</div><div class="top">최다 축 · <b>대안비교</b></div></div>
+              <div class="cell"><div class="ty">팀조정</div><div class="rate na">—</div><div class="n">진행 1 · 판정불가</div><div class="top">개인 축 기준 부적용(D36)</div></div>
+              <div class="cell"><div class="ty">모니터링</div><div class="rate na">—</div><div class="n">완료 0</div><div class="top">관찰 유지 목적</div></div>
+            </div>
+          </div>
+          <div class="alertbar" style="background:var(--c-danger-soft);border-color:#e6c3bd;color:var(--c-danger)">⚠️ <b>악화 1건</b> (개입 후 더 나빠짐, 우선 확인) · <b>방치 1건</b> (대기·진행 7일 이상 변화 없음) <span class="link" style="color:var(--c-danger)">우선 건만 보기</span></div>
+          <div class="createhint">＋ 새 개입은 여기서 만들지 않습니다 — <b>대시보드(M01)·위험 목록(M04)·교육생 상세(M06)</b>의 [개입 생성]에서 근거 시그널과 함께 시작하세요.</div>
+          <div class="toolbar">
+            <span class="sel"><span class="k">상태</span> 전체 ▾</span>
+            <span class="sel"><span class="k">유형</span> 전체 ▾</span>
+            <span class="sel"><span class="k">효과</span> 전체 ▾</span>
+            <span class="sel"><span class="k">담당</span> 내 담당 ▾</span>
+            <span class="sel"><span class="k">정렬</span> 우선순위 ▾</span>
+            <span class="grow"></span>
+            <span class="cnt">10건</span>
+          </div>
+          <div class="card"><table class="tbl">
+            <thead><tr><th>대상</th><th>유형</th><th>근거 시그널</th><th>담당</th><th>상태</th><th>경과</th><th>효과</th><th></th></tr></thead>
+            <tbody>
+              <tr class="click" style="background:var(--c-danger-soft)"><td><span class="nm">한도현</span> <span class="sub">A반</span></td><td><span class="ty">면담</span></td><td><span class="sig risk">위험 · 반례대응</span></td><td>박지현</td><td><span class="st done">완료</span></td><td class="elapse">—</td><td><span class="eff no">악화 · 반례대응 (Δ−1)</span></td><td></td></tr>
+              <tr class="click"><td><span class="nm">B팀</span> <span class="sub">팀 프로젝트</span></td><td><span class="ty">팀조정</span></td><td><span class="sig team">팀 이상</span></td><td>박지현</td><td><span class="st prog">진행</span></td><td class="elapse stall">⚠ 9일</td><td><span class="eff dash">—</span></td><td><button class="statebtn">완료로 →</button></td></tr>
+              <tr class="click"><td><span class="nm">강민준</span> <span class="sub">A반</span></td><td><span class="ty">면담</span></td><td><span class="sig risk">위험 · 반례대응</span></td><td>박지현</td><td><span class="st prog">진행</span></td><td class="elapse">3일</td><td><span class="eff dash">—</span></td><td><button class="statebtn">완료로 →</button></td></tr>
+              <tr class="click"><td><span class="nm">서지우</span> <span class="sub">B반</span></td><td><span class="ty">멘토링</span></td><td><span class="sig risk">위험 · 반례대응</span></td><td>박지현</td><td><span class="st wait">대기</span></td><td class="elapse">1일</td><td><span class="eff dash">—</span></td><td><button class="statebtn">진행으로 →</button></td></tr>
+              <tr class="click"><td><span class="nm">강민준</span> <span class="sub">A반</span></td><td><span class="ty">멘토링</span></td><td><span class="sig risk">위험 · 설계논리</span></td><td>박지현</td><td><span class="st done">완료</span></td><td class="elapse">—</td><td><span class="eff rec">회복 · 설계논리 (Δ+1, post 5)</span></td><td></td></tr>
+              <tr class="click"><td><span class="nm">정하늘</span> <span class="sub">A반</span></td><td><span class="ty">보강</span></td><td><span class="sig imb">기여·이해도 불균형</span></td><td>박지현</td><td><span class="st done">완료</span></td><td class="elapse">—</td><td><span class="eff part">부분 회복 · 반례대응</span></td><td></td></tr>
+              <tr class="click"><td><span class="nm">오지훈</span> <span class="sub">A반</span></td><td><span class="ty">보강</span></td><td><span class="sig risk">위험 · 대안비교</span></td><td>박지현</td><td><span class="st done">완료</span></td><td class="elapse">—</td><td><span class="eff no">미회복 (Δ0)</span></td><td></td></tr>
+              <tr class="click"><td><span class="nm">김서연</span> <span class="sub">A반</span></td><td><span class="ty">면담</span></td><td><span class="sig imb">기여·이해도 불균형</span></td><td>박지현</td><td><span class="st done">완료</span></td><td class="elapse">—</td><td><span class="eff pend">판정 대기 · 후속 회차 전</span></td><td></td></tr>
+            </tbody>
+          </table></div>
+          <div class="pager"><div class="pages"><span class="pg">‹</span><span class="pg on">1</span><span class="pg">2</span><span class="pg">›</span></div></div>
+          <div style="font-size:11px;color:var(--c-text-3);margin-top:12px">· <b>효과 1급 컬럼</b>(완료 개입만): 회복 / 부분 회복 / 미회복 / <b style="color:var(--c-danger)">악화</b> / 판정 대기. 회복=Δ≥1 AND post≥3(B7). <b>완료+후속 회차 전 = 판정 대기</b>, 대기·진행은 효과 없음(—). 정렬 기본 <b>우선순위</b>(악화·방치 먼저). 방치=대기·진행 7일↑. 행 클릭 → 상세.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <!-- ===== 공용 생성 패널: M01·M04·M06 [개입 생성] 클릭 시 ===== -->
+  <div class="sec-label">공용 생성 패널 · M01/M04/M06의 [개입 생성] 클릭 시 열림 — 대상·근거 시그널 이미 확정(M07 자체 진입점 없음·D131)</div>
+  <div class="rpage" id="page-create">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/interventions</span></div>
+    <div class="app" style="min-height:560px">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav" style="filter:blur(1px);opacity:.6"><div class="item on"><span class="ic">✎</span>개입</div></div>
+        <div class="content" style="filter:blur(1px);opacity:.5"><div class="phead"><h2>개입 관리</h2></div></div>
+      </div>
+      <div class="overlay">
+        <div class="side">
+          <div class="sideh"><h4>개입 생성 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· 위험 목록에서 진입</span></h4><span class="x">✕</span></div>
+          <div class="sideb">
+            <div class="evbox">
+              <div class="h">근거 시그널 (연결됨)</div>
+              <div class="r"><b>한도현</b> · 7기 A반<br>위험 · <b>반례대응</b> 4→2 · 2회차 · 심각도 높음</div>
+            </div>
+            <div class="flabel">개입 유형 <span style="font-weight:400;color:var(--c-text-3);text-transform:none">· 5종 고정(세분화는 메모로)</span></div>
+            <div class="radios">
+              <div class="radio on"><span class="dot"></span><div><div>면담</div><div class="path">추천 경로: 낮은 축 1~2개 + 반례대응 포함</div></div><span class="rec">추천</span></div>
+              <div class="radio"><span class="dot"></span>멘토링</div>
+              <div class="radio"><span class="dot"></span>보강</div>
+              <div class="radio"><span class="dot"></span>팀조정</div>
+              <div class="radio"><span class="dot"></span>모니터링</div>
+            </div>
+            <div class="flabel">담당자</div>
+            <div class="fsel">박지현 (본인) <span style="color:var(--c-text-3)">▾</span></div>
+            <div class="flabel">실행 초안 <span style="font-weight:400;color:var(--c-text-3);text-transform:none">· 자동 생성됨 · 편집 가능(INTV-02)</span></div>
+            <div class="fta" style="color:var(--c-text-2);white-space:pre-line;line-height:1.6;min-height:88px">한도현 학생의 <b>반례대응</b>이 4→2로 하락했습니다. 실패·예외 케이스 대응이 약해지고 있어, <b>면담</b>을 통해 학습 페이스·블로커를 확인하고 예외 처리 교안 위치를 함께 짚어보길 제안합니다.</div>
+            <div style="font-size:11px;color:var(--c-text-3);margin-top:6px">· 슬롯([학생]·[축]·[변화]·[제안조치]) 자동 채움. 매니저가 검토·편집(편집 여부는 추천 개선 신호로 기록).</div>
+          </div>
+          <div class="sidef"><button class="btn ghost">취소</button><button class="btn">검토 후 생성</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--c-text-3);margin-top:8px">· 근거 시그널이 <b>폼보다 먼저·확정</b>(근거 없는 개입 차단, 이미 M04/M01/M06에서 연결됨). 유형 <b>5종 고정</b>(임의 추가 없음, 효과 통계 무결성·D37), 세분화는 메모. 추천 유형(INTV-01) '추천' 배지. 생성 시 상태=대기·시그널 연결 저장. 중복 활성 개입이면 "이미 진행 중" + 기존 건 안내.</div>
+  </div>
+
+  <!-- ===== 행 클릭 상세 패널 ===== -->
+  <div class="sec-label">행 클릭 시 · 개입 상세 패널 (상태·효과·근거를 크게 / 관리 정보는 하단 약하게)</div>
+  <div class="rpage" id="page-detail">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/interventions/1042</span></div>
+    <div class="app" style="min-height:660px">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav" style="filter:blur(1px);opacity:.6"><div class="item on"><span class="ic">✎</span>개입</div></div>
+        <div class="content" style="filter:blur(1px);opacity:.5"><div class="phead"><h2>개입 관리</h2></div></div>
+      </div>
+      <div class="overlay">
+        <div class="side" style="width:440px">
+          <div class="sideh"><div class="dtitle"><h4>강민준</h4><span class="ty2">면담</span></div><span class="x">✕</span></div>
+          <div class="sideb">
+            <!-- 1. 상태 & 다음 행동 (최상단·크게) -->
+            <div class="flabel" style="margin-top:0">상태 · 다음 행동</div>
+            <div class="steps"><span class="step done">대기</span><span class="step now">진행</span><span class="step">완료</span></div>
+            <div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn" style="padding:8px 16px">완료로 이동 →</button></div>
+
+            <!-- 2. 근거 시그널 -->
+            <div class="flabel">근거 시그널</div>
+            <div class="evbox" style="background:var(--c-primary-soft);border-color:#cdd4f2;margin-bottom:0"><div class="r">위험 · <b>반례대응</b> 4→2 · 2회차 · 심각도 높음 <span class="lnk">시그널 상세 ↗</span></div></div>
+
+            <!-- 3. 효과 판정 -->
+            <div class="flabel">효과 판정</div>
+            <div class="effcard" style="background:#eef0f3;border-color:var(--c-border);color:var(--c-text-2)">판정 대기 · 완료 후 다음 회차 측정 시 자동(회복 = Δ≥1 AND post≥3 · B7). 진행 중엔 판정 없음.</div>
+
+            <!-- 4. 실행 초안 -->
+            <div class="flabel">실행 초안·제안조치 <span style="font-weight:400;color:var(--c-text-3);text-transform:none">· INTV-02</span></div>
+            <div class="draft">반례대응이 4→2 하락. 예외 대응이 약해져, 면담으로 학습 페이스·블로커를 확인하고 예외 처리 교안 위치를 함께 짚기로.</div>
+
+            <!-- 5. 활동 기록 (M06 공유) -->
+            <div class="flabel">활동 기록 <span style="font-weight:400;color:var(--c-text-3);text-transform:none">· 교육생 상세와 공유(INTV-08)</span></div>
+            <div class="aitem"><div class="at"><span class="atag meet">면담</span><span class="adate">04.12 · 박지현</span></div><div class="abody2">예외 처리 개념을 어려워함. 페이스는 괜찮으나 막힐 때 질문을 잘 안 함. 다음 회차 전 교안 함께 보기로.</div></div>
+            <div class="addbtn">＋ 면담·관찰 기록 추가</div>
+
+            <!-- 6. 관리 정보 (하단·약하게) -->
+            <div class="flabel">관리 정보</div>
+            <div class="drow assign"><span class="k">담당자</span><span><b class="v">박지현</b> <span class="chg">변경</span></span></div>
+            <div class="drow"><span class="k">생성</span><span class="v">04.12 · 박지현</span></div>
+            <div class="drow" style="border-bottom:0"><span class="k">상태 이력</span><span class="v" style="font-weight:400;color:var(--c-text-2)">대기 04.12 → 진행 04.13</span></div>
+          </div>
+          <div class="sidef"><button class="btn ghost">취약 축 export</button><button class="btn ghost">교육생 상세(SC-M06) ↗</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--c-text-3);margin-top:8px">· <b>보여줄 것(우선순위):</b> ①상태·다음 행동(크게) ②근거 시그널 ③효과 판정 ④실행 초안 ⑤활동 기록 ⑥관리 정보(하단 약하게). <b>기능:</b> 상태 전이 · 활동 기록 추가 · 담당자 변경(위임·인수인계) · 취약축 export · 교육생 상세 이동. 하드 삭제는 명세에 없어 제외(상태로만 관리·GOV-02). M06 활동 카드와 같은 레코드.</div>
+  </div>
+
+  <!-- ===== 취약 축 export: 다이얼로그 + 문서 구성 ===== -->
+  <div class="sec-label">[취약 축 export] 클릭 시 · 생성 다이얼로그 + 문서 구성 (PDF / 만료형 공유 링크)</div>
+  <div class="rpage" id="page-export">
+  <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
+    <!-- 다이얼로그 -->
+    <div style="flex:0 0 400px;background:#fff;border:1px solid var(--c-border);border-radius:var(--r-lg);box-shadow:var(--shadow-pop);overflow:hidden">
+      <div class="sideh"><h4>취약 축 요약 export</h4><span class="x">✕</span></div>
+      <div style="padding:20px">
+        <div style="font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:10px">멘토·강사 공유용 <b>요약 문서</b>. 포함 항목:</div>
+        <div class="expchk"><span class="cb on"></span>취약 축·회차 추이·기수 대비</div>
+        <div class="expchk"><span class="cb on"></span>취약 기술 영역 · 확인 필요 사항</div>
+        <div class="expchk"><span class="cb on"></span>개입 이력·효과</div>
+        <div class="expchk" style="opacity:.6"><span class="cb off"></span>교육생 원문 답변 <span style="font-size:11px;color:var(--c-danger)">· 포함 불가</span></div>
+        <div class="expchk" style="opacity:.6"><span class="cb off"></span>세부 채점 근거·루브릭·점수 공식 <span style="font-size:11px;color:var(--c-danger)">· 포함 불가</span></div>
+        <div class="expwarn">🔒 원문·세부 근거는 <b>절대 미포함</b>(INTV-07·A5 · 유출 시 복구 불가). 공유 권한자만.</div>
+        <div style="display:flex;gap:8px;margin-top:18px;justify-content:flex-end">
+          <button class="btn ghost">PDF 다운로드</button>
+          <button class="btn">만료형 공유 링크</button>
+        </div>
+      </div>
+    </div>
+    <!-- 문서 구성 미리보기 -->
+    <div style="flex:1;min-width:300px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);margin-bottom:10px">생성되는 문서 구성 (한 장)</div>
+      <div style="background:#fff;border:1px solid var(--c-border-strong);border-radius:var(--r-md);padding:22px;box-shadow:var(--shadow-card);font-size:var(--fs-sm)">
+        <div style="border-bottom:1px solid var(--c-border);padding-bottom:12px;margin-bottom:12px"><div style="font-weight:700;font-size:var(--fs-lg)">한도현 · 취약 축 요약</div><div style="font-size:11px;color:var(--c-text-3);margin-top:2px">7기 A반 · 기준 2회차 · 생성 04.12 · 매니저 공유용</div></div>
+        <div style="color:var(--c-text-2);margin-bottom:12px">① <b>요약</b> — 반례대응 영역이 2회 하락, 실패·예외 대응 지원 필요.</div>
+        <div style="margin-bottom:12px">② <b>취약 축</b> · 반례대응 4→2 <span style="color:var(--c-danger)">(기수 평균보다 낮음)</span> <span style="color:var(--c-text-3);font-family:ui-monospace,Menlo,monospace">▁▄▂ 추이</span></div>
+        <div style="margin-bottom:12px;color:var(--c-text-2)">③ <b>취약 기술 영역</b> · 인증·보안(예외 처리)</div>
+        <div style="margin-bottom:12px;color:var(--c-text-2)">④ <b>확인 필요 사항</b> · 실패 케이스 대비 학습 지원 (코칭 관점, 코드 재시험 아님)</div>
+        <div style="margin-bottom:14px;color:var(--c-text-2)">⑤ <b>개입 이력·효과</b> · 면담(진행 중) · 이전 멘토링 회복</div>
+        <div style="border-top:1px solid var(--c-border);padding-top:10px;font-size:11px;color:var(--c-text-3)">🔒 원문 답변·세부 채점 근거·루브릭·점수 공식은 포함되지 않음</div>
+      </div>
+    </div>
+  </div>
+  <div style="font-size:12px;color:var(--c-text-3);margin-top:12px">· 별도 화면 아님, 다이얼로그 → <b>PDF</b>(오프라인·인쇄) 또는 <b>만료형 공유 링크</b>(권한자·기간 제한). 생성자·시각 기록, 취약축 없으면 차단, 원문 포함 탐지 시 자동 제거(INTV-07 case2).</div>
+  </div>
+
+  <div class="sec-label">상태 매핑</div>
+  <div class="rpage" id="page-cases">
+  <div class="notes">
+    <h3>상태 ↔ case 매핑 (INTV-04 7 · 05 7 · 06 9 · 07 6 · 08 7 = 36)</h3>
+    <p class="hint">비주얼은 목록·생성(공용 패널)·상세·export만. 예외는 이 표가 계약. INTV-04(생성) 검증 규칙은 실제 진입 화면(M01/M04/M06)에서도 동일 적용.</p>
+    <div class="grp">개입 생성 (INTV-04)</div>
+    <div class="tblwrap"><table class="ntbl"><tbody>
+      <tr><td>C-1</td><td>비활성·해소 시그널</td><td><span class="pill danger">danger</span></td><td>생성 차단·최신 활성 재조회</td></tr>
+      <tr><td>C-2</td><td>시그널 근거 부재</td><td><span class="pill danger">danger</span></td><td>생성 차단·ENG-04 재생성</td></tr>
+      <tr><td>C-3</td><td>필수값 누락</td><td><span class="pill danger">danger</span></td><td>유형·대상·담당자</td></tr>
+      <tr><td>C-4</td><td>허용 안된 유형</td><td><span class="pill danger">danger</span></td><td>5종만</td></tr>
+      <tr><td>C-5</td><td>중복 활성 개입</td><td><span class="pill warning">warning</span></td><td>"이미 진행 중" + 기존 건 링크</td></tr>
+      <tr><td>C-6</td><td>대상 조회 불가</td><td><span class="pill danger">danger</span></td><td>대상 재확인</td></tr>
+      <tr><td>C-7</td><td>연결 저장 실패</td><td><span class="pill danger">danger</span></td><td>내용 유지·롤백·재시도</td></tr>
+    </tbody></table></div>
+    <div class="grp">상태 전이 (INTV-05)</div>
+    <div class="tblwrap"><table class="ntbl"><tbody>
+      <tr><td>S-1</td><td>허용 안된 전이</td><td><span class="pill danger">danger</span></td><td>허용 전이만</td></tr>
+      <tr><td>S-3</td><td>완료→진행 역전</td><td><span class="pill danger">danger</span></td><td>기본 차단</td></tr>
+      <tr><td>S-4</td><td>권한 없음</td><td><span class="pill danger">danger</span></td><td>403</td></tr>
+      <tr><td>S-6</td><td>동일 상태 중복</td><td><span class="pill na">멱등</span></td><td>이력 없음</td></tr>
+      <tr><td>S-2·5·7</td><td>미존재·연결누락·저장실패</td><td><span class="pill warning">warning</span></td><td>재조회·보류·재시도</td></tr>
+    </tbody></table></div>
+    <div class="grp">효과 판정 (INTV-06)</div>
+    <div class="tblwrap"><table class="ntbl"><tbody>
+      <tr><td>E-1·2</td><td>회차 미도래·미응시</td><td><span class="pill na">판정대기</span></td><td>판정 금지</td></tr>
+      <tr><td>E-6</td><td>Δ≥1·post&lt;3</td><td><span class="pill warning">부분 회복</span></td><td>회복률 분자 제외</td></tr>
+      <tr><td>E-7</td><td>Δ&lt;0</td><td><span class="pill danger">악화</span></td><td>우선 재알림</td></tr>
+      <tr><td>E-8</td><td>후속 없이 회복 요청</td><td><span class="pill danger">danger</span></td><td>차단(B7)</td></tr>
+      <tr><td>E-3·4·5·9</td><td>후속점수/pre/policy 부재·재알림 실패</td><td><span class="pill danger">danger</span></td><td>판정 차단·재시도</td></tr>
+    </tbody></table></div>
+    <div class="grp">export (INTV-07 6) · 메모 (INTV-08 7)</div>
+    <div class="tblwrap"><table class="ntbl"><tbody>
+      <tr><td>X-1~6</td><td>취약축 부재·원문 포함·권한없음·결측·실패·대상조회실패</td><td><span class="pill danger">danger</span></td><td>export 차단/제외 · 원문 유출 금지</td></tr>
+      <tr><td>M-1~7</td><td>대상없음·권한없음·빈메모·길이초과·연결없음·수정이력보존·저장실패</td><td><span class="pill warning">warning</span></td><td>차단/보존/재시도 (M06 메모 공유)</td></tr>
+    </tbody></table></div>
+    <div class="foot">디자인 토큰: docs/plan/screen/definition/_source/design-tokens.md · 명세 재설계(옛 골격 미참조·D35) · 효과 전면 테이블 · 신규: RecoveryRateAgg·EffectBadge·StateBtn·SidePanel(상세/생성 공용)·AlertBar · 생성 진입점 M07 자체 없음(D131) · 시그널 연결 필수·자동확정 금지(GOV-02)·회복 이중조건(B7) · 웹 기준</div>
+  </div>
+  </div>
+</div>
+<script>
+  var PAGE = { list:"page-list", create:"page-create", detail:"page-detail", export:"page-export", cases:"page-cases" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "list";
+    var id = PAGE[h] || "page-list";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+</script>
+</body>
+</html>

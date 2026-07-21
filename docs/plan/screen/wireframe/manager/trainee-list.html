@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SC-M11 · 교육생 리스트 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-nav:#1e2436; --c-nav-2:#2a3147; --c-nav-text:#aeb4c6;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:820px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  .app{display:flex;flex-direction:column;min-height:600px}
+  .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
+  .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700;font-size:var(--fs-base)}
+  .topbar .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .cohortsel{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:5px var(--sp-3);font-size:var(--fs-sm);color:var(--c-text);background:var(--c-surface-2)}
+  .cohortsel .k{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+  .body{display:flex;flex:1}
+  .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
+  .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
+  .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
+  .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-6)}
+  .phead{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:var(--sp-4)}
+  .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead .crumb{font-size:var(--fs-sm);color:var(--c-text-3);margin-bottom:var(--sp-1)}
+
+  .toolbar{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3);flex-wrap:wrap}
+  .toolbar .grow{flex:1}
+  .toolbar .cnt{font-size:var(--fs-xs);color:var(--c-text-3);white-space:nowrap}
+  .search{width:240px;height:36px;border:1px solid var(--c-border-strong);border-radius:var(--r-md);background:var(--c-surface-2);color:var(--c-text-3);font-size:var(--fs-sm);display:flex;align-items:center;padding:0 var(--sp-3)}
+  .sel{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--c-border-strong);border-radius:var(--r-md);padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text);background:#fff}
+  .sel .k{color:var(--c-text-3)}
+
+  .card{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .tbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .tbl th,.tbl td{text-align:left;padding:11px var(--sp-4);border-bottom:1px solid var(--c-border)}
+  .tbl th{font-size:var(--fs-xs);text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);font-weight:600;background:var(--c-surface-2)}
+  .tbl th.sortable::after{content:" ↕";color:var(--c-border-strong)}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl tr.click:hover{background:var(--c-surface-2);cursor:pointer}
+  /* identity spine */
+  .who{display:flex;align-items:center;gap:var(--sp-3)}
+  .who .av{width:34px;height:34px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex:0 0 auto}
+  .who .nm{font-weight:600;color:var(--c-text);text-decoration:none;display:inline-block}
+  .who .nm:focus-visible{outline:2px solid var(--c-primary);outline-offset:2px;border-radius:3px}
+  .who .em{font-size:11px;color:var(--c-text-3)}
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .badge.ok{background:var(--c-success-soft);color:var(--c-success)}
+  .badge.off{background:#eef0f3;color:var(--c-text-3)}
+  .badge.inv{background:var(--c-info-soft);color:var(--c-info)}
+  .cpinfo{font-size:11px;color:var(--c-text-3);margin-top:2px}
+  .chev{color:var(--c-text-3)}
+
+  /* centered pagination bottom (D22/D23) */
+  .pager{display:flex;justify-content:center;margin-top:var(--sp-5)}
+  .pager .pages{display:flex;gap:4px}
+  .pager .pg{min-width:32px;height:32px;padding:0 6px;border:1px solid var(--c-border);border-radius:var(--r-sm);display:inline-flex;align-items:center;justify-content:center;background:#fff;font-size:var(--fs-sm);color:var(--c-text-2)}
+  .pager .pg.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary);font-weight:600}
+
+  .norm{margin-top:var(--sp-4);font-size:12px;color:var(--c-text-3)}
+
+  .notes{margin-top:var(--sp-8);background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-5) var(--sp-6)}
+  .notes h3{font-size:var(--fs-lg);margin-bottom:var(--sp-1)}
+  .notes .hint{font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-4)}
+  .tblwrap{overflow-x:auto}
+  .ntbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm);min-width:500px}
+  .ntbl td,.ntbl th{text-align:left;padding:var(--sp-2) var(--sp-3);border-bottom:1px solid var(--c-border)}
+  .ntbl td:first-child{width:48px;color:var(--c-text-3)}
+  .pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
+  .pill.danger{background:var(--c-danger-soft);color:var(--c-danger)}
+  .pill.info{background:var(--c-info-soft);color:var(--c-info)}
+  .pill.na{background:#eef0f3;color:var(--c-text-3)}
+  .foot{margin-top:var(--sp-5);font-size:var(--fs-xs);color:var(--c-text-3)}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">SC-M11 · P0 · 매니저 · 웹</span>
+    <h1>교육생 리스트 (디렉터리)</h1>
+    <p><b>사람을 찾아 상세로 가는 순수 디렉터리.</b> 정체성(이름·반)이 척추 — <b>팀은 프로젝트마다 재편성되는 유동값이라 목록에 안 둠</b>(상세 SC-M06). <b>측정과 독립</b>: 회차·제출·점수는 안 넣는다(그건 프로젝트 워크스페이스·대시보드 SC-M01·상세 SC-M06 소관). 리스트는 "찾기"까지, 파고들기는 상세(마스터-디테일·D89). 계정 상태(활성/초대/비활성)만 가벼운 관리 신호로, 계정 필터 기본값은 활성(비활성은 명시적으로 켤 때만). <b>v1은 매니저가 자기 기관 내 모든 교육생을 봄</b>(권한 토글 없음, AUTH-11 세밀 통제는 고도화 보류). 페이지네이션 중앙.</p>
+  </div>
+
+  <div class="sec-label">교육생 디렉터리</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trainees</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 · 그린 부트캠프 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
+        </div>
+        <div class="content">
+          <div class="phead"><div><div class="crumb">교육생 › 7기</div><h2>교육생 <span style="color:var(--c-text-3);font-weight:400;font-size:14px">48명</span></h2></div></div>
+          <div class="toolbar">
+            <span class="search">🔍 이름 · 이메일 검색</span>
+            <span class="sel"><span class="k">반</span> 전체 ▾</span>
+            <span class="sel"><span class="k">계정</span> 활성 ▾</span>
+            <span class="sel"><span class="k">정렬</span> 이름순 ▾</span>
+            <span class="grow"></span>
+            <span class="cnt">1–20 / 48명</span>
+          </div>
+          <div class="card"><table class="tbl">
+            <thead><tr><th class="sortable">교육생</th><th>반</th><th>계정</th><th></th></tr></thead>
+            <tbody>
+              <tr class="click"><td><div class="who"><span class="av" aria-hidden="true">강</span><div><a class="nm" href="#" aria-label="강민준 상세 보기">강민준</a><div class="em">minjun@ex.com</div></div></div></td><td>A반</td><td><span class="badge ok">활성</span></td><td class="chev" aria-hidden="true">›</td></tr>
+              <tr class="click"><td><div class="who"><span class="av" aria-hidden="true">김</span><div><a class="nm" href="#" aria-label="김서연 상세 보기">김서연</a><div class="em">seoyeon@ex.com</div></div></div></td><td>A반</td><td><span class="badge ok">활성</span></td><td class="chev" aria-hidden="true">›</td></tr>
+              <tr class="click"><td><div class="who"><span class="av" aria-hidden="true">서</span><div><a class="nm" href="#" aria-label="서지우 상세 보기">서지우</a><div class="em">jiwoo@ex.com</div></div></div></td><td>B반</td><td><span class="badge inv">초대됨</span></td><td class="chev" aria-hidden="true">›</td></tr>
+              <tr class="click"><td><div class="who"><span class="av" aria-hidden="true">한</span><div><a class="nm" href="#" aria-label="한도현 상세 보기">한도현</a><div class="em">dohyun@ex.com</div></div></div></td><td>A반</td><td><span class="badge ok">활성</span></td><td class="chev" aria-hidden="true">›</td></tr>
+              <tr class="click"><td><div class="who"><span class="av" aria-hidden="true">오</span><div><a class="nm" href="#" aria-label="오세훈 상세 보기">오세훈</a><div class="em">sehun@ex.com</div></div></div></td><td>C반</td><td><span class="badge off">비활성</span><div class="cpinfo">이탈 · 08.02</div></td><td class="chev" aria-hidden="true">›</td></tr>
+            </tbody>
+          </table></div>
+          <div class="pager">
+            <div class="pages"><span class="pg">‹</span><span class="pg on">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">›</span></div>
+          </div>
+          <div class="norm">· <b>정체성 우선</b>(이름·반·계정 상태). 팀·회차·제출·점수는 목록에 없음 — 측정과 독립된 순수 디렉터리, 그 상세는 개별 상세(SC-M06)·프로젝트·대시보드 소관. <b>위험도 정렬·판정은 없음</b>. 행 클릭 → 개별 상세(SC-M06).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <h3>상태 ↔ 명세 case 매핑 (DASH-17 8 · AUTH-11 고도화 보류)</h3>
+    <p class="hint">v1은 기관 내 개방(D20) → AUTH-11 세밀 열람 통제 7건은 <b>고도화 보류</b>. SYS-02 테넌트 격리만 유지. 비주얼은 정상 목록만.</p>
+    <div class="tblwrap"><table class="ntbl"><tbody>
+      <tr><td>L-1</td><td>검색 결과 없음</td><td><span class="pill na">-</span></td><td>"결과 없음" 안내</td></tr>
+      <tr><td>L-2</td><td>페이지 범위 초과</td><td><span class="pill na">-</span></td><td>마지막 유효 페이지/빈 결과</td></tr>
+      <tr><td>L-3</td><td>유효하지 않은 반 필터</td><td><span class="pill danger">danger</span></td><td>필터 거부·허용 값 안내</td></tr>
+      <tr><td>L-4</td><td>이름 검색어 과도·비정상</td><td><span class="pill info">info</span></td><td>입력 정규화 또는 거부</td></tr>
+      <tr><td>L-5</td><td>타 기관 교육생 포함(격리)</td><td><span class="pill danger">danger</span></td><td>범위 밖 제거 (SYS-02)</td></tr>
+      <tr><td>L-6</td><td>반 조회 실패</td><td><span class="pill info">info</span></td><td>필터 비활성·기본 목록</td></tr>
+      <tr><td>L-7</td><td>위험도 정렬·판정 요청</td><td><span class="pill info">info</span></td><td>거부·"SC-M01 사용" 유도(연속 미제출 등 패턴 판정도 동일 거부)</td></tr>
+      <tr><td>L-8</td><td>대량 페이지 요청</td><td><span class="pill info">info</span></td><td>최대 페이지 크기 제한</td></tr>
+      <tr><td>—</td><td>AUTH-11 타 매니저 이력 통제 (7건)</td><td><span class="pill na">보류</span></td><td>고도화 이관 — v1 기관 내 개방(D20)</td></tr>
+    </tbody></table></div>
+    <div class="foot">디자인 토큰: docs/plan/screen/definition/_source/design-tokens.md · 순수 디렉터리(정체성=이름·반·계정, 팀·회차·제출·점수는 상세/프로젝트/대시보드 소관·측정 독립) · 마스터-디테일(D89·파고들기는 SC-M06) · 계정 필터 기본=활성 · 권한 토글 제거(D20) · 페이지네이션 중앙(D22) · 위험도 정렬·판정 배제(DASH-17) · 접근성: 이름 링크+포커스링·아바타 aria-hidden · 웹 기준</div>
+  </div>
+</div>
+</body>
+</html>

@@ -71,14 +71,14 @@
   /* identity spine */
   .who{display:flex;align-items:center;gap:var(--sp-3)}
   .who .av{width:34px;height:34px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:13px;flex:0 0 auto}
-  .who .nm{font-weight:600}
+  .who .nm{font-weight:600;color:var(--c-text);text-decoration:none;display:inline-block}
+  .who .nm:focus-visible{outline:2px solid var(--c-primary);outline-offset:2px;border-radius:3px}
   .who .em{font-size:11px;color:var(--c-text-3)}
   .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
   .badge.ok{background:var(--c-success-soft);color:var(--c-success)}
   .badge.off{background:#eef0f3;color:var(--c-text-3)}
-  .badge.warn{background:var(--c-warning-soft);color:var(--c-warning)}
   .badge.inv{background:var(--c-info-soft);color:var(--c-info)}
-  .team{color:var(--c-text-2)}
+  .cpinfo{font-size:11px;color:var(--c-text-3);margin-top:2px}
   .chev{color:var(--c-text-3)}
 
   /* centered pagination bottom (D22/D23) */
@@ -108,7 +108,7 @@
   <div class="doc-head">
     <span class="id">SC-M11 · P0 · 매니저 · 웹</span>
     <h1>교육생 리스트 (디렉터리)</h1>
-    <p><b>사람을 찾아 상세로 가는 통로</b> — 정체성(이름·반·팀)이 척추, 계정·이번 회차 상태는 가벼운 보조. 점수·위험 정렬은 없음(그건 대시보드 SC-M01·상세 SC-M06 소관). <b>v1은 매니저가 자기 기관 내 모든 교육생을 봄</b>(권한 토글 없음 · AUTH-11 세밀 통제는 고도화 보류). 페이지네이션 중앙.</p>
+    <p><b>사람을 찾아 상세로 가는 순수 디렉터리.</b> 정체성(이름·반)이 척추 — <b>팀은 프로젝트마다 재편성되는 유동값이라 목록에 안 둠</b>(상세 SC-M06). <b>측정과 독립</b>: 회차·제출·점수는 안 넣는다(그건 프로젝트 워크스페이스·대시보드 SC-M01·상세 SC-M06 소관). 리스트는 "찾기"까지, 파고들기는 상세(마스터-디테일·D89). 계정 상태(활성/초대/비활성)만 가벼운 관리 신호로, 계정 필터 기본값은 활성(비활성은 명시적으로 켤 때만). <b>v1은 매니저가 자기 기관 내 모든 교육생을 봄</b>(권한 토글 없음, AUTH-11 세밀 통제는 고도화 보류). 페이지네이션 중앙.</p>
   </div>
 
   <div class="sec-label">교육생 디렉터리</div>
@@ -121,32 +121,32 @@
       </div>
       <div class="body">
         <div class="nav">
-          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
         </div>
         <div class="content">
           <div class="phead"><div><div class="crumb">교육생 › 7기</div><h2>교육생 <span style="color:var(--c-text-3);font-weight:400;font-size:14px">48명</span></h2></div></div>
           <div class="toolbar">
             <span class="search">🔍 이름 · 이메일 검색</span>
             <span class="sel"><span class="k">반</span> 전체 ▾</span>
-            <span class="sel"><span class="k">계정</span> 전체 ▾</span>
+            <span class="sel"><span class="k">계정</span> 활성 ▾</span>
             <span class="sel"><span class="k">정렬</span> 이름순 ▾</span>
             <span class="grow"></span>
             <span class="cnt">1–20 / 48명</span>
           </div>
           <div class="card"><table class="tbl">
-            <thead><tr><th class="sortable">교육생</th><th>반</th><th>팀</th><th>계정</th><th>이번 회차</th><th></th></tr></thead>
+            <thead><tr><th class="sortable">교육생</th><th>반</th><th>계정</th><th></th></tr></thead>
             <tbody>
-              <tr class="click"><td><div class="who"><span class="av">강</span><div><div class="nm">강민준</div><div class="em">minjun@ex.com</div></div></div></td><td>A반</td><td class="team">팀 A</td><td><span class="badge ok">활성</span></td><td><span class="badge ok">응시 완료</span></td><td class="chev">›</td></tr>
-              <tr class="click"><td><div class="who"><span class="av">김</span><div><div class="nm">김서연</div><div class="em">seoyeon@ex.com</div></div></div></td><td>A반</td><td class="team">팀 A</td><td><span class="badge ok">활성</span></td><td><span class="badge warn">세션 진행</span></td><td class="chev">›</td></tr>
-              <tr class="click"><td><div class="who"><span class="av">서</span><div><div class="nm">서지우</div><div class="em">jiwoo@ex.com</div></div></div></td><td>B반</td><td class="team">팀 C</td><td><span class="badge inv">초대됨</span></td><td><span class="badge off">미제출</span></td><td class="chev">›</td></tr>
-              <tr class="click"><td><div class="who"><span class="av">한</span><div><div class="nm">한도현</div><div class="em">dohyun@ex.com</div></div></div></td><td>A반</td><td class="team">팀 A</td><td><span class="badge ok">활성</span></td><td><span class="badge off">미제출</span></td><td class="chev">›</td></tr>
-              <tr class="click"><td><div class="who"><span class="av">오</span><div><div class="nm">오세훈</div><div class="em">sehun@ex.com</div></div></div></td><td>C반</td><td class="team">—</td><td><span class="badge off">비활성</span></td><td><span class="badge off">—</span></td><td class="chev">›</td></tr>
+              <tr class="click"><td><div class="who"><span class="av" aria-hidden="true">강</span><div><a class="nm" href="#" aria-label="강민준 상세 보기">강민준</a><div class="em">minjun@ex.com</div></div></div></td><td>A반</td><td><span class="badge ok">활성</span></td><td class="chev" aria-hidden="true">›</td></tr>
+              <tr class="click"><td><div class="who"><span class="av" aria-hidden="true">김</span><div><a class="nm" href="#" aria-label="김서연 상세 보기">김서연</a><div class="em">seoyeon@ex.com</div></div></div></td><td>A반</td><td><span class="badge ok">활성</span></td><td class="chev" aria-hidden="true">›</td></tr>
+              <tr class="click"><td><div class="who"><span class="av" aria-hidden="true">서</span><div><a class="nm" href="#" aria-label="서지우 상세 보기">서지우</a><div class="em">jiwoo@ex.com</div></div></div></td><td>B반</td><td><span class="badge inv">초대됨</span></td><td class="chev" aria-hidden="true">›</td></tr>
+              <tr class="click"><td><div class="who"><span class="av" aria-hidden="true">한</span><div><a class="nm" href="#" aria-label="한도현 상세 보기">한도현</a><div class="em">dohyun@ex.com</div></div></div></td><td>A반</td><td><span class="badge ok">활성</span></td><td class="chev" aria-hidden="true">›</td></tr>
+              <tr class="click"><td><div class="who"><span class="av" aria-hidden="true">오</span><div><a class="nm" href="#" aria-label="오세훈 상세 보기">오세훈</a><div class="em">sehun@ex.com</div></div></div></td><td>C반</td><td><span class="badge off">비활성</span><div class="cpinfo">이탈 · 08.02</div></td><td class="chev" aria-hidden="true">›</td></tr>
             </tbody>
           </table></div>
           <div class="pager">
             <div class="pages"><span class="pg">‹</span><span class="pg on">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">›</span></div>
           </div>
-          <div class="norm">· <b>정체성 우선</b>(이름·반·팀). "이번 회차"는 운영 참고용 가벼운 신호(누가 미제출인지). <b>위험도 정렬은 없음</b> — 위험 우선순위는 대시보드(SC-M01). 행 클릭 → 개별 상세(SC-M06).</div>
+          <div class="norm">· <b>정체성 우선</b>(이름·반·계정 상태). 팀·회차·제출·점수는 목록에 없음 — 측정과 독립된 순수 디렉터리, 그 상세는 개별 상세(SC-M06)·프로젝트·대시보드 소관. <b>위험도 정렬·판정은 없음</b>. 행 클릭 → 개별 상세(SC-M06).</div>
         </div>
       </div>
     </div>
@@ -161,12 +161,12 @@
       <tr><td>L-3</td><td>유효하지 않은 반 필터</td><td><span class="pill danger">danger</span></td><td>필터 거부·허용 값 안내</td></tr>
       <tr><td>L-4</td><td>이름 검색어 과도·비정상</td><td><span class="pill info">info</span></td><td>입력 정규화 또는 거부</td></tr>
       <tr><td>L-5</td><td>타 기관 교육생 포함(격리)</td><td><span class="pill danger">danger</span></td><td>범위 밖 제거 (SYS-02)</td></tr>
-      <tr><td>L-6</td><td>반/팀 조회 실패</td><td><span class="pill info">info</span></td><td>필터 비활성·기본 목록</td></tr>
-      <tr><td>L-7</td><td>위험도 정렬 요청</td><td><span class="pill info">info</span></td><td>거부·"SC-M01 사용" 유도</td></tr>
+      <tr><td>L-6</td><td>반 조회 실패</td><td><span class="pill info">info</span></td><td>필터 비활성·기본 목록</td></tr>
+      <tr><td>L-7</td><td>위험도 정렬·판정 요청</td><td><span class="pill info">info</span></td><td>거부·"SC-M01 사용" 유도(연속 미제출 등 패턴 판정도 동일 거부)</td></tr>
       <tr><td>L-8</td><td>대량 페이지 요청</td><td><span class="pill info">info</span></td><td>최대 페이지 크기 제한</td></tr>
       <tr><td>—</td><td>AUTH-11 타 매니저 이력 통제 (7건)</td><td><span class="pill na">보류</span></td><td>고도화 이관 — v1 기관 내 개방(D20)</td></tr>
     </tbody></table></div>
-    <div class="foot">디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 디렉터리 재프레이밍(정체성 우선) · 권한 토글 제거(D20) · 페이지네이션 중앙(D22) · 위험도 정렬 배제(DASH-17) · 웹 기준</div>
+    <div class="foot">디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 순수 디렉터리(정체성=이름·반·계정, 팀·회차·제출·점수는 상세/프로젝트/대시보드 소관·측정 독립) · 마스터-디테일(D89·파고들기는 SC-M06) · 계정 필터 기본=활성 · 권한 토글 제거(D20) · 페이지네이션 중앙(D22) · 위험도 정렬·판정 배제(DASH-17) · 접근성: 이름 링크+포커스링·아바타 aria-hidden · 웹 기준</div>
   </div>
 </div>
 </body>

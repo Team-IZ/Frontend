@@ -118,6 +118,13 @@
   .pill.na{background:#eef0f3;color:var(--c-text-3)}
   .flag{background:var(--c-warning-soft);border:1px solid #e6d3a8;border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);font-size:var(--fs-sm);color:var(--c-warning);margin-top:var(--sp-4);line-height:1.6}
   .foot{margin-top:var(--sp-5);font-size:var(--fs-xs);color:var(--c-text-3)}
+
+  .statebar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--sp-6);padding-bottom:var(--sp-5);border-bottom:1px solid var(--c-border)}
+  .stbtn{font-size:12px;font-weight:600;padding:7px 13px;border-radius:20px;border:1px solid var(--c-border-strong);background:#fff;color:var(--c-text-2);cursor:pointer;white-space:nowrap;font-family:inherit}
+  .stbtn:hover{border-color:var(--c-text-3)}
+  .stbtn.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary)}
+  .statesec{display:none}
+  .statesec.on{display:block}
 </style>
 </head>
 <body>
@@ -126,6 +133,17 @@
     <span class="id">SC-T05 · P0 · 교육생 · 웹</span>
     <h1>결과 리포트 (교육생) — 상태별 전량</h1>
     <p>교육생이 볼 수 있는 것만(GOV-03 <b>전체/요약/비공개</b>, 미지정 시 기본 비공개). <b>점수·루브릭·산정 공식·채점 근거는 비노출</b>(A5) — 리포트는 <b>서술형 강약점 + 이해 상태 궤적</b>. 취약점은 <b>처방이 아니라 교안 위치 안내까지</b>(자동 연결된 매핑이 있고 신뢰도가 충분할 때만, B10·D96). 등급은 <b>최종 회차만</b>(B3). <b>결과에 대한 이의제기 절차는 없다</b> — 점수·루브릭이 A5로 비노출이라 학생이 논박할 근거 자체가 없고, 오측정 안전망은 매니저 검토(GOV-02)와 재채점 검증(ENG-05)이 담당(D117).</p>
+  </div>
+
+  <section class="statesec" id="t0">
+  <div class="statebar" role="tablist">
+    <button class="stbtn on" data-state="t0">T0 · "내 리포트" 진입</button>
+    <button class="stbtn" data-state="t1">T1 · 요약 공개 (GOV-03)</button>
+    <button class="stbtn" data-state="t2">T2 · 전체 공개 (GOV-03)</button>
+    <button class="stbtn" data-state="t5">T5 · 최종 리포트 (최종 회차)</button>
+    <button class="stbtn" data-state="t6">T6 · 비공개(R-1)</button>
+    <button class="stbtn" data-state="t7">T7 · 세션 미완료(R-3)</button>
+    <button class="stbtn" data-state="t8">T8 · 교안 위치 안내 없음(R-5)</button>
   </div>
 
   <!-- ============ T0 · 내 리포트 진입 (회차 선택) ============ -->
@@ -163,6 +181,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="t1">
   <!-- ============ T1 · 요약 공개 (기본) ============ -->
   <div class="sec-label">T1 · 요약 공개 (GOV-03) <span class="tag">중간 회차 · 등급 없음(B3)</span></div>
   <div class="viewport">
@@ -202,6 +223,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="t2">
   <!-- ============ T2 · 전체 공개 (추이 포함) ============ -->
   <div class="sec-label">T2 · 전체 공개 (GOV-03) <span class="tag">이해 상태 궤적 추가 · 점수 눈금 없음(A5) · 2회차부터 표시(B4)</span></div>
   <div class="viewport">
@@ -251,6 +275,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="t5">
   <!-- ============ T5 · 최종 리포트 (등급) ============ -->
   <div class="sec-label">T5 · 최종 리포트 (최종 회차) <span class="tag">등급은 여기서만 부여(B3) · D25 어휘(견고/부분/표면)</span></div>
   <div class="viewport">
@@ -289,6 +316,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="t6">
   <!-- ============ T6 · 비공개 / 미지정 ============ -->
   <div class="sec-label">T6 · 비공개(R-1) · 설정 미지정·조회 실패도 동일(R-2) <span class="tag">기본 비공개 = 안전 기본값</span></div>
   <div class="viewport">
@@ -309,6 +339,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="t7">
   <!-- ============ T7 · 세션 미완료 / 준비 중 ============ -->
   <div class="sec-label">T7 · 세션 미완료(R-3) · 리포트 준비 중(R-4) <span class="tag">두 상태 · 같은 화면 골격</span></div>
   <div class="viewport">
@@ -334,6 +367,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="t8">
   <!-- ============ T8 · 교안 위치 안내 없음 ============ -->
   <div class="sec-label">T8 · 교안 위치 안내 없음(R-5) <span class="tag">미링크·미커버·저신뢰 3분기 → 블록 자체 생략 · 빈 껍데기 금지</span></div>
   <div class="viewport">
@@ -361,9 +397,11 @@
     </div>
   </div>
 
+  </section>
+
   <div class="notes">
     <h3>상태 ↔ 명세 case 매핑 (교육생-facing)</h3>
-    <p class="hint">공개 범위 설정(GOV-03 매니저측)은 <b>SC-M09 소관</b>. <b>학생 이의제기(GOV-01) 제외</b> — A5로 논박 근거 비노출, 안전망은 GOV-02+ENG-05(D117).</p>
+    <p class="hint">공개 범위 설정(GOV-03 매니저측)은 <b>SC-M03 측정 계획의 회차 파라미터</b>(D121). <b>학생 이의제기(GOV-01) 제외</b> — A5로 논박 근거 비노출, 안전망은 GOV-02+ENG-05(D117).</p>
     <div class="tblwrap"><table class="ntbl"><thead><tr><th>#</th><th>상태</th><th>표현</th><th>교육생에게 보이는 것</th><th>화면</th></tr></thead><tbody>
       <tr><td>—</td><td>정상(요약/전체 공개)</td><td>—</td><td>서술형 강약점 · (전체 시)이해 상태 궤적 · 교안 위치</td><td>✔ T1·T2</td></tr>
       <tr><td>R-1</td><td>전체 비공개(GOV-03)</td><td><span class="pill na">잠금</span></td><td>"결과가 아직 공개되지 않았어요"</td><td>✔ T6</td></tr>
@@ -383,5 +421,30 @@
     점수·루브릭·산정 공식 비노출(A5) · 처방 금지·위치 안내까지(B10) · 등급은 최종 회차만(B3) · 1회차 단독 판정 금지 → 궤적은 2회차부터(B4) · 순위·타인 비교 배제(B5·D29) · 학생 이의제기 제외(D117) · 웹 기준</div>
   </div>
 </div>
+
+<script>
+(function(){
+  var bar = document.querySelector('.statebar');
+  if(!bar) return;
+  var btns = Array.prototype.slice.call(bar.querySelectorAll('.stbtn'));
+  var secs = Array.prototype.slice.call(document.querySelectorAll('.statesec'));
+  function show(id){
+    secs.forEach(function(s){ s.classList.toggle('on', s.id === id); });
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.state === id); });
+  }
+  bar.addEventListener('click', function(e){
+    var b = e.target.closest('.stbtn');
+    if(!b) return;
+    if(location.hash === '#' + b.dataset.state) show(b.dataset.state);
+    else location.hash = b.dataset.state;
+  });
+  window.addEventListener('hashchange', function(){
+    var h = (location.hash || '').slice(1);
+    if(document.getElementById(h)) show(h);
+  });
+  var initial = (location.hash || '').slice(1);
+  show(document.getElementById(initial) ? initial : secs[0].id);
+})();
+</script>
 </body>
 </html>

@@ -73,14 +73,14 @@
 | A02 | ✅ | ✅ signup·activation | 완료 |
 | A03 비번재설정 [P2·상] | ✅ | ✅ password-reset | 완료 (2026-07-18) |
 | M01 | ✅ | ✅ dashboard | 완료 |
-| M02 기수·팀·프로젝트 | ✅ | ✅ (레거시 projects-teams / lead-only program-admin·roster-assign) | 완료·D90 재구조화 |
-| M03 측정계획 | ✅ | ✅ project-workspace#plan (레거시 measurement-plan) | 완료·D78 흡수 |
+| M02 기수·팀·프로젝트 | ✅ | ✅ project-workspace (lead-only program-admin·roster-assign) | 완료·D90 · 레거시 projects-teams 삭제(D121) |
+| M03 측정계획 | ✅ | ✅ project-workspace#plan | 완료·D78 · 레거시 measurement-plan 삭제(D121) · GOV-03 흡수 |
 | M04 위험·분석 | ✅ | ✅ analysis | 완료·**M05 병합(D88)** |
 | M05 히트맵 [P2] | ✅(병합) | ✅ analysis 內 패턴 렌즈 | M04로 병합 — 독립 화면 아님 |
 | M06 개별상세 | ✅ | ✅ trainee-detail | 완료 |
 | M07 개입 | ✅ | ✅ intervention | 완료 |
 | M08 리포트 | ✅ | ✅ report | 완료 |
-| M09 이의·열람범위 | ✅ | ✅ appeal-disclosure | 완료 |
+| M09 → 해체(D121) | — | 흡수 | 공개범위=SC-M03 측정계획 파라미터로 흡수 · 이의검토=제거(D117) |
 | M10 온보딩 [P2·하] | ✅ | ✅ onboarding | 완료 (2026-07-18·오버레이) |
 | M11 교육생리스트 | ✅ | ✅ trainee-list | 완료 |
 | M12 교안관리 [P1·상] | ✅ | ✅ curriculum | 완료 (정의서 2026-07-18 작성) |
@@ -97,7 +97,7 @@
 
 → **20 화면 전량 정의서+와이어 완비**(SC md 21·와이어 24). 게이트A(예외=상태행) 신규 3화면 25/9/7 전량 일치.
 
-**레거시 와이어(7단계 삭제 후보, 지금 미삭제):** `measurement-plan.html`·`projects-teams.html` — project-workspace로 흡수됨(index.html 쇼케이스 참조 여부 확인 후 정리).
+**레거시 와이어 삭제 완료(D121):** `measurement-plan.html`·`projects-teams.html`·`appeal-disclosure.html`(+ SC-M09 정의서) 삭제 — project-workspace 흡수·M09 해체. index·README 참조 정리.
 
 ---
 

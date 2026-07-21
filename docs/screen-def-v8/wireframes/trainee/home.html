@@ -123,6 +123,13 @@
   .pill.info{background:var(--c-info-soft);color:var(--c-info)}
   .pill.na{background:#eef0f3;color:var(--c-text-3)}
   .foot{margin-top:var(--sp-5);font-size:var(--fs-xs);color:var(--c-text-3)}
+
+  .statebar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--sp-6);padding-bottom:var(--sp-5);border-bottom:1px solid var(--c-border)}
+  .stbtn{font-size:12px;font-weight:600;padding:7px 13px;border-radius:20px;border:1px solid var(--c-border-strong);background:#fff;color:var(--c-text-2);cursor:pointer;white-space:nowrap;font-family:inherit}
+  .stbtn:hover{border-color:var(--c-text-3)}
+  .stbtn.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary)}
+  .statesec{display:none}
+  .statesec.on{display:block}
 </style>
 </head>
 <body>
@@ -131,6 +138,17 @@
     <span class="id">SC-T01 · P0 · 교육생 · 웹</span>
     <h1>교육생 홈 (회차 · 응시 상태) — 상태별 전량</h1>
     <p>홈은 체크포인트 대시보드가 아니라 <b>"지금 뭘 해야 하나"에 답하는 단일 초점 화면</b>. 히어로 = <b>지금 할 일 딱 하나</b>. 검증 세션은 한 번에 하나(프로젝트 시간순, 02-domain §5 · D6 "CTA 하나"). 아래는 <b>파생 상태별 풀 화면 전량</b> — 실제로는 이 중 "지금" 하나만 뜬다. 채점·루브릭 비노출(A5), 결과는 GOV-03.</p>
+  </div>
+
+  <section class="statesec" id="h-6">
+  <div class="statebar" role="tablist">
+    <button class="stbtn on" data-state="h-6">H-6 · 제출 완료</button>
+    <button class="stbtn" data-state="h-3">H-3 · 미제출</button>
+    <button class="stbtn" data-state="h-10">H-10 · 분석 진행 중(제출 후)</button>
+    <button class="stbtn" data-state="h-11">H-11 · 분석 실패</button>
+    <button class="stbtn" data-state="h-7">H-7 · 세션 진행 중</button>
+    <button class="stbtn" data-state="h-1">H-1 · 진행/예정 없음(휴지)</button>
+    <button class="stbtn" data-state="h-5">H-5 · 응시 기한 마감</button>
   </div>
 
   <!-- ============ H-6 세션 대기 (지배) + 미검증 배너 ============ -->
@@ -170,6 +188,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="h-3">
   <!-- ============ H-3 미제출 ============ -->
   <div class="sec-label">H-3 · 미제출 · 기한 내 <span class="tag">CTA=코드 제출 · 커밋 검증됨(배너 없음) · 마감 여유(차분)</span></div>
   <div class="viewport">
@@ -206,6 +227,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="h-10">
   <!-- ============ H-10 분석 중 ============ -->
   <div class="sec-label">H-10 · 분석 진행 중(제출 후) <span class="tag">CTA 비활성 · 세션 못 엶 · 거짓 어포던스 차단</span></div>
   <div class="viewport">
@@ -241,6 +265,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="h-11">
   <!-- ============ H-11 분석 실패 (T02 S8과 짝) ============ -->
   <div class="sec-label">H-11 · 분석 실패 · 확인 필요 <span class="tag">SC-T02 S8과 짝 · 홈이 스피너에 영구 정지하지 않도록</span></div>
   <div class="viewport">
@@ -274,6 +301,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="h-7">
   <!-- ============ H-7 세션 진행 중 ============ -->
   <div class="sec-label">H-7 · 세션 진행 중 <span class="tag">CTA=세션 이어하기 · 저장 지점 안내</span></div>
   <div class="viewport">
@@ -307,6 +337,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="h-1">
   <!-- ============ H-1 휴지 (할 일 없음) + H-9 결과 비공개 ============ -->
   <div class="sec-label">H-1 · 진행/예정 없음(휴지) <span class="tag">+ 지난 회차에 H-9 결과 비공개 잠금</span></div>
   <div class="viewport">
@@ -334,6 +367,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="h-5">
   <!-- ============ H-5 응시 마감 ============ -->
   <div class="sec-label">H-5 · 응시 기한 마감 <span class="tag">제출 불가(재응시 없음) · 조용한 마감 히어로</span></div>
   <div class="viewport">
@@ -361,6 +397,8 @@
     </div>
   </div>
 
+  </section>
+
   <div class="notes">
     <h3>파생 상태 계약 (연계 FR 없음 — 인접 FR에서 파생)</h3>
     <p class="hint">SC-T01은 직접 명세 case가 없다(게이트 A는 MEAS·GOV-03 소관). <b>히어로 CTA는 이 표의 "지금" 상태 하나에 묶인다.</b> 활성 회차가 여럿이어도 히어로는 항상 1개(가장 급한 것), 나머지는 목록 배지로.</p>
@@ -380,5 +418,30 @@
     <div class="foot">디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 단일 "지금 할 일" 히어로(세션은 한 번에 하나 — 프로젝트 시간순 02-domain §5·D6 "CTA 하나") · 그 외 회차는 조용한 목록 · 세션 톤 선제 완화(D108~111) · 마감 임박 시에만 경고색 · 매니저 전용 비노출(A5)·GOV-03 · 웹 기준</div>
   </div>
 </div>
+
+<script>
+(function(){
+  var bar = document.querySelector('.statebar');
+  if(!bar) return;
+  var btns = Array.prototype.slice.call(bar.querySelectorAll('.stbtn'));
+  var secs = Array.prototype.slice.call(document.querySelectorAll('.statesec'));
+  function show(id){
+    secs.forEach(function(s){ s.classList.toggle('on', s.id === id); });
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.state === id); });
+  }
+  bar.addEventListener('click', function(e){
+    var b = e.target.closest('.stbtn');
+    if(!b) return;
+    if(location.hash === '#' + b.dataset.state) show(b.dataset.state);
+    else location.hash = b.dataset.state;
+  });
+  window.addEventListener('hashchange', function(){
+    var h = (location.hash || '').slice(1);
+    if(document.getElementById(h)) show(h);
+  });
+  var initial = (location.hash || '').slice(1);
+  show(document.getElementById(initial) ? initial : secs[0].id);
+})();
+</script>
 </body>
 </html>

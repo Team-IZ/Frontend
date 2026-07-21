@@ -1,0 +1,158 @@
+- generic [ref=f1e2]:
+  - generic [ref=f1e3]:
+    - generic [ref=f1e4]: SC-T01 · P0 · 교육생 · 웹
+    - heading "교육생 홈 (회차 · 응시 상태) — 상태별 전량" [level=1] [ref=f1e5]
+    - paragraph [ref=f1e6]: 홈은 체크포인트 대시보드가 아니라 "지금 뭘 해야 하나"에 답하는 단일 초점 화면. 히어로 = 지금 할 일 딱 하나. 검증 세션은 한 번에 하나(프로젝트 시간순, 02-domain §5 · D6 "CTA 하나"). 아래는 파생 상태별 풀 화면 전량 — 실제로는 이 중 "지금" 하나만 뜬다. 채점·루브릭 비노출(A5), 결과는 GOV-03.
+  - generic [ref=f1e7]:
+    - tablist [ref=f1e8]:
+      - button "H-6 · 제출 완료" [ref=f1e9] [cursor=pointer]
+      - button "H-3 · 미제출" [ref=f1e10] [cursor=pointer]
+      - button "H-10 · 분석 진행 중(제출 후)" [ref=f1e11] [cursor=pointer]
+      - button "H-11 · 분석 실패" [ref=f1e12] [cursor=pointer]
+      - button "H-7 · 세션 진행 중" [ref=f1e13] [cursor=pointer]
+      - button "H-1 · 진행/예정 없음(휴지)" [ref=f1e14] [cursor=pointer]
+      - button "H-5 · 응시 기한 마감" [ref=f1e15] [cursor=pointer]
+    - generic [ref=f1e16]: H-6 · 제출 완료 · 세션 대기 지배 상태 · 커밋 미검증 배너(H-2) 동반
+    - generic [ref=f1e17]:
+      - generic [ref=f1e18]: iz-get.com/home
+      - generic [ref=f1e24]:
+        - generic [ref=f1e25]:
+          - generic [ref=f1e26]:
+            - generic [ref=f1e27]:
+              - generic [ref=f1e28]: ◆
+              - text: IZ-Get
+            - generic [ref=f1e29]:
+              - generic [ref=f1e30]: 홈
+              - generic [ref=f1e31]: 내 리포트
+          - generic [ref=f1e32]:
+            - generic [ref=f1e33]:
+              - text: 김민준
+              - generic [ref=f1e34]: 7기 · A반
+            - generic [ref=f1e35]: 민
+        - generic [ref=f1e36]:
+          - generic [ref=f1e37]:
+            - text: ⚠️ GitHub 커밋 이메일이 아직 인증되지 않았어요. 인증하면 기여 분석이 정확해져요(인증 없이도 제출은 됩니다).
+            - generic [ref=f1e38] [cursor=pointer]: 커밋 이메일 인증
+          - generic [ref=f1e39]: 지금 할 일
+          - generic [ref=f1e40]:
+            - generic [ref=f1e41]:
+              - generic [ref=f1e42]: 2회차 · API 서버팀 · A조
+              - generic [ref=f1e43]: 응시 마감 D-1 · 04.11 18:00
+            - generic [ref=f1e44]: 검증 세션을 시작할 차례예요
+            - generic [ref=f1e45]:
+              - generic [ref=f1e46]:
+                - generic [ref=f1e47]: ✓
+                - generic [ref=f1e48]: 코드 제출
+              - generic [ref=f1e50]:
+                - generic [ref=f1e51]: "2"
+                - generic [ref=f1e52]: 검증 세션
+              - generic [ref=f1e54]:
+                - generic [ref=f1e55]: "3"
+                - generic [ref=f1e56]: 결과 리포트
+            - generic [ref=f1e57]:
+              - generic [ref=f1e58]: 🔒
+              - generic [ref=f1e59]: 코드를 보며 이해한 내용을 설명하는 시간이에요. 점수는 표시되지 않아요. 약 10~15분 걸립니다.
+            - button "검증 세션 시작하기 →" [ref=f1e60] [cursor=pointer]
+          - generic [ref=f1e61]:
+            - generic [ref=f1e62]: 예정
+            - generic [ref=f1e63]:
+              - generic [ref=f1e64]:
+                - generic [ref=f1e65]: 3회차
+                - generic [ref=f1e66]: 측정 05.09 · 응시 05.09~05.10
+              - generic [ref=f1e67]: 예정
+            - generic [ref=f1e69]:
+              - generic [ref=f1e70]:
+                - generic [ref=f1e71]:
+                  - text: 4회차
+                  - generic [ref=f1e72]: 최종
+                - generic [ref=f1e73]: 측정 06.06 · 최종 등급은 이 회차 후
+              - generic [ref=f1e74]: 예정
+            - generic [ref=f1e76]:
+              - text: 지난 회차
+              - generic [ref=f1e77] [cursor=pointer]: 전체 보기 → 내 리포트
+            - generic [ref=f1e78]:
+              - generic [ref=f1e79]:
+                - generic [ref=f1e80]: 1회차
+                - generic [ref=f1e81]: 측정 03.18 · 완료
+              - generic [ref=f1e82]:
+                - generic [ref=f1e83]: 완료
+                - generic [ref=f1e84] [cursor=pointer]: 결과 보기 →
+  - generic [ref=f1e85]:
+    - heading "파생 상태 계약 (연계 FR 없음 — 인접 FR에서 파생)" [level=3] [ref=f1e86]
+    - paragraph [ref=f1e87]: SC-T01은 직접 명세 case가 없다(게이트 A는 MEAS·GOV-03 소관). 히어로 CTA는 이 표의 "지금" 상태 하나에 묶인다. 활성 회차가 여럿이어도 히어로는 항상 1개(가장 급한 것), 나머지는 목록 배지로.
+    - table [ref=f1e89]:
+      - rowgroup [ref=f1e90]:
+        - row [ref=f1e91]:
+          - columnheader "#" [ref=f1e92]
+          - columnheader "상태" [ref=f1e93]
+          - columnheader "표현" [ref=f1e94]
+          - columnheader "히어로 CTA / 다음 행동" [ref=f1e95]
+          - columnheader "위 화면" [ref=f1e96]
+      - rowgroup [ref=f1e97]:
+        - row [ref=f1e98]:
+          - cell "H-1" [ref=f1e99]
+          - cell "진행/예정 회차 없음" [ref=f1e100]
+          - cell "휴지" [ref=f1e101]
+          - cell "휴지 히어로 \"지금 할 일이 없어요\" + 다음 예정" [ref=f1e103]
+          - cell "✔" [ref=f1e104]
+        - row [ref=f1e105]:
+          - cell "H-2" [ref=f1e106]
+          - cell "커밋 이메일 미검증" [ref=f1e107]
+          - cell "warning" [ref=f1e108]
+          - cell "상단 배너 + [지금 인증] (AUTH-07)" [ref=f1e110]
+          - cell "✔ (H-6)" [ref=f1e111]
+        - row [ref=f1e112]:
+          - cell "H-3" [ref=f1e113]
+          - cell "미제출 · 기한 내" [ref=f1e114]
+          - cell "info" [ref=f1e115]
+          - cell "히어로 CTA [코드 제출하기] (→T02)" [ref=f1e117]
+          - cell "✔" [ref=f1e118]
+        - row [ref=f1e119]:
+          - cell "H-4" [ref=f1e120]
+          - cell "응시 기한 임박(D-1/당일)" [ref=f1e121]
+          - cell "warning" [ref=f1e122]
+          - cell "마감 라인만 경고색(평소 차분)" [ref=f1e124]
+          - cell "✔ (H-6/H-7)" [ref=f1e125]
+        - row [ref=f1e126]:
+          - cell "H-5" [ref=f1e127]
+          - cell "응시 기한 마감" [ref=f1e128]
+          - cell "-" [ref=f1e129]
+          - cell "마감 히어로 · 제출 불가(재응시 없음)" [ref=f1e131]
+          - cell "✔" [ref=f1e132]
+        - row [ref=f1e133]:
+          - cell "H-6" [ref=f1e134]
+          - cell "제출 완료 · 세션 대기" [ref=f1e135]
+          - cell "info" [ref=f1e136]
+          - cell "히어로 CTA [검증 세션 시작하기] (→T04)" [ref=f1e138]
+          - cell "✔" [ref=f1e139]
+        - row [ref=f1e140]:
+          - cell "H-7" [ref=f1e141]
+          - cell "세션 진행 중" [ref=f1e142]
+          - cell "warning" [ref=f1e143]
+          - cell "히어로 CTA [세션 이어하기] · 저장 지점 안내" [ref=f1e145]
+          - cell "✔" [ref=f1e146]
+        - row [ref=f1e147]:
+          - cell "H-8" [ref=f1e148]
+          - cell "회차 완료 · 결과 공개" [ref=f1e149]
+          - cell "info" [ref=f1e150]
+          - cell "지난 회차 [결과 보기] (→T05)" [ref=f1e152]
+          - cell "✔ (목록)" [ref=f1e153]
+        - row [ref=f1e154]:
+          - cell "H-9" [ref=f1e155]
+          - cell "회차 완료 · 결과 비공개" [ref=f1e156]
+          - cell "잠금" [ref=f1e157]
+          - cell "\"결과가 아직 공개되지 않았어요\" (GOV-03)" [ref=f1e159]
+          - cell "✔ (H-1)" [ref=f1e160]
+        - row [ref=f1e161]:
+          - cell "H-10" [ref=f1e162]
+          - cell "분석 진행 중(제출 후)" [ref=f1e163]
+          - cell "info" [ref=f1e164]
+          - cell "대기 히어로 비활성 \"분석 중 · 준비되면 알림\"" [ref=f1e166]
+          - cell "✔" [ref=f1e167]
+        - row [ref=f1e168]:
+          - cell "H-11" [ref=f1e169]
+          - cell "분석 실패(제출 후)" [ref=f1e170]
+          - cell "warning" [ref=f1e171]
+          - cell "히어로 CTA [확인하러 가기] → T02 S8 (스피너 영구 정지 차단)" [ref=f1e173]
+          - cell "✔" [ref=f1e174]
+    - generic [ref=f1e175]: "디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 단일 \"지금 할 일\" 히어로(세션은 한 번에 하나 — 프로젝트 시간순 02-domain §5·D6 \"CTA 하나\") · 그 외 회차는 조용한 목록 · 세션 톤 선제 완화(D108~111) · 마감 임박 시에만 경고색 · 매니저 전용 비노출(A5)·GOV-03 · 웹 기준"

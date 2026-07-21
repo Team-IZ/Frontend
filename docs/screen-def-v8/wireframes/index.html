@@ -111,8 +111,7 @@
           <div class="subwrap">
             <button class="item sub" data-src="manager/curriculum.html#list" data-nm="교안 · 목록">교안 목록 <span style="font-size:9px;color:#8b93a8">CUR-03 · 컬렉션</span></button>
             <button class="item sub" data-src="manager/curriculum.html#upload" data-nm="교안 · 등록">교안 등록 <span style="font-size:9px;color:#8b93a8">CUR-03 · 업로드</span></button>
-            <button class="item sub" data-src="manager/curriculum.html#structure" data-nm="교안 상세 · 교안 구성">교안 구성 <span style="font-size:9px;color:#8b93a8">CUR-01 · 목차</span></button>
-            <button class="item sub" data-src="manager/curriculum.html#mapping" data-nm="교안 상세 · 교안 연결">교안 연결 <span style="font-size:9px;color:#8b93a8">CUR-02 · 자동+확인</span></button>
+            <button class="item sub" data-src="manager/curriculum.html#structure" data-nm="교안 상세">교안 상세 <span style="font-size:9px;color:#8b93a8">CUR-01·02 · 섹션·주제·커버리지</span></button>
           </div>
         </div>
         <div class="grp" id="grp-proj" style="margin-top:2px">
@@ -152,10 +151,22 @@
           <button class="item parent" data-toggle="grp-trainee">교육생<span class="cev">▸</span></button>
           <div class="subwrap">
             <button class="item sub" data-src="manager/trainee-list.html" data-nm="교육생 · 리스트(명부)">리스트 <span style="font-size:9px;color:#8b93a8">명부 · DASH-17</span></button>
-            <button class="item sub" data-src="manager/trainee-detail.html" data-nm="교육생 · 개별 상세">개별 상세 <span style="font-size:9px;color:#8b93a8">리스트·분석에서 진입 · DASH-16</span></button>
+            <button class="item sub" data-src="manager/trainee-detail.html#overview" data-nm="개별 상세 · 종합">개별 상세 · 종합 <span style="font-size:9px;color:#8b93a8">DASH-16 · 위험·에이스·일반 3예시</span></button>
+            <button class="item sub" data-src="manager/trainee-detail.html#session" data-nm="개별 상세 · 세션">개별 상세 · 세션 <span style="font-size:9px;color:#8b93a8">MEAS-06</span></button>
+            <button class="item sub" data-src="manager/trainee-detail.html#intervention" data-nm="개별 상세 · 개입">개별 상세 · 개입 <span style="font-size:9px;color:#8b93a8">INTV-08</span></button>
+            <button class="item sub" data-src="manager/trainee-detail.html#cases" data-nm="개별 상세 · 상태 ↔ case 매핑">상태 ↔ case 매핑 <span style="font-size:9px;color:#8b93a8">27</span></button>
           </div>
         </div>
-        <button class="item" data-src="manager/intervention.html" data-nm="개입 관리">개입 관리<span class="pth">manager/intervention.html</span></button>
+        <div class="grp" id="grp-intervention" style="margin-top:2px">
+          <button class="item parent" data-toggle="grp-intervention">개입 관리<span class="cev">▸</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/intervention.html#list" data-nm="개입 관리 · 목록">목록 <span style="font-size:9px;color:#8b93a8">회복률 집계 · INTV-05/06</span></button>
+            <button class="item sub" data-src="manager/intervention.html#create" data-nm="개입 관리 · 공용 생성 패널">공용 생성 패널 <span style="font-size:9px;color:#8b93a8">M01/M04/M06 진입 · INTV-04</span></button>
+            <button class="item sub" data-src="manager/intervention.html#detail" data-nm="개입 관리 · 상세">상세 <span style="font-size:9px;color:#8b93a8">INTV-05/06/08</span></button>
+            <button class="item sub" data-src="manager/intervention.html#export" data-nm="개입 관리 · export">export <span style="font-size:9px;color:#8b93a8">INTV-07</span></button>
+            <button class="item sub" data-src="manager/intervention.html#cases" data-nm="개입 관리 · 상태 ↔ case 매핑">상태 ↔ case 매핑 <span style="font-size:9px;color:#8b93a8">36</span></button>
+          </div>
+        </div>
         <div class="grp" id="grp-report" style="margin-top:2px">
           <button class="item parent" data-toggle="grp-report">리포트<span class="cev">▸</span></button>
           <div class="subwrap">
@@ -165,15 +176,60 @@
             <button class="item sub" data-src="manager/report.html#cases" data-nm="리포트 · 상태 ↔ case 매핑">상태 ↔ case 매핑 <span style="font-size:9px;color:#8b93a8">총합</span></button>
           </div>
         </div>
-        <button class="item" data-src="manager/appeal-disclosure.html" data-nm="이의 검토 · 열람 범위">이의 검토 · 열람 범위<span class="pth">manager/appeal-disclosure.html</span></button>
       </div>
       <div class="grp">
         <div class="gt"><span class="dot trainee"></span>trainee</div>
         <button class="item" data-src="trainee/activation.html" data-nm="교육생 계정 활성화">교육생 계정 활성화<span class="pth">trainee/activation.html</span></button>
-        <button class="item" data-src="trainee/home.html" data-nm="홈(회차·응시)">홈(회차·응시)<span class="pth">trainee/home.html</span></button>
-        <button class="item" data-src="trainee/submission.html" data-nm="코드 제출">코드 제출<span class="pth">trainee/submission.html</span></button>
-        <button class="item" data-src="trainee/session.html" data-nm="검증 세션">검증 세션<span class="pth">trainee/session.html</span></button>
-        <button class="item" data-src="trainee/result.html" data-nm="결과 리포트">결과 리포트<span class="pth">trainee/result.html</span></button>
+        <div class="grp" id="grp-t-home" style="margin-top:2px">
+          <button class="item parent" data-toggle="grp-t-home">홈(회차·응시)<span class="cev">▸</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="trainee/home.html#h-6" data-nm="홈 · H-6 제출 완료·세션 대기">H-6 제출 완료 · 세션 대기 <span style="font-size:9px;color:#8b93a8">지배 상태</span></button>
+            <button class="item sub" data-src="trainee/home.html#h-3" data-nm="홈 · H-3 미제출">H-3 미제출 · 기한 내</button>
+            <button class="item sub" data-src="trainee/home.html#h-10" data-nm="홈 · H-10 분석 진행 중">H-10 분석 진행 중 <span style="font-size:9px;color:#8b93a8">CTA 비활성</span></button>
+            <button class="item sub" data-src="trainee/home.html#h-11" data-nm="홈 · H-11 분석 실패">H-11 분석 실패</button>
+            <button class="item sub" data-src="trainee/home.html#h-7" data-nm="홈 · H-7 세션 진행 중">H-7 세션 진행 중</button>
+            <button class="item sub" data-src="trainee/home.html#h-1" data-nm="홈 · H-1 휴지">H-1 진행/예정 없음 <span style="font-size:9px;color:#8b93a8">휴지</span></button>
+            <button class="item sub" data-src="trainee/home.html#h-5" data-nm="홈 · H-5 응시 마감">H-5 응시 기한 마감</button>
+          </div>
+        </div>
+        <div class="grp" id="grp-t-submission" style="margin-top:2px">
+          <button class="item parent" data-toggle="grp-t-submission">코드 제출<span class="cev">▸</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="trainee/submission.html#s1" data-nm="제출 · S1 정상">S1 정상 <span style="font-size:9px;color:#8b93a8">가장 흔한 경로</span></button>
+            <button class="item sub" data-src="trainee/submission.html#s2" data-nm="제출 · S2 커밋 미검증">S2 커밋 이메일 미검증(E-6)</button>
+            <button class="item sub" data-src="trainee/submission.html#s3" data-nm="제출 · S3 ZIP">S3 ZIP 업로드 방식</button>
+            <button class="item sub" data-src="trainee/submission.html#s4" data-nm="제출 · S4 제출 완료">S4 제출 완료 · 분석 중</button>
+            <button class="item sub" data-src="trainee/submission.html#s5" data-nm="제출 · S5 분석 완료">S5 분석 완료(DP_READY)</button>
+            <button class="item sub" data-src="trainee/submission.html#s6" data-nm="제출 · S6 재제출">S6 이미 제출함 · 재제출</button>
+            <button class="item sub" data-src="trainee/submission.html#s6b" data-nm="제출 · S6b 재제출 잠금">S6b 재제출 잠금 <span style="font-size:9px;color:#8b93a8">세션 시작 후</span></button>
+            <button class="item sub" data-src="trainee/submission.html#s7" data-nm="제출 · S7 오류">S7 오류 <span style="font-size:9px;color:#8b93a8">M-2·M-3</span></button>
+            <button class="item sub" data-src="trainee/submission.html#s8" data-nm="제출 · S8 분석 실패">S8 분석 실패(A-1)</button>
+          </div>
+        </div>
+        <div class="grp" id="grp-t-session" style="margin-top:2px">
+          <button class="item parent" data-toggle="grp-t-session">검증 세션<span class="cev">▸</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="trainee/session.html#v0" data-nm="세션 · V0 시작 전">V0 시작 전 <span style="font-size:9px;color:#8b93a8">기대치 셋업</span></button>
+            <button class="item sub" data-src="trainee/session.html#v1" data-nm="세션 · V1 정상 질답">V1 정상 · 질답 진행</button>
+            <button class="item sub" data-src="trainee/session.html#v2" data-nm="세션 · V2 질문 준비 중">V2 다음 질문 준비 중</button>
+            <button class="item sub" data-src="trainee/session.html#v3" data-nm="세션 · V3 세션 종료">V3 세션 종료 <span style="font-size:9px;color:#8b93a8">결정지점 소진</span></button>
+            <button class="item sub" data-src="trainee/session.html#v4" data-nm="세션 · V4 시간 상한">V4 시간 상한 초과</button>
+            <button class="item sub" data-src="trainee/session.html#v5" data-nm="세션 · V5 네트워크 중단">V5 네트워크 중단</button>
+          </div>
+        </div>
+        <div class="grp" id="grp-t-result" style="margin-top:2px">
+          <button class="item parent" data-toggle="grp-t-result">결과 리포트<span class="cev">▸</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="trainee/result.html#t0" data-nm="결과 · T0 내 리포트 진입">T0 "내 리포트" 진입 <span style="font-size:9px;color:#8b93a8">회차 선택기</span></button>
+            <button class="item sub" data-src="trainee/result.html#t1" data-nm="결과 · T1 요약 공개">T1 요약 공개</button>
+            <button class="item sub" data-src="trainee/result.html#t2" data-nm="결과 · T2 전체 공개">T2 전체 공개 <span style="font-size:9px;color:#8b93a8">궤적</span></button>
+            <button class="item sub" data-src="trainee/result.html#t5" data-nm="결과 · T5 최종 리포트">T5 최종 리포트 <span style="font-size:9px;color:#8b93a8">등급</span></button>
+            <button class="item sub" data-src="trainee/result.html#t6" data-nm="결과 · T6 비공개">T6 비공개(R-1)</button>
+            <button class="item sub" data-src="trainee/result.html#t7" data-nm="결과 · T7 세션 미완료">T7 세션 미완료(R-3)</button>
+            <button class="item sub" data-src="trainee/result.html#t8" data-nm="결과 · T8 교안 위치 안내 없음">T8 교안 위치 안내 없음(R-5)</button>
+          </div>
+        </div>
+        <button class="item" data-src="trainee/cases.html" data-nm="교육생 · 상태 ↔ case 매핑">상태 ↔ case 매핑 <span style="font-size:9px;color:#8b93a8">총합 · 46</span><span class="pth">trainee/cases.html</span></button>
       </div>
     </nav>
   </aside>

@@ -129,7 +129,7 @@ SC-T01은 직접 연계 FR이 없어 명세 예외 case가 없다(게이트 A는
 
 ## 10. 와이어프레임
 
-`docs/screen-def-v8/wireframes/trainee/home.html` — 교육생 경량 셸 + 커밋 배너 + 진행/예정/지난 회차 카드 + 파생 상태.
+`docs/screen-def-v8/wireframes/trainee/home.html` — 교육생 경량 셸 + 커밋 배너 + 진행/예정/지난 회차 카드 + 파생 상태. · 교육생 4화면 총합: `wireframes/trainee/cases.html`
 
 ---
 

@@ -150,7 +150,7 @@
 
 ## 10. 와이어프레임
 
-`docs/screen-def-v8/wireframes/trainee/submission.html` — **상태별 풀 화면 9종**: S1 정상(검증됨 접힘·팀 레포 연결) · S2 커밋 미검증(E-6)+개인 URL 입력 · S3 ZIP 방식(git log 안내) · S4 분석 진행 중 · S5 분석 완료(DP_READY→T04 인계) · S6 재제출(세션 미시작) · S6b 재제출 잠금(세션 시작·완료) · S7 오류(M-2·M-3+복구 경로) · S8 분석 실패(A-1) + 상태 매핑 표(화면 커버리지 열).
+`docs/screen-def-v8/wireframes/trainee/submission.html` — **상태별 풀 화면 9종**: S1 정상(검증됨 접힘·팀 레포 연결) · S2 커밋 미검증(E-6)+개인 URL 입력 · S3 ZIP 방식(git log 안내) · S4 분석 진행 중 · S5 분석 완료(DP_READY→T04 인계) · S6 재제출(세션 미시작) · S6b 재제출 잠금(세션 시작·완료) · S7 오류(M-2·M-3+복구 경로) · S8 분석 실패(A-1) + 상태 매핑 표(화면 커버리지 열). · 교육생 4화면 총합: `wireframes/trainee/cases.html`
 
 ---
 

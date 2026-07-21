@@ -351,15 +351,15 @@
                   <div class="foot">· <b>질문 초점 = 질문을 어디에 치중할지</b>(회차 소속·PLAN-03). 비우면 <b>AI가 각자 기여분에서 중요 지점을 질문수만큼 자율 추출</b>(제한 아님). 지정하면(예: CSS·디자인) 그 영역 치중. 교육생 비노출(A4·FB-F6). 편집은 [측정 계획] 탭.</div>
                 </div>
                 <div class="block">
-                  <div class="bhead"><h3>적용 교안 <span class="rtag lead">총괄</span> <span class="meta">· 리포트 위치 안내(MEAS-07)에 쓰임 · 선택(비워도 됨·D91)</span></h3><div style="display:flex;align-items:center"><button class="btn ghost lead-only" id="curlink-btn">+ 교안 연결<span class="rtag lead">총괄</span></button><span class="lead-gate">🔒 총괄 전용</span></div></div>
+                  <div class="bhead"><h3>교안 범위 한정 <span class="rtag lead">총괄</span> <span class="meta">· 선택 · 비워두면 기수 전체 교안에서 자동 안내(D103)</span></h3><div style="display:flex;align-items:center"><button class="btn ghost lead-only" id="curlink-btn">교안 한정<span class="rtag lead">총괄</span></button><span class="lead-gate">🔒 총괄 전용</span></div></div>
                   <div class="card"><table class="tbl">
-                    <thead><tr><th>연결된 교안</th><th>버전</th><th>커버 기술영역</th><th></th></tr></thead>
+                    <thead><tr><th>한정된 교안</th><th>버전</th><th>다루는 주제</th><th></th></tr></thead>
                     <tbody>
-                      <tr><td class="nm">Kubernetes와 CICD</td><td class="sub">v2</td><td><span class="badge info">컨테이너 오케스트레이션</span> <span class="badge info">서비스 노출</span> <span class="badge info">CICD</span></td><td style="text-align:right"><span class="link lead-only">연결 해제</span></td></tr>
-                      <tr><td class="nm">AWS 핵심 서비스</td><td class="sub">v3</td><td><span class="badge info">클라우드 인프라</span> <span class="badge info">네트워킹</span></td><td style="text-align:right"><span class="link lead-only">연결 해제</span></td></tr>
+                      <tr><td class="nm">Kubernetes와 CICD</td><td class="sub">v2</td><td><span class="badge info">컨테이너 오케스트레이션</span> <span class="badge info">서비스 노출</span> <span class="badge info">CICD</span></td><td style="text-align:right"><span class="link lead-only">한정 해제</span></td></tr>
+                      <tr><td class="nm">AWS 핵심 서비스</td><td class="sub">v3</td><td><span class="badge info">클라우드 인프라</span> <span class="badge info">네트워킹</span></td><td style="text-align:right"><span class="link lead-only">한정 해제</span></td></tr>
                     </tbody>
                   </table></div>
-                  <div class="foot">· <b>커버리지:</b> 이 프로젝트 기술영역 4개 중 <b style="color:var(--c-success)">3 커버</b> · <b style="color:var(--c-warning)">관측성·모니터링 미커버</b> — 관련 교안 추가 연결 권장. <b>미연결이어도 프로젝트는 정상</b>(그 경우 리포트 위치 안내만 생략·D91). 실제 축→위치 매핑은 <b>[교안]</b>에서 자동(D96 자동 연결). 교안 라이브러리·등록은 <b>[교안]</b> 메뉴.</div>
+                  <div class="foot">· <b>보통은 비워둡니다.</b> 비우면 이 반 학생이 취약할 때 <b>기수 전체 교안에서 가장 맞는 위치를 자동 안내</b>(MEAS-07·D103). <b>한정은 예외 도구</b>입니다. 프론트/백엔드가 섞인 기수에서 <b>특정 프로젝트를 특정 교안으로만 좁히고 싶을 때</b>만 지정하세요. 위 2개로 한정하면 나머지 교안은 이 프로젝트 안내에서 제외됩니다. 주제·커버리지 편집은 <b>[교안]</b> 상세에서.</div>
                 </div>
               </div>
 
@@ -414,13 +414,13 @@
                 </div>
                 <div class="bhead"><h3>체크포인트 <span class="tot">2개</span><span class="meta">· API 서버 · 누적 순번 CP3~4</span></h3><button class="btn" id="new-cp">+ 체크포인트(회차) 열기<span class="rtag mgr">담당</span></button></div>
                 <div class="card"><table class="tbl">
-                  <thead><tr><th>체크포인트</th><th>프로젝트 · 회차</th><th>측정일</th><th>질문 초점 <span class="sub" style="font-weight:400">· 비우면 AI 자율</span></th><th class="num">질문 수</th><th>응시(팀)</th><th>상태</th><th></th></tr></thead>
+                  <thead><tr><th>체크포인트</th><th>프로젝트 · 회차</th><th>측정일</th><th>질문 초점 <span class="sub" style="font-weight:400">· 비우면 AI 자율</span></th><th class="num">질문 수</th><th>공개 범위</th><th>응시(팀)</th><th>상태</th><th></th></tr></thead>
                   <tbody>
-                    <tr><td class="nm">체크포인트 3</td><td>API 서버 · 1회차</td><td>04.03</td><td><span class="badge info">책임 분리</span> <span class="badge info">반례·예외</span></td><td class="num">4</td><td>3 / 4</td><td><span class="badge warn">진행 중</span></td><td><span class="link">응시 보기</span></td></tr>
-                    <tr><td class="nm">체크포인트 4 <span class="badge final">최종</span></td><td>API 서버 · 2회차</td><td>04.10</td><td><span class="badge off">미지정</span> <span class="sub">→ AI 자율 추출</span></td><td class="num">5</td><td>—</td><td><span class="badge off">예정</span></td><td><span class="link">지정</span></td></tr>
+                    <tr><td class="nm">체크포인트 3</td><td>API 서버 · 1회차</td><td>04.03</td><td><span class="badge info">책임 분리</span> <span class="badge info">반례·예외</span></td><td class="num">4</td><td><span class="badge info">요약</span></td><td>3 / 4</td><td><span class="badge warn">진행 중</span></td><td><span class="link">응시 보기</span></td></tr>
+                    <tr><td class="nm">체크포인트 4 <span class="badge final">최종</span></td><td>API 서버 · 2회차</td><td>04.10</td><td><span class="badge off">미지정</span> <span class="sub">→ AI 자율 추출</span></td><td class="num">5</td><td><span class="badge off">비공개</span></td><td>—</td><td><span class="badge off">예정</span></td><td><span class="link">지정</span></td></tr>
                   </tbody>
                 </table></div>
-                <div class="foot">· 체크포인트 번호는 <b>트랙 누적</b>(앞 프로젝트 CLI 2회차=CP1·2 → API 서버는 CP3부터·D76). 응시(팀) X/4 분모는 단위, 분자는 실제 응시. 최종 회차 단 1건(등급=B3). 질문 수(예산 N)는 회차별(기본 4·D28). 질문 초점 없으면 AI 자율 추출.</div>
+                <div class="foot">· 체크포인트 번호는 <b>트랙 누적</b>(앞 프로젝트 CLI 2회차=CP1·2 → API 서버는 CP3부터·D76). 응시(팀) X/4 분모는 단위, 분자는 실제 응시. 최종 회차 단 1건(등급=B3). 질문 수(예산 N)는 회차별(기본 4·D28). 질문 초점 없으면 AI 자율 추출. <b>공개 범위</b>(GOV-03)는 회차별 설정(기본 비공개), 여기 컬럼으로 현황·모달에서 변경 — 별도 화면 아님(D121, 옛 SC-M09 흡수).</div>
               </div>
 
               <!-- 탭: 결과 -->
@@ -549,9 +549,18 @@
                     <div class="inp">5</div>
                   </div>
                 </div>
+                <div class="fld">
+                  <div class="fl">결과 공개 범위 <span class="rtag mgr">담당</span> <span class="hint">· 교육생이 결과 리포트(SC-T05)에서 보는 범위 · GOV-03 · 기본 비공개</span></div>
+                  <div class="radio">
+                    <span class="rd on"><span class="mk"></span>비공개 <span class="sub">(기본·결과 미노출)</span></span>
+                    <span class="rd"><span class="mk"></span>요약 <span class="sub">(강약점만)</span></span>
+                    <span class="rd"><span class="mk"></span>전체 <span class="sub">(강약점+궤적)</span></span>
+                  </div>
+                  <div class="fwarn" style="color:var(--c-text-3)">어느 설정이든 <b>내부 루브릭·채점 근거·점수 공식·처방형 콘텐츠는 항상 제거</b>(A6). 저장은 매니저 명시 액션·버전 기록(GOV-02). <span style="color:var(--c-info)">결과를 검토한 뒤 열면 됩니다 — 지금은 비공개로 두고 나중에 이 회차를 수정해 공개.</span> <span class="link" id="cp-preview">교육생 화면 미리보기 →</span></div>
+                </div>
               </div>
               <div class="df">
-                <span style="font-size:11px;color:var(--c-text-3)">지정 후 → 회차 도래 시 교육생 응시 · 종료 시 리포트 자동생성(RPT-04)</span>
+                <span style="font-size:11px;color:var(--c-text-3)">지정 후 → 회차 도래 시 교육생 응시 · 종료 시 리포트 자동생성(RPT-04) · 공개 범위는 언제든 이 회차 수정에서 변경</span>
                 <div style="display:flex;gap:8px"><button class="btn ghost" id="cp-cancel">취소</button><button class="btn">회차 지정</button></div>
               </div>
             </div>
@@ -580,26 +589,26 @@
             </div>
           </div>
 
-          <!-- 교안 연결 모달 (D91 프로젝트↔교안 선택적 링크 · 총괄) -->
+          <!-- 교안 범위 한정 모달 (D103 프로젝트↔교안 선택적 좁히기 · 총괄) -->
           <div class="backdrop hidden" id="curlink-modal">
             <div class="dialog">
-              <div class="dh"><h3>교안 연결 <span style="font-size:12px;color:var(--c-text-3);font-weight:400">· API 서버 · 이 기수 교안 라이브러리에서 선택</span></h3><span class="x" id="curlink-close">✕</span></div>
+              <div class="dh"><h3>교안 범위 한정 <span style="font-size:12px;color:var(--c-text-3);font-weight:400">· API 서버 · 이 기수 교안 라이브러리에서 선택</span></h3><span class="x" id="curlink-close">✕</span></div>
               <div class="db">
                 <div class="fld">
-                  <div class="fl">연결할 교안 <span class="hint">· 다중 선택 · 리포트가 이 교안으로 위치 안내(MEAS-07)</span></div>
+                  <div class="fl">이 프로젝트에서 쓸 교안만 선택 <span class="hint">· 다중 선택 · 선택한 교안으로만 안내 범위를 좁힘</span></div>
                   <div class="curpick">
                     <label class="curopt on"><span class="ck">✓</span><div class="ci"><b>Kubernetes와 CICD</b> <span class="cv">v2</span><div class="cc">컨테이너 오케스트레이션 · 서비스 노출 · CICD</div></div></label>
                     <label class="curopt on"><span class="ck">✓</span><div class="ci"><b>AWS 핵심 서비스</b> <span class="cv">v3</span><div class="cc">클라우드 인프라 · 네트워킹</div></div></label>
                     <label class="curopt"><span class="ck"></span><div class="ci"><b>Microservice 아키텍처</b> <span class="cv">v1</span><div class="cc">서비스 분해 · API 게이트웨이 · 사가</div></div></label>
                     <label class="curopt"><span class="ck"></span><div class="ci"><b>클라우드 현대화 이해 서비스</b> <span class="cv">v1</span><div class="cc">클라우드 네이티브 · IaaS/PaaS/SaaS</div></div></label>
-                    <label class="curopt dis"><span class="ck"></span><div class="ci"><b>Docker 컨테이너 기초</b> <span class="cv">v1</span><div class="cc" style="color:var(--c-danger)">추출 실패 · 연결 불가(재분석 필요)</div></div></label>
+                    <label class="curopt dis"><span class="ck"></span><div class="ci"><b>Docker 컨테이너 기초</b> <span class="cv">v1</span><div class="cc" style="color:var(--c-danger)">추출 실패 · 한정 대상 불가(재분석 필요)</div></div></label>
                   </div>
-                  <div class="fwarn" style="color:var(--c-text-3)"><b>비워도 됨</b> — 미연결이면 이 프로젝트 리포트에 위치 안내만 생략(측정·피드백은 그대로·D91). 새 교안은 <b>[교안] 메뉴 → 등록</b>에서. 연결 후 축→섹션 매핑은 [교안]에서 자동(고신뢰 자동·저신뢰 확인 권장·D96).</div>
+                  <div class="fwarn" style="color:var(--c-text-3)"><b>아무것도 안 고르면 기수 전체 교안이 안내 대상</b>(권장·D103). 여기서 고르면 <b>고른 교안으로만</b> 이 프로젝트 안내를 한정합니다. 새 교안은 <b>[교안] 메뉴 → 등록</b>에서, 주제 편집은 [교안] 상세에서.</div>
                 </div>
               </div>
               <div class="df">
-                <span style="font-size:11px;color:var(--c-text-3)">2개 선택됨 · 커버 기술영역 3/4(관측성 미커버)</span>
-                <div style="display:flex;gap:8px"><button class="btn ghost" id="curlink-cancel">취소</button><button class="btn">연결 저장</button></div>
+                <span style="font-size:11px;color:var(--c-text-3)">2개 한정 · 이 2개 주제로 커버 3/4(관측성 미커버)</span>
+                <div style="display:flex;gap:8px"><button class="btn ghost" id="curlink-cancel">취소</button><button class="btn">한정 저장</button></div>
               </div>
             </div>
           </div>

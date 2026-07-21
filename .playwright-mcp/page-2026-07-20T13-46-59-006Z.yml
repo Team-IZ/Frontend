@@ -1,0 +1,1218 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: SC-M04 · P0/P1/P2 · 매니저 · 웹
+    - heading "분석 · 진단" [level=1] [ref=e5]
+    - paragraph [ref=e6]: 한 기수를 두 렌즈로 진단한다. ［사람］ = 누가 위험한가 — ENG-04 시그널을 라벨이 아니라 서술형 근거로 트리아지(위험 목록·불균형·에이스·팀 분석, DASH-10~13). ［패턴］ = 어느 단계·영역이 무너지나 — 이해 단계·기술영역 히트맵으로 공통 취약 패턴을 색으로(DASH-14/15). 개요(히트맵)→상세(위험 목록)로 이어지는 한 진단. 근거 없는 표시 금지(A2)·낙인 금지 서술형(A1)·기여 단독 금지(B5)·표본 부족 유보(B4)·L1~L5=5축 파생(B6)·회차 스냅샷(B1).
+  - generic [ref=e7]: 사람 렌즈 · 위험 교육생 목록 (DASH-10 · 근거 추적 중심)
+  - generic [ref=e9]:
+    - generic [ref=e10]: iz-get.com/cohorts/7/analysis/risks
+    - generic [ref=e16]:
+      - generic [ref=e17]:
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - generic [ref=e20]: ◆
+            - text: IZ-Get
+          - generic [ref=e21]:
+            - generic [ref=e22]: 기수
+            - text: 7기 ▾
+        - generic [ref=e23]:
+          - text: 박지현 · 매니저
+          - generic [ref=e24]: 박
+      - generic [ref=e25]:
+        - generic [ref=e26]:
+          - generic [ref=e27]:
+            - generic [ref=e28]: ▦
+            - text: 대시보드
+          - generic [ref=e29]:
+            - generic [ref=e30]: ◔
+            - text: 기수 구성
+          - generic [ref=e31]:
+            - generic [ref=e32]: ▧
+            - text: 교안
+          - generic [ref=e33]:
+            - generic [ref=e34]: ▤
+            - text: 프로젝트
+          - generic [ref=e35]:
+            - generic [ref=e36]: △
+            - text: 분석 · 진단
+          - generic [ref=e37]:
+            - generic [ref=e38]: ◎
+            - text: 교육생
+          - generic [ref=e39]:
+            - generic [ref=e40]: ✎
+            - text: 개입
+          - generic [ref=e41]:
+            - generic [ref=e42]: ▥
+            - text: 리포트
+        - generic [ref=e43]:
+          - generic [ref=e44]:
+            - generic [ref=e45]: 분석 · 진단 › 7기
+            - heading "분석 · 진단" [level=2] [ref=e46]
+          - generic [ref=e47]:
+            - generic [ref=e48] [cursor=pointer]: 사람 누가 위험한가
+            - generic [ref=e49] [cursor=pointer]: 패턴 어디가 무너지나
+          - generic [ref=e50]:
+            - generic [ref=e51] [cursor=pointer]: 위험 목록 5
+            - generic [ref=e52] [cursor=pointer]: 기여·이해도 불균형 2
+            - generic [ref=e53] [cursor=pointer]: 에이스 3
+            - generic [ref=e54] [cursor=pointer]: 팀 분석
+          - generic [ref=e55]:
+            - generic [ref=e56]:
+              - text: 조치 필요
+              - generic [ref=e57]: "3"
+              - text: 명
+            - generic [ref=e59]:
+              - text: 진행 중
+              - generic [ref=e60]: "1"
+            - generic [ref=e62]:
+              - text: 산출 유보
+              - generic [ref=e63]: "1"
+            - generic [ref=e64]: A반 2 · B반 1 · C반 1 · 전체 48명 중 · 4회차 스냅샷(B1)
+          - generic [ref=e65]:
+            - generic [ref=e66]:
+              - generic [ref=e67]:
+                - generic [ref=e68]: 🔍 이름 검색
+                - generic [ref=e69]:
+                  - generic [ref=e70] [cursor=pointer]: 전체
+                  - generic [ref=e71] [cursor=pointer]: 반 ▾
+                  - generic [ref=e72] [cursor=pointer]: 시그널 ▾
+                  - generic [ref=e73] [cursor=pointer]: "정렬: 위험도 ▾"
+              - generic [ref=e74]:
+                - text: 지금 조치 필요
+                - generic [ref=e75]: "3"
+              - generic [ref=e78] [cursor=pointer]:
+                - generic [ref=e79]:
+                  - generic [ref=e80]: 윤서아
+                  - generic [ref=e81]: A반
+                  - generic [ref=e82]: ⚠︎ 9일
+                - generic [ref=e83]:
+                  - generic [ref=e84]: 설명-산출 갭
+                  - generic [ref=e85]: 깊이 고착
+              - generic [ref=e88] [cursor=pointer]:
+                - generic [ref=e89]:
+                  - generic [ref=e90]: 강민준
+                  - generic [ref=e91]: A반 · 팀A
+                - generic [ref=e92]: 깊이 고착
+              - generic [ref=e96] [cursor=pointer]:
+                - generic [ref=e97]:
+                  - generic [ref=e98]: 오세훈
+                  - generic [ref=e99]: C반
+                - generic [ref=e100]: 점수 하락
+              - generic [ref=e102]:
+                - text: 개입 진행 중
+                - generic [ref=e103]: "1"
+              - generic [ref=e106] [cursor=pointer]:
+                - generic [ref=e107]:
+                  - generic [ref=e108]: 서지우
+                  - generic [ref=e109]: B반
+                - generic [ref=e110]: 회복 확인 중
+              - generic [ref=e112]:
+                - text: 산출 유보
+                - generic [ref=e113]: "1"
+              - generic [ref=e116] [cursor=pointer]:
+                - generic [ref=e117]:
+                  - generic [ref=e118]: 한도현
+                  - generic [ref=e119]: A반
+                - generic [ref=e120]: 표본 부족 · 1회차
+            - generic [ref=e122]:
+              - generic [ref=e123]:
+                - generic [ref=e124]:
+                  - generic [ref=e125]: 윤서아
+                  - generic [ref=e126]: A반 · 팀 A · 4회차
+                  - generic [ref=e127] [cursor=pointer]: 개별 상세 ↗
+                - generic [ref=e128]:
+                  - generic [ref=e129]: 심각도 높음
+                  - generic [ref=e130]: 기수 평균 대비 −1.4(4회차 스냅샷·B1)
+                  - generic [ref=e131]: ✓ 재채점 일치
+                  - generic [ref=e132]: 시그널 생성 후 9일 · 개입 없음
+              - generic [ref=e133]:
+                - generic [ref=e134]: 무엇을 관찰했나 (근거 · DASH-10)
+                - generic [ref=e135]:
+                  - generic [ref=e136]:
+                    - generic [ref=e137]: 설명-산출 갭
+                    - generic [ref=e138]: 2회차부터 · 3회차 연속
+                  - paragraph [ref=e139]: 기여량은 팀 평균의 1.9배(342줄 / 팀 평균 180줄)인데, 세션에서 본인 커밋 구간을 설명할 때 L1(기본 종속)에서 표면 응답이 반복됩니다. 코드는 계속 나오지만 그 코드가 본인 것인지 확인되지 않는 상태 — 대필·과도한 AI 의존 가능성을 검토할 지점입니다(확정 아님).
+                  - generic [ref=e140]:
+                    - generic [ref=e141]: 기여 편차 ↑
+                    - generic [ref=e142]: 이해도 저조 2.1
+                    - generic [ref=e143]: 3회차 지속
+                    - generic [ref=e144]: 교차 3조건 충족(B5)
+                - generic [ref=e145]:
+                  - generic [ref=e146]:
+                    - generic [ref=e147]: 깊이 고착
+                    - generic [ref=e148]: 2~4회차
+                  - paragraph [ref=e149]: L1은 매 회차 통과하나 L2(대안·트레이드오프)에서 3회차 연속 표면 응답. 겉의 동작은 알지만 "왜 이렇게 했는가"가 쌓이지 않는 고착 패턴입니다.
+                  - generic [ref=e150]:
+                    - generic [ref=e151]: 도달 depth L1
+                    - generic [ref=e152]: SURFACE ×3
+                    - generic [ref=e153]: L1~L5는 5축 파생(B6)
+              - generic [ref=e154]:
+                - generic [ref=e155]: 5축 현재값 · 직전 회차 대비 (ENG-02 · 동일 가중)
+                - generic [ref=e156]:
+                  - generic [ref=e157]:
+                    - generic [ref=e158]: 코드이해
+                    - generic [ref=e159]: "3"
+                    - generic [ref=e160]: ±0
+                  - generic [ref=e161]:
+                    - generic [ref=e162]: 설계논리
+                    - generic [ref=e163]: "2"
+                    - generic [ref=e164]: −1
+                  - generic [ref=e165]:
+                    - generic [ref=e166]: 대안비교
+                    - generic [ref=e167]: "2"
+                    - generic [ref=e168]: −1
+                  - generic [ref=e169]:
+                    - generic [ref=e170]: 반례대응
+                    - generic [ref=e171]: "2"
+                    - generic [ref=e172]: −1
+                  - generic [ref=e173]:
+                    - generic [ref=e174]: 자기수정
+                    - generic [ref=e175]: "3"
+                    - generic [ref=e176]: ±0
+                - generic [ref=e177]: 총 12 / 25 · 기수 평균 17.4(4회차 스냅샷) · σ·백분위·순위는 표시하지 않음(D29)
+              - generic [ref=e178]:
+                - generic [ref=e179]: 채점 근거 원본 (DASH-09)
+                - generic [ref=e180]:
+                  - generic [ref=e181] [cursor=pointer]:
+                    - generic [ref=e182]: ▾
+                    - text: 4회차 세션 · 설계논리 축 근거 구간
+                    - generic [ref=e183]: 매니저 전용
+                  - generic [ref=e184]:
+                    - text: 질문 — "이 함수에서 캐시를 무효화하는 시점을 왜 쓰기 직후로 잡았나요?"
+                    - generic [ref=e185]: "\"음… 그렇게 해야 최신 데이터가 나와서요. 그냥 그렇게 짰습니다.\""
+                    - text: "채점 근거: 트레이드오프 언급 없음 · 대안(TTL·쓰기 지연) 미검토 → 설계논리 2점."
+                    - generic [ref=e186]: model v2.1 · prompt v1.4 · rubric v3 · 원본 응답 보존됨
+                - generic [ref=e187]: 루브릭·프롬프트 원문은 교육생에게 비공개(게이밍 방지·A5). 열람 이력은 감사 로그에 남습니다.
+              - generic [ref=e188]:
+                - generic [ref=e189]: 개입 이력 (INTV)
+                - generic [ref=e190]:
+                  - text: 개입 없음 · 시그널 생성 후
+                  - generic [ref=e191]: 9일
+                  - text: 경과 — 방치해도 목록에서 사라지지 않습니다(A7).
+              - generic [ref=e192]:
+                - button "개입 생성 →" [ref=e193] [cursor=pointer]
+                - button "면담 체크리스트" [ref=e194] [cursor=pointer]
+                - button "재산출 요청" [ref=e195] [cursor=pointer]
+          - generic [ref=e196]: · 한 사람 = 한 행, 시그널 유형은 병존 표시(ENG-04 case5 · DASH-10 중복 통합). · 정렬은 위험도 순(Priority=S×(0.5+R)·DASH-03), 미조치 경과(⚠︎)는 증폭 신호(D124) — 순위 번호는 조치 큐인 SC-M01 소관이라 여기서는 쓰지 않습니다. · 자의적 상/중/하 라벨 없음(A2) — 심각도는 기수 평균 대비 실측값. · 기여량 단독 판정 아님(B5) · 회복 확정은 INTV-06(B7) · 확정 판단은 매니저(GOV-02).
+          - generic [ref=e197]: 변형 · 산출 유보(한도현) 선택 시 — 표본 부족 오버라이드
+          - generic [ref=e198]:
+            - generic [ref=e199]:
+              - generic [ref=e200]:
+                - generic [ref=e201]: 한도현
+                - generic [ref=e202]: A반 · 1회차
+                - generic [ref=e203] [cursor=pointer]: 개별 상세 ↗
+              - generic [ref=e204]:
+                - generic [ref=e205]: 표본 부족 · 참고용
+                - generic [ref=e206]: 완료 회차 1건 — 추이·우선순위를 산출하지 않습니다(B4·DASH-08)
+            - generic [ref=e207]:
+              - generic [ref=e208]: 현재 상태
+              - paragraph [ref=e209]: 1회차 절대 점수만 있습니다(총 14/25). 변화량·심각도는 계산하지 않습니다 — 1회차 단독 판정 금지(B4·ENG-02). 2회차 완료 시 자동으로 재계산됩니다.
+            - generic [ref=e210]:
+              - generic [ref=e211]: 개입 판단 (DASH-08 · GOV-02 역방향 위반 방지)
+              - generic [ref=e212]:
+                - generic [ref=e213]:
+                  - text: 시스템 기본 추천 —
+                  - generic [ref=e214]: 모니터링 유지
+                  - generic [ref=e215]: (표본 부족 시 기본값)
+                - generic [ref=e216]:
+                  - text: 매니저 선택
+                  - generic [ref=e217]:
+                    - generic [ref=e218] [cursor=pointer]: 모니터링
+                    - generic [ref=e219] [cursor=pointer]: 면담
+                    - generic [ref=e220] [cursor=pointer]: 멘토링
+                    - generic [ref=e221] [cursor=pointer]: 보강
+                    - generic [ref=e222] [cursor=pointer]: 팀 조정
+                - generic [ref=e223]: 사유 입력 — 기본 추천과 다른 유형을 고를 때 필수(미입력 시 저장 차단·case3)
+              - generic [ref=e224]:
+                - text: 표본이 부족해도 매니저의 재량은 막지 않습니다 — 시스템의 자동 확정만 차단합니다(DASH-08 비즈니스 규칙). 이 건은
+                - code [ref=e225]: sample_insufficient_override
+                - text: 로 표시돼 추천 성능 집계(DASH-07)에서 분리됩니다.
+            - button "저장" [ref=e227] [cursor=pointer]
+          - generic [ref=e228]: 변형 · 근거값과 최신 점수 불일치 (case 5)
+          - generic [ref=e229]:
+            - generic [ref=e230]:
+              - generic [ref=e231]:
+                - generic [ref=e232]: 오세훈
+                - generic [ref=e233]: C반 · 4회차
+                - generic [ref=e234] [cursor=pointer]: 개별 상세 ↗
+              - generic [ref=e235]:
+                - generic [ref=e236]: 심각도 낮음
+                - generic [ref=e237]: ⚠︎ 재검토 필요
+                - generic [ref=e238]: 재채점 편차가 허용 범위를 넘었습니다(ENG-05)
+            - generic [ref=e239]:
+              - generic [ref=e240]:
+                - text: 근거에 기록된 값(3 → 2)이 최신 점수(3 → 3)와 다릅니다 — 판단 전 재산출이 필요합니다.
+                - button "재산출 요청" [ref=e241] [cursor=pointer]
+              - generic [ref=e242]: 불일치 상태에서는 순위·심각도 문구를 확정하지 않습니다(A2 — 근거와 표시값이 일치할 때만 노출). 재산출 완료 후 목록 순서가 갱신됩니다.
+          - generic [ref=e243]: 변형 · 위험 0건 (빈 상태)
+          - generic [ref=e244]:
+            - generic [ref=e245]: ✓
+            - generic [ref=e246]: 이번 회차 위험 신호가 없습니다
+            - generic [ref=e247]: 4회차 스냅샷 기준 · 다음 체크포인트 04.18에 재평가합니다. 표본 부족 1명은 산출 유보 중.
+  - generic [ref=e248]: 사람 렌즈 · 기여·이해도 불균형 (DASH-11 · 낙인 최고 위험 · 서술형·교차만)
+  - generic [ref=e250]:
+    - generic [ref=e251]: iz-get.com/cohorts/7/analysis/imbalance
+    - generic [ref=e257]:
+      - generic [ref=e258]:
+        - generic [ref=e259]:
+          - generic [ref=e260]:
+            - generic [ref=e261]: ◆
+            - text: IZ-Get
+          - generic [ref=e262]:
+            - generic [ref=e263]: 기수
+            - text: 7기 ▾
+        - generic [ref=e264]:
+          - text: 박지현 · 매니저
+          - generic [ref=e265]: 박
+      - generic [ref=e266]:
+        - generic [ref=e267]:
+          - generic [ref=e268]:
+            - generic [ref=e269]: ▦
+            - text: 대시보드
+          - generic [ref=e270]:
+            - generic [ref=e271]: ◔
+            - text: 기수 구성
+          - generic [ref=e272]:
+            - generic [ref=e273]: ▧
+            - text: 교안
+          - generic [ref=e274]:
+            - generic [ref=e275]: ▤
+            - text: 프로젝트
+          - generic [ref=e276]:
+            - generic [ref=e277]: △
+            - text: 분석 · 진단
+          - generic [ref=e278]:
+            - generic [ref=e279]: ◎
+            - text: 교육생
+          - generic [ref=e280]:
+            - generic [ref=e281]: ✎
+            - text: 개입
+          - generic [ref=e282]:
+            - generic [ref=e283]: ▥
+            - text: 리포트
+        - generic [ref=e284]:
+          - generic [ref=e285]:
+            - generic [ref=e286]: 분석 · 진단 › 7기
+            - heading "분석 · 진단" [level=2] [ref=e287]
+          - generic [ref=e288]:
+            - generic [ref=e289] [cursor=pointer]: 사람 누가 위험한가
+            - generic [ref=e290] [cursor=pointer]: 패턴 어디가 무너지나
+          - generic [ref=e291]:
+            - generic [ref=e292] [cursor=pointer]: 위험 목록 5
+            - generic [ref=e293] [cursor=pointer]: 기여·이해도 불균형 2
+            - generic [ref=e294] [cursor=pointer]: 에이스 3
+            - generic [ref=e295] [cursor=pointer]: 팀 분석
+          - generic [ref=e296]: ⚠ '프리라이더' 같은 확정 라벨은 쓰지 않습니다(낙인·자동화 편향 방지 · A1). 기여량 단독이 아니라 세 조건이 동시에 충족될 때만 표시(B5).
+          - generic [ref=e297]:
+            - generic [ref=e298]:
+              - generic [ref=e299]: 오세훈 · C반 · 팀 A
+              - generic [ref=e300]: 기여·이해도 불균형 (서술형)
+            - paragraph [ref=e301]: 팀 내 기여량이 낮은 편이지만, 낮은 기여량이 곧 낮은 실력을 뜻하진 않습니다. 아래 세 조건이 동시에 충족되어 검토 대상으로 표시됩니다.
+            - generic [ref=e302]:
+              - generic [ref=e303]: 기여 편차 (팀 하위)
+              - generic [ref=e304]: ＋ 이해도 저조 (반례대응 2)
+              - generic [ref=e305]: ＋ 지속성 (2회차)
+            - generic [ref=e306] [cursor=pointer]: ▸ 기여 원시 데이터 보기 (참고용 · 판정값 아님)
+            - generic [ref=e307]:
+              - button "개입 생성" [ref=e308] [cursor=pointer]
+              - button "상세 ↗" [ref=e309] [cursor=pointer]
+          - generic [ref=e310]:
+            - generic [ref=e311]:
+              - generic [ref=e312]: 박준호 · A반 · 팀 B
+              - generic [ref=e313]: 기여·이해도 불균형 (서술형)
+            - paragraph [ref=e314]: 기여 편차 + 이해도 저조 + 지속성 교차. 팀 조정 또는 면담 검토.
+            - generic [ref=e315]:
+              - generic [ref=e316]: 기여 편차
+              - generic [ref=e317]: ＋ 이해도 저조
+              - generic [ref=e318]: ＋ 지속성
+            - generic [ref=e319]:
+              - button "개입 생성" [ref=e320] [cursor=pointer]
+              - button "상세 ↗" [ref=e321] [cursor=pointer]
+  - generic [ref=e322]: 사람 렌즈 · 에이스 (DASH-12 · 근거만 · 자동 "후보" 배지 없음)
+  - generic [ref=e324]:
+    - generic [ref=e325]: iz-get.com/cohorts/7/analysis/aces
+    - generic [ref=e331]:
+      - generic [ref=e332]:
+        - generic [ref=e333]:
+          - generic [ref=e334]:
+            - generic [ref=e335]: ◆
+            - text: IZ-Get
+          - generic [ref=e336]:
+            - generic [ref=e337]: 기수
+            - text: 7기 ▾
+        - generic [ref=e338]:
+          - text: 박지현 · 매니저
+          - generic [ref=e339]: 박
+      - generic [ref=e340]:
+        - generic [ref=e341]:
+          - generic [ref=e342]:
+            - generic [ref=e343]: ▦
+            - text: 대시보드
+          - generic [ref=e344]:
+            - generic [ref=e345]: ◔
+            - text: 기수 구성
+          - generic [ref=e346]:
+            - generic [ref=e347]: ▧
+            - text: 교안
+          - generic [ref=e348]:
+            - generic [ref=e349]: ▤
+            - text: 프로젝트
+          - generic [ref=e350]:
+            - generic [ref=e351]: △
+            - text: 분석 · 진단
+          - generic [ref=e352]:
+            - generic [ref=e353]: ◎
+            - text: 교육생
+          - generic [ref=e354]:
+            - generic [ref=e355]: ✎
+            - text: 개입
+          - generic [ref=e356]:
+            - generic [ref=e357]: ▥
+            - text: 리포트
+        - generic [ref=e358]:
+          - generic [ref=e359]:
+            - generic [ref=e360]: 분석 · 진단 › 7기
+            - heading "분석 · 진단" [level=2] [ref=e361]
+          - generic [ref=e362]:
+            - generic [ref=e363] [cursor=pointer]: 사람 누가 위험한가
+            - generic [ref=e364] [cursor=pointer]: 패턴 어디가 무너지나
+          - generic [ref=e365]:
+            - generic [ref=e366] [cursor=pointer]: 위험 목록 5
+            - generic [ref=e367] [cursor=pointer]: 기여·이해도 불균형 2
+            - generic [ref=e368] [cursor=pointer]: 에이스 3
+            - generic [ref=e369] [cursor=pointer]: 팀 분석
+          - generic [ref=e370]: · 단기 고득점 ≠ 에이스 — 지속 성장·설명력·표본 근거만 제시. "발표자/멘토로 쓸지"는 매니저 판단(시스템이 후보로 확정하지 않음).
+          - generic [ref=e371]:
+            - generic [ref=e372]:
+              - generic [ref=e373]: 김서연 · A반
+              - generic [ref=e374]:
+                - generic [ref=e375]: 설계논리 5
+                - generic [ref=e376]: 자기수정 5
+                - text: · 3회 연속 상위 · 설명력 상위 10% · 4회차 표본
+            - button "상세 ↗" [ref=e377] [cursor=pointer]
+          - generic [ref=e378]:
+            - generic [ref=e379]:
+              - generic [ref=e380]: 이서연 · B반
+              - generic [ref=e381]:
+                - generic [ref=e382]: 대안비교 5
+                - text: · 꾸준한 상위(성장률 +1.2) · 3회차 표본
+            - button "상세 ↗" [ref=e383] [cursor=pointer]
+          - generic [ref=e384]:
+            - generic [ref=e385]:
+              - generic [ref=e386]: 정하늘 · A반
+              - generic [ref=e387]:
+                - generic [ref=e388]: 코드이해 5
+                - text: · 단일 회차 고득점 · 표본 부족 → 에이스 확정 유보(B4)
+            - button "상세 ↗" [ref=e389] [cursor=pointer]
+          - generic [ref=e390]: · 활용 용도(발표자·멘토·성과 증빙)는 매니저가 태그. 자동 판정 아님(D47).
+  - generic [ref=e391]: 사람 렌즈 · 팀 분석 (DASH-13 · 분포·편차·설명력 갭)
+  - generic [ref=e393]:
+    - generic [ref=e394]: iz-get.com/cohorts/7/analysis/teams
+    - generic [ref=e400]:
+      - generic [ref=e401]:
+        - generic [ref=e402]:
+          - generic [ref=e403]:
+            - generic [ref=e404]: ◆
+            - text: IZ-Get
+          - generic [ref=e405]:
+            - generic [ref=e406]: 기수
+            - text: 7기 ▾
+        - generic [ref=e407]:
+          - text: 박지현 · 매니저
+          - generic [ref=e408]: 박
+      - generic [ref=e409]:
+        - generic [ref=e410]:
+          - generic [ref=e411]:
+            - generic [ref=e412]: ▦
+            - text: 대시보드
+          - generic [ref=e413]:
+            - generic [ref=e414]: ◔
+            - text: 기수 구성
+          - generic [ref=e415]:
+            - generic [ref=e416]: ▧
+            - text: 교안
+          - generic [ref=e417]:
+            - generic [ref=e418]: ▤
+            - text: 프로젝트
+          - generic [ref=e419]:
+            - generic [ref=e420]: △
+            - text: 분석 · 진단
+          - generic [ref=e421]:
+            - generic [ref=e422]: ◎
+            - text: 교육생
+          - generic [ref=e423]:
+            - generic [ref=e424]: ✎
+            - text: 개입
+          - generic [ref=e425]:
+            - generic [ref=e426]: ▥
+            - text: 리포트
+        - generic [ref=e427]:
+          - generic [ref=e428]:
+            - generic [ref=e429]: 분석 · 진단 › 7기
+            - heading "분석 · 진단" [level=2] [ref=e430]
+          - generic [ref=e431]:
+            - generic [ref=e432] [cursor=pointer]: 사람 누가 위험한가
+            - generic [ref=e433] [cursor=pointer]: 패턴 어디가 무너지나
+          - generic [ref=e434]:
+            - generic [ref=e435] [cursor=pointer]: 위험 목록 5
+            - generic [ref=e436] [cursor=pointer]: 기여·이해도 불균형 2
+            - generic [ref=e437] [cursor=pointer]: 에이스 3
+            - generic [ref=e438] [cursor=pointer]: 팀 분석
+          - generic [ref=e439]: · 프로젝트 팀별 이해도 분포·편차·완성도 대비 설명력 갭. 위험 팀은 우선 검토. 팀원 과소·구성 변경은 표본 부족 병기·기간 분리.
+          - table [ref=e441]:
+            - rowgroup [ref=e442]:
+              - row [ref=e443]:
+                - columnheader "팀 · 프로젝트" [ref=e444]
+                - columnheader "이해도 분포" [ref=e445]
+                - columnheader "편차" [ref=e446]
+                - columnheader "완성도↔설명력 갭" [ref=e447]
+                - columnheader "분류" [ref=e448]
+                - columnheader [ref=e449]
+            - rowgroup [ref=e450]:
+              - row [ref=e451]:
+                - cell "B팀 · API 서버" [ref=e452]
+                - cell "▁▁█▁ 2~5" [ref=e453]
+                - cell "큼" [ref=e454]
+                - cell "완성도 높은데 설명력 낮음 (갭 큼)" [ref=e455]
+                - cell "위험" [ref=e456]
+                - cell "팀 상세 ↗" [ref=e458]
+              - row [ref=e459]:
+                - cell "A팀 · API 서버" [ref=e460]
+                - cell "▃▄▅▄ 3~4" [ref=e461]
+                - cell "작음" [ref=e462]
+                - cell "갭 작음" [ref=e463]
+                - cell "균형" [ref=e464]
+                - cell "팀 상세 ↗" [ref=e466]
+              - row [ref=e467]:
+                - cell "C팀 · API 서버" [ref=e468]
+                - cell "▅▆▆▇ 4~5" [ref=e469]
+                - cell "작음" [ref=e470]
+                - cell "완성도·설명력 모두 높음" [ref=e471]
+                - cell "고성과" [ref=e472]
+                - cell "팀 상세 ↗" [ref=e474]
+              - row [ref=e475]:
+                - cell "D팀 · 2명" [ref=e476]
+                - cell "표본 부족 · 팀원 과소로 편차 해석 유보" [ref=e477]
+                - cell "–" [ref=e478]
+                - cell "팀 상세 ↗" [ref=e480]
+          - generic [ref=e481]: · 설명력 갭 = 프로젝트 완성도는 높은데 이해도(설명력)가 낮음 → 기여·이해도 불균형 팀 신호. 팀 상세 → 구성원별(SC-M06). 구성 변경 시 기간별 분리 집계(DASH-13).
+  - generic [ref=e482]: 패턴 렌즈 · 이해 단계 히트맵 (DASH-14 · L1~L5 = 5축 파생 · 현재 상태)
+  - generic [ref=e484]:
+    - generic [ref=e485]: iz-get.com/cohorts/7/analysis/heatmap/stages
+    - generic [ref=e491]:
+      - generic [ref=e492]:
+        - generic [ref=e493]:
+          - generic [ref=e494]:
+            - generic [ref=e495]: ◆
+            - text: IZ-Get
+          - generic [ref=e496]:
+            - generic [ref=e497]: 기수
+            - text: 7기 ▾
+        - generic [ref=e498]:
+          - text: 박지현 · 매니저
+          - generic [ref=e499]: 박
+      - generic [ref=e500]:
+        - generic [ref=e501]:
+          - generic [ref=e502]:
+            - generic [ref=e503]: ▦
+            - text: 대시보드
+          - generic [ref=e504]:
+            - generic [ref=e505]: ◔
+            - text: 기수 구성
+          - generic [ref=e506]:
+            - generic [ref=e507]: ▧
+            - text: 교안
+          - generic [ref=e508]:
+            - generic [ref=e509]: ▤
+            - text: 프로젝트
+          - generic [ref=e510]:
+            - generic [ref=e511]: △
+            - text: 분석 · 진단
+          - generic [ref=e512]:
+            - generic [ref=e513]: ◎
+            - text: 교육생
+          - generic [ref=e514]:
+            - generic [ref=e515]: ✎
+            - text: 개입
+          - generic [ref=e516]:
+            - generic [ref=e517]: ▥
+            - text: 리포트
+        - generic [ref=e518]:
+          - generic [ref=e519]:
+            - generic [ref=e520]: 분석 · 진단 › 패턴 › 7기
+            - heading "분석 · 진단" [level=2] [ref=e521]
+          - generic [ref=e522]:
+            - generic [ref=e523] [cursor=pointer]: 사람 누가 위험한가
+            - generic [ref=e524] [cursor=pointer]: 패턴 어디가 무너지나
+          - generic [ref=e525]:
+            - generic [ref=e526] [cursor=pointer]: 이해 단계 (DASH-14)
+            - generic [ref=e527] [cursor=pointer]: 기술영역 (DASH-15)
+            - generic [ref=e528] [cursor=pointer]: 개인 궤적
+          - generic [ref=e529]:
+            - generic [ref=e530]:
+              - text: 보기
+              - generic [ref=e531] [cursor=pointer]: 기수 · 반별
+              - generic [ref=e532]: ›
+              - generic [ref=e533] [cursor=pointer]: 반 상세
+              - generic [ref=e534]: ›
+              - generic [ref=e535] [cursor=pointer]: 개인
+            - generic [ref=e536]:
+              - text: 표시
+              - generic [ref=e537]:
+                - generic [ref=e538] [cursor=pointer]: 현재 상태
+                - generic [ref=e539] [cursor=pointer]: 회차 비교
+            - generic [ref=e540]: 취약 양호 표본부족
+          - generic [ref=e547]:
+            - text: 💡 이 기수는 L2(설계논리)까지는 안정적이나 L3(대안비교)에서 공통적으로 무너집니다. 특히 B반이 L3 취약(2.3). 커리큘럼상 대안·트레이드오프 비교 단계 보강 검토.
+            - generic [ref=e548]:
+              - button "교안 보강 검토 (CUR)" [ref=e549] [cursor=pointer]
+              - button "L3 취약 대상 개입 (INTV-01)" [ref=e550] [cursor=pointer]
+          - table [ref=e552]:
+            - rowgroup [ref=e553]:
+              - row [ref=e554]:
+                - columnheader [ref=e555]
+                - columnheader "L1 코드이해" [ref=e556]:
+                  - generic [ref=e557]: L1
+                  - text: 코드이해
+                - columnheader "L2 설계논리" [ref=e558]:
+                  - generic [ref=e559]: L2
+                  - text: 설계논리
+                - columnheader "L3 대안비교" [ref=e560]:
+                  - generic [ref=e561]: L3
+                  - text: 대안비교
+                - columnheader "L4 반례대응" [ref=e562]:
+                  - generic [ref=e563]: L4
+                  - text: 반례대응
+                - columnheader "L5 자기수정" [ref=e564]:
+                  - generic [ref=e565]: L5
+                  - text: 자기수정
+              - row [ref=e566]:
+                - cell "기수 평균 24명" [ref=e567]
+                - cell "3.8 양호" [ref=e568] [cursor=pointer]:
+                  - text: "3.8"
+                  - generic [ref=e569]: 양호
+                - cell "3.5 양호" [ref=e570] [cursor=pointer]:
+                  - text: "3.5"
+                  - generic [ref=e571]: 양호
+                - cell "2.6 취약" [ref=e572] [cursor=pointer]:
+                  - text: "2.6"
+                  - generic [ref=e573]: 취약
+                - cell "2.9 주의" [ref=e574] [cursor=pointer]:
+                  - text: "2.9"
+                  - generic [ref=e575]: 주의
+                - cell "3.2" [ref=e576] [cursor=pointer]
+              - row [ref=e577]:
+                - cell "반별 · 행 클릭 → 그 반 학생 히트맵" [ref=e578]
+              - row [ref=e579]:
+                - cell "A반 8명 ▸" [ref=e580] [cursor=pointer]
+                - cell "4.0" [ref=e581] [cursor=pointer]
+                - cell "3.7" [ref=e582] [cursor=pointer]
+                - cell "2.8" [ref=e583] [cursor=pointer]
+                - cell "3.0" [ref=e584] [cursor=pointer]
+                - cell "3.4" [ref=e585] [cursor=pointer]
+              - row [ref=e586]:
+                - cell "B반 8명 ▸" [ref=e587] [cursor=pointer]
+                - cell "3.6" [ref=e588] [cursor=pointer]
+                - cell "3.3" [ref=e589] [cursor=pointer]
+                - cell "2.3 취약" [ref=e590] [cursor=pointer]:
+                  - text: "2.3"
+                  - generic [ref=e591]: 취약
+                - cell "2.7" [ref=e592] [cursor=pointer]
+                - cell "3.0" [ref=e593] [cursor=pointer]
+              - row [ref=e594]:
+                - cell "C반 8명 ▸" [ref=e595] [cursor=pointer]
+                - cell "3.7" [ref=e596] [cursor=pointer]
+                - cell "3.4" [ref=e597] [cursor=pointer]
+                - cell "2.7" [ref=e598] [cursor=pointer]
+                - cell "3.0" [ref=e599] [cursor=pointer]
+                - cell "3.1" [ref=e600] [cursor=pointer]
+          - generic [ref=e601]: "· L1~L5는 별도로 측정한 축이 아닙니다 — 5축 점수(코드이해·설계논리·대안비교·반례대응·자기수정)를 이해 깊이 순서로 재배열한 파생 표현입니다(B6·DASH-14). 셀 값은 회차 스냅샷 기준(B1). 셀 클릭 → 해당 대상·세션·근거(A2 · 취약 셀 클릭 시 취약 학생 명단·자연빈도 팝오버 → SC-M06). 기수 › 반 › 개인 드릴: 반 행 → 그 반 학생, 학생 → 개인 궤적. ※ 축→단계 매핑(깊이 순서)은 인지 난이도 가정 — 명세 최종 확인 필요."
+  - generic [ref=e602]: 패턴 렌즈 · 이해 단계 · 회차 비교 모드 (ENG-02 · 직전만이 아니라 임의 두 회차 · 여기선 3회차 vs 1회차)
+  - generic [ref=e604]:
+    - generic [ref=e605]: iz-get.com/cohorts/7/analysis/heatmap/stages?cmp=3vs1
+    - generic [ref=e611]:
+      - generic [ref=e612]:
+        - generic [ref=e613]:
+          - generic [ref=e614]:
+            - generic [ref=e615]: ◆
+            - text: IZ-Get
+          - generic [ref=e616]:
+            - generic [ref=e617]: 기수
+            - text: 7기 ▾
+        - generic [ref=e618]:
+          - text: 박지현 · 매니저
+          - generic [ref=e619]: 박
+      - generic [ref=e620]:
+        - generic [ref=e621]:
+          - generic [ref=e622]:
+            - generic [ref=e623]: ▦
+            - text: 대시보드
+          - generic [ref=e624]:
+            - generic [ref=e625]: ◔
+            - text: 기수 구성
+          - generic [ref=e626]:
+            - generic [ref=e627]: ▧
+            - text: 교안
+          - generic [ref=e628]:
+            - generic [ref=e629]: ▤
+            - text: 프로젝트
+          - generic [ref=e630]:
+            - generic [ref=e631]: △
+            - text: 분석 · 진단
+          - generic [ref=e632]:
+            - generic [ref=e633]: ◎
+            - text: 교육생
+          - generic [ref=e634]:
+            - generic [ref=e635]: ✎
+            - text: 개입
+          - generic [ref=e636]:
+            - generic [ref=e637]: ▥
+            - text: 리포트
+        - generic [ref=e638]:
+          - generic [ref=e639]:
+            - generic [ref=e640]: 분석 · 진단 › 패턴 › 7기
+            - heading "분석 · 진단" [level=2] [ref=e641]
+          - generic [ref=e642]:
+            - generic [ref=e643] [cursor=pointer]: 사람 누가 위험한가
+            - generic [ref=e644] [cursor=pointer]: 패턴 어디가 무너지나
+          - generic [ref=e645]:
+            - generic [ref=e646] [cursor=pointer]: 이해 단계 (DASH-14)
+            - generic [ref=e647] [cursor=pointer]: 기술영역 (DASH-15)
+            - generic [ref=e648] [cursor=pointer]: 개인 궤적
+          - generic [ref=e649]:
+            - generic [ref=e650]:
+              - text: 표시
+              - generic [ref=e651]:
+                - generic [ref=e652] [cursor=pointer]: 현재 상태
+                - generic [ref=e653] [cursor=pointer]: 회차 비교
+            - generic [ref=e654]:
+              - text: 비교
+              - generic [ref=e655] [cursor=pointer]: 3회차 ▾
+              - text: vs
+              - generic [ref=e656] [cursor=pointer]: 1회차 ▾
+            - generic [ref=e657]:
+              - text: 프리셋
+              - generic [ref=e658]:
+                - generic [ref=e659] [cursor=pointer]: 직전(2→3)
+                - generic [ref=e660] [cursor=pointer]: 최초(1→3)
+                - generic [ref=e661] [cursor=pointer]: 구간
+            - generic [ref=e662]: 악화 변화없음 개선
+          - generic [ref=e666]: "💡 1→3회차 누적: L3(대안비교)가 가장 크게 개선(+0.7) — 2회차 대안비교 세션 보강 효과. 단 B반 반례대응(L4)은 누적 하락(−0.1). 비교 회차를 바꾸면 구간별 변화도 확인."
+          - table [ref=e668]:
+            - rowgroup [ref=e669]:
+              - row [ref=e670]:
+                - columnheader [ref=e671]
+                - columnheader "L1 코드이해" [ref=e672]:
+                  - generic [ref=e673]: L1
+                  - text: 코드이해
+                - columnheader "L2 설계논리" [ref=e674]:
+                  - generic [ref=e675]: L2
+                  - text: 설계논리
+                - columnheader "L3 대안비교" [ref=e676]:
+                  - generic [ref=e677]: L3
+                  - text: 대안비교
+                - columnheader "L4 반례대응" [ref=e678]:
+                  - generic [ref=e679]: L4
+                  - text: 반례대응
+                - columnheader "L5 자기수정" [ref=e680]:
+                  - generic [ref=e681]: L5
+                  - text: 자기수정
+              - row [ref=e682]:
+                - cell "기수 평균" [ref=e683]
+                - cell "▲ +0.5" [ref=e684] [cursor=pointer]
+                - cell "▲ +0.3" [ref=e685] [cursor=pointer]
+                - cell "▲ +0.7" [ref=e686] [cursor=pointer]
+                - cell "▲ +0.2" [ref=e687] [cursor=pointer]
+                - cell "▲ +0.4" [ref=e688] [cursor=pointer]
+              - row [ref=e689]:
+                - cell "반별 · 행 클릭 → 그 반 학생" [ref=e690]
+              - row [ref=e691]:
+                - cell "A반 ▸" [ref=e692] [cursor=pointer]
+                - cell "▲ +0.5" [ref=e693] [cursor=pointer]
+                - cell "▲ +0.4" [ref=e694] [cursor=pointer]
+                - cell "▲ +0.8" [ref=e695] [cursor=pointer]
+                - cell "▲ +0.3" [ref=e696] [cursor=pointer]
+                - cell "▲ +0.5" [ref=e697] [cursor=pointer]
+              - row [ref=e698]:
+                - cell "B반 ▸" [ref=e699] [cursor=pointer]
+                - cell "▲ +0.4" [ref=e700] [cursor=pointer]
+                - cell "▲ +0.2" [ref=e701] [cursor=pointer]
+                - cell "▲ +0.5" [ref=e702] [cursor=pointer]
+                - cell "▼ −0.1" [ref=e703] [cursor=pointer]
+                - cell "▲ +0.2" [ref=e704] [cursor=pointer]
+              - row [ref=e705]:
+                - cell "C반 ▸" [ref=e706] [cursor=pointer]
+                - cell "▲ +0.6" [ref=e707] [cursor=pointer]
+                - cell "▲ +0.3" [ref=e708] [cursor=pointer]
+                - cell "▲ +0.6" [ref=e709] [cursor=pointer]
+                - cell "▲ +0.1" [ref=e710] [cursor=pointer]
+                - cell "▲ +0.3" [ref=e711] [cursor=pointer]
+          - generic [ref=e712]: · 비교 = 선택 회차 A − 회차 B(ENG-02). 직전(2→3)·최초(1→3)·임의 구간 모두 선택 가능 — 직전 대비에 고정하지 않음. 셀 클릭 시 현재값·직전 대비·최초 대비 누적 세 값 동시 제공(ENG-02 표시 권고). 선택 회차 중 하나라도 데이터 없으면 회색·산출 불가(B4).
+  - generic [ref=e713]: 패턴 렌즈 · 기술영역 히트맵 (DASH-15 · 답변 기준 취약도 · failure_tag)
+  - generic [ref=e715]:
+    - generic [ref=e716]: iz-get.com/cohorts/7/analysis/heatmap/domains
+    - generic [ref=e722]:
+      - generic [ref=e723]:
+        - generic [ref=e724]:
+          - generic [ref=e725]:
+            - generic [ref=e726]: ◆
+            - text: IZ-Get
+          - generic [ref=e727]:
+            - generic [ref=e728]: 기수
+            - text: 7기 ▾
+        - generic [ref=e729]:
+          - text: 박지현 · 매니저
+          - generic [ref=e730]: 박
+      - generic [ref=e731]:
+        - generic [ref=e732]:
+          - generic [ref=e733]:
+            - generic [ref=e734]: ▦
+            - text: 대시보드
+          - generic [ref=e735]:
+            - generic [ref=e736]: ◔
+            - text: 기수 구성
+          - generic [ref=e737]:
+            - generic [ref=e738]: ▧
+            - text: 교안
+          - generic [ref=e739]:
+            - generic [ref=e740]: ▤
+            - text: 프로젝트
+          - generic [ref=e741]:
+            - generic [ref=e742]: △
+            - text: 분석 · 진단
+          - generic [ref=e743]:
+            - generic [ref=e744]: ◎
+            - text: 교육생
+          - generic [ref=e745]:
+            - generic [ref=e746]: ✎
+            - text: 개입
+          - generic [ref=e747]:
+            - generic [ref=e748]: ▥
+            - text: 리포트
+        - generic [ref=e749]:
+          - generic [ref=e750]:
+            - generic [ref=e751]: 분석 · 진단 › 패턴 › 7기
+            - heading "분석 · 진단" [level=2] [ref=e752]
+          - generic [ref=e753]:
+            - generic [ref=e754] [cursor=pointer]: 사람 누가 위험한가
+            - generic [ref=e755] [cursor=pointer]: 패턴 어디가 무너지나
+          - generic [ref=e756]:
+            - generic [ref=e757] [cursor=pointer]: 이해 단계 (DASH-14)
+            - generic [ref=e758] [cursor=pointer]: 기술영역 (DASH-15)
+            - generic [ref=e759] [cursor=pointer]: 개인 궤적
+          - generic [ref=e760]: ⚠ 취약도 = 답변에서 실제로 이해가 무너진 세션 비율(ENG-01 failure_tag 기준). "그 파일에서 질문받은 비율"이 아닙니다 — 인증 파일에서 질문받은 것과 인증을 이해 못한 것은 다른 사실입니다.
+          - generic [ref=e761]:
+            - generic [ref=e762]:
+              - text: 표시
+              - generic [ref=e763]:
+                - generic [ref=e764] [cursor=pointer]: 취약 세션 비율
+                - generic [ref=e765] [cursor=pointer]: 직전 대비 Δ
+            - generic [ref=e766]: 양호 취약 표본부족
+          - generic [ref=e773]:
+            - text: 💡 동시성·경합이 기수 전체의 최대 취약 영역 — 관련 세션 40건 중 24건(60%)에서 이해 실패. 인증·토큰수명도 주의(31/70, 44%). 두 영역은 교안 보강·집중 개입 후보.
+            - generic [ref=e774]:
+              - button "동시성 교안 보강 검토 (CUR)" [ref=e775] [cursor=pointer]
+              - button "취약 대상 개입 (INTV-01)" [ref=e776] [cursor=pointer]
+          - table [ref=e778]:
+            - rowgroup [ref=e779]:
+              - row [ref=e780]:
+                - columnheader [ref=e781]
+                - columnheader "A반" [ref=e782]
+                - columnheader "B반" [ref=e783]
+                - columnheader "C반" [ref=e784]
+                - columnheader "기수 전체" [ref=e785]
+              - row [ref=e786]:
+                - cell "동시성 · 경합" [ref=e787]
+                - cell "50 %" [ref=e788] [cursor=pointer]:
+                  - text: "50"
+                  - generic [ref=e789]: "%"
+                - cell "70 %" [ref=e790] [cursor=pointer]:
+                  - text: "70"
+                  - generic [ref=e791]: "%"
+                - cell "50 %" [ref=e792] [cursor=pointer]:
+                  - text: "50"
+                  - generic [ref=e793]: "%"
+                - cell "60 24/40" [ref=e794] [cursor=pointer]:
+                  - text: "60"
+                  - generic [ref=e795]: 24/40
+              - row [ref=e796]:
+                - cell "인증 · 토큰수명" [ref=e797]
+                - cell "40 %" [ref=e798] [cursor=pointer]:
+                  - text: "40"
+                  - generic [ref=e799]: "%"
+                - cell "55 %" [ref=e800] [cursor=pointer]:
+                  - text: "55"
+                  - generic [ref=e801]: "%"
+                - cell "35 %" [ref=e802] [cursor=pointer]:
+                  - text: "35"
+                  - generic [ref=e803]: "%"
+                - cell "44 %" [ref=e804] [cursor=pointer]:
+                  - text: "44"
+                  - generic [ref=e805]: "%"
+              - row [ref=e806]:
+                - cell "비동기 · 에러처리" [ref=e807]
+                - cell "45 %" [ref=e808] [cursor=pointer]:
+                  - text: "45"
+                  - generic [ref=e809]: "%"
+                - cell "50 %" [ref=e810] [cursor=pointer]:
+                  - text: "50"
+                  - generic [ref=e811]: "%"
+                - cell "40 %" [ref=e812] [cursor=pointer]:
+                  - text: "40"
+                  - generic [ref=e813]: "%"
+                - cell "45 %" [ref=e814] [cursor=pointer]:
+                  - text: "45"
+                  - generic [ref=e815]: "%"
+              - row [ref=e816]:
+                - cell "상태관리 · 생명주기" [ref=e817]
+                - cell "25 %" [ref=e818] [cursor=pointer]:
+                  - text: "25"
+                  - generic [ref=e819]: "%"
+                - cell "30 %" [ref=e820] [cursor=pointer]:
+                  - text: "30"
+                  - generic [ref=e821]: "%"
+                - cell "20 %" [ref=e822] [cursor=pointer]:
+                  - text: "20"
+                  - generic [ref=e823]: "%"
+                - cell "25 %" [ref=e824] [cursor=pointer]:
+                  - text: "25"
+                  - generic [ref=e825]: "%"
+              - row [ref=e826]:
+                - cell "자료구조 · 복잡도" [ref=e827]
+                - cell "표본부족" [ref=e828]
+                - cell "표본부족" [ref=e829]
+                - cell "표본부족" [ref=e830]
+                - cell "N<5" [ref=e831]
+          - generic [ref=e832]:
+            - text: · 영역은 프로젝트 DP(Discussion Point)에서 도출, 취약도는 ENG-01 축별 채점의 failure_tag enum을
+            - code [ref=e833]: GROUP BY
+            - text: 한 집계(답변 기준). 미분류는
+            - code [ref=e834]: unmapped
+            - text: 로 별도 표기. 세션 표본 N<5는 취약도 산출 유보(회색·B4). 셀 클릭 → 취약 세션·근거·대상(A2).
+  - generic [ref=e835]: 패턴 렌즈 · 개인 궤적 · 회차 × 이해 단계 (드릴 대상 · 개입 마커 · SC-M06 연결)
+  - generic [ref=e837]:
+    - generic [ref=e838]: iz-get.com/cohorts/7/analysis/heatmap/trainees/김서연
+    - generic [ref=e844]:
+      - generic [ref=e845]:
+        - generic [ref=e846]:
+          - generic [ref=e847]:
+            - generic [ref=e848]: ◆
+            - text: IZ-Get
+          - generic [ref=e849]:
+            - generic [ref=e850]: 기수
+            - text: 7기 ▾
+        - generic [ref=e851]:
+          - text: 박지현 · 매니저
+          - generic [ref=e852]: 박
+      - generic [ref=e853]:
+        - generic [ref=e854]:
+          - generic [ref=e855]:
+            - generic [ref=e856]: ▦
+            - text: 대시보드
+          - generic [ref=e857]:
+            - generic [ref=e858]: ◔
+            - text: 기수 구성
+          - generic [ref=e859]:
+            - generic [ref=e860]: ▧
+            - text: 교안
+          - generic [ref=e861]:
+            - generic [ref=e862]: ▤
+            - text: 프로젝트
+          - generic [ref=e863]:
+            - generic [ref=e864]: △
+            - text: 분석 · 진단
+          - generic [ref=e865]:
+            - generic [ref=e866]: ◎
+            - text: 교육생
+          - generic [ref=e867]:
+            - generic [ref=e868]: ✎
+            - text: 개입
+          - generic [ref=e869]:
+            - generic [ref=e870]: ▥
+            - text: 리포트
+        - generic [ref=e871]:
+          - generic [ref=e872]:
+            - generic [ref=e873]: 분석 · 진단 › 패턴 › 7기
+            - heading "분석 · 진단" [level=2] [ref=e874]
+          - generic [ref=e875]:
+            - generic [ref=e876] [cursor=pointer]: 사람 누가 위험한가
+            - generic [ref=e877] [cursor=pointer]: 패턴 어디가 무너지나
+          - generic [ref=e878]:
+            - generic [ref=e879] [cursor=pointer]: 이해 단계 (DASH-14)
+            - generic [ref=e880] [cursor=pointer]: 기술영역 (DASH-15)
+            - generic [ref=e881] [cursor=pointer]: 개인 궤적
+          - generic [ref=e882]:
+            - generic [ref=e883]:
+              - text: 보기
+              - generic [ref=e884] [cursor=pointer]: 기수 · 반별
+              - generic [ref=e885]: ›
+              - generic [ref=e886] [cursor=pointer]: A반
+              - generic [ref=e887]: ›
+              - generic [ref=e888] [cursor=pointer]: 김서연
+            - generic [ref=e889] [cursor=pointer]: 김서연 ▾
+            - generic [ref=e890]: 취약 양호
+          - generic [ref=e896]: 김서연 · A반 · 개인 이해 단계 궤적 — 회차별로 어느 단계가 언제 회복/성장했는지. 셀은 이 학생의 축 점수(코호트 평균과 별개).
+          - table [ref=e898]:
+            - rowgroup [ref=e899]:
+              - row [ref=e900]:
+                - columnheader [ref=e901]
+                - columnheader "L1 코드이해" [ref=e902]:
+                  - generic [ref=e903]: L1
+                  - text: 코드이해
+                - columnheader "L2 설계논리" [ref=e904]:
+                  - generic [ref=e905]: L2
+                  - text: 설계논리
+                - columnheader "L3 대안비교" [ref=e906]:
+                  - generic [ref=e907]: L3
+                  - text: 대안비교
+                - columnheader "L4 반례대응" [ref=e908]:
+                  - generic [ref=e909]: L4
+                  - text: 반례대응
+                - columnheader "L5 자기수정" [ref=e910]:
+                  - generic [ref=e911]: L5
+                  - text: 자기수정
+              - row [ref=e912]:
+                - cell "1회차" [ref=e913]
+                - cell "3.5" [ref=e914] [cursor=pointer]
+                - cell "3.2" [ref=e915] [cursor=pointer]
+                - cell "2.0 취약" [ref=e916] [cursor=pointer]:
+                  - text: "2.0"
+                  - generic [ref=e917]: 취약
+                - cell "2.5" [ref=e918] [cursor=pointer]
+                - cell "2.8" [ref=e919] [cursor=pointer]
+              - row [ref=e920]:
+                - cell "2회차 개입" [ref=e921]:
+                  - text: 2회차
+                  - generic [ref=e922]: 개입
+                - cell "3.8" [ref=e923] [cursor=pointer]
+                - cell "3.5" [ref=e924] [cursor=pointer]
+                - cell "3.0" [ref=e925] [cursor=pointer]
+                - cell "2.9" [ref=e926] [cursor=pointer]
+                - cell "3.4" [ref=e927] [cursor=pointer]
+              - row [ref=e928]:
+                - cell "3회차 최종" [ref=e929]
+                - cell "4.2" [ref=e930] [cursor=pointer]
+                - cell "3.8" [ref=e931] [cursor=pointer]
+                - cell "3.6" [ref=e932] [cursor=pointer]
+                - cell "3.5" [ref=e933] [cursor=pointer]
+                - cell "4.0" [ref=e934] [cursor=pointer]
+          - generic [ref=e935]:
+            - text: ✎
+            - generic [ref=e936]: 개입 이력
+            - text: · 2회차 반례대응 멘토링(INTV#312) → 대안비교·반례대응 이후 회복. 개입 마커가 붙은 회차 이후 상승 추적 가능.
+          - generic [ref=e937]: · 개인 궤적은 낙인이 아니라 성장 기록 — 상승/회복 지점을 본다. 세부(세션 원문·근거·귀속)는 SC-M06 개별 상세, 최종 등급·총평은 SC-M08 개인 리포트. 이 페이지는 회차×단계 히트맵 궤적에 특화(중복 아님). 1회차만 있으면 궤적 없이 절대값만(B4). L1~L5는 5축 파생(B6).
+  - generic [ref=e938]: 상태 ↔ 명세 case 매핑 (DASH-10~13 25 + DASH-14/15 14 = 39)
+  - generic [ref=e941]:
+    - heading "상태별 UI — 예외 case 전량 (게이트 A · 39)" [level=3] [ref=e942]
+    - paragraph [ref=e943]: 비주얼은 위험 목록·불균형·히트맵 위주. 예외는 이 표가 계약. 사람 렌즈 25(DASH-10 6·11 7·12 6·13 6) + 패턴 렌즈 14(DASH-14 7·15 7).
+    - generic [ref=e944]: ［사람］ 위험 목록 (DASH-10)
+    - table [ref=e946]:
+      - rowgroup [ref=e947]:
+        - row [ref=e948]:
+          - cell "R-1" [ref=e949]
+          - cell "근거 trace 없는 시그널" [ref=e950]
+          - cell "danger" [ref=e951]
+          - cell "노출 차단(A2)" [ref=e953]
+        - row [ref=e954]:
+          - cell "R-2" [ref=e955]
+          - cell "회차 1건 이하" [ref=e956]
+          - cell "warning" [ref=e957]
+          - cell "추이 문구 금지·표본 부족(B4)" [ref=e959]
+        - row [ref=e960]:
+          - cell "R-3" [ref=e961]
+          - cell "기수 평균 부재" [ref=e962]
+          - cell "-" [ref=e963]
+          - cell "절대 점수·개인 추이만" [ref=e965]
+        - row [ref=e966]:
+          - cell "R-4" [ref=e967]
+          - cell "이미 해소된 시그널" [ref=e968]
+          - cell "-" [ref=e969]
+          - cell "목록 제외" [ref=e971]
+        - row [ref=e972]:
+          - cell "R-5" [ref=e973]
+          - cell "근거값·최신 점수 불일치" [ref=e974]
+          - cell "warning" [ref=e975]
+          - cell "재산출 요청" [ref=e977]
+        - row [ref=e978]:
+          - cell "R-6" [ref=e979]
+          - cell "위험 라벨 단독 요청" [ref=e980]
+          - cell "danger" [ref=e981]
+          - cell "근거 문구 필수(A2)" [ref=e983]
+    - generic [ref=e984]: ［사람］ 기여·이해도 불균형 (DASH-11)
+    - table [ref=e986]:
+      - rowgroup [ref=e987]:
+        - row [ref=e988]:
+          - cell "I-1" [ref=e989]
+          - cell "기여량 데이터만" [ref=e990]
+          - cell "danger" [ref=e991]
+          - cell "후보 표시 차단(B5)" [ref=e993]
+        - row [ref=e994]:
+          - cell "I-2" [ref=e995]
+          - cell "이해도 데이터만" [ref=e996]
+          - cell "-" [ref=e997]
+          - cell "교차 시그널 유보" [ref=e999]
+        - row [ref=e1000]:
+          - cell "I-3" [ref=e1001]
+          - cell "git history 부재" [ref=e1002]
+          - cell "-" [ref=e1003]
+          - cell "판정 유보" [ref=e1005]
+        - row [ref=e1006]:
+          - cell "I-4" [ref=e1007]
+          - cell "교차 근거 불충분" [ref=e1008]
+          - cell "-" [ref=e1009]
+          - cell "노출 없이 모니터링" [ref=e1011]
+        - row [ref=e1012]:
+          - cell "I-5" [ref=e1013]
+          - cell "'프리라이더' 라벨 요청" [ref=e1014]
+          - cell "danger" [ref=e1015]
+          - cell "서술형 변환(A1)" [ref=e1017]
+        - row [ref=e1018]:
+          - cell "I-6" [ref=e1019]
+          - cell "자동 생성 코드 영향" [ref=e1020]
+          - cell "warning" [ref=e1021]
+          - cell "기여량 재산출" [ref=e1023]
+        - row [ref=e1024]:
+          - cell "I-7" [ref=e1025]
+          - cell "중복 시그널" [ref=e1026]
+          - cell "-" [ref=e1027]
+          - cell "활성 시그널 병합" [ref=e1029]
+    - generic [ref=e1030]: ［사람］ 에이스 (DASH-12 6) · 팀 분석 (DASH-13 6)
+    - table [ref=e1032]:
+      - rowgroup [ref=e1033]:
+        - row [ref=e1034]:
+          - cell "A-1" [ref=e1035]
+          - cell "단일 회차 고득점만" [ref=e1036]
+          - cell "warning" [ref=e1037]
+          - cell "에이스 확정 유보·표본 부족(B4)" [ref=e1039]
+        - row [ref=e1040]:
+          - cell "A-2" [ref=e1041]
+          - cell "성장률 계산 불가" [ref=e1042]
+          - cell "-" [ref=e1043]
+          - cell "최신·설명력만·성장 근거 제외" [ref=e1045]
+        - row [ref=e1046]:
+          - cell "A-3" [ref=e1047]
+          - cell "근거 세션 부재" [ref=e1048]
+          - cell "danger" [ref=e1049]
+          - cell "카드 생성 차단" [ref=e1051]
+        - row [ref=e1052]:
+          - cell "A-4·5" [ref=e1053]
+          - cell "일부 축 누락·동점 다수" [ref=e1054]
+          - cell "-" [ref=e1055]
+          - cell "산출 가능 축만·성장률 보조 정렬" [ref=e1057]
+        - row [ref=e1058]:
+          - cell "A-6" [ref=e1059]
+          - cell "활성 에이스 없음" [ref=e1060]
+          - cell "-" [ref=e1061]
+          - cell "빈 상태" [ref=e1063]
+        - row [ref=e1064]:
+          - cell "T-1" [ref=e1065]
+          - cell "팀 구성 부재" [ref=e1066]
+          - cell "danger" [ref=e1067]
+          - cell "개인 단위만" [ref=e1069]
+        - row [ref=e1070]:
+          - cell "T-2" [ref=e1071]
+          - cell "일부 팀원 점수 누락" [ref=e1072]
+          - cell "-" [ref=e1073]
+          - cell "유효 표본 병기·계산 가능만" [ref=e1075]
+        - row [ref=e1076]:
+          - cell "T-3" [ref=e1077]
+          - cell "팀원 과소" [ref=e1078]
+          - cell "warning" [ref=e1079]
+          - cell "편차 해석 유보·표본 부족" [ref=e1081]
+        - row [ref=e1082]:
+          - cell "T-4" [ref=e1083]
+          - cell "완성도 데이터 부재" [ref=e1084]
+          - cell "-" [ref=e1085]
+          - cell "설명력 갭 생략" [ref=e1087]
+        - row [ref=e1088]:
+          - cell "T-5·6" [ref=e1089]
+          - cell "구성 변경·중복 소속" [ref=e1090]
+          - cell "-" [ref=e1091]
+          - cell "기간 분리·활성 정규화" [ref=e1093]
+    - generic [ref=e1094]: ［패턴］ 이해 단계 히트맵 (DASH-14)
+    - table [ref=e1096]:
+      - rowgroup [ref=e1097]:
+        - row [ref=e1098]:
+          - columnheader "#" [ref=e1099]
+          - columnheader "상태" [ref=e1100]
+          - columnheader "처리" [ref=e1101]
+          - columnheader "표현 / 다음 행동" [ref=e1102]
+        - row [ref=e1103]:
+          - cell "1" [ref=e1104]
+          - cell "축 점수 데이터 없음" [ref=e1105]
+          - cell "셀 비움" [ref=e1106]
+          - cell "해당 단계 셀 회색·N/A(파생 원천 없음)" [ref=e1108]
+        - row [ref=e1109]:
+          - cell "2" [ref=e1110]
+          - cell "회차 1건 이하" [ref=e1111]
+          - cell "Δ 산출 불가" [ref=e1112]
+          - cell "Δ 모드에서 회색·\"표본 부족\"(B4)" [ref=e1114]
+        - row [ref=e1115]:
+          - cell "3" [ref=e1116]
+          - cell "근거 세션 없는 셀" [ref=e1117]
+          - cell "표시 차단" [ref=e1118]
+          - cell "근거 trace 없으면 셀 값 표시 안 함(A2)" [ref=e1120]
+        - row [ref=e1121]:
+          - cell "4" [ref=e1122]
+          - cell "일부 축 결측" [ref=e1123]
+          - cell "결측 축 제외" [ref=e1124]
+          - cell "산출 가능한 단계만 채색, 결측 병기" [ref=e1126]
+        - row [ref=e1127]:
+          - cell "5" [ref=e1128]
+          - cell "L1~L5를 독립 측정으로 오해" [ref=e1129]
+          - cell "파생 명시" [ref=e1130]
+          - cell "\"5축 파생\" 문구 상시 노출(B6)" [ref=e1132]
+        - row [ref=e1133]:
+          - cell "6" [ref=e1134]
+          - cell "기수 평균 부재" [ref=e1135]
+          - cell "개인/반만" [ref=e1136]
+          - cell "평균 행 생략, 개인·반 단위만" [ref=e1138]
+        - row [ref=e1139]:
+          - cell "7" [ref=e1140]
+          - cell "재측정으로 값 갱신" [ref=e1141]
+          - cell "스냅샷 기준" [ref=e1142]
+          - cell "회차 스냅샷 기준 재집계(B1)" [ref=e1144]
+    - generic [ref=e1145]: ［패턴］ 기술영역 히트맵 (DASH-15)
+    - table [ref=e1147]:
+      - rowgroup [ref=e1148]:
+        - row [ref=e1149]:
+          - columnheader "#" [ref=e1150]
+          - columnheader "상태" [ref=e1151]
+          - columnheader "처리" [ref=e1152]
+          - columnheader "표현 / 다음 행동" [ref=e1153]
+        - row [ref=e1154]:
+          - cell "1" [ref=e1155]
+          - cell "세션 표본 부족(N<5)" [ref=e1156]
+          - cell "산출 유보" [ref=e1157]
+          - cell "해당 영역 셀 회색·\"표본부족\"(B4)" [ref=e1159]
+        - row [ref=e1160]:
+          - cell "2" [ref=e1161]
+          - cell "failure_tag 미분류" [ref=e1162]
+          - cell "unmapped 표기" [ref=e1163]
+          - cell "미분류 비율을 별도 표기(품질 지표)" [ref=e1165]
+        - row [ref=e1166]:
+          - cell "3" [ref=e1167]
+          - cell "질문영역과 실패영역 혼동" [ref=e1168]
+          - cell "답변 기준 강제" [ref=e1169]
+          - cell "취약도는 failure_tag(답변)만, 질문 파일 집계 차단" [ref=e1171]
+        - row [ref=e1172]:
+          - cell "4" [ref=e1173]
+          - cell "근거 없는 영역 라벨" [ref=e1174]
+          - cell "표시 차단" [ref=e1175]
+          - cell "근거 세션 없는 영역 셀 미표시(A2)" [ref=e1177]
+        - row [ref=e1178]:
+          - cell "5" [ref=e1179]
+          - cell "DP 도출 영역 없음" [ref=e1180]
+          - cell "영역 비움" [ref=e1181]
+          - cell "프로젝트 DP 없으면 영역 축 비움" [ref=e1183]
+        - row [ref=e1184]:
+          - cell "6" [ref=e1185]
+          - cell "영역 명칭 중복/유사" [ref=e1186]
+          - cell "enum 정규화" [ref=e1187]
+          - cell "사전 정의 enum으로 병합·정규화" [ref=e1189]
+        - row [ref=e1190]:
+          - cell "7" [ref=e1191]
+          - cell "회차 간 영역 구성 변경" [ref=e1192]
+          - cell "스냅샷 분리" [ref=e1193]
+          - cell "회차 스냅샷 기준 분리 집계(B1)" [ref=e1195]
+    - generic [ref=e1196]: "게이트 A: 25 + 14 = 39 case = 39 상태 행 ✅ (패턴 렌즈 DASH-14/15는 P2·원문 대조 필요 플래그) · 근거 추적 중심(A2)·낙인 금지 서술형(A1)·기여 단독 금지(B5)·표본 부족 유보(B4)·L1~L5=5축 파생(B6)·회차 스냅샷(B1) · 항목 → 개입 생성(SC-M07)·상세(SC-M06)·교안 보강(CUR)·개입 분기(INTV-01) · 담당 기수·기관 범위(SYS-02·AUTH-09) · 웹 기준 · 디자인 토큰: docs/screen-def-v8/_source/design-tokens.md"

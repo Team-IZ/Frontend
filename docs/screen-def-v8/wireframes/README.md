@@ -19,14 +19,11 @@
 |---|---|---|
 | `manager/signup.html` | 매니저 회원가입(초대) | SC-A02-signup-activation.md |
 | `manager/dashboard.html` | 대시보드 | SC-M01-dashboard.md |
-| `manager/measurement-plan.html` | 측정 계획 | SC-M03-measurement-plan.md |
-| `manager/projects-teams.html` | 프로젝트·팀 | SC-M13-projects-teams.md |
 | `manager/analysis.html` | 분석·진단 (사람 렌즈 + 패턴 렌즈, M04+M05 병합) | SC-M04-risk-analysis.md · SC-M05-heatmap.md |
 | `manager/trainee-list.html` | 교육생 리스트 | SC-M11-trainee-list.md |
 | `manager/trainee-detail.html` | 개별 교육생 상세 | SC-M06-trainee-detail.md |
 | `manager/intervention.html` | 개입 관리 | SC-M07-intervention-management.md |
 | `manager/report.html` | 리포트 | SC-M08-report.md |
-| `manager/appeal-disclosure.html` | 이의 검토·열람 범위 | SC-M09-appeal-disclosure.md |
 
 ### manager/lead-only/ — **총괄 매니저(ORG_MANAGE) 전용** (담당엔 네비 비노출·403)
 | 파일 | 화면 | 정의서 |

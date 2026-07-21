@@ -134,6 +134,13 @@
   .pill.warning{background:var(--c-warning-soft);color:var(--c-warning)}
   .pill.info{background:var(--c-info-soft);color:var(--c-info)}
   .foot{margin-top:var(--sp-5);font-size:var(--fs-xs);color:var(--c-text-3)}
+
+  .statebar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--sp-6);padding-bottom:var(--sp-5);border-bottom:1px solid var(--c-border)}
+  .stbtn{font-size:12px;font-weight:600;padding:7px 13px;border-radius:20px;border:1px solid var(--c-border-strong);background:#fff;color:var(--c-text-2);cursor:pointer;white-space:nowrap;font-family:inherit}
+  .stbtn:hover{border-color:var(--c-text-3)}
+  .stbtn.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary)}
+  .statesec{display:none}
+  .statesec.on{display:block}
 </style>
 </head>
 <body>
@@ -142,6 +149,19 @@
     <span class="id">SC-T02 · P0 · 교육생 · 웹</span>
     <h1>코드 제출 — 상태별 전량</h1>
     <p>흐름: <b>커밋 이메일 검증(AUTH-07) → 코드 제출(MEAS-01) → 분석 대기(MEAS-02A/02B) → 세션(T04)</b>. 커밋 이메일은 귀속의 전제(미검증도 제출은 되나 경고, A8). <b>레포는 팀/학생 단위로 연결</b>(D18) — 팀 프로젝트는 연결된 팀 레포를 쓰고 개인은 본인이 입력. 추출된 질문 내용은 <b>세션 전까지 비노출</b>(A4·A5). 재응시 없음.</p>
+  </div>
+
+  <section class="statesec" id="s1">
+  <div class="statebar" role="tablist">
+    <button class="stbtn on" data-state="s1">S1 · 정상 — 커밋 검증됨(접힘)</button>
+    <button class="stbtn" data-state="s2">S2 · 커밋 이메일 미검증(E-6)</button>
+    <button class="stbtn" data-state="s3">S3 · ZIP 업로드 방식</button>
+    <button class="stbtn" data-state="s4">S4 · 제출 완료</button>
+    <button class="stbtn" data-state="s5">S5 · 분석 완료(DP_READY)</button>
+    <button class="stbtn" data-state="s6">S6 · 이미 제출함</button>
+    <button class="stbtn" data-state="s6b">S6b · 세션 시작</button>
+    <button class="stbtn" data-state="s7">S7 · 오류 — 저장소 접근 불가(M-3) + URL 형식 오류(M-2)</button>
+    <button class="stbtn" data-state="s8">S8 · 분석 실패 — 내 커밋 0건(A-1)</button>
   </div>
 
   <!-- ============ S1 · 정상 (커밋 검증됨 → 접힘, 팀 레포 연결됨) ============ -->
@@ -184,6 +204,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="s2">
   <!-- ============ S2 · 커밋 미검증 + 개인 프로젝트(URL 직접 입력) ============ -->
   <div class="sec-label">S2 · 커밋 이메일 미검증(E-6) · 개인 프로젝트(본인 저장소 입력) <span class="tag">검증 단계 펼침 · 미검증도 제출은 허용(A8)</span></div>
   <div class="viewport">
@@ -223,6 +246,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="s3">
   <!-- ============ S3 · ZIP 방식 ============ -->
   <div class="sec-label">S3 · ZIP 업로드 방식 <span class="tag">git log 필수(귀속 분석용) · OS별 명령 안내 · MEAS-01</span></div>
   <div class="viewport">
@@ -256,6 +282,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="s4">
   <!-- ============ S4 · 제출 후 분석 진행 ============ -->
   <div class="sec-label">S4 · 제출 완료 · 분석 진행 중 <span class="tag">백그라운드 · 단계별 상태 · 추출 내용 비노출</span></div>
   <div class="viewport">
@@ -295,6 +324,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="s5">
   <!-- ============ S5 · 분석 완료 → 세션 시작 가능 ============ -->
   <div class="sec-label">S5 · 분석 완료(DP_READY) · 세션 시작 가능 <span class="tag">T04 인계 지점 · 세션 톤 선제 완화(D108~111)</span></div>
   <div class="viewport">
@@ -330,6 +362,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="s6">
   <!-- ============ S6 · 이미 제출됨(재제출 가능 — 세션 미시작) ============ -->
   <div class="sec-label">S6 · 이미 제출함 · <b>세션 미시작</b> → 재제출 가능 <span class="tag">스냅샷 교체·분석 재시작 · 세션 시작 전에만</span></div>
   <div class="viewport">
@@ -363,6 +398,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="s6b">
   <!-- ============ S6b · 세션 시작/완료 후 → 재제출 잠금 ============ -->
   <div class="sec-label">S6b · 세션 시작·완료 후 → <b>재제출 잠금</b> <span class="tag">이 스냅샷으로 측정 진행/완료 · 갈면 측정 오염 + 재응시 우회 · B2</span></div>
   <div class="viewport">
@@ -397,6 +435,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="s7">
   <!-- ============ S7 · 오류 모음 ============ -->
   <div class="sec-label">S7 · 오류 — 저장소 접근 불가(M-3) + URL 형식 오류(M-2) <span class="tag">복구 경로 제시(ZIP 전환)</span></div>
   <div class="viewport">
@@ -430,6 +471,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="s8">
   <!-- ============ S8 · 분석 실패 ============ -->
   <div class="sec-label">S8 · 분석 실패 — 내 커밋 0건(A-1) <span class="tag">교육생이 스스로 복구 가능한 안내 · 랩의 pstep error 패턴</span></div>
   <div class="viewport">
@@ -463,6 +507,8 @@
       </div>
     </div>
   </div>
+
+  </section>
 
   <div class="notes">
     <h3>상태 ↔ 명세 case 매핑 (MEAS-01 6 + AUTH-07 8 + MEAS-02A/B 6 = 20)</h3>
@@ -499,5 +545,30 @@
     <div class="foot">디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 신규: ContextStrip·CommitEmailField(검증 시 접힘)·MethodToggle(모드별 콘텐츠 분기)·AnalysisProgress(done·now·wait·error)·SubmittedCard · <b>레포는 팀/학생 단위 연결</b>(D18 — 팀=연결된 레포 잠금, 개인=직접 입력) · 추출 질문 내용 비노출(A4·A5) · 세션 톤 선제 완화(D108~111) · 재응시 없음 · 웹 기준</div>
   </div>
 </div>
+
+<script>
+(function(){
+  var bar = document.querySelector('.statebar');
+  if(!bar) return;
+  var btns = Array.prototype.slice.call(bar.querySelectorAll('.stbtn'));
+  var secs = Array.prototype.slice.call(document.querySelectorAll('.statesec'));
+  function show(id){
+    secs.forEach(function(s){ s.classList.toggle('on', s.id === id); });
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.state === id); });
+  }
+  bar.addEventListener('click', function(e){
+    var b = e.target.closest('.stbtn');
+    if(!b) return;
+    if(location.hash === '#' + b.dataset.state) show(b.dataset.state);
+    else location.hash = b.dataset.state;
+  });
+  window.addEventListener('hashchange', function(){
+    var h = (location.hash || '').slice(1);
+    if(document.getElementById(h)) show(h);
+  });
+  var initial = (location.hash || '').slice(1);
+  show(document.getElementById(initial) ? initial : secs[0].id);
+})();
+</script>
 </body>
 </html>

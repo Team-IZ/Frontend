@@ -1,0 +1,137 @@
+- generic [ref=f4e2]:
+  - generic [ref=f4e3]:
+    - generic [ref=f4e4]: SC-T05 · P0 · 교육생 · 웹
+    - heading "결과 리포트 (교육생) — 상태별 전량" [level=1] [ref=f4e5]
+    - paragraph [ref=f4e6]: 교육생이 볼 수 있는 것만(GOV-03 전체/요약/비공개, 미지정 시 기본 비공개). 점수·루브릭·산정 공식·채점 근거는 비노출(A5) — 리포트는 서술형 강약점 + 이해 상태 궤적. 취약점은 처방이 아니라 교안 위치 안내까지(자동 연결된 매핑이 있고 신뢰도가 충분할 때만, B10·D96). 등급은 최종 회차만(B3). 결과에 대한 이의제기 절차는 없다 — 점수·루브릭이 A5로 비노출이라 학생이 논박할 근거 자체가 없고, 오측정 안전망은 매니저 검토(GOV-02)와 재채점 검증(ENG-05)이 담당(D117).
+  - generic [ref=f4e7]:
+    - tablist [ref=f4e8]:
+      - button "T0 · \"내 리포트\" 진입" [ref=f4e9] [cursor=pointer]
+      - button "T1 · 요약 공개 (GOV-03)" [ref=f4e10] [cursor=pointer]
+      - button "T2 · 전체 공개 (GOV-03)" [ref=f4e11] [cursor=pointer]
+      - button "T5 · 최종 리포트 (최종 회차)" [ref=f4e12] [cursor=pointer]
+      - button "T6 · 비공개(R-1)" [ref=f4e13] [cursor=pointer]
+      - button "T7 · 세션 미완료(R-3)" [ref=f4e14] [cursor=pointer]
+      - button "T8 · 교안 위치 안내 없음(R-5)" [ref=f4e15] [cursor=pointer]
+    - generic [ref=f4e16]: T0 · "내 리포트" 진입 별도 목록 화면 없음 — 회차 선택기 + 최신 리포트 (D116)
+    - generic [ref=f4e17]:
+      - generic [ref=f4e18]: iz-get.com/reports
+      - generic [ref=f4e24]:
+        - generic [ref=f4e25]:
+          - generic [ref=f4e26]:
+            - generic [ref=f4e27]:
+              - generic [ref=f4e28]: ◆
+              - text: IZ-Get
+            - generic [ref=f4e29]:
+              - generic [ref=f4e30]: 홈
+              - generic [ref=f4e31]: 내 리포트
+          - generic [ref=f4e32]:
+            - generic [ref=f4e33]:
+              - text: 김민준
+              - generic [ref=f4e34]: 7기 · A반
+            - generic [ref=f4e35]: 민
+        - generic [ref=f4e36]:
+          - generic [ref=f4e37]:
+            - generic [ref=f4e38]:
+              - generic [ref=f4e39]: 내 리포트
+              - heading "3회차 결과" [level=2] [ref=f4e40]
+            - generic [ref=f4e41]: 전체 공개
+          - generic [ref=f4e42]: 생성 05.11 · API 서버 · 중간 회차 · 가장 최근 리포트
+          - generic [ref=f4e43]:
+            - generic [ref=f4e44] [cursor=pointer]:
+              - text: 1회차
+              - generic [ref=f4e45]: 🔒
+            - generic [ref=f4e46] [cursor=pointer]: 2회차
+            - generic [ref=f4e47] [cursor=pointer]: 3회차
+            - generic [ref=f4e48] [cursor=pointer]: 4회차 · 준비 중
+          - generic [ref=f4e49]:
+            - generic [ref=f4e50]: 지금까지의 변화
+            - generic [ref=f4e51]:
+              - generic [ref=f4e52]:
+                - generic [ref=f4e54]: 시작
+                - generic [ref=f4e55]: 1회차
+              - generic [ref=f4e56]:
+                - generic [ref=f4e58]: 부분
+                - generic [ref=f4e59]: 2회차
+              - generic [ref=f4e60]:
+                - generic [ref=f4e61]: 견고
+                - generic [ref=f4e62]: 3회차
+            - paragraph [ref=f4e63]: 코드를 설명하는 힘이 회차를 거치며 꾸준히 나아지고 있어요.
+          - generic [ref=f4e64]:
+            - generic [ref=f4e65]: 잘한 점
+            - paragraph [ref=f4e67]: 예외 상황 대응이 눈에 띄게 좋아졌어요.
+            - generic [ref=f4e68]: 반례 대응
+          - generic [ref=f4e70]: 🔒 점수·루브릭·채점 근거는 표시되지 않아요. · 회차를 눌러 지난 결과를 볼 수 있어요(비공개 회차는 잠금).
+  - generic [ref=f4e71]:
+    - heading "상태 ↔ 명세 case 매핑 (교육생-facing)" [level=3] [ref=f4e72]
+    - paragraph [ref=f4e73]: 공개 범위 설정(GOV-03 매니저측)은 SC-M03 측정 계획의 회차 파라미터(D121). 학생 이의제기(GOV-01) 제외 — A5로 논박 근거 비노출, 안전망은 GOV-02+ENG-05(D117).
+    - table [ref=f4e75]:
+      - rowgroup [ref=f4e76]:
+        - row [ref=f4e77]:
+          - columnheader "#" [ref=f4e78]
+          - columnheader "상태" [ref=f4e79]
+          - columnheader "표현" [ref=f4e80]
+          - columnheader "교육생에게 보이는 것" [ref=f4e81]
+          - columnheader "화면" [ref=f4e82]
+      - rowgroup [ref=f4e83]:
+        - row [ref=f4e84]:
+          - cell "—" [ref=f4e85]
+          - cell "정상(요약/전체 공개)" [ref=f4e86]
+          - cell "—" [ref=f4e87]
+          - cell "서술형 강약점 · (전체 시)이해 상태 궤적 · 교안 위치" [ref=f4e88]
+          - cell "✔ T1·T2" [ref=f4e89]
+        - row [ref=f4e90]:
+          - cell "R-1" [ref=f4e91]
+          - cell "전체 비공개(GOV-03)" [ref=f4e92]
+          - cell "잠금" [ref=f4e93]
+          - cell "\"결과가 아직 공개되지 않았어요\"" [ref=f4e95]
+          - cell "✔ T6" [ref=f4e96]
+        - row [ref=f4e97]:
+          - cell "R-2" [ref=f4e98]
+          - cell "설정 미지정·조회 실패" [ref=f4e99]
+          - cell "잠금" [ref=f4e100]
+          - cell "기본 비공개 적용(안전)" [ref=f4e102]
+          - cell "✔ T6" [ref=f4e103]
+        - row [ref=f4e104]:
+          - cell "R-3" [ref=f4e105]
+          - cell "세션 미완료" [ref=f4e106]
+          - cell "info" [ref=f4e107]
+          - cell "\"세션을 마치면 결과를 볼 수 있어요\"" [ref=f4e109]
+          - cell "✔ T7" [ref=f4e110]
+        - row [ref=f4e111]:
+          - cell "R-4" [ref=f4e112]
+          - cell "리포트 생성 중/실패" [ref=f4e113]
+          - cell "info" [ref=f4e114]
+          - cell "\"결과를 정리하고 있어요\"" [ref=f4e116]
+          - cell "✔ T7" [ref=f4e117]
+        - row [ref=f4e118]:
+          - cell "R-5" [ref=f4e119]
+          - cell "교안 위치 안내 불가(미링크·미커버·저신뢰)" [ref=f4e120]
+          - cell "-" [ref=f4e121]
+          - cell "학습 자료 블록 생략(빈 껍데기 금지) · D96 자동연결 모델" [ref=f4e123]
+          - cell "✔ T8" [ref=f4e124]
+        - row [ref=f4e125]:
+          - cell "R-9" [ref=f4e126]
+          - cell "첫 회차(비교할 이전 회차 없음)" [ref=f4e127]
+          - cell "info" [ref=f4e128]
+          - cell "궤적 블록 생략 · \"회차가 쌓이면 변화를 보여드려요\" · 단독 판정 금지(B4)" [ref=f4e130]
+          - cell "T2 변형" [ref=f4e131]
+        - row [ref=f4e132]:
+          - cell "R-6" [ref=f4e133]
+          - cell "최종 회차 아님" [ref=f4e134]
+          - cell "-" [ref=f4e135]
+          - cell "등급 미표시, 강약점·궤적만" [ref=f4e137]
+          - cell "✔ T1·T2" [ref=f4e138]
+        - row [ref=f4e139]:
+          - cell "R-7" [ref=f4e140]
+          - cell "최종 등급 부재" [ref=f4e141]
+          - cell "info" [ref=f4e142]
+          - cell "등급 항목 제외, 궤적만" [ref=f4e144]
+          - cell "T5 변형" [ref=f4e145]
+        - row [ref=f4e146]:
+          - cell "R-8" [ref=f4e147]
+          - cell "공개 금지 정보 탐지" [ref=f4e148]
+          - cell "warning" [ref=f4e149]
+          - cell "해당 항목 제거 후 노출(교육생엔 흔적 없음)" [ref=f4e151]
+          - cell "서버측" [ref=f4e152]
+    - generic [ref=f4e153]: "⚠️ 확인 필요(명세 공백): 최종 등급 체계의 값이 기능명세서에 정의돼 있지 않다. 이 와이어는 세션 이해 상태 어휘(견고/부분/표면, D25)를 재사용했다. 이전 초안의 \"소유\"는 테스트 랩 용어가 유입된 것이라 제거. 등급을 이해 상태와 같은 축으로 둘지 별도 등급(A/B/C 등)으로 둘지 확정 필요."
+    - generic [ref=f4e154]: "디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 신규: ReportHeader·ScopeBadge·StrengthWeakness(서술형)·StateTrajectory(점수 눈금 없음)·CurriculumHint·GradeBadge·LockCard·StateCard · 점수·루브릭·산정 공식 비노출(A5) · 처방 금지·위치 안내까지(B10) · 등급은 최종 회차만(B3) · 1회차 단독 판정 금지 → 궤적은 2회차부터(B4) · 순위·타인 비교 배제(B5·D29) · 학생 이의제기 제외(D117) · 웹 기준"

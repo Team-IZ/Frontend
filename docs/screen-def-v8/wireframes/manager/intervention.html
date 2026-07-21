@@ -168,6 +168,30 @@
   .pill.warning{background:var(--c-warning-soft);color:var(--c-warning)}
   .pill.na{background:#eef0f3;color:var(--c-text-3)}
   .foot{margin-top:var(--sp-5);font-size:var(--fs-xs);color:var(--c-text-3)}
+
+  /* 회복률 집계(1급 정보 · D131) — 유형×축 회복률, 목록보다 먼저 */
+  .agg{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5);margin-bottom:var(--sp-4);box-shadow:var(--shadow-card)}
+  .agg .ah{display:flex;align-items:baseline;gap:8px;margin-bottom:var(--sp-3)}
+  .agg .ah b{font-size:var(--fs-lg);font-weight:800}
+  .agg .ah .mut{font-size:11px;color:var(--c-text-3)}
+  .agg .grid{display:grid;grid-template-columns:repeat(5,1fr);gap:var(--sp-3)}
+  .agg .cell{border:1px solid var(--c-border);border-radius:var(--r-md);padding:10px 12px;background:var(--c-surface-2)}
+  .agg .cell .ty{font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);margin-bottom:6px}
+  .agg .cell .rate{font-size:var(--fs-xl);font-weight:800;line-height:1;letter-spacing:-.01em}
+  .agg .cell .rate.hi{color:var(--c-success)}
+  .agg .cell .rate.mid{color:var(--c-warning)}
+  .agg .cell .rate.lo{color:var(--c-danger)}
+  .agg .cell .rate.na{color:var(--c-text-3)}
+  .agg .cell .n{font-size:11px;color:var(--c-text-3);margin-top:2px}
+  .agg .cell .top{font-size:10px;color:var(--c-text-3);margin-top:6px;border-top:1px solid var(--c-border);padding-top:6px}
+  .agg .cell .top b{color:var(--c-text-2)}
+  .createhint{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--c-text-3);background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-md);padding:8px 12px;margin-bottom:var(--sp-3)}
+
+  /* 해시 라우팅 — 사이드바 하위메뉴 하나당 화면 하나(M04/M06/M11과 동일 패턴 · D131) */
+  body.embedded .doc-head, body.embedded .sec-label{display:none}
+  body.embedded .page{padding:var(--sp-4) var(--sp-5)}
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
 </style>
 </head>
 <body>
@@ -175,11 +199,12 @@
   <div class="doc-head">
     <span class="id">SC-M07 · P0/P1 · 매니저 · 웹</span>
     <h1>개입 관리</h1>
-    <p>시그널을 실제 개입(면담·멘토링·보강·팀조정·모니터링)으로 전환하고 추적. 이 화면의 핵심 질문 = <b>"무슨 개입을 하고 있고, 뭐가 효과 있었나"</b> → <b>효과 판정을 1급 컬럼으로 앞세운 정보-우선 테이블</b>. 시그널-개입 연결 필수(근거 없는 개입 차단), 자동확정 금지. M06·M01·M04 어디서 열든 같은 생성 패널.</p>
+    <p>개입(면담·멘토링·보강·팀조정·모니터링)을 <b>실행하고 효과를 검증</b>하는 화면. 이 화면의 핵심 질문 = <b>"무슨 개입을 하고 있고, 뭐가 효과 있었나"</b> → <b>유형×축 회복률 집계를 1급 정보로 앞세운 정보-우선 테이블</b>(D131). <b>생성 진입점은 M07에 없다</b> — 근거 없는 개입 차단(시그널-개입 연결 필수)은 위험 트리아지(M04)·조치 큐(M01)·개별 상세(M06)가 이미 더 잘함, M07은 그 결과를 추적·검증만(D131). 자동확정 금지.</p>
   </div>
 
-  <!-- ===== 개입 테이블 ===== -->
-  <div class="sec-label">개입 목록 (효과 · 경과 · 방치)</div>
+  <!-- ===== 개입 목록 ===== -->
+  <div class="sec-label">개입 목록 (회복률 집계 · 효과 · 경과 · 방치)</div>
+  <div class="rpage on" id="page-list">
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/interventions</span></div>
     <div class="app">
@@ -189,11 +214,22 @@
       </div>
       <div class="body">
         <div class="nav">
-          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item on"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item on"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
         </div>
         <div class="content">
-          <div class="phead"><div><div class="crumb">개입 › 7기</div><h2>개입 관리</h2></div><button class="btn">+ 개입 생성</button></div>
+          <div class="phead"><div><div class="crumb">개입 › 7기</div><h2>개입 관리</h2></div></div>
+          <div class="agg">
+            <div class="ah"><b>유형별 회복률</b><span class="mut">완료 개입만 · 회복=Δ≥1 AND post≥3(B7) · DASH-07 성능 지표와 같은 원천</span></div>
+            <div class="grid">
+              <div class="cell"><div class="ty">면담</div><div class="rate hi">71%</div><div class="n">5/7 완료</div><div class="top">최다 축 · <b>반례대응</b></div></div>
+              <div class="cell"><div class="ty">멘토링</div><div class="rate hi">80%</div><div class="n">4/5 완료</div><div class="top">최다 축 · <b>설계논리</b></div></div>
+              <div class="cell"><div class="ty">보강</div><div class="rate lo">25%</div><div class="n">1/4 완료</div><div class="top">최다 축 · <b>대안비교</b></div></div>
+              <div class="cell"><div class="ty">팀조정</div><div class="rate na">—</div><div class="n">진행 1 · 판정불가</div><div class="top">개인 축 기준 부적용(D36)</div></div>
+              <div class="cell"><div class="ty">모니터링</div><div class="rate na">—</div><div class="n">완료 0</div><div class="top">관찰 유지 목적</div></div>
+            </div>
+          </div>
           <div class="alertbar" style="background:var(--c-danger-soft);border-color:#e6c3bd;color:var(--c-danger)">⚠️ <b>악화 1건</b> (개입 후 더 나빠짐, 우선 확인) · <b>방치 1건</b> (대기·진행 7일 이상 변화 없음) <span class="link" style="color:var(--c-danger)">우선 건만 보기</span></div>
+          <div class="createhint">＋ 새 개입은 여기서 만들지 않습니다 — <b>대시보드(M01)·위험 목록(M04)·교육생 상세(M06)</b>의 [개입 생성]에서 근거 시그널과 함께 시작하세요.</div>
           <div class="toolbar">
             <span class="sel"><span class="k">상태</span> 전체 ▾</span>
             <span class="sel"><span class="k">유형</span> 전체 ▾</span>
@@ -222,38 +258,11 @@
       </div>
     </div>
   </div>
-
-  <!-- ===== 개입 생성 STEP 1: 시그널 선택 ===== -->
-  <div class="sec-label">헤더 [+ 개입 생성] 클릭 시 · STEP 1 — 어느 시그널에 개입할지 먼저 선택 (근거 없는 개입 차단)</div>
-  <div class="viewport">
-    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/interventions</span></div>
-    <div class="app" style="min-height:520px">
-      <div class="topbar">
-        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
-        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
-      </div>
-      <div class="body">
-        <div class="nav" style="filter:blur(1px);opacity:.6"><div class="item on"><span class="ic">✎</span>개입</div></div>
-        <div class="content" style="filter:blur(1px);opacity:.5"><div class="phead"><h2>개입 관리</h2></div></div>
-      </div>
-      <div class="overlay">
-        <div class="side" style="width:440px">
-          <div class="sideh"><h4>개입 생성 · 대상 선택</h4><span class="x">✕</span></div>
-          <div class="sideb">
-            <div style="font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:16px">개입은 <b>위험 시그널에서 시작</b>합니다. 아직 개입 없는 활성 시그널을 골라주세요. <span style="color:var(--c-text-3);font-size:11px">(대시보드·위험 목록·교육생 상세에서 [개입 생성]하면 이 단계는 건너뜁니다)</span></div>
-            <div style="position:relative;margin-bottom:12px"><div class="fsel" style="justify-content:flex-start;color:var(--c-text-3)">🔍 이름·시그널 검색</div></div>
-            <div class="sigrow"><div><div class="nm2">한도현 <span class="sub">A반</span></div><span class="sig risk">위험 · 반례대응 4→2</span></div><button class="pickbtn">선택 →</button></div>
-            <div class="sigrow"><div><div class="nm2">오세훈 <span class="sub">C반</span></div><span class="sig imb">기여·이해도 불균형 2회차</span></div><button class="pickbtn">선택 →</button></div>
-            <div class="sigrow"><div><div class="nm2">A팀 <span class="sub">팀</span></div><span class="sig team">팀 이상 · 분산 큼</span></div><button class="pickbtn">선택 →</button></div>
-            <div style="font-size:11px;color:var(--c-text-3);margin-top:12px">· 이미 개입 있는 시그널은 목록에서 제외(중복 방지). 시그널이 없으면 개입 생성 불가.</div>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 
-  <!-- ===== 개입 생성 STEP 2: 폼 ===== -->
-  <div class="sec-label">STEP 2 — 대상 선택 후 · 생성 폼 (근거 시그널 확정 → 유형·담당·메모)</div>
+  <!-- ===== 공용 생성 패널: M01·M04·M06 [개입 생성] 클릭 시 ===== -->
+  <div class="sec-label">공용 생성 패널 · M01/M04/M06의 [개입 생성] 클릭 시 열림 — 대상·근거 시그널 이미 확정(M07 자체 진입점 없음·D131)</div>
+  <div class="rpage" id="page-create">
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/interventions</span></div>
     <div class="app" style="min-height:560px">
@@ -267,7 +276,7 @@
       </div>
       <div class="overlay">
         <div class="side">
-          <div class="sideh"><h4>개입 생성 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· ‹ 대상 다시 선택</span></h4><span class="x">✕</span></div>
+          <div class="sideh"><h4>개입 생성 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· 위험 목록에서 진입</span></h4><span class="x">✕</span></div>
           <div class="sideb">
             <div class="evbox">
               <div class="h">근거 시그널 (연결됨)</div>
@@ -292,10 +301,12 @@
       </div>
     </div>
   </div>
-  <div style="font-size:12px;color:var(--c-text-3);margin-top:8px">· 근거 시그널이 <b>폼보다 먼저·확정</b>(근거 없는 개입 차단). 유형 <b>5종 고정</b>(임의 추가 없음 — 효과 통계 무결성 · D37), 세분화는 메모. 추천 유형(INTV-01) '추천' 배지. 생성 시 상태=대기·시그널 연결 저장. 중복 활성 개입이면 "이미 진행 중" + 기존 건 안내.</div>
+  <div style="font-size:12px;color:var(--c-text-3);margin-top:8px">· 근거 시그널이 <b>폼보다 먼저·확정</b>(근거 없는 개입 차단, 이미 M04/M01/M06에서 연결됨). 유형 <b>5종 고정</b>(임의 추가 없음, 효과 통계 무결성·D37), 세분화는 메모. 추천 유형(INTV-01) '추천' 배지. 생성 시 상태=대기·시그널 연결 저장. 중복 활성 개입이면 "이미 진행 중" + 기존 건 안내.</div>
+  </div>
 
   <!-- ===== 행 클릭 상세 패널 ===== -->
   <div class="sec-label">행 클릭 시 · 개입 상세 패널 (상태·효과·근거를 크게 / 관리 정보는 하단 약하게)</div>
+  <div class="rpage" id="page-detail">
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/interventions/1042</span></div>
     <div class="app" style="min-height:660px">
@@ -345,9 +356,11 @@
     </div>
   </div>
   <div style="font-size:12px;color:var(--c-text-3);margin-top:8px">· <b>보여줄 것(우선순위):</b> ①상태·다음 행동(크게) ②근거 시그널 ③효과 판정 ④실행 초안 ⑤활동 기록 ⑥관리 정보(하단 약하게). <b>기능:</b> 상태 전이 · 활동 기록 추가 · 담당자 변경(위임·인수인계) · 취약축 export · 교육생 상세 이동. 하드 삭제는 명세에 없어 제외(상태로만 관리·GOV-02). M06 활동 카드와 같은 레코드.</div>
+  </div>
 
   <!-- ===== 취약 축 export: 다이얼로그 + 문서 구성 ===== -->
   <div class="sec-label">[취약 축 export] 클릭 시 · 생성 다이얼로그 + 문서 구성 (PDF / 만료형 공유 링크)</div>
+  <div class="rpage" id="page-export">
   <div style="display:flex;gap:24px;flex-wrap:wrap;align-items:flex-start">
     <!-- 다이얼로그 -->
     <div style="flex:0 0 400px;background:#fff;border:1px solid var(--c-border);border-radius:var(--r-lg);box-shadow:var(--shadow-pop);overflow:hidden">
@@ -380,11 +393,14 @@
       </div>
     </div>
   </div>
-  <div style="font-size:12px;color:var(--c-text-3);margin-top:12px">· 별도 화면 아님 — 다이얼로그 → <b>PDF</b>(오프라인·인쇄) 또는 <b>만료형 공유 링크</b>(권한자·기간 제한). 생성자·시각 기록, 취약축 없으면 차단, 원문 포함 탐지 시 자동 제거(INTV-07 case2).</div>
+  <div style="font-size:12px;color:var(--c-text-3);margin-top:12px">· 별도 화면 아님, 다이얼로그 → <b>PDF</b>(오프라인·인쇄) 또는 <b>만료형 공유 링크</b>(권한자·기간 제한). 생성자·시각 기록, 취약축 없으면 차단, 원문 포함 탐지 시 자동 제거(INTV-07 case2).</div>
+  </div>
 
+  <div class="sec-label">상태 매핑</div>
+  <div class="rpage" id="page-cases">
   <div class="notes">
-    <h3>상태 ↔ 명세 case 매핑 (INTV-04 7 · 05 7 · 06 9 · 07 6 · 08 7 = 36)</h3>
-    <p class="hint">비주얼은 목록·생성·상세만. 예외는 이 표가 계약.</p>
+    <h3>상태 ↔ case 매핑 (INTV-04 7 · 05 7 · 06 9 · 07 6 · 08 7 = 36)</h3>
+    <p class="hint">비주얼은 목록·생성(공용 패널)·상세·export만. 예외는 이 표가 계약. INTV-04(생성) 검증 규칙은 실제 진입 화면(M01/M04/M06)에서도 동일 적용.</p>
     <div class="grp">개입 생성 (INTV-04)</div>
     <div class="tblwrap"><table class="ntbl"><tbody>
       <tr><td>C-1</td><td>비활성·해소 시그널</td><td><span class="pill danger">danger</span></td><td>생성 차단·최신 활성 재조회</td></tr>
@@ -416,8 +432,21 @@
       <tr><td>X-1~6</td><td>취약축 부재·원문 포함·권한없음·결측·실패·대상조회실패</td><td><span class="pill danger">danger</span></td><td>export 차단/제외 · 원문 유출 금지</td></tr>
       <tr><td>M-1~7</td><td>대상없음·권한없음·빈메모·길이초과·연결없음·수정이력보존·저장실패</td><td><span class="pill warning">warning</span></td><td>차단/보존/재시도 (M06 메모 공유)</td></tr>
     </tbody></table></div>
-    <div class="foot">디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 명세 재설계(옛 골격 미참조·D35) · 효과 전면 테이블 · 신규: EffectBadge·StateBtn·SidePanel(상세/생성 공용)·AlertBar · 시그널 연결 필수·자동확정 금지(GOV-02)·회복 이중조건(B7) · 웹 기준</div>
+    <div class="foot">디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 명세 재설계(옛 골격 미참조·D35) · 효과 전면 테이블 · 신규: RecoveryRateAgg·EffectBadge·StateBtn·SidePanel(상세/생성 공용)·AlertBar · 생성 진입점 M07 자체 없음(D131) · 시그널 연결 필수·자동확정 금지(GOV-02)·회복 이중조건(B7) · 웹 기준</div>
+  </div>
   </div>
 </div>
+<script>
+  var PAGE = { list:"page-list", create:"page-create", detail:"page-detail", export:"page-export", cases:"page-cases" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "list";
+    var id = PAGE[h] || "page-list";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+</script>
 </body>
 </html>

@@ -137,6 +137,13 @@
   .pill.warning{background:var(--c-warning-soft);color:var(--c-warning)}
   .pill.na{background:#eef0f3;color:var(--c-text-3)}
   .foot{margin-top:var(--sp-5);font-size:var(--fs-xs);color:var(--c-text-3)}
+
+  .statebar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--sp-6);padding-bottom:var(--sp-5);border-bottom:1px solid var(--c-border)}
+  .stbtn{font-size:12px;font-weight:600;padding:7px 13px;border-radius:20px;border:1px solid var(--c-border-strong);background:#fff;color:var(--c-text-2);cursor:pointer;white-space:nowrap;font-family:inherit}
+  .stbtn:hover{border-color:var(--c-text-3)}
+  .stbtn.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary)}
+  .statesec{display:none}
+  .statesec.on{display:block}
 </style>
 </head>
 <body>
@@ -146,6 +153,16 @@
     <h1>검증 세션 (코드 종속형) — 상태별 전량</h1>
     <p>제출 코드를 근거로 한 소크라틱 검증. <b>왼쪽 = 지금 질문의 근거 코드(고정), 오른쪽 = 질답</b>. 코드 없이는 답할 수 없는 질문만(MEAS-06).
     진행 표시는 <b>결정지점 = 정직한 분수</b>(고정 예산 N, D110), <b>깊이 = 비분수 인디케이터</b>(적응형이라 분모 없음, D109). 깊이는 <b>L1 기본 → L2 대안·트레이드오프 → L3 반례</b>로 "이해의 종류"를 캐는 축이지 난이도가 아니며(D109), <b>5축 채점은 세션이 끝난 뒤 대화 전체에 적용</b>된다(D108) — 세션 중 <b>점수·평가·루브릭은 절대 비노출</b>(A5).</p>
+  </div>
+
+  <section class="statesec" id="v0">
+  <div class="statebar" role="tablist">
+    <button class="stbtn on" data-state="v0">V0 · 시작 전 — 기대치 셋업</button>
+    <button class="stbtn" data-state="v1">V1 · 정상 — 질답 진행</button>
+    <button class="stbtn" data-state="v2">V2 · 다음 질문 준비 중</button>
+    <button class="stbtn" data-state="v3">V3 · 전체 결정지점 소진 → 세션 종료</button>
+    <button class="stbtn" data-state="v4">V4 · 시간 상한 초과(V-4)</button>
+    <button class="stbtn" data-state="v5">V5 · 네트워크 중단(V-5)</button>
   </div>
 
   <!-- ============ V0 · 시작 전 기대치 게이트 ============ -->
@@ -174,6 +191,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="v1">
   <!-- ============ V1 · 정상 질답 (지배 상태) ============ -->
   <div class="sec-label">V1 · 정상 — 질답 진행 <span class="tag">결정지점 2/4(정직 분수) · 깊이 2단계째(비분수) · 근거 코드 하이라이트</span></div>
   <div class="viewport">
@@ -223,6 +243,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="v2">
   <!-- ============ V2 · 질문 생성 중 (레이턴시) ============ -->
   <div class="sec-label">V2 · 다음 질문 준비 중 <span class="tag">LLM 지연 완충 · 입력 비활성 · 랩 검증 패턴(V-6 재생성도 동일 표시)</span></div>
   <div class="viewport">
@@ -265,6 +288,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="v3">
   <!-- ============ V3 · 세션 완료 → 채점 ============ -->
   <div class="sec-label">V3 · 전체 결정지점 소진 → 세션 종료 <span class="tag">5축 채점은 여기서 시작(D108) · 점수는 T05에서</span></div>
   <div class="viewport">
@@ -286,6 +312,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="v4">
   <!-- ============ V4 · 시간 상한 도달 (V-4) ============ -->
   <div class="sec-label">V4 · 시간 상한 초과(V-4) <span class="tag">완료 결정지점 기준 저장 · 손실 최소 · 비난 없는 문구</span></div>
   <div class="viewport">
@@ -307,6 +336,9 @@
     </div>
   </div>
 
+  </section>
+
+  <section class="statesec" id="v5">
   <!-- ============ V5 · 네트워크 중단 (V-5) ============ -->
   <div class="sec-label">V5 · 네트워크 중단(V-5) <span class="tag">마지막 완료 턴부터 복구 · 세션 바 유지(맥락 보존)</span></div>
   <div class="viewport">
@@ -347,6 +379,8 @@
     </div>
   </div>
 
+  </section>
+
   <div class="notes">
     <h3>상태 ↔ 명세 case 매핑 (MEAS-06 6)</h3>
     <p class="hint">교육생에겐 내부 오류가 "일시 오류 / 다음 질문"으로만 보인다(A5 — 채점·평가·루브릭 비노출). 내부 실패는 표가 계약.</p>
@@ -365,5 +399,30 @@
     타이머는 평소 은은·임박 시에만 경고(시험 불안 완화) · 채점·평가 비노출(A5) · 웹 기준</div>
   </div>
 </div>
+
+<script>
+(function(){
+  var bar = document.querySelector('.statebar');
+  if(!bar) return;
+  var btns = Array.prototype.slice.call(bar.querySelectorAll('.stbtn'));
+  var secs = Array.prototype.slice.call(document.querySelectorAll('.statesec'));
+  function show(id){
+    secs.forEach(function(s){ s.classList.toggle('on', s.id === id); });
+    btns.forEach(function(b){ b.classList.toggle('on', b.dataset.state === id); });
+  }
+  bar.addEventListener('click', function(e){
+    var b = e.target.closest('.stbtn');
+    if(!b) return;
+    if(location.hash === '#' + b.dataset.state) show(b.dataset.state);
+    else location.hash = b.dataset.state;
+  });
+  window.addEventListener('hashchange', function(){
+    var h = (location.hash || '').slice(1);
+    if(document.getElementById(h)) show(h);
+  });
+  var initial = (location.hash || '').slice(1);
+  show(document.getElementById(initial) ? initial : secs[0].id);
+})();
+</script>
 </body>
 </html>

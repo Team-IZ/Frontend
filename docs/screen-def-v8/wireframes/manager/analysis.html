@@ -83,25 +83,185 @@
   .flag{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;background:#eef0f3;color:var(--c-text-2)}
   .flag.none{background:var(--c-warning-soft);color:var(--c-warning)}
   .ract{display:flex;gap:var(--sp-2)}
+
+  /* ===== 위험 분석 v6 — 스케일(50~500명) 대응 (D128) =====
+     집계 → 세그먼트 → 밀집 테이블 + 일괄처리 → 드릴인 드로어.
+     500명이면 위험군만 50~100명이라 한 명씩 큐로 훑는 마스터-디테일은 붕괴. */
+
+  /* 시그널 유형 칩 — 원인별 처방 분기(테이블·드로어 공용) */
+  .sig{font-size:10px;font-weight:700;border-radius:var(--r-sm);padding:1px 7px;white-space:nowrap;display:inline-block}
+  .sig.gap{background:#f6e6f0;color:#8e2f6b}
+  .sig.stuck{background:#ece7f7;color:#5b3fa8}
+  .sig.base{background:#e7eff7;color:#2b5f8e}
+  .sig.norec{background:var(--c-danger-soft);color:var(--c-danger)}
+  .sig.drop{background:#eef0f3;color:var(--c-text-2)}
+  /* 근거 신뢰도 점 — LLM 저해상도 계측 노이즈를 매니저에게 전가 안 함 */
+  .conf{display:inline-flex;align-items:center;gap:3px;font-size:10px;color:var(--c-text-3);white-space:nowrap}
+  .conf i{width:5px;height:5px;border-radius:50%;background:#d6dae0;display:inline-block}
+  .conf.c3 i:nth-child(-n+3){background:var(--c-success)}
+  .conf.c2 i:nth-child(-n+2){background:var(--c-warning)}
+  .conf.c1 i:nth-child(-n+1){background:var(--c-text-3)}
+
+  /* 1. 개관 — 개별 이름 전에 "문제의 형태"부터 (반/유형/심각도 분포 + 회차 델타) */
+  .ragg{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5);margin-bottom:var(--sp-3);box-shadow:var(--shadow-card)}
+  .ragg .hd{display:flex;align-items:baseline;gap:var(--sp-3);flex-wrap:wrap;margin-bottom:var(--sp-4)}
+  .ragg .big{font-size:var(--fs-xl);font-weight:800;letter-spacing:-.01em}
+  .ragg .big b{color:var(--c-danger)}
+  .ragg .sub{font-size:var(--fs-sm);color:var(--c-text-3)}
+  .ragg .dlt{font-size:var(--fs-xs);font-weight:700;padding:2px 8px;border-radius:20px}
+  .ragg .dlt.up{background:var(--c-danger-soft);color:var(--c-danger)}
+  .ragg .dlt.dn{background:var(--c-success-soft);color:var(--c-success)}
+  .ragg .ctx{margin-left:auto;font-size:11px;color:var(--c-text-3)}
+  .scope{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--c-text-2);background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-md);padding:7px var(--sp-3);margin-bottom:var(--sp-4)}
+  .scope b{color:var(--c-primary)}
+  .scope .mut{color:var(--c-text-3)}
+  .dist{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-5)}
+  .distrow .dl{font-size:10px;font-weight:700;color:var(--c-text-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:7px;display:flex;justify-content:space-between}
+  .distrow .dl .h{color:var(--c-text-2)}
+  .dbar{display:flex;height:36px;border-radius:var(--r-sm);overflow:hidden;border:1px solid var(--c-border);gap:1px;background:var(--c-border)}
+  .dseg{display:flex;flex-direction:column;justify-content:center;align-items:center;cursor:pointer;min-width:0;padding:0 3px;transition:filter .12s;background:var(--c-surface-2)}
+  .dseg:hover{filter:brightness(.94)}
+  .dseg .dn{font-size:var(--fs-sm);font-weight:800;line-height:1.05;font-variant-numeric:tabular-nums}
+  .dseg .dc{font-size:9px;line-height:1.25;color:var(--c-text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .dseg .dc b{color:var(--c-danger);font-weight:700}
+  .dseg.sv3{background:#f7e0dc}.dseg.sv3 .dn{color:#c0392b}
+  .dseg.sv2{background:#f7ebe0}.dseg.sv2 .dn{color:#b3771a}
+  .dseg.sv1{background:#eef0f3}.dseg.sv1 .dn{color:var(--c-text-2)}
+  .dseg.tg{background:#f6e6f0}.dseg.tg .dn{color:#8e2f6b}
+  .dseg.ts{background:#ece7f7}.dseg.ts .dn{color:#5b3fa8}
+  .dseg.tb{background:#e7eff7}.dseg.tb .dn{color:#2b5f8e}
+  .dseg.td{background:#eef0f3}.dseg.td .dn{color:var(--c-text-2)}
+  .dseg.cl{background:var(--c-surface-2)}.dseg.cl .dn{color:var(--c-text)}
+
+  /* 2. 세그먼트 툴바 — 500명은 스크롤이 아니라 세그먼트로 항해 */
+  .rseg{display:flex;align-items:center;gap:var(--sp-2);flex-wrap:wrap;margin-bottom:var(--sp-3)}
+  .rseg .sch{flex:0 0 190px;border:1px solid var(--c-border-strong);background:#fff;border-radius:var(--r-md);padding:7px 10px;font-size:var(--fs-xs);color:var(--c-text-3)}
+  .rseg .fl{display:flex;align-items:center;gap:5px;border:1px solid var(--c-border-strong);background:#fff;border-radius:var(--r-md);padding:6px 11px;font-size:var(--fs-xs);color:var(--c-text-2);cursor:pointer;white-space:nowrap}
+  .rseg .fl.on{border-color:var(--c-primary);background:var(--c-primary-soft);color:var(--c-primary);font-weight:600}
+  .rseg .fl .cv{font-size:9px;color:var(--c-text-3)}
+  .rseg .grp{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--c-text-3)}
+  .rseg .seg{display:inline-flex;border:1px solid var(--c-border-strong);border-radius:var(--r-md);overflow:hidden}
+  .rseg .seg span{padding:5px 10px;font-size:11px;background:#fff;color:var(--c-text-2);cursor:pointer}
+  .rseg .seg span.on{background:var(--c-text);color:#fff;font-weight:600}
+
+  /* 3. 밀집 테이블 + 일괄 처리 — 100명을 한 명씩 결정 못 하니 세그먼트 일괄 처리 */
+  .rtwrap{border:1px solid var(--c-border);border-radius:var(--r-lg);background:var(--c-surface);overflow:hidden;box-shadow:var(--shadow-card)}
+  .rbulk{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-4);background:var(--c-primary);color:#fff;font-size:var(--fs-sm)}
+  .rbulk b{font-weight:800}
+  .rbulk .clr{color:rgba(255,255,255,.7);cursor:pointer;font-size:var(--fs-xs)}
+  .rbulk .ba{margin-left:auto;display:flex;gap:6px}
+  .rbulk .bb{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.32);color:#fff;border-radius:var(--r-md);padding:5px 11px;font-size:var(--fs-xs);font-weight:600;cursor:pointer;white-space:nowrap}
+  .rbulk .bb.solid{background:#fff;color:var(--c-primary);border-color:#fff}
+  .rth,.rtr{display:grid;grid-template-columns:34px 10px 1fr 58px 116px 62px 104px 22px;gap:var(--sp-2);align-items:center;padding:0 var(--sp-4)}
+  .rth{height:34px;background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3)}
+  .rth .srt{cursor:pointer;display:inline-flex;align-items:center;gap:3px}
+  .rth .srt.on{color:var(--c-primary)}
+  .rgrph{display:flex;align-items:center;gap:8px;padding:7px var(--sp-4);background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-size:11px;font-weight:800;color:var(--c-text-2)}
+  .rgrph .gc{color:var(--c-text-3);font-weight:600}
+  .rtr{height:44px;border-bottom:1px solid var(--c-border);cursor:pointer;font-size:var(--fs-sm)}
+  .rtr:last-child{border-bottom:0}
+  .rtr:hover{background:var(--c-surface-2)}
+  .rtr.sel{background:var(--c-primary-soft)}
+  .ck{width:16px;height:16px;border:1.5px solid var(--c-border-strong);border-radius:4px;background:#fff;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px}
+  .rtr.sel .ck{background:var(--c-primary);border-color:var(--c-primary)}
+  .rth .ck{border-color:var(--c-border-strong)}
+  .dot{width:9px;height:9px;border-radius:50%}
+  .dot.s3{background:#c0392b}.dot.s2{background:#dd8a6a}.dot.s1{background:#e8c39a}.dot.none{background:#cfd4dc}
+  .rtr .sig,.rtr .conf{justify-self:start}
+  .rtr .nm{font-weight:700;color:var(--c-text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .rtr .cl{font-size:var(--fs-xs);color:var(--c-text-3)}
+  .rtr .age{font-size:var(--fs-xs);color:var(--c-text-3);text-align:right}
+  .rtr .age.warn{color:var(--c-warning);font-weight:700}
+  .rtr .st{font-size:11px;color:var(--c-text-2)}
+  .rtr .st.calm{color:var(--c-success)}
+  .rtr .cv{color:var(--c-text-3);text-align:center;font-size:12px}
+
+  /* 4. 푸터 — 범위·페이저(전역 표 표준) */
+  .rpag{display:flex;align-items:center;padding:9px var(--sp-4);background:var(--c-surface-2);border-top:1px solid var(--c-border);font-size:var(--fs-xs);color:var(--c-text-3)}
+  .rpag .pg{margin:0 auto;display:flex;gap:4px}
+  .rpag .pg span{min-width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--c-border);border-radius:var(--r-sm);background:#fff;cursor:pointer;color:var(--c-text-2)}
+  .rpag .pg span.on{background:var(--c-primary);border-color:var(--c-primary);color:#fff;font-weight:700}
+
+  /* 5. 개별 결정 드로어 — 행 클릭 시 우측 slide-in. 세그먼트 안을 화살표로 훑으며 결정 */
+  .drwrap{display:grid;grid-template-columns:1fr 452px;border:1px solid var(--c-border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);min-height:480px}
+  .drback{background:var(--c-surface-2);padding:var(--sp-4);position:relative}
+  .drback .peek{opacity:.5;filter:grayscale(.3);pointer-events:none}
+  .drback .prow{display:grid;grid-template-columns:10px 1fr auto;gap:var(--sp-2);align-items:center;height:40px;padding:0 var(--sp-3);border-bottom:1px solid var(--c-border);font-size:var(--fs-sm)}
+  .drback .prow .nm{font-weight:700}
+  .drback .prow.hi{background:var(--c-primary-soft);border-radius:var(--r-sm);opacity:1;filter:none}
+  .drawer{background:var(--c-surface);border-left:1px solid var(--c-border);display:flex;flex-direction:column}
+  .drh{padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--c-border);background:linear-gradient(180deg,var(--c-surface-2),var(--c-surface))}
+  .drh .nav{display:flex;align-items:center;gap:var(--sp-2);font-size:11px;color:var(--c-text-3);margin-bottom:var(--sp-3)}
+  .drh .nav .x{margin-left:auto;cursor:pointer;font-size:14px;color:var(--c-text-3)}
+  .drh .nm{font-size:var(--fs-xl);font-weight:800;letter-spacing:-.01em}
+  .drh .mt{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:6px;font-size:11px;color:var(--c-text-3)}
+  .drtabs{display:flex;gap:2px;padding:0 var(--sp-5);border-bottom:1px solid var(--c-border);background:var(--c-surface)}
+  .drtabs span{padding:10px 12px;font-size:var(--fs-sm);color:var(--c-text-3);cursor:pointer;border-bottom:2px solid transparent;font-weight:600}
+  .drtabs span.on{color:var(--c-primary);border-bottom-color:var(--c-primary)}
+  .drbody{padding:var(--sp-5);overflow-y:auto;flex:1}
+  .drbody .lb{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--c-text-3);margin-bottom:9px}
+  .story{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.75}
+  .story b{color:var(--c-text)}
+  .quote{margin:var(--sp-3) 0;padding:var(--sp-3) var(--sp-4);background:var(--c-surface-2);border-left:3px solid var(--c-primary);border-radius:0 var(--r-md) var(--r-md) 0}
+  .quote .q{font-size:var(--fs-base);color:var(--c-text);line-height:1.55;font-weight:500}
+  .quote .qm{font-size:10px;color:var(--c-text-3);margin-top:5px}
+  .rx{border:1px solid var(--c-primary);border-radius:var(--r-md);overflow:hidden;margin-top:var(--sp-4)}
+  .rxh{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);background:var(--c-primary-soft)}
+  .rxh .ty{font-size:var(--fs-sm);font-weight:800;color:var(--c-primary)}
+  .rxh .rec{font-size:9px;font-weight:700;color:var(--c-primary);border:1px solid var(--c-primary);border-radius:20px;padding:1px 6px}
+  .rxh .hit{margin-left:auto;font-size:10px;color:var(--c-text-2)}
+  .rxh .hit b{color:var(--c-success);font-weight:800}
+  .rxb{padding:var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);line-height:1.6}
+  .drfoot{padding:var(--sp-3) var(--sp-5);border-top:1px solid var(--c-border);background:var(--c-surface-2);display:flex;align-items:center;gap:var(--sp-2)}
+  .drfoot .cf{margin-left:auto;font-size:10px;color:var(--c-text-3)}
+  .dirchip{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;white-space:nowrap}
+  .dirchip.up{background:var(--c-success-soft);color:var(--c-success)}
+  .hold{background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-3);margin-top:var(--sp-3)}
+  .hold .row{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-xs);color:var(--c-text-2);margin-bottom:8px}
+  .hold .seg{display:inline-flex;border:1px solid var(--c-border-strong);border-radius:var(--r-md);overflow:hidden}
+  .hold .seg span{padding:4px 9px;font-size:11px;background:#fff;color:var(--c-text-2);cursor:pointer}
+  .hold .seg span.on{background:var(--c-primary);color:#fff;font-weight:600}
+  .hold .rsn{border:1px solid var(--c-border-strong);border-radius:var(--r-md);background:#fff;padding:7px 9px;font-size:var(--fs-xs);color:var(--c-text-3)}
+  .hold .req{color:var(--c-danger);font-weight:700}
+  .rnote{font-size:11px;color:var(--c-text-3);margin-top:var(--sp-3);line-height:1.6}
+
+  /* ===== 불균형·에이스·팀 탭 공용 — 리스크 탭과 크래프트·스코프 정합(D130) ===== */
+  .taghd{display:flex;align-items:baseline;gap:8px;margin-bottom:var(--sp-3)}
+  .taghd .n{font-size:var(--fs-lg);font-weight:800}
+  .taghd .n b{color:var(--c-primary)}
+  .taghd .mut{font-size:11px;color:var(--c-text-3)}
+  .warnbar{display:flex;align-items:flex-start;gap:7px;font-size:11px;color:var(--c-warning);background:var(--c-warning-soft);border:1px solid #e6d3a8;border-radius:var(--r-md);padding:9px var(--sp-3);margin-bottom:var(--sp-3);line-height:1.5}
+  .lwrap{border:1px solid var(--c-border);border-radius:var(--r-lg);background:var(--c-surface);overflow:hidden;box-shadow:var(--shadow-card)}
+  .lrow{display:grid;align-items:center;gap:var(--sp-3);padding:12px var(--sp-4);border-bottom:1px solid var(--c-border);cursor:pointer}
+  .lrow:last-child{border-bottom:0}
+  .lrow:hover{background:var(--c-surface-2)}
+  .lrow .nm{font-weight:700;font-size:var(--fs-sm)}
+  .lrow .cl{font-size:11px;color:var(--c-text-3);font-weight:400;margin-left:5px}
+  .lrow .sub{font-size:var(--fs-xs);color:var(--c-text-2);margin-top:4px;line-height:1.55}
+  .lrow .sub b{color:var(--c-text)}
+  .crossmini{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+  .cxm{font-size:10px;font-weight:600;background:var(--c-surface-2);border:1px solid var(--c-border);color:var(--c-text-2);border-radius:20px;padding:2px 8px}
+  .cxm.b{background:#fbeef4;border-color:#e6c3d6;color:#8e2f6b}
+  .disc2{font-size:11px;color:var(--c-text-3);margin-top:7px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+  .axc2{font-size:10px;font-weight:700;background:var(--c-success-soft);color:var(--c-success);border-radius:20px;padding:2px 8px}
+  .axc2.mut{background:#eef0f3;color:var(--c-text-2)}
+  .tagbtn{font-size:11px;font-weight:600;color:var(--c-text-2);border:1px solid var(--c-border-strong);background:#fff;border-radius:var(--r-md);padding:5px 10px;cursor:pointer;white-space:nowrap}
+  /* 팀 분포 미니바 */
+  .tdist{display:inline-flex;gap:2px;align-items:flex-end;height:24px}
+  .tdist i{width:9px;border-radius:2px 2px 0 0;background:#b7c0e8;display:inline-block}
+  .tdist i.hi{background:var(--c-primary)}
+  .tpill{font-size:10px;font-weight:700;border-radius:20px;padding:2px 9px;white-space:nowrap}
+  .tpill.risk{background:var(--c-danger-soft);color:var(--c-danger)}
+  .tpill.bal{background:#eef0f3;color:var(--c-text-2)}
+  .tpill.high{background:var(--c-success-soft);color:var(--c-success)}
+  .tpill.na{background:#eef0f3;color:var(--c-text-3)}
+
+  .rempty{background:var(--c-surface);border:1px dashed var(--c-border-strong);border-radius:var(--r-md);padding:var(--sp-6);text-align:center}
+  .rempty .ic{font-size:22px;margin-bottom:6px}
+  .rempty .t{font-weight:700;font-size:var(--fs-base);margin-bottom:3px}
+  .rempty .d{font-size:var(--fs-sm);color:var(--c-text-3)}
   .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-xs);cursor:pointer;padding:7px 12px}
   .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong)}
-
-  /* 불균형 카드 (DASH-11) */
-  .imbcard{background:var(--c-warning-soft);border:1px solid #e6d3a8;border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5);margin-bottom:var(--sp-3)}
-  .imbcard .h{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-2)}
-  .imbcard .h .nm{font-weight:700}
-  .imbcard .h .tag{font-size:11px;font-weight:600;color:var(--c-warning)}
-  .imbcard p{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.6}
-  .cross{display:flex;gap:var(--sp-2);margin-top:var(--sp-3);flex-wrap:wrap}
-  .cx{font-size:11px;font-weight:600;background:#fff;border:1px solid #e6d3a8;color:var(--c-warning);border-radius:20px;padding:3px 10px}
-  .disc{margin-top:var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-3);text-decoration:underline;cursor:pointer}
-  .imbact{display:flex;gap:var(--sp-2);margin-top:var(--sp-3)}
-
-  /* 에이스 (DASH-12) */
-  .acecard{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5);margin-bottom:var(--sp-3);display:flex;align-items:center;justify-content:space-between}
-  .acecard .l .nm{font-weight:700}
-  .acecard .l .m{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:2px}
-  .axis{display:inline-block;font-size:11px;font-weight:600;background:var(--c-success-soft);color:var(--c-success);border-radius:20px;padding:2px 8px;margin-right:4px}
 
   /* 히트맵 컨트롤 (DASH-14/15) */
   .hmctrl{display:flex;align-items:center;gap:var(--sp-4);margin-bottom:var(--sp-4);flex-wrap:wrap}
@@ -213,35 +373,211 @@
       </div>
       <div class="body">
         <div class="nav">
-          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
         </div>
         <div class="content">
           <div class="phead"><div class="crumb">분석 · 진단 › 7기</div><h2>분석 · 진단</h2></div>
           <div class="lensbar"><span class="ln on" data-tab="risk">사람 <small>누가 위험한가</small></span><span class="ln" data-tab="stage">패턴 <small>어디가 무너지나</small></span></div>
-          <div class="tabs"><span class="t on" data-tab="risk">위험 목록 <span class="cnt">4</span></span><span class="t" data-tab="imbalance">기여·이해도 불균형 <span class="cnt">2</span></span><span class="t" data-tab="ace">에이스 <span class="cnt">3</span></span><span class="t" data-tab="team">팀 분석</span></div>
-          <div class="rlist">
-            <div class="rcard hi">
-              <div class="rtop"><div class="rwho"><span class="rk">1</span><span class="nm">강민준</span> <span class="cl">A반 · 팀 A</span></div></div>
-              <div class="evi"><b>반례대응</b> <span class="trend">4 → 3 → 2</span> · <b>2회 연속 하락</b>, 기수 평균(3.4)보다 <b>크게 낮음</b>. 실패·예외 대응이 약해지는 중.</div>
-              <div class="rmeta"><span class="flag none">미처리 개입 없음</span><div class="ract"><button class="btn">개입 생성</button><button class="btn ghost">상세 ↗</button></div></div>
+          <div class="tabs"><span class="t on" data-tab="risk">위험 목록 <span class="cnt">22</span></span><span class="t" data-tab="imbalance">기여·이해도 불균형 <span class="cnt">3</span></span><span class="t" data-tab="ace">에이스 <span class="cnt">2</span></span><span class="t" data-tab="team">팀 분석</span></div>
+          <!-- ① 개관 — 개별 이름 전에 "문제의 형태"부터(D128) -->
+          <div class="ragg">
+            <div class="hd">
+              <span class="big">위험 신호 <b>22</b>명</span>
+              <span class="sub">내 담당 A·B·C반 138명 중 15.9% · 4회차 스냅샷(B1)</span>
+              <span class="dlt up">↑ +3 vs 3회차</span>
+              <span class="ctx">해소 −2 · 신규 +5</span>
             </div>
-            <div class="rcard hi">
-              <div class="rtop"><div class="rwho"><span class="rk">2</span><span class="nm">서지우</span> <span class="cl">B반</span></div></div>
-              <div class="evi"><b>반례대응</b> <span class="trend">3 → 2</span> · <b>대안비교</b>도 하락. 최근 회차부터 두 축 동시 저조, 평균 대비 낮음.</div>
-              <div class="rmeta"><span class="flag">개입 진행 중 · 멘토링</span><div class="ract"><button class="btn ghost">상세 ↗</button></div></div>
-            </div>
-            <div class="rcard">
-              <div class="rtop"><div class="rwho"><span class="rk">3</span><span class="nm">오세훈</span> <span class="cl">C반</span></div></div>
-              <div class="evi"><b>코드이해</b>는 유지되나 <b>자기수정</b> <span class="trend">3 → 2</span> 하락(평균 수준). 지속되면 재검토.</div>
-              <div class="rmeta"><span class="flag none">미처리 개입 없음</span><div class="ract"><button class="btn">개입 생성</button><button class="btn ghost">상세 ↗</button></div></div>
-            </div>
-            <div class="rcard">
-              <div class="rtop"><div class="rwho"><span class="rk pend">–</span><span class="nm">한도현</span> <span class="cl">A반</span></div><span class="flag">표본 부족</span></div>
-              <div class="evi" style="color:var(--c-text-3)">1회차만 완료 · 추이·우선순위 산출 유보(표본 &lt;2회차). 절대 점수만 참고.</div>
-              <div class="rmeta"><span class="flag">2회차 응시 후 재평가</span><div class="ract"><button class="btn ghost">상세 ↗</button></div></div>
+            <div class="scope">👤 담당 매니저 · 배정 <b>A·B·C반</b>만 표시(SYS-02 격리) — 미배정 D·E반은 보이지 않음. <span class="mut">총괄 매니저는 기수 전 반(480명).</span></div>
+            <div class="dist">
+              <div class="distrow">
+                <div class="dl"><span>반별 — A반에 집중</span><span class="h">배정 3개 반</span></div>
+                <div class="dbar">
+                  <div class="dseg cl" style="flex:9" title="A반 9명"><span class="dn">9</span><span class="dc">A반</span></div>
+                  <div class="dseg cl" style="flex:8" title="B반 8명"><span class="dn">8</span><span class="dc">B반</span></div>
+                  <div class="dseg cl" style="flex:5" title="C반 5명"><span class="dn">5</span><span class="dc">C반</span></div>
+                </div>
+              </div>
+              <div class="distrow">
+                <div class="dl"><span>신호 유형 — 설명-산출 갭 급증</span><span class="h">4종</span></div>
+                <div class="dbar">
+                  <div class="dseg tg" style="flex:7" title="설명-산출 갭 7명"><span class="dn">7</span><span class="dc"><b>갭 +3</b></span></div>
+                  <div class="dseg td" style="flex:6" title="점수 하락 6명"><span class="dn">6</span><span class="dc">하락</span></div>
+                  <div class="dseg ts" style="flex:5" title="깊이 고착 5명"><span class="dn">5</span><span class="dc">고착</span></div>
+                  <div class="dseg tb" style="flex:4" title="기초 공백 4명"><span class="dn">4</span><span class="dc">기초</span></div>
+                </div>
+              </div>
+              <div class="distrow">
+                <div class="dl"><span>심각도</span><span class="h">개입 가치 기준</span></div>
+                <div class="dbar">
+                  <div class="dseg sv3" style="flex:6" title="즉시 개입 6명"><span class="dn">6</span><span class="dc">즉시</span></div>
+                  <div class="dseg sv2" style="flex:10" title="주의 10명"><span class="dn">10</span><span class="dc">주의</span></div>
+                  <div class="dseg sv1" style="flex:6" title="관찰 6명"><span class="dn">6</span><span class="dc">관찰</span></div>
+                </div>
+              </div>
             </div>
           </div>
-          <div style="font-size:11px;color:var(--c-text-3);margin-top:12px">· 좌측 숫자 = <b>우선순위</b> (Priority=S×(0.5+R) 정렬 · S=평균 대비 상대 위치, R=회복탄력성 · DASH-03). <b>자의적 상/중/하 라벨 없음</b> — 시스템이 규칙으로 산출, 각 항목은 서술형 근거만(A2). 미처리 개입 강조. 해소 시그널 자동 제외. <b>표본 &lt;2회차는 산출 유보</b>(B4). 개입 여부 판단은 매니저(GOV-02).</div>
+
+          <!-- ② 세그먼트 툴바 -->
+          <div class="rseg">
+            <div class="sch">🔍 이름 검색</div>
+            <span class="fl">반 <span class="cv">▾</span></span>
+            <span class="fl on">유형: 설명-산출 갭 <span class="cv">▾</span></span>
+            <span class="fl">심각도 <span class="cv">▾</span></span>
+            <span class="fl">개입 상태 <span class="cv">▾</span></span>
+            <span class="grp">묶기 <span class="seg"><span>없음</span><span class="on">반</span><span>유형</span></span> · 정렬 개입 가치순 ▾</span>
+          </div>
+
+          <!-- ③ 밀집 테이블 + 일괄 처리 (3명 선택 상태) -->
+          <div class="rtwrap">
+            <div class="rbulk">
+              <span class="ck">✓</span> <b>3명</b> 선택됨 <span class="clr">· 선택 해제</span>
+              <div class="ba">
+                <span class="bb solid">일괄 개입 생성 ▾</span>
+                <span class="bb">담당자 배정 ▾</span>
+                <span class="bb">관찰 유지</span>
+                <span class="bb">CSV 내보내기</span>
+              </div>
+            </div>
+
+            <div class="rth">
+              <span class="ck"></span><span></span>
+              <span class="srt on">교육생 · 개입 가치 ↓</span>
+              <span>반</span><span>신호 유형</span><span class="srt">신뢰도</span><span class="srt">상태</span><span></span>
+            </div>
+
+            <div class="rgrph">A반 <span class="gc">· 위험 9명 중 5명 표시 · 배정 반 중 위험 최다</span></div>
+
+            <div class="rtr sel">
+              <span class="ck">✓</span><span class="dot s3"></span>
+              <span class="nm">윤서아</span><span class="cl">A반</span>
+              <span class="sig gap">설명-산출 갭</span>
+              <span class="conf c3"><i></i><i></i><i></i></span>
+              <span class="st"><span class="age warn">⚠︎ 9일</span></span><span class="cv">›</span>
+            </div>
+            <div class="rtr sel">
+              <span class="ck">✓</span><span class="dot s3"></span>
+              <span class="nm">조현우</span><span class="cl">A반</span>
+              <span class="sig gap">설명-산출 갭</span>
+              <span class="conf c3"><i></i><i></i><i></i></span>
+              <span class="st"><span class="age">3일</span></span><span class="cv">›</span>
+            </div>
+            <div class="rtr sel">
+              <span class="ck">✓</span><span class="dot s2"></span>
+              <span class="nm">강민준</span><span class="cl">A반 · 팀A</span>
+              <span class="sig stuck">깊이 고착</span>
+              <span class="conf c2"><i></i><i></i><i></i></span>
+              <span class="st calm">관찰 중</span><span class="cv">›</span>
+            </div>
+            <div class="rtr">
+              <span class="ck"></span><span class="dot s2"></span>
+              <span class="nm">한지민</span><span class="cl">A반</span>
+              <span class="sig base">기초 공백</span>
+              <span class="conf c3"><i></i><i></i><i></i></span>
+              <span class="st"><span class="age">4일</span></span><span class="cv">›</span>
+            </div>
+            <div class="rtr">
+              <span class="ck"></span><span class="dot s1"></span>
+              <span class="nm">오세훈</span><span class="cl">A반</span>
+              <span class="sig drop">점수 하락</span>
+              <span class="conf c1"><i></i><i></i><i></i></span>
+              <span class="st"><span class="age">2일</span></span><span class="cv">›</span>
+            </div>
+
+            <div class="rgrph">B반 <span class="gc">· 위험 8명 중 3명 표시</span></div>
+
+            <div class="rtr">
+              <span class="ck"></span><span class="dot s3"></span>
+              <span class="nm">박하은</span><span class="cl">B반</span>
+              <span class="sig base">기초 공백</span>
+              <span class="conf c3"><i></i><i></i><i></i></span>
+              <span class="st"><span class="age">5일</span></span><span class="cv">›</span>
+            </div>
+            <div class="rtr">
+              <span class="ck"></span><span class="dot s2"></span>
+              <span class="nm">서지우</span><span class="cl">B반</span>
+              <span class="sig norec">회복 확인 중</span>
+              <span class="conf c2"><i></i><i></i><i></i></span>
+              <span class="st calm">개입 4일째</span><span class="cv">›</span>
+            </div>
+            <div class="rtr">
+              <span class="ck"></span><span class="dot s1"></span>
+              <span class="nm">임태윤</span><span class="cl">B반</span>
+              <span class="sig drop">점수 하락</span>
+              <span class="conf c2"><i></i><i></i><i></i></span>
+              <span class="st calm">관찰 중</span><span class="cv">›</span>
+            </div>
+
+            <div class="rpag">
+              <span>A·B반 8건 표시 · 전체 22건 (배정 3개 반)</span>
+              <span class="pg"><span>‹</span><span class="on">1</span><span>2</span><span>3</span><span>4</span><span>›</span></span>
+              <span style="visibility:hidden">balance</span>
+            </div>
+          </div>
+
+          <div class="rnote">· <b>개관 → 세그먼트 → 일괄 처리 → 드릴인</b>(D128) — 500명 규모에서 개별 큐 스캔은 붕괴하므로 <b>분포로 어디를 볼지 정하고, 세그먼트를 일괄 처리</b>한 뒤, 개별 판단이 필요한 소수만 드로어로 연다. · <b>정렬 개입 가치순</b>(심각도 × 회복 가능성) — 가장 심각한 사람이 항상 위는 아니다. · 순위 번호는 조치 큐(SC-M01) 어휘라 쓰지 않는다. · 심각도 점은 기수 평균 대비 실측(A2·자의적 라벨 아님).</div>
+
+          <!-- ④ 행 클릭 → 개별 결정 드로어(우측 slide-in) -->
+          <div class="sec-label" style="margin-top:28px">행 클릭 → 개별 결정 드로어 (세그먼트 안을 ← → 로 훑으며 결정)</div>
+          <div class="drwrap">
+            <div class="drback">
+              <div class="prow peek"><span class="dot s3"></span><span class="nm">윤서아 <span style="font-weight:400;color:var(--c-text-3);font-size:11px">A반</span></span><span class="sig gap">갭</span></div>
+              <div class="prow hi"><span class="dot s3"></span><span class="nm">조현우 <span style="font-weight:400;color:var(--c-text-3);font-size:11px">A반</span></span><span class="sig gap">갭</span></div>
+              <div class="prow peek"><span class="dot s2"></span><span class="nm">강민준 <span style="font-weight:400;color:var(--c-text-3);font-size:11px">A반</span></span><span class="sig stuck">고착</span></div>
+              <div class="prow peek"><span class="dot s2"></span><span class="nm">한지민 <span style="font-weight:400;color:var(--c-text-3);font-size:11px">A반</span></span><span class="sig base">기초</span></div>
+              <div class="prow peek"><span class="dot s1"></span><span class="nm">오세훈 <span style="font-weight:400;color:var(--c-text-3);font-size:11px">A반</span></span><span class="sig drop">하락</span></div>
+              <div style="position:absolute;bottom:var(--sp-4);left:var(--sp-4);right:var(--sp-4);font-size:10px;color:var(--c-text-3);text-align:center">목록 맥락 유지 · 결정하면 다음 행으로 자동 이동</div>
+            </div>
+
+            <div class="drawer">
+              <div class="drh">
+                <div class="nav">A반 세그먼트 2 / 9 <span class="x">✕</span></div>
+                <div class="nm">조현우</div>
+                <div class="mt"><span class="sig gap">설명-산출 갭</span><span class="conf c3"><i></i><i></i><i></i>근거 확인됨</span><span>3일 · 개입 없음</span></div>
+              </div>
+              <div class="drtabs"><span class="on">개요</span><span>근거·궤적</span><span>개입 이력</span></div>
+              <div class="drbody">
+                <div class="lb">무슨 일이 일어나고 있나</div>
+                <p class="story">이번 회차 기여 <b>상위권</b>인데, 세션에서 본인 커밋을 짚어 물으면 L1(기본 종속)에서 멈춥니다. 윤서아와 <b>같은 패턴</b>이 A반에 번지고 있습니다.</p>
+                <div class="quote">
+                  <div class="q">"라이브러리가 알아서 해주는 거라, 안을 자세히는…"</div>
+                  <div class="qm">4회차 세션 · "이 의존성을 왜 골랐나요?"에 대한 답변 · 원문 보존됨</div>
+                </div>
+                <div class="rx">
+                  <div class="rxh"><span class="ty">1:1 멘토링</span><span class="rec">권장</span><span class="hit">이 조합 과거 <b>7건 중 5건</b> 회복</span></div>
+                  <div class="rxb">본인 커밋을 짚어가며 물어야 갭이 드러나는 유형. 집단 보강으로는 해소되지 않습니다. <b>A반 갭 유형 3명 묶어 그룹 멘토링</b>도 검토 가능.</div>
+                </div>
+              </div>
+              <div class="drfoot">
+                <button class="btn">개입 생성 →</button>
+                <button class="btn ghost">관찰 유지</button>
+                <span class="cf">← → 로 세그먼트 내 이동</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 드로어 변형: 관찰 유지 / 산출 유보(1회차) 는 결정 푸터·본문만 전환 -->
+          <div class="sec-label" style="margin-top:24px">드로어 변형 · [관찰 유지] 선택 — 판단해서 두는 것과 방치를 구분(사유·재검토 필수)</div>
+          <div class="rtwrap" style="max-width:452px">
+            <div class="drh" style="border-bottom:1px solid var(--c-border)">
+              <div class="nm" style="font-size:var(--fs-lg)">강민준</div>
+              <div class="mt"><span class="sig stuck">깊이 고착</span><span class="conf c2"><i></i><i></i><i></i>관찰 중 · 2회 반복</span></div>
+            </div>
+            <div style="padding:var(--sp-4) var(--sp-5)">
+              <div class="hold">
+                <div class="row">재검토 <span class="seg"><span class="on">다음 회차(5회차)</span><span>2회차 후</span><span>날짜</span></span></div>
+                <div class="rsn">사유 — 왜 지금은 개입하지 않는가 <span class="req">필수</span> · 예: "팀 교체 직후라 한 회차 더 본다"</div>
+              </div>
+              <div class="rnote">기록하면 큐에서 <b>관찰 중</b>으로 내려가고 재검토 시점에 자동 복귀 · 사유는 다음 담당자도 봄. 방치와 판단은 다르다(A7).</div>
+            </div>
+          </div>
+
+          <!-- 빈 상태 (D122 ⑥) · A7 정신: 조용히 사라지지 않고 명시 -->
+          <div class="sec-label" style="margin-top:28px">변형 · 위험 0건 (빈 상태)</div>
+          <div class="rempty">
+            <div class="ic">✓</div>
+            <div class="t">이번 회차 위험 신호가 없습니다</div>
+            <div class="d">4회차 스냅샷 기준 · 다음 체크포인트 04.18에 재평가합니다. 표본 부족 1명은 산출 유보 중.</div>
+          </div>
         </div>
       </div>
     </div>
@@ -260,26 +596,50 @@
       </div>
       <div class="body">
         <div class="nav">
-          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
         </div>
         <div class="content">
           <div class="phead"><div class="crumb">분석 · 진단 › 7기</div><h2>분석 · 진단</h2></div>
           <div class="lensbar"><span class="ln on" data-tab="risk">사람 <small>누가 위험한가</small></span><span class="ln" data-tab="stage">패턴 <small>어디가 무너지나</small></span></div>
-          <div class="tabs"><span class="t" data-tab="risk">위험 목록 <span class="cnt">4</span></span><span class="t on" data-tab="imbalance">기여·이해도 불균형 <span class="cnt">2</span></span><span class="t" data-tab="ace">에이스 <span class="cnt">3</span></span><span class="t" data-tab="team">팀 분석</span></div>
-          <div style="font-size:12px;color:var(--c-warning);background:var(--c-warning-soft);border-radius:var(--r-md);padding:10px 14px;margin-bottom:16px">⚠ <b>'프리라이더' 같은 확정 라벨은 쓰지 않습니다</b>(낙인·자동화 편향 방지 · A1). 기여량 단독이 아니라 <b>세 조건이 동시</b>에 충족될 때만 표시(B5).</div>
-          <div class="imbcard">
-            <div class="h"><span class="nm">오세훈 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· C반 · 팀 A</span></span><span class="tag">기여·이해도 불균형 (서술형)</span></div>
-            <p>팀 내 기여량이 낮은 편이지만, <b>낮은 기여량이 곧 낮은 실력을 뜻하진 않습니다.</b> 아래 세 조건이 동시에 충족되어 검토 대상으로 표시됩니다.</p>
-            <div class="cross"><span class="cx">기여 편차 (팀 하위)</span><span class="cx">＋ 이해도 저조 (반례대응 2)</span><span class="cx">＋ 지속성 (2회차)</span></div>
-            <div class="disc">▸ 기여 원시 데이터 보기 (참고용 · 판정값 아님)</div>
-            <div class="imbact"><button class="btn">개입 생성</button><button class="btn ghost">상세 ↗</button></div>
+          <div class="tabs"><span class="t" data-tab="risk">위험 목록 <span class="cnt">22</span></span><span class="t on" data-tab="imbalance">기여·이해도 불균형 <span class="cnt">3</span></span><span class="t" data-tab="ace">에이스 <span class="cnt">2</span></span><span class="t" data-tab="team">팀 분석</span></div>
+          <div class="scope">👤 담당 매니저 · 배정 <b>A·B·C반</b>만 표시(SYS-02 격리). <span class="mut">총괄은 기수 전 반.</span></div>
+          <div class="taghd"><span class="n">기여·이해도 불균형 <b>3</b>명</span><span class="mut">배정 138명 중 · 교차 3조건 동시 충족만(B5)</span></div>
+          <div class="warnbar">⚠ <div><b>'프리라이더' 같은 확정 라벨은 쓰지 않습니다</b>(낙인·자동화 편향 방지·A1). 기여량 단독이 아니라 <b>기여 편차 AND 이해도 저조 AND 지속성</b> 세 조건이 동시 충족될 때만 표시하고, 표현은 서술형입니다.</div></div>
+          <div class="lwrap">
+            <div class="lrow" style="grid-template-columns:10px 1fr 66px 92px">
+              <span class="dot s2"></span>
+              <div>
+                <div><span class="nm">오세훈</span><span class="cl">C반 · 팀 A</span></div>
+                <div class="sub">기여는 팀 하위인데 <b>동작 설명은 되지만 이유로 넘어가면 막힙니다.</b> 낮은 기여량이 곧 낮은 실력은 아니라, 세 조건이 함께 잡힐 때만 봅니다.</div>
+                <div class="crossmini"><span class="cxm b">기여 편차 (팀 하위)</span><span class="cxm b">이해도 저조 (반례대응 2)</span><span class="cxm b">지속성 (2회차)</span></div>
+                <div class="disc2">▸ 기여 원시 데이터 (참고용 · 판정값 아님·B5)</div>
+              </div>
+              <span class="conf c3"><i></i><i></i><i></i></span>
+              <div style="display:flex;flex-direction:column;gap:5px"><button class="btn">개입 생성</button><button class="btn ghost">상세 ↗</button></div>
+            </div>
+            <div class="lrow" style="grid-template-columns:10px 1fr 66px 92px">
+              <span class="dot s2"></span>
+              <div>
+                <div><span class="nm">박준호</span><span class="cl">A반 · 팀 B</span></div>
+                <div class="sub">기여 편차 + 이해도 저조 + 지속성 교차. <b>팀 조정 또는 면담</b>을 검토할 지점입니다.</div>
+                <div class="crossmini"><span class="cxm b">기여 편차</span><span class="cxm b">이해도 저조</span><span class="cxm b">지속성 (2회차)</span></div>
+                <div class="disc2">▸ 기여 원시 데이터 (참고용·B5)</div>
+              </div>
+              <span class="conf c2"><i></i><i></i><i></i></span>
+              <div style="display:flex;flex-direction:column;gap:5px"><button class="btn">개입 생성</button><button class="btn ghost">상세 ↗</button></div>
+            </div>
+            <div class="lrow" style="grid-template-columns:10px 1fr 66px 92px">
+              <span class="dot s1"></span>
+              <div>
+                <div><span class="nm">한지민</span><span class="cl">B반 · 팀 C</span></div>
+                <div class="sub">기여 편차는 크지만 <b>이해도는 아직 정상 범위</b> — 2조건만 충족이라 판정하지 않고 모니터링만 합니다(교차 근거 불충분·case).</div>
+                <div class="crossmini"><span class="cxm b">기여 편차</span><span class="cxm">이해도 정상</span><span class="cxm">지속성 미확인</span></div>
+              </div>
+              <span class="conf c1"><i></i><i></i><i></i></span>
+              <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:11px;color:var(--c-text-3);text-align:center">모니터링</span></div>
+            </div>
           </div>
-          <div class="imbcard">
-            <div class="h"><span class="nm">박준호 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· A반 · 팀 B</span></span><span class="tag">기여·이해도 불균형 (서술형)</span></div>
-            <p>기여 편차 + 이해도 저조 + 지속성 교차. 팀 조정 또는 면담 검토.</p>
-            <div class="cross"><span class="cx">기여 편차</span><span class="cx">＋ 이해도 저조</span><span class="cx">＋ 지속성</span></div>
-            <div class="imbact"><button class="btn">개입 생성</button><button class="btn ghost">상세 ↗</button></div>
-          </div>
+          <div class="rnote">· 서버가 <b>기여량 단독으로는 이 목록을 만들 수 없습니다</b>(B5·ENG-03 case) — git history 부재·자동 생성 코드는 재산출, 교차 근거 불충분은 노출 없이 모니터링. · 상세(→SC-M06 귀속 탭)에서 원시 기여·팀 기준선·회차별 편차를 봅니다.</div>
         </div>
       </div>
     </div>
@@ -295,17 +655,42 @@
       <div class="topbar"><div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div><div class="me">박지현 · 매니저 <span class="av">박</span></div></div>
       <div class="body">
         <div class="nav">
-          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
         </div>
         <div class="content">
           <div class="phead"><div class="crumb">분석 · 진단 › 7기</div><h2>분석 · 진단</h2></div>
           <div class="lensbar"><span class="ln on" data-tab="risk">사람 <small>누가 위험한가</small></span><span class="ln" data-tab="stage">패턴 <small>어디가 무너지나</small></span></div>
-          <div class="tabs"><span class="t" data-tab="risk">위험 목록 <span class="cnt">4</span></span><span class="t" data-tab="imbalance">기여·이해도 불균형 <span class="cnt">2</span></span><span class="t on" data-tab="ace">에이스 <span class="cnt">3</span></span><span class="t" data-tab="team">팀 분석</span></div>
-          <div style="font-size:12px;color:var(--c-text-3);margin-bottom:14px">· 단기 고득점 ≠ 에이스 — <b>지속 성장·설명력·표본</b> 근거만 제시. "발표자/멘토로 쓸지"는 <b>매니저 판단</b>(시스템이 후보로 확정하지 않음).</div>
-          <div class="acecard"><div class="l"><div class="nm">김서연 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· A반</span></div><div class="m"><span class="axis">설계논리 5</span><span class="axis">자기수정 5</span> · 3회 연속 상위 · 설명력 상위 10% · 4회차 표본</div></div><button class="btn ghost">상세 ↗</button></div>
-          <div class="acecard"><div class="l"><div class="nm">이서연 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· B반</span></div><div class="m"><span class="axis">대안비교 5</span> · 꾸준한 상위(성장률 +1.2) · 3회차 표본</div></div><button class="btn ghost">상세 ↗</button></div>
-          <div class="acecard" style="opacity:.7"><div class="l"><div class="nm">정하늘 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· A반</span></div><div class="m"><span class="axis" style="background:#eef0f3;color:var(--c-text-2)">코드이해 5</span> · <b style="color:var(--c-warning)">단일 회차 고득점 · 표본 부족</b> → 에이스 확정 유보(B4)</div></div><button class="btn ghost">상세 ↗</button></div>
-          <div style="font-size:11px;color:var(--c-text-3);margin-top:10px">· 활용 용도(발표자·멘토·성과 증빙)는 매니저가 태그. 자동 판정 아님(D47).</div>
+          <div class="tabs"><span class="t" data-tab="risk">위험 목록 <span class="cnt">22</span></span><span class="t" data-tab="imbalance">기여·이해도 불균형 <span class="cnt">3</span></span><span class="t on" data-tab="ace">에이스 <span class="cnt">2</span></span><span class="t" data-tab="team">팀 분석</span></div>
+          <div class="scope">👤 담당 매니저 · 배정 <b>A·B·C반</b>만 표시(SYS-02 격리). <span class="mut">총괄은 기수 전 반.</span></div>
+          <div class="taghd"><span class="n">에이스 <b>2</b>명</span><span class="mut">배정 138명 중 · 표본 부족 1명은 유보 · 근거만 제시(자동 "후보" 배지 없음·D47)</span></div>
+          <div class="warnbar" style="color:var(--c-text-2);background:var(--c-surface-2);border-color:var(--c-border)">ℹ <div>단기 고득점 ≠ 에이스. <b>지속 성장·설명력·표본</b> 근거만 보여주고, "발표자/멘토로 쓸지"는 <b>매니저가 태그</b>합니다 — 시스템은 후보로 확정하지 않습니다.</div></div>
+          <div class="lwrap">
+            <div class="lrow" style="grid-template-columns:1fr 66px 118px">
+              <div>
+                <div><span class="nm">김서연</span><span class="cl">A반</span> <span class="axc2">설계논리 5</span> <span class="axc2">자기수정 5</span></div>
+                <div class="sub"><b>3회 연속 상위</b> · 설명력 상위 10%(완성도만이 아니라 이유를 설명) · 4회차 표본으로 지속성 확인.</div>
+              </div>
+              <span class="conf c3"><i></i><i></i><i></i></span>
+              <div style="display:flex;flex-direction:column;gap:5px"><button class="tagbtn">역할 태그 ▾</button><button class="btn ghost">상세 ↗</button></div>
+            </div>
+            <div class="lrow" style="grid-template-columns:1fr 66px 118px">
+              <div>
+                <div><span class="nm">이서연</span><span class="cl">B반</span> <span class="axc2">대안비교 5</span></div>
+                <div class="sub"><b>꾸준한 상위</b>(성장률 +1.2 · 우상향 궤적) · 3회차 표본. 트레이드오프를 스스로 비교하는 강점.</div>
+              </div>
+              <span class="conf c2"><i></i><i></i><i></i></span>
+              <div style="display:flex;flex-direction:column;gap:5px"><button class="tagbtn">역할 태그 ▾</button><button class="btn ghost">상세 ↗</button></div>
+            </div>
+            <div class="lrow" style="grid-template-columns:1fr 66px 118px;opacity:.72">
+              <div>
+                <div><span class="nm">정하늘</span><span class="cl">A반</span> <span class="axc2 mut">코드이해 5</span></div>
+                <div class="sub"><b style="color:var(--c-warning)">단일 회차 고득점 · 표본 부족</b> → 그날의 컨디션인지 실력인지 구분 불가라 에이스 확정 유보(B4). 2회차 완료 시 재평가.</div>
+              </div>
+              <span class="conf c1"><i></i><i></i><i></i></span>
+              <div style="display:flex;flex-direction:column;gap:5px"><span style="font-size:11px;color:var(--c-warning);text-align:center;font-weight:700">확정 유보</span></div>
+            </div>
+          </div>
+          <div class="rnote">· 활용 용도(발표자·멘토·성과 증빙)는 <b>매니저가 [역할 태그]로</b> 붙입니다 — 시스템 자동 판정 아님(D47). · 성장률 계산 불가·근거 세션 부재는 카드 생성 안 하고(최신·설명력만), 동점 다수는 성장률·설명력·지속성으로 보조 정렬.</div>
         </div>
       </div>
     </div>
@@ -321,58 +706,51 @@
       <div class="topbar"><div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div><div class="me">박지현 · 매니저 <span class="av">박</span></div></div>
       <div class="body">
         <div class="nav">
-          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
         </div>
         <div class="content">
           <div class="phead"><div class="crumb">분석 · 진단 › 7기</div><h2>분석 · 진단</h2></div>
           <div class="lensbar"><span class="ln on" data-tab="risk">사람 <small>누가 위험한가</small></span><span class="ln" data-tab="stage">패턴 <small>어디가 무너지나</small></span></div>
-          <div class="tabs"><span class="t" data-tab="risk">위험 목록 <span class="cnt">4</span></span><span class="t" data-tab="imbalance">기여·이해도 불균형 <span class="cnt">2</span></span><span class="t" data-tab="ace">에이스 <span class="cnt">3</span></span><span class="t on" data-tab="team">팀 분석</span></div>
-          <div style="font-size:12px;color:var(--c-text-3);margin-bottom:14px">· 프로젝트 팀별 이해도 <b>분포·편차·완성도 대비 설명력 갭</b>. 위험 팀은 우선 검토. 팀원 과소·구성 변경은 표본 부족 병기·기간 분리.</div>
-          <div class="card" style="background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden">
-            <table style="width:100%;border-collapse:collapse;font-size:var(--fs-sm)">
-              <thead><tr>
-                <th style="text-align:left;padding:11px 16px;font-size:11px;text-transform:uppercase;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border)">팀 · 프로젝트</th>
-                <th style="text-align:left;padding:11px 16px;font-size:11px;text-transform:uppercase;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border)">이해도 분포</th>
-                <th style="text-align:center;padding:11px 16px;font-size:11px;text-transform:uppercase;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border)">편차</th>
-                <th style="text-align:left;padding:11px 16px;font-size:11px;text-transform:uppercase;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border)">완성도↔설명력 갭</th>
-                <th style="text-align:left;padding:11px 16px;font-size:11px;text-transform:uppercase;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border)">분류</th>
-                <th style="border-bottom:1px solid var(--c-border);background:var(--c-surface-2)"></th>
-              </tr></thead>
-              <tbody>
-                <tr style="background:var(--c-danger-soft)">
-                  <td style="padding:12px 16px;border-bottom:1px solid var(--c-border);font-weight:600">B팀 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· API 서버</span></td>
-                  <td style="padding:12px 16px;border-bottom:1px solid var(--c-border);font-family:var(--mono);font-size:12px;letter-spacing:1px">▁▁█▁ <span style="color:var(--c-text-3)">2~5</span></td>
-                  <td style="padding:12px 16px;border-bottom:1px solid var(--c-border);text-align:center;color:var(--c-danger);font-weight:700">큼</td>
-                  <td style="padding:12px 16px;border-bottom:1px solid var(--c-border);color:var(--c-danger)">완성도 높은데 <b>설명력 낮음</b> (갭 큼)</td>
-                  <td style="padding:12px 16px;border-bottom:1px solid var(--c-border)"><span class="pill danger">위험</span></td>
-                  <td style="padding:12px 16px;border-bottom:1px solid var(--c-border);text-align:right"><span style="color:var(--c-primary);font-size:var(--fs-xs);cursor:pointer">팀 상세 ↗</span></td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 16px;border-bottom:1px solid var(--c-border);font-weight:600">A팀 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· API 서버</span></td>
-                  <td style="padding:12px 16px;border-bottom:1px solid var(--c-border);font-family:var(--mono);font-size:12px;letter-spacing:1px">▃▄▅▄ <span style="color:var(--c-text-3)">3~4</span></td>
-                  <td style="padding:12px 16px;border-bottom:1px solid var(--c-border);text-align:center;color:var(--c-text-2)">작음</td>
-                  <td style="padding:12px 16px;border-bottom:1px solid var(--c-border);color:var(--c-text-2)">갭 작음</td>
-                  <td style="padding:12px 16px;border-bottom:1px solid var(--c-border)"><span class="pill na">균형</span></td>
-                  <td style="padding:12px 16px;border-bottom:1px solid var(--c-border);text-align:right"><span style="color:var(--c-primary);font-size:var(--fs-xs);cursor:pointer">팀 상세 ↗</span></td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 16px;font-weight:600">C팀 <span style="font-size:11px;color:var(--c-text-3);font-weight:400">· API 서버</span></td>
-                  <td style="padding:12px 16px;font-family:var(--mono);font-size:12px;letter-spacing:1px">▅▆▆▇ <span style="color:var(--c-text-3)">4~5</span></td>
-                  <td style="padding:12px 16px;text-align:center;color:var(--c-text-2)">작음</td>
-                  <td style="padding:12px 16px;color:var(--c-success)">완성도·설명력 모두 높음</td>
-                  <td style="padding:12px 16px"><span class="pill" style="background:var(--c-success-soft);color:var(--c-success)">고성과</span></td>
-                  <td style="padding:12px 16px;text-align:right"><span style="color:var(--c-primary);font-size:var(--fs-xs);cursor:pointer">팀 상세 ↗</span></td>
-                </tr>
-                <tr>
-                  <td style="padding:12px 16px;font-weight:600;color:var(--c-text-3)">D팀 <span style="font-size:11px;font-weight:400">· 2명</span></td>
-                  <td style="padding:12px 16px;color:var(--c-text-3)" colspan="3"><b class="flag" style="background:var(--c-warning-soft);color:var(--c-warning)">표본 부족</b> · 팀원 과소로 편차 해석 유보</td>
-                  <td style="padding:12px 16px"><span class="pill na">–</span></td>
-                  <td style="padding:12px 16px;text-align:right"><span style="color:var(--c-primary);font-size:var(--fs-xs);cursor:pointer">팀 상세 ↗</span></td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="tabs"><span class="t" data-tab="risk">위험 목록 <span class="cnt">22</span></span><span class="t" data-tab="imbalance">기여·이해도 불균형 <span class="cnt">3</span></span><span class="t" data-tab="ace">에이스 <span class="cnt">2</span></span><span class="t on" data-tab="team">팀 분석</span></div>
+          <div class="scope">👤 담당 매니저 · 배정 <b>A·B·C반</b>의 팀만 표시(SYS-02 격리). <span class="mut">총괄은 기수 전 반.</span></div>
+          <div class="taghd"><span class="n">팀 <b>4</b>개</span><span class="mut">배정 반 프로젝트 팀 · 위험 1 · 균형 1 · 고성과 1 · 표본 부족 1</span></div>
+          <div class="warnbar" style="color:var(--c-text-2);background:var(--c-surface-2);border-color:var(--c-border)">ℹ <div><b>설명력 갭</b> = 완성도는 높은데 이해(설명력)가 낮음 → 팀 단위 기여·이해도 불균형 신호. 위험 팀 우선 검토. 팀원 과소·구성 변경은 표본 부족 병기·기간 분리.</div></div>
+          <div class="lwrap">
+            <div class="rth" style="grid-template-columns:1fr 120px 60px 1fr 74px 22px">
+              <span>팀 · 프로젝트</span><span>이해도 분포</span><span>편차</span><span>완성도↔설명력 갭</span><span>분류</span><span></span>
+            </div>
+            <div class="lrow" style="grid-template-columns:1fr 120px 60px 1fr 74px 22px;background:var(--c-danger-soft)">
+              <div><span class="nm">B팀</span><span class="cl">API 서버 · 4명</span></div>
+              <div class="tdist"><i style="height:6px"></i><i style="height:6px"></i><i class="hi" style="height:24px"></i><i style="height:6px"></i></div>
+              <span style="color:var(--c-danger);font-weight:700;font-size:var(--fs-xs)">큼</span>
+              <div style="font-size:var(--fs-xs);color:var(--c-danger)">완성도 높은데 <b>설명력 낮음</b> — 한 명이 다 짜고 나머지는 못 따라온 신호</div>
+              <span class="tpill risk">위험</span>
+              <span class="cv" style="color:var(--c-text-3);text-align:center;font-size:12px">›</span>
+            </div>
+            <div class="lrow" style="grid-template-columns:1fr 120px 60px 1fr 74px 22px">
+              <div><span class="nm">A팀</span><span class="cl">API 서버 · 4명</span></div>
+              <div class="tdist"><i style="height:14px"></i><i style="height:18px"></i><i style="height:20px"></i><i style="height:18px"></i></div>
+              <span style="color:var(--c-text-2);font-size:var(--fs-xs)">작음</span>
+              <div style="font-size:var(--fs-xs);color:var(--c-text-2)">갭 작음 · 고르게 이해</div>
+              <span class="tpill bal">균형</span>
+              <span class="cv" style="color:var(--c-text-3);text-align:center;font-size:12px">›</span>
+            </div>
+            <div class="lrow" style="grid-template-columns:1fr 120px 60px 1fr 74px 22px">
+              <div><span class="nm">C팀</span><span class="cl">API 서버 · 4명</span></div>
+              <div class="tdist"><i style="height:18px"></i><i style="height:21px"></i><i style="height:22px"></i><i class="hi" style="height:24px"></i></div>
+              <span style="color:var(--c-text-2);font-size:var(--fs-xs)">작음</span>
+              <div style="font-size:var(--fs-xs);color:var(--c-success)">완성도·설명력 모두 높음</div>
+              <span class="tpill high">고성과</span>
+              <span class="cv" style="color:var(--c-text-3);text-align:center;font-size:12px">›</span>
+            </div>
+            <div class="lrow" style="grid-template-columns:1fr 120px 60px 1fr 74px 22px">
+              <div><span class="nm" style="color:var(--c-text-3)">D팀</span><span class="cl">API 서버 · 2명</span></div>
+              <div style="grid-column:span 3;font-size:var(--fs-xs);color:var(--c-text-3)"><span class="tpill na" style="background:var(--c-warning-soft);color:var(--c-warning)">표본 부족</span> 팀원 과소로 편차·갭 해석 유보</div>
+              <span class="tpill na">–</span>
+              <span class="cv" style="color:var(--c-text-3);text-align:center;font-size:12px">›</span>
+            </div>
           </div>
-          <div style="font-size:11px;color:var(--c-text-3);margin-top:10px">· <b>설명력 갭</b> = 프로젝트 완성도는 높은데 이해도(설명력)가 낮음 → 기여·이해도 불균형 팀 신호. 팀 상세 → 구성원별(SC-M06). 구성 변경 시 기간별 분리 집계(DASH-13).</div>
+          <div class="rnote">· 팀 상세 → 구성원별(SC-M06). 구성 변경 시 <b>기간별 분리 집계</b>(DASH-13). 팀 구성 부재면 팀 분석 중단·개인 단위만. · 분포 막대 = 팀원 이해도(2~5점) 히스토그램 — 한쪽에 몰리면(B팀) 편차 큼.</div>
         </div>
       </div>
     </div>
@@ -391,7 +769,7 @@
       </div>
       <div class="body">
         <div class="nav">
-          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
         </div>
         <div class="content">
           <div class="phead"><div class="crumb">분석 · 진단 › 패턴 › 7기</div><h2>분석 · 진단</h2></div>
@@ -460,7 +838,7 @@
       </div>
       <div class="body">
         <div class="nav">
-          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
         </div>
         <div class="content">
           <div class="phead"><div class="crumb">분석 · 진단 › 패턴 › 7기</div><h2>분석 · 진단</h2></div>
@@ -517,7 +895,7 @@
       </div>
       <div class="body">
         <div class="nav">
-          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
         </div>
         <div class="content">
           <div class="phead"><div class="crumb">분석 · 진단 › 패턴 › 7기</div><h2>분석 · 진단</h2></div>
@@ -581,7 +959,7 @@
       </div>
       <div class="body">
         <div class="nav">
-          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item on"><span class="ic">△</span>분석 · 진단</div><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
         </div>
         <div class="content">
           <div class="phead"><div class="crumb">분석 · 진단 › 패턴 › 7기</div><h2>분석 · 진단</h2></div>

@@ -31,6 +31,26 @@
   .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
   .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:860px}
   .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+  /* 해시 라우팅 — 임베디드(쇼케이스 iframe)에선 한 케이스만 표시 */
+  body.embedded .doc-head, body.embedded .sec-label{display:none}
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  /* 상황 요약 히어로 — 상태별 색만 다름, 구조 동일 */
+  .hero{display:flex;align-items:center;gap:var(--sp-4);border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5);margin-bottom:var(--sp-5);border:1px solid}
+  .hero .ic{font-size:20px}
+  .hero .txt{flex:1}.hero .txt b{font-size:var(--fs-base)}
+  .hero .txt .sub{font-size:var(--fs-xs);color:var(--c-text-2);margin-top:2px}
+  .hero .act{border:0;border-radius:var(--r-md);padding:9px 16px;font-size:var(--fs-sm);font-weight:600;cursor:pointer;white-space:nowrap;color:#fff}
+  .hero.risk{background:var(--c-danger-soft);border-color:#e6c3bd}.hero.risk b{color:var(--c-danger)}.hero.risk .act{background:var(--c-danger)}
+  .hero.ace{background:var(--c-success-soft);border-color:#bfe3ce}.hero.ace b{color:var(--c-success)}.hero.ace .act{background:var(--c-success)}
+  .stateview.hidden{display:none}
+  /* 상태 버전 전환기 (데모 · 실제 앱은 학생 상태에 맞는 버전 자동 표시) */
+  .statebar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:var(--sp-4);font-size:11px;align-items:center}
+  .statebar .lbl{color:var(--c-text-3);font-weight:600;margin-right:2px}
+  .statebar .sc{padding:3px 10px;border-radius:20px;background:#eef0f3;color:var(--c-text-2);cursor:pointer;border:1px solid transparent}
+  .statebar .sc:hover{border-color:var(--c-border-strong)}
+  .statebar .sc.on{background:var(--c-primary);color:#fff;font-weight:600}
+  .mini b{color:var(--c-text)}
 
   .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff}
   .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
@@ -59,42 +79,62 @@
   .dhead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
   .dhead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
   .dhead .meta{font-size:var(--fs-sm);color:var(--c-text-2)}
+  .dhead .meta .proj{color:var(--c-text-3);font-size:var(--fs-xs)}
   .mbtn{border:1px solid var(--c-primary);background:var(--c-primary-soft);color:var(--c-primary);border-radius:var(--r-md);padding:8px 14px;font-size:var(--fs-sm);font-weight:600;cursor:pointer}
   .tabs{display:flex;gap:var(--sp-5);border-bottom:1px solid var(--c-border);margin-bottom:var(--sp-5)}
   .tabs .t{padding:var(--sp-2) 0;font-size:var(--fs-sm);color:var(--c-text-2);border-bottom:2px solid transparent;margin-bottom:-1px}
   .tabs .t.on{color:var(--c-primary);border-color:var(--c-primary);font-weight:600}
 
-  .headsig{display:flex;align-items:center;gap:var(--sp-4);background:var(--c-danger-soft);border:1px solid #e6c3bd;border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5);margin-bottom:var(--sp-5)}
-  .headsig .ic{font-size:20px}
-  .headsig .txt{flex:1}.headsig .txt b{color:var(--c-danger)}
-  .headsig .txt .sub{font-size:var(--fs-xs);color:var(--c-text-2);margin-top:2px}
-  .headsig .act{background:var(--c-danger);color:#fff;border:0;border-radius:var(--r-md);padding:9px 16px;font-size:var(--fs-sm);font-weight:600;cursor:pointer;white-space:nowrap}
-
   .panel{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-5);margin-bottom:var(--sp-4)}
   .panel .ph{display:flex;align-items:center;justify-content:space-between;font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);margin-bottom:var(--sp-4)}
+  .panel .ph .fx{font-weight:400;text-transform:none;letter-spacing:0;margin-right:auto;margin-left:8px}
   .panel .ph .leg{display:flex;gap:var(--sp-4);text-transform:none;letter-spacing:0;font-weight:400}
   .panel .ph .leg .k{display:inline-flex;align-items:center;gap:5px;color:var(--c-text-2)}
   .panel .ph .leg .sw{width:14px;height:3px;border-radius:2px}
   .panel .ph .leg .sw.dash{background:repeating-linear-gradient(90deg,#8b929c,#8b929c 3px,transparent 3px,transparent 6px)}
-
-  .ogrid{display:flex;gap:var(--sp-4);align-items:stretch;flex-wrap:wrap}
-  .radar{flex:0 0 300px;text-align:center}
-  .radar .cap{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:var(--sp-1)}
-  .axisrows{flex:1;min-width:340px}
-  .arow{display:flex;align-items:center;gap:var(--sp-3);padding:9px 0;border-bottom:1px solid var(--c-border)}
-  .arow:last-child{border-bottom:0}
-  .arow .ax{width:76px;font-weight:600;font-size:var(--fs-sm)}
-  .arow .score{font-size:var(--fs-xl);font-weight:700;font-variant-numeric:tabular-nums;width:26px;text-align:right}
-  .arow .of{font-size:var(--fs-xs);color:var(--c-text-3);width:20px}
-  .arow .delta{font-size:var(--fs-sm);font-weight:600;width:40px}
   .up{color:var(--c-success)} .dn{color:var(--c-danger)} .fl{color:var(--c-text-3)}
-  .spark{flex:1;height:24px;max-width:96px}
-  .vs{font-size:var(--fs-xs);width:132px;text-align:right;color:var(--c-text-3)}
-  .vs .gap{font-weight:700;margin-left:6px}
-  .vs .gap.hi{color:var(--c-success)} .vs .gap.mid{color:var(--c-text-3)} .vs .gap.lo{color:var(--c-danger)}
+  .spark{flex:0 0 60px;height:20px}
+  .gap{font-weight:700;margin-left:4px}
+  .gap.hi{color:var(--c-success)} .gap.mid{color:var(--c-text-3)} .gap.lo{color:var(--c-danger)}
+
+  /* ① 상태 배지(위험/에이스만) — 이미 정의된 .hero 재사용, risk/ace 색만 유지, 미사용 변형(newbie/active/recover/steady)은 제거 */
+
+  /* ② 데이터 신뢰도 경고 — 문제 있을 때만, 별도 스트립(사람 신호와 분리) */
+  .confbadge{display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--c-danger);border-radius:var(--r-md);padding:var(--sp-2) var(--sp-4);font-size:var(--fs-xs);color:var(--c-danger);margin-bottom:var(--sp-4)}
+  .confbadge b{color:var(--c-danger)}
+
+  /* ④ 상담 중 컨텍스트 라인 — 항상(있으면) */
+  .ivline{display:flex;align-items:center;gap:8px;font-size:var(--fs-sm);color:var(--c-text-2);background:var(--c-info-soft);border:1px solid #bcd4ea;border-radius:var(--r-md);padding:var(--sp-2) var(--sp-4);margin-bottom:var(--sp-4)}
+  .ivline .ivdot{width:8px;height:8px;border-radius:50%;background:var(--c-info);flex:0 0 auto}
+  .ivline .ivgo{margin-left:auto;color:var(--c-info);font-weight:600;text-decoration:none;white-space:nowrap}
+
+  /* ⑤ 세션 참여 팩트 — 모든 학생 공통 */
+  .factline{font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-4)}
+  .factline b{color:var(--c-text)}
+
+  /* 일반 학생 안내 */
+  .normnote{font-size:var(--fs-sm);color:var(--c-text-3);background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-4)}
+
+  /* ⑥ 5축 통합표 — 레이더·별도 총점그래프 대체(유일한 5축 정보원) */
+  .axtbl{display:flex;flex-direction:column}
+  .axr{display:flex;align-items:center;gap:var(--sp-3);padding:9px 0;border-bottom:1px solid var(--c-border)}
+  .axr:last-child{border-bottom:0}
+  .axr .ax{width:76px;font-weight:600;font-size:var(--fs-sm)}
+  .axr .sc5{font-size:var(--fs-xl);font-weight:700;font-variant-numeric:tabular-nums;width:44px;text-align:right}
+  .axr .sc5 .of{font-size:var(--fs-xs);color:var(--c-text-3);font-weight:400}
+  .axr .dl{font-size:var(--fs-sm);font-weight:600;width:32px}
+  .axr .gapv{font-size:var(--fs-xs);color:var(--c-text-3);width:130px;text-align:right;margin-left:auto}
+  .axr.hl-bad{background:var(--c-danger-soft);margin:0 -12px;padding:9px 12px;border-radius:8px}
+  .axr.hl-bad .ax{color:var(--c-danger)}
+  .axr.hl-bad .sc5{color:var(--c-danger)}
+  .axr.hl-good{background:var(--c-success-soft);margin:0 -12px;padding:9px 12px;border-radius:8px}
+  .axr.hl-good .ax{color:var(--c-success)}
+  .axr.hl-good .sc5{color:var(--c-success)}
+  .axnote{font-size:11px;color:var(--c-text-3);margin-top:10px}
 
   .imb{background:var(--c-warning-soft);border:1px solid #e6d3a8;border-radius:var(--r-lg);padding:var(--sp-4) var(--sp-5)}
   .imb .h{font-weight:700;color:var(--c-warning);font-size:var(--fs-sm);margin-bottom:var(--sp-2)}
+  .imb .h .ctx{font-weight:400;color:var(--c-text-3);font-size:var(--fs-xs)}
   .imb p{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.6}
   .imb .cross{display:flex;gap:var(--sp-2);margin-top:var(--sp-3);flex-wrap:wrap}
   .imb .cx{font-size:11px;font-weight:600;background:#fff;border:1px solid #e6d3a8;color:var(--c-warning);border-radius:20px;padding:3px 10px}
@@ -228,8 +268,10 @@
     <p>명세 목적 = "면담 전 통합 상세"(DASH-16). 3탭: <b>종합</b>(종합점수 추이 + 레이더 + 축별 + 신호) · <b>세션</b>(무너진 지점) · <b>개입</b>(이력·메모). 통계 기호(σ) 대신 평이한 말, 기수 평균은 <b>회차 스냅샷</b>(B1) 명시. 세션 상태는 한글(견고/부분/표면). 귀속 탭 제거 → 불균형 신호로만(코드량 ≠ 실력·B5).</p>
   </div>
 
-  <!-- ===== 종합 탭 ===== -->
-  <div class="sec-label">탭 · 종합</div>
+  <!-- ===== 종합 탭 (컴포넌트 스택 고정: 상태배지→신뢰도경고→포커스축그래프→상담중라인→세션참여팩트→5축표→귀속카드. 값만 학생마다 다름) ===== -->
+  <div class="sec-label">탭 · 종합 (3예시: 위험 · 에이스 · 일반 · 뼈대 동일)</div>
+  <div class="rpage on" id="page-overview">
+  <div class="stateview" data-state="risk">
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/trainees/minjun</span></div>
     <div class="app">
@@ -239,78 +281,61 @@
       </div>
       <div class="body">
         <div class="nav">
-          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
         </div>
         <div class="content">
           <div class="dhead">
-            <div class="who"><span class="av">강</span><div><div class="crumb">교육생 › 강민준</div><h2 style="line-height:1.1">강민준</h2><div class="meta">7기 · A반 · 팀 A · 활성 · 2/2회차 응시</div></div></div>
+            <div class="who"><span class="av">강</span><div><div class="crumb">교육생 › 강민준</div><h2 style="line-height:1.1">강민준</h2><div class="meta">7기 · A반 · 활성 <span class="proj">· 참여 프로젝트: MSA 배포 실습(팀A) · API 서버(팀C)</span></div></div></div>
           </div>
           <div class="tabs"><span class="t on">종합</span><span class="t">세션</span><span class="t">개입</span></div>
+          <div class="statebar"><span class="lbl">데모 예시</span><span class="sc on" data-go="risk">위험</span><span class="sc" data-go="ace">에이스</span><span class="sc" data-go="normal">일반</span></div>
 
-          <div class="headsig">
+          <!-- ① 상태 배지 — 위험/에이스만. 일반은 이 블록 자체가 없음 -->
+          <div class="hero risk">
             <span class="ic">⚠️</span>
-            <div class="txt"><b>반례대응이 2점으로 2회 연속 하락(4 → 2), 기수 평균 3.4보다 1.4점 낮습니다.</b><div class="sub">실패 케이스·엣지 대응이 약해지는 중. 다른 4축은 상승세라 국소적 취약. 개입 검토 권장.</div></div>
+            <div class="txt"><b>반례대응이 2점으로 2회 연속 하락(4 → 2), 기수 평균 3.4보다 1.4점 낮습니다.</b><div class="sub">실패 케이스·엣지 대응이 약해지는 중. 다른 4축은 상승세라 국소적 취약. <b>지금 개입 검토 권장</b>(DASH-05 즉시).</div></div>
             <button class="act">개입 생성 →</button>
           </div>
 
-          <!-- 종합점수 추이 (hero) -->
+          <!-- ② 데이터 신뢰도 경고 — 문제 있을 때만(채점 안정성 DASH-06 · 커밋귀속 AUTH-07). 없으면 안 뜸 -->
+          <div class="confbadge">⚠ <b>데이터 신뢰도 주의</b> · 커밋 이메일 미검증(AUTH-07) — 기여 관련 수치는 확정 전 검증 필요</div>
+
+          <!-- ③ 포커스 축 그래프 — 헤드라인이 지목한 그 축 하나만. 5개 뭉뚱그린 총점 아님 -->
           <div class="panel">
-            <div class="ph">종합점수 추이 <span class="leg"><span class="k"><span class="sw" style="background:#3a4db8"></span>강민준</span><span class="k"><span class="sw dash"></span>기수 평균 (회차별 스냅샷)</span></span></div>
-            <svg width="100%" viewBox="0 0 640 190" preserveAspectRatio="xMidYMid meet" style="max-width:640px">
-              <!-- gridlines -->
-              <g stroke="#eef0f3" stroke-width="1">
-                <line x1="40" y1="50" x2="620" y2="50"/><line x1="40" y1="80" x2="620" y2="80"/><line x1="40" y1="110" x2="620" y2="110"/><line x1="40" y1="140" x2="620" y2="140"/><line x1="40" y1="170" x2="620" y2="170"/>
-              </g>
-              <g font-size="10" fill="#8b929c" font-family="sans-serif">
-                <text x="34" y="53" text-anchor="end">25</text><text x="34" y="83" text-anchor="end">20</text><text x="34" y="113" text-anchor="end">15</text><text x="34" y="143" text-anchor="end">10</text><text x="34" y="173" text-anchor="end">5</text>
-              </g>
-              <!-- x labels -->
-              <g font-size="11" fill="#5a616b" font-family="sans-serif" text-anchor="middle">
-                <text x="40" y="188">1회차</text><text x="233" y="188">2회차</text><text x="427" y="188" fill="#8b929c">3회차 예정</text><text x="620" y="188" fill="#8b929c">4회차 최종</text>
-              </g>
-              <!-- cohort avg line (dashed grey): r1=16→74, r2=17.5→65 -->
-              <polyline points="40,74 233,65" fill="none" stroke="#8b929c" stroke-width="2" stroke-dasharray="5 3"/>
-              <g fill="#8b929c"><circle cx="40" cy="74" r="3"/><circle cx="233" cy="65" r="3"/></g>
-              <!-- student line (solid indigo): r1=18→62, r2=19→56 -->
-              <polyline points="40,62 233,56" fill="none" stroke="#3a4db8" stroke-width="2.5"/>
-              <g fill="#3a4db8"><circle cx="40" cy="62" r="4"/><circle cx="233" cy="56" r="4"/></g>
-              <g font-size="11" font-weight="700" fill="#3a4db8" font-family="sans-serif"><text x="40" y="52" text-anchor="middle">18</text><text x="233" y="46" text-anchor="middle">19</text></g>
+            <div class="ph">반례대응 추이 <span class="fx" style="color:var(--c-danger)">· 위험 신호 축</span> <span class="leg"><span class="k"><span class="sw" style="background:#c0392b"></span>강민준</span><span class="k"><span class="sw dash"></span>기수 평균</span></span></div>
+            <svg width="100%" viewBox="0 0 480 140" preserveAspectRatio="xMidYMid meet" style="max-width:480px">
+              <g stroke="#eef0f3" stroke-width="1"><line x1="36" y1="30" x2="460" y2="30"/><line x1="36" y1="60" x2="460" y2="60"/><line x1="36" y1="90" x2="460" y2="90"/><line x1="36" y1="120" x2="460" y2="120"/></g>
+              <g font-size="10" fill="#8b929c" font-family="sans-serif"><text x="30" y="33" text-anchor="end">5</text><text x="30" y="63" text-anchor="end">3</text><text x="30" y="123" text-anchor="end">0</text></g>
+              <g font-size="11" fill="#5a616b" font-family="sans-serif" text-anchor="middle"><text x="60" y="136">1회차</text><text x="250" y="136">2회차</text><text x="440" y="136" fill="#8b929c">3회차 예정</text></g>
+              <polyline points="60,55 250,58" fill="none" stroke="#8b929c" stroke-width="2" stroke-dasharray="5 3"/><g fill="#8b929c"><circle cx="60" cy="55" r="3"/><circle cx="250" cy="58" r="3"/></g>
+              <polyline points="60,60 250,108" fill="none" stroke="#c0392b" stroke-width="2.5"/><g fill="#c0392b"><circle cx="60" cy="60" r="4"/><circle cx="250" cy="108" r="4"/></g>
+              <g font-size="11" font-weight="700" fill="#c0392b" font-family="sans-serif"><text x="60" y="50" text-anchor="middle">4</text><text x="250" y="124" text-anchor="middle">2</text></g>
             </svg>
-            <div style="font-size:11px;color:var(--c-text-3);margin-top:6px">· 종합은 오르지만(18→19) <b>축 등락을 가림</b> — 반례대응 폭락은 아래 축별에서 확인. 기수 평균은 회차마다 다른 스냅샷(B1). 1회차 단독은 판정 유보(B4).</div>
+            <div style="font-size:11px;color:var(--c-text-3);margin-top:4px">· 다른 4축은 이 회차 상승세 — 이 축만 국소적으로 취약(전체 5축은 아래 표에서 확인). 결측 회차는 선으로 잇지 않음(T-2).</div>
           </div>
 
+          <!-- ④ 상담 중 컨텍스트 — 진행 중인 개입 있으면 항상 표시(상태와 무관) -->
+          <div class="ivline"><span class="ivdot"></span> <b>진행 중인 개입:</b> 면담(04.12 시작) · 효과는 다음 회차 판정 <a href="#" class="ivgo">개입 탭에서 보기 →</a></div>
+
+          <!-- ⑤ 세션 참여 팩트 — 모든 학생 공통, 상태 무관 -->
+          <div class="factline">📋 이번 회차(2회차) <b>응시 완료</b> · 마지막 세션 04.18 · 소요 14분</div>
+
+          <!-- ⑥ 5축 통합표 — 유일한 5축 정보원(레이더 없음, 총점 그래프 없음) -->
           <div class="panel">
             <div class="ph">5축 상세 · 2회차</div>
-            <div class="ogrid">
-              <div class="radar">
-                <svg width="260" height="248" viewBox="0 0 260 250">
-                  <g fill="none" stroke="#e2e5ea" stroke-width="1"><polygon points="130,49 202,101 175,181 85,181 58,101"/><polygon points="130,68 184,105 164,165 96,165 76,105"/><polygon points="130,87 166,110 153,148 107,148 94,110"/></g>
-                  <g stroke="#e2e5ea" stroke-width="1"><line x1="130" y1="125" x2="130" y2="30"/><line x1="130" y1="125" x2="220" y2="96"/><line x1="130" y1="125" x2="186" y2="202"/><line x1="130" y1="125" x2="74" y2="202"/><line x1="130" y1="125" x2="40" y2="96"/></g>
-                  <polygon points="130,60 195,104 170,180 94,174 67,104" fill="none" stroke="#8b929c" stroke-width="1.5" stroke-dasharray="4 3"/>
-                  <polygon points="130,49 220,96 175,186 108,156 58,102" fill="rgba(58,77,184,.16)" stroke="#3a4db8" stroke-width="2"/>
-                  <g fill="#3a4db8"><circle cx="130" cy="49" r="3"/><circle cx="220" cy="96" r="3"/><circle cx="175" cy="186" r="3"/><circle cx="108" cy="156" r="3"/><circle cx="58" cy="102" r="3"/></g>
-                  <g font-size="11" fill="#5a616b" font-family="sans-serif"><text x="130" y="22" text-anchor="middle">코드이해</text><text x="232" y="96">설계논리</text><text x="188" y="222" text-anchor="middle">대안비교</text><text x="72" y="222" text-anchor="middle" fill="#c0392b" font-weight="700">반례대응</text><text x="28" y="96" text-anchor="end">자기수정</text></g>
-                </svg>
-                <div class="cap">채움 = 강민준 · 점선 = 기수 평균(2회차 스냅샷)</div>
-              </div>
-              <div class="axisrows">
-                <div class="arow"><span class="ax">코드이해</span><span class="score">4</span><span class="of">/5</span><span class="delta fl">0</span>
-                  <svg class="spark" viewBox="0 0 80 24"><polyline points="8,12 72,12" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="72" cy="12" r="2.5" fill="#3a4db8"/></svg><span class="vs">평균 3.4<span class="gap mid">+0.6</span></span></div>
-                <div class="arow"><span class="ax">설계논리</span><span class="score">5</span><span class="of">/5</span><span class="delta up">▲1</span>
-                  <svg class="spark" viewBox="0 0 80 24"><polyline points="8,16 72,6" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="72" cy="6" r="2.5" fill="#3a4db8"/></svg><span class="vs">평균 3.6<span class="gap hi">+1.4</span></span></div>
-                <div class="arow"><span class="ax">대안비교</span><span class="score">4</span><span class="of">/5</span><span class="delta up">▲1</span>
-                  <svg class="spark" viewBox="0 0 80 24"><polyline points="8,17 72,10" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="72" cy="10" r="2.5" fill="#3a4db8"/></svg><span class="vs">평균 3.6<span class="gap mid">+0.4</span></span></div>
-                <div class="arow" style="background:var(--c-danger-soft);margin:0 -12px;padding:9px 12px;border-radius:8px"><span class="ax" style="color:var(--c-danger)">반례대응</span><span class="score" style="color:var(--c-danger)">2</span><span class="of">/5</span><span class="delta dn">▼2</span>
-                  <svg class="spark" viewBox="0 0 80 24"><polyline points="8,7 72,20" fill="none" stroke="#c0392b" stroke-width="2"/><circle cx="72" cy="20" r="2.5" fill="#c0392b"/></svg><span class="vs">평균 3.4<span class="gap lo">−1.4</span></span></div>
-                <div class="arow"><span class="ax">자기수정</span><span class="score">4</span><span class="of">/5</span><span class="delta up">▲1</span>
-                  <svg class="spark" viewBox="0 0 80 24"><polyline points="8,16 72,10" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="72" cy="10" r="2.5" fill="#3a4db8"/></svg><span class="vs">평균 3.5<span class="gap mid">+0.5</span></span></div>
-                <div style="font-size:11px;color:var(--c-text-3);margin-top:10px">· 오른쪽은 <b>2회차 기수 평균</b>(스냅샷)과 본인 점수 차이. 같은 5점 단위라 바로 읽힘. 정확한 통계 편차는 마우스오버(내부 z-score).</div>
-              </div>
+            <div class="axtbl">
+              <div class="axr"><span class="ax">코드이해</span><span class="sc5">4<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,10" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="10" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.4<b class="gap mid">+0.6</b></span></div>
+              <div class="axr"><span class="ax">설계논리</span><span class="sc5">5<span class="of">/5</span></span><span class="dl up">▲1</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,14 54,4" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="4" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.6<b class="gap hi">+1.4</b></span></div>
+              <div class="axr"><span class="ax">대안비교</span><span class="sc5">4<span class="of">/5</span></span><span class="dl up">▲1</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,15 54,8" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="8" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.6<b class="gap mid">+0.4</b></span></div>
+              <div class="axr hl-bad"><span class="ax">반례대응</span><span class="sc5">2<span class="of">/5</span></span><span class="dl dn">▼2</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,6 54,16" fill="none" stroke="#c0392b" stroke-width="2"/><circle cx="54" cy="16" r="2.3" fill="#c0392b"/></svg><span class="gapv">평균 3.4<b class="gap lo">−1.4</b></span></div>
+              <div class="axr"><span class="ax">자기수정</span><span class="sc5">4<span class="of">/5</span></span><span class="dl up">▲1</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,14 54,8" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="8" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.5<b class="gap mid">+0.5</b></span></div>
+              <div class="axnote">· Δ=직전 회차 대비. 오른쪽 기수평균은 2회차 스냅샷(B1)과의 차이, 같은 5점 단위. 정밀 통계편차는 마우스오버. 회차 2개부터 계산(표본 부족 시 "—", DASH-08).</div>
             </div>
           </div>
 
+          <!-- ⑦ 귀속 신호(조건부) — 3조건 동시충족 시만, 순수 서술형(신뢰도 경고는 위 ②로 분리됨) -->
           <div class="imb">
-            <div class="h">⚠ 기여·이해도 불균형 (팀 프로젝트 · 서술형)</div>
+            <div class="h">⚠ 기여·이해도 불균형 <span class="ctx">MSA 배포 실습 · 팀A · 서술형</span></div>
             <p>팀 내 기여량이 낮은 편이지만, <b>낮은 기여량이 곧 낮은 실력을 뜻하진 않습니다.</b> 이 신호는 기여량 단독이 아니라 아래 세 조건이 <b>동시에</b> 충족될 때만 표시됩니다.</p>
             <div class="cross"><span class="cx">기여 편차 (팀 하위)</span><span class="cx">＋ 이해도 저조 (반례대응 2)</span><span class="cx">＋ 지속성 (2회차)</span></div>
             <div class="disc">▸ 기여 원시 데이터 보기 (참고용)</div>
@@ -320,9 +345,108 @@
       </div>
     </div>
   </div>
+  </div>
 
+  <div class="stateview hidden" data-state="ace">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/trainees/seoyeon</span></div>
+    <div class="app">
+      <div class="topbar"><div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div><div class="me">박지현 · 매니저 <span class="av">박</span></div></div>
+      <div class="body">
+        <div class="nav"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div></div>
+        <div class="content">
+          <div class="dhead"><div class="who"><span class="av">김</span><div><div class="crumb">교육생 › 김서연</div><h2 style="line-height:1.1">김서연</h2><div class="meta">7기 · A반 · 활성 <span class="proj">· 참여 프로젝트: MSA 배포 실습(팀A)</span></div></div></div></div>
+          <div class="tabs"><span class="t on">종합</span><span class="t">세션</span><span class="t">개입</span></div>
+          <div class="statebar"><span class="lbl">데모 예시</span><span class="sc" data-go="risk">위험</span><span class="sc on" data-go="ace">에이스</span><span class="sc" data-go="normal">일반</span></div>
+
+          <!-- ① 상태 배지 -->
+          <div class="hero ace">
+            <span class="ic">★</span>
+            <div class="txt"><b>대안비교가 5점 만점 · 2회 연속 기수 최상위권입니다(기수 평균 3.6보다 1.4점 높음).</b><div class="sub">근거를 스스로 제시하는 설명력이 뛰어남. 다른 축도 전반 상위. <b>멘토 후보로 검토</b>할 만함(DASH-12 · 자동 배치 아님).</div></div>
+          </div>
+
+          <!-- ② 신뢰도 경고 없음(문제 없어 미표시) -->
+
+          <!-- ③ 포커스 축 그래프 — 강점 축 -->
+          <div class="panel">
+            <div class="ph">대안비교 추이 <span class="fx" style="color:var(--c-success)">· 강점 축</span> <span class="leg"><span class="k"><span class="sw" style="background:#1f8a5b"></span>김서연</span><span class="k"><span class="sw dash"></span>기수 평균</span></span></div>
+            <svg width="100%" viewBox="0 0 480 140" preserveAspectRatio="xMidYMid meet" style="max-width:480px">
+              <g stroke="#eef0f3" stroke-width="1"><line x1="36" y1="30" x2="460" y2="30"/><line x1="36" y1="60" x2="460" y2="60"/><line x1="36" y1="90" x2="460" y2="90"/><line x1="36" y1="120" x2="460" y2="120"/></g>
+              <g font-size="10" fill="#8b929c" font-family="sans-serif"><text x="30" y="33" text-anchor="end">5</text><text x="30" y="63" text-anchor="end">3</text><text x="30" y="123" text-anchor="end">0</text></g>
+              <g font-size="11" fill="#5a616b" font-family="sans-serif" text-anchor="middle"><text x="60" y="136">1회차</text><text x="250" y="136">2회차</text><text x="440" y="136" fill="#8b929c">3회차 예정</text></g>
+              <polyline points="60,58 250,55" fill="none" stroke="#8b929c" stroke-width="2" stroke-dasharray="5 3"/><g fill="#8b929c"><circle cx="60" cy="58" r="3"/><circle cx="250" cy="55" r="3"/></g>
+              <polyline points="60,35 250,30" fill="none" stroke="#1f8a5b" stroke-width="2.5"/><g fill="#1f8a5b"><circle cx="60" cy="35" r="4"/><circle cx="250" cy="30" r="4"/></g>
+              <g font-size="11" font-weight="700" fill="#1f8a5b" font-family="sans-serif"><text x="60" y="27" text-anchor="middle">4</text><text x="250" y="22" text-anchor="middle">5</text></g>
+            </svg>
+            <div style="font-size:11px;color:var(--c-text-3);margin-top:4px">· 기수 평균을 꾸준히 상회. 표본 근거와 함께 표시(자동 후보 배지 없음·DASH-12).</div>
+          </div>
+
+          <!-- ④ 상담 라인 없음(진행 중 개입 없어 미표시) -->
+
+          <!-- ⑤ 세션 참여 팩트 -->
+          <div class="factline">📋 이번 회차(2회차) <b>응시 완료</b> · 마지막 세션 04.17 · 소요 11분</div>
+
+          <!-- ⑥ 5축 통합표 -->
+          <div class="panel">
+            <div class="ph">5축 상세 · 2회차 <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--c-success)">· 전 축 기수 평균 이상</span></div>
+            <div class="axtbl">
+              <div class="axr"><span class="ax">코드이해</span><span class="sc5">5<span class="of">/5</span></span><span class="dl up">▲1</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,4" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="4" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.4<b class="gap hi">+1.6</b></span></div>
+              <div class="axr"><span class="ax">설계논리</span><span class="sc5">5<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,6 54,6" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="6" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.6<b class="gap hi">+1.4</b></span></div>
+              <div class="axr hl-good"><span class="ax">대안비교</span><span class="sc5">5<span class="of">/5</span></span><span class="dl up">▲1</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,4" fill="none" stroke="#1f8a5b" stroke-width="2"/><circle cx="54" cy="4" r="2.3" fill="#1f8a5b"/></svg><span class="gapv">평균 3.6<b class="gap hi">+1.4</b></span></div>
+              <div class="axr"><span class="ax">반례대응</span><span class="sc5">4<span class="of">/5</span></span><span class="dl up">▲1</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,14 54,8" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="8" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.4<b class="gap hi">+0.6</b></span></div>
+              <div class="axr"><span class="ax">자기수정</span><span class="sc5">4<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,8 54,8" fill="none" stroke="#3a4db8" stroke-width="2"/><circle cx="54" cy="8" r="2.3" fill="#3a4db8"/></svg><span class="gapv">평균 3.5<b class="gap mid">+0.5</b></span></div>
+              <div class="axnote">· 5축 전반 강점이라 표에서 바로 확인. 불균형 카드는 조건 미충족이라 미표시(아래 ⑦ 참고).</div>
+            </div>
+          </div>
+
+          <!-- ⑦ 귀속 카드 없음(3조건 미충족 — 정상, 표시 자체가 없음) -->
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="stateview hidden" data-state="normal">
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/trainees/yujin</span></div>
+    <div class="app">
+      <div class="topbar"><div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div><div class="me">박지현 · 매니저 <span class="av">박</span></div></div>
+      <div class="body">
+        <div class="nav"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div></div>
+        <div class="content">
+          <div class="dhead"><div class="who"><span class="av">정</span><div><div class="crumb">교육생 › 정유진</div><h2 style="line-height:1.1">정유진</h2><div class="meta">7기 · A반 · 활성 <span class="proj">· 참여 프로젝트: MSA 배포 실습(팀A)</span></div></div></div></div>
+          <div class="tabs"><span class="t on">종합</span><span class="t">세션</span><span class="t">개입</span></div>
+          <div class="statebar"><span class="lbl">데모 예시</span><span class="sc" data-go="risk">위험</span><span class="sc" data-go="ace">에이스</span><span class="sc on" data-go="normal">일반</span></div>
+
+          <!-- ①②③④ 전부 없음 — 일반 학생은 배지·포커스그래프·경고·상담라인 아무것도 없이 아래 공통 정보만 -->
+          <div class="normnote">특이 신호 없음 — 위험·강점 판정 모두 미해당(DASH-03 낮은 우선순위). 아래는 모든 학생에게 공통으로 보이는 기본 정보입니다.</div>
+
+          <!-- ⑤ 세션 참여 팩트 -->
+          <div class="factline">📋 이번 회차(2회차) <b>응시 완료</b> · 마지막 세션 04.16 · 소요 15분</div>
+
+          <!-- ⑥ 5축 통합표 -->
+          <div class="panel">
+            <div class="ph">5축 상세 · 2회차 <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--c-text-3)">· 전 축 평균 ±0.6 이내</span></div>
+            <div class="axtbl">
+              <div class="axr"><span class="ax">코드이해</span><span class="sc5">4<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,10" fill="none" stroke="#5a616b" stroke-width="2"/><circle cx="54" cy="10" r="2.3" fill="#5a616b"/></svg><span class="gapv">평균 3.4<b class="gap mid">+0.6</b></span></div>
+              <div class="axr"><span class="ax">설계논리</span><span class="sc5">4<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,10" fill="none" stroke="#5a616b" stroke-width="2"/><circle cx="54" cy="10" r="2.3" fill="#5a616b"/></svg><span class="gapv">평균 3.6<b class="gap mid">+0.4</b></span></div>
+              <div class="axr"><span class="ax">대안비교</span><span class="sc5">3<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,10" fill="none" stroke="#5a616b" stroke-width="2"/><circle cx="54" cy="10" r="2.3" fill="#5a616b"/></svg><span class="gapv">평균 3.6<b class="gap mid">−0.6</b></span></div>
+              <div class="axr"><span class="ax">반례대응</span><span class="sc5">4<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,10" fill="none" stroke="#5a616b" stroke-width="2"/><circle cx="54" cy="10" r="2.3" fill="#5a616b"/></svg><span class="gapv">평균 3.4<b class="gap mid">+0.6</b></span></div>
+              <div class="axr"><span class="ax">자기수정</span><span class="sc5">3<span class="of">/5</span></span><span class="dl fl">0</span><svg class="spark" viewBox="0 0 60 20"><polyline points="6,10 54,10" fill="none" stroke="#5a616b" stroke-width="2"/><circle cx="54" cy="10" r="2.3" fill="#5a616b"/></svg><span class="gapv">평균 3.5<b class="gap mid">−0.5</b></span></div>
+              <div class="axnote">· 위험·강점 어느 쪽도 아니라 강조 행 없음. 대부분의 학생이 이 상태(소음 최소화).</div>
+            </div>
+          </div>
+
+          <!-- ⑦ 귀속 카드 없음 -->
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  </div>
   <!-- ===== 세션 탭 ===== -->
   <div class="sec-label">탭 · 세션 (질문 예산 N=4 · 적응형 depth · 무너진 지점 강조)</div>
+  <div class="rpage" id="page-session">
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/trainees/minjun/sessions/2</span></div>
     <div class="app">
@@ -332,10 +456,10 @@
       </div>
       <div class="body">
         <div class="nav">
-          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
         </div>
         <div class="content">
-          <div class="dhead"><div class="who"><span class="av">강</span><div><div class="crumb">교육생 › 강민준</div><h2 style="line-height:1.1">강민준</h2><div class="meta">7기 · A반 · 팀 A</div></div></div></div>
+          <div class="dhead"><div class="who"><span class="av">강</span><div><div class="crumb">교육생 › 강민준</div><h2 style="line-height:1.1">강민준</h2><div class="meta">7기 · A반 · 활성 <span class="proj">· MSA 배포 실습(팀A) · API 서버(팀C)</span></div></div></div></div>
           <div class="tabs"><span class="t">종합</span><span class="t on">세션</span><span class="t">개입</span></div>
           <div class="subsel">
             <span class="sel"><span class="k">회차</span> 2회차 ▾</span>
@@ -363,9 +487,11 @@
       </div>
     </div>
   </div>
+  </div>
 
   <!-- ===== 개입 탭 ===== -->
   <div class="sec-label">탭 · 개입 (이력 + 메모)</div>
+  <div class="rpage" id="page-intervention">
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/trainees/minjun#intv</span></div>
     <div class="app">
@@ -375,10 +501,10 @@
       </div>
       <div class="body">
         <div class="nav">
-          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">⚖</span>이의 · 공개</div>
+          <div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">◔</span>기수 구성</div><div class="item"><span class="ic">▧</span>교안</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">△</span>분석 · 진단</div><div class="item on"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">✎</span>개입</div><div class="item"><span class="ic">▥</span>리포트</div>
         </div>
         <div class="content">
-          <div class="dhead"><div class="who"><span class="av">강</span><div><div class="crumb">교육생 › 강민준</div><h2 style="line-height:1.1">강민준</h2><div class="meta">7기 · A반 · 팀 A</div></div></div></div>
+          <div class="dhead"><div class="who"><span class="av">강</span><div><div class="crumb">교육생 › 강민준</div><h2 style="line-height:1.1">강민준</h2><div class="meta">7기 · A반 · 활성 <span class="proj">· MSA 배포 실습(팀A) · API 서버(팀C)</span></div></div></div></div>
           <div class="tabs"><span class="t">종합</span><span class="t">세션</span><span class="t on">개입</span></div>
           <!-- 개입별 활동 카드: 근거·활동 기록·효과가 한 덩어리 -->
           <div class="ivcard active">
@@ -425,7 +551,10 @@
       </div>
     </div>
   </div>
+  </div>
 
+  <div class="sec-label">상태 ↔ case 매핑 (총합)</div>
+  <div class="rpage" id="page-cases">
   <div class="notes">
     <h3>상태 ↔ 명세 case 매핑 (DASH-16·ENG-02/03·RPT-03·INTV-08)</h3>
     <p class="hint">근거·귀속 데이터는 탭 제거 후 종합·세션에 흡수 — 커버리지 유지, IA 개선(D21). <b>역할 분리(D38):</b> [개입 생성]→SC-M07 생성 폼 프리필(같은 생성 흐름의 시그널 진입), 면담 준비·상담 메모는 이 화면(개입 탭)에서 준비·기록. 별도 개입 시스템 아님.</p>
@@ -438,6 +567,7 @@
       <tr><td>D-7</td><td>삭제·비활성 교육생</td><td><span class="pill na">배지</span></td><td>수정 제한</td></tr>
       <tr><td>T-1</td><td>1회차 단독(표본 부족)</td><td><span class="pill info">info</span></td><td>추이·기수대비 미산출·표본 부족(B4)</td></tr>
       <tr><td>G-3</td><td>기여량 단독 프리라이더 요청</td><td><span class="pill danger">danger</span></td><td>확정 차단·서술형·교차 3조건 필수(B5)</td></tr>
+      <tr><td>G-4</td><td>커밋 이메일 미검증(귀속 신뢰도)</td><td><span class="pill danger">danger</span></td><td>기여 카드에 정확도 주의 경고·확정 판단 전 검증 유도(AUTH-07·A8)</td></tr>
     </tbody></table></div>
     <div class="grp">세션 이해 상태 모델 (MEAS-06) · 면담(RPT-03) · 메모(INTV-08)</div>
     <div class="tblwrap"><table class="ntbl"><tbody>
@@ -449,8 +579,32 @@
       <tr><td>M-3</td><td>빈 메모</td><td><span class="pill danger">danger</span></td><td>저장 차단</td></tr>
       <tr><td>M-6</td><td>수정 시 원작성 보존</td><td><span class="pill info">info</span></td><td>작성자·시각 보존·이력 추가</td></tr>
     </tbody></table></div>
-    <div class="foot">디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 종합점수 추이(D27)·σ 평이화(D24)·회차 스냅샷 라벨(B1)·한글 이해 상태(D25)·N 적응형(D26) · 매니저 전용 · 웹 기준</div>
+    <div class="foot">디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 종합점수 추이(D27)·σ 평이화(D24)·회차 스냅샷 라벨(B1)·한글 이해 상태(D25)·N 적응형(D26) · 상태별 적응 요약(D106) · 매니저 전용 · 웹 기준</div>
+  </div>
   </div>
 </div>
+<script>
+  // 해시 라우팅 (report·program-admin과 동일) — 탭 단위 4뷰: 종합·세션·개입·상태매핑
+  var PAGE = { overview:"page-overview", session:"page-session", intervention:"page-intervention", cases:"page-cases" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "overview";
+    var id = PAGE[h] || "page-overview";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  // 종합 탭 안의 상태 버전 전환 (데모) — statebar 칩 클릭 시 해당 상태 stateview만 표시
+  function showState(st){
+    document.querySelectorAll("#page-overview .stateview").forEach(function(v){
+      v.classList.toggle("hidden", v.getAttribute("data-state") !== st);
+    });
+  }
+  document.addEventListener("click", function(e){
+    var chip = e.target.closest(".statebar .sc");
+    if(chip){ showState(chip.getAttribute("data-go")); return; }
+  });
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+</script>
 </body>
 </html>

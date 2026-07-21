@@ -1,0 +1,227 @@
+- generic [ref=f3e2]:
+  - generic [ref=f3e3]:
+    - generic [ref=f3e4]: SC-T02 · P0 · 교육생 · 웹
+    - heading "코드 제출 — 상태별 전량" [level=1] [ref=f3e5]
+    - paragraph [ref=f3e6]: "흐름: 커밋 이메일 검증(AUTH-07) → 코드 제출(MEAS-01) → 분석 대기(MEAS-02A/02B) → 세션(T04). 커밋 이메일은 귀속의 전제(미검증도 제출은 되나 경고, A8). 레포는 팀/학생 단위로 연결(D18) — 팀 프로젝트는 연결된 팀 레포를 쓰고 개인은 본인이 입력. 추출된 질문 내용은 세션 전까지 비노출(A4·A5). 재응시 없음."
+  - generic [ref=f3e7]:
+    - tablist [ref=f3e8]:
+      - button "S1 · 정상 — 커밋 검증됨(접힘)" [ref=f3e9] [cursor=pointer]
+      - button "S2 · 커밋 이메일 미검증(E-6)" [ref=f3e10] [cursor=pointer]
+      - button "S3 · ZIP 업로드 방식" [ref=f3e11] [cursor=pointer]
+      - button "S4 · 제출 완료" [ref=f3e12] [cursor=pointer]
+      - button "S5 · 분석 완료(DP_READY)" [ref=f3e13] [cursor=pointer]
+      - button "S6 · 이미 제출함" [ref=f3e14] [cursor=pointer]
+      - button "S6b · 세션 시작" [ref=f3e15] [cursor=pointer]
+      - button "S7 · 오류 — 저장소 접근 불가(M-3) + URL 형식 오류(M-2)" [ref=f3e16] [cursor=pointer]
+      - button "S8 · 분석 실패 — 내 커밋 0건(A-1)" [ref=f3e17] [cursor=pointer]
+    - generic [ref=f3e18]: S1 · 정상 — 커밋 검증됨(접힘) · 팀 프로젝트(레포 연결됨) 가장 흔한 경로 · 제출만 하면 됨
+    - generic [ref=f3e19]:
+      - generic [ref=f3e20]: iz-get.com/checkpoints/2/submit
+      - generic [ref=f3e26]:
+        - generic [ref=f3e27]:
+          - generic [ref=f3e28]:
+            - generic [ref=f3e29]:
+              - generic [ref=f3e30]: ◆
+              - text: IZ-Get
+            - generic [ref=f3e31]:
+              - generic [ref=f3e32]: 홈
+              - generic [ref=f3e33]: 내 리포트
+          - generic [ref=f3e34]:
+            - generic [ref=f3e35]:
+              - text: 김민준
+              - generic [ref=f3e36]: 7기 · A반
+            - generic [ref=f3e37]: 민
+        - generic [ref=f3e38]:
+          - generic [ref=f3e39] [cursor=pointer]: ← 홈
+          - generic [ref=f3e40]: 코드 제출
+          - generic [ref=f3e41]: 이번 회차 코드를 제출하면 분석이 시작돼요.
+          - generic [ref=f3e42]:
+            - generic [ref=f3e43]:
+              - generic [ref=f3e44]: 회차
+              - generic [ref=f3e45]: 2회차
+            - generic [ref=f3e46]:
+              - generic [ref=f3e47]: 프로젝트
+              - generic [ref=f3e48]:
+                - text: API 서버
+                - generic [ref=f3e49]: 팀 · A조
+            - generic [ref=f3e50]:
+              - generic [ref=f3e51]: 추출 범위
+              - generic [ref=f3e52]: 본인 커밋 기여분
+            - generic [ref=f3e53]:
+              - generic [ref=f3e54]: 응시 마감
+              - generic [ref=f3e55]: D-1 · 04.11 18:00
+          - generic [ref=f3e56]:
+            - generic [ref=f3e57]: ✓ 커밋 이메일 검증됨
+            - generic [ref=f3e58]: minjun.dev@gmail.com
+            - generic [ref=f3e59] [cursor=pointer]: 변경
+          - generic [ref=f3e60]:
+            - generic [ref=f3e61]:
+              - generic [ref=f3e62]: "1"
+              - text: 제출할 코드
+            - generic [ref=f3e63]:
+              - generic [ref=f3e64]:
+                - text: 팀 저장소
+                - generic [ref=f3e65]: 팀에 연결됨
+              - generic [ref=f3e66]:
+                - generic [ref=f3e67]: github.com/izget-7th/team-a-api
+                - generic [ref=f3e68]: 🔗 연결됨
+            - generic [ref=f3e69]: 팀 프로젝트는 팀에 연결된 저장소를 사용해요. 저장소를 바꾸려면 매니저에게 요청하세요. 제출 시점의 최신 커밋이 이번 회차 스냅샷으로 저장됩니다.
+            - generic [ref=f3e70]:
+              - generic [ref=f3e71]: 브랜치 (선택)
+              - generic [ref=f3e72]: 비우면 기본 브랜치(main)
+            - button "제출하기" [ref=f3e73] [cursor=pointer]
+            - generic [ref=f3e74]: 제출 후 기여 분석과 검증 질문 준비가 진행돼요. 준비되면 세션을 시작할 수 있어요.
+  - generic [ref=f3e75]:
+    - heading "상태 ↔ 명세 case 매핑 (MEAS-01 6 + AUTH-07 8 + MEAS-02A/B 6 = 20)" [level=3] [ref=f3e76]
+    - paragraph [ref=f3e77]: 예외는 이 표가 계약. 위 화면은 대표 경로·대표 오류만 렌더(나머지는 같은 패턴의 문구 차이).
+    - generic [ref=f3e78]: 코드 제출 (MEAS-01)
+    - table [ref=f3e80]:
+      - rowgroup [ref=f3e81]:
+        - row [ref=f3e82]:
+          - columnheader "#" [ref=f3e83]
+          - columnheader "상태" [ref=f3e84]
+          - columnheader "표현" [ref=f3e85]
+          - columnheader "다음 행동" [ref=f3e86]
+          - columnheader "화면" [ref=f3e87]
+      - rowgroup [ref=f3e88]:
+        - row [ref=f3e89]:
+          - cell "M-1" [ref=f3e90]
+          - cell "제출 기한 초과" [ref=f3e91]
+          - cell "warning" [ref=f3e92]
+          - cell "지각 허용 시 기록 / 미허용 시 차단" [ref=f3e94]
+          - cell "S6 주석" [ref=f3e95]
+        - row [ref=f3e96]:
+          - cell "M-2" [ref=f3e97]
+          - cell "GitHub URL 형식 오류" [ref=f3e98]
+          - cell "danger" [ref=f3e99]
+          - cell "필드 오류 · 유효 URL 요청" [ref=f3e101]
+          - cell "✔ S7" [ref=f3e102]
+        - row [ref=f3e103]:
+          - cell "M-3" [ref=f3e104]
+          - cell "저장소 접근 불가" [ref=f3e105]
+          - cell "warning" [ref=f3e106]
+          - cell "FETCH_FAILED · ZIP 전환 안내" [ref=f3e108]
+          - cell "✔ S7" [ref=f3e109]
+        - row [ref=f3e110]:
+          - cell "M-4" [ref=f3e111]
+          - cell "ZIP 형식·용량 실패" [ref=f3e112]
+          - cell "danger" [ref=f3e113]
+          - cell "업로드 중단·실패 항목" [ref=f3e115]
+          - cell "S3 패턴" [ref=f3e116]
+        - row [ref=f3e117]:
+          - cell "M-5" [ref=f3e118]
+          - cell "ZIP 해제 실패/금지 항목" [ref=f3e119]
+          - cell "danger" [ref=f3e120]
+          - cell "안전 검증 실패 사유" [ref=f3e122]
+          - cell "S3 패턴" [ref=f3e123]
+        - row [ref=f3e124]:
+          - cell "M-6" [ref=f3e125]
+          - cell "분석 대상 파일 부재" [ref=f3e126]
+          - cell "danger" [ref=f3e127]
+          - cell "유효 파일 재제출" [ref=f3e129]
+          - cell "S8 패턴" [ref=f3e130]
+    - generic [ref=f3e131]: 커밋 이메일 (AUTH-07)
+    - table [ref=f3e133]:
+      - rowgroup [ref=f3e134]:
+        - row [ref=f3e135]:
+          - columnheader "#" [ref=f3e136]
+          - columnheader "상태" [ref=f3e137]
+          - columnheader "표현" [ref=f3e138]
+          - columnheader "다음 행동" [ref=f3e139]
+          - columnheader "화면" [ref=f3e140]
+      - rowgroup [ref=f3e141]:
+        - row [ref=f3e142]:
+          - cell "E-1" [ref=f3e143]
+          - cell "OAuth 실패" [ref=f3e144]
+          - cell "info" [ref=f3e145]
+          - cell "매니저 승인 요청 폴백" [ref=f3e147]
+          - cell "✔ S2" [ref=f3e148]
+        - row [ref=f3e149]:
+          - cell "E-2" [ref=f3e150]
+          - cell "OAuth 미제공 이메일" [ref=f3e151]
+          - cell "info" [ref=f3e152]
+          - cell "매니저 수동 확인" [ref=f3e154]
+          - cell "✔ S2" [ref=f3e155]
+        - row [ref=f3e156]:
+          - cell "E-3" [ref=f3e157]
+          - cell "이메일 형식 오류" [ref=f3e158]
+          - cell "danger" [ref=f3e159]
+          - cell "필드 오류 · 재입력" [ref=f3e161]
+          - cell "S7 패턴" [ref=f3e162]
+        - row [ref=f3e163]:
+          - cell "E-4" [ref=f3e164]
+          - cell "동일 이메일 중복 등록" [ref=f3e165]
+          - cell "warning" [ref=f3e166]
+          - cell "기존 상태 반환" [ref=f3e168]
+          - cell "S2 패턴" [ref=f3e169]
+        - row [ref=f3e170]:
+          - cell "E-5" [ref=f3e171]
+          - cell "타 교육생 검증 이메일" [ref=f3e172]
+          - cell "danger" [ref=f3e173]
+          - cell "자동 검증 차단·매니저 검토" [ref=f3e175]
+          - cell "S2 패턴" [ref=f3e176]
+        - row [ref=f3e177]:
+          - cell "E-6" [ref=f3e178]
+          - cell "미검증 이메일 사용" [ref=f3e179]
+          - cell "warning" [ref=f3e180]
+          - cell "제출 허용 · 귀속 경고 표기(A8)" [ref=f3e182]
+          - cell "✔ S2" [ref=f3e183]
+        - row [ref=f3e184]:
+          - cell "E-7" [ref=f3e185]
+          - cell "매니저 승인 거부" [ref=f3e186]
+          - cell "warning" [ref=f3e187]
+          - cell "verified=false 유지" [ref=f3e189]
+          - cell "S2 패턴" [ref=f3e190]
+        - row [ref=f3e191]:
+          - cell "E-8" [ref=f3e192]
+          - cell "검증 상태 저장 실패" [ref=f3e193]
+          - cell "warning" [ref=f3e194]
+          - cell "재시도" [ref=f3e196]
+          - cell "S2 패턴" [ref=f3e197]
+    - generic [ref=f3e198]: 분석 (MEAS-02A/02B · 백그라운드)
+    - table [ref=f3e200]:
+      - rowgroup [ref=f3e201]:
+        - row [ref=f3e202]:
+          - columnheader "#" [ref=f3e203]
+          - columnheader "상태" [ref=f3e204]
+          - columnheader "표현" [ref=f3e205]
+          - columnheader "다음 행동" [ref=f3e206]
+          - columnheader "화면" [ref=f3e207]
+      - rowgroup [ref=f3e208]:
+        - row [ref=f3e209]:
+          - cell "A-1" [ref=f3e210]
+          - cell "귀속 커밋 0건" [ref=f3e211]
+          - cell "warning" [ref=f3e212]
+          - cell "ATTRIBUTION_REQUIRED · 커밋 이메일 재확인" [ref=f3e214]
+          - cell "✔ S8" [ref=f3e215]
+        - row [ref=f3e216]:
+          - cell "A-2" [ref=f3e217]
+          - cell "git history 부재" [ref=f3e218]
+          - cell "info" [ref=f3e219]
+          - cell "전체코드 폴백(scope_fallback) 안내" [ref=f3e221]
+          - cell "S4 패턴" [ref=f3e222]
+        - row [ref=f3e223]:
+          - cell "A-3" [ref=f3e224]
+          - cell "분석 가능 코드 부재" [ref=f3e225]
+          - cell "danger" [ref=f3e226]
+          - cell "제출물 재검증" [ref=f3e228]
+          - cell "S8 패턴" [ref=f3e229]
+        - row [ref=f3e230]:
+          - cell "A-4" [ref=f3e231]
+          - cell "DP 후보 미생성" [ref=f3e232]
+          - cell "warning" [ref=f3e233]
+          - cell "범위 확대·재시도" [ref=f3e235]
+          - cell "S8 패턴" [ref=f3e236]
+        - row [ref=f3e237]:
+          - cell "A-5" [ref=f3e238]
+          - cell "유효 DP < 예산 N" [ref=f3e239]
+          - cell "info" [ref=f3e240]
+          - cell "확보 수량으로 세션 축소(교육생엔 비노출)" [ref=f3e242]
+          - cell "S5 내부" [ref=f3e243]
+        - row [ref=f3e244]:
+          - cell "A-6" [ref=f3e245]
+          - cell "LLM 추출 실패" [ref=f3e246]
+          - cell "warning" [ref=f3e247]
+          - cell "재시도 · 지속 실패 시 분석 실패" [ref=f3e249]
+          - cell "S8 패턴" [ref=f3e250]
+    - generic [ref=f3e251]: "디자인 토큰: docs/screen-def-v8/_source/design-tokens.md · 신규: ContextStrip·CommitEmailField(검증 시 접힘)·MethodToggle(모드별 콘텐츠 분기)·AnalysisProgress(done·now·wait·error)·SubmittedCard · 레포는 팀/학생 단위 연결(D18 — 팀=연결된 레포 잠금, 개인=직접 입력) · 추출 질문 내용 비노출(A4·A5) · 세션 톤 선제 완화(D108~111) · 재응시 없음 · 웹 기준"

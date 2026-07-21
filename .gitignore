@@ -29,3 +29,7 @@ dist-ssr
 
 # 도구가 만드는 로컬 캐시
 .impeccable/
+
+# 스크린샷·브라우저 도구 산출물 (루트 오염 방지)
+/*.png
+.playwright-mcp/

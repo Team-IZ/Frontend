@@ -14,11 +14,19 @@
     "typecheck": "tsc -b",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "check:design": "node scripts/check-design.mjs",
+    "doc:design": "node scripts/design-doc.mjs"
   },
   "dependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "react": "^19.2.7",
-    "react-dom": "^19.2.7"
+    "react-dom": "^19.2.7",
+    "react-router": "^7.18.1",
+    "tailwind-merge": "^3.6.0",
+    "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
     "@types/node": "^24.13.2",

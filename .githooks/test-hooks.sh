@@ -34,10 +34,13 @@ check ng "added login api"                            # type 없음
 check ng "feat: add login."                           # 마침표
 check ng "feat:add login"                             # 콜론 뒤 공백 없음
 check ng "feature: add login"                         # 허용되지 않는 type
-check ng "feat: add a very long description that goes well past the fifty character limit (#3)"
-
-# 이슈 참조는 길이 계산에서 제외되는지 (설명 50자 정확히 + 이슈)
+# 길이: 72 초과만 실패, 50~72는 경고하고 통과
+check ng "feat: add a description so long that it sails past seventy two characters and gets cut (#3)"
+check ok "docs: reorganize screen definition docs into plan tree (#3)"
 check ok "feat: add exactly fifty characters of description (#3)"
+
+# 본문은 길이 제한 없음 — 설명은 본문에 쓰라는 게 규칙의 취지
+check ok "feat: add login API (#5)\n\n왜 이렇게 했는지 길게 설명하는 본문.\n여러 줄이어도 통과해야 한다."
 
 # AI 공동저자 trailer 차단
 check ng "chore: set up hooks (#3)\n\nCo-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>"

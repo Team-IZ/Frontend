@@ -89,10 +89,10 @@ chore: enable ts strict, prettier, path alias
 | 이슈 번호 자동 부착 | `.githooks/prepare-commit-msg` | ✅ |
 | `main`·`develop` 직접 커밋 | `.githooks/pre-commit` | ✅ |
 | `.env` 커밋 | `.gitignore` + `.githooks/pre-commit` | ✅ |
-| `console.log` 잔존 | `.oxlintrc.json` `no-console` | ⬜ |
-| 빌드 통과 | GitHub Actions (PR) | ⬜ |
-| `main`·`develop` 직접 **push** | GitHub 브랜치 보호 규칙 (둘 다) | ⬜ |
-| PR 제목·본문 형식 | `.github/pull_request_template.md` | ⬜ |
+| `console.log` 잔존 | `.oxlintrc.json` `no-console` | ✅ |
+| 빌드 통과 | GitHub Actions + ruleset required check | ✅ |
+| `main`·`develop` 직접 **push** | GitHub ruleset `protect-main-develop` | ✅ |
+| PR 제목·본문 형식 | `.github/pull_request_template.md` | ✅ |
 
 > **default 브랜치 = `develop`**(2026-07-21 변경). 보호 규칙은 `main`·`develop` **둘 다**에 건다 — 설정 상세는 `issue-and-branch-online.md` 부록.
 
@@ -102,7 +102,16 @@ chore: enable ts strict, prettier, path alias
 > 훅은 `--no-verify`로 우회된다. **최종 방어선은 GitHub 브랜치 보호 규칙**이므로 레포 설정을 반드시 함께 건다.
 > `.env`는 push되면 히스토리에 남아 gitignore 추가로 해결되지 않는다 — 유출 시 **키 폐기·재발급**.
 
-## 6. 커뮤니케이션
+## 6. 완료의 정의 (Definition of Done)
+
+"다 했어"의 기준이 서로 다르면 리뷰가 매번 협상이 된다. 화면 하나가 완료라는 건:
+
+- 와이어프레임에 정의된 **모든 상태**가 렌더된다 (정상 + 로딩 + 에러 + 빈 상태)
+- 목 데이터로 **실제 동작**한다 (클릭하면 결과가 나온다)
+- 키보드로 조작 가능하고 포커스가 보인다
+- CI 통과 (format · lint · build)
+
+## 7. 커뮤니케이션
 
 - PR이 올라오면 **24시간 내 리뷰**
 - 리뷰 코멘트를 반영했으면 resolve, 안 했으면 **이유를 댓글로**

@@ -3,6 +3,8 @@
   "plugins": ["react", "typescript", "oxc"],
   "rules": {
     "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+    "react/only-export-components": ["warn", { "allowConstantExport": true }],
+    // 디버그 로그가 프로덕션에 새는 것을 막는다. 의도한 경고·에러는 허용.
+    "no-console": ["error", { "allow": ["warn", "error"] }]
   }
 }

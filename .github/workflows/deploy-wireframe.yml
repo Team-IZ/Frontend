@@ -4,7 +4,7 @@ name: Deploy wireframe
 # 소스는 docs/plan/screen/wireframe/ 하나뿐 — gh-pages 브랜치로 복사하지 않는다.
 on:
   push:
-    branches: [planning]
+    branches: [mockup]
     paths: ['docs/plan/screen/wireframe/**']
   workflow_dispatch:
 

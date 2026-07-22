@@ -25,9 +25,12 @@ jobs:
       - name: Design tokens
         run: npm run check:design
 
-      # 토큰을 고치고 문서를 다시 만들지 않으면 팀이 낡은 문서를 본다
+      # 토큰·컴포넌트를 고치고 문서를 다시 만들지 않으면 팀이 낡은 문서를 본다
       - name: Design doc up to date
         run: node scripts/design-doc.mjs --check
+
+      - name: Component doc up to date
+        run: node scripts/component-doc.mjs --check
 
       - name: Lint
         run: npm run lint

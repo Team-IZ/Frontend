@@ -7,5 +7,42 @@
     "react/only-export-components": ["warn", { "allowConstantExport": true }],
     // 디버그 로그가 프로덕션에 새는 것을 막는다. 의도한 경고·에러는 허용.
     "no-console": ["error", { "allow": ["warn", "error"] }]
-  }
+  },
+  // 레이어 경계를 문서가 아니라 린터가 지킨다. 근거: docs/dev/frontend-architecture.md §3
+  "overrides": [
+    {
+      // 도메인은 서로를 모른다 — 이 규칙이 두 사람의 작업 분할을 성립시킨다.
+      "files": ["src/features/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/features/*/*"],
+                "message": "feature 간 교차 import 금지. 공통은 components/common으로 올린다."
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      // 공용 UI는 도메인을 모른다. 알아야 하면 features로 내려야 한다.
+      "files": ["src/components/**", "src/lib/**"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": [
+              {
+                "group": ["@/features/*", "@/features/**", "@/stores/*"],
+                "message": "공용 UI는 도메인·전역 상태를 모른다. 값은 props로 받는다."
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
 }

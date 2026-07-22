@@ -1,0 +1,46 @@
+import { createBrowserRouter, Navigate, Link, useLocation } from 'react-router'
+import { dashboardRoutes } from '@/features/dashboard/routes'
+
+/*
+  각 도메인이 자기 라우트를 내보내고, 여기서는 합치기만 한다.
+  도메인이 추가되면 이 파일에서 바뀌는 것은 import 한 줄과 배열 한 줄이라
+  두 사람이 동시에 고쳐도 대개 자동 병합된다.
+
+  인증 도메인(`features/auth`)은 아직 여기 없다 — 인증 화면은 별도 이슈에서 들어온다.
+  합류할 때 늘어나는 것은 import 한 줄과 아래 spread 한 줄뿐이다.
+*/
+export const router = createBrowserRouter([
+  ...dashboardRoutes,
+
+  // 진입점. 인증이 붙기 전까지는 확인 가능한 유일한 화면으로 보낸다.
+  // 인증 라우트가 합류하면 로그인으로 바뀐다 — 로그인 후 역할별 초기 화면은
+  // 서버가 판정한다(명세 AUTH-03).
+  { path: '/', element: <Navigate to="/dashboard" replace /> },
+
+  // 없는 경로를 조용히 로그인으로 보내지 않는다. 그러면 "라우트를 등록 안 한 것"과
+  // "코드가 틀린 것"을 구분할 수 없어 개발 중에 시간을 잃는다.
+  // 인증이 붙으면 미로그인 사용자용 리다이렉트로 바뀐다.
+  { path: '*', element: <RouteNotFound /> },
+])
+
+function RouteNotFound() {
+  // 전역 location이 아니라 라우터의 값을 쓴다. 전역을 쓰면 화면 안에서 다른 경로로
+  // 이동했을 때 주소만 바뀌고 화면은 이전 경로를 계속 보여준다(실제로 그랬다).
+  const { pathname } = useLocation()
+
+  return (
+    <div className="flex min-h-svh flex-col items-center justify-center gap-3 p-6 text-center">
+      <p className="text-lg font-semibold">이 경로에 등록된 화면이 없습니다</p>
+      <p className="text-fg-muted text-sm">
+        <code className="font-mono">{pathname}</code>
+      </p>
+      <p className="text-fg-subtle text-sm">
+        해당 도메인의 <code className="font-mono">routes.tsx</code>에 라우트를 추가했는지
+        확인하세요.
+      </p>
+      <Link to="/dashboard" className="text-primary mt-2 text-sm">
+        대시보드로
+      </Link>
+    </div>
+  )
+}

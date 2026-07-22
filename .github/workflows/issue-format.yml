@@ -1,0 +1,63 @@
+name: Issue Format
+
+# 이슈 템플릿의 필수 절이 지워진 채 등록되는 것을 잡는다.
+# 템플릿은 채워주기만 할 뿐 지웠는지는 검사하지 않으므로, 서버에서 한 번 본다.
+# 막지는 않는다 — 댓글로 알리고 끝. 등록 자체를 차단하면 협업이 불편해진다.
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const { title, body = '', number } = context.payload.issue
+            const isBug = /^\[Fix\]/i.test(title)
+            const required = isBug
+              ? ['버그 개요', '발생 환경', '재현 절차', '실제 결과', '예상 결과']
+              : ['작업 개요', '작업 유형', '작업 내용', '변경 대상', '완료 조건']
+
+            const heads = [...body.matchAll(/^##\s+(.+?)\s*$/gm)].map(m => m[1])
+            const missing = required.filter(s => !heads.some(h => h.startsWith(s)))
+
+            // 작업 유형은 있어도 아무것도 체크 안 했으면 빠진 것과 같다
+            const typeChecked = /^\s*\*\s*\[x\]/im.test(
+              body.split(/^## 작업 유형\s*$/m)[1]?.split(/^## /m)[0] ?? ''
+            )
+            if (!isBug && !missing.includes('작업 유형') && !typeChecked) {
+              missing.push('작업 유형 (체크된 항목 없음)')
+            }
+
+            const MARK = '<!-- issue-format-check -->'
+            const { data: comments } = await github.rest.issues.listComments({
+              ...context.repo, issue_number: number,
+            })
+            const prev = comments.find(c => c.body.includes(MARK))
+
+            if (!missing.length) {
+              // 고쳤으면 지적을 지운다 — 해결된 지적이 남아 있으면 노이즈다
+              if (prev) await github.rest.issues.deleteComment({ ...context.repo, comment_id: prev.id })
+              return
+            }
+
+            const text = [
+              MARK,
+              '이슈 템플릿의 필수 절이 비어 있습니다.',
+              '',
+              ...missing.map(s => `- \`## ${s}\``),
+              '',
+              '템플릿에 없는 절을 더 쓰는 것은 괜찮습니다. 위 절만 채워 주세요.',
+              '규약: `docs/handbook/git-convention.md` §3',
+            ].join('\n')
+
+            if (prev) {
+              await github.rest.issues.updateComment({ ...context.repo, comment_id: prev.id, body: text })
+            } else {
+              await github.rest.issues.createComment({ ...context.repo, issue_number: number, body: text })
+            }

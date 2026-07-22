@@ -7,6 +7,12 @@
   문서는 앞으로도 늘어나므로 문서를 고치는 대신 범위를 좁힌다.
 */
 @import 'tailwindcss' source(none);
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+/*
+  ---break---
+*/
+@custom-variant dark (&:is(.dark *));
 @source '.';
 @source '../index.html';
 
@@ -120,12 +126,14 @@
   html {
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    @apply font-sans;
   }
 
   body {
     background: var(--color-canvas);
     color: var(--color-fg);
     font-size: var(--text-base);
+    @apply bg-background text-foreground;
   }
 
   /* 포커스가 보이지 않으면 키보드로 쓸 수 없다. 전역 기준선. */
@@ -133,4 +141,114 @@
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
+  * {
+    @apply border-border outline-ring/50;
+  }
 }
+
+/*
+  ---break---
+*/
+
+/*
+  shadcn 토큰층 — 이름만 다를 뿐 값은 위 @theme static에서 온다.
+  여기 있는 --color-*는 shadcn 레지스트리에서 받은 컴포넌트가 쓰는 이름이고,
+  실제 값은 아래 :root에서 우리 토큰(var(--color-canvas) 등)에 연결한다.
+  덕분에 `shadcn add`로 새로 받은 컴포넌트도 손대지 않고 우리 팔레트로 나온다.
+
+  ▸ 여기 없는 것 — 이름이 위 @theme static과 겹쳐서 뺐다
+      --color-primary · --color-border   겹치면 뒤엣것(여기)이 이겨서
+        bg-primary가 #3a4db8이 아니라 거의 검정으로 렌더됐다(빌드 산출물로 확인).
+        뺐으므로 위 static 값이 그대로 유틸리티가 된다.
+      --radius-*   shadcn은 --radius 하나에 배수를 곱해 만드는데, 우리 스케일
+        6·10·14·18px은 한 배수로 나오지 않는다. static의 4단계를 그대로 쓴다.
+      --font-sans  'Inter Variable'로 덮고 있었다. 한글은 어차피 시스템 폰트로
+        폴백되므로 웹폰트를 쓰지 않는다는 것이 정해진 결정이다(디자인 문서 참조).
+*/
+@theme inline {
+  --font-heading: var(--font-sans);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+}
+
+/*
+  ---break---
+*/
+
+/*
+  shadcn 이름 → 우리 토큰. **여기에 새 색을 만들지 않는다** — 전부 var()로 연결만 한다.
+  값을 직접 적으면 팔레트가 두 벌이 되고, 디자인 문서(생성물)와 화면이 갈라진다.
+
+  대응이 애매했던 것만 적어둔다.
+    secondary·muted → surface-2   "같은 카드 안에서 한 단계 눌러야 하는 면"이 둘의 실제 용도다
+    accent          → primary-soft  shadcn accent는 선택·강조 배경이고, 우리는 그게 primary-soft다
+    input           → border-strong  입력 요소는 경계가 또렷해야 한다(토큰 설명 그대로)
+    ring            → primary        포커스 링. 전역 :focus-visible 아웃라인과 같은 색으로 맞춘다
+*/
+:root {
+  --background: var(--color-canvas);
+  --foreground: var(--color-fg);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-fg);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-fg);
+  --primary: var(--color-primary);
+  --primary-foreground: var(--color-surface); /* primary 위의 글자 — 흰 면과 같은 값 */
+  --secondary: var(--color-surface-2);
+  --secondary-foreground: var(--color-fg-muted);
+  --muted: var(--color-surface-2);
+  --muted-foreground: var(--color-fg-subtle);
+  --accent: var(--color-primary-soft);
+  --accent-foreground: var(--color-primary);
+  --destructive: var(--color-danger);
+  --border: var(--color-border);
+  --input: var(--color-border-strong);
+  --ring: var(--color-primary);
+
+  /* 좌측 네비(어두운 면) — 밝은 배경용 색은 여기서 통하지 않아 별도 토큰이 있다 */
+  --sidebar: var(--color-nav);
+  --sidebar-foreground: var(--color-nav-fg);
+  --sidebar-primary: var(--color-primary);
+  --sidebar-primary-foreground: var(--color-surface);
+  --sidebar-accent: var(--color-nav-active);
+  --sidebar-accent-foreground: var(--color-nav-fg);
+  --sidebar-border: var(--color-nav-active);
+  --sidebar-ring: var(--color-primary);
+
+  /* 차트 색은 아직 정해진 것이 없다. 쓰는 화면이 생기면 그때 팔레트를 만든다 —
+     지금 회색 5단계를 남겨두면 "이미 있는 것"으로 오해돼 그대로 쓰이게 된다 */
+}
+
+/*
+  ---break---
+*/
+
+/*
+  다크 모드는 명세에 없다(디자인 문서 "다크 모드와는 다른가" 참조).
+  shadcn init이 넣어둔 .dark 블록은 지웠다 — 남겨두면 우리 팔레트가 아니라
+  shadcn 회색으로 되돌아가는 두 번째 팔레트가 된다. 요구가 생기면
+  @theme static에 원시 토큰 층을 먼저 만들고(그 조건이 토큰 주석에 적혀 있다)
+  여기에 다시 세운다.
+*/

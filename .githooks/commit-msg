@@ -16,7 +16,7 @@ fail() {
   echo "  받은 제목: $subject" >&2
   echo "" >&2
   echo "  형식: type: short description (#issue-number)" >&2
-  echo "  type: feat fix refactor style docs chore remove" >&2
+  echo "  type: feat fix refactor style docs chore remove build ci test perf" >&2
   echo "  예시: feat: add user login API (#5)" >&2
   echo "  규약: docs/handbook/git-convention.md §4" >&2
   echo "" >&2
@@ -33,7 +33,7 @@ if grep -qiE '^(co-authored-by|generated with|🤖)' "$msg_file"; then
   exit 1
 fi
 
-echo "$subject" | grep -qE '^(feat|fix|refactor|style|docs|chore|remove): .' \
+echo "$subject" | grep -qE '^(feat|fix|refactor|style|docs|chore|remove|build|ci|test|perf): .' \
   || fail "type 접두사가 없거나 오타 (소문자 type + 콜론 + 공백)"
 
 echo "$subject" | grep -qE '^[a-z]+: [a-z]' \

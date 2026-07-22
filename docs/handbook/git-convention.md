@@ -62,7 +62,10 @@ PR 올리기 **전에** develop를 머지해 충돌을 미리 푼다. 충돌 상
 ```
 
 태그는 커밋 type과 같은 어휘를 쓴다 — `[Feat]` `[Fix]` `[Refactor]` `[Style]`
-`[Docs]` `[Chore]` `[Remove]`.
+`[Docs]` `[Chore]` `[Remove]` `[Build]` `[Ci]` `[Test]` `[Perf]`.
+
+> **이슈 · 커밋 · 훅이 한 목록을 쓴다.** 이슈 템플릿의 작업 유형, 커밋 type,
+> `commit-msg` 훅의 허용 목록이 모두 위 11개다. 한 곳만 늘리면 다른 곳에서 막힌다.
 
 > **커밋 메시지는 반대다.** 커밋은 소문자 명령형(`feat: add login API`)이고
 > 훅이 검사한다. 이슈·PR은 GitHub에서 사람이 읽는 제목이라 Title Case를 쓴다.

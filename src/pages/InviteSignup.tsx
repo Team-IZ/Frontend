@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import type { FormEvent } from 'react'
+import { useForm } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router'
 import { getInvite, signup, activate, resendInvite } from '@/api/inviteApi'
 import { consentsFor } from '@/auth/consents'
@@ -49,6 +49,12 @@ const COPY = {
   },
 }
 
+interface InviteFormValues {
+  name: string
+  password: string
+  passwordConfirm: string
+}
+
 /**
  * SC-A02 · 회원가입 · 계정 활성화
  * 한 화면에서 초대 토큰이 변형을 결정 (매니저=변형 A / 교육생=변형 B)
@@ -62,15 +68,22 @@ export default function InviteSignup() {
   const [invite, setInvite] = useState<InviteInfo | null>(null)
   const [alert, setAlert] = useState<InviteState | null>(null)
 
-  const [name, setName] = useState('')
-  const [password, setPassword] = useState('')
-  const [passwordConfirm, setPasswordConfirm] = useState('')
   const [consents, setConsents] = useState<string[]>([])
-  const [policyUnmet, setPolicyUnmet] = useState<string[]>([])
-  const [confirmError, setConfirmError] = useState('')
   const [showMissingConsents, setShowMissingConsents] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
   const [resendDone, setResendDone] = useState(false)
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors, isSubmitting },
+  } = useForm<InviteFormValues>({
+    defaultValues: { name: '', password: '', passwordConfirm: '' },
+  })
+
+  const password = watch('password')
+  // 정책 미충족 목록은 제출 시도 후에만 노출 (case6)
+  const policyUnmet = errors.password ? checkPasswordPolicy(password) : []
 
   // 진입 시 초대 토큰 검증 → 변형 결정
   useEffect(() => {
@@ -84,42 +97,26 @@ export default function InviteSignup() {
   const requiredCodes = items.filter((i) => i.required).map((i) => i.code)
   const allRequiredAgreed = requiredCodes.every((code) => consents.includes(code))
 
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
+  async function onSubmit(values: InviteFormValues) {
     if (!invite) return
 
     setAlert(null)
-    setConfirmError('')
-    setPolicyUnmet([])
 
-    // 비밀번호 정책 (case6)
-    const unmet = checkPasswordPolicy(password)
-    if (unmet.length > 0) {
-      setPolicyUnmet(unmet)
-      return
-    }
-    if (password !== passwordConfirm) {
-      setConfirmError('비밀번호가 일치하지 않습니다.')
-      return
-    }
     // 필수 동의 (CS1)
     if (!allRequiredAgreed) {
       setShowMissingConsents(true)
       return
     }
 
-    setSubmitting(true)
     try {
       if (invite.inviteType === 'MANAGER') {
-        await signup({ token, name, password, consents })
+        await signup({ token, name: values.name, password: values.password, consents })
       } else {
-        await activate({ token, password, consents })
+        await activate({ token, password: values.password, consents })
       }
       navigate('/shared/login', { replace: true })
     } catch (err) {
       setAlert(resolveInviteState((err as InviteApiError).code))
-    } finally {
-      setSubmitting(false)
     }
   }
 
@@ -164,17 +161,16 @@ export default function InviteSignup() {
 
           {/* 정상 토큰 → 변형별 폼 */}
           {!verifying && invite && !alert?.blocksForm && (
-            <form onSubmit={handleSubmit} noValidate className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
               <p className="text-[12px] text-success">✓ 초대 링크로 이메일이 확인되었습니다</p>
 
               {/* 변형 A만 이름 입력 — 교육생은 명단에 이름이 이미 등록됨 */}
               {invite.inviteType === 'MANAGER' && (
                 <TextField
                   label="이름"
-                  value={name}
-                  onChange={setName}
                   placeholder="이름을 입력하세요"
-                  disabled={submitting}
+                  disabled={isSubmitting}
+                  {...register('name')}
                 />
               )}
 
@@ -183,38 +179,42 @@ export default function InviteSignup() {
               <div>
                 <PasswordField
                   label="비밀번호"
-                  value={password}
-                  onChange={setPassword}
                   placeholder="비밀번호 설정"
                   autoComplete="new-password"
-                  disabled={submitting}
+                  disabled={isSubmitting}
+                  {...register('password', {
+                    validate: (value) => {
+                      const unmet = checkPasswordPolicy(value)
+                      return unmet.length === 0 || `비밀번호 조건 미충족 · ${unmet.join(', ')}`
+                    },
+                  })}
                 />
                 <PasswordPolicyHint unmet={policyUnmet} />
               </div>
 
-              <div>
-                <PasswordField
-                  label="비밀번호 확인"
-                  value={passwordConfirm}
-                  onChange={setPasswordConfirm}
-                  placeholder="다시 입력"
-                  autoComplete="new-password"
-                  disabled={submitting}
-                />
-                {confirmError && <p className="mt-1.5 text-[12px] text-danger">{confirmError}</p>}
-              </div>
+              <PasswordField
+                label="비밀번호 확인"
+                placeholder="다시 입력"
+                autoComplete="new-password"
+                disabled={isSubmitting}
+                error={errors.passwordConfirm?.message}
+                {...register('passwordConfirm', {
+                  validate: (value, formValues) =>
+                    value === formValues.password || '비밀번호가 일치하지 않습니다.',
+                })}
+              />
 
               <ConsentGroup
                 items={items}
                 checked={consents}
                 onChange={setConsents}
                 highlightMissing={showMissingConsents}
-                disabled={submitting}
+                disabled={isSubmitting}
               />
 
               <div className="pt-1">
                 {/* 필수 전체 동의 전 제출 불가 (CS1) */}
-                <PrimaryButton loading={submitting} disabled={!allRequiredAgreed}>
+                <PrimaryButton loading={isSubmitting} disabled={!allRequiredAgreed}>
                   {copy.submit}
                 </PrimaryButton>
               </div>

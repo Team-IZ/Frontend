@@ -12,6 +12,14 @@
   "overrides": [
     {
       // 도메인은 서로를 모른다 — 이 규칙이 두 사람의 작업 분할을 성립시킨다.
+      //
+      // 패턴이 둘인 이유: glob의 `*`는 `/`를 넘지 않아 `@/features/*/*`는 딱 두 단계만
+      // 잡는다. 그래서 `@/features/{남}/AuthContext`는 막히는데
+      // `@/features/{남}/components/TextField`는 통과했다 — 남의 도메인 컴포넌트를
+      // 가져다 쓰는, 실제로 제일 흔한 형태가 새어나갔다. `**`가 나머지 깊이를 받는다.
+      //
+      // 자기 feature 안은 상대경로(`./AuthContext`)로 참조한다. 이 규칙이 자기 자신도
+      // 막기 때문이기도 하고, 폴더째 옮길 때 내부 import를 다시 쓰지 않아도 되기 때문이다.
       "files": ["src/features/**"],
       "rules": {
         "no-restricted-imports": [
@@ -19,7 +27,7 @@
           {
             "patterns": [
               {
-                "group": ["@/features/*/*"],
+                "group": ["@/features/*/*", "@/features/*/**"],
                 "message": "feature 간 교차 import 금지. 공통은 components/common으로 올린다."
               }
             ]

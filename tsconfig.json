@@ -1,4 +1,12 @@
 {
   "files": [],
-  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }]
+  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  /* tsc -b는 이 파일로 컴파일 안 함(files: []) — shadcn CLI 등 외부 툴이 alias를
+     못 찾고 리터럴 경로("@/...")로 파일을 써버리는 걸 막기 위한 진입점.
+     실제 값은 tsconfig.app.json/vite.config.ts와 반드시 같이 간다. */
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  }
 }

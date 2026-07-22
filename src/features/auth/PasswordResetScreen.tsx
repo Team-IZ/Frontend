@@ -1,6 +1,6 @@
-import BrandPanel from '@/components/BrandPanel'
-import AuthForm from '@/components/AuthForm'
-import TextLink from '@/components/TextLink'
+import BrandPanel from './components/BrandPanel'
+import AuthForm from './components/AuthForm'
+import TextLink from './components/TextLink'
 
 /** SC-A03 · 비밀번호 재설정 (자리표시 — 공통 컴포넌트 재사용 확인용) */
 export default function PasswordReset() {

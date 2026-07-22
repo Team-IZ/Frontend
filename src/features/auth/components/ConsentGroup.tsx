@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { ConsentItem } from '@/auth/consents'
+import type { ConsentItem } from '../consents'
 
 interface Props {
   items: ConsentItem[]

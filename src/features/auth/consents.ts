@@ -1,4 +1,4 @@
-import type { InviteType } from '@/types/invite'
+import type { InviteType } from './inviteTypes'
 
 /**
  * 개인정보 동의 항목 (D14 · 개인정보보호법 §15·17·22·26)

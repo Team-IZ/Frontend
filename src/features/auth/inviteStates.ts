@@ -1,5 +1,5 @@
-import type { InviteErrorCode } from '@/types/invite'
-import type { AlertVariant } from '@/components/InlineAlert'
+import type { InviteErrorCode } from './inviteTypes'
+import type { AlertVariant } from './components/InlineAlert'
 
 /**
  * SC-A02 §6 · 상태별 UI (AUTH-01 6 활성 + AUTH-06 8 + 동의 3)

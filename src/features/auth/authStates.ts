@@ -1,5 +1,5 @@
-import type { AuthErrorCode } from '@/types/auth'
-import type { AlertVariant } from '@/components/InlineAlert'
+import type { AuthErrorCode } from './authTypes'
+import type { AlertVariant } from './components/InlineAlert'
 
 /**
  * SC-A01 §6 · 상태별 UI (AUTH-03 예외 9 case 전량 1:1)

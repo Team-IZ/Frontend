@@ -3,7 +3,7 @@
 // 로그인(authApi)과 가입·활성화(inviteApi)가 같은 데이터를 보도록 하는 임시 DB입니다.
 // 실제로는 서버 DB의 accounts 테이블이 이 역할을 합니다.
 // ─────────────────────────────────────────────────────────────
-import type { Role } from '@/types/auth'
+import type { Role } from './authTypes'
 
 export interface MockAccount {
   email: string

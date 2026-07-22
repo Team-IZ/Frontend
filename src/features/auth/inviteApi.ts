@@ -2,8 +2,8 @@
 // 초대 가입·활성화 API 격리 모듈 (SC-A02 §5)
 // 백엔드 준비 시 각 함수의 Mock 블록만 지우고 아래 fetch를 켜면 됩니다.
 // ─────────────────────────────────────────────────────────────
-import type { ActivateRequest, InviteApiError, InviteInfo, SignupRequest } from '@/types/invite'
-import { accounts, createManagerAccount, activateTraineeAccount } from '@/api/mockDb'
+import type { ActivateRequest, InviteApiError, InviteInfo, SignupRequest } from './inviteTypes'
+import { accounts, createManagerAccount, activateTraineeAccount } from './mockDb'
 
 // ───────── Mock 초대 토큰 (백엔드 연동 시 이 블록 전체 삭제) ─────────
 /** 정상 토큰 — 유형과 초대 이메일을 결정 */

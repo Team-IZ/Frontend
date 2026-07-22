@@ -1,0 +1,260 @@
+#!/usr/bin/env node
+/**
+ * 셸·컴포넌트 문서 생성 — `npm run doc:components`
+ *
+ * 토큰 문서(design-system.html)와 분리했다. 값을 고르러 오는 것과 구현을
+ * 참고하러 오는 것은 읽는 목적이 다르다 — 전자는 훑고 고르는 문서, 후자는
+ * "이 화면과 비슷한 걸 어떻게 짰나"를 보러 오는 문서다.
+ *
+ * 셸 미리보기는 **실제 셸 코드가 아니라 구조·비율·토큰 값만 옮긴 것**이다.
+ * 실제 마크업을 그대로 박으면 셸이 바뀔 때 이 문서도 다시 만들어야 하는데,
+ * 그 동기화를 잊으면 정확히 D10·D11이 경계한 "조용히 낡는 문서"가 된다.
+ * 그래서 카드 자체를 원본 와이어프레임으로 가는 링크로 두었다 — 진짜 화면은
+ * 거기서 본다.
+ *
+ * `--check`를 주면 생성 결과가 커밋된 파일과 다를 때 실패한다(CI용).
+ */
+import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs'
+import { join, dirname } from 'node:path'
+import { ROOT, readTokens, tokenCssBlock, rationale, section, pageShell } from './doc-shared.mjs'
+
+const OUT = join(ROOT, 'docs/dev/components.html')
+
+const PAGE_CSS = `
+  .cards { display: grid; gap: 12px; grid-template-columns: 1fr 1fr }
+  @media (max-width: 640px) { .cards { grid-template-columns: 1fr } }
+  .card { display: block; padding: 16px; border: 1px solid var(--color-border); border-radius: var(--radius-lg); background: var(--color-surface); text-decoration: none; color: inherit }
+  .card:hover { border-color: var(--color-border-strong) }
+  .card .top { display: flex; align-items: baseline; justify-content: space-between; margin-top: 12px }
+  .card .nm { font-family: var(--mono); font-size: 14px; font-weight: 600 }
+  .card .uses { font-size: 12px; color: var(--color-fg-subtle) }
+  .card .desc { font-size: 14px; color: var(--color-fg-muted); margin-top: 8px }
+  .card .go { display: inline-block; margin-top: 12px; font-size: 14px; color: var(--color-primary) }
+
+  /* 셸 구조 미리보기 — 뼈대만. 실제 셸 색·타이포는 여기 값과 같지만
+     레이아웃 세부(패딩 등)까지 1:1은 아니다. "구조 미리보기"라고 캡션에 명시한다. */
+  .shell-mini { border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; background: var(--color-canvas); pointer-events: none }
+  .shell-mini-auth { display: flex; height: 120px }
+  .sm-brand { flex: 0 0 42%; background: linear-gradient(150deg, var(--color-brand-1), var(--color-brand-2)); padding: 14px; display: flex; flex-direction: column; justify-content: space-between }
+  .sm-dot { width: 14px; height: 14px; border-radius: 4px; background: rgba(255,255,255,.25); display: block }
+  .sm-form { flex: 1; background: var(--color-surface); padding: 16px; display: flex; flex-direction: column; gap: 8px }
+  .sm-line { display: block; height: 6px; border-radius: 3px; background: var(--color-border-strong) }
+  .sm-box { display: block; height: 16px; border-radius: 4px; border: 1px solid var(--color-border-strong); background: var(--color-surface) }
+  .sm-cta { display: block; height: 16px; border-radius: 4px; background: var(--color-primary); margin-top: 4px }
+
+  .shell-mini-manager { height: 120px; display: flex; flex-direction: column }
+  .sm-topbar { height: 22px; flex: 0 0 22px; background: var(--color-surface); border-bottom: 1px solid var(--color-border); display: flex; align-items: center; gap: 8px; padding: 0 10px }
+  .sm-pill { height: 10px; width: 40px; border-radius: 999px; background: var(--color-surface-2); border: 1px solid var(--color-border-strong) }
+  .sm-body { flex: 1; display: flex }
+  .sm-nav { width: 34%; background: var(--color-nav); padding: 8px; display: flex; flex-direction: column; gap: 5px }
+  .sm-navitem { display: block; height: 10px; border-radius: 3px; background: var(--color-nav-fg); opacity: .35 }
+  .sm-navitem-on { background: var(--color-nav-active); opacity: 1 }
+  .sm-content { flex: 1; background: var(--color-canvas); padding: 10px; display: flex; flex-direction: column; gap: 8px }
+  .sm-block { display: block; flex: 1; border-radius: 4px; background: var(--color-surface); border: 1px solid var(--color-border) }
+
+  /* 컴포넌트 데모 — 실제 컴포넌트와 같은 토큰만 쓴다. 값을 새로 만들면 문서가 거짓이 된다 */
+  .comp { margin-bottom: 28px }
+  .comp h3 { display: flex; align-items: baseline; gap: 8px }
+  .comp h3 .cnt { font-size: 12px; font-weight: 400; color: var(--color-fg-subtle) }
+  .row-demo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 0; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; font-family: inherit }
+  .btn-primary { background: var(--color-primary); color: #fff }
+  .btn-ghost { background: var(--color-surface); color: var(--color-fg-muted); border: 1px solid var(--color-border-strong) }
+  .btn-danger { background: var(--color-danger); color: #fff }
+  .btn-sm { padding: 6px 12px; font-size: var(--text-xs) }
+  .btn-md { padding: 8px 14px; font-size: var(--text-xs) }
+  .btn-lg { height: 44px; width: 100%; font-size: var(--text-sm) }
+  .btn:disabled { cursor: not-allowed; opacity: .6 }
+  .bdg { display: inline-flex; align-items: center; gap: 4px; border-radius: 999px; padding: 2px 8px; font-size: var(--text-2xs); font-weight: 600 }
+  .bdg-success { background: var(--color-success-soft); color: var(--color-success) }
+  .bdg-warning { background: var(--color-warning-soft); color: var(--color-warning) }
+  .bdg-danger { background: var(--color-danger-soft); color: var(--color-danger) }
+  .bdg-info { background: var(--color-info-soft); color: var(--color-info) }
+  .bdg-neutral { background: var(--color-neutral-soft); color: var(--color-fg-subtle) }
+  .cardbox { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; flex: 1; min-width: 200px }
+  .demo-frame { background: var(--color-canvas); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px; margin-top: 12px }
+  .ph { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 16px }
+  .ph-crumb { font-size: var(--text-xs); color: var(--color-fg-subtle); margin-bottom: 2px }
+  .ph-title { font-size: var(--text-xl); font-weight: 700; letter-spacing: -.01em }
+  .ph-title span { font-size: var(--text-sm); font-weight: 400; color: var(--color-fg-subtle); margin-left: 8px }
+  .tbar { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px; border-bottom: 1px solid var(--color-border) }
+  .fakectl { border: 1px solid var(--color-border-strong); border-radius: var(--radius-sm); padding: 4px 10px; font-size: var(--text-xs); color: var(--color-fg-muted); background: var(--color-surface) }
+  .tbody { padding: 28px 12px; text-align: center; color: var(--color-fg-subtle); font-size: var(--text-xs) }
+  .tfoot { display: grid; grid-template-columns: repeat(3, 1fr); align-items: center; padding: 12px; border-top: 1px solid var(--color-border) }
+  .tfoot p { font-size: var(--text-xs); color: var(--color-fg-subtle) }
+  .tfoot-mid { display: flex; justify-content: center }
+
+  .empty-note { font-size: 13px; color: var(--color-fg-subtle) }
+`
+
+function build() {
+  const tokens = readTokens()
+
+  const shellsHtml = `<div class="cards">
+    <a class="card" href="../plan/screen/wireframe/shared/login.html">
+      <div class="shell-mini shell-mini-auth">
+        <div class="sm-brand">
+          <span class="sm-dot"></span>
+          <span class="sm-line" style="width:60%"></span>
+        </div>
+        <div class="sm-form">
+          <span class="sm-line" style="width:40%;height:8px"></span>
+          <span class="sm-box"></span>
+          <span class="sm-box"></span>
+          <span class="sm-cta"></span>
+        </div>
+      </div>
+      <div class="top"><span class="nm">AuthShell</span><span class="uses">4~7 / 17 화면</span></div>
+      <p class="desc">좌 브랜드 패널 + 우 폼. 구조는 고정이고 헤드라인·설명·각주만 받는다.</p>
+      <span class="go">와이어프레임 열기 →</span>
+    </a>
+    <a class="card" href="../plan/screen/wireframe/manager/dashboard.html">
+      <div class="shell-mini shell-mini-manager">
+        <div class="sm-topbar">
+          <span class="sm-dot" style="background:var(--color-primary);width:10px;height:10px;border-radius:3px"></span>
+          <span class="sm-pill"></span>
+        </div>
+        <div class="sm-body">
+          <div class="sm-nav">
+            <span class="sm-navitem sm-navitem-on"></span>
+            <span class="sm-navitem"></span>
+            <span class="sm-navitem"></span>
+            <span class="sm-navitem"></span>
+          </div>
+          <div class="sm-content">
+            <span class="sm-line" style="width:35%"></span>
+            <span class="sm-block"></span>
+          </div>
+        </div>
+      </div>
+      <div class="top"><span class="nm">ManagerShell</span><span class="uses">7~9 / 17 화면</span></div>
+      <p class="desc">상단바(브랜드·기수 선택기·사용자) + 좌측 네비 184px + 콘텐츠. 총괄 전용 항목을 가린다.</p>
+      <span class="go">와이어프레임 열기 →</span>
+    </a>
+  </div>
+  ${rationale([
+    {
+      q: '왜 셸을 먼저 만들었나',
+      a: '확정 화면 17개에서 무엇이 가장 많이 반복되는지 세어봤더니 개별 컴포넌트가 아니라 셸이었다(레이아웃 골격 9회, 네비·콘텐츠 9회, 상단바 8회). 둘이 나눠 개발하면 각자 셸을 만들게 되고, 그러면 가장 크고 가장 많이 쓰이는 것을 두 벌 갖게 된다.',
+    },
+    {
+      q: '페이지 제목·주액션은 왜 셸이 안 받나',
+      a: '화면마다 탭이 끼거나 제목 옆에 총개수가 붙는 등 조합이 달라서, 셸이 다 받으면 props가 계속 늘어난다. 별도 컴포넌트로 둔다.',
+    },
+    {
+      q: '위 미리보기는 실제 셸 코드인가',
+      a: '아니다. 구조·비율·토큰 값만 옮긴 것이다. 실제 마크업을 그대로 박으면 셸이 바뀔 때마다 이 문서를 다시 만들어야 하는데, 그 동기화를 사람이 기억해야 한다면 결국 낡는다. 그래서 카드를 원본 와이어프레임으로 가는 링크로 두었다 — 진짜 화면은 거기서 실행 중인 앱으로 본다.',
+    },
+  ])}`
+
+  const componentsHtml = `<div class="comp">
+    <h3>Button <span class="cnt">10 / 17 화면</span></h3>
+    <p class="cap">주 액션은 한 화면에 하나가 원칙이다. 비활성은 <code>disabled</code> 속성으로 준다 — 회색으로 보이게만 하면 보조기술에는 누를 수 있는 버튼으로 읽힌다</p>
+    <div class="row-demo">
+      <button class="btn btn-primary btn-md">저장</button>
+      <button class="btn btn-ghost btn-md">취소</button>
+      <button class="btn btn-danger btn-md">삭제</button>
+      <button class="btn btn-primary btn-sm">작게</button>
+      <button class="btn btn-primary btn-md" disabled>비활성</button>
+    </div>
+    <div class="row-demo"><button class="btn btn-primary btn-lg">전체 폭 — 폼 제출</button></div>
+  </div>
+
+  <div class="comp">
+    <h3>Badge <span class="cnt">8 / 17 화면</span></h3>
+    <p class="cap"><b>색만으로 상태를 말하지 않는다.</b> 배지 안의 글자가 상태를 그대로 말해야 한다 — 색을 구분하기 어려운 사용자에게는 색이 아무 정보도 주지 않는다</p>
+    <div class="row-demo">
+      <span class="bdg bdg-success">활성</span>
+      <span class="bdg bdg-warning">미검증</span>
+      <span class="bdg bdg-danger">차단됨</span>
+      <span class="bdg bdg-info">안내</span>
+      <span class="bdg bdg-neutral">보류</span>
+    </div>
+  </div>
+
+  <div class="comp">
+    <h3>Card <span class="cnt">6 / 17 화면</span></h3>
+    <p class="cap">안쪽 여백을 기본값으로 두지 않는다 — 표를 담는 카드는 여백이 0이어야 하고 폼을 담는 카드는 필요하다. 기본값을 정하면 절반은 그걸 지우는 데 쓴다</p>
+    <div class="row-demo">
+      <div class="cardbox" style="padding:16px">폼을 담을 때 — 여백을 준다</div>
+      <div class="cardbox">표를 담을 때 — 여백 없음</div>
+    </div>
+  </div>
+
+  <div class="comp">
+    <h3>PageHeader · 표 배치 <span class="cnt">6 · 5 / 17 화면</span></h3>
+    <p class="cap">배치만 만들었다. <b>컬럼 정의와 데이터 연결은 없다</b> — 화면마다 컬럼이 다르고, 한 화면만 보고 그 형태를 정하면 두 번째 화면에서 틀린다</p>
+    <div class="demo-frame">
+      <div class="ph">
+        <div>
+          <p class="ph-crumb">교육생 › 7기</p>
+          <h4 class="ph-title">교육생 <span>48명</span></h4>
+        </div>
+        <button class="btn btn-primary btn-md">+ 추가</button>
+      </div>
+      <div class="cardbox">
+        <div class="tbar">
+          <span class="fakectl">🔍 검색</span>
+          <span class="fakectl">반 ▾</span>
+          <span class="fakectl">계정 ▾</span>
+          <span class="fakectl">정렬 ▾</span>
+        </div>
+        <div class="tbody">표 자리 — 각 화면이 직접 그린다</div>
+        <div class="tfoot">
+          <p>1–20 / 48명</p>
+          <div class="tfoot-mid"><span class="fakectl">‹ 1 2 3 ›</span></div>
+          <div></div>
+        </div>
+      </div>
+    </div>
+    <p class="cap">툴바는 <b>전부 왼쪽</b>, 오른쪽은 비운다. 주 액션은 제목 줄에 있으므로 툴바 오른쪽에도 버튼을 두면 주 액션이 둘로 보인다. 푸터는 범위 개수(왼쪽) · 페이지 이동(가운데) · 오른쪽 비움.</p>
+  </div>
+  ${rationale([
+    {
+      q: '왜 미리 다 만들어두지 않나',
+      a: '화면 하나만 보고 뽑은 컴포넌트는 두 번째 화면에서 대개 틀린다. 같은 조각이 세 번 반복되는 것을 확인한 뒤에 뽑는다. 지금 만드는 것들은 확정 화면 17개에서 5회 이상 반복되는 것만 고른 것이다.',
+    },
+    {
+      q: '필요한 컴포넌트가 없으면',
+      a: '내 도메인 폴더 안에 만든다(features/{도메인}/components). 다른 도메인에서도 같은 것이 필요해지면 그때 공용으로 올린다. 처음부터 공용으로 만들면 한 곳의 사정에 맞춘 것이 공용이 된다.',
+    },
+  ])}`
+
+  const bodyHtml = `
+  ${section('셸', 2, '아래 미리보기는 구조·비율·토큰 값만 옮긴 것이다. 실제 셸 코드가 아니다 — 카드를 누르면 그 셸이 뽑힌 원본 와이어프레임이 열린다', shellsHtml)}
+  ${section('컴포넌트', 5, '확정 화면 17개에서 5회 이상 반복되는 것만 만들었다. 아래는 실제로 렌더된 모습이다', componentsHtml)}
+  <div class="empty-note">
+    <p>Modal · Tabs · Search · Select는 아직 이름과 위치만 합의된 상태다 — 필요한 사람이 만들고 여기 추가한다.</p>
+  </div>
+  `
+
+  return pageShell({
+    title: 'IZ-Get · 셸 · 컴포넌트',
+    kicker: '생성된 문서 · 직접 고치지 않는다',
+    lede: `실제 화면을 짤 때 참고하는 문서다. 값(색·크기)은 <a href="./design-system.html">토큰 문서</a>와 같은 곳(<code>src/index.css</code>)에서 온다.`,
+    howto: null,
+    nav: `<a href="./design-system.html">토큰</a><a class="on" href="./components.html">셸 · 컴포넌트</a>`,
+    tokenCss: tokenCssBlock(tokens),
+    pageCss: PAGE_CSS,
+    bodyHtml,
+    footerNote: `생성 명령 <code>npm run doc:components</code> · 컴포넌트 소스 <code>src/components/</code>, <code>src/shells/</code>`,
+  })
+}
+
+/* ── 실행 ────────────────────────────────────────────── */
+
+const html = build()
+
+if (process.argv.includes('--check')) {
+  const current = existsSync(OUT) ? readFileSync(OUT, 'utf8') : ''
+  if (current !== html) {
+    console.error('\n✗ 셸·컴포넌트 문서가 최신이 아니다.')
+    console.error('    npm run doc:components 를 실행하고 결과를 커밋할 것.\n')
+    process.exit(1)
+  }
+  console.log('✓ 셸·컴포넌트 문서가 최신이다')
+} else {
+  mkdirSync(dirname(OUT), { recursive: true })
+  writeFileSync(OUT, html)
+  console.log(`✓ ${OUT.slice(ROOT.length)} 생성됨`)
+}

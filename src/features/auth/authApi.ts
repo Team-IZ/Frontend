@@ -3,8 +3,8 @@
 // 백엔드 준비 시 각 함수의 Mock 블록만 삭제하고 아래 주석의 fetch를 켜면 됩니다.
 // (화면·컴포넌트 코드는 수정 불필요)
 // ─────────────────────────────────────────────────────────────
-import type { ApiError, LoginRequest, LoginResponse, Role } from '@/types/auth'
-import { accounts } from '@/api/mockDb'
+import type { ApiError, LoginRequest, LoginResponse, Role } from './authTypes'
+import { accounts } from './mockDb'
 
 /** 서버가 내려주는 역할별 초기 화면 (SC-A01 §5 · initialScreen) */
 const INITIAL_SCREEN: Record<Role, string> = {

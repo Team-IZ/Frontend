@@ -1,7 +1,7 @@
 import { Navigate } from 'react-router'
 import type { ReactNode } from 'react'
-import { useAuth } from '@/auth/AuthContext'
-import type { Role } from '@/types/auth'
+import { useAuth } from '../AuthContext'
+import type { Role } from '../authTypes'
 
 /**
  * 화면 진입 문지기 (AUTH-09 · RBAC / SYS-02 격리)

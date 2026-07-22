@@ -1,6 +1,6 @@
 import { createContext, useContext, useState } from 'react'
 import type { ReactNode } from 'react'
-import type { Role } from '@/types/auth'
+import type { Role } from './authTypes'
 
 /**
  * 로그인 세션을 앱 전체가 공유하는 곳 (AUTH-09 · 인증 컨텍스트)

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import Wordmark from '@/components/Wordmark'
+import Wordmark from './Wordmark'
 
 interface Props {
   /** 마케팅 리드 — 화면마다 다름 */

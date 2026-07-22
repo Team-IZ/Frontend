@@ -11,6 +11,11 @@
 
   라벨은 `운영 관리`가 맞다. 와이어 일부에 남아 있는 `기수 구성`은 옛 라벨이고,
   나중에 다시 쓰인 파일(운영 관리·프로젝트·반 배정)이 모두 새 라벨을 쓴다.
+
+  경로는 `/manager/*` 로 통일한다. 와이어프레임 폴더(manager · trainee ·
+  superadmin · shared)와 로그인이 내려주는 initialScreen이 같은 형태를 쓴다.
+  역할 접두사가 없으면 교육생·슈퍼어드민 화면이 들어올 때 이름이 겹친다
+  (예: 대시보드는 매니저에도 교육생에도 있다).
 */
 export type NavItem = {
   icon: string
@@ -23,12 +28,12 @@ export type NavItem = {
 }
 
 export const MANAGER_NAV: NavItem[] = [
-  { icon: '▦', label: '대시보드', to: '/dashboard' },
-  { icon: '⚙', label: '운영 관리', to: '/admin/cohorts', leadOnly: true },
-  { icon: '▧', label: '교안', to: '/curriculum' },
-  { icon: '▤', label: '프로젝트', to: '/projects' },
-  { icon: '◎', label: '교육생', to: '/trainees' },
-  { icon: '△', label: '분석 · 진단', to: '/analysis', temporary: true },
-  { icon: '✎', label: '개입', to: '/interventions', temporary: true },
-  { icon: '▥', label: '리포트', to: '/reports', temporary: true },
+  { icon: '▦', label: '대시보드', to: '/manager/dashboard' },
+  { icon: '⚙', label: '운영 관리', to: '/manager/onboarding', leadOnly: true },
+  { icon: '▧', label: '교안', to: '/manager/curriculum' },
+  { icon: '▤', label: '프로젝트', to: '/manager/projects' },
+  { icon: '◎', label: '교육생', to: '/manager/trainees' },
+  { icon: '△', label: '분석 · 진단', to: '/manager/analysis', temporary: true },
+  { icon: '✎', label: '개입', to: '/manager/interventions', temporary: true },
+  { icon: '▥', label: '리포트', to: '/manager/reports', temporary: true },
 ]

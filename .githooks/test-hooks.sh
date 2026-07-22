@@ -25,6 +25,10 @@ check ok "fix: prevent token refresh loop (#8)"
 check ok "refactor: extract AuthContext into custom hook (#10)"
 check ok "chore: add .env.example fields"
 check ok "remove: drop unused vite starter assets (#3)"
+check ok "build: bump vite to 7.2 (#11)"
+check ok "ci: run design guard on pull request (#11)"
+check ok "test: cover cohort scope reducer (#11)"
+check ok "perf: memoize trainee list rows (#11)"
 check ok "Merge branch 'develop' into feature/setup"
 
 # 막아야 하는 것

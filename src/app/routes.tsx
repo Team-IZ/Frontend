@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate, Link, useLocation } from 'react-router'
 import { authRoutes } from '@/features/auth/routes'
 import { dashboardRoutes } from '@/features/dashboard/routes'
+import { curriculumRoutes } from '@/features/curriculum/routes'
 
 /*
   각 도메인이 자기 라우트를 내보내고, 여기서는 합치기만 한다.
@@ -13,6 +14,7 @@ import { dashboardRoutes } from '@/features/dashboard/routes'
 export const router = createBrowserRouter([
   ...authRoutes,
   ...dashboardRoutes,
+  ...curriculumRoutes,
 
   // 진입점. 로그인 후 역할별 초기 화면은 서버가 판정하므로(명세 AUTH-03),
   // 클라이언트는 역할→화면 매핑을 갖지 않는다.

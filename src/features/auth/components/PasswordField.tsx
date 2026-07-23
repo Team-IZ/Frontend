@@ -1,7 +1,7 @@
 import { forwardRef, useState } from 'react'
 import type { FocusEvent, InputHTMLAttributes, KeyboardEvent } from 'react'
 
-import { Kbd } from '@/components/ui/kbd'
+import { Kbd } from '@/components/ui/Kbd'
 
 interface Props extends Omit<InputHTMLAttributes<HTMLInputElement>, 'type'> {
   label: string

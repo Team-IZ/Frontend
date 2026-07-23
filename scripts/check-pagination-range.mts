@@ -1,5 +1,5 @@
 import assert from 'node:assert'
-import { getPageRange } from '../src/components/ui/pagination-range.ts'
+import { getPageRange } from '../src/components/ui/paginationRange.ts'
 
 const eq = (a: unknown, b: unknown, msg: string) =>
   assert.deepStrictEqual(a, b, `${msg}\n  실제: ${JSON.stringify(a)}\n  기대: ${JSON.stringify(b)}`)

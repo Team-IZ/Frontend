@@ -38,35 +38,35 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
-import { Kbd } from '@/components/ui/kbd'
+import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
+import { Checkbox } from '@/components/ui/Checkbox'
+import { Switch } from '@/components/ui/Switch'
+import { Label } from '@/components/ui/Label'
+import { Kbd } from '@/components/ui/Kbd'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+} from '@/components/ui/Select'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover'
 import {
   Pagination,
   PaginationContent,
   PaginationEllipsis,
   PaginationItem,
   PaginationLink,
-} from '@/components/ui/pagination'
-import { getPageRange } from '@/components/ui/pagination-range'
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Separator } from '@/components/ui/separator'
-import { Skeleton } from '@/components/ui/skeleton'
-import { Spinner } from '@/components/ui/spinner'
-import { Progress } from '@/components/ui/progress'
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/empty'
+} from '@/components/ui/Pagination'
+import { getPageRange } from '@/components/ui/paginationRange'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
+import { Avatar, AvatarFallback } from '@/components/ui/Avatar'
+import { Separator } from '@/components/ui/Separator'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { Spinner } from '@/components/ui/Spinner'
+import { Progress } from '@/components/ui/Progress'
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import InputCompositionsPreview from './InputCompositionsPreview'
 
 /*

@@ -21,16 +21,18 @@ export default function BrandPanel({
   meta = '교육 운영기관 전용 · 초대 기반 계정',
 }: Props) {
   return (
-    <div className="hidden flex-col justify-center bg-[linear-gradient(150deg,var(--color-brand-1),var(--color-brand-2))] p-10 text-white md:flex md:w-1/2">
-      <div className="mb-10">
-        <Wordmark light />
+    <div className="hidden flex-col items-center justify-center bg-[linear-gradient(150deg,var(--color-brand-1),var(--color-brand-2))] p-10 text-white md:flex md:w-1/2">
+      <div className="w-full max-w-md">
+        <div className="mb-10">
+          <Wordmark light />
+        </div>
+
+        <h1 className="text-[26px] font-bold leading-snug">{title}</h1>
+
+        <p className="mt-5 text-sm leading-relaxed text-white/70">{description}</p>
+
+        <p className="mt-10 text-xs text-white/45">{meta}</p>
       </div>
-
-      <h1 className="text-[26px] font-bold leading-snug">{title}</h1>
-
-      <p className="mt-5 text-sm leading-relaxed text-white/70">{description}</p>
-
-      <p className="mt-10 text-xs text-white/45">{meta}</p>
     </div>
   )
 }

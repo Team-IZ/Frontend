@@ -6,19 +6,19 @@ import type { DateRange } from 'react-day-picker'
 
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
-import { Calendar } from '@/components/ui/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Field, FieldLabel, FieldDescription, FieldError } from '@/components/ui/field'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
+import { Calendar } from '@/components/ui/Calendar'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover'
+import { Field, FieldLabel, FieldDescription, FieldError } from '@/components/ui/Field'
+import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
   InputGroupText,
-} from '@/components/ui/input-group'
-import { ButtonGroup } from '@/components/ui/button-group'
+} from '@/components/ui/InputGroup'
+import { ButtonGroup } from '@/components/ui/ButtonGroup'
 
 /*
   docs/dev/input-inventory.md 의 10개 범주가 **지금 있는 컴포넌트로 되는지** 실제로

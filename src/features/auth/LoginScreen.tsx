@@ -74,8 +74,8 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-canvas p-4">
-      <div className="flex w-full max-w-4xl overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+    <div className="flex min-h-screen w-full bg-canvas">
+      <div className="flex w-full bg-surface">
         <BrandPanel />
 
         <AuthForm title="로그인" subtitle="계정 정보를 입력하세요.">

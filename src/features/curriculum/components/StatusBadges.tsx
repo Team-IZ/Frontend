@@ -35,7 +35,13 @@ const TOPIC_VARIANT: Record<Exclude<TopicBucket, 'NA'>, 'success' | 'warning' | 
   NONE: 'info',
 }
 
-export function TopicAssignmentBadge({ assigned, total }: { assigned: number | null; total: number | null }) {
+export function TopicAssignmentBadge({
+  assigned,
+  total,
+}: {
+  assigned: number | null
+  total: number | null
+}) {
   const bucket = topicBucket(assigned, total)
   if (bucket === 'NA') return <span className="text-fg-subtle text-2xs">—</span>
   return (

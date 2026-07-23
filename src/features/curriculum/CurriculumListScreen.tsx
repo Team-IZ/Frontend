@@ -13,7 +13,12 @@ import {
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { CURRICULA, type ExtractionStatus } from './mockData'
-import { ExtractionStatusBadge, TopicAssignmentBadge, topicBucket, type TopicBucket } from './components/StatusBadges'
+import {
+  ExtractionStatusBadge,
+  TopicAssignmentBadge,
+  topicBucket,
+  type TopicBucket,
+} from './components/StatusBadges'
 
 /*
   SC-M12 · CUR-03 교안 목록. 목업 — API 연동 없이 고정 배열(mockData)을 화면에서
@@ -70,7 +75,11 @@ export default function CurriculumListScreen() {
       if (topicFilter !== 'ALL' && topicBucket(c.topicSections, c.totalSections) !== topicFilter)
         return false
       if (projectFilter === 'NONE' && c.projects.length > 0) return false
-      if (projectFilter !== 'ALL' && projectFilter !== 'NONE' && !c.projects.includes(projectFilter))
+      if (
+        projectFilter !== 'ALL' &&
+        projectFilter !== 'NONE' &&
+        !c.projects.includes(projectFilter)
+      )
         return false
       return true
     })
@@ -165,7 +174,10 @@ export default function CurriculumListScreen() {
           <TableBody>
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-fg-subtle py-8 text-center whitespace-normal">
+                <TableCell
+                  colSpan={8}
+                  className="text-fg-subtle py-8 text-center whitespace-normal"
+                >
                   조건에 맞는 교안이 없습니다.
                 </TableCell>
               </TableRow>

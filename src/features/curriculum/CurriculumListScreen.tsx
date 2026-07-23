@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { Link } from 'react-router'
 import ManagerShell from '@/shells/ManagerShell'
 import PageHeader from '@/components/common/PageHeader'
 import { TableFrame, TableToolbar, TableFooter } from '@/components/common/TableFrame'
@@ -94,7 +95,13 @@ export default function CurriculumListScreen() {
         breadcrumb="교안 › 7기"
         title="교안 관리"
         count={`총 ${CURRICULA.length}개`}
-        action={isLead && <Button>+ 교안 등록</Button>}
+        action={
+          isLead && (
+            <Button nativeButton={false} render={<Link to="/manager/curriculum/new" />}>
+              + 교안 등록
+            </Button>
+          )
+        }
       />
 
       <TableFrame>

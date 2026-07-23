@@ -128,8 +128,8 @@ export default function InviteSignup() {
   const copy = invite ? COPY[invite.inviteType] : COPY.MANAGER
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-canvas p-4">
-      <div className="flex w-full max-w-4xl overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+    <div className="flex min-h-screen w-full bg-canvas">
+      <div className="flex w-full bg-surface">
         <BrandPanel title={copy.brandTitle} description={copy.brandDesc} />
 
         <AuthForm title={copy.title} subtitle={copy.subtitle}>

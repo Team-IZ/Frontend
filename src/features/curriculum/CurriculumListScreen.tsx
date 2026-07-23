@@ -84,7 +84,7 @@ export default function CurriculumListScreen() {
       return true
     })
     return filtered.sort((a, b) =>
-      sort === 'NAME' ? a.name.localeCompare(b.name) : b.updatedAt.localeCompare(a.updatedAt),
+      sort === 'NAME' ? a.name.localeCompare(b.name, 'en') : b.updatedAt.localeCompare(a.updatedAt),
     )
   }, [search, statusFilter, topicFilter, projectFilter, sort])
 

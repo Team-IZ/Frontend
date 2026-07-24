@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
+import { SearchIcon, XIcon } from 'lucide-react'
 import ManagerShell from '@/shells/ManagerShell'
 import PageHeader from '@/components/common/PageHeader'
 import { TableFrame, TableToolbar, TableFooter } from '@/components/common/TableFrame'
@@ -13,6 +14,31 @@ import {
 } from '@/components/ui/Table'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/ui/InputGroup'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/DropdownMenu'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+} from '@/components/ui/Pagination'
 import { CURRICULA, type ExtractionStatus } from './mockData'
 import {
   ExtractionStatusBadge,
@@ -30,8 +56,6 @@ import {
 */
 
 const SEARCH_PLACEHOLDER = '교안명 · 주제 검색'
-const PILL =
-  'border-border-strong bg-surface-2 text-fg-muted rounded-full border px-3 py-[7px] text-xs'
 
 const STATUS_OPTIONS: { value: 'ALL' | ExtractionStatus; label: string }[] = [
   { value: 'ALL', label: '전체' },
@@ -40,6 +64,9 @@ const STATUS_OPTIONS: { value: 'ALL' | ExtractionStatus; label: string }[] = [
   { value: 'EXTRACTION_FAILED', label: '추출 실패' },
   { value: 'UPLOADED', label: '업로드됨' },
 ]
+const STATUS_ITEMS = Object.fromEntries(
+  STATUS_OPTIONS.map((o) => [o.value, `추출 상태 · ${o.label}`]),
+)
 
 const TOPIC_OPTIONS: { value: 'ALL' | TopicBucket; label: string }[] = [
   { value: 'ALL', label: '전체' },
@@ -48,11 +75,15 @@ const TOPIC_OPTIONS: { value: 'ALL' | TopicBucket; label: string }[] = [
   { value: 'NONE', label: '미지정' },
   { value: 'NA', label: '추출 전' },
 ]
+const TOPIC_ITEMS = Object.fromEntries(
+  TOPIC_OPTIONS.map((o) => [o.value, `주제 지정 · ${o.label}`]),
+)
 
 const SORT_OPTIONS = [
   { value: 'RECENT', label: '최근 수정순' },
   { value: 'NAME', label: '이름순' },
 ] as const
+const SORT_ITEMS = Object.fromEntries(SORT_OPTIONS.map((o) => [o.value, `정렬 · ${o.label}`]))
 
 export default function CurriculumListScreen() {
   const isLead = true
@@ -67,6 +98,14 @@ export default function CurriculumListScreen() {
     () => Array.from(new Set(CURRICULA.flatMap((c) => c.projects))).sort(),
     [],
   )
+  const projectItems = useMemo(() => {
+    const items: Record<string, string> = {
+      ALL: '적용 프로젝트 · 전체',
+      NONE: '적용 프로젝트 · 미연결',
+    }
+    for (const p of projectOptions) items[p] = `적용 프로젝트 · ${p}`
+    return items
+  }, [projectOptions])
 
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -106,63 +145,94 @@ export default function CurriculumListScreen() {
 
       <TableFrame>
         <TableToolbar>
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={SEARCH_PLACEHOLDER}
-            className={`${PILL} placeholder:text-fg-subtle w-60 text-fg`}
-          />
-          <select
+          <InputGroup className="h-9 w-60">
+            <InputGroupAddon>
+              <SearchIcon />
+            </InputGroupAddon>
+            <InputGroupInput
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={SEARCH_PLACEHOLDER}
+              aria-label="교안 검색"
+            />
+            {search && (
+              <InputGroupAddon align="inline-end">
+                <InputGroupButton
+                  size="icon-xs"
+                  aria-label="검색어 지우기"
+                  onClick={() => setSearch('')}
+                >
+                  <XIcon />
+                </InputGroupButton>
+              </InputGroupAddon>
+            )}
+          </InputGroup>
+
+          <Select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
-            className={PILL}
-            aria-label="추출 상태 필터"
+            onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
+            items={STATUS_ITEMS}
           >
-            {STATUS_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                추출 상태 · {o.label}
-              </option>
-            ))}
-          </select>
-          <select
+            <SelectTrigger className="h-9 min-w-44" aria-label="추출 상태 필터">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  추출 상태 · {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
             value={topicFilter}
-            onChange={(e) => setTopicFilter(e.target.value as typeof topicFilter)}
-            className={PILL}
-            aria-label="주제 지정 필터"
+            onValueChange={(v) => setTopicFilter(v as typeof topicFilter)}
+            items={TOPIC_ITEMS}
           >
-            {TOPIC_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                주제 지정 · {o.label}
-              </option>
-            ))}
-          </select>
-          <select
+            <SelectTrigger className="h-9 min-w-44" aria-label="주제 지정 필터">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TOPIC_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  주제 지정 · {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select
             value={projectFilter}
-            onChange={(e) => setProjectFilter(e.target.value)}
-            className={PILL}
-            aria-label="적용 프로젝트 필터"
+            onValueChange={(v) => setProjectFilter(v ?? 'ALL')}
+            items={projectItems}
           >
-            <option value="ALL">적용 프로젝트 · 전체</option>
-            <option value="NONE">적용 프로젝트 · 미연결</option>
-            {projectOptions.map((p) => (
-              <option key={p} value={p}>
-                적용 프로젝트 · {p}
-              </option>
-            ))}
-          </select>
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value as typeof sort)}
-            className={`${PILL} ml-auto`}
-            aria-label="정렬"
-          >
-            {SORT_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                정렬 · {o.label}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger className="h-9 min-w-64" aria-label="적용 프로젝트 필터">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ALL">적용 프로젝트 · 전체</SelectItem>
+              <SelectItem value="NONE">적용 프로젝트 · 미연결</SelectItem>
+              {projectOptions.map((p) => (
+                <SelectItem key={p} value={p}>
+                  적용 프로젝트 · {p}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+
+          <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)} items={SORT_ITEMS}>
+            <SelectTrigger className="ml-auto h-9 min-w-36" aria-label="정렬">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SORT_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  정렬 · {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </TableToolbar>
 
         <Table>
@@ -237,9 +307,18 @@ export default function CurriculumListScreen() {
                           재처리
                         </Button>
                       )}
-                      <Button variant="ghost" size="sm" aria-label="더 보기">
-                        ⋯
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger
+                          render={
+                            <Button variant="ghost" size="sm" aria-label="더 보기">
+                              ⋯
+                            </Button>
+                          }
+                        />
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem variant="destructive">삭제</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   )}
                 </TableCell>
@@ -249,9 +328,15 @@ export default function CurriculumListScreen() {
         </Table>
 
         <TableFooter range={`${rows.length}개 중 1–${rows.length}`}>
-          <span className="bg-primary rounded-md px-2 py-0.5 text-xs font-semibold text-white">
-            1
-          </span>
+          <Pagination className="mx-0 w-auto">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationLink isActive aria-label="1쪽">
+                  1
+                </PaginationLink>
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </TableFooter>
       </TableFrame>
     </ManagerShell>

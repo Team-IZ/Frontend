@@ -1,11 +1,21 @@
 import { useRef, useState, type DragEvent } from 'react'
-import { useForm } from 'react-hook-form'
+import { Controller, useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, FileIcon, InfoIcon, UploadIcon, XIcon } from 'lucide-react'
 import ManagerShell from '@/shells/ManagerShell'
 import PageHeader from '@/components/common/PageHeader'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
+import { Card, CardContent, CardFooter } from '@/components/ui/Card'
+import { Field, FieldLabel, FieldDescription, FieldError } from '@/components/ui/Field'
+import { Input } from '@/components/ui/Input'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/Select'
 import { CURRICULA } from './mockData'
 
 /*
@@ -13,14 +23,16 @@ import { CURRICULA } from './mockData'
   성공 시 목록으로 돌아간다. 저작 화면이라 총괄 전용(isLead 게이팅), 대시보드·
   목록과 같은 방식으로 역할은 화면에서 고정한다(인증 붙기 전까지).
 
-  파일 드롭존·입력·select는 팀 UI 컴포넌트가 나오기 전까지 기본 HTML 요소로
-  임시 구현한다(목록 화면 필터와 같은 방식) — 각 자리에 교체 주석을 남긴다.
+  드롭존만 기본 HTML로 남긴다 — attachment 컴포넌트엔 drop 핸들러가 없다
+  (docs/dev/input-inventory.md §4-1 G).
 */
 
 const MAX_SIZE = 50 * 1024 * 1024
-const FIELD =
-  'border-border-strong rounded-md border bg-surface px-3 py-2 text-sm text-fg w-full disabled:text-fg-subtle'
 const PROJECT_OPTIONS = Array.from(new Set(CURRICULA.flatMap((c) => c.projects))).sort()
+const PROJECT_ITEMS: Record<string, string> = {
+  '': '비우면 기수 전체 자동 안내',
+  ...Object.fromEntries(PROJECT_OPTIONS.map((p) => [p, p])),
+}
 
 interface UploadFormValues {
   name: string
@@ -40,6 +52,7 @@ export default function CurriculumUploadScreen() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<UploadFormValues>({ defaultValues: { name: '', topic: '', project: '' } })
 
@@ -104,137 +117,164 @@ export default function CurriculumUploadScreen() {
         <Badge variant="warning">총괄</Badge>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} noValidate className="max-w-xl space-y-4">
-        {/* 팀 UI 컴포넌트(드롭존) 나오면 교체 */}
-        <div
-          onDragOver={(e) => {
-            e.preventDefault()
-            setDragOver(true)
-          }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={handleDrop}
-          onClick={() => fileInputRef.current?.click()}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click()
-          }}
-          className={`border-border-strong bg-surface-2 cursor-pointer rounded-md border-2 border-dashed p-6 text-center ${dragOver ? 'border-primary' : ''}`}
-        >
-          <p className="text-sm font-semibold text-fg">PDF를 끌어다 놓거나 클릭해 선택</p>
-          <p className="text-fg-subtle mt-0.5 text-2xs">
-            현재 PDF만 지원 (pptx·docx·스캔본은 보류) · 최대 50MB
-          </p>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="application/pdf,.pdf"
-            className="hidden"
-            onChange={(e) => applyFile(e.target.files?.[0])}
-          />
-          {file && (
-            <div
-              className="border-border bg-surface mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <span>
-                📄 {file.name} · {(file.size / 1024 / 1024).toFixed(1)}MB
-              </span>
-              <button
-                type="button"
-                aria-label="파일 제거"
-                className="text-fg-subtle cursor-pointer"
-                onClick={() => {
-                  setFile(null)
-                  if (fileInputRef.current) fileInputRef.current.value = ''
+      <div className="mx-auto max-w-2xl">
+        <Card>
+          <form onSubmit={handleSubmit(onSubmit)} noValidate>
+            <CardContent className="flex flex-col gap-6 pb-4">
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault()
+                  setDragOver(true)
                 }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={handleDrop}
+                onClick={() => fileInputRef.current?.click()}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') fileInputRef.current?.click()
+                }}
+                className={`flex cursor-pointer flex-col items-center gap-3 rounded-md border-2 border-dashed py-14 text-center transition-colors ${
+                  dragOver ? 'border-primary bg-primary-soft' : 'border-border-strong bg-surface-2'
+                }`}
               >
-                ✕
-              </button>
-            </div>
-          )}
-        </div>
-        {fileError && <p className="text-danger text-xs">{fileError}</p>}
+                <UploadIcon className={`size-10 ${dragOver ? 'text-primary' : 'text-fg-subtle'}`} />
+                <div>
+                  <p className="text-sm font-semibold text-fg">PDF를 끌어다 놓거나 클릭해 선택</p>
+                  <p className="text-fg-subtle mt-0.5 text-2xs">
+                    현재 PDF만 지원 (pptx·docx·스캔본은 보류) · 최대 50MB
+                  </p>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  className="hidden"
+                  onChange={(e) => applyFile(e.target.files?.[0])}
+                />
+                {file && (
+                  <div
+                    className="border-border bg-surface mx-6 flex w-full max-w-sm items-center justify-between gap-3 rounded-md border p-3 text-left text-sm"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex min-w-0 items-center gap-2">
+                      <FileIcon className="text-fg-subtle size-5 shrink-0" />
+                      <span className="truncate">
+                        {file.name}{' '}
+                        <span className="text-fg-subtle">
+                          · {(file.size / 1024 / 1024).toFixed(1)}MB
+                        </span>
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      aria-label="파일 제거"
+                      className="text-fg-subtle hover:text-fg shrink-0 cursor-pointer"
+                      onClick={() => {
+                        setFile(null)
+                        if (fileInputRef.current) fileInputRef.current.value = ''
+                      }}
+                    >
+                      <XIcon className="size-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              {fileError && <p className="text-danger text-xs">{fileError}</p>}
 
-        <div>
-          <label className="text-fg-muted mb-1 block text-xs font-semibold" htmlFor="cur-name">
-            교안명 <span className="text-danger">*</span>
-          </label>
-          {/* 팀 UI 컴포넌트(텍스트 입력) 나오면 교체 */}
-          <input
-            id="cur-name"
-            className={FIELD}
-            disabled={isSubmitting}
-            {...register('name', { required: '교안명을 입력해주세요.' })}
-          />
-          {errors.name && <p className="text-danger mt-1 text-xs">{errors.name.message}</p>}
-        </div>
+              <Field data-invalid={!!errors.name}>
+                <FieldLabel htmlFor="cur-name">
+                  교안명 <span className="text-danger">*</span>
+                </FieldLabel>
+                <Input
+                  id="cur-name"
+                  aria-invalid={!!errors.name}
+                  disabled={isSubmitting}
+                  {...register('name', { required: '교안명을 입력해주세요.' })}
+                />
+                <FieldError>{errors.name?.message}</FieldError>
+              </Field>
 
-        <div>
-          <label className="text-fg-muted mb-1 block text-xs font-semibold" htmlFor="cur-topic">
-            주제 · 설명 <span className="text-fg-subtle font-normal">· 선택</span>
-          </label>
-          {/* 팀 UI 컴포넌트(텍스트 입력) 나오면 교체 */}
-          <input
-            id="cur-topic"
-            placeholder="예: K8s 아키텍처 · 컨테이너 배포 · Service/Ingress · CICD"
-            className={FIELD}
-            disabled={isSubmitting}
-            {...register('topic')}
-          />
-          <p className="text-fg-subtle mt-1 text-2xs">
-            검색·목록 표시용. 비워도 됨(분석이 섹션·주제를 자동 추출).
-          </p>
-        </div>
+              <Field>
+                <FieldLabel htmlFor="cur-topic">
+                  주제 · 설명 <span className="text-fg-subtle font-normal">· 선택</span>
+                </FieldLabel>
+                <Input
+                  id="cur-topic"
+                  placeholder="예: K8s 아키텍처 · 컨테이너 배포 · Service/Ingress · CICD"
+                  disabled={isSubmitting}
+                  {...register('topic')}
+                />
+                <FieldDescription>
+                  검색·목록 표시용. 비워도 됨(분석이 섹션·주제를 자동 추출).
+                </FieldDescription>
+              </Field>
 
-        <div className="flex gap-3">
-          <div className="flex-1">
-            <label className="text-fg-muted mb-1 block text-xs font-semibold">유형</label>
-            <p className={`${FIELD} bg-surface-2`}>PDF</p>
-          </div>
-          <div className="flex-1">
-            <label className="text-fg-muted mb-1 block text-xs font-semibold">버전</label>
-            <p className={`${FIELD} bg-surface-2`}>자동 산정</p>
-            <p className="text-fg-subtle mt-1 text-2xs">
-              같은 교안 재업로드 시 기존 버전 보존, 새 버전으로 등록.
-            </p>
-          </div>
-        </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Field>
+                  <FieldLabel>유형</FieldLabel>
+                  <Input value="PDF" disabled readOnly />
+                </Field>
+                <Field>
+                  <FieldLabel>버전</FieldLabel>
+                  <Input value="자동 산정" disabled readOnly />
+                  <FieldDescription>
+                    같은 교안 재업로드 시 기존 버전 보존, 새 버전으로 등록.
+                  </FieldDescription>
+                </Field>
+                <Field className="col-span-2">
+                  <FieldLabel htmlFor="cur-project">
+                    적용 프로젝트{' '}
+                    <span className="text-fg-subtle font-normal">· 선택 · 지금 안 해도 됨</span>
+                  </FieldLabel>
+                  <Controller
+                    control={control}
+                    name="project"
+                    render={({ field }) => (
+                      <Select
+                        value={field.value}
+                        onValueChange={(v) => field.onChange(v ?? '')}
+                        items={PROJECT_ITEMS}
+                        disabled={isSubmitting}
+                      >
+                        <SelectTrigger id="cur-project">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="">비우면 기수 전체 자동 안내</SelectItem>
+                          {PROJECT_OPTIONS.map((p) => (
+                            <SelectItem key={p} value={p}>
+                              {p}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </Field>
+              </div>
 
-        <div>
-          <label className="text-fg-muted mb-1 block text-xs font-semibold" htmlFor="cur-project">
-            적용 프로젝트{' '}
-            <span className="text-fg-subtle font-normal">· 선택 · 지금 안 해도 됨</span>
-          </label>
-          {/* 팀 UI 컴포넌트(select) 나오면 교체 */}
-          <select
-            id="cur-project"
-            className={FIELD}
-            disabled={isSubmitting}
-            {...register('project')}
-          >
-            <option value="">비우면 기수 전체 자동 안내</option>
-            {PROJECT_OPTIONS.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
-          </select>
-        </div>
+              <p className="bg-info-soft text-info flex items-center gap-2 rounded-md px-3.5 py-2.5 text-xs">
+                <InfoIcon className="size-4 shrink-0" />
+                등록 시 구조 추출이 자동 시작됩니다.
+              </p>
+            </CardContent>
 
-        <p className="bg-info-soft text-info rounded-md px-3.5 py-2.5 text-xs">
-          ℹ 등록 시 구조 추출이 자동 시작됩니다.
-        </p>
-
-        <div className="border-border flex items-center gap-2 border-t pt-4">
-          <Button type="submit" disabled={!file || isSubmitting}>
-            등록 · 자동 분석 시작
-          </Button>
-          <Button variant="ghost" nativeButton={false} render={<Link to="/manager/curriculum" />}>
-            취소
-          </Button>
-        </div>
-      </form>
+            <CardFooter className="gap-2 py-6">
+              <Button type="submit" disabled={!file || isSubmitting}>
+                등록 · 자동 분석 시작
+              </Button>
+              <Button
+                variant="ghost"
+                nativeButton={false}
+                render={<Link to="/manager/curriculum" />}
+              >
+                취소
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
     </ManagerShell>
   )
 }

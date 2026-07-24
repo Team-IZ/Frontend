@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { SearchIcon, XIcon } from 'lucide-react'
 import ManagerShell from '@/shells/ManagerShell'
 import PageHeader from '@/components/common/PageHeader'
-import { TableFrame, TableToolbar, TableFooter } from '@/components/common/TableFrame'
+import { TableFrame } from '@/components/common/TableFrame'
 import {
   Table,
   TableHeader,
@@ -143,99 +143,99 @@ export default function CurriculumListScreen() {
         }
       />
 
-      <TableFrame>
-        <TableToolbar>
-          <InputGroup className="h-9 w-60">
-            <InputGroupAddon>
-              <SearchIcon />
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <InputGroup className="h-9 w-60">
+          <InputGroupAddon>
+            <SearchIcon />
+          </InputGroupAddon>
+          <InputGroupInput
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={SEARCH_PLACEHOLDER}
+            aria-label="교안 검색"
+          />
+          {search && (
+            <InputGroupAddon align="inline-end">
+              <InputGroupButton
+                size="icon-xs"
+                aria-label="검색어 지우기"
+                onClick={() => setSearch('')}
+              >
+                <XIcon />
+              </InputGroupButton>
             </InputGroupAddon>
-            <InputGroupInput
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={SEARCH_PLACEHOLDER}
-              aria-label="교안 검색"
-            />
-            {search && (
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton
-                  size="icon-xs"
-                  aria-label="검색어 지우기"
-                  onClick={() => setSearch('')}
-                >
-                  <XIcon />
-                </InputGroupButton>
-              </InputGroupAddon>
-            )}
-          </InputGroup>
+          )}
+        </InputGroup>
 
-          <Select
-            value={statusFilter}
-            onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
-            items={STATUS_ITEMS}
-          >
-            <SelectTrigger className="h-9 min-w-44" aria-label="추출 상태 필터">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUS_OPTIONS.map((o) => (
-                <SelectItem key={o.value} value={o.value}>
-                  추출 상태 · {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <Select
+          value={statusFilter}
+          onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}
+          items={STATUS_ITEMS}
+        >
+          <SelectTrigger className="h-9 min-w-44" aria-label="추출 상태 필터">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {STATUS_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                추출 상태 · {o.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-          <Select
-            value={topicFilter}
-            onValueChange={(v) => setTopicFilter(v as typeof topicFilter)}
-            items={TOPIC_ITEMS}
-          >
-            <SelectTrigger className="h-9 min-w-44" aria-label="주제 지정 필터">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {TOPIC_OPTIONS.map((o) => (
-                <SelectItem key={o.value} value={o.value}>
-                  주제 지정 · {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <Select
+          value={topicFilter}
+          onValueChange={(v) => setTopicFilter(v as typeof topicFilter)}
+          items={TOPIC_ITEMS}
+        >
+          <SelectTrigger className="h-9 min-w-44" aria-label="주제 지정 필터">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {TOPIC_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                주제 지정 · {o.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-          <Select
-            value={projectFilter}
-            onValueChange={(v) => setProjectFilter(v ?? 'ALL')}
-            items={projectItems}
-          >
-            <SelectTrigger className="h-9 min-w-64" aria-label="적용 프로젝트 필터">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">적용 프로젝트 · 전체</SelectItem>
-              <SelectItem value="NONE">적용 프로젝트 · 미연결</SelectItem>
-              {projectOptions.map((p) => (
-                <SelectItem key={p} value={p}>
-                  적용 프로젝트 · {p}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+        <Select
+          value={projectFilter}
+          onValueChange={(v) => setProjectFilter(v ?? 'ALL')}
+          items={projectItems}
+        >
+          <SelectTrigger className="h-9 min-w-64" aria-label="적용 프로젝트 필터">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">적용 프로젝트 · 전체</SelectItem>
+            <SelectItem value="NONE">적용 프로젝트 · 미연결</SelectItem>
+            {projectOptions.map((p) => (
+              <SelectItem key={p} value={p}>
+                적용 프로젝트 · {p}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
 
-          <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)} items={SORT_ITEMS}>
-            <SelectTrigger className="ml-auto h-9 min-w-36" aria-label="정렬">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SORT_OPTIONS.map((o) => (
-                <SelectItem key={o.value} value={o.value}>
-                  정렬 · {o.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </TableToolbar>
+        <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)} items={SORT_ITEMS}>
+          <SelectTrigger className="ml-auto h-9 min-w-36" aria-label="정렬">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {SORT_OPTIONS.map((o) => (
+              <SelectItem key={o.value} value={o.value}>
+                정렬 · {o.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-        <Table>
+      <TableFrame>
+        <Table className="border-0 bg-transparent rounded-none">
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>교안명</TableHead>
@@ -326,8 +326,11 @@ export default function CurriculumListScreen() {
             ))}
           </TableBody>
         </Table>
+      </TableFrame>
 
-        <TableFooter range={`${rows.length}개 중 1–${rows.length}`}>
+      <div className="mt-3 grid grid-cols-3 items-center">
+        <p className="text-fg-subtle text-xs">{`${rows.length}개 중 1–${rows.length}`}</p>
+        <div className="flex justify-center">
           <Pagination className="mx-0 w-auto">
             <PaginationContent>
               <PaginationItem>
@@ -337,8 +340,9 @@ export default function CurriculumListScreen() {
               </PaginationItem>
             </PaginationContent>
           </Pagination>
-        </TableFooter>
-      </TableFrame>
+        </div>
+        <div />
+      </div>
     </ManagerShell>
   )
 }

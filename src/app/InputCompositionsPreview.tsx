@@ -211,7 +211,7 @@ export default function InputCompositionsPreview() {
           {/*
             비밀번호는 표시 토글이 붙는다. 가려진 값은 오타를 확인할 방법이 없어서,
             토글이 없으면 틀린 줄 모르고 계속 다시 친다.
-            Caps Lock 경고는 features/auth/components/PasswordField.tsx에 이미 있다.
+            Caps Lock 경고는 features/auth/useCapsLockWarning.ts에 이미 있다.
           */}
           <Field>
             <FieldLabel htmlFor="c-pw">비밀번호 · password</FieldLabel>

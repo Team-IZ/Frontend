@@ -33,3 +33,6 @@ dist-ssr
 # 스크린샷·브라우저 도구 산출물 (루트 오염 방지)
 /*.png
 .playwright-mcp/
+
+# 세션 간 인수인계 메모 (로컬 전용, 공유 안 함)
+docs/dev/handoff.md

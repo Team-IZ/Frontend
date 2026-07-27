@@ -30,7 +30,7 @@
   .grp:first-child{margin-top:4px}
   .grp .gt{display:flex;align-items:center;gap:7px;padding:6px 8px;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8b93a8}
   .grp .gt .dot{width:7px;height:7px;border-radius:50%}
-  .dot.super{background:#8b93a8}.dot.manager{background:#7f8ef0}.dot.lead{background:var(--warn)}.dot.trainee{background:var(--info)}.dot.shared{background:#7d8497}
+  .dot.super{background:#8b93a8}.dot.manager{background:#7f8ef0}.dot.lead{background:var(--warn)}.dot.trainee{background:var(--info)}.dot.shared{background:#7d8497}.dot.doc{background:#6f9e7a}
   .item{display:block;width:100%;text-align:left;background:none;border:0;color:var(--navtext);font-family:inherit;font-size:13px;padding:8px 10px;border-radius:8px;cursor:pointer;line-height:1.35}
   .item:hover{background:var(--nav2);color:#fff}
   .item.on{background:var(--primary);color:#fff;font-weight:600}
@@ -68,6 +68,11 @@
       <div class="sub">권한 순: 슈퍼어드민 › 총괄 › 담당 › 교육생.<br>총괄 = 매니저 전부 + 운영 관리 하나 더.</div>
     </div>
     <nav class="list" id="list">
+      <div class="grp">
+        <div class="gt"><span class="dot doc"></span>기획 문서 · 화면 아님</div>
+        <button class="item" data-src="planning/foundation.html" data-nm="이해도 측정 방법론">이해도 측정 방법론<span class="pth">planning/foundation.html</span></button>
+        <button class="item" data-src="planning/answers.html" data-nm="나머지 결정들">나머지 결정들<span class="pth">planning/answers.html</span></button>
+      </div>
       <div class="grp">
         <div class="gt"><span class="dot shared"></span>shared</div>
         <button class="item" data-src="shared/login.html" data-nm="로그인">로그인<span class="pth">shared/login.html</span></button>

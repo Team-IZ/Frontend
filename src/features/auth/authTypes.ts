@@ -5,6 +5,9 @@
 
 export type Role = 'SUPERADMIN' | 'MANAGER' | 'TRAINEE'
 
+/** SC-A01/A02 상태 알림 색 — @/components/ui/Alert의 variant 어휘와 맞춘다 */
+export type AlertVariant = 'danger' | 'warning' | 'info'
+
 /** POST /auth/login 요청 */
 export interface LoginRequest {
   email: string

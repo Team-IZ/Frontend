@@ -1,18 +1,27 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate, Navigate, Link } from 'react-router'
+import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { useAuth } from './AuthContext'
 import { login, resendVerification } from './authApi'
 import { resolveAuthState } from './authStates'
 import type { AuthState } from './authStates'
 import type { ApiError } from './authTypes'
+import { useCapsLockWarning } from './useCapsLockWarning'
 import BrandPanel from './components/BrandPanel'
 import AuthForm from './components/AuthForm'
-import InlineAlert from './components/InlineAlert'
-import TextField from './components/TextField'
-import PasswordField from './components/PasswordField'
-import PrimaryButton from './components/PrimaryButton'
 import TextLink from './components/TextLink'
+import { Alert } from '@/components/ui/Alert'
+import { Field, FieldLabel, FieldError } from '@/components/ui/Field'
+import { Input } from '@/components/ui/Input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/ui/InputGroup'
+import { Kbd } from '@/components/ui/Kbd'
+import { Button } from '@/components/ui/Button'
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -32,6 +41,8 @@ export default function Login() {
   const { session, signIn } = useAuth()
   const [alert, setAlert] = useState<AuthState | null>(null)
   const [resendDone, setResendDone] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const passwordCaps = useCapsLockWarning()
 
   const {
     register,
@@ -41,6 +52,7 @@ export default function Login() {
   } = useForm<LoginFormValues>({ defaultValues: { email: '', password: '' } })
 
   const email = watch('email')
+  const passwordField = register('password', { required: '비밀번호를 입력해주세요.' })
 
   // 잠금은 계정별 상태 — 이메일이 바뀌면 이전 계정의 잠금 알림을 유지하지 않는다
   useEffect(() => {
@@ -79,11 +91,11 @@ export default function Login() {
         <BrandPanel />
 
         <AuthForm title="로그인" subtitle="계정 정보를 입력하세요.">
-          {/* noValidate: 브라우저 기본 검증 대신 RHF/InlineAlert로 상태를 일원화 (§3) */}
+          {/* noValidate: 브라우저 기본 검증 대신 RHF/Alert로 상태를 일원화 (§3) */}
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-            {/* InlineAlert 슬롯 — 서버발 상태 발생 시에만 노출 (§3) */}
+            {/* Alert 슬롯 — 서버발 상태 발생 시에만 노출 (§3) */}
             {alert && (
-              <InlineAlert variant={alert.variant}>
+              <Alert variant={alert.variant}>
                 {alert.message}
                 {alert.showResend && (
                   <span className="ml-2">
@@ -94,38 +106,69 @@ export default function Login() {
                     )}
                   </span>
                 )}
-              </InlineAlert>
+              </Alert>
             )}
 
-            <TextField
-              label="이메일"
-              type="email"
-              placeholder="manager@org.com"
-              autoComplete="username"
-              disabled={isSubmitting}
-              error={errors.email?.message}
-              {...register('email', {
-                required: '이메일을 입력해주세요.',
-                pattern: { value: EMAIL_PATTERN, message: '올바른 이메일 형식이 아닙니다.' },
-              })}
-            />
+            <Field data-invalid={!!errors.email}>
+              <FieldLabel htmlFor="login-email">이메일</FieldLabel>
+              <Input
+                id="login-email"
+                type="email"
+                placeholder="manager@org.com"
+                autoComplete="username"
+                disabled={isSubmitting}
+                aria-invalid={!!errors.email}
+                {...register('email', {
+                  required: '이메일을 입력해주세요.',
+                  pattern: { value: EMAIL_PATTERN, message: '올바른 이메일 형식이 아닙니다.' },
+                })}
+              />
+              <FieldError>{errors.email?.message}</FieldError>
+            </Field>
 
-            <PasswordField
-              label="비밀번호"
-              placeholder="••••••••"
-              disabled={isSubmitting}
-              error={errors.password?.message}
-              {...register('password', { required: '비밀번호를 입력해주세요.' })}
-            />
+            <Field data-invalid={!!errors.password}>
+              <FieldLabel htmlFor="login-password">비밀번호</FieldLabel>
+              <InputGroup>
+                <InputGroupInput
+                  id="login-password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  disabled={isSubmitting}
+                  aria-invalid={!!errors.password}
+                  {...passwordField}
+                  onKeyDown={passwordCaps.onKeyDown}
+                  onKeyUp={passwordCaps.onKeyUp}
+                  onBlur={(event) => {
+                    passwordCaps.onBlur(event)
+                    passwordField.onBlur(event)
+                  }}
+                />
+                <InputGroupAddon align="inline-end">
+                  <InputGroupButton
+                    size="icon-xs"
+                    aria-label={showPassword ? '비밀번호 숨기기' : '비밀번호 표시'}
+                    aria-pressed={showPassword}
+                    disabled={isSubmitting}
+                    onClick={() => setShowPassword((v) => !v)}
+                  >
+                    {showPassword ? <EyeOffIcon /> : <EyeIcon />}
+                  </InputGroupButton>
+                </InputGroupAddon>
+              </InputGroup>
+              {/* role=status — 값이 가려진 필드라 화면을 못 보는 사용자에게도 읽혀야 한다 */}
+              {passwordCaps.capsLock && (
+                <p role="status" className="text-warning flex items-center gap-1.5 text-xs">
+                  <Kbd>⇪ Caps Lock</Kbd> 켜짐 — 대문자로 입력됩니다.
+                </p>
+              )}
+              <FieldError>{errors.password?.message}</FieldError>
+            </Field>
 
             <div className="pt-1">
-              <PrimaryButton
-                loading={isSubmitting}
-                loadingText="로그인 중…"
-                disabled={alert?.blockSubmit}
-              >
-                로그인
-              </PrimaryButton>
+              <Button type="submit" size="lg" disabled={isSubmitting || alert?.blockSubmit}>
+                {isSubmitting ? '로그인 중…' : '로그인'}
+              </Button>
             </div>
           </form>
 

@@ -262,8 +262,15 @@ export default function CurriculumListScreen() {
             {rows.map((c) => (
               <TableRow key={c.id}>
                 <TableCell className="whitespace-normal">
-                  <p className="text-fg font-bold">
-                    {c.name}
+                  <p className="font-bold">
+                    {/* 교안명 클릭 = 상세 진입(SC-M12 §7 "목록 행 클릭 → 진입"). 상세는
+                        모든 추출 상태를 처리하므로 EXTRACTED가 아니어도 링크한다. */}
+                    <Link
+                      to={`/manager/curriculum/${c.id}`}
+                      className="text-fg hover:text-primary hover:underline"
+                    >
+                      {c.name}
+                    </Link>
                     {c.isNew && (
                       <Badge variant="info" className="ml-1.5 align-middle">
                         방금 등록
@@ -298,7 +305,12 @@ export default function CurriculumListScreen() {
                   {isLead && (
                     <div className="flex items-center justify-end gap-1.5">
                       {c.extractionStatus === 'EXTRACTED' && (
-                        <Button variant="ghost" size="sm">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          nativeButton={false}
+                          render={<Link to={`/manager/curriculum/${c.id}`} />}
+                        >
                           주제 확인 →
                         </Button>
                       )}

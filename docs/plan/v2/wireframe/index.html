@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IZ-Get v2 · 와이어프레임</title>
+<style>
+  :root{
+    --bg:#f4f5f7; --surface:#fff; --border:#e2e5ea; --border2:#cfd4dc;
+    --text:#181b20; --text2:#5a616b; --text3:#8b929c;
+    --primary:#3a4db8; --primary-soft:#eef0fb;
+    --nav:#1b2030; --nav2:#262d40; --navtext:#aeb4c6;
+    --warn:#d9a441; --info:#5b8fd0; --ok:#5bbd8c;
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased;overflow:hidden}
+  .app{display:flex;height:100vh}
+
+  .side{width:280px;flex:0 0 280px;background:var(--nav);color:var(--navtext);display:flex;flex-direction:column;overflow:hidden}
+  .side .head{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,.07)}
+  .side .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px;color:#fff;margin-bottom:6px}
+  .side .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .side .brand .v{font-size:10px;font-weight:700;color:var(--nav);background:var(--ok);border-radius:20px;padding:1px 7px;margin-left:2px}
+  .side .head .sub{font-size:11px;color:#7d8497;line-height:1.55}
+  .side .head .prog{margin-top:9px;font-size:10px;color:#8b93a8;display:flex;align-items:center;gap:7px}
+  .side .head .prog .bar{flex:1;height:4px;border-radius:3px;background:#2c3346;overflow:hidden}
+  .side .head .prog .bar i{display:block;height:100%;background:var(--ok);width:8%}
+  .side .head .expandall{margin-top:9px;width:100%;background:none;border:1px solid #3a4258;color:#8b93a8;font-family:inherit;font-size:11px;font-weight:600;padding:6px 8px;border-radius:6px;cursor:pointer}
+  .side .head .expandall:hover{color:#fff;border-color:#5c6377}
+  .side .list{flex:1;overflow-y:auto;padding:10px 10px 24px}
+
+  .grp{margin-top:14px}
+  .grp:first-child{margin-top:4px}
+  .grp .gt{display:flex;align-items:center;gap:7px;padding:6px 8px;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#8b93a8}
+  .grp .gt .dot{width:7px;height:7px;border-radius:50%}
+  .dot.shared{background:#7d8497}.dot.super{background:#8b93a8}.dot.op{background:var(--warn)}.dot.mgr{background:#7f8ef0}.dot.tr{background:var(--info)}
+
+  .item{display:block;width:100%;text-align:left;background:none;border:0;color:var(--navtext);font-family:inherit;font-size:13px;padding:8px 10px;border-radius:8px;cursor:pointer;line-height:1.35}
+  .item:hover{background:var(--nav2);color:#fff}
+  .item.on{background:var(--primary);color:#fff;font-weight:600}
+  .item .code{font-size:9px;font-weight:700;color:#6c7488;font-family:var(--mono);margin-right:6px}
+  .item.on .code{color:rgba(255,255,255,.7)}
+
+  .item.parent{display:flex;align-items:center;font-weight:600;color:#cdd2df}
+  .item.parent .cev{margin-left:auto;font-size:10px;color:#8b93a8;transition:transform .15s}
+  .grp.open > .item.parent .cev,.subgrp.open > .item.parent .cev{transform:rotate(90deg)}
+  .subgrp.open > .item.parent{color:#fff}
+  .subwrap{display:none;margin:3px 0 4px 16px;border-left:1px solid #3a4258}
+  .subgrp.open > .subwrap{display:block}
+  .item.sub{padding-left:16px;font-size:12px;position:relative}
+  .item.sub::before{content:"";position:absolute;left:0;top:15px;width:9px;height:1px;background:#3a4258}
+
+  .item.todo{color:#5c6377;cursor:default}
+  .item.todo:hover{background:none;color:#5c6377}
+  .item.todo::after{content:"미작업";float:right;font-size:9px;color:#4e5568;font-weight:600}
+  .step{font-size:9px;font-weight:700;color:var(--warn);margin-left:6px}
+
+  .main{flex:1;display:flex;flex-direction:column;min-width:0;background:var(--bg)}
+  .bar{height:48px;flex:0 0 48px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:0 16px}
+  .bar .nm{font-weight:700;font-size:14px}
+  .bar .pth{font-size:11px;color:var(--text3);font-family:var(--mono)}
+  .bar .sp{flex:1}
+  .bar a{font-size:12px;color:var(--primary);text-decoration:none;border:1px solid var(--border2);border-radius:8px;padding:5px 11px;font-weight:600}
+  .bar a:hover{background:var(--primary-soft)}
+  .bar a.def{color:var(--text2)}
+  iframe{flex:1;width:100%;border:0;background:var(--bg)}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side">
+    <div class="head">
+      <div class="brand"><span class="mk">◆</span>IZ-Get 화면정의<span class="v">v2</span></div>
+      <div class="sub">계층 4 · 화면 25.<br>오퍼레이터와 매니저는 나브가 다르다 — 상하 관계가 아니다.</div>
+      <div class="prog"><span>진행</span><span class="bar"><i></i></span><span id="progtx">2 / 25</span></div>
+      <button class="expandall" id="expandall" data-state="collapsed">전체 펼치기</button>
+    </div>
+    <nav class="list" id="list">
+
+      <div class="grp">
+        <div class="gt"><span class="dot shared"></span>공통 · 비로그인</div>
+        <div class="subgrp" id="g-au01">
+          <button class="item parent" data-toggle="g-au01"><span class="code">AU-01</span>로그인<span class="step">10단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="shared/login.html#default" data-nm="AU-01 · 로그인" data-def="AU-01-login">기본</button>
+            <button class="item sub" data-src="shared/login.html#bad" data-nm="AU-01 · 자격 불일치" data-def="AU-01-login">자격 불일치</button>
+            <button class="item sub" data-src="shared/login.html#inactive" data-nm="AU-01 · 미활성 계정" data-def="AU-01-login">미활성 계정</button>
+            <button class="item sub" data-src="shared/login.html#suspended" data-nm="AU-01 · 정지된 계정" data-def="AU-01-login">정지된 계정</button>
+            <button class="item sub" data-src="shared/login.html#throttled" data-nm="AU-01 · 연속 실패 지연" data-def="AU-01-login">연속 실패 지연</button>
+          </div>
+        </div>
+
+        <div class="subgrp" id="g-au02">
+          <button class="item parent" data-toggle="g-au02"><span class="code">AU-02</span>회원가입 · 활성화<span class="step">10단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="shared/signup-activation.html#signup" data-nm="AU-02 · 변형 A · 회원가입" data-def="AU-02-signup-activation">변형 A · 회원가입</button>
+            <button class="item sub" data-src="shared/signup-activation.html#activate" data-nm="AU-02 · 변형 B · 계정 활성화" data-def="AU-02-signup-activation">변형 B · 계정 활성화</button>
+            <button class="item sub" data-src="shared/signup-activation.html#consent" data-nm="AU-02 · 필수 미동의" data-def="AU-02-signup-activation">필수 미동의</button>
+            <button class="item sub" data-src="shared/signup-activation.html#policy" data-nm="AU-02 · 비밀번호 정책 미충족" data-def="AU-02-signup-activation">비밀번호 정책 미충족</button>
+            <button class="item sub" data-src="shared/signup-activation.html#expired" data-nm="AU-02 · 초대 토큰 만료" data-def="AU-02-signup-activation">초대 토큰 만료</button>
+            <button class="item sub" data-src="shared/signup-activation.html#invalid" data-nm="AU-02 · 토큰 재사용 · 위변조" data-def="AU-02-signup-activation">토큰 재사용 · 위변조</button>
+            <button class="item sub" data-src="shared/signup-activation.html#already" data-nm="AU-02 · 이미 활성화됨" data-def="AU-02-signup-activation">이미 활성화됨</button>
+            <button class="item sub" data-src="shared/signup-activation.html#notlisted" data-nm="AU-02 · 명단 외 이메일" data-def="AU-02-signup-activation">명단 외 이메일</button>
+            <button class="item sub" data-src="shared/signup-activation.html#failed" data-nm="AU-02 · 저장 실패" data-def="AU-02-signup-activation">저장 실패</button>
+          </div>
+        </div>
+
+        <div class="subgrp" id="g-au03">
+          <button class="item parent" data-toggle="g-au03"><span class="code">AU-03</span>비밀번호 재설정<span class="step">10단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="shared/password-reset.html#request" data-nm="AU-03 · ① 요청" data-def="AU-03-password-reset">① 요청</button>
+            <button class="item sub" data-src="shared/password-reset.html#sent" data-nm="AU-03 · 요청 후 동일 안내" data-def="AU-03-password-reset">요청 후 동일 안내</button>
+            <button class="item sub" data-src="shared/password-reset.html#set" data-nm="AU-03 · ② 설정" data-def="AU-03-password-reset">② 설정</button>
+            <button class="item sub" data-src="shared/password-reset.html#policy" data-nm="AU-03 · 정책 미충족" data-def="AU-03-password-reset">정책 미충족</button>
+            <button class="item sub" data-src="shared/password-reset.html#expired" data-nm="AU-03 · 링크 만료" data-def="AU-03-password-reset">링크 만료</button>
+            <button class="item sub" data-src="shared/password-reset.html#inactive" data-nm="AU-03 · 미활성 → 활성화 안내" data-def="AU-03-password-reset">미활성 → 활성화 안내</button>
+            <button class="item sub" data-src="shared/password-reset.html#done" data-nm="AU-03 · 변경 완료" data-def="AU-03-password-reset">변경 완료</button>
+            <button class="item sub" data-src="shared/password-reset.html#failed" data-nm="AU-03 · 저장 실패" data-def="AU-03-password-reset">저장 실패</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="gt"><span class="dot super"></span>슈퍼어드민</div>
+        <div class="subgrp" id="g-sa01">
+          <button class="item parent" data-toggle="g-sa01"><span class="code">SA-01</span>기관 목록<span class="step">9단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="superadmin/console.html#list" data-nm="SA-01 · 기관 목록" data-def="SA-01-org-list">목록</button>
+            <button class="item sub" data-src="superadmin/console.html#create" data-nm="SA-01 · 기관 생성 모달" data-def="SA-01-org-list">기관 생성 모달</button>
+            <button class="item sub" data-src="superadmin/console.html#empty" data-nm="SA-01 · 기관 0" data-def="SA-01-org-list">기관 0</button>
+          </div>
+        </div>
+
+        <div class="subgrp" id="g-sa02">
+          <button class="item parent" data-toggle="g-sa02"><span class="code">SA-02</span>기관 상세<span class="step">9단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="superadmin/console.html#overview" data-nm="SA-02 · ① 개요" data-def="SA-02-org-detail">① 개요</button>
+            <button class="item sub" data-src="superadmin/console.html#noop" data-nm="SA-02 · 오퍼레이터 0" data-def="SA-02-org-detail">오퍼레이터 0</button>
+            <button class="item sub" data-src="superadmin/console.html#operators" data-nm="SA-02 · ② 오퍼레이터" data-def="SA-02-org-detail">② 오퍼레이터</button>
+            <button class="item sub" data-src="superadmin/console.html#invite" data-nm="SA-02 · 초대 모달" data-def="SA-02-org-detail">초대 모달</button>
+            <button class="item sub" data-src="superadmin/console.html#mailfail" data-nm="SA-02 · 초대 메일 실패" data-def="SA-02-org-detail">초대 메일 실패</button>
+            <button class="item sub" data-src="superadmin/console.html#lastblock" data-nm="SA-02 · 마지막 오퍼레이터 정지 차단" data-def="SA-02-org-detail">마지막 1인 정지 차단</button>
+            <button class="item sub" data-src="superadmin/console.html#usage" data-nm="SA-02 · ③ 사용량 · AI 비용" data-def="SA-02-org-detail">③ 사용량 · 비용</button>
+            <button class="item sub" data-src="superadmin/console.html#settings" data-nm="SA-02 · ④ 설정" data-def="SA-02-org-detail">④ 설정</button>
+          </div>
+        </div>
+
+        <div class="subgrp" id="g-sa03">
+          <button class="item parent" data-toggle="g-sa03"><span class="code">SA-03</span>플랫폼 설정<span class="step">9단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="superadmin/console.html#model" data-nm="SA-03 · 모델 · 단가" data-def="SA-03-platform-settings">모델 · 단가</button>
+            <button class="item sub" data-src="superadmin/console.html#modelchange" data-nm="SA-03 · 채점 모델 변경 확인" data-def="SA-03-platform-settings">채점 모델 변경 확인</button>
+            <button class="item sub" data-src="superadmin/console.html#nopricing" data-nm="SA-03 · 단가 미입력" data-def="SA-03-platform-settings">단가 미입력</button>
+            <button class="item sub" data-src="superadmin/console.html#accounts" data-nm="SA-03 · 슈퍼어드민 계정" data-def="SA-03-platform-settings">슈퍼어드민 계정</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="gt"><span class="dot op"></span>오퍼레이터</div>
+        <div class="subgrp open" id="g-op01">
+          <button class="item parent" data-toggle="g-op01"><span class="code">OP-01</span>대시보드 · 지표판<span class="step">7단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="operator/dashboard.html#dash" data-nm="OP-01 · ① 기본 (시작)" data-def="OP-01-dashboard">① 기본 (시작)</button>
+            <button class="item sub" data-src="operator/dashboard.html#ok" data-nm="OP-01 · ② 조치 필요 0" data-def="OP-01-dashboard">② 조치 필요 0</button>
+            <button class="item sub" data-src="operator/dashboard.html#pre" data-nm="OP-01 · ③ 회차 진행 전" data-def="OP-01-dashboard">③ 회차 진행 전</button>
+            <button class="item sub" data-src="operator/dashboard.html#multi" data-nm="OP-01 · ④ 집단 미달 다건" data-def="OP-01-dashboard">④ 집단 미달 다건</button>
+            <button class="item sub" data-src="operator/dashboard.html#assign" data-nm="OP-01 · ⑤ 미배정" data-def="OP-01-dashboard">⑤ 미배정</button>
+            <button class="item sub" data-src="operator/dashboard.html#partial" data-nm="OP-01 · ⑥ 부분 실패" data-def="OP-01-dashboard">⑥ 부분 실패</button>
+          </div>
+        </div>
+        <button class="item todo"><span class="code">OP-02</span>분석</button>
+
+        <div class="subgrp" id="g-op03">
+          <button class="item parent" data-toggle="g-op03"><span class="code">OP-03</span>프로젝트 목록<span class="step">1단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="operator/projects.html#list" data-nm="OP-03 · 프로젝트 목록" data-def="OP-03-project-list">목록</button>
+            <button class="item sub" data-src="operator/projects.html#create" data-nm="OP-03 · 프로젝트 생성 모달" data-def="OP-03-project-list">생성 모달</button>
+          </div>
+        </div>
+
+        <div class="subgrp" id="g-op04">
+          <button class="item parent" data-toggle="g-op04"><span class="code">OP-04</span>프로젝트 상세<span class="step">1단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="operator/projects.html#config" data-nm="OP-04 · 상세 › 구성" data-def="OP-04-project-detail">구성</button>
+            <button class="item sub" data-src="operator/projects.html#schedule" data-nm="OP-04 · 상세 › 일정" data-def="OP-04-project-detail">일정</button>
+            <button class="item sub" data-src="operator/projects.html#status" data-nm="OP-04 · 상세 › 현황" data-def="OP-04-project-detail">현황 · 개념 공백</button>
+            <button class="item sub" data-src="operator/projects.html#draft" data-nm="OP-04 · 개념 미확정" data-def="OP-04-project-detail">개념 미확정 · 탭 잠김</button>
+          </div>
+        </div>
+
+        <button class="item todo"><span class="code">OP-05</span>리포트</button>
+        <div class="subgrp" id="g-op06">
+          <button class="item parent" data-toggle="g-op06"><span class="code">OP-06</span>운영 관리<span class="step">9단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="operator/admin.html#cohort" data-nm="OP-06 · ① 기수" data-def="OP-06-admin">① 기수</button>
+            <button class="item sub" data-src="operator/admin.html#cohort-create" data-nm="OP-06 · 기수 생성 모달" data-def="OP-06-admin">기수 생성 모달</button>
+            <button class="item sub" data-src="operator/admin.html#empty" data-nm="OP-06 · 기수 0" data-def="OP-06-admin">기수 0</button>
+            <button class="item sub" data-src="operator/admin.html#classes" data-nm="OP-06 · ② 반 · 명단" data-def="OP-06-admin">② 반 · 명단</button>
+            <button class="item sub" data-src="operator/admin.html#class-add" data-nm="OP-06 · 반 추가 모달" data-def="OP-06-admin">반 추가 모달</button>
+            <button class="item sub" data-src="operator/admin.html#roster-add" data-nm="OP-06 · 명단 추가 · CSV" data-def="OP-06-admin">명단 추가 · CSV</button>
+            <button class="item sub" data-src="operator/admin.html#roster-manual" data-nm="OP-06 · 명단 추가 · 직접 입력" data-def="OP-06-admin">명단 추가 · 직접 입력</button>
+            <button class="item sub" data-src="operator/admin.html#bulk" data-nm="OP-06 · 벌크 선택" data-def="OP-06-admin">벌크 선택</button>
+            <button class="item sub" data-src="operator/admin.html#assign-idle" data-nm="OP-06 · 반 배정 ① 진입 (0명 선택)" data-def="OP-06-admin">배정 ① 진입 · 0명</button>
+            <button class="item sub" data-src="operator/admin.html#assign" data-nm="OP-06 · 반 배정 ② 선택 상태" data-def="OP-06-admin">배정 ② 선택</button>
+            <button class="item sub" data-src="operator/admin.html#assign-done" data-nm="OP-06 · 반 배정 ③ 되돌리기" data-def="OP-06-admin">배정 ③ 되돌리기</button>
+            <button class="item sub" data-src="operator/admin.html#assign-empty" data-nm="OP-06 · 반 배정 ④ 미배정 0" data-def="OP-06-admin">배정 ④ 미배정 0</button>
+            <button class="item sub" data-src="operator/admin.html#managers" data-nm="OP-06 · ③ 매니저" data-def="OP-06-admin">③ 매니저</button>
+            <button class="item sub" data-src="operator/admin.html#mgr-invite" data-nm="OP-06 · 매니저 초대 모달" data-def="OP-06-admin">매니저 초대 모달</button>
+            <button class="item sub" data-src="operator/admin.html#curriculum" data-nm="OP-06 · ④ 교안 목록" data-def="OP-06-admin">④ 교안 목록</button>
+            <button class="item sub" data-src="operator/admin.html#cur-detail" data-nm="OP-06 · 교안 › 섹션 (가르친 항목)" data-def="OP-06-admin">교안 › 섹션</button>
+            <button class="item sub" data-src="operator/admin.html#cur-nocode" data-nm="OP-06 · 교안 › 다른 섹션" data-def="OP-06-admin">교안 › 다른 섹션</button>
+            <button class="item sub" data-src="operator/admin.html#cur-used" data-nm="OP-06 · 교안 › 연결된 프로젝트" data-def="OP-06-admin">교안 › 연결된 프로젝트</button>
+            <button class="item sub" data-src="operator/admin.html#cur-reanalyze" data-nm="OP-06 · 다시 분석 확인" data-def="OP-06-admin">다시 분석 확인</button>
+            <button class="item sub" data-src="operator/admin.html#cur-fail" data-nm="OP-06 · 교안 분석 실패" data-def="OP-06-admin">교안 분석 실패</button>
+            <button class="item sub" data-src="operator/admin.html#cost" data-nm="OP-06 · ⑤ 비용" data-def="OP-06-admin">⑤ 비용</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grp">
+        <div class="gt"><span class="dot mgr"></span>매니저</div>
+        <div class="subgrp open" id="g-mg01">
+          <button class="item parent" data-toggle="g-mg01"><span class="code">MG-01</span>대시보드 · 인박스<span class="step">7단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/dashboard.html#inbox" data-nm="MG-01 · ① 기본 (시작)" data-def="MG-01-dashboard">① 기본 (시작)</button>
+            <button class="item sub" data-src="manager/dashboard.html#done" data-nm="MG-01 · ② 처리됨 펼침" data-def="MG-01-dashboard">② 처리됨 펼침</button>
+            <button class="item sub" data-src="manager/dashboard.html#sent" data-nm="MG-01 · ③ 독촉 발송 직후" data-def="MG-01-dashboard">③ 독촉 발송 직후</button>
+            <button class="item sub" data-src="manager/dashboard.html#all" data-nm="MG-01 · ④ 전체 (필터 끔)" data-def="MG-01-dashboard">④ 전체</button>
+            <button class="item sub" data-src="manager/dashboard.html#clear" data-nm="MG-01 · ⑤ 할 일 없음" data-def="MG-01-dashboard">⑤ 할 일 없음</button>
+            <button class="item sub" data-src="manager/dashboard.html#noproject" data-nm="MG-01 · ⑥ 프로젝트 없음" data-def="MG-01-dashboard">⑥ 프로젝트 없음</button>
+            <button class="item sub" data-src="manager/dashboard.html#partial" data-nm="MG-01 · ⑦ 부분 실패" data-def="MG-01-dashboard">⑦ 부분 실패</button>
+          </div>
+        </div>
+        <div class="subgrp" id="g-mg02">
+          <button class="item parent" data-toggle="g-mg02"><span class="code">MG-02</span>히트맵<span class="step">5단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/heatmap.html#class" data-nm="MG-02 · ① 반별 (시작)" data-def="MG-02-heatmap">① 반별 (시작)</button>
+            <button class="item sub" data-src="manager/heatmap.html#team" data-nm="MG-02 · ② 팀" data-def="MG-02-heatmap">② 팀</button>
+            <button class="item sub" data-src="manager/heatmap.html#person" data-nm="MG-02 · ③ 개인" data-def="MG-02-heatmap">③ 개인</button>
+            <button class="item sub" data-src="manager/heatmap.html#retried" data-nm="MG-02 · ④ 다시 보기" data-def="MG-02-heatmap">④ 다시 보기</button>
+            <button class="item sub" data-src="manager/heatmap.html#empty" data-nm="MG-02 · 회차 결과 없음" data-def="MG-02-heatmap">회차 결과 없음</button>
+          </div>
+        </div>
+
+        <div class="subgrp" id="g-mg03">
+          <button class="item parent" data-toggle="g-mg03"><span class="code">MG-03</span>면담 목록<span class="step">6단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/interviews.html#list" data-nm="MG-03 · ① 기본 (시작)" data-def="MG-03-interview-list">① 기본 (시작)</button>
+            <button class="item sub" data-src="manager/interviews.html#done" data-nm="MG-03 · ② 종결만" data-def="MG-03-interview-list">② 종결만</button>
+            <button class="item sub" data-src="manager/interviews.html#void" data-nm="MG-03 · ③ 무효 응시 확인" data-def="MG-03-interview-list">③ 무효 응시 확인</button>
+            <button class="item sub" data-src="manager/interviews.html#exclude" data-nm="MG-03 · ④ 제외" data-def="MG-03-interview-list">④ 제외</button>
+            <button class="item sub" data-src="manager/interviews.html#past" data-nm="MG-03 · ⑤ 지난 회차" data-def="MG-03-interview-list">⑤ 지난 회차</button>
+            <button class="item sub" data-src="manager/interviews.html#empty" data-nm="MG-03 · ⑥ 대상 없음" data-def="MG-03-interview-list">⑥ 대상 없음</button>
+            <button class="item sub" data-src="manager/interviews.html#pending" data-nm="MG-03 · ⑦ 결과 없음" data-def="MG-03-interview-list">⑦ 결과 없음</button>
+            <button class="item sub" data-src="manager/interviews.html#first" data-nm="MG-03 · ⑧ 미프 1차 (유형 없음)" data-def="MG-03-interview-list">⑧ 미프 1차</button>
+          </div>
+        </div>
+        <div class="subgrp" id="g-mg04">
+          <button class="item parent" data-toggle="g-mg04"><span class="code">MG-04</span>면담 브리프 · 모드<span class="step">6단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/interview-brief.html#brief" data-nm="MG-04 · ① 기본 (시작)" data-def="MG-04-interview-brief">① 기본 (시작)</button>
+            <button class="item sub" data-src="manager/interview-brief.html#one" data-nm="MG-04 · ② 하나 고르면" data-def="MG-04-interview-brief">② 하나 고르면</button>
+            <button class="item sub" data-src="manager/interview-brief.html#multi" data-nm="MG-04 · ③ 여러 개 고르면" data-def="MG-04-interview-brief">③ 여러 개 고르면</button>
+            <button class="item sub" data-src="manager/interview-brief.html#group" data-nm="MG-04 · ④ 난이도 상승 (반 문제)" data-def="MG-04-interview-brief">④ 난이도 상승</button>
+            <button class="item sub" data-src="manager/interview-brief.html#first" data-nm="MG-04 · ⑤ 첫 면담" data-def="MG-04-interview-brief">⑤ 첫 면담</button>
+            <button class="item sub" data-src="manager/interview-brief.html#void" data-nm="MG-04 · ⑥ 무효 응시" data-def="MG-04-interview-brief">⑥ 무효 응시</button>
+            <button class="item sub" data-src="manager/interview-brief.html#confirm" data-nm="MG-04 · ⑦ 저장 확인" data-def="MG-04-interview-brief">⑦ 저장 확인</button>
+          </div>
+        </div>
+        <div class="subgrp open" id="g-mg05">
+          <button class="item parent" data-toggle="g-mg05"><span class="code">MG-05</span>교육생 명부<span class="step">8단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/trainees.html#list" data-nm="MG-05 · ① 기본 (시작)" data-def="MG-05-trainee-list">① 기본 (시작)</button>
+            <button class="item sub" data-src="manager/trainees.html#past" data-nm="MG-05 · ② 지난 회차" data-def="MG-05-trainee-list">② 지난 회차</button>
+            <button class="item sub" data-src="manager/trainees.html#top" data-nm="MG-05 · ③ 우수순" data-def="MG-05-trainee-list">③ 우수순</button>
+            <button class="item sub" data-src="manager/trainees.html#risk" data-nm="MG-05 · ④ 위험순" data-def="MG-05-trainee-list">④ 위험순</button>
+            <button class="item sub" data-src="manager/trainees.html#fav" data-nm="MG-05 · ⑤ 즐겨찾기만" data-def="MG-05-trainee-list">⑤ 즐겨찾기만</button>
+            <button class="item sub" data-src="manager/trainees.html#account" data-nm="MG-05 · ⑥ 계정 상태" data-def="MG-05-trainee-list">⑥ 계정 상태</button>
+            <button class="item sub" data-src="manager/trainees.html#noresult" data-nm="MG-05 · ⑦ 검색 결과 없음" data-def="MG-05-trainee-list">⑦ 검색 결과 없음</button>
+            <button class="item sub" data-src="manager/trainees.html#pre" data-nm="MG-05 · ⑧ 회차 결과 전" data-def="MG-05-trainee-list">⑧ 회차 결과 전</button>
+          </div>
+        </div>
+        <div class="subgrp" id="g-mg06">
+          <button class="item parent" data-toggle="g-mg06"><span class="code">MG-06</span>교육생 상세<span class="step">5단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/trainee-detail.html#main" data-nm="MG-06 · ① 전체 (시작)" data-def="MG-06-trainee-detail">① 전체 (시작)</button>
+            <button class="item sub" data-src="manager/trainee-detail.html#session" data-nm="MG-06 · ② 세션만" data-def="MG-06-trainee-detail">② 세션만</button>
+            <button class="item sub" data-src="manager/trainee-detail.html#retry" data-nm="MG-06 · ③ 다시 보기만" data-def="MG-06-trainee-detail">③ 다시 보기만</button>
+            <button class="item sub" data-src="manager/trainee-detail.html#report" data-nm="MG-06 · ④ 리포트만" data-def="MG-06-trainee-detail">④ 리포트만</button>
+            <button class="item sub" data-src="manager/trainee-detail.html#talk" data-nm="MG-06 · ⑤ 면담만" data-def="MG-06-trainee-detail">⑤ 면담만</button>
+            <button class="item sub" data-src="manager/trainee-detail.html#low" data-nm="MG-06 · ⑥ 지속 저점" data-def="MG-06-trainee-detail">⑥ 지속 저점</button>
+            <button class="item sub" data-src="manager/trainee-detail.html#ok" data-nm="MG-06 · ⑦ 위험 없음" data-def="MG-06-trainee-detail">⑦ 위험 없음</button>
+            <button class="item sub" data-src="manager/trainee-detail.html#empty" data-nm="MG-06 · ⑧ 기록 없음" data-def="MG-06-trainee-detail">⑧ 기록 없음</button>
+          </div>
+        </div>
+        <button class="item todo"><span class="code">MG-07</span>프로젝트 목록</button>
+        <div class="subgrp" id="g-mg08">
+          <button class="item parent" data-toggle="g-mg08"><span class="code">MG-08</span>프로젝트 상세<span class="step">4단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/project-detail.html#team-empty" data-nm="MG-08 · 팀 · 편성 전" data-def="MG-08-project-detail">팀 · 편성 전</button>
+            <button class="item sub" data-src="manager/project-detail.html#team-auto" data-nm="MG-08 · 자동 배분 모달" data-def="MG-08-project-detail">자동 배분 모달</button>
+            <button class="item sub" data-src="manager/project-detail.html#team-partial" data-nm="MG-08 · 팀 · 편성 중" data-def="MG-08-project-detail">팀 · 편성 중</button>
+            <button class="item sub" data-src="manager/project-detail.html#team-assign" data-nm="MG-08 · 팀에 넣기" data-def="MG-08-project-detail">팀에 넣기</button>
+            <button class="item sub" data-src="manager/project-detail.html#team-ready" data-nm="MG-08 · 확정 직전" data-def="MG-08-project-detail">확정 직전</button>
+            <button class="item sub" data-src="manager/project-detail.html#team-locked" data-nm="MG-08 · 확정됨 · 제출 전" data-def="MG-08-project-detail">확정됨 · 제출 전</button>
+            <button class="item sub" data-src="manager/project-detail.html#team" data-nm="MG-08 · 제출 시작됨" data-def="MG-08-project-detail">제출 시작됨</button>
+            <button class="item sub" data-src="manager/project-detail.html#team-edit" data-nm="MG-08 · 팀 편집" data-def="MG-08-project-detail">팀 편집</button>
+            <button class="item sub" data-src="manager/project-detail.html#team-add" data-nm="MG-08 · 팀 추가" data-def="MG-08-project-detail">팀 추가</button>
+            <button class="item sub" data-src="manager/project-detail.html#submit" data-nm="MG-08 · 제출 현황" data-def="MG-08-project-detail">제출 현황</button>
+            <button class="item sub" data-src="manager/project-detail.html#req" data-nm="MG-08 · 요구사항 펼침" data-def="MG-08-project-detail">요구사항 펼침</button>
+            <button class="item sub" data-src="manager/project-detail.html#nudge" data-nm="MG-08 · 독촉 보내기" data-def="MG-08-project-detail">독촉 보내기</button>
+            <button class="item sub" data-src="manager/project-detail.html#result-pre" data-nm="MG-08 · 결과 · 발행 전" data-def="MG-08-project-detail">결과 · 발행 전</button>
+            <button class="item sub" data-src="manager/project-detail.html#result-class" data-nm="MG-08 · 결과 · 반 종합" data-def="MG-08-project-detail">결과 · 반 종합</button>
+            <button class="item sub" data-src="manager/project-detail.html#result-person" data-nm="MG-08 · 개인 · A안(점수 없음)" data-def="MG-08-project-detail">개인 · A안 점수 없음</button>
+            <button class="item sub" data-src="manager/project-detail.html#result-person-open" data-nm="MG-08 · 개인 · 근거 펼침" data-def="MG-08-project-detail">개인 · 근거 펼침</button>
+            <button class="item sub" data-src="manager/project-detail.html#result-person-b" data-nm="MG-08 · 개인 · B안(점수 병기)" data-def="MG-08-project-detail">개인 · B안 점수 병기</button>
+            <button class="item sub" data-src="manager/project-detail.html#retry-send" data-nm="MG-08 · 다시 보기 발송" data-def="MG-08-project-detail">다시 보기 발송</button>
+          </div>
+        </div>
+
+        <button class="item todo"><span class="code">MG-09</span>교안 뷰어</button>
+      </div>
+
+      <div class="grp">
+        <div class="gt"><span class="dot tr"></span>교육생</div>
+        <div class="subgrp" id="g-tr01">
+          <button class="item parent" data-toggle="g-tr01"><span class="code">TR-01</span>홈<span class="step">2단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="trainee/home.html#todo" data-nm="TR-01 · 홈 · 미제출" data-def="TR-01-home">미제출</button>
+            <button class="item sub" data-src="trainee/home.html#analyzing" data-nm="TR-01 · 홈 · 분석 중" data-def="TR-01-home">분석 중</button>
+            <button class="item sub" data-src="trainee/home.html#ready" data-nm="TR-01 · 홈 · 응시 가능" data-def="TR-01-home">응시 가능</button>
+            <button class="item sub" data-src="trainee/home.html#done" data-nm="TR-01 · 홈 · 응시 완료" data-def="TR-01-home">응시 완료</button>
+            <button class="item sub" data-src="trainee/home.html#retry" data-nm="TR-01 · 홈 · 다시 보기 대상" data-def="TR-01-home">다시 보기 대상</button>
+            <button class="item sub" data-src="trainee/home.html#failed" data-nm="TR-01 · 홈 · 분석 실패" data-def="TR-01-home">분석 실패</button>
+            <button class="item sub" data-src="trainee/home.html#closed" data-nm="TR-01 · 홈 · 응시 마감" data-def="TR-01-home">응시 마감</button>
+            <button class="item sub" data-src="trainee/home.html#none" data-nm="TR-01 · 홈 · 회차 없음" data-def="TR-01-home">회차 없음</button>
+          </div>
+        </div>
+
+        <div class="subgrp" id="g-tr02">
+          <button class="item parent" data-toggle="g-tr02"><span class="code">TR-02</span>코드 제출<span class="step">2단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="trainee/submission.html#form" data-nm="TR-02 · 제출 · GitHub" data-def="TR-02-submission">GitHub 저장소</button>
+            <button class="item sub" data-src="trainee/submission.html#zip" data-nm="TR-02 · 제출 · ZIP" data-def="TR-02-submission">ZIP 업로드</button>
+            <button class="item sub" data-src="trainee/submission.html#invalid" data-nm="TR-02 · 주소 확인 실패" data-def="TR-02-submission">주소 확인 실패</button>
+            <button class="item sub" data-src="trainee/submission.html#submitted" data-nm="TR-02 · 제출 완료 · 분석 중" data-def="TR-02-submission">제출 완료 · 분석 중</button>
+            <button class="item sub" data-src="trainee/submission.html#resubmit" data-nm="TR-02 · 분석 완료 · 재제출 가능" data-def="TR-02-submission">분석 완료</button>
+            <button class="item sub" data-src="trainee/submission.html#locked" data-nm="TR-02 · 재제출 잠김" data-def="TR-02-submission">재제출 잠김</button>
+            <button class="item sub" data-src="trainee/submission.html#failed" data-nm="TR-02 · 분석 실패" data-def="TR-02-submission">분석 실패</button>
+          </div>
+        </div>
+
+        <div class="subgrp" id="g-tr03">
+          <button class="item parent" data-toggle="g-tr03"><span class="code">TR-03</span>검증 세션 · 모드<span class="step">3단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="trainee/session.html#intro" data-nm="TR-03 · 시작 전 안내" data-def="TR-03-session">시작 전 안내</button>
+            <button class="item sub" data-src="trainee/session.html#ask" data-nm="TR-03 · 문제 시작 · 첫 질문" data-def="TR-03-session">문제 시작 · 첫 질문</button>
+            <button class="item sub" data-src="trainee/session.html#callers" data-nm="TR-03 · 호출부 펼침" data-def="TR-03-session">호출부 펼침</button>
+            <button class="item sub" data-src="trainee/session.html#thread" data-nm="TR-03 · 꼬리질문" data-def="TR-03-session">꼬리질문</button>
+            <button class="item sub" data-src="trainee/session.html#short" data-nm="TR-03 · 짧은 답변 안내" data-def="TR-03-session">짧은 답변 안내</button>
+            <button class="item sub" data-src="trainee/session.html#again" data-nm="TR-03 · 다시 설명 1회" data-def="TR-03-session">다시 설명 1회</button>
+            <button class="item sub" data-src="trainee/session.html#hintgone" data-nm="TR-03 · 다시 설명 소진" data-def="TR-03-session">다시 설명 소진</button>
+            <button class="item sub" data-src="trainee/session.html#waiting" data-nm="TR-03 · 질문 준비 중" data-def="TR-03-session">질문 준비 중</button>
+            <button class="item sub" data-src="trainee/session.html#deeper" data-nm="TR-03 · 세 번째 질문" data-def="TR-03-session">세 번째 질문</button>
+            <button class="item sub" data-src="trainee/session.html#stop" data-nm="TR-03 · 문제 종료" data-def="TR-03-session">문제 종료</button>
+            <button class="item sub" data-src="trainee/session.html#next" data-nm="TR-03 · 다음 문제로" data-def="TR-03-session">다음 문제로</button>
+            <button class="item sub" data-src="trainee/session.html#last" data-nm="TR-03 · 마지막 답변" data-def="TR-03-session">마지막 답변</button>
+            <button class="item sub" data-src="trainee/session.html#away" data-nm="TR-03 · 창 이탈 복귀" data-def="TR-03-session">창 이탈 복귀</button>
+            <button class="item sub" data-src="trainee/session.html#offline" data-nm="TR-03 · 연결 끊김" data-def="TR-03-session">연결 끊김</button>
+            <button class="item sub" data-src="trainee/session.html#end" data-nm="TR-03 · 세션 종료" data-def="TR-03-session">세션 종료</button>
+            <button class="item sub" data-src="trainee/session.html#r-intro" data-nm="TR-03 · 다시 보기 · 안내" data-def="TR-03-session">다시 보기 · 안내</button>
+            <button class="item sub" data-src="trainee/session.html#r-ask" data-nm="TR-03 · 다시 보기 · 막힌 질문" data-def="TR-03-session">다시 보기 · 막힌 질문</button>
+            <button class="item sub" data-src="trainee/session.html#r-pass" data-nm="TR-03 · 다시 보기 · 통과" data-def="TR-03-session">다시 보기 · 통과</button>
+            <button class="item sub" data-src="trainee/session.html#r-end" data-nm="TR-03 · 다시 보기 · 종료" data-def="TR-03-session">다시 보기 · 종료</button>
+          </div>
+        </div>
+
+        <div class="subgrp" id="g-tr04">
+          <button class="item parent" data-toggle="g-tr04"><span class="code">TR-04</span>내 리포트<span class="step">4단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="trainee/report.html#locked" data-nm="TR-04 · 발행 후 · 해설 잠김" data-def="TR-04-my-report">발행 후 · 해설 잠김</button>
+            <button class="item sub" data-src="trainee/report.html#qa" data-nm="TR-04 · 문답 펼침" data-def="TR-04-my-report">문답 펼침</button>
+            <button class="item sub" data-src="trainee/report.html#after" data-nm="TR-04 · 다시 보기 후 · 해설 공개" data-def="TR-04-my-report">다시 보기 후 · 해설 공개</button>
+            <button class="item sub" data-src="trainee/report.html#clear" data-nm="TR-04 · 다시 볼 문제 없음" data-def="TR-04-my-report">다시 볼 문제 없음</button>
+            <button class="item sub" data-src="trainee/report.html#archive" data-nm="TR-04 · 지난 회차" data-def="TR-04-my-report">지난 회차</button>
+            <button class="item sub" data-src="trainee/report.html#pre" data-nm="TR-04 · 발행 전" data-def="TR-04-my-report">발행 전</button>
+            <button class="item sub" data-src="trainee/report.html#missed" data-nm="TR-04 · 미응시" data-def="TR-04-my-report">미응시</button>
+            <button class="item sub" data-src="trainee/report.html#void" data-nm="TR-04 · 무효 응시" data-def="TR-04-my-report">무효 응시</button>
+            <button class="item sub" data-src="trainee/report.html#empty" data-nm="TR-04 · 리포트 없음" data-def="TR-04-my-report">리포트 없음</button>
+          </div>
+        </div>
+      </div>
+
+    </nav>
+  </aside>
+
+  <main class="main">
+    <div class="bar">
+      <span class="nm" id="curNm">OP-03 · 프로젝트 목록</span>
+      <span class="pth" id="curPth">operator/projects.html#list</span>
+      <span class="sp"></span>
+      <a class="def" id="defLink" href="../definition/OP-03-project-list.md" target="_blank">정의 문서 ↗</a>
+      <a id="newtab" href="operator/projects.html#list" target="_blank">새 탭에서 열기 ↗</a>
+    </div>
+    <iframe id="view" src="operator/projects.html#list" title="wireframe"></iframe>
+  </main>
+</div>
+<script>
+  var list = document.getElementById('list');
+  var view = document.getElementById('view');
+  var curNm = document.getElementById('curNm');
+  var curPth = document.getElementById('curPth');
+  var newtab = document.getElementById('newtab');
+  var defLink = document.getElementById('defLink');
+
+  // data-src(operator/projects.html#config) → 라우트(#/operator/projects/config)
+  var routes = {};
+  list.querySelectorAll('.item[data-src]').forEach(function(btn){
+    var route = '#/' + btn.getAttribute('data-src').replace('.html', '').replace('#', '/');
+    btn.dataset.route = route;
+    routes[route] = btn;
+  });
+
+  function select(btn, skipHash){
+    var src = btn.getAttribute('data-src');
+    // 해시만 바뀌면 iframe이 다시 로드되지 않는다. src를 매번 새로 넣어 라우팅을 태운다
+    view.src = src;
+    curNm.textContent = btn.getAttribute('data-nm');
+    curPth.textContent = src;
+    newtab.href = src;
+    defLink.href = '../definition/' + btn.getAttribute('data-def') + '.md';
+    var prev = list.querySelector('.item.on');
+    if(prev) prev.classList.remove('on');
+    btn.classList.add('on');
+    var sg = btn.closest('.subgrp');
+    if(sg) sg.classList.add('open');
+    if(!skipHash && location.hash !== btn.dataset.route) location.hash = btn.dataset.route;
+  }
+
+  list.addEventListener('click', function(e){
+    var par = e.target.closest('.item.parent');
+    if(par){ document.getElementById(par.getAttribute('data-toggle')).classList.toggle('open'); return; }
+    var btn = e.target.closest('.item[data-src]');
+    if(btn) select(btn);
+  });
+
+  window.addEventListener('hashchange', function(){
+    var btn = routes[location.hash];
+    if(btn) select(btn, true);
+  });
+
+  // 진행률 — 작업된 화면 수를 사이드바에서 직접 센다
+  var doneScreens = new Set();
+  list.querySelectorAll('.item[data-def]').forEach(function(b){ doneScreens.add(b.getAttribute('data-def')); });
+  // 화면 수 기준(상태 수 아님) — 작업된 화면 + 미작업 화면
+  var total = doneScreens.size + list.querySelectorAll('.item.todo').length;
+  document.getElementById('progtx').textContent = doneScreens.size + ' / ' + total;
+  document.querySelector('.prog .bar i').style.width = (doneScreens.size / total * 100) + '%';
+
+  var initial = routes[location.hash] || list.querySelector('[data-src]');
+  select(initial, true);
+
+  // 전체 펼치기/접기 — 현재 선택된 화면 브랜치는 항상 열려 있다
+  var expandall = document.getElementById('expandall');
+  expandall.addEventListener('click', function(){
+    var expand = expandall.dataset.state === 'collapsed';
+    list.querySelectorAll('.subgrp').forEach(function(sg){ sg.classList.toggle('open', expand); });
+    expandall.dataset.state = expand ? 'expanded' : 'collapsed';
+    expandall.textContent = expand ? '전체 접기' : '전체 펼치기';
+  });
+</script>
+</body>
+</html>

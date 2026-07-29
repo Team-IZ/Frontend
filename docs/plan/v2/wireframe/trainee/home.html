@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TR-01 · 교육생 홈 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .doc-head ul{margin:var(--sp-3) 0 0 18px;color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .doc-head li{margin-bottom:3px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  /* 셸 — 사이드바 없음. 항목이 둘뿐이라 폭을 본문에 준다 */
+  .app{display:flex;flex-direction:column;min-height:560px;background:var(--c-bg)}
+  .ttop{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .ttop .l{display:flex;align-items:center;gap:var(--sp-6)}
+  .ttop .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700}
+  .ttop .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .ttop .tnav{display:flex;gap:var(--sp-4);font-size:var(--fs-sm)}
+  .ttop .tnav a{color:var(--c-text-2);cursor:pointer}
+  .ttop .tnav a.on{color:var(--c-text);font-weight:600}
+  .ttop .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .ttop .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+  .tmain{max-width:860px;width:100%;margin:0 auto;padding:var(--sp-6) var(--sp-5) var(--sp-8)}
+
+  .slab{font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);letter-spacing:.03em;margin:0 0 var(--sp-2);display:flex;align-items:baseline;justify-content:space-between}
+  .slab .more{font-size:var(--fs-xs);font-weight:600;color:var(--c-primary);cursor:pointer}
+  .sblock{margin-top:var(--sp-6)}
+
+  /* 카드 — 되돌릴 수 없는 마감이 있으면 상단 스트립이 붙는다 */
+  .card{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-lg);box-shadow:0 1px 2px rgba(20,24,31,.04);overflow:hidden}
+  .strip{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);padding:11px var(--sp-5);font-size:var(--fs-sm);font-weight:700}
+  .strip .cd{display:flex;align-items:center;gap:var(--sp-2);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+  .strip .cd .big{font-size:var(--fs-lg)}
+  .strip .at{font-weight:600;font-size:var(--fs-xs);opacity:.85}
+  .strip.go{background:var(--c-success-soft);color:var(--c-success);border-bottom:1px solid #cfe8dc}
+  .strip.warn{background:var(--c-warning-soft);color:var(--c-warning);border-bottom:1px solid #e6d3a8}
+  .strip.stop{background:var(--c-danger-soft);color:var(--c-danger);border-bottom:1px solid #efc9c4}
+
+  .cbody{padding:var(--sp-5) var(--sp-6) var(--sp-6)}
+  .cmeta{font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-2)}
+  .cmeta .sub{color:var(--c-text-3)}
+  .cbody h3{font-size:var(--fs-xl);letter-spacing:-.01em;margin-bottom:var(--sp-4)}
+  .cbody h3 em{font-style:normal;color:var(--c-primary)}
+  .card.mute .cbody h3 em{color:var(--c-text-2)}
+  .card.mute{background:var(--c-surface-2)}
+
+  .steps{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:var(--sp-4)}
+  .steps .s{display:flex;align-items:center;gap:6px}
+  .steps .s .n{width:18px;height:18px;border-radius:50%;background:#eef0f3;color:var(--c-text-3);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+  .steps .s.done .n{background:var(--c-success-soft);color:var(--c-success)}
+  .steps .s.now .n{background:var(--c-primary);color:#fff}
+  .steps .s.now{color:var(--c-text);font-weight:600}
+  .steps .ar{color:var(--c-border-strong)}
+
+  .guide{background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4);font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-5)}
+  .guide b{color:var(--c-text)}
+  .guide .gl{display:flex;gap:var(--sp-2);align-items:flex-start;margin-bottom:6px}
+  .guide .gl:last-child{margin-bottom:0}
+  .guide .gl .k{flex:0 0 15px;color:var(--c-text-3)}
+
+  .cta{display:flex;align-items:center;justify-content:flex-end;gap:var(--sp-3)}
+  .cta .aside{font-size:var(--fs-xs);color:var(--c-text-3);margin-right:auto}
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:700;font-size:var(--fs-base);cursor:pointer;padding:13px 26px}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong);font-weight:600;font-size:var(--fs-sm);padding:11px 18px}
+  .btn.off{background:#e8eaee;color:var(--c-text-3);cursor:not-allowed}
+
+  .prow{display:flex;align-items:center;gap:var(--sp-3);background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:11px var(--sp-4);margin-bottom:var(--sp-2);font-size:var(--fs-sm)}
+  .prow:last-child{margin-bottom:0}
+  .prow .nm{font-weight:600;flex:0 0 92px}
+  .prow .st{color:var(--c-text-3);font-size:var(--fs-xs);flex:1}
+  .prow .go{color:var(--c-primary);font-size:var(--fs-xs);font-weight:600;cursor:pointer}
+  .prow .tag{font-size:10px;font-weight:700;color:var(--c-text-3);background:#eef0f3;border-radius:20px;padding:2px 8px}
+  .prow.soon{background:var(--c-surface-2)}
+
+  .banner{display:flex;gap:var(--sp-2);align-items:flex-start;background:var(--c-warning-soft);border:1px solid #e6d3a8;color:var(--c-warning);border-radius:var(--r-md);padding:10px var(--sp-4);font-size:var(--fs-sm);margin-bottom:var(--sp-4)}
+  .banner .sub{display:block;color:var(--c-text-2);font-size:var(--fs-xs);margin-top:2px}
+  .banner .act{margin-left:auto;font-weight:700;font-size:var(--fs-xs);cursor:pointer;white-space:nowrap}
+
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  body.embedded .sec-label{margin-top:0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">TR-01 · 교육생 · 웹</span>
+    <h1>홈 — 지금 할 일 하나</h1>
+    <p>학생이 이 화면에서 실패할 수 있는 방식은 넷이고, 화면은 그 넷을 막는 쪽으로 짰다.</p>
+    <ul>
+      <li><b>24시간 응시 창을 놓친다</b> — 복구가 안 되는 유일한 실패라, 창이 열린 동안에는 <b>남은 시간이 카드 맨 위 스트립</b>으로 가장 크게 붙는다.</li>
+      <li><b>준비 없이 세션을 시작한다</b> — 전체화면 · 중간 이탈 불가 · 30~40분. 그래서 <b>CTA 바로 앞에 무엇을 하는 시간인지·얼마나 걸리는지·나갈 수 없다는 사실</b>을 묶어 둔다.</li>
+      <li><b>모르는 값을 아는 척한다</b> — 분석에 남은 시간은 예측하지 않는다. 진행률 막대도 두지 않는다.</li>
+      <li><b>확정 안 된 판정을 보여준다</b> — 요구사항 충족(P/F)은 매니저가 확인해야 확정되므로 <b>학생 화면에 없다</b>(매니저의 제출 현황 소관).</li>
+    </ul>
+  </div>
+
+  <div class="rpage" id="page-todo">
+  <div class="sec-label">상태 · 미제출 (기한 내)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/home</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+      <div class="banner"><span>⚠</span><div>GitHub 커밋 이메일이 아직 확인되지 않았어요<span class="sub">확인하지 않아도 제출은 되지만, 빅프에서 내 기여가 정확히 잡히지 않을 수 있어요.</span></div><span class="act">확인하기 →</span></div>
+        <div class="slab">지금 할 일</div>
+      <div class="card">
+        <div class="strip warn"><span class="cd"><span class="big">1일 4시간</span> 남음</span><span class="at">제출 마감 07-14 18:00</span></div>
+        <div class="cbody">
+          <div class="cmeta">미프 3차 <span class="sub">· A반 3팀 · 교안 AI_LLMOps</span></div>
+          <h3><em>코드</em>를 제출할 차례예요</h3>
+          <div class="steps"><span class="s now"><span class="n">1</span>코드 제출</span><span class="ar">→</span><span class="s "><span class="n">2</span>코드 분석</span><span class="ar">→</span><span class="s "><span class="n">3</span>이해도 확인</span><span class="ar">→</span><span class="s "><span class="n">4</span>리포트</span></div>
+          <div class="guide">
+            <div class="gl"><span class="k">↥</span><div>GitHub 저장소 주소나 ZIP 파일로 제출해요.</div></div>
+            <div class="gl"><span class="k">→</span><div>제출하면 코드 분석이 시작되고, <b>분석이 끝난 시각부터 24시간</b> 안에 이해도 확인을 하면 됩니다.</div></div>
+          </div>
+          <div class="cta"><button class="btn">코드 제출</button></div>
+        </div>
+      </div>
+      <div class="sblock">
+        <div class="slab">예정</div>
+        <div class="prow soon"><span class="nm">미프 4차</span><span class="st">제출 07-21 · 이해도 확인 07-22~23</span><span class="tag">예정</span></div>
+      </div>
+      <div class="sblock">
+        <div class="slab">지난 회차<span class="more">전체 보기 → 내 리포트</span></div>
+        <div class="prow"><span class="nm">미프 2차</span><span class="st">완료 · 다시 보기 1건 완료</span><span class="go">리포트 보기 →</span></div>
+        <div class="prow"><span class="nm">미프 1차</span><span class="st">완료</span><span class="go">리포트 보기 →</span></div>
+      </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-analyzing">
+  <div class="sec-label">상태 · 제출 완료 · 분석 중</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/home</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <div class="slab">지금 할 일</div>
+      <div class="card">
+        <div class="cbody">
+          <div class="cmeta">미프 3차 <span class="sub">· A반 3팀 · 교안 AI_LLMOps</span></div>
+          <h3><em>코드 분석</em>이 진행 중이에요</h3>
+          <div class="steps"><span class="s done"><span class="n">✓</span>코드 제출</span><span class="ar">→</span><span class="s now"><span class="n">2</span>코드 분석</span><span class="ar">→</span><span class="s "><span class="n">3</span>이해도 확인</span><span class="ar">→</span><span class="s "><span class="n">4</span>리포트</span></div>
+          <div class="guide">
+            <div class="gl"><span class="k">◴</span><div><b>끝나면 알려드릴게요.</b> 이 화면을 켜 두지 않아도 됩니다.</div></div>
+            <div class="gl"><span class="k">!</span><div>남은 시간은 알려드리지 않아요 — 정확하지 않은 예상을 드리지 않으려고요.</div></div>
+          </div>
+          <div class="cta"><span class="aside">분석이 끝나면 열려요</span><button class="btn off">이해도 확인</button></div>
+        </div>
+      </div>
+      <div class="sblock">
+        <div class="slab">예정</div>
+        <div class="prow soon"><span class="nm">미프 4차</span><span class="st">제출 07-21 · 이해도 확인 07-22~23</span><span class="tag">예정</span></div>
+      </div>
+      <div class="sblock">
+        <div class="slab">지난 회차<span class="more">전체 보기 → 내 리포트</span></div>
+        <div class="prow"><span class="nm">미프 2차</span><span class="st">완료 · 다시 보기 1건 완료</span><span class="go">리포트 보기 →</span></div>
+        <div class="prow"><span class="nm">미프 1차</span><span class="st">완료</span><span class="go">리포트 보기 →</span></div>
+      </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-ready">
+  <div class="sec-label">상태 · 응시 가능 — 창이 열린 동안</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/home</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <div class="slab">지금 할 일</div>
+      <div class="card">
+        <div class="strip go"><span class="cd"><span class="big">19:12:04</span> 남음</span><span class="at">07-15 14:20까지</span></div>
+        <div class="cbody">
+          <div class="cmeta">미프 3차 <span class="sub">· A반 3팀 · 교안 AI_LLMOps</span></div>
+          <h3><em>이해도 확인</em>을 시작할 차례예요</h3>
+          <div class="steps"><span class="s done"><span class="n">✓</span>코드 제출</span><span class="ar">→</span><span class="s done"><span class="n">✓</span>코드 분석</span><span class="ar">→</span><span class="s now"><span class="n">3</span>이해도 확인</span><span class="ar">→</span><span class="s "><span class="n">4</span>리포트</span></div>
+          <div class="guide">
+            <div class="gl"><span class="k">🔒</span><div>내가 쓴 코드 <b>3군데</b>에 대해 왜 그렇게 했는지 이야기하는 시간이에요.</div></div>
+            <div class="gl"><span class="k">⏱</span><div>보통 <b>30~40분</b>. 시작하면 <b>중간에 나갈 수 없어요.</b> 시간이 되는 때에 시작하세요.</div></div>
+            <div class="gl"><span class="k">◇</span><div><b>점수는 표시되지 않아요.</b> 모르면 다시 설명해 달라고 할 수 있고, 그걸 써도 불이익이 없어요.</div></div>
+          </div>
+          <div class="cta"><span class="aside">지금 시작하면 07-15 새벽 3시 전에 끝나요</span><button class="btn">이해도 확인 시작하기 →</button></div>
+        </div>
+      </div>
+      <div class="sblock">
+        <div class="slab">예정</div>
+        <div class="prow soon"><span class="nm">미프 4차</span><span class="st">제출 07-21 · 이해도 확인 07-22~23</span><span class="tag">예정</span></div>
+      </div>
+      <div class="sblock">
+        <div class="slab">지난 회차<span class="more">전체 보기 → 내 리포트</span></div>
+        <div class="prow"><span class="nm">미프 2차</span><span class="st">완료 · 다시 보기 1건 완료</span><span class="go">리포트 보기 →</span></div>
+        <div class="prow"><span class="nm">미프 1차</span><span class="st">완료</span><span class="go">리포트 보기 →</span></div>
+      </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-done">
+  <div class="sec-label">상태 · 응시 완료 (리포트 대기)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/home</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <div class="slab">지금 할 일</div>
+      <div class="card">
+        <div class="cbody">
+          <div class="cmeta">미프 3차 <span class="sub">· A반 3팀 · 교안 AI_LLMOps</span></div>
+          <h3><em>리포트</em>를 기다리는 중이에요</h3>
+          <div class="steps"><span class="s done"><span class="n">✓</span>코드 제출</span><span class="ar">→</span><span class="s done"><span class="n">✓</span>코드 분석</span><span class="ar">→</span><span class="s done"><span class="n">✓</span>이해도 확인</span><span class="ar">→</span><span class="s now"><span class="n">4</span>리포트</span></div>
+          <div class="guide">
+            <div class="gl"><span class="k">✓</span><div>이해도 확인이 끝났어요. 07-15 10:32 제출됨.</div></div>
+            <div class="gl"><span class="k">→</span><div>리포트는 <b>회차 마감 후 한꺼번에</b> 발행됩니다. 발행되면 알려드릴게요.</div></div>
+          </div>
+          <div class="cta"><span class="aside">발행 예정 07-15 이후</span><button class="btn off">내 리포트</button></div>
+        </div>
+      </div>
+      <div class="sblock">
+        <div class="slab">예정</div>
+        <div class="prow soon"><span class="nm">미프 4차</span><span class="st">제출 07-21 · 이해도 확인 07-22~23</span><span class="tag">예정</span></div>
+      </div>
+      <div class="sblock">
+        <div class="slab">지난 회차<span class="more">전체 보기 → 내 리포트</span></div>
+        <div class="prow"><span class="nm">미프 2차</span><span class="st">완료 · 다시 보기 1건 완료</span><span class="go">리포트 보기 →</span></div>
+        <div class="prow"><span class="nm">미프 1차</span><span class="st">완료</span><span class="go">리포트 보기 →</span></div>
+      </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-retry">
+  <div class="sec-label">상태 · 다시 보기 대상</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/home</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <div class="slab">지금 할 일</div>
+      <div class="card">
+        <div class="strip warn"><span class="cd"><span class="big">6일</span> 남음</span><span class="at">07-24까지</span></div>
+        <div class="cbody">
+          <div class="cmeta">미프 3차 <span class="sub">· A반 3팀 · 교안 AI_LLMOps</span></div>
+          <h3><em>다시 볼 수 있는 문제</em>가 2개 있어요</h3>
+          <div class="steps"><span class="s done"><span class="n">✓</span>코드 제출</span><span class="ar">→</span><span class="s done"><span class="n">✓</span>코드 분석</span><span class="ar">→</span><span class="s done"><span class="n">✓</span>이해도 확인</span><span class="ar">→</span><span class="s now"><span class="n">4</span>리포트</span></div>
+          <div class="guide">
+            <div class="gl"><span class="k">↻</span><div>리포트에서 안내한 교안을 보고 오면 됩니다. <b>기존 결과는 그대로예요</b> — 다시 본 것은 기록에만 남아요.</div></div>
+            <div class="gl"><span class="k">◇</span><div>HITL Trigger 조건 · Graph 구성 · 이번에는 <b>다시 설명해 주는 도움 없이</b> 진행해요.</div></div>
+          </div>
+          <div class="cta"><span class="aside">7월 24일까지</span><button class="btn">다시 보기</button></div>
+        </div>
+      </div>
+      <div class="sblock">
+        <div class="slab">이번 회차 리포트</div>
+        <div class="prow"><span class="nm">미프 3차</span><span class="st">발행됨 · 자세한 해설은 다시 보기 후 열려요</span><span class="go">리포트 보기 →</span></div>
+      </div>
+      <div class="sblock">
+        <div class="slab">지난 회차<span class="more">전체 보기 → 내 리포트</span></div>
+        <div class="prow"><span class="nm">미프 2차</span><span class="st">완료 · 다시 보기 1건 완료</span><span class="go">리포트 보기 →</span></div>
+        <div class="prow"><span class="nm">미프 1차</span><span class="st">완료</span><span class="go">리포트 보기 →</span></div>
+      </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-failed">
+  <div class="sec-label">상태 · 분석 실패</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/home</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <div class="slab">지금 할 일</div>
+      <div class="card">
+        <div class="strip stop"><span class="cd"><span class="big">4시간</span> 남음</span><span class="at">제출 마감 07-14 18:00</span></div>
+        <div class="cbody">
+          <div class="cmeta">미프 3차 <span class="sub">· A반 3팀 · 교안 AI_LLMOps</span></div>
+          <h3><em>코드를 분석하지 못했어요</em></h3>
+          <div class="steps"><span class="s done"><span class="n">✓</span>코드 제출</span><span class="ar">→</span><span class="s now"><span class="n">2</span>코드 분석</span><span class="ar">→</span><span class="s "><span class="n">3</span>이해도 확인</span><span class="ar">→</span><span class="s "><span class="n">4</span>리포트</span></div>
+          <div class="guide">
+            <div class="gl"><span class="k">!</span><div>저장소가 비어 있거나 접근할 수 없었어요. 주소를 확인하고 다시 제출해 주세요.</div></div>
+            <div class="gl"><span class="k">→</span><div>조직 밖 저장소라면 <b>ZIP으로 올리면</b> 됩니다. 계속 안 되면 매니저에게 알려 주세요.</div></div>
+          </div>
+          <div class="cta"><button class="btn">다시 제출</button></div>
+        </div>
+      </div>
+      <div class="sblock">
+        <div class="slab">예정</div>
+        <div class="prow soon"><span class="nm">미프 4차</span><span class="st">제출 07-21 · 이해도 확인 07-22~23</span><span class="tag">예정</span></div>
+      </div>
+      <div class="sblock">
+        <div class="slab">지난 회차<span class="more">전체 보기 → 내 리포트</span></div>
+        <div class="prow"><span class="nm">미프 2차</span><span class="st">완료 · 다시 보기 1건 완료</span><span class="go">리포트 보기 →</span></div>
+        <div class="prow"><span class="nm">미프 1차</span><span class="st">완료</span><span class="go">리포트 보기 →</span></div>
+      </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-closed">
+  <div class="sec-label">상태 · 응시 창 마감</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/home</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <div class="slab">지금 할 일</div>
+      <div class="card mute">
+        <div class="cbody">
+          <div class="cmeta">미프 3차 <span class="sub">· A반 3팀 · 교안 AI_LLMOps</span></div>
+          <h3><em>응시 기한</em>이 지났어요</h3>
+          <div class="guide">
+            <div class="gl"><span class="k">–</span><div>응시 창은 07-15 14:20에 닫혔어요. 이번 회차는 <b>미응시</b>로 기록됩니다.</div></div>
+            <div class="gl"><span class="k">→</span><div>사정이 있었다면 매니저에게 알려 주세요.</div></div>
+          </div>
+          <div class="cta"><button class="btn ghost">매니저에게 문의</button></div>
+        </div>
+      </div>
+      <div class="sblock">
+        <div class="slab">예정</div>
+        <div class="prow soon"><span class="nm">미프 4차</span><span class="st">제출 07-21 · 이해도 확인 07-22~23</span><span class="tag">예정</span></div>
+      </div>
+      <div class="sblock">
+        <div class="slab">지난 회차<span class="more">전체 보기 → 내 리포트</span></div>
+        <div class="prow"><span class="nm">미프 2차</span><span class="st">완료 · 다시 보기 1건 완료</span><span class="go">리포트 보기 →</span></div>
+        <div class="prow"><span class="nm">미프 1차</span><span class="st">완료</span><span class="go">리포트 보기 →</span></div>
+      </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-none">
+  <div class="sec-label">상태 · 진행 중인 회차 없음</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/home</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <div class="slab">지금 할 일</div>
+      <div class="card mute">
+        <div class="cbody">
+          <div class="cmeta">7기 <span class="sub">· A반 3팀</span></div>
+          <h3><em>지금은 예정된 일정</em>이 없어요</h3>
+          <div class="guide">
+            <div class="gl"><span class="k">·</span><div>다음 프로젝트가 시작되면 여기에 표시됩니다.</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="sblock">
+        <div class="slab">지난 회차<span class="more">전체 보기 → 내 리포트</span></div>
+        <div class="prow"><span class="nm">미프 3차</span><span class="st">완료</span><span class="go">리포트 보기 →</span></div>
+        <div class="prow"><span class="nm">미프 2차</span><span class="st">완료 · 다시 보기 1건 완료</span><span class="go">리포트 보기 →</span></div>
+        <div class="prow"><span class="nm">미프 1차</span><span class="st">완료</span><span class="go">리포트 보기 →</span></div>
+      </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+<script>
+  var PAGE = { todo:"page-todo", analyzing:"page-analyzing", ready:"page-ready", done:"page-done",
+               retry:"page-retry", failed:"page-failed", closed:"page-closed", none:"page-none" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "todo";
+    var id = PAGE[h] || "page-todo";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+</script>
+</body>
+</html>

@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TR-04 · 내 리포트 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --c-code:#1e2436; --c-code-fg:#d6dae6; --c-code-dim:#7d8497;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .doc-head ul{margin:var(--sp-3) 0 0 18px;color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .doc-head li{margin-bottom:3px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  .app{display:flex;flex-direction:column;height:660px;background:var(--c-bg)}
+  .ttop{height:54px;flex:0 0 54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .ttop .l{display:flex;align-items:center;gap:var(--sp-6)}
+  .ttop .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700}
+  .ttop .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .ttop .tnav{display:flex;gap:var(--sp-4);font-size:var(--fs-sm)}
+  .ttop .tnav a{color:var(--c-text-2);cursor:pointer}
+  .ttop .tnav a.on{color:var(--c-text);font-weight:600}
+  .ttop .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .ttop .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+
+  /* 좌 회차 목록(=아카이브) · 우 본문. 목차는 섹션 전환이지 스크롤이 아니다 */
+  .split{display:flex;flex:1;min-height:0}
+  .rail{flex:0 0 236px;background:var(--c-surface);border-right:1px solid var(--c-border);padding:var(--sp-4) var(--sp-3);overflow-y:auto}
+  .rail .rt{font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:0 var(--sp-2);margin-bottom:var(--sp-2)}
+  .ritem{display:block;padding:9px var(--sp-3);border-radius:var(--r-md);cursor:pointer;margin-bottom:2px}
+  .ritem:hover{background:var(--c-surface-2)}
+  .ritem.on{background:var(--c-primary-soft)}
+  .ritem .nm{font-size:var(--fs-sm);font-weight:600;display:flex;align-items:center;gap:6px}
+  .ritem.on .nm{color:var(--c-primary)}
+  .ritem .st{font-size:11px;color:var(--c-text-3);margin-top:2px}
+  .ritem .dot{width:6px;height:6px;border-radius:50%;background:var(--c-warning);display:inline-block}
+
+  .body{flex:1;min-width:0;overflow-y:auto;padding:var(--sp-5) var(--sp-6) var(--sp-8)}
+  .rhead{margin-bottom:var(--sp-5);padding-bottom:var(--sp-4);border-bottom:1px solid var(--c-border)}
+  .rhead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .rhead .meta{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+
+  /* 개념 블록 — 좌측 레일로 시작과 범위를 그린다.
+     번호(01/02/03)를 붙이지 않는다: 세 개념은 순서가 없고, 번호는 없는 서열을 만든다 */
+  .cpt{position:relative;padding:0 0 var(--sp-6) var(--sp-5);margin-bottom:var(--sp-2)}
+  .cpt:last-of-type{padding-bottom:var(--sp-3)}
+  .cpt::before{content:"";position:absolute;left:4px;top:9px;bottom:0;width:1px;background:var(--c-border)}
+  .cpt:last-of-type::before{bottom:auto;height:calc(100% - 24px)}
+  .cpt .pin{position:absolute;left:0;top:5px;width:9px;height:9px;border-radius:50%;background:var(--c-border-strong);z-index:1}
+  .cpt.low .pin{background:var(--c-warning)}
+  .cpt.mid .pin{background:var(--c-info)}
+  .cpt.deep .pin{background:var(--c-success)}
+  .cpt .ch{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-2)}
+  .cpt .ch .nm{font-size:var(--fs-lg);font-weight:700;letter-spacing:-.01em}
+  .reach{font-size:var(--fs-xs);font-weight:700;padding:4px 11px;border-radius:20px;white-space:nowrap}
+  .reach.deep{background:var(--c-success-soft);color:var(--c-success)}
+  .reach.mid{background:var(--c-info-soft);color:var(--c-info)}
+  .reach.low{background:var(--c-warning-soft);color:var(--c-warning)}
+  .cpt .said{font-size:var(--fs-base);color:var(--c-text-2);line-height:1.7}
+  .cpt .said b{color:var(--c-text)}
+
+  /* 교안 위치 — 링크가 아니다. 교안 본문은 이 서비스가 갖고 있지 않다 */
+  .where{margin-top:var(--sp-4);display:flex;flex-wrap:wrap;gap:var(--sp-2) var(--sp-5);align-items:baseline}
+  .wloc{font-size:var(--fs-sm);color:var(--c-text-2);display:flex;align-items:baseline;gap:var(--sp-2)}
+  .wloc .k{font-size:var(--fs-xs);color:var(--c-text-3)}
+  .wloc b{color:var(--c-text);font-weight:600}
+
+  .locked{margin-top:var(--sp-4);border:1px dashed var(--c-border-strong);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);background:var(--c-surface-2);display:flex;gap:var(--sp-3);align-items:flex-start}
+  .locked .ic{font-size:var(--fs-sm);color:var(--c-text-3)}
+  .locked .tx{font-size:var(--fs-sm);color:var(--c-text-2)}
+  .locked .tx b{color:var(--c-text)}
+  .locked .tx .why{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+
+  .explain{margin-top:var(--sp-4);border-left:3px solid var(--c-primary-soft);padding-left:var(--sp-4)}
+  .explain .et{font-size:var(--fs-xs);font-weight:700;color:var(--c-primary);margin-bottom:var(--sp-2)}
+  .explain p{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.75}
+  .explain p+p{margin-top:var(--sp-2)}
+
+  /* 내 답변 — 개수를 드러내는 정보. 문장형 안내가 아니다 */
+  .mine{margin-top:var(--sp-4);border-top:1px solid var(--c-border);padding-top:var(--sp-3)}
+  .mine .mh{display:flex;align-items:center;justify-content:space-between;font-size:var(--fs-sm);color:var(--c-text-2);cursor:pointer}
+  .mine .mh .n{font-weight:600}
+  .mine .mh .n .c{color:var(--c-text-3);font-weight:400;margin-left:5px}
+  .mine .mh .cv{color:var(--c-text-3);font-size:11px}
+  .qalist{margin-top:var(--sp-3)}
+  .qarow{margin-bottom:var(--sp-3)}
+  .qarow:last-child{margin-bottom:0}
+  .qarow .q{font-size:var(--fs-sm);color:var(--c-text);line-height:1.65}
+  .qarow .q .n{color:var(--c-text-3);font-size:var(--fs-xs);margin-right:6px}
+  .qarow .a{font-size:var(--fs-sm);color:var(--c-text-2);background:var(--c-primary-soft);border-radius:var(--r-md);padding:var(--sp-2) var(--sp-3);margin-top:5px;line-height:1.7}
+  .qarow .a .h{font-size:11px;color:var(--c-text-3);display:block;margin-bottom:2px}
+
+  .cmp{display:flex;gap:var(--sp-3);margin-top:var(--sp-3)}
+  .cmp .col{flex:1;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);background:#fff}
+  .cmp .col .ct{font-size:11px;font-weight:700;color:var(--c-text-3);margin-bottom:6px}
+  .cmp .col.re{background:var(--c-surface-2)}
+
+  .banner{display:flex;gap:var(--sp-3);align-items:flex-start;border-radius:var(--r-md);padding:var(--sp-4);font-size:var(--fs-sm);margin-bottom:var(--sp-5)}
+  .banner.warn{background:var(--c-warning-soft);border:1px solid #e6d3a8;color:var(--c-warning)}
+  .banner.info{background:var(--c-info-soft);border:1px solid #cfe0f0;color:var(--c-info)}
+  .banner .tx{flex:1;color:var(--c-text-2)}
+  .banner .tx b{color:var(--c-text)}
+  .banner .tx .sub{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .banner .act{flex:0 0 auto}
+
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:700;font-size:var(--fs-sm);cursor:pointer;padding:11px 22px;font-family:inherit;line-height:1.3;white-space:nowrap}
+  .btn:hover{background:#31429e}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong);font-weight:600}
+  .btn.sm{padding:8px 16px;font-size:var(--fs-xs)}
+
+  .center{flex:1;display:flex;align-items:center;justify-content:center;padding:var(--sp-6);min-height:0;overflow-y:auto}
+  .msg{width:460px;max-width:100%;background:#fff;border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-6);text-align:center;box-shadow:0 1px 2px rgba(20,24,31,.04)}
+  .msg .ic{width:48px;height:48px;margin:0 auto var(--sp-4);border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--c-primary-soft);color:var(--c-primary)}
+  .msg h3{font-size:var(--fs-lg);margin-bottom:var(--sp-2);letter-spacing:-.01em}
+  .msg p{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.65}
+  .msg .sub{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:var(--sp-3);line-height:1.6}
+  .msg .act{margin-top:var(--sp-5);display:flex;gap:var(--sp-2);justify-content:center}
+  .msg.warn .ic{background:var(--c-warning-soft);color:var(--c-warning)}
+  .msg.mute .ic{background:#eef0f3;color:var(--c-text-3)}
+
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  body.embedded .sec-label{margin-top:0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">TR-04 · 교육생 · 웹</span>
+    <h1>내 리포트</h1>
+    <p>성공 기준은 열람률이 아니라 <b>읽고 나서 다음 한 주를 어디에 쓸지 바뀌는 것</b>이다.</p>
+    <ul>
+      <li><b>숫자가 없다.</b> 계단 4단을 <b>학생 언어 라벨</b>로 바꿨다 — <code>무엇을 하는지까지 / 왜 그렇게 했는지까지 / 다른 방법까지 / 언제 깨지는지까지</code>. <code>2단</code>이라고 쓰면 그것도 숫자고, 서술만 두면 개념 셋을 견줄 수 없다.</li>
+      <li><b>"못했다"가 아니라 "확인되지 않았다".</b> 측정은 관찰이지 판정이 아니다.</li>
+      <li><b>상단 요약을 두지 않는다.</b> <code>3개 중 1개 도달</code> 같은 걸 올리면 성적표가 된다.</li>
+      <li><b>막힌 만큼 두꺼워진다.</b> 도달한 개념은 한 줄, 막힌 개념은 해설 + 교안 위치. <b>분량 차이 자체가</b> 어디를 봐야 하는지 알려준다 — 시스템이 "이것부터 하세요"라고 순서를 정하면 처방이 된다.</li>
+      <li><b>문답은 즉시, 상세 해설은 다시 보기 후.</b> 다시 보기가 같은 문항이라 해설을 먼저 주면 답안지가 된다. 내가 쓴 답변은 내 것이니 바로 보여준다.</li>
+    </ul>
+  </div>
+
+
+  <div class="rpage" id="page-locked">
+  <div class="sec-label">화면 · 발행 후 — 다시 볼 수 있는 문제가 있음</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/reports</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a>홈</a><a class="on">내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="split">
+        <div class="rail">
+          <div class="rt">회차</div>
+          <div class="ritem on"><div class="nm">미프 3차<span class="dot"></span></div><div class="st">다시 볼 문제 2개</div></div>
+          <div class="ritem"><div class="nm">미프 2차</div><div class="st">다시 보기 1개 완료</div></div>
+          <div class="ritem"><div class="nm">미프 1차</div></div>
+        </div>
+        <div class="body">
+          <div class="rhead"><h2>미프 3차</h2><div class="meta">발행 07-15 · 교안 AI_LLMOps</div></div>
+          <div class="banner warn"><span>↻</span><div class="tx"><b>다시 볼 수 있는 문제가 2개 있어요</b><span class="sub">7월 24일까지 · 결과는 기록에만 남고 <b>지금 결과는 그대로예요</b></span></div><div class="act"><button class="btn sm">다시 보기</button></div></div>
+          <div class="cpt low">
+            <span class="pin"></span>
+            <div class="ch"><span class="nm">HITL Trigger 조건</span><span class="reach low">무엇을 하는지까지</span></div>
+            <div class="said">이 함수가 <b>무엇을 하는지</b>는 설명했어요. 다만 교안에 있던 세 번째 조건을 왜 넣지 않았는지는 <b>확인되지 않았습니다.</b></div>
+            <div class="locked"><span class="ic">🔒</span><div class="tx"><b>자세한 해설은 다시 보기를 마치면 열려요</b><span class="why">지금 보면 답을 알고 다시 보게 되니까요</span></div></div>
+            <div class="where"><span class="wloc"><span class="k">교안</span><b>3장 · 36~46쪽 <span style="color:var(--c-text-3);font-weight:400">사람 확인이 필요한 순간</span></b></span></div>
+            <div class="mine"><div class="mh"><span class="n">내 답변<span class="c">3개</span></span><span class="cv">펼치기 ▾</span></div></div>
+          </div>
+          <div class="cpt mid">
+            <span class="pin"></span>
+            <div class="ch"><span class="nm">Graph 구성</span><span class="reach mid">왜 그렇게 했는지까지</span></div>
+            <div class="said"><b>왜 그렇게 만들었는지</b>까지 설명했어요. 다른 방법이 있는지는 확인되지 않았습니다.</div>
+            <div class="locked"><span class="ic">🔒</span><div class="tx"><b>자세한 해설은 다시 보기를 마치면 열려요</b><span class="why">지금 보면 답을 알고 다시 보게 되니까요</span></div></div>
+            <div class="where"><span class="wloc"><span class="k">교안</span><b>2장 · 28~35쪽 <span style="color:var(--c-text-3);font-weight:400">그래프 구성하기</span></b></span></div>
+            <div class="mine"><div class="mh"><span class="n">내 답변<span class="c">2개</span></span><span class="cv">펼치기 ▾</span></div></div>
+          </div>
+          <div class="cpt deep">
+            <span class="pin"></span>
+            <div class="ch"><span class="nm">State 관리</span><span class="reach deep">언제 깨지는지까지</span></div>
+            <div class="said"><b>언제 문제가 되는지</b>까지 이야기했어요. add_messages를 쓰지 않았을 때 어디가 깨지는지 조건을 짚었습니다.</div>
+            <div class="mine"><div class="mh"><span class="n">내 답변<span class="c">2개</span></span><span class="cv">펼치기 ▾</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-qa">
+  <div class="sec-label">상태 · [내 답변] 펼침</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/reports</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a>홈</a><a class="on">내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="split">
+        <div class="rail">
+          <div class="rt">회차</div>
+          <div class="ritem on"><div class="nm">미프 3차<span class="dot"></span></div><div class="st">다시 볼 문제 2개</div></div>
+          <div class="ritem"><div class="nm">미프 2차</div><div class="st">다시 보기 1개 완료</div></div>
+          <div class="ritem"><div class="nm">미프 1차</div></div>
+        </div>
+        <div class="body">
+          <div class="rhead"><h2>미프 3차</h2><div class="meta">발행 07-15 · 교안 AI_LLMOps</div></div>
+          <div class="cpt low">
+            <span class="pin"></span>
+            <div class="ch"><span class="nm">HITL Trigger 조건</span><span class="reach low">무엇을 하는지까지</span></div>
+            <div class="said">이 함수가 <b>무엇을 하는지</b>는 설명했어요. 다만 교안에 있던 세 번째 조건을 왜 넣지 않았는지는 <b>확인되지 않았습니다.</b></div>
+            <div class="locked"><span class="ic">🔒</span><div class="tx"><b>자세한 해설은 다시 보기를 마치면 열려요</b><span class="why">지금 보면 답을 알고 다시 보게 되니까요</span></div></div>
+            <div class="where"><span class="wloc"><span class="k">교안</span><b>3장 · 36~46쪽 <span style="color:var(--c-text-3);font-weight:400">사람 확인이 필요한 순간</span></b></span></div>
+            <div class="mine"><div class="mh"><span class="n">내 답변<span class="c">3개</span></span><span class="cv">접기 ▴</span></div>
+              <div class="qalist">
+                <div class="qarow"><div class="q"><span class="n">질문 1</span>이 함수는 무슨 일을 하나요? 어떤 값이 들어오고, 어디에서 쓰이는지도 같이 이야기해 주세요.</div>
+                  <div class="a"><span class="h">내 답변</span>state를 받아서 사람이 확인해야 하는 상황인지 True/False로 알려주는 함수입니다. 재시도가 3번을 넘거나 결정이 REJECTED면 True를 돌려줍니다.</div></div>
+                <div class="qarow"><div class="q"><span class="n">질문 2</span>교안에서는 사람이 확인해야 하는 조건을 세 가지로 봤는데, 여기서는 두 가지만 보고 있어요. 왜 그렇게 하셨나요?</div>
+                  <div class="a"><span class="h">내 답변</span>retry 횟수가 넘거나 REJECTED가 오면 사람이 봐야 한다고 생각해서 두 개만 넣었습니다.</div></div>
+                <div class="qarow"><div class="q"><span class="n">질문 2 · 다시 설명</span>이 함수가 True를 돌려주는 경우를 먼저 짚어 보고, 교안에 있던 나머지 한 가지를 여기서는 왜 넣지 않았는지 이야기해 주세요.</div>
+                  <div class="a"><span class="h">내 답변</span>세 번째 조건은 잘 기억이 안 납니다.</div></div>
+              </div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-after">
+  <div class="sec-label">화면 · 다시 보기를 마친 뒤 — 해설이 열린다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/reports</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a>홈</a><a class="on">내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="split">
+        <div class="rail">
+          <div class="rt">회차</div>
+          <div class="ritem on"><div class="nm">미프 3차</div><div class="st">다시 보기 완료</div></div>
+          <div class="ritem"><div class="nm">미프 2차</div><div class="st">다시 보기 1개 완료</div></div>
+          <div class="ritem"><div class="nm">미프 1차</div></div>
+        </div>
+        <div class="body">
+          <div class="rhead"><h2>미프 3차</h2><div class="meta">발행 07-15 · 다시 보기 07-19 · 교안 AI_LLMOps</div></div>
+          <div class="banner info"><span>✓</span><div class="tx"><b>다시 보기를 마쳤어요</b><span class="sub">자세한 해설이 열렸습니다 · 다시 본 결과는 <b>성적에 반영되지 않아요</b></span></div></div>
+          <div class="cpt low">
+            <span class="pin"></span>
+            <div class="ch"><span class="nm">HITL Trigger 조건</span><span class="reach low">무엇을 하는지까지</span></div>
+            <div class="said">이 함수가 <b>무엇을 하는지</b>는 설명했어요. 다만 교안에 있던 세 번째 조건을 왜 넣지 않았는지는 <b>확인되지 않았습니다.</b></div>
+            <div class="cmp">
+              <div class="col"><div class="ct">처음 봤을 때</div><div class="said" style="font-size:var(--fs-sm)">무엇을 하는지까지</div></div>
+              <div class="col re"><div class="ct">다시 봤을 때</div><div class="said" style="font-size:var(--fs-sm)">왜 그렇게 했는지까지</div></div>
+            </div>
+            <div class="explain"><div class="et">어디서 막혔나</div><p>교안 3장에서는 사람이 확인해야 하는 경우를 <b>세 가지</b>로 나눕니다 — 재시도 상한, 거절 결정, 그리고 <b>위험 키워드가 들어온 경우</b>입니다.</p><p>앞의 두 가지는 코드에 있었지만 세 번째는 없었어요. 이런 조건이 빠지면 위험한 요청이 사람 확인 없이 지나갑니다.</p></div>
+            <div class="where"><span class="wloc"><span class="k">교안</span><b>3장 · 36~46쪽 <span style="color:var(--c-text-3);font-weight:400">사람 확인이 필요한 순간</span></b></span></div>
+            <div class="mine"><div class="mh"><span class="n">내 답변<span class="c">3개</span></span><span class="cv">펼치기 ▾</span></div></div>
+          </div>
+          <div class="cpt mid">
+            <span class="pin"></span>
+            <div class="ch"><span class="nm">Graph 구성</span><span class="reach mid">왜 그렇게 했는지까지</span></div>
+            <div class="said"><b>왜 그렇게 만들었는지</b>까지 설명했어요. 다른 방법이 있는지는 확인되지 않았습니다.</div>
+            <div class="explain"><div class="et">어디서 막혔나</div><p>조건부 분기 말고 <b>Supervisor 구조</b>로도 만들 수 있습니다. 교안 2장 뒷부분에서 둘을 견줍니다.</p></div>
+            <div class="where"><span class="wloc"><span class="k">교안</span><b>2장 · 28~35쪽 <span style="color:var(--c-text-3);font-weight:400">그래프 구성하기</span></b></span></div>
+            <div class="mine"><div class="mh"><span class="n">내 답변<span class="c">2개</span></span><span class="cv">펼치기 ▾</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-clear">
+  <div class="sec-label">상태 · 다시 볼 문제가 없음 — 해설이 바로 열린다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/reports</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a>홈</a><a class="on">내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="split">
+        <div class="rail">
+          <div class="rt">회차</div>
+          <div class="ritem on"><div class="nm">미프 2차</div></div>
+          <div class="ritem"><div class="nm">미프 1차</div></div>
+        </div>
+        <div class="body">
+          <div class="rhead"><h2>미프 2차</h2><div class="meta">발행 07-05 · 교안 AI_LLMOps</div></div>
+          <div class="cpt deep">
+            <span class="pin"></span>
+            <div class="ch"><span class="nm">Service 역할 분리</span><span class="reach deep">다른 방법까지</span></div>
+            <div class="said"><b>다른 방법이 있다는 것</b>까지 이야기했어요. NodePort와 Ingress를 견주고 왜 지금 방식을 골랐는지 설명했습니다.</div>
+            <div class="mine"><div class="mh"><span class="n">내 답변<span class="c">3개</span></span><span class="cv">펼치기 ▾</span></div></div>
+          </div>
+          <div class="cpt deep">
+            <span class="pin"></span>
+            <div class="ch"><span class="nm">Deployment 구성</span><span class="reach deep">언제 깨지는지까지</span></div>
+            <div class="said"><b>언제 문제가 되는지</b>까지 이야기했어요. replica를 늘렸을 때 어디가 먼저 막히는지 짚었습니다.</div>
+            <div class="mine"><div class="mh"><span class="n">내 답변<span class="c">2개</span></span><span class="cv">펼치기 ▾</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-archive">
+  <div class="sec-label">상태 · 지난 회차 열람 (아카이브)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/reports</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a>홈</a><a class="on">내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="split">
+        <div class="rail">
+          <div class="rt">회차</div>
+          <div class="ritem"><div class="nm">미프 3차</div><div class="st">다시 보기 완료</div></div>
+          <div class="ritem"><div class="nm">미프 2차</div><div class="st">다시 보기 1개 완료</div></div>
+          <div class="ritem on"><div class="nm">미프 1차</div></div>
+        </div>
+        <div class="body">
+          <div class="rhead"><h2>미프 1차</h2><div class="meta">발행 06-24 · 교안 AI_LLMOps · 3개월 전</div></div>
+          <div class="cpt mid">
+            <span class="pin"></span>
+            <div class="ch"><span class="nm">LangGraph 기본 구조</span><span class="reach mid">왜 그렇게 했는지까지</span></div>
+            <div class="said"><b>왜 그렇게 만들었는지</b>까지 설명했어요.</div>
+            <div class="explain"><div class="et">어디서 막혔나</div><p>노드를 함수로 나누면 테스트가 쉬워집니다. 교안 1장에서 같은 이유로 나눕니다.</p></div>
+            <div class="where"><span class="wloc"><span class="k">교안</span><b>1장 · 12~20쪽 <span style="color:var(--c-text-3);font-weight:400">그래프와 노드</span></b></span></div>
+            <div class="mine"><div class="mh"><span class="n">내 답변<span class="c">2개</span></span><span class="cv">펼치기 ▾</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-pre">
+  <div class="sec-label">상태 · 발행 전</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/reports</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a>홈</a><a class="on">내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="split">
+        <div class="rail">
+          <div class="rt">회차</div>
+          <div class="ritem on"><div class="nm">미프 3차</div><div class="st">응시 완료</div></div>
+          <div class="ritem"><div class="nm">미프 2차</div><div class="st">다시 보기 1개 완료</div></div>
+          <div class="ritem"><div class="nm">미프 1차</div></div>
+        </div>
+        <div class="center">
+          <div class="msg">
+            <span class="ic">◴</span>
+            <h3>아직 발행 전이에요</h3>
+            <p>리포트는 <b>회차 마감 후 한꺼번에</b> 발행됩니다.</p>
+            <div class="sub">발행되면 알려드릴게요 · 발행 예정 07-15 이후</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-missed">
+  <div class="sec-label">상태 · 미응시 (리포트 없음)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/reports</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a>홈</a><a class="on">내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="split">
+        <div class="rail">
+          <div class="rt">회차</div>
+          <div class="ritem on"><div class="nm">미프 3차</div><div class="st">미응시</div></div>
+          <div class="ritem"><div class="nm">미프 2차</div></div>
+          <div class="ritem"><div class="nm">미프 1차</div></div>
+        </div>
+        <div class="center">
+          <div class="msg mute">
+            <span class="ic">–</span>
+            <h3>이 회차는 리포트가 없어요</h3>
+            <p>이해도 확인에 응시하지 않아 만들 내용이 없습니다.</p>
+            <div class="sub">사정이 있었다면 매니저에게 알려 주세요</div>
+            <div class="act"><button class="btn ghost">매니저에게 문의</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-void">
+  <div class="sec-label">상태 · 응시 기록이 확인 필요 (무효 응시)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/reports</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a>홈</a><a class="on">내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="split">
+        <div class="rail">
+          <div class="rt">회차</div>
+          <div class="ritem on"><div class="nm">미프 3차</div><div class="st">확인 필요</div></div>
+          <div class="ritem"><div class="nm">미프 2차</div></div>
+          <div class="ritem"><div class="nm">미프 1차</div></div>
+        </div>
+        <div class="center">
+          <div class="msg warn">
+            <span class="ic">?</span>
+            <h3>응시 기록을 확인하고 있어요</h3>
+            <p>답변이 거의 남지 않아 결과를 만들지 못했습니다. <b>매니저가 확인한 뒤</b> 다시 응시할 수 있어요.</p>
+            <div class="sub">연결 문제였거나 실수로 넘어갔을 수 있어요 — 확인되면 알려드립니다</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-empty">
+  <div class="sec-label">상태 · 리포트가 하나도 없음</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/reports</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a>홈</a><a class="on">내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="split">
+
+        <div class="center">
+          <div class="msg mute">
+            <span class="ic">·</span>
+            <h3>아직 받은 리포트가 없어요</h3>
+            <p>이해도 확인을 마치고 회차가 끝나면 여기에 쌓입니다.</p>
+            <div class="sub"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+</div>
+<script>
+  var PAGE = { locked:"page-locked", qa:"page-qa", after:"page-after", clear:"page-clear",
+               archive:"page-archive", pre:"page-pre", missed:"page-missed", void:"page-void", empty:"page-empty" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "locked";
+    var id = PAGE[h] || "page-locked";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+</script>
+</body>
+</html>

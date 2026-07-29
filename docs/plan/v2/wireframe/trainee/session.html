@@ -1,0 +1,837 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TR-03 · 검증 세션 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --c-code:#1e2436; --c-code-fg:#d6dae6; --c-code-dim:#7d8497;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .doc-head ul{margin:var(--sp-3) 0 0 18px;color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .doc-head li{margin-bottom:3px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+  .chrome .fs{font-size:10px;font-weight:700;color:var(--c-text-3);white-space:nowrap}
+
+  /* 세션 — 전체화면. 나브도, 나가는 링크도 없다 */
+  .app{display:flex;flex-direction:column;height:700px;background:var(--c-bg)}
+  .sbar{height:52px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5);flex:0 0 52px}
+  .sbar .l{display:flex;align-items:center;gap:var(--sp-4)}
+  .sbar .qn{font-size:var(--fs-sm);font-weight:700}
+  .sbar .dots{display:flex;gap:6px;align-items:center}
+  .sbar .dots i{width:22px;height:5px;border-radius:3px;background:var(--c-border-strong);display:block}
+  .sbar .dots i.done{background:var(--c-success)}
+  .sbar .dots i.now{background:var(--c-primary)}
+  .sbar .rt{font-size:11px;font-weight:700;color:var(--c-warning);background:var(--c-warning-soft);border-radius:20px;padding:3px 10px}
+  .sbar .el{font-size:var(--fs-xs);color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .sbar .el b{color:var(--c-text-2);font-weight:600}
+
+  /* 좌: 코드 · 우: 대화. 코드를 보면서 답을 쓰므로 둘이 동시에 보여야 한다 */
+  .split{display:flex;flex:1;min-height:0}
+  .codepane{flex:0 0 428px;background:var(--c-surface);border-right:1px solid var(--c-border);padding:var(--sp-5);display:flex;flex-direction:column;min-height:0}
+  .codepane .th{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-2);margin-bottom:var(--sp-3);flex:0 0 auto}
+  .codepane .th .nm{font-size:var(--fs-base);font-weight:700}
+  .codepane .th .loc{font-size:11px;color:var(--c-text-3);font-family:var(--mono)}
+  .code{background:var(--c-code);color:var(--c-code-fg);border-radius:var(--r-md);padding:var(--sp-3) 0;font-family:var(--mono);font-size:var(--fs-xs);line-height:1.9;overflow:auto;flex:1;min-height:0}
+  .code .r{display:block;padding:0 var(--sp-4);white-space:pre}
+  .code .r.hi{background:rgba(58,77,184,.34);box-shadow:inset 2px 0 0 #9db4ff}
+  .code .r.gap{opacity:.42}
+  .code .ln{color:var(--c-code-dim);display:inline-block;width:26px;user-select:none}
+  .code .kw{color:#9db4ff}.code .st{color:#a5d6a7}.code .fn{color:#ffd28a}.code .cm{color:#7d8497}
+  .callers{margin-top:var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);cursor:pointer;flex:0 0 auto}
+  .callers .cv{color:var(--c-text-3)}
+  .callers .f{font-family:var(--mono);color:var(--c-text-3)}
+  .callers .snip{margin-top:var(--sp-2);background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-sm);padding:var(--sp-2) var(--sp-3);font-family:var(--mono);font-size:11px;color:var(--c-text-2);line-height:1.8}
+
+  .thread{flex:1;min-width:0;display:flex;flex-direction:column}
+  .tscroll{flex:1;overflow-y:auto;padding:var(--sp-5) var(--sp-6);min-height:0}
+  .turn{margin-bottom:var(--sp-4)}
+  .turn:last-child{margin-bottom:0}
+  .qb{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);border-top-left-radius:var(--r-sm);padding:var(--sp-4);font-size:var(--fs-base);line-height:1.65;max-width:94%}
+  .qb .qh{font-size:var(--fs-xs);font-weight:700;color:var(--c-primary);margin-bottom:6px}
+  .qb .ref{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:11px;color:var(--c-text-3)}
+  .qb.now{border-color:#cdd4f2;box-shadow:0 1px 2px rgba(58,77,184,.10)}
+  .ab{background:var(--c-primary-soft);border:1px solid #cdd4f2;border-radius:var(--r-md);border-top-right-radius:var(--r-sm);padding:var(--sp-3) var(--sp-4);font-size:var(--fs-sm);line-height:1.7;margin:var(--sp-2) 0 0 auto;max-width:86%;color:var(--c-text)}
+  .ab .ah{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:4px}
+  .again{background:var(--c-info-soft);border:1px solid #cfe0f0;border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-top:var(--sp-2);max-width:94%}
+  .again .t{font-size:var(--fs-xs);font-weight:700;color:var(--c-info);margin-bottom:4px}
+  .again p{font-size:var(--fs-sm);line-height:1.65}
+  .typing{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-3);padding:var(--sp-3) 0}
+  .typing i{width:6px;height:6px;border-radius:50%;background:var(--c-border-strong);display:block}
+
+  .compose{flex:0 0 auto;border-top:1px solid var(--c-border);background:var(--c-surface);padding:var(--sp-4) var(--sp-6)}
+  .ans{border:1px solid var(--c-border-strong);border-radius:var(--r-md);background:#fff;padding:var(--sp-3) var(--sp-4);min-height:84px;font-size:var(--fs-base);color:var(--c-text-3);line-height:1.75}
+  .ans.filled{color:var(--c-text)}
+  .ans.off{background:var(--c-surface-2)}
+  .ameta{display:flex;align-items:center;justify-content:space-between;margin-top:6px;font-size:var(--fs-xs);color:var(--c-text-3)}
+  .ameta .short{color:var(--c-warning)}
+  .acts{display:flex;align-items:center;gap:var(--sp-3);margin-top:var(--sp-3)}
+  .acts .sp{flex:1}
+  .acts .oneway{font-size:var(--fs-xs);color:var(--c-text-3);text-align:right}
+  .acts .oneway b{color:var(--c-text-2)}
+  .hintgone{font-size:var(--fs-xs);color:var(--c-text-3);max-width:270px;line-height:1.5}
+  .hintgone b{color:var(--c-text-2)}
+  .nohint{font-size:var(--fs-xs);color:var(--c-text-3);max-width:300px;line-height:1.5}
+  .nohint b{color:var(--c-text-2)}
+
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:700;font-size:var(--fs-sm);cursor:pointer;padding:11px 22px;font-family:inherit;line-height:1.3;white-space:nowrap}
+  .btn:hover{background:#31429e}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong);font-weight:600}
+  .btn.ghost:hover{background:var(--c-surface-2)}
+  .btn.hint{padding:7px 14px;text-align:left;font-size:var(--fs-xs)}
+  .btn.off{background:#e8eaee;color:var(--c-text-3);cursor:not-allowed}
+  .btn.off:hover{background:#e8eaee}
+  .btn .k{display:block;font-size:10px;font-weight:600;color:var(--c-text-3);margin-top:2px;letter-spacing:0}
+  .btn.big{font-size:var(--fs-base);padding:13px 26px}
+
+  /* 시작 전 안내 · 마무리 카드가 놓이는 단일 컬럼 */
+  .smain{max-width:640px;width:100%;margin:0 auto;padding:var(--sp-6) var(--sp-5) var(--sp-8);overflow-y:auto}
+
+  /* ── 상태 메시지 카드 ──────────────────────────────────────────
+     아이콘 + 제목 + 설명 + 보조 + 액션. 흐름 안(.center)에 놓이든
+     오버레이로 뜨든 같은 컴포넌트다 — 배경이 깔리는지만 다르다.
+     폭은 460px 고정. 내용 길이로 폭이 변하면 화면마다 크기가 달라진다. */
+  .center{flex:1;display:flex;align-items:center;justify-content:center;padding:var(--sp-6);min-height:0;overflow-y:auto}
+  .msg{width:460px;max-width:100%;background:#fff;border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-6);text-align:center;box-shadow:0 1px 2px rgba(20,24,31,.04)}
+  .msg .ic{width:48px;height:48px;margin:0 auto var(--sp-4);border-radius:15px;display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--c-primary-soft);color:var(--c-primary)}
+  .msg h3{font-size:var(--fs-lg);margin-bottom:var(--sp-2);letter-spacing:-.01em}
+  .msg p{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.65}
+  .msg .sub{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:var(--sp-3);line-height:1.6}
+  .msg .act{margin-top:var(--sp-5);display:flex;gap:var(--sp-2);justify-content:center}
+  .msg.ok .ic{background:var(--c-success-soft);color:var(--c-success)}
+  .msg.warn .ic{background:var(--c-warning-soft);color:var(--c-warning)}
+  .msg.bad .ic{background:var(--c-danger-soft);color:var(--c-danger)}
+  /* 오버레이 — 진행이 막힌 상태에만. 배경을 깔고 같은 .msg를 띄운다 */
+  .overlay{position:absolute;inset:0;background:rgba(20,24,31,.55);display:flex;align-items:center;justify-content:center;padding:var(--sp-6);z-index:20}
+  .overlay .msg{box-shadow:var(--shadow-card);border-color:transparent}
+
+  /* 토스트 — 알리되 막지 않는 것. 액션이 없다 */
+  .toast{position:absolute;left:50%;transform:translateX(-50%);bottom:var(--sp-5);background:var(--c-code);color:#fff;font-size:var(--fs-sm);padding:11px var(--sp-5);border-radius:20px;box-shadow:var(--shadow-card);display:flex;align-items:center;gap:var(--sp-2);z-index:10}
+  .toast .em{color:#ffd28a;font-weight:700}
+
+  /* 시작 전 안내 — 되돌릴 수 없는 행동 앞 고지 */
+  .intro{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-6);box-shadow:0 1px 2px rgba(20,24,31,.04)}
+  .intro h2{font-size:var(--fs-2xl);letter-spacing:-.02em;margin-bottom:var(--sp-2)}
+  .intro .lead{font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-5)}
+  .irow{display:flex;gap:var(--sp-3);align-items:flex-start;padding:var(--sp-3) 0;border-top:1px solid var(--c-border);font-size:var(--fs-sm)}
+  .irow:first-of-type{border-top:0}
+  .irow .k{flex:0 0 20px;font-size:var(--fs-base);text-align:center}
+  .irow .v{color:var(--c-text-2)}
+  .irow .v b{color:var(--c-text)}
+  .icheck{display:flex;gap:var(--sp-2);align-items:center;margin-top:var(--sp-5);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .icheck .bx{width:17px;height:17px;border:1px solid var(--c-primary);border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#fff;background:var(--c-primary)}
+
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  body.embedded .sec-label{margin-top:0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">TR-03 · 교육생 · 웹 · 모드</span>
+    <h1>검증 세션 — 전체화면</h1>
+    <p>자기 코드의 한 지점에 대해, 그 자리에서, 왜 그렇게 됐는지 말하는 시간. <b>나브도 나가는 링크도 없다.</b></p>
+    <ul>
+      <li><b>단계 카운터를 보여주지 않는다.</b> 계단은 학생마다 어디까지 가는지 다르고 막히면 거기서 끝난다 — <code>3/4단계</code>처럼 쓰면 남은 개수를 약속하는 셈이라 거짓 진행률이 된다. 확정된 값인 <b>문제 2/3</b>만 쓴다.</li>
+      <li><b>남은 시간이 아니라 경과 시간.</b> 시간은 안내이고 강제로 끊지 않으므로 카운트다운을 두면 강제처럼 읽힌다.</li>
+      <li><b>내부 용어를 쓰지 않는다.</b> <code>L2 설계논리</code> 같은 표기는 화면에 없다.</li>
+      <li><b>힌트는 "다시 설명해 주세요"</b>다. 질문을 다르게 말할 뿐 코드 위치도 선택지도 주지 않고, <b>불이익이 없다는 것을 버튼 옆에 적는다.</b></li>
+      <li><b>창 이탈은 막지 않고 기록한다.</b> 막으면 우회하고, 기록하면 매니저가 본다. 복귀했을 때 한 번만 알린다.</li>
+      <li><b>한 문제 = 한 화면.</b> 세 문제는 서로 다른 개념이고 코드 지점도 파일도 다르다 — 같은 대화의 연속이 아니다. <b>끝난 문제는 다시 볼 수 없다</b>: 지금 문제와 무관한 데 시간을 쓰고, "아까 그거 틀린 것 같은데"만 남는다.</li>
+      <li><b>대화는 한 문제 안에서 쌓인다.</b> 질문이 앞 답변을 파고들며 최대 네 번 이어지므로, 앞 질문과 내 답변이 위에 남아야 <b>꼬리질문이라는 것</b>이 보인다.</li>
+      <li><b>코드는 왼쪽에 고정, 대화는 오른쪽.</b> 학생은 코드를 보면서 답을 쓴다 — 위아래로 쌓으면 "설명 대상"과 "설명 쓰는 곳"이 멀어져 계속 스크롤하게 된다.</li>
+      <li><b>코드는 블록 전체를 준다.</b> 함수·클래스 단위로 자르고 <b>지금 질문이 가리키는 줄만 하이라이트</b>가 옮겨간다. 몇 줄만 떼어 주면 "어디랑 연결되는지"를 답할 수 없고, 반대로 레포 전체를 주면 이해도가 아니라 <b>코드 찾는 속도</b>를 재게 된다. 호출부는 접어 두고 필요할 때 편다.</li>
+      <li><b>다시 보기는 같은 화면의 변형이다.</b> 막힌 개념만 · <b>같은 문항</b> · 힌트 없음 · 결과는 기록에만. 힌트 버튼이 그냥 없으면 고장으로 보이므로 <b>왜 없는지를 적는다</b> — 같은 문항이라 이미 설명을 들었다.</li>
+      <li><b>제출은 되돌릴 수 없다.</b> 세션 시작 때 한 번 고지하고 끝내지 않고, 제출 버튼 옆에 <b>지금 이 행동이 일방향이라는 것</b>을 계속 적는다. 마지막 답변만 라벨이 바뀌고 확인을 받는다.</li>
+    </ul>
+  </div>
+
+
+
+
+  <div class="rpage" id="page-intro">
+  <div class="sec-label">상태 · 시작 전 안내 (되돌릴 수 없는 행동 앞)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span></div>
+    <div class="app">
+      <div class="sbar"><div class="l"><span class="qn">이해도 확인</span></div><span class="el">미프 3차</span></div>
+      <div class="smain">
+        <div class="intro">
+          <h2>시작하기 전에</h2>
+          <div class="lead">내가 쓴 코드 <b>3군데</b>에 대해, 왜 그렇게 했는지 이야기하는 시간이에요. 한 군데마다 <b>이야기가 이어지면서</b> 몇 번 더 물어봐요.</div>
+          <div class="irow"><span class="k">⏱</span><span class="v">보통 <b>30~40분</b> 걸려요. 시간 제한은 없지만 <b>시작하면 중간에 나갈 수 없어요.</b></span></div>
+          <div class="irow"><span class="k">↦</span><span class="v">답을 <b>제출하면 고칠 수 없어요.</b> 앞으로만 갑니다.</span></div>
+          <div class="irow"><span class="k">🖥</span><span class="v">화면이 <b>전체화면으로 바뀌어요.</b> 다른 창을 열면 기록에 남습니다.</span></div>
+          <div class="irow"><span class="k">💬</span><span class="v">모르겠으면 <b>다시 설명해 달라고</b> 할 수 있어요. 써도 <b>불이익이 없어요.</b></span></div>
+          <div class="irow"><span class="k">🔒</span><span class="v">점수는 표시되지 않아요. 결과는 <b>리포트에서</b> 확인합니다.</span></div>
+          <div class="irow"><span class="k">👤</span><span class="v">주고받은 대화는 <b>매니저가 볼 수 있어요.</b></span></div>
+          <div class="icheck"><span class="bx">✓</span>지금 30~40분 동안 방해받지 않을 수 있어요</div>
+          <div class="acts"><span class="sp"></span><button class="btn">전체화면으로 시작하기</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-ask">
+  <div class="sec-label">화면 · 문제 시작 — 첫 질문</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar">
+        <div class="l"><span class="qn">문제 2 / 3</span><span class="dots"><i class="done"></i><i class="now"></i><i class=""></i></span></div>
+        <span class="el"><b>7분</b> 경과 · 시간 제한 없어요</span>
+      </div>      <div class="split">
+        <div class="codepane">
+          <div class="th"><span class="nm">HITL Trigger 조건</span><span class="loc">nodes.py</span></div>
+          <div class="code"><span class="r gap"><span class="ln">8</span><span class="cm"># 재시도 상한 — 넘으면 사람이 확인한다</span></span><span class="r gap"><span class="ln">9</span>MAX_ITERATIONS = <span class="st">3</span></span><span class="r gap"><span class="ln">10</span></span><span class="r gap"><span class="ln">11</span></span><span class="r"><span class="ln">12</span><span class="kw">def</span> <span class="fn">should_trigger_hitl</span>(state: AgentState) -&gt; <span class="kw">bool</span>:</span><span class="r"><span class="ln">13</span>    <span class="cm">"""사람 확인이 필요한지 판단한다."""</span></span><span class="r"><span class="ln">14</span>    <span class="kw">if</span> state[<span class="st">"retry"</span>] &gt; MAX_ITERATIONS:</span><span class="r"><span class="ln">15</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">16</span></span><span class="r"><span class="ln">17</span>    <span class="kw">if</span> state[<span class="st">"decision"</span>] == <span class="st">"REJECTED"</span>:</span><span class="r"><span class="ln">18</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">19</span></span><span class="r"><span class="ln">20</span>    <span class="kw">return</span> <span class="kw">False</span></span></div>
+          <div class="callers"><span class="cv">▸</span> 이 함수를 쓰는 곳 <span class="f">graph.py:41</span></div>
+        </div>
+        <div class="thread">
+          <div class="tscroll">
+            <div class="turn">
+              <div class="qb now">
+                <div class="qh">◆ 질문 1</div>
+                이 함수는 무슨 일을 하나요? 어떤 값이 들어오고, 어디에서 쓰이는지도 같이 이야기해 주세요.
+                <span class="ref">↳ nodes.py:12–20</span>
+              </div>
+            </div>
+          </div>
+        <div class="compose">
+          <div class="ans">답을 입력해 주세요</div>
+          <div class="ameta"><span>0자 · 3~5문장이면 충분해요</span><span>붙여넣기는 막혀 있어요</span></div>
+          <div class="acts"><button class="btn ghost hint">다시 설명해 주세요<span class="k">2번 쓸 수 있어요 · 불이익 없음</span></button><span class="sp"></span><div class="oneway">제출하면 <b>고칠 수 없어요</b></div><button class="btn off">답변 제출</button></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-callers">
+  <div class="sec-label">상태 · [이 함수를 쓰는 곳] 펼침</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar">
+        <div class="l"><span class="qn">문제 2 / 3</span><span class="dots"><i class="done"></i><i class="now"></i><i class=""></i></span></div>
+        <span class="el"><b>9분</b> 경과 · 시간 제한 없어요</span>
+      </div>      <div class="split">
+        <div class="codepane">
+          <div class="th"><span class="nm">HITL Trigger 조건</span><span class="loc">nodes.py</span></div>
+          <div class="code"><span class="r gap"><span class="ln">8</span><span class="cm"># 재시도 상한 — 넘으면 사람이 확인한다</span></span><span class="r gap"><span class="ln">9</span>MAX_ITERATIONS = <span class="st">3</span></span><span class="r gap"><span class="ln">10</span></span><span class="r gap"><span class="ln">11</span></span><span class="r"><span class="ln">12</span><span class="kw">def</span> <span class="fn">should_trigger_hitl</span>(state: AgentState) -&gt; <span class="kw">bool</span>:</span><span class="r"><span class="ln">13</span>    <span class="cm">"""사람 확인이 필요한지 판단한다."""</span></span><span class="r"><span class="ln">14</span>    <span class="kw">if</span> state[<span class="st">"retry"</span>] &gt; MAX_ITERATIONS:</span><span class="r"><span class="ln">15</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">16</span></span><span class="r"><span class="ln">17</span>    <span class="kw">if</span> state[<span class="st">"decision"</span>] == <span class="st">"REJECTED"</span>:</span><span class="r"><span class="ln">18</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">19</span></span><span class="r"><span class="ln">20</span>    <span class="kw">return</span> <span class="kw">False</span></span></div>
+          <div class="callers"><span class="cv">▾</span> 이 함수를 쓰는 곳
+            <div class="snip">graph.py:41<br><span style="color:#8b929c">workflow.add_conditional_edges(</span><br>&nbsp;&nbsp;<span style="color:#5a616b">"agent", should_trigger_hitl,</span><br>&nbsp;&nbsp;<span style="color:#5a616b">{True: "human", False: "end"})</span></div>
+          </div>
+        </div>
+        <div class="thread">
+          <div class="tscroll">
+            <div class="turn">
+              <div class="qb now">
+                <div class="qh">◆ 질문 1</div>
+                이 함수는 무슨 일을 하나요? 어떤 값이 들어오고, 어디에서 쓰이는지도 같이 이야기해 주세요.
+                <span class="ref">↳ nodes.py:12–20</span>
+              </div>
+            </div>
+          </div>
+        <div class="compose">
+          <div class="ans filled">state를 받아서 사람이 확인해야 하는 상황인지 True/False로…</div>
+          <div class="ameta"><span>34자 · 3~5문장이면 충분해요</span><span>붙여넣기는 막혀 있어요</span></div>
+          <div class="acts"><button class="btn ghost hint">다시 설명해 주세요<span class="k">2번 쓸 수 있어요 · 불이익 없음</span></button><span class="sp"></span><div class="oneway">제출하면 <b>고칠 수 없어요</b></div><button class="btn">답변 제출</button></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-thread">
+  <div class="sec-label">화면 · 꼬리질문 — 앞 답변을 파고든다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar">
+        <div class="l"><span class="qn">문제 2 / 3</span><span class="dots"><i class="done"></i><i class="now"></i><i class=""></i></span></div>
+        <span class="el"><b>12분</b> 경과 · 시간 제한 없어요</span>
+      </div>      <div class="split">
+        <div class="codepane">
+          <div class="th"><span class="nm">HITL Trigger 조건</span><span class="loc">nodes.py</span></div>
+          <div class="code"><span class="r gap"><span class="ln">8</span><span class="cm"># 재시도 상한 — 넘으면 사람이 확인한다</span></span><span class="r gap"><span class="ln">9</span>MAX_ITERATIONS = <span class="st">3</span></span><span class="r gap"><span class="ln">10</span></span><span class="r gap"><span class="ln">11</span></span><span class="r"><span class="ln">12</span><span class="kw">def</span> <span class="fn">should_trigger_hitl</span>(state: AgentState) -&gt; <span class="kw">bool</span>:</span><span class="r"><span class="ln">13</span>    <span class="cm">"""사람 확인이 필요한지 판단한다."""</span></span><span class="r hi"><span class="ln">14</span>    <span class="kw">if</span> state[<span class="st">"retry"</span>] &gt; MAX_ITERATIONS:</span><span class="r hi"><span class="ln">15</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">16</span></span><span class="r hi"><span class="ln">17</span>    <span class="kw">if</span> state[<span class="st">"decision"</span>] == <span class="st">"REJECTED"</span>:</span><span class="r hi"><span class="ln">18</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">19</span></span><span class="r"><span class="ln">20</span>    <span class="kw">return</span> <span class="kw">False</span></span></div>
+          <div class="callers"><span class="cv">▸</span> 이 함수를 쓰는 곳 <span class="f">graph.py:41</span></div>
+        </div>
+        <div class="thread">
+          <div class="tscroll">
+            <div class="turn">
+              <div class="qb">
+                <div class="qh">◆ 질문 1</div>
+                이 함수는 무슨 일을 하나요? 어떤 값이 들어오고, 어디에서 쓰이는지도 같이 이야기해 주세요.
+                <span class="ref">↳ nodes.py:12–20</span>
+              </div>
+              <div class="ab"><div class="ah">내 답변</div>state를 받아서 사람이 확인해야 하는 상황인지 True/False로 알려주는 함수입니다. 재시도가 3번을 넘거나 결정이 REJECTED면 True를 돌려줍니다. graph에서 분기 조건으로 씁니다.</div>
+            </div>
+            <div class="turn">
+              <div class="qb now">
+                <div class="qh">◆ 질문 2</div>
+                교안에서는 사람이 확인해야 하는 조건을 <b>세 가지</b>로 봤는데, 여기서는 두 가지만 보고 있어요. 왜 그렇게 하셨나요?
+                <span class="ref">↳ nodes.py:14, 17</span>
+              </div>
+            </div>
+          </div>
+        <div class="compose">
+          <div class="ans">답을 입력해 주세요</div>
+          <div class="ameta"><span>0자 · 3~5문장이면 충분해요</span><span>붙여넣기는 막혀 있어요</span></div>
+          <div class="acts"><button class="btn ghost hint">다시 설명해 주세요<span class="k">2번 쓸 수 있어요 · 불이익 없음</span></button><span class="sp"></span><div class="oneway">제출하면 <b>고칠 수 없어요</b></div><button class="btn off">답변 제출</button></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-short">
+  <div class="sec-label">상태 · 답변이 짧을 때 (차단 아님)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar">
+        <div class="l"><span class="qn">문제 2 / 3</span><span class="dots"><i class="done"></i><i class="now"></i><i class=""></i></span></div>
+        <span class="el"><b>13분</b> 경과 · 시간 제한 없어요</span>
+      </div>      <div class="split">
+        <div class="codepane">
+          <div class="th"><span class="nm">HITL Trigger 조건</span><span class="loc">nodes.py</span></div>
+          <div class="code"><span class="r gap"><span class="ln">8</span><span class="cm"># 재시도 상한 — 넘으면 사람이 확인한다</span></span><span class="r gap"><span class="ln">9</span>MAX_ITERATIONS = <span class="st">3</span></span><span class="r gap"><span class="ln">10</span></span><span class="r gap"><span class="ln">11</span></span><span class="r"><span class="ln">12</span><span class="kw">def</span> <span class="fn">should_trigger_hitl</span>(state: AgentState) -&gt; <span class="kw">bool</span>:</span><span class="r"><span class="ln">13</span>    <span class="cm">"""사람 확인이 필요한지 판단한다."""</span></span><span class="r hi"><span class="ln">14</span>    <span class="kw">if</span> state[<span class="st">"retry"</span>] &gt; MAX_ITERATIONS:</span><span class="r hi"><span class="ln">15</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">16</span></span><span class="r hi"><span class="ln">17</span>    <span class="kw">if</span> state[<span class="st">"decision"</span>] == <span class="st">"REJECTED"</span>:</span><span class="r hi"><span class="ln">18</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">19</span></span><span class="r"><span class="ln">20</span>    <span class="kw">return</span> <span class="kw">False</span></span></div>
+          <div class="callers"><span class="cv">▸</span> 이 함수를 쓰는 곳 <span class="f">graph.py:41</span></div>
+        </div>
+        <div class="thread">
+          <div class="tscroll">
+            <div class="turn">
+              <div class="qb">
+                <div class="qh">◆ 질문 1</div>
+                이 함수는 무슨 일을 하나요? 어떤 값이 들어오고, 어디에서 쓰이는지도 같이 이야기해 주세요.
+                <span class="ref">↳ nodes.py:12–20</span>
+              </div>
+              <div class="ab"><div class="ah">내 답변</div>state를 받아서 사람이 확인해야 하는 상황인지 True/False로 알려주는 함수입니다. 재시도가 3번을 넘거나 결정이 REJECTED면 True를 돌려줍니다. graph에서 분기 조건으로 씁니다.</div>
+            </div>
+            <div class="turn">
+              <div class="qb now">
+                <div class="qh">◆ 질문 2</div>
+                교안에서는 사람이 확인해야 하는 조건을 <b>세 가지</b>로 봤는데, 여기서는 두 가지만 보고 있어요. 왜 그렇게 하셨나요?
+                <span class="ref">↳ nodes.py:14, 17</span>
+              </div>
+            </div>
+          </div>
+        <div class="compose">
+          <div class="ans filled">그냥 두 개면 될 것 같아서요</div>
+          <div class="ameta"><span>15자 · 3~5문장이면 충분해요</span><span class="short">조금 더 써 볼까요? 지금은 짧아요</span></div>
+          <div class="acts"><button class="btn ghost hint">다시 설명해 주세요<span class="k">2번 쓸 수 있어요 · 불이익 없음</span></button><span class="sp"></span><div class="oneway">제출하면 <b>고칠 수 없어요</b></div><button class="btn">답변 제출</button></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-again">
+  <div class="sec-label">상태 · [다시 설명해 주세요] 1번 사용</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar">
+        <div class="l"><span class="qn">문제 2 / 3</span><span class="dots"><i class="done"></i><i class="now"></i><i class=""></i></span></div>
+        <span class="el"><b>14분</b> 경과 · 시간 제한 없어요</span>
+      </div>      <div class="split">
+        <div class="codepane">
+          <div class="th"><span class="nm">HITL Trigger 조건</span><span class="loc">nodes.py</span></div>
+          <div class="code"><span class="r gap"><span class="ln">8</span><span class="cm"># 재시도 상한 — 넘으면 사람이 확인한다</span></span><span class="r gap"><span class="ln">9</span>MAX_ITERATIONS = <span class="st">3</span></span><span class="r gap"><span class="ln">10</span></span><span class="r gap"><span class="ln">11</span></span><span class="r"><span class="ln">12</span><span class="kw">def</span> <span class="fn">should_trigger_hitl</span>(state: AgentState) -&gt; <span class="kw">bool</span>:</span><span class="r"><span class="ln">13</span>    <span class="cm">"""사람 확인이 필요한지 판단한다."""</span></span><span class="r hi"><span class="ln">14</span>    <span class="kw">if</span> state[<span class="st">"retry"</span>] &gt; MAX_ITERATIONS:</span><span class="r hi"><span class="ln">15</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">16</span></span><span class="r hi"><span class="ln">17</span>    <span class="kw">if</span> state[<span class="st">"decision"</span>] == <span class="st">"REJECTED"</span>:</span><span class="r hi"><span class="ln">18</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">19</span></span><span class="r"><span class="ln">20</span>    <span class="kw">return</span> <span class="kw">False</span></span></div>
+          <div class="callers"><span class="cv">▸</span> 이 함수를 쓰는 곳 <span class="f">graph.py:41</span></div>
+        </div>
+        <div class="thread">
+          <div class="tscroll">
+            <div class="turn">
+              <div class="qb">
+                <div class="qh">◆ 질문 1</div>
+                이 함수는 무슨 일을 하나요? 어떤 값이 들어오고, 어디에서 쓰이는지도 같이 이야기해 주세요.
+                <span class="ref">↳ nodes.py:12–20</span>
+              </div>
+              <div class="ab"><div class="ah">내 답변</div>state를 받아서 사람이 확인해야 하는 상황인지 True/False로 알려주는 함수입니다. 재시도가 3번을 넘거나 결정이 REJECTED면 True를 돌려줍니다. graph에서 분기 조건으로 씁니다.</div>
+            </div>
+            <div class="turn">
+              <div class="qb now">
+                <div class="qh">◆ 질문 2</div>
+                교안에서는 사람이 확인해야 하는 조건을 <b>세 가지</b>로 봤는데, 여기서는 두 가지만 보고 있어요. 왜 그렇게 하셨나요?
+                <span class="ref">↳ nodes.py:14, 17</span>
+              </div>
+              <div class="again"><div class="t">다시 설명하면</div><p>이 함수가 <b>True</b>를 돌려주는 경우를 먼저 짚어 보고, 교안에 있던 나머지 한 가지를 여기서는 왜 넣지 않았는지 이야기해 주세요.</p></div>
+            </div>
+          </div>
+        <div class="compose">
+          <div class="ans filled">retry 횟수가 넘어가거나 REJECTED가 오면 사람이 봐야 한다고 생각해서 두 개만 넣었습니다. 세 번째 조건은…</div>
+          <div class="ameta"><span>61자 · 3~5문장이면 충분해요</span><span>붙여넣기는 막혀 있어요</span></div>
+          <div class="acts"><button class="btn ghost hint">다시 설명해 주세요<span class="k">1번 남았어요 · 불이익 없음</span></button><span class="sp"></span><div class="oneway">제출하면 <b>고칠 수 없어요</b></div><button class="btn">답변 제출</button></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-hintgone">
+  <div class="sec-label">상태 · 다시 설명 2번 모두 사용</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar">
+        <div class="l"><span class="qn">문제 2 / 3</span><span class="dots"><i class="done"></i><i class="now"></i><i class=""></i></span></div>
+        <span class="el"><b>17분</b> 경과 · 시간 제한 없어요</span>
+      </div>      <div class="split">
+        <div class="codepane">
+          <div class="th"><span class="nm">HITL Trigger 조건</span><span class="loc">nodes.py</span></div>
+          <div class="code"><span class="r gap"><span class="ln">8</span><span class="cm"># 재시도 상한 — 넘으면 사람이 확인한다</span></span><span class="r gap"><span class="ln">9</span>MAX_ITERATIONS = <span class="st">3</span></span><span class="r gap"><span class="ln">10</span></span><span class="r gap"><span class="ln">11</span></span><span class="r"><span class="ln">12</span><span class="kw">def</span> <span class="fn">should_trigger_hitl</span>(state: AgentState) -&gt; <span class="kw">bool</span>:</span><span class="r"><span class="ln">13</span>    <span class="cm">"""사람 확인이 필요한지 판단한다."""</span></span><span class="r hi"><span class="ln">14</span>    <span class="kw">if</span> state[<span class="st">"retry"</span>] &gt; MAX_ITERATIONS:</span><span class="r hi"><span class="ln">15</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">16</span></span><span class="r hi"><span class="ln">17</span>    <span class="kw">if</span> state[<span class="st">"decision"</span>] == <span class="st">"REJECTED"</span>:</span><span class="r hi"><span class="ln">18</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">19</span></span><span class="r"><span class="ln">20</span>    <span class="kw">return</span> <span class="kw">False</span></span></div>
+          <div class="callers"><span class="cv">▸</span> 이 함수를 쓰는 곳 <span class="f">graph.py:41</span></div>
+        </div>
+        <div class="thread">
+          <div class="tscroll">
+            <div class="turn">
+              <div class="qb">
+                <div class="qh">◆ 질문 1</div>
+                이 함수는 무슨 일을 하나요? 어떤 값이 들어오고, 어디에서 쓰이는지도 같이 이야기해 주세요.
+                <span class="ref">↳ nodes.py:12–20</span>
+              </div>
+              <div class="ab"><div class="ah">내 답변</div>state를 받아서 사람이 확인해야 하는 상황인지 True/False로 알려주는 함수입니다. 재시도가 3번을 넘거나 결정이 REJECTED면 True를 돌려줍니다. graph에서 분기 조건으로 씁니다.</div>
+            </div>
+            <div class="turn">
+              <div class="qb now">
+                <div class="qh">◆ 질문 2</div>
+                교안에서는 사람이 확인해야 하는 조건을 <b>세 가지</b>로 봤는데, 여기서는 두 가지만 보고 있어요. 왜 그렇게 하셨나요?
+                <span class="ref">↳ nodes.py:14, 17</span>
+              </div>
+              <div class="again"><div class="t">다시 설명하면</div><p>조건이 <b>두 개</b>일 때와 <b>세 개</b>일 때, 사람이 확인하게 되는 상황이 어떻게 달라질까요?</p></div>
+            </div>
+          </div>
+        <div class="compose">
+          <div class="ans">답을 입력해 주세요</div>
+          <div class="ameta"><span>0자 · 3~5문장이면 충분해요</span><span>붙여넣기는 막혀 있어요</span></div>
+          <div class="acts"><div class="hintgone"><b>더 이상 설명해 드릴 수 없어요.</b> 아는 만큼만 써 주세요 — 빈칸으로 두지 않는 게 좋아요.</div><span class="sp"></span><div class="oneway">제출하면 <b>고칠 수 없어요</b></div><button class="btn off">답변 제출</button></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-waiting">
+  <div class="sec-label">상태 · 다음 질문 준비 중</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar">
+        <div class="l"><span class="qn">문제 2 / 3</span><span class="dots"><i class="done"></i><i class="now"></i><i class=""></i></span></div>
+        <span class="el"><b>19분</b> 경과 · 시간 제한 없어요</span>
+      </div>      <div class="split">
+        <div class="codepane" style="opacity:.45">
+          <div class="th"><span class="nm">HITL Trigger 조건</span><span class="loc">nodes.py</span></div>
+          <div class="code"><span class="r gap"><span class="ln">8</span><span class="cm"># 재시도 상한 — 넘으면 사람이 확인한다</span></span><span class="r gap"><span class="ln">9</span>MAX_ITERATIONS = <span class="st">3</span></span><span class="r gap"><span class="ln">10</span></span><span class="r gap"><span class="ln">11</span></span><span class="r"><span class="ln">12</span><span class="kw">def</span> <span class="fn">should_trigger_hitl</span>(state: AgentState) -&gt; <span class="kw">bool</span>:</span><span class="r"><span class="ln">13</span>    <span class="cm">"""사람 확인이 필요한지 판단한다."""</span></span><span class="r"><span class="ln">14</span>    <span class="kw">if</span> state[<span class="st">"retry"</span>] &gt; MAX_ITERATIONS:</span><span class="r"><span class="ln">15</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">16</span></span><span class="r"><span class="ln">17</span>    <span class="kw">if</span> state[<span class="st">"decision"</span>] == <span class="st">"REJECTED"</span>:</span><span class="r"><span class="ln">18</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">19</span></span><span class="r"><span class="ln">20</span>    <span class="kw">return</span> <span class="kw">False</span></span></div>
+          <div class="callers"><span class="cv">▸</span> 이 함수를 쓰는 곳 <span class="f">graph.py:41</span></div>
+        </div>
+        <div class="thread">
+          <div class="tscroll">
+            <div class="turn">
+              <div class="qb">
+                <div class="qh">◆ 질문 1</div>
+                이 함수는 무슨 일을 하나요? 어떤 값이 들어오고, 어디에서 쓰이는지도 같이 이야기해 주세요.
+                <span class="ref">↳ nodes.py:12–20</span>
+              </div>
+              <div class="ab"><div class="ah">내 답변</div>state를 받아서 사람이 확인해야 하는 상황인지 True/False로 알려주는 함수입니다. 재시도가 3번을 넘거나 결정이 REJECTED면 True를 돌려줍니다. graph에서 분기 조건으로 씁니다.</div>
+            </div>
+            <div class="turn">
+              <div class="qb">
+                <div class="qh">◆ 질문 2</div>
+                교안에서는 사람이 확인해야 하는 조건을 <b>세 가지</b>로 봤는데, 여기서는 두 가지만 보고 있어요. 왜 그렇게 하셨나요?
+                <span class="ref">↳ nodes.py:14, 17</span>
+              </div>
+              <div class="ab"><div class="ah">내 답변</div>retry 횟수가 넘거나 REJECTED가 오면 사람이 봐야 한다고 생각해서 두 개만 넣었습니다.</div>
+            </div>
+            <div class="typing"><i></i><i></i><i></i> 다음 질문을 준비하고 있어요</div>
+          </div>
+        <div class="compose">
+          <div class="ans off">답변을 준비하는 동안 기다려 주세요</div>
+          <div class="ameta"><span>0자 · 3~5문장이면 충분해요</span><span>붙여넣기는 막혀 있어요</span></div>
+          <div class="acts"><span class="sp"></span><button class="btn off">답변 제출</button></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-deeper">
+  <div class="sec-label">화면 · 세 번째 질문 — 다른 방법</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar">
+        <div class="l"><span class="qn">문제 2 / 3</span><span class="dots"><i class="done"></i><i class="now"></i><i class=""></i></span></div>
+        <span class="el"><b>21분</b> 경과 · 시간 제한 없어요</span>
+      </div>      <div class="split">
+        <div class="codepane">
+          <div class="th"><span class="nm">HITL Trigger 조건</span><span class="loc">nodes.py</span></div>
+          <div class="code"><span class="r gap"><span class="ln">8</span><span class="cm"># 재시도 상한 — 넘으면 사람이 확인한다</span></span><span class="r gap"><span class="ln">9</span>MAX_ITERATIONS = <span class="st">3</span></span><span class="r gap"><span class="ln">10</span></span><span class="r gap"><span class="ln">11</span></span><span class="r"><span class="ln">12</span><span class="kw">def</span> <span class="fn">should_trigger_hitl</span>(state: AgentState) -&gt; <span class="kw">bool</span>:</span><span class="r"><span class="ln">13</span>    <span class="cm">"""사람 확인이 필요한지 판단한다."""</span></span><span class="r"><span class="ln">14</span>    <span class="kw">if</span> state[<span class="st">"retry"</span>] &gt; MAX_ITERATIONS:</span><span class="r"><span class="ln">15</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">16</span></span><span class="r"><span class="ln">17</span>    <span class="kw">if</span> state[<span class="st">"decision"</span>] == <span class="st">"REJECTED"</span>:</span><span class="r"><span class="ln">18</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">19</span></span><span class="r hi"><span class="ln">20</span>    <span class="kw">return</span> <span class="kw">False</span></span></div>
+          <div class="callers"><span class="cv">▸</span> 이 함수를 쓰는 곳 <span class="f">graph.py:41</span></div>
+        </div>
+        <div class="thread">
+          <div class="tscroll">
+            <div class="turn">
+              <div class="qb">
+                <div class="qh">◆ 질문 1</div>
+                이 함수는 무슨 일을 하나요? 어떤 값이 들어오고, 어디에서 쓰이는지도 같이 이야기해 주세요.
+                <span class="ref">↳ nodes.py:12–20</span>
+              </div>
+              <div class="ab"><div class="ah">내 답변</div>state를 받아서 사람이 확인해야 하는 상황인지 True/False로 알려주는 함수입니다. 재시도가 3번을 넘거나 결정이 REJECTED면 True를 돌려줍니다. graph에서 분기 조건으로 씁니다.</div>
+            </div>
+            <div class="turn">
+              <div class="qb">
+                <div class="qh">◆ 질문 2</div>
+                교안에서는 사람이 확인해야 하는 조건을 <b>세 가지</b>로 봤는데, 여기서는 두 가지만 보고 있어요. 왜 그렇게 하셨나요?
+                <span class="ref">↳ nodes.py:14, 17</span>
+              </div>
+              <div class="ab"><div class="ah">내 답변</div>retry 횟수가 넘거나 REJECTED가 오면 사람이 봐야 한다고 생각해서 두 개만 넣었습니다.</div>
+            </div>
+            <div class="turn">
+              <div class="qb now">
+                <div class="qh">◆ 질문 3</div>
+                이 조건들을 쓰지 않고 다르게 만들 수도 있었을까요? 다른 방법이 있다면 무엇이 달라지는지 이야기해 주세요.
+                <span class="ref">↳ nodes.py:20</span>
+              </div>
+            </div>
+          </div>
+        <div class="compose">
+          <div class="ans">답을 입력해 주세요</div>
+          <div class="ameta"><span>0자 · 3~5문장이면 충분해요</span><span>붙여넣기는 막혀 있어요</span></div>
+          <div class="acts"><button class="btn ghost hint">다시 설명해 주세요<span class="k">2번 쓸 수 있어요 · 불이익 없음</span></button><span class="sp"></span><div class="oneway">제출하면 <b>고칠 수 없어요</b></div><button class="btn off">답변 제출</button></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-last">
+  <div class="sec-label">상태 · 마지막 문제의 마지막 답변</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar">
+        <div class="l"><span class="qn">문제 3 / 3</span><span class="dots"><i class="done"></i><i class="done"></i><i class="now"></i></span></div>
+        <span class="el"><b>34분</b> 경과 · 시간 제한 없어요</span>
+      </div>      <div class="split">
+        <div class="codepane">
+          <div class="th"><span class="nm">State 관리</span><span class="loc">state.py</span></div>
+          <div class="code"><span class="r gap"><span class="ln">1</span><span class="kw">from</span> typing <span class="kw">import</span> Annotated, TypedDict</span><span class="r gap"><span class="ln">2</span></span><span class="r"><span class="ln">6</span><span class="kw">class</span> <span class="fn">AgentState</span>(TypedDict):</span><span class="r hi"><span class="ln">7</span>    messages: Annotated[<span class="kw">list</span>, add_messages]</span><span class="r"><span class="ln">8</span>    retry: <span class="kw">int</span></span><span class="r"><span class="ln">9</span>    decision: <span class="kw">str</span></span><span class="r"><span class="ln">10</span>    human_decision: <span class="kw">str</span> | <span class="kw">None</span></span></div>
+          <div class="callers"><span class="cv">▸</span> 이 타입을 쓰는 곳 <span class="f">graph.py:12 · nodes.py:12</span></div>
+        </div>
+        <div class="thread">
+          <div class="tscroll">
+            <div class="turn">
+              <div class="qb">
+                <div class="qh">◆ 질문 1</div>
+                messages에 add_messages를 붙인 이유가 뭔가요?
+                <span class="ref">↳ state.py:7</span>
+              </div>
+              <div class="ab"><div class="ah">내 답변</div>그냥 리스트로 두면 노드마다 덮어써져서, 이어 붙이도록 하려고 썼습니다.</div>
+            </div>
+            <div class="turn">
+              <div class="qb now">
+                <div class="qh">◆ 질문 2</div>
+                이걸 쓰지 않았다면 어디에서 문제가 생겼을까요?
+                <span class="ref">↳ state.py:7</span>
+              </div>
+            </div>
+          </div>
+        <div class="compose">
+          <div class="ans filled">HITL 노드에서 사람 답을 받아 다시 agent로 돌아갈 때, 앞 대화가 사라져서 같은 질문을 반복했을 것 같습니다.</div>
+          <div class="ameta"><span>58자 · 3~5문장이면 충분해요</span><span>붙여넣기는 막혀 있어요</span></div>
+          <div class="acts"><button class="btn ghost hint">다시 설명해 주세요<span class="k">2번 쓸 수 있어요 · 불이익 없음</span></button><span class="sp"></span><div class="oneway"><b>마지막 답변이에요</b><br>제출하면 끝납니다</div><button class="btn">답변 제출하고 마치기</button></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-away">
+  <div class="sec-label">상태 · 다른 창에 다녀옴 (차단 아님 · 기록)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar">
+        <div class="l"><span class="qn">문제 2 / 3</span><span class="dots"><i class="done"></i><i class="now"></i><i class=""></i></span></div>
+        <span class="el"><b>15분</b> 경과 · 시간 제한 없어요</span>
+      </div>      <div class="split">
+        <div class="codepane">
+          <div class="th"><span class="nm">HITL Trigger 조건</span><span class="loc">nodes.py</span></div>
+          <div class="code"><span class="r gap"><span class="ln">8</span><span class="cm"># 재시도 상한 — 넘으면 사람이 확인한다</span></span><span class="r gap"><span class="ln">9</span>MAX_ITERATIONS = <span class="st">3</span></span><span class="r gap"><span class="ln">10</span></span><span class="r gap"><span class="ln">11</span></span><span class="r"><span class="ln">12</span><span class="kw">def</span> <span class="fn">should_trigger_hitl</span>(state: AgentState) -&gt; <span class="kw">bool</span>:</span><span class="r"><span class="ln">13</span>    <span class="cm">"""사람 확인이 필요한지 판단한다."""</span></span><span class="r hi"><span class="ln">14</span>    <span class="kw">if</span> state[<span class="st">"retry"</span>] &gt; MAX_ITERATIONS:</span><span class="r hi"><span class="ln">15</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">16</span></span><span class="r hi"><span class="ln">17</span>    <span class="kw">if</span> state[<span class="st">"decision"</span>] == <span class="st">"REJECTED"</span>:</span><span class="r hi"><span class="ln">18</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">19</span></span><span class="r"><span class="ln">20</span>    <span class="kw">return</span> <span class="kw">False</span></span></div>
+          <div class="callers"><span class="cv">▸</span> 이 함수를 쓰는 곳 <span class="f">graph.py:41</span></div>
+        </div>
+        <div class="thread">
+          <div class="tscroll">
+            <div class="turn">
+              <div class="qb">
+                <div class="qh">◆ 질문 1</div>
+                이 함수는 무슨 일을 하나요? 어떤 값이 들어오고, 어디에서 쓰이는지도 같이 이야기해 주세요.
+                <span class="ref">↳ nodes.py:12–20</span>
+              </div>
+              <div class="ab"><div class="ah">내 답변</div>state를 받아서 사람이 확인해야 하는 상황인지 True/False로 알려주는 함수입니다. 재시도가 3번을 넘거나 결정이 REJECTED면 True를 돌려줍니다. graph에서 분기 조건으로 씁니다.</div>
+            </div>
+            <div class="turn">
+              <div class="qb now">
+                <div class="qh">◆ 질문 2</div>
+                교안에서는 사람이 확인해야 하는 조건을 <b>세 가지</b>로 봤는데, 여기서는 두 가지만 보고 있어요. 왜 그렇게 하셨나요?
+                <span class="ref">↳ nodes.py:14, 17</span>
+              </div>
+            </div>
+          </div>
+        <div class="compose">
+          <div class="ans">답을 입력해 주세요</div>
+          <div class="ameta"><span>0자 · 3~5문장이면 충분해요</span><span>붙여넣기는 막혀 있어요</span></div>
+          <div class="acts"><button class="btn ghost hint">다시 설명해 주세요<span class="k">2번 쓸 수 있어요 · 불이익 없음</span></button><span class="sp"></span><div class="oneway">제출하면 <b>고칠 수 없어요</b></div><button class="btn off">답변 제출</button></div>
+        </div>
+        </div>
+      </div>
+    </div>
+    <div class="toast"><span class="em">화면을 벗어났다 돌아왔어요</span> · 42초 · 기록에 남습니다</div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-stop">
+  <div class="sec-label">상태 · 이 문제 종료 (설명이 닿지 않음)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar"><div class="l"><span class="qn">문제 2 / 3</span><span class="dots"><i class="done"></i><i class="now"></i><i></i></span></div><span class="el"><b>23분</b> 경과 · 시간 제한 없어요</span></div>
+      <div class="center"><div class="msg"><span class="ic">→</span>
+          <h3>이 문제는 여기까지 볼게요</h3>
+          <p>이 부분은 <b>리포트에서 자세히 설명해드릴게요.</b> 교안에서 어디를 다시 보면 되는지도 같이 알려드립니다.</p>
+          <div class="sub">남은 문제는 계속 진행됩니다 · 이 문제 때문에 다음 문제가 어려워지지 않아요</div>
+          <div class="act"><button class="btn">다음 문제로</button></div></div></div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-next">
+  <div class="sec-label">상태 · 다음 문제로 넘어감 (앞 문제는 닫힌다)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar"><div class="l"><span class="qn">문제 3 / 3</span><span class="dots"><i class="done"></i><i class="done"></i><i class="now"></i></span></div><span class="el"><b>24분</b> 경과 · 시간 제한 없어요</span></div>
+      <div class="center"><div class="msg"><span class="ic">▸</span>
+          <h3>마지막 문제예요</h3>
+          <p><b>State 관리</b>에 대해 이야기해요. <span style="color:var(--c-text-3)">state.py</span></p>
+          <div class="sub">앞 문제는 닫혔어요 · 다시 열 수 없습니다</div>
+          <div class="act"><button class="btn">시작하기</button></div></div></div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-offline">
+  <div class="sec-label">상태 · 네트워크 끊김 (답변 보존)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar">
+        <div class="l"><span class="qn">문제 2 / 3</span><span class="dots"><i class="done"></i><i class="now"></i><i class=""></i></span></div>
+        <span class="el"><b>16분</b> 경과 · 시간 제한 없어요</span>
+      </div>      <div class="split">
+        <div class="codepane">
+          <div class="th"><span class="nm">HITL Trigger 조건</span><span class="loc">nodes.py</span></div>
+          <div class="code"><span class="r gap"><span class="ln">8</span><span class="cm"># 재시도 상한 — 넘으면 사람이 확인한다</span></span><span class="r gap"><span class="ln">9</span>MAX_ITERATIONS = <span class="st">3</span></span><span class="r gap"><span class="ln">10</span></span><span class="r gap"><span class="ln">11</span></span><span class="r"><span class="ln">12</span><span class="kw">def</span> <span class="fn">should_trigger_hitl</span>(state: AgentState) -&gt; <span class="kw">bool</span>:</span><span class="r"><span class="ln">13</span>    <span class="cm">"""사람 확인이 필요한지 판단한다."""</span></span><span class="r hi"><span class="ln">14</span>    <span class="kw">if</span> state[<span class="st">"retry"</span>] &gt; MAX_ITERATIONS:</span><span class="r hi"><span class="ln">15</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">16</span></span><span class="r hi"><span class="ln">17</span>    <span class="kw">if</span> state[<span class="st">"decision"</span>] == <span class="st">"REJECTED"</span>:</span><span class="r hi"><span class="ln">18</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">19</span></span><span class="r"><span class="ln">20</span>    <span class="kw">return</span> <span class="kw">False</span></span></div>
+          <div class="callers"><span class="cv">▸</span> 이 함수를 쓰는 곳 <span class="f">graph.py:41</span></div>
+        </div>
+        <div class="thread">
+          <div class="tscroll">
+            <div class="turn">
+              <div class="qb">
+                <div class="qh">◆ 질문 1</div>
+                이 함수는 무슨 일을 하나요? 어떤 값이 들어오고, 어디에서 쓰이는지도 같이 이야기해 주세요.
+                <span class="ref">↳ nodes.py:12–20</span>
+              </div>
+              <div class="ab"><div class="ah">내 답변</div>state를 받아서 사람이 확인해야 하는 상황인지 True/False로 알려주는 함수입니다. 재시도가 3번을 넘거나 결정이 REJECTED면 True를 돌려줍니다. graph에서 분기 조건으로 씁니다.</div>
+            </div>
+            <div class="turn">
+              <div class="qb now">
+                <div class="qh">◆ 질문 2</div>
+                교안에서는 사람이 확인해야 하는 조건을 <b>세 가지</b>로 봤는데, 여기서는 두 가지만 보고 있어요. 왜 그렇게 하셨나요?
+                <span class="ref">↳ nodes.py:14, 17</span>
+              </div>
+            </div>
+          </div>
+        <div class="compose">
+          <div class="ans">답을 입력해 주세요</div>
+          <div class="ameta"><span>0자 · 3~5문장이면 충분해요</span><span>붙여넣기는 막혀 있어요</span></div>
+          <div class="acts"><button class="btn ghost hint">다시 설명해 주세요<span class="k">2번 쓸 수 있어요 · 불이익 없음</span></button><span class="sp"></span><div class="oneway">제출하면 <b>고칠 수 없어요</b></div><button class="btn off">답변 제출</button></div>
+        </div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay">
+      <div class="msg bad">
+        <span class="ic">⚡</span>
+        <h3>연결이 끊겼어요</h3>
+        <p>쓰던 답변은 이 기기에 남아 있어요. 연결되면 <b>마지막 질문부터</b> 이어서 진행합니다.</p>
+        <div class="sub">경과 시간은 멈추지 않아요 · 시간 제한이 없으니 서두르지 않아도 됩니다</div>
+        <div class="act"><button class="btn ghost">다시 연결</button></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-end">
+  <div class="sec-label">상태 · 세션 종료</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar"><div class="l"><span class="qn">이해도 확인</span><span class="dots"><i class="done"></i><i class="done"></i><i class="done"></i></span></div><span class="el">36분 걸렸어요</span></div>
+      <div class="center"><div class="msg ok"><span class="ic">✓</span>
+          <h3>끝났어요. 수고했어요</h3>
+          <p>리포트는 <b>회차 마감 후 한꺼번에</b> 발행됩니다. 발행되면 알려드릴게요.</p>
+          <div class="sub">막힌 부분은 리포트에서 자세히 설명해드려요 · 교안에서 어디를 보면 되는지도 함께</div>
+          <div class="act"><button class="btn">홈으로</button></div></div></div>
+    </div>
+  </div>
+  </div>
+
+
+  <div class="rpage" id="page-r-intro">
+  <div class="sec-label">다시 보기 · 시작 전 안내 (1차와 다른 점을 먼저)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3/retry</span></div>
+    <div class="app">
+      <div class="sbar"><div class="l"><span class="qn">다시 보기</span><span class="rt">기록에만 남아요</span></div><span class="el">미프 3차</span></div>
+      <div class="smain">
+        <div class="intro">
+          <h2>다시 보기 시작하기 전에</h2>
+          <div class="lead">지난번에 <b>덜 이야기된 2군데</b>를 다시 봐요. 리포트에서 안내한 교안을 보고 왔다면 시작해도 좋아요.</div>
+          <div class="irow"><span class="k">↺</span><span class="v"><b>지난번과 같은 질문</b>이에요. 그래서 이번에는 <b>다시 설명해 주는 도움이 없어요.</b></span></div>
+          <div class="irow"><span class="k">◇</span><span class="v"><b>지금 결과는 그대로예요.</b> 다시 본 것은 기록에만 남고 성적에 반영되지 않아요.</span></div>
+          <div class="irow"><span class="k">🔓</span><span class="v">마치면 리포트에 <b>자세한 해설이 열려요.</b></span></div>
+          <div class="irow"><span class="k">⏱</span><span class="v">보통 <b>15~20분</b>. 시작하면 중간에 나갈 수 없는 건 지난번과 같아요.</span></div>
+          <div class="acts"><span class="sp"></span><button class="btn">전체화면으로 시작하기</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-r-ask">
+  <div class="sec-label">다시 보기 · 막힌 질문부터 (1차 답변은 안 보여준다)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3/retry</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar">
+        <div class="l"><span class="qn">문제 1 / 2</span><span class="dots"><i class="now"></i><i class=""></i></span><span class="rt">기록에만 남아요</span></div>
+        <span class="el"><b>6분</b> 경과 · 시간 제한 없어요</span>
+      </div>
+      <div class="split">
+        <div class="codepane">
+          <div class="th"><span class="nm">HITL Trigger 조건</span><span class="loc">nodes.py</span></div>
+          <div class="code"><span class="r gap"><span class="ln">8</span><span class="cm"># 재시도 상한 — 넘으면 사람이 확인한다</span></span><span class="r gap"><span class="ln">9</span>MAX_ITERATIONS = <span class="st">3</span></span><span class="r gap"><span class="ln">10</span></span><span class="r gap"><span class="ln">11</span></span><span class="r"><span class="ln">12</span><span class="kw">def</span> <span class="fn">should_trigger_hitl</span>(state: AgentState) -&gt; <span class="kw">bool</span>:</span><span class="r"><span class="ln">13</span>    <span class="cm">"""사람 확인이 필요한지 판단한다."""</span></span><span class="r hi"><span class="ln">14</span>    <span class="kw">if</span> state[<span class="st">"retry"</span>] &gt; MAX_ITERATIONS:</span><span class="r hi"><span class="ln">15</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">16</span></span><span class="r hi"><span class="ln">17</span>    <span class="kw">if</span> state[<span class="st">"decision"</span>] == <span class="st">"REJECTED"</span>:</span><span class="r hi"><span class="ln">18</span>        <span class="kw">return</span> <span class="kw">True</span></span><span class="r"><span class="ln">19</span></span><span class="r"><span class="ln">20</span>    <span class="kw">return</span> <span class="kw">False</span></span></div>
+          <div class="callers"><span class="cv">▸</span> 이 함수를 쓰는 곳 <span class="f">graph.py:41</span></div>
+        </div>
+        <div class="thread">
+          <div class="tscroll">
+            <div class="turn">
+              <div class="qb now">
+                <div class="qh">◆ 지난번에 막혔던 질문</div>
+                교안에서는 사람이 확인해야 하는 조건을 <b>세 가지</b>로 봤는데, 여기서는 두 가지만 보고 있어요. 왜 그렇게 하셨나요?
+                <span class="ref">↳ nodes.py:14, 17</span>
+              </div>
+            </div>
+          </div>
+          <div class="compose">
+            <div class="ans">답을 입력해 주세요</div>
+            <div class="ameta"><span>0자 · 3~5문장이면 충분해요</span><span>붙여넣기는 막혀 있어요</span></div>
+            <div class="acts"><div class="nohint"><b>이번에는 다시 설명해 드리지 않아요.</b> 지난번과 같은 질문이라 이미 한 번 들었어요.</div><span class="sp"></span><div class="oneway">제출하면 <b>고칠 수 없어요</b></div><button class="btn off">답변 제출</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-r-pass">
+  <div class="sec-label">다시 보기 · 통과 → 더 깊이 가지 않고 여기서 끝</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3/retry</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar">
+        <div class="l"><span class="qn">문제 2 / 2</span><span class="dots"><i class="done"></i><i class="now"></i></span><span class="rt">기록에만 남아요</span></div>
+        <span class="el"><b>11분</b> 경과 · 시간 제한 없어요</span>
+      </div>
+      <div class="center">
+        <div class="msg">
+          <span class="ic">▸</span>
+          <h3>다음 문제로 갈게요</h3>
+          <p><b>Graph 구성</b>에 대해 이야기해요. <span style="color:var(--c-text-3)">graph.py</span></p>
+          <div class="sub">지난번에 막혔던 질문 하나씩만 봐요 · 더 깊은 질문으로 이어지지 않아요</div>
+          <div class="act"><button class="btn">시작하기</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-r-end">
+  <div class="sec-label">다시 보기 · 종료 → 해설이 열린다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3/retry</span></div>
+    <div class="app">
+      <div class="sbar"><div class="l"><span class="qn">다시 보기</span><span class="dots"><i class="done"></i><i class="done"></i></span></div><span class="el">18분 걸렸어요</span></div>
+      <div class="center">
+        <div class="msg ok">
+          <span class="ic">🔓</span>
+          <h3>다시 보기가 끝났어요</h3>
+          <p>리포트에 <b>자세한 해설이 열렸습니다.</b> 지난번 답변과 나란히 볼 수 있어요.</p>
+          <div class="sub">이번 결과는 기록에만 남아요 · 성적은 그대로입니다</div>
+          <div class="act"><button class="btn">리포트 보기</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+</div>
+<script>
+  var PAGE = { intro:"page-intro", ask:"page-ask", callers:"page-callers", thread:"page-thread",
+               short:"page-short", again:"page-again", hintgone:"page-hintgone", waiting:"page-waiting",
+               deeper:"page-deeper", stop:"page-stop", next:"page-next", last:"page-last",
+               away:"page-away", offline:"page-offline", end:"page-end",
+               "r-intro":"page-r-intro", "r-ask":"page-r-ask", "r-pass":"page-r-pass", "r-end":"page-r-end" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "intro";
+    var id = PAGE[h] || "page-intro";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+</script>
+</body>
+</html>

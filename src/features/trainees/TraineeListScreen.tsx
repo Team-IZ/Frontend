@@ -34,6 +34,7 @@ import {
 } from '@/components/ui/Pagination'
 import { TRAINEES, type AccountStatus } from './mockData'
 import { AccountStatusBadge } from './components/AccountStatusBadge'
+import { maskEmail } from '@/lib/utils/mask'
 
 /*
   SC-M11 · DASH-17 교육생 리스트. 목업 — API 연동 없이 고정 배열(mockData)을
@@ -82,6 +83,8 @@ export default function TraineeListScreen() {
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase()
     const filtered = TRAINEES.filter((t) => {
+      // 검색은 원본 이메일 기준 매칭 — 표시만 가리고(마스킹) 매니저가 이메일로
+      // 찾는 실무 동작은 막지 않는다.
       if (q && !`${t.name} ${t.email}`.toLowerCase().includes(q)) return false
       if (classFilter !== 'ALL' && t.className !== classFilter) return false
       if (accountFilter !== 'ALL' && t.accountStatus !== accountFilter) return false
@@ -214,7 +217,7 @@ export default function TraineeListScreen() {
                       >
                         {t.name}
                       </Link>
-                      <p className="text-fg-subtle text-2xs">{t.email}</p>
+                      <p className="text-fg-subtle text-2xs">{maskEmail(t.email)}</p>
                     </div>
                   </div>
                 </TableCell>

@@ -97,6 +97,27 @@
   .scard .act .b{border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:700;font-size:var(--fs-sm);padding:10px 20px;cursor:pointer}
   .scard .act .b.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong);font-weight:600}
 
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
   body.embedded .sec-label{margin-top:0}
@@ -114,6 +135,45 @@
       <li><b>교육생에게 이름을 다시 받지 않는다.</b> 명단(OP-06)에 이름+이메일이 이미 있다 — 활성화 전에도 반 편성·미제출 관리가 돌아야 해서 그때 이름이 필요하다.</li>
       <li><b>동의 항목 수가 다른 이유:</b> 교육생은 코드·문답·이탈 기록까지 처리 대상이다.</li>
     </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · AUTH-01 + AUTH-06 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">공통 — 변형 A · B</td></tr>
+        <tr><td class="no">—</td><td class="st">토큰 검증 · 변형 결정</td><td class="code">GET /auth/invite/{token}</td><td class="msg">응답의 <code>inviteType</code>이 변형을 정한다 — <b>사용자가 고르지 않는다</b><span class="nx">→ A=회원가입 · B=계정 활성화</span></td><td><a class="mk2" href="#signup">#signup</a></td></tr>
+        <tr><td class="no">—</td><td class="st">제출 중</td><td class="code">—</td><td class="msg">버튼 <b>계정을 만들고 있어요…</b> · 입력 잠금<span class="nx">→ 대기</span></td><td><a class="mk2" href="#loading">#loading</a></td></tr>
+        <tr><td class="no">—</td><td class="st">성공</td><td class="code">—</td><td class="msg">화면을 벗어난다<span class="nx">→ AU-01 로그인</span></td><td class="no">—</td></tr>
+        <tr class="grp"><td colspan="5">토큰 — 두 변형 공통</td></tr>
+        <tr><td class="no">A1·B2</td><td class="st">초대 토큰 만료</td><td class="code">INVITE_EXPIRED</td><td class="msg"><b>초대 링크가 만료되었습니다</b> + [초대 메일 다시 받기]<span class="nx">→ 재발송 — <b>같은 주소로만</b> 보낸다</span></td><td><a class="mk2" href="#expired">#expired</a></td></tr>
+        <tr><td class="no">A2·B4</td><td class="st">이미 가입 · 활성화됨</td><td class="code">INVITE_USED</td><td class="msg"><b>이미 활성화된 계정입니다</b> + [로그인]<span class="nx">→ AU-01 · 재수강생도 이 행</span></td><td><a class="mk2" href="#already">#already</a></td></tr>
+        <tr><td class="no">B5</td><td class="st">재수강생 — 계정이 이미 있음</td><td class="code">ACCOUNT_EXISTS</td><td class="msg">화면 동일(<code>#already</code>) · 문구가 이전 기수 계정을 덮는다<span class="nx">→ <b>백엔드는 다르다</b> — 새 계정을 만들지 않고 <b>기존 계정을 새 기수 명단에 잇는다</b></span></td><td><a class="mk2" href="#already">#already</a></td></tr>
+        <tr><td class="no">A3·B8</td><td class="st">위변조 · 다른 기수 토큰</td><td class="code">INVITE_INVALID</td><td class="msg"><b>유효하지 않은 링크입니다</b> + [문의하기]<span class="nx">→ 문의 · <b>보안 로그 기록</b></span></td><td><a class="mk2" href="#invalid">#invalid</a></td></tr>
+        <tr class="grp"><td colspan="5">변형 B — 교육생만</td></tr>
+        <tr><td class="no">B1</td><td class="st">명단 외 이메일</td><td class="code">NOT_IN_ROSTER</td><td class="msg"><b>명단에 등록되지 않은 계정입니다</b> + [문의하기]<span class="nx">→ 담당 매니저 확인</span></td><td><a class="mk2" href="#notlisted">#notlisted</a></td></tr>
+        <tr class="grp"><td colspan="5">입력 · 동의</td></tr>
+        <tr><td class="no">A6·B6</td><td class="st">비밀번호 정책 미충족</td><td class="code">—</td><td class="msg">필드 하단에 <b>못 채운 기준만</b><span class="nx">→ 재입력</span></td><td><a class="mk2" href="#policy">#policy</a></td></tr>
+        <tr><td class="no">CS1</td><td class="st">필수 미동의</td><td class="code">—</td><td class="msg">제출 비활성 + 미체크 항목 강조<span class="nx">→ 필수 동의 — 변형 A는 <code>#signup</code></span></td><td><a class="mk2" href="#consent">#consent</a></td></tr>
+        <tr><td class="no">CS2</td><td class="st">선택 미동의</td><td class="code">—</td><td class="msg"><b>정상 진행</b> — 막지 않는다<span class="nx">→ 진행 · <b>그림 없음</b></span></td><td class="no">—</td></tr>
+        <tr class="grp"><td colspan="5">저장 실패</td></tr>
+        <tr><td class="no">A7·B7·CS3</td><td class="st">저장 실패 · 롤백</td><td class="code">SIGNUP_FAILED</td><td class="msg"><b>잠시 문제가 있었어요</b> · 입력값 유지<span class="nx">→ 재시도 — <b>계정 생성 전 차단</b>. 동의만 남는 상태를 만들지 않는다</span></td><td><a class="mk2" href="#failed">#failed</a></td></tr>
+        <tr class="grp"><td colspan="5">v1에서 버린 것 — 이 화면에 없다</td></tr>
+        <tr><td class="no">A4</td><td class="st">이메일 불일치</td><td class="code">—</td><td class="msg"><b>구조적으로 불가</b> — 이메일이 초대값 읽기전용이다<span class="nx">→ —</span></td><td class="no">—</td></tr>
+        <tr><td class="no">A8</td><td class="st">인증 메일 트리거 실패</td><td class="code">—</td><td class="msg"><b>단계가 없다</b> — 초대 링크 클릭이 이메일 소유 증명<span class="nx">→ —</span></td><td class="no">—</td></tr>
+        <tr><td class="no">B3</td><td class="st">초대 메일 미수신</td><td class="code">—</td><td class="msg"><b>이 화면에 도달할 수 없다</b> — 링크를 받아야 여기 온다<span class="nx">→ AU-01 <code>#inactive</code>의 [초대 메일 다시 받기]</span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>#은 v1 케이스 번호</b>(A=AUTH-01 매니저 가입 · B=AUTH-06 교육생 활성화 · CS=동의). v1 17행을 전량 대조해 <b>합칠 것은 합치고 버릴 것은 이유를 남겼다.</b><br>
+    · <b>토큰 오류 4종은 두 변형이 같다.</b> 만료 · 사용됨 · 위변조 · 명단 외 — 화면이 폼 대신 <b>상태 카드</b>로 바뀐다.<br>
+    · <b>B5(재수강생)는 그림이 <code>#already</code>와 같지만 백엔드가 다르다.</b> 새 계정을 만들지 않고 기존 계정을 새 기수 명단에 잇는다 — <b>표 행을 나눈 이유가 이것</b>이다.<br>
+    · <b>A2와 A3을 가른 기준:</b> 서버가 <b>쓰인 토큰임을 알 수 있으면</b> <code>#already</code>(로그인으로 보낸다), <b>서명이 깨졌거나 모르는 토큰이면</b> <code>#invalid</code>(문의). 한 화면에서 둘을 섞으면 로그인하면 되는 사람에게 문의하라고 말하게 된다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
   </div>
 
   <div class="rpage" id="page-signup">
@@ -167,6 +227,35 @@
           <div class="crow"><span class="cbox"></span><div class="ctext"><span class="tag opt">선택</span>익명 데이터의 서비스 개선 활용<span class="view">전문 보기</span></div></div>
         </div>
         <button class="btn">활성화하기</button>
+      </div></div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-loading">
+  <div class="sec-label">상태 · 제출 중 (입력 잠금 · 중복 제출 방지)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/invite/stu-4c19…</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede"><h2>이해도 확인을<br>시작하세요</h2><p>비밀번호를 정하고 데이터 처리에 동의하면 계정이 열립니다.</p></div>
+        <div class="meta">초대 링크로 이메일이 확인되었습니다</div>
+      </div>
+      <div class="formside"><div class="form">
+        <h2>계정 활성화</h2><div class="sub">비밀번호 설정과 동의로 활성화됩니다.</div>
+        <div class="field"><label>이메일 <span class="cap">· 명단 등록 (확인됨)</span></label><div class="input ro">lee@student.com<span class="lock">고정</span></div></div>
+        <div class="field"><label>비밀번호</label><div class="input">••••••••<span class="eye">표시</span></div><div class="hint"><b>8자 이상</b>, 영문·숫자·특수문자 포함</div></div>
+        <div class="field"><label>비밀번호 확인</label><div class="input">••••••••<span class="eye">표시</span></div></div>
+        <div class="consent">
+          <div class="all"><span class="cbox on"></span>전체 동의</div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>서비스 이용약관<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>개인정보 수집·이용 (이름·이메일·소속)<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>코드·문답의 AI 분석 <span class="conseq">· 미동의 시 이해도 확인 불가</span><span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>결과의 소속 기관 공유<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox"></span><div class="ctext"><span class="tag opt">선택</span>익명 데이터의 서비스 개선 활용<span class="view">전문 보기</span></div></div>
+        </div>
+        <button class="btn off">계정을 만들고 있어요…</button>
       </div></div>
     </div>
   </div>
@@ -255,7 +344,7 @@
   </div>
 
   <div class="rpage" id="page-invalid">
-  <div class="sec-label">상태 · 토큰 재사용 · 위변조</div>
+  <div class="sec-label">상태 · 위변조 · 다른 기수 토큰 (서명 실패 · 보안 로그)</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/invite/stu-9b02…</span></div>
     <div class="split">
@@ -268,9 +357,9 @@
         <div class="scard bad">
           <div class="ic">!</div>
           <h3>유효하지 않은 링크입니다</h3>
-          <p>이미 사용했거나 잘못된 링크예요.</p>
-          <div class="aux">계정을 이미 만들었다면 로그인해 주세요. 아니라면 담당자에게 문의해 주세요.</div>
-          <div class="act"><span class="b ghost">문의하기</span><span class="b">로그인</span></div>
+          <p>링크가 잘못되었거나 이 기수의 링크가 아니에요.</p>
+          <div class="aux">메일에 있는 링크를 다시 눌러 보세요. 계속 같으면 담당자에게 문의해 주세요.</div>
+          <div class="act"><span class="b">문의하기</span></div>
         </div>
       </div>
     </div>
@@ -278,7 +367,7 @@
   </div>
 
   <div class="rpage" id="page-already">
-  <div class="sec-label">상태 · 이미 가입 · 활성화됨</div>
+  <div class="sec-label">상태 · 이미 가입 · 활성화됨 (재수강생 포함)</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/invite/stu-4c19…</span></div>
     <div class="split">
@@ -292,7 +381,7 @@
           <div class="ic">✓</div>
           <h3>이미 활성화된 계정입니다</h3>
           <p>lee@student.com으로 바로 로그인하면 돼요.</p>
-          <div class="aux">비밀번호가 기억나지 않으면 로그인 화면에서 재설정할 수 있어요.</div>
+          <div class="aux">이전 기수에서 쓰던 계정이면 그대로 로그인하면 새 기수가 보입니다. 비밀번호가 기억나지 않으면 로그인 화면에서 재설정할 수 있어요.</div>
           <div class="act"><span class="b">로그인</span></div>
         </div>
       </div>
@@ -355,7 +444,7 @@
 
 </div>
 <script>
-  var PAGE = { signup:"page-signup", activate:"page-activate", consent:"page-consent", policy:"page-policy",
+  var PAGE = { cases:"page-cases", loading:"page-loading", signup:"page-signup", activate:"page-activate", consent:"page-consent", policy:"page-policy",
                expired:"page-expired", invalid:"page-invalid", already:"page-already",
                notlisted:"page-notlisted", failed:"page-failed" };
   function route(){

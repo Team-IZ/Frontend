@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OP-02 · 추이 — 와이어프레임</title>
+<style>
+
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-nav:#1e2436; --c-nav-2:#2a3147; --c-nav-text:#aeb4c6;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  .app{display:flex;flex-direction:column;min-height:620px}
+  .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
+  .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700}
+  .topbar .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .cohortsel{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:5px var(--sp-3);font-size:var(--fs-sm);background:var(--c-surface-2)}
+  .cohortsel .k{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+
+  .body{display:flex;flex:1}
+  .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
+  .nav .grp{padding-top:var(--sp-2);margin-top:var(--sp-2);border-top:1px solid var(--c-nav-2)}
+  .nav .grp:first-child{padding-top:0;margin-top:0;border-top:0}
+  .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
+  .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
+  .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-6);min-width:0}
+  .phead{margin-bottom:var(--sp-4)}
+  .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
+
+  .lhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-4)}
+  .lhead .ttl{font-size:var(--fs-lg);font-weight:700;display:flex;align-items:baseline;gap:var(--sp-2)}
+  .lhead .ttl .cnt{font-size:var(--fs-xs);font-weight:600;color:var(--c-text-3)}
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-xs);cursor:pointer;padding:8px 13px}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong)}
+  .btn.off{background:#e8eaee;color:var(--c-text-3);cursor:not-allowed}
+
+  .ltool{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3);flex-wrap:wrap}
+  .ltool .search{flex:0 0 240px;border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-3);background:var(--c-surface-2)}
+  .ltool .fil{border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);cursor:pointer}
+  .ltool .fil .k{color:var(--c-text-3)}
+
+  .card{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .dtbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .dtbl th{text-align:left;padding:11px var(--sp-4);font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-weight:600;white-space:nowrap}
+  .dtbl td{padding:12px var(--sp-4);border-bottom:1px solid var(--c-border);vertical-align:middle}
+  .dtbl tr:last-child td{border-bottom:0}
+  .dtbl tr.click{cursor:pointer}
+  .dtbl tr.click:hover{background:var(--c-surface-2)}
+  .dtbl .name b{font-weight:700}
+  .dtbl .sub{font-size:11px;color:var(--c-text-3);margin-top:2px}
+  .dtbl .date{color:var(--c-text-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .dtbl .num{font-variant-numeric:tabular-nums}
+
+  .st{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .st .dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+  .st.run{background:var(--c-info-soft);color:var(--c-info)} .st.run .dot{background:var(--c-info)}
+  .st.plan{background:#eef0f3;color:var(--c-text-2)} .st.plan .dot{background:var(--c-text-3)}
+  .st.done{background:var(--c-success-soft);color:var(--c-success)} .st.done .dot{background:var(--c-success)}
+  .st.warn{background:var(--c-warning-soft);color:var(--c-warning)} .st.warn .dot{background:var(--c-warning)}
+
+  .kchip{display:inline-block;font-size:11px;font-weight:600;color:var(--c-text-2);background:var(--c-surface-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:2px 9px;margin:1px 2px 1px 0}
+  .kmiss{font-size:11px;font-weight:600;color:var(--c-warning)}
+  .na{color:var(--c-text-3)}
+
+  /* 표 푸터 표준 — 범위개수(좌) + 페이저(중앙). 페이지가 하나면 화살표를 넣지 않는다 */
+  .tablefoot{display:flex;align-items:center;margin-top:var(--sp-4)}
+  .tablefoot .range{flex:1;font-size:var(--fs-xs);color:var(--c-text-3);white-space:nowrap}
+  .tablefoot .rspace{flex:1}
+  .pages{display:flex;gap:4px;justify-content:center}
+  .pg{min-width:32px;height:32px;padding:0 6px;border:1px solid var(--c-border);border-radius:var(--r-sm);display:inline-flex;align-items:center;justify-content:center;background:#fff;font-size:var(--fs-sm);color:var(--c-text-2);cursor:pointer}
+  .pg.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary);font-weight:600}
+
+
+  /* ===== OP-02 · 추이 — OP-01은 스냅샷, 여기는 흐름 ===== */
+  .tabs{display:flex;gap:var(--sp-5);border-bottom:1px solid var(--c-border);margin-bottom:var(--sp-4)}
+  .tabs .t{padding:var(--sp-2) 0;font-size:var(--fs-sm);color:var(--c-text-2);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer}
+  .tabs .t.on{color:var(--c-primary);font-weight:700;border-bottom-color:var(--c-primary)}
+
+  .fil{border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);cursor:pointer}
+  .fil .k{color:var(--c-text-3)}
+  .fil.on{background:var(--c-primary-soft);border-color:#cdd4f2;color:var(--c-primary);font-weight:600}
+  .seg2{display:inline-flex;border:1px solid var(--c-border-strong);border-radius:20px;overflow:hidden}
+  .seg2 span{padding:7px 14px;font-size:var(--fs-xs);cursor:pointer;color:var(--c-text-2);background:#fff;border-right:1px solid var(--c-border)}
+  .seg2 span:last-child{border-right:0}
+  .seg2 span.on{background:var(--c-primary);color:#fff;font-weight:600}
+
+  /* 추이 표 — 위험자 비율은 회차가 달라도 비교된다(9-2가 개수로 정의됐으므로) */
+  .trwrap{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5)}
+  .trtbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .trtbl th{font-size:11px;color:var(--c-text-3);font-weight:700;padding:0 var(--sp-2) var(--sp-2);text-align:center;white-space:nowrap}
+  .trtbl th.rh{text-align:left;width:150px;padding-left:0}
+  .trtbl th.tr7{text-align:right;width:118px;padding-right:0}
+  .trtbl td{padding:6px var(--sp-2);vertical-align:middle}
+  .trtbl td.rh{width:150px;padding-left:0;white-space:nowrap;font-size:var(--fs-sm);font-weight:600}
+  .trtbl td.rh small{color:var(--c-text-3);font-weight:400;font-size:11px;margin-left:4px}
+  .trtbl td.rh .man3{font-size:10px;color:var(--c-text-3);font-weight:400;margin-left:5px}
+  .trtbl td.rh .man3.none{color:var(--c-danger);font-weight:700}
+  .trtbl tr.tot td{border-bottom:1px solid var(--c-border-strong);padding-bottom:var(--sp-3)}
+  .trtbl tr.tot td.rh{font-weight:700}
+  .trtbl tr.first td{padding-top:var(--sp-3)}
+  /* 값 셀 — 막대가 아니라 숫자 + 배경 농도. 회차 간 비교가 목적이라 정렬이 우선 */
+  .pc2{display:block;text-align:center;font-variant-numeric:tabular-nums;font-weight:700;font-size:var(--fs-sm);border-radius:5px;padding:5px 0;color:#241108}
+  .pc2.p0{background:#eef7f1;color:var(--c-text-2)}
+  .pc2.p1{background:#dcefe3}
+  .pc2.p2{background:#f7e9c4}
+  .pc2.p3{background:#f2c98f}
+  .pc2.p4{background:#e59f7d}
+  .pc2.p5{background:#d9705c;color:#fff}
+  .pc2.na2{background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);color:var(--c-text-3);font-weight:400}
+  .pc2 small{display:block;font-size:9px;font-weight:600;opacity:.7}
+  /* 추세 — 세 회차 이상이면 방향이 값이다 */
+  .trend{text-align:right;white-space:nowrap;font-size:var(--fs-xs);font-weight:700;font-variant-numeric:tabular-nums}
+  .trend.up{color:var(--c-danger)}
+  .trend.dn{color:var(--c-success)}
+  .trend.flat{color:var(--c-text-3)}
+  .trend .lb2{display:block;font-size:10px;font-weight:600;color:var(--c-text-3)}
+  .trnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.7;margin-top:var(--sp-3);padding-top:var(--sp-3);border-top:1px solid var(--c-border)}
+  .trnote b{color:var(--c-text-2)}
+
+  /* 기수 간 비교 */
+  .cotbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .cotbl th{text-align:left;padding:10px var(--sp-4);font-size:11px;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-weight:600;white-space:nowrap}
+  .cotbl td{padding:12px var(--sp-4);border-bottom:1px solid var(--c-border);vertical-align:middle}
+  .cotbl tr:last-child td{border-bottom:0}
+  .cotbl th.c-cp{width:200px}
+  .cotbl th.c-v{width:96px;text-align:center}
+  .cotbl th.c-d{width:104px;text-align:right}
+  .cotbl td.cp3{font-weight:700}
+  .cotbl td.cp3 .src3{display:block;font-size:11px;color:var(--c-text-3);font-weight:400;margin-top:2px}
+  .cotbl td.vv2{text-align:center}
+  .cotbl td.dd{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
+  .cotbl td.dd.up{color:var(--c-danger)}
+  .cotbl td.dd.dn{color:var(--c-success)}
+  .cotbl td.dd.flat{color:var(--c-text-3)}
+  .cotbl .nocmp{font-size:var(--fs-xs);color:var(--c-text-3)}
+  .cotbl tr.newrow td{background:var(--c-surface-2)}
+
+  /* 판정 — 표 아래 한 줄 (MG-02 규약) */
+  .verdict{display:flex;align-items:flex-start;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--c-border);font-size:var(--fs-sm)}
+  .verdict .vt{display:flex;align-items:flex-start;gap:8px;flex:1;min-width:340px}
+  .verdict .vm{font-weight:700;font-size:15px;line-height:1.5}
+  .verdict .vx{display:block}
+  .verdict b{display:block;color:var(--c-text);font-weight:700;margin-bottom:3px}
+  .verdict .vs{display:block;color:var(--c-text-2);line-height:1.65;max-width:64ch}
+  .verdict .vs b{display:inline;margin:0}
+  .verdict .vact{display:flex;gap:6px;margin-left:auto;flex-shrink:0;align-self:center}
+
+  .keyrow{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--c-text-3);margin-top:var(--sp-3);padding-left:158px}
+  .keyrow .sw{width:22px;height:13px;border-radius:3px;display:inline-block}
+
+  .empty{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8);text-align:center}
+  .empty .t{font-size:var(--fs-base);font-weight:600;margin-bottom:6px}
+  .empty .s{font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.8}
+  .empty .s b{color:var(--c-text-2)}
+
+  .hint3{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.7;margin-top:var(--sp-3)}
+  .hint3 b{color:var(--c-text-2)}
+  .note2{max-width:1180px;margin:-18px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
+  .note2 b{color:var(--c-text-2)}
+
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  body.embedded .sec-label{margin-top:0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">OP-02 · 오퍼레이터 · 웹</span>
+    <h1>추이 &#8212; 우리가 나아지고 있나</h1>
+    <p><b>OP-01은 스냅샷, 여기는 흐름</b>이다. 오퍼레이터의 질문 대부분은 이미 다른 화면이 답한다 &#8212; <b>답이 없던 질문은 하나</b>였다.</p>
+    <ul>
+      <li><b>고유 질문이 없으면 화면이 없어야 한다.</b> 지금 회차 상태는 <b>OP-01</b>, 조치는 <b>OP-01 조치 필요</b>, 반별 제출&#183;응시율과 개념 공백은 <b>OP-04 현황</b>, 교안은 <b>OP-06</b>, 배정은 <b>OP-06</b>가 답한다 &#8212; <b>히트맵&#183;위험 목록을 여기 다시 그리면 매니저 화면의 확대판</b>이 된다.</li>
+      <li><b>위험자 비율은 회차가 달라도 비교된다.</b> 판정 기준(<code>2단 이하 개념 2개 이상</code>)이 <b>회차와 무관하게 같기</b> 때문이다 &#8212; 9-2가 개념 이름이 아니라 <b>개수</b>로 정의된 이유가 여기서도 작동한다. <b>평균 도달은 비교할 수 없다</b>(회차마다 다른 것을 물었다).</li>
+      <li><b>OP-01 반 비교와 같은 값</b>을 쓴다 &#8212; 그 막대가 <b>이 표의 마지막 열</b>이다. 클릭해서 넘어왔을 때 <b>숫자가 이어져야</b> 한다.</li>
+      <li><b>3회차부터 방향을 말한다.</b> 2회로는 <b>추세인지 우연인지</b> 갈리지 않는다 &#8212; 9-2가 위험을 2회 비교로 판정하는 것과 같은 논리다.</li>
+      <li><b>기수 간 비교는 같은 교안&#183;같은 개념만</b> 한다. 커리큘럼이 같으면 비교 가능하고(14번 61줄 &#8212; <i>"기수 끝나면 수업 진단(다음 기수 개선)"</i>), <b>새로 고른 개념은 비교 대상이 아니라고 말한다.</b></li>
+      <li><b>등수를 붙이지 않는다.</b> OP-01과 같은 원칙 &#8212; <b>매니저 줄세우기가 되면 그 지표를 관리하려는 행동</b>이 나온다. 담당 매니저는 <b>공백을 보기 위해</b>만 쓴다.</li>
+      <li><b>개인이 없다.</b> 추이 화면에서 개인은 뜻이 없고(개인 이력은 <b>MG-06 타임라인</b>), 12-3이 히트맵에 개인을 넣은 것은 <b>매니저 기준</b>이다.</li>
+      <li><b>저장&#183;공유&#183;PDF가 없다.</b> 고정 시점 스냅샷은 <b>OP-05 기수 리포트</b>가 하고, 이 화면의 발견이 <b>거기로 간다.</b></li>
+    </ul>
+  </div>
+
+  <div class="rpage" id="page-round">
+  <div class="sec-label">&#9312; 회차 흐름 — OP-01 반 비교 막대가 맨 오른쪽 열이 된다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item on"><span class="ic">&#9651;</span>추이</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; 회차 흐름</div><h2>추이</h2></div>
+          <div class="tabs"><span class="t on">회차 흐름</span><span class="t">기수 간 비교</span></div>
+          <div class="ltool">
+            <span class="seg2"><span class="on">반별</span><span>팀</span></span>
+            <div class="fil"><span class="k">정렬</span> 최근 회차 높은 순 &#9662;</div>
+            <div class="fil">&#9888; 계속 오르는 반만</div>
+          </div>
+          <div class="trwrap"><table class="trtbl">
+              <tr><th class="rh">반</th><th>미프 1차</th><th>미프 2차</th><th>미프 3차</th><th>미프 4차</th><th class="tr7">1차 &#8594; 최근</th></tr>
+              <tr class="tot"><td class="rh">기수 전체<small>250명</small></td><td><span class="pc2 p1">12%<small>30/250</small></span></td><td><span class="pc2 p2">16%<small>40/250</small></span></td><td><span class="pc2 p2">19%<small>47/250</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;7p<span class="lb2">계속 오름</span></td></tr>
+              <tr class="first"><td class="rh">C반<small>25명</small><span class="man3">김서연</span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">24%<small>6/25</small></span></td><td><span class="pc2 p5">32%<small>8/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;16p<span class="lb2">계속 오름</span></td></tr>
+              <tr class=""><td class="rh">D반<small>25명</small><span class="man3">이준호</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 p4">28%<small>7/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;16p<span class="lb2">계속 오름</span></td></tr>
+              <tr class=""><td class="rh">I반<small>25명</small><span class="man3">최민아</span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 p4">28%<small>7/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;12p<span class="lb2">계속 오름</span></td></tr>
+              <tr class=""><td class="rh">A반<small>25명</small><span class="man3">박지현</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 p3">24%<small>6/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;12p<span class="lb2">계속 오름</span></td></tr>
+              <tr class=""><td class="rh">F반<small>25명</small><span class="man3 none">담당 없음</span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 p3">24%<small>6/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;8p<span class="lb2">계속 오름</span></td></tr>
+              <tr class=""><td class="rh">B반<small>25명</small><span class="man3">정하윤</span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;12p<span class="lb2">계속 오름</span></td></tr>
+              <tr class=""><td class="rh">H반<small>25명</small><span class="man3 none">담당 없음</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;8p<span class="lb2">계속 오름</span></td></tr>
+              <tr class=""><td class="rh">J반<small>25명</small><span class="man3">윤서진</span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;8p<span class="lb2">계속 오름</span></td></tr>
+              <tr class=""><td class="rh">E반<small>25명</small><span class="man3">강태영</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+4p<span class="lb2">보합</span></td></tr>
+              <tr class=""><td class="rh">G반<small>25명</small><span class="man3">한지민</span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+4p<span class="lb2">보합</span></td></tr>
+            </table>
+          <div class="trnote">&#183; <b>위험자 = 2단 이하 개념이 2개 이상인 학생</b>(9-2). 회차마다 개념이 달라도 <b>판정 기준이 같아서</b> 비교된다 &#8212; <b>평균 도달은 비교할 수 없다</b>(다른 것을 물은 값이다).<br>&#183; <b>OP-01 반 비교 막대와 같은 값</b>이다 &#8212; 그 막대가 <b>맨 오른쪽 열</b>이다.<br>&#183; <b>집단 미달(9-6)로 빠진 개념은 여기서도 빠진다</b> &#8212; OP-01과 같은 계산이어야 두 화면 숫자가 이어진다.<br>&#183; <b>등수를 쓰지 않는다.</b> 정렬만 하고 순위 숫자를 붙이지 않는다 &#8212; <b>매니저 줄세우기가 되면 그 지표를 관리하려는 행동</b>이 나온다.</div>
+          </div>
+          <div class="keyrow">위험자 비율 <span class="sw" style="background:#eef7f1"></span><span class="sw" style="background:#dcefe3"></span><span class="sw" style="background:#f7e9c4"></span><span class="sw" style="background:#f2c98f"></span><span class="sw" style="background:#e59f7d"></span><span class="sw" style="background:#d9705c"></span> 높음<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 아직 안 함</div>
+          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-danger)">&#9888;</span><span class="vx"><b>기수 전체가 세 회차 연속 올랐다 · 10개 반 전부 같은 방향</b><span class="vs">12% &#8594; 16% &#8594; 19%. <b>특정 반이 아니라 전체</b>가 오르므로 <b>회차가 어려워지는 것</b>과 <b>누적 공백</b> 둘 중 하나다 &#8212; 어느 쪽인지는 <b>회차별 검증 개념</b>을 봐야 갈린다. <b>기수 간 비교</b>에서 지난 기수도 같은 모양이었는지 확인하세요.</span></span></span><span class="vact"><button class="btn">기수 간 비교</button><button class="btn ghost">회차 설계 보기</button></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="note2">&#183; <b>OP-01은 스냅샷, 여기는 흐름</b>이다 &#8212; 오퍼레이터의 질문 대부분은 이미 다른 화면이 답하고(회차 상태 OP-01 &#183; 반별 응시율 OP-04 &#183; 교안 OP-06 &#183; 배정 OP-06), <b>답이 없던 질문은 "우리가 나아지고 있나" 하나</b>였다. &#183; <b>히트맵&#183;위험 목록을 만들지 않는다</b> &#8212; 그건 MG-02&#183;MG-03의 확대판이고, 오퍼레이터는 그것으로 <b>할 수 있는 일이 없다.</b></div>
+  <div class="rpage" id="page-one">
+  <div class="sec-label">&#9313; 한 반만 오를 때 — 회차 난이도로 설명되지 않는다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item on"><span class="ic">&#9651;</span>추이</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; 회차 흐름</div><h2>추이</h2></div>
+          <div class="tabs"><span class="t on">회차 흐름</span><span class="t">기수 간 비교</span></div>
+          <div class="ltool">
+            <span class="seg2"><span class="on">반별</span><span>팀</span></span>
+            <div class="fil"><span class="k">정렬</span> 최근 회차 높은 순 &#9662;</div>
+            <div class="fil">&#9888; 계속 오르는 반만</div>
+          </div>
+          <div class="trwrap"><table class="trtbl">
+              <tr><th class="rh">반</th><th>미프 1차</th><th>미프 2차</th><th>미프 3차</th><th>미프 4차</th><th class="tr7">1차 &#8594; 최근</th></tr>
+              <tr class="tot"><td class="rh">기수 전체<small>250명</small></td><td><span class="pc2 p1">12%<small>30/250</small></span></td><td><span class="pc2 p1">13%<small>33/250</small></span></td><td><span class="pc2 p2">14%<small>35/250</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+2p<span class="lb2">보합</span></td></tr>
+              <tr class="first"><td class="rh">F반<small>25명</small><span class="man3 none">담당 없음</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p3">24%<small>6/25</small></span></td><td><span class="pc2 p5">32%<small>8/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;20p<span class="lb2">계속 오름</span></td></tr>
+              <tr class=""><td class="rh">C반<small>25명</small><span class="man3">김서연</span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+0p<span class="lb2">보합</span></td></tr>
+              <tr class=""><td class="rh">A반<small>25명</small><span class="man3">박지현</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+0p<span class="lb2">보합</span></td></tr>
+              <tr class=""><td class="rh">D반<small>25명</small><span class="man3">이준호</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+0p<span class="lb2">보합</span></td></tr>
+              <tr class=""><td class="rh">E반<small>25명</small><span class="man3">강태영</span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+4p<span class="lb2">보합</span></td></tr>
+              <tr class=""><td class="rh">G반<small>25명</small><span class="man3">한지민</span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+0p<span class="lb2">보합</span></td></tr>
+            </table>
+          <div class="trnote">&#183; <b>위험자 = 2단 이하 개념이 2개 이상인 학생</b>(9-2). 회차마다 개념이 달라도 <b>판정 기준이 같아서</b> 비교된다 &#8212; <b>평균 도달은 비교할 수 없다</b>(다른 것을 물은 값이다).<br>&#183; <b>OP-01 반 비교 막대와 같은 값</b>이다 &#8212; 그 막대가 <b>맨 오른쪽 열</b>이다.<br>&#183; <b>집단 미달(9-6)로 빠진 개념은 여기서도 빠진다</b> &#8212; OP-01과 같은 계산이어야 두 화면 숫자가 이어진다.<br>&#183; <b>등수를 쓰지 않는다.</b> 정렬만 하고 순위 숫자를 붙이지 않는다 &#8212; <b>매니저 줄세우기가 되면 그 지표를 관리하려는 행동</b>이 나온다.</div>
+          </div>
+          <div class="keyrow">위험자 비율 <span class="sw" style="background:#eef7f1"></span><span class="sw" style="background:#dcefe3"></span><span class="sw" style="background:#f7e9c4"></span><span class="sw" style="background:#f2c98f"></span><span class="sw" style="background:#e59f7d"></span><span class="sw" style="background:#d9705c"></span> 높음<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 아직 안 함</div>
+          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-danger)">&#9888;</span><span class="vx"><b>F반만 오르고 있다 · 담당 매니저가 07-11부터 없다</b><span class="vs">기수 전체는 <b>12% &#8594; 14%</b>로 거의 그대로인데 F반은 <b>12% &#8594; 32%</b>다. <b>회차 난이도로는 설명되지 않는다</b> &#8212; 매니저 공백이 시작된 시점이 <b>미프 2차 응시 창</b>이고, 그 회차부터 벌어졌다.</span></span></span><span class="vact"><button class="btn">매니저 배정</button></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-early">
+  <div class="sec-label">&#9314; 2회차까지 — 값은 주고 해석은 미룬다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item on"><span class="ic">&#9651;</span>추이</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; 회차 흐름</div><h2>추이</h2></div>
+          <div class="tabs"><span class="t on">회차 흐름</span><span class="t">기수 간 비교</span></div>
+          <div class="ltool">
+            <span class="seg2"><span class="on">반별</span><span>팀</span></span>
+            <div class="fil"><span class="k">정렬</span> 최근 회차 높은 순 &#9662;</div>
+            <div class="fil">&#9888; 계속 오르는 반만</div>
+          </div>
+          <div class="trwrap"><table class="trtbl">
+              <tr><th class="rh">반</th><th>미프 1차</th><th>미프 2차</th><th>미프 3차</th><th>미프 4차</th><th class="tr7">1차 &#8594; 최근</th></tr>
+              <tr class="tot"><td class="rh">기수 전체<small>250명</small></td><td><span class="pc2 p1">12%<small>30/250</small></span></td><td><span class="pc2 p2">16%<small>40/250</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">&#8212;<span class="lb2">회차 부족</span></td></tr>
+              <tr class="first"><td class="rh">C반<small>25명</small><span class="man3">김서연</span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">24%<small>6/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">&#8212;<span class="lb2">회차 부족</span></td></tr>
+              <tr class=""><td class="rh">A반<small>25명</small><span class="man3">박지현</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">&#8212;<span class="lb2">회차 부족</span></td></tr>
+              <tr class=""><td class="rh">F반<small>25명</small><span class="man3 none">담당 없음</span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">&#8212;<span class="lb2">회차 부족</span></td></tr>
+              <tr class=""><td class="rh">E반<small>25명</small><span class="man3">강태영</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">&#8212;<span class="lb2">회차 부족</span></td></tr>
+              <tr class=""><td class="rh">G반<small>25명</small><span class="man3">한지민</span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">&#8212;<span class="lb2">회차 부족</span></td></tr>
+            </table>
+          <div class="trnote">&#183; <b>위험자 = 2단 이하 개념이 2개 이상인 학생</b>(9-2). 회차마다 개념이 달라도 <b>판정 기준이 같아서</b> 비교된다 &#8212; <b>평균 도달은 비교할 수 없다</b>(다른 것을 물은 값이다).<br>&#183; <b>OP-01 반 비교 막대와 같은 값</b>이다 &#8212; 그 막대가 <b>맨 오른쪽 열</b>이다.<br>&#183; <b>집단 미달(9-6)로 빠진 개념은 여기서도 빠진다</b> &#8212; OP-01과 같은 계산이어야 두 화면 숫자가 이어진다.<br>&#183; <b>등수를 쓰지 않는다.</b> 정렬만 하고 순위 숫자를 붙이지 않는다 &#8212; <b>매니저 줄세우기가 되면 그 지표를 관리하려는 행동</b>이 나온다.</div>
+          </div>
+          <div class="keyrow">위험자 비율 <span class="sw" style="background:#eef7f1"></span><span class="sw" style="background:#dcefe3"></span><span class="sw" style="background:#f7e9c4"></span><span class="sw" style="background:#f2c98f"></span><span class="sw" style="background:#e59f7d"></span><span class="sw" style="background:#d9705c"></span> 높음<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 아직 안 함</div>
+          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-info)">&#9432;</span><span class="vx"><b>아직 방향을 말하지 않는다</b><span class="vs"><b>3회차부터</b> 추세를 씁니다 &#8212; 2회로는 <b>오르는 중인지 한 번 튄 것인지</b> 갈리지 않아요. 9-2가 위험을 <b>2회 비교</b>로 판정하는 것과 같은 이유입니다. 값은 지금도 보이고, <b>화면이 해석만 미룹니다.</b></span></span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-cohort">
+  <div class="sec-label">&#9315; 기수 간 비교 — 같은 교안 · 같은 개념만</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item on"><span class="ic">&#9651;</span>추이</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; 6기와 비교</div><h2>추이</h2></div>
+          <div class="tabs"><span class="t">회차 흐름</span><span class="t on">기수 간 비교</span></div>
+          <div class="ltool">
+            <div class="fil" style="font-size:var(--fs-sm);font-weight:700;padding:7px 15px"><span class="k" style="font-weight:400">비교</span> 6기 &#9662;</div>
+            <div class="fil on">같은 교안 &#183; 같은 개념만</div>
+            <div class="fil"><span class="k">정렬</span> 나빠진 순 &#9662;</div>
+          </div>
+          <div class="card"><table class="cotbl">
+              <thead><tr><th class="c-cp">검증 개념</th><th class="c-v">6기</th><th class="c-v">7기</th><th class="c-d">변화</th></tr></thead>
+              <tbody>
+                <tr><td class="cp3">Graph 구성<span class="src3">교안 AI_LLMOps &#183; 4장 p.62 &#183; 미프 3차</span></td><td class="vv2"><span class="pc2 p1">2.9</span></td><td class="vv2"><span class="pc2 p2">2.5</span></td><td class="dd up">-0.4<span class="lb2" style="display:block;font-size:10px;font-weight:600;color:var(--c-text-3)">나빠짐</span></td></tr>
+                <tr><td class="cp3">트랜잭션<span class="src3">교안 Kubernetes 기초 &#183; 3장 p.44 &#183; 미프 2차</span></td><td class="vv2"><span class="pc2 p1">3.2</span></td><td class="vv2"><span class="pc2 p1">2.9</span></td><td class="dd up">-0.3<span class="lb2" style="display:block;font-size:10px;font-weight:600;color:var(--c-text-3)">나빠짐</span></td></tr>
+                <tr><td class="cp3">HITL Trigger<span class="src3">교안 AI_LLMOps &#183; 3장 p.55 &#183; 미프 3차</span></td><td class="vv2"><span class="pc2 p2">2.7</span></td><td class="vv2"><span class="pc2 p1">2.8</span></td><td class="dd flat">+0.1<span class="lb2" style="display:block;font-size:10px;font-weight:600;color:var(--c-text-3)">비슷</span></td></tr>
+                <tr><td class="cp3">REST 설계<span class="src3">교안 Kubernetes 기초 &#183; 1장 p.12 &#183; 미프 1차</span></td><td class="vv2"><span class="pc2 p1">3.3</span></td><td class="vv2"><span class="pc2 p1">3.4</span></td><td class="dd flat">+0.1<span class="lb2" style="display:block;font-size:10px;font-weight:600;color:var(--c-text-3)">비슷</span></td></tr>
+                <tr class="newrow"><td class="cp3">State 관리<span class="src3">교안 AI_LLMOps &#183; 5장 p.88 &#183; 미프 3차</span></td><td class="vv2 nocmp">&#8212;</td><td class="vv2"><span class="pc2 p1">3.3</span></td><td class="dd flat"><span class="nocmp">6기에 없던 개념</span></td></tr>
+                <tr class="newrow"><td class="cp3">캐시 전략<span class="src3">교안 Kubernetes 기초 &#183; 5장 p.71 &#183; 미프 2차</span></td><td class="vv2 nocmp">&#8212;</td><td class="vv2"><span class="pc2 p1">3.4</span></td><td class="dd flat"><span class="nocmp">6기에 없던 개념</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="hint3">&#183; <b>같은 교안 &#183; 같은 개념만 비교한다.</b> 커리큘럼이 같으면 <b>같은 것을 물은 값</b>이라 비교가 성립한다 &#8212; 개념이 다르면 <b>다른 것을 물은 값</b>이다.<br>&#183; <b>새로 고른 개념은 비교 대상이 아니라고 말한다</b> &#8212; 빈칸으로 두면 <i>"0점"</i>이나 <i>"나빠졌다"</i>로 읽힌다.<br>&#183; <b>교안 버전을 함께 쓴다</b> &#8212; <b>교안을 고친 것이 효과가 있었나</b>가 이 표의 핵심 질문이고, 버전이 없으면 답할 수 없다.<br>&#183; <b>회차가 달라도 상관없다</b> &#8212; 6기 미프 2차와 7기 미프 3차에서 같은 개념을 물었다면 <b>같은 개념끼리</b> 비교한다.</div>
+          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-warning)">&#9888;</span><span class="vx"><b>Graph 구성이 교안을 v2로 바꾼 뒤 오히려 나빠졌다</b><span class="vs">6기 <b>2.9</b> &#8594; 7기 <b>2.5</b> &#183; 교안 <b>v1 &#8594; v2</b>. <b>교안 개정이 도움이 되지 않았다</b>는 뜻이고, 7기에서는 <b>7개 반이 반 문제</b>로 판정됐습니다(6기는 3개 반). <b>다음 기수 전에 이 섹션을 다시 봐야</b> 합니다.</span></span></span><span class="vact"><button class="btn">교안에서 보기</button><button class="btn ghost">기수 리포트에 기록</button></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-nocohort">
+  <div class="sec-label">&#9316; 비교할 기수가 없을 때</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item on"><span class="ic">&#9651;</span>추이</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; 기수 간 비교</div><h2>추이</h2></div>
+          <div class="tabs"><span class="t">회차 흐름</span><span class="t on">기수 간 비교</span></div>
+          <div class="ltool">
+            <div class="fil" style="font-size:var(--fs-sm);font-weight:700;padding:7px 15px"><span class="k" style="font-weight:400">비교</span> 없음 &#9662;</div>
+          </div>
+          <div class="empty"><div class="t">비교할 기수가 없습니다</div><div class="s">7기가 <b>이 기관의 첫 기수</b>예요.<br>다음 기수가 같은 교안으로 진행되면 <b>같은 개념끼리</b> 비교할 수 있습니다.<br>지금은 <b>회차 흐름</b>에서 기수 안의 변화를 봅니다.</div></div>
+          <div class="hint3">&#183; <b>기수가 하나면 이 탭이 할 일이 없다</b> &#8212; 억지로 <b>다른 기관 평균</b>을 만들지 않는다. 그건 <b>커리큘럼이 다른 값</b>이다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-team">
+  <div class="sec-label">&#9317; 팀 — 추세로 읽으면 안 되는 계층</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item on"><span class="ic">&#9651;</span>추이</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; <b style="color:var(--c-primary)">C반</b></div><h2>추이</h2></div>
+          <div class="tabs"><span class="t on">회차 흐름</span><span class="t">기수 간 비교</span></div>
+          <div class="ltool">
+            <span class="seg2"><span>반별</span><span class="on">팀</span></span>
+            <div class="fil on"><span class="k">반</span> C반 &#9662;</div>
+            <div class="fil"><span class="k">정렬</span> 최근 회차 높은 순 &#9662;</div>
+          </div>
+          <div class="trwrap"><table class="trtbl">
+              <tr><th class="rh">팀</th><th>미프 1차</th><th>미프 2차</th><th>미프 3차</th><th>미프 4차</th><th class="tr7">1차 &#8594; 최근</th></tr>
+              <tr class="tot"><td class="rh">C반<small>25명 &#183; 김서연</small></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">24%<small>6/25</small></span></td><td><span class="pc2 p5">32%<small>8/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;16p<span class="lb2">계속 오름</span></td></tr>
+              <tr class="first"><td class="rh">3팀<small>3명</small></td><td><span class="pc2 p5">33%<small>1/3</small></span></td><td><span class="pc2 p5">67%<small>2/3</small></span></td><td><span class="pc2 p5">100%<small>3/3</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;67p<span class="lb2">계속 오름</span></td></tr>
+              <tr class=""><td class="rh">5팀<small>3명</small></td><td><span class="pc2 p0">0%<small>0/3</small></span></td><td><span class="pc2 p5">33%<small>1/3</small></span></td><td><span class="pc2 p5">67%<small>2/3</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;67p<span class="lb2">계속 오름</span></td></tr>
+              <tr class=""><td class="rh">1팀<small>3명</small></td><td><span class="pc2 p5">33%<small>1/3</small></span></td><td><span class="pc2 p5">33%<small>1/3</small></span></td><td><span class="pc2 p5">33%<small>1/3</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+0p<span class="lb2">보합</span></td></tr>
+              <tr class=""><td class="rh">2팀<small>4명</small></td><td><span class="pc2 p0">0%<small>0/4</small></span></td><td><span class="pc2 p3">25%<small>1/4</small></span></td><td><span class="pc2 p3">25%<small>1/4</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;25p<span class="lb2">계속 오름</span></td></tr>
+              <tr class=""><td class="rh">4팀<small>3명</small></td><td><span class="pc2 p0">0%<small>0/3</small></span></td><td><span class="pc2 p0">0%<small>0/3</small></span></td><td><span class="pc2 p0">0%<small>0/3</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+0p<span class="lb2">보합</span></td></tr>
+            </table>
+            <div class="trnote">&#183; <b>3명 팀에서 1명이면 33%</b>다 &#8212; <b>모집단이 작아 비율이 튄다.</b> 셀 아래 <b>실수</b>를 같이 쓴다.<br>&#183; <b>팀은 회차마다 재편성된다</b>(TeamMembership이 프로젝트 종속) &#8212; 가로로 읽으면 <b>다른 사람들의 값</b>을 이어 붙이는 것이다.</div>
+          </div>
+          <div class="keyrow">위험자 비율 <span class="sw" style="background:#eef7f1"></span><span class="sw" style="background:#dcefe3"></span><span class="sw" style="background:#f7e9c4"></span><span class="sw" style="background:#f2c98f"></span><span class="sw" style="background:#e59f7d"></span><span class="sw" style="background:#d9705c"></span> 높음<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 아직 안 함</div>
+          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-info)">&#9432;</span><span class="vx"><b>팀은 회차마다 다시 짜므로 같은 팀이 아니다</b><span class="vs"><b>3팀 100%</b>는 <b>이번 회차 3팀</b>의 값이고 지난 회차 3팀과 <b>구성원이 다르다</b> &#8212; 팀은 프로젝트마다 재편성된다. <b>팀 흐름은 반 안에서 어느 팀이 이번에 무너졌나</b>를 보는 것이고, <b>추세로 읽으면 안 된다.</b></span></span></span><span class="vact"><button class="btn ghost">반별로 돌아가기</button></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+</div>
+<script>
+  var PAGE = { round:"page-round", one:"page-one", early:"page-early",
+               cohort:"page-cohort", nocohort:"page-nocohort", team:"page-team" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "round";
+    var id = PAGE[h] || "page-round";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+</script>
+</body>
+</html>

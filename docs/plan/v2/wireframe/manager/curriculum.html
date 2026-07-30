@@ -1,0 +1,487 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MG-09 · 교안 — 와이어프레임</title>
+<style>
+
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-nav:#1e2436; --c-nav-2:#2a3147; --c-nav-text:#aeb4c6;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  .app{display:flex;flex-direction:column;min-height:620px}
+  .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
+  .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700}
+  .topbar .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .cohortsel{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:5px var(--sp-3);font-size:var(--fs-sm);background:var(--c-surface-2)}
+  .cohortsel .k{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+
+  .body{display:flex;flex:1}
+  .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
+  .nav .grp{padding-top:var(--sp-2);margin-top:var(--sp-2);border-top:1px solid var(--c-nav-2)}
+  .nav .grp:first-child{padding-top:0;margin-top:0;border-top:0}
+  .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
+  .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
+  .nav .item .bg{margin-left:auto;background:var(--c-primary);color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:1px 6px}
+  .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-6);min-width:0}
+  .phead{margin-bottom:var(--sp-4)}
+  .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
+
+  .lhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-4)}
+  .lhead .ttl{font-size:var(--fs-lg);font-weight:700;display:flex;align-items:baseline;gap:var(--sp-2)}
+  .lhead .ttl .cnt{font-size:var(--fs-xs);font-weight:600;color:var(--c-text-3)}
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-xs);cursor:pointer;padding:8px 13px}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong)}
+  .btn.off{background:#e8eaee;color:var(--c-text-3);cursor:not-allowed}
+
+  .ltool{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3);flex-wrap:wrap}
+  .ltool .search{flex:0 0 240px;border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-3);background:var(--c-surface-2)}
+  .ltool .fil{border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);cursor:pointer}
+  .ltool .fil .k{color:var(--c-text-3)}
+
+  .card{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .dtbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .dtbl th{text-align:left;padding:11px var(--sp-4);font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-weight:600;white-space:nowrap}
+  .dtbl td{padding:12px var(--sp-4);border-bottom:1px solid var(--c-border);vertical-align:middle}
+  .dtbl tr:last-child td{border-bottom:0}
+  .dtbl tr.click{cursor:pointer}
+  .dtbl tr.click:hover{background:var(--c-surface-2)}
+  .dtbl .name b{font-weight:700}
+  .dtbl .sub{font-size:11px;color:var(--c-text-3);margin-top:2px}
+  .dtbl .date{color:var(--c-text-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .dtbl .num{font-variant-numeric:tabular-nums}
+
+  .st{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .st .dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+  .st.run{background:var(--c-info-soft);color:var(--c-info)} .st.run .dot{background:var(--c-info)}
+  .st.plan{background:#eef0f3;color:var(--c-text-2)} .st.plan .dot{background:var(--c-text-3)}
+  .st.done{background:var(--c-success-soft);color:var(--c-success)} .st.done .dot{background:var(--c-success)}
+  .st.warn{background:var(--c-warning-soft);color:var(--c-warning)} .st.warn .dot{background:var(--c-warning)}
+
+  .kchip{display:inline-block;font-size:11px;font-weight:600;color:var(--c-text-2);background:var(--c-surface-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:2px 9px;margin:1px 2px 1px 0}
+  .kmiss{font-size:11px;font-weight:600;color:var(--c-warning)}
+  .na{color:var(--c-text-3)}
+
+  /* 표 푸터 표준 — 범위개수(좌) + 페이저(중앙). 페이지가 하나면 화살표를 넣지 않는다 */
+  .tablefoot{display:flex;align-items:center;margin-top:var(--sp-4)}
+  .tablefoot .range{flex:1;font-size:var(--fs-xs);color:var(--c-text-3);white-space:nowrap}
+  .tablefoot .rspace{flex:1}
+  .pages{display:flex;gap:4px;justify-content:center}
+  .pg{min-width:32px;height:32px;padding:0 6px;border:1px solid var(--c-border);border-radius:var(--r-sm);display:inline-flex;align-items:center;justify-content:center;background:#fff;font-size:var(--fs-sm);color:var(--c-text-2);cursor:pointer}
+  .pg.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary);font-weight:600}
+
+  .phead{margin-bottom:var(--sp-4);display:flex;align-items:baseline;gap:var(--sp-3)}
+  .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead .back{margin-left:auto;font-size:var(--fs-xs);color:var(--c-primary);cursor:pointer}
+  .block{margin-bottom:var(--sp-6)}
+  .block:last-child{margin-bottom:0}
+  .bhead{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-3)}
+  .bhead h3{font-size:var(--fs-lg);font-weight:700;display:flex;align-items:baseline;gap:var(--sp-2)}
+  .bhead h3 .tot{font-size:var(--fs-xs);font-weight:600;color:var(--c-text-3)}
+  .bhead h3 .meta{font-size:11px;font-weight:400;color:var(--c-text-3)}
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-xs);cursor:pointer;padding:8px 13px}
+  .toolbar{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3);flex-wrap:wrap}
+  .toolbar .search{flex:0 0 240px;border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-3);background:var(--c-surface-2)}
+  .toolbar .sel{border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);cursor:pointer}
+  .toolbar .sel .k{color:var(--c-text-3)}
+  .tbl thead tr.bulk th{background:var(--c-primary-soft);border-bottom-color:#cfd8ee;padding-top:8px;padding-bottom:8px;text-transform:none;letter-spacing:0}
+  .card{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .tbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .tbl th.k-chk,.tbl td.chk{width:var(--col-chk)}
+  .tbl th.k-name{width:var(--col-name)}
+  .tbl th.k-num{width:var(--col-num)}
+  .tbl th.k-money{width:var(--col-money)}
+  .tbl th.k-badge{width:var(--col-badge)}
+  .tbl th.k-date{width:var(--col-date)}
+  .tbl th.k-period{width:var(--col-period)}
+  .tbl th.k-email{width:var(--col-email)}
+  .tbl th.k-person{width:var(--col-person)}
+  .tbl th.k-cls{width:var(--col-cls)}
+  .tbl th.k-act{width:var(--col-act)}
+  .tbl th{text-align:left;padding:11px var(--sp-4);font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-weight:600;white-space:nowrap}
+  .tbl td{padding:11px var(--sp-4);border-bottom:1px solid var(--c-border);vertical-align:middle}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl tr.click{cursor:pointer}
+  .tbl tr.click:hover{background:var(--c-surface-2)}
+  .tbl tr.sel{background:var(--c-primary-soft)}
+  .tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .tbl th.num{text-align:right}
+  .tbl .nm{font-weight:600}
+  .tbl .date{color:var(--c-text-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tbl td.act{text-align:right;white-space:nowrap}
+  .tbl .link{font-size:var(--fs-xs);font-weight:600;color:var(--c-primary);cursor:pointer;margin-left:var(--sp-3)}
+  .tbl .link.warn{color:var(--c-danger)}
+  .tbl th.chk,.tbl td.chk{width:38px;padding-right:0}
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .na{color:var(--c-text-3)}
+  .mono{font-family:var(--mono);font-size:var(--fs-xs)}
+  .tablefoot{display:flex;align-items:center;margin-top:var(--sp-4)}
+  .tablefoot .range{flex:1;font-size:var(--fs-xs);color:var(--c-text-3);white-space:nowrap}
+  .tablefoot .rspace{flex:1}
+  .pages{display:flex;gap:4px;justify-content:center}
+  .pg{min-width:32px;height:32px;padding:0 6px;border:1px solid var(--c-border);border-radius:var(--r-sm);display:inline-flex;align-items:center;justify-content:center;background:#fff;font-size:var(--fs-sm);color:var(--c-text-2);cursor:pointer}
+  .note{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:var(--sp-3);line-height:1.7}
+  .qrow{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-4)}
+  .qrow .qact{margin-left:auto;display:flex;gap:var(--sp-2)}
+  .relsplit{display:flex;gap:var(--sp-4);align-items:flex-start}
+  .seclist{flex:0 0 244px;display:flex;flex-direction:column;gap:5px}
+  .secitem{width:100%;text-align:left;background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:10px var(--sp-3);cursor:pointer;font-family:inherit}
+  .secitem:hover{border-color:var(--c-border-strong)}
+  .secitem b{display:block;font-size:var(--fs-sm);line-height:1.4}
+  .secitem .m{display:block;font-size:10px;color:var(--c-text-3);margin-top:3px}
+  .relpane{flex:1;min-width:0;background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5) var(--sp-5)}
+  .sech{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-3);padding-bottom:var(--sp-3);border-bottom:1px solid var(--c-border);margin-bottom:var(--sp-4)}
+  .sech h3{font-size:var(--fs-lg)}
+  .sech .sm{font-size:11px;color:var(--c-text-3);margin-top:3px}
+  .sech .sm b{color:var(--c-text-2);font-family:var(--mono)}
+  .grph{display:flex;align-items:baseline;gap:var(--sp-2);font-size:var(--fs-sm);font-weight:700;margin:var(--sp-5) 0 var(--sp-2)}
+  .grph:first-of-type{margin-top:0}
+  .grph b{color:var(--c-primary)}
+  .grph .gd{font-weight:400;font-size:11px;color:var(--c-text-3)}
+  .itm{border:1px solid var(--c-border);border-radius:var(--r-md);padding:10px var(--sp-4);margin-bottom:5px}
+  .itm .it{display:flex;align-items:baseline;gap:var(--sp-3)}
+  .itm .it b{font-size:var(--fs-sm);flex:1}
+  .itm .it .p{font-family:var(--mono);font-size:11px;color:var(--c-text-3);white-space:nowrap}
+  .itm .idf{font-size:var(--fs-xs);color:var(--c-text-2);line-height:1.7;margin-top:4px}
+  .subtabs{display:flex;gap:var(--sp-4);border-bottom:1px solid var(--c-border);margin-bottom:var(--sp-4)}
+  .subtabs .st2{padding:6px 0;font-size:var(--fs-xs);color:var(--c-text-2);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer}
+  .subtabs .st2.on{color:var(--c-primary);border-color:var(--c-primary);font-weight:700}
+  /* ===== MG-09 · 교안 (읽기 전용) ===== */
+  .lhead2{display:flex;align-items:baseline;gap:var(--sp-2);margin-bottom:var(--sp-4)}
+  .lhead2 .t5{font-size:var(--fs-lg);font-weight:700}
+  .lhead2 .tot2{font-size:var(--fs-xs);font-weight:600;color:var(--c-text-3)}
+  .lhead2 .meta2{font-size:var(--fs-xs);color:var(--c-text-3);margin-left:var(--sp-2)}
+  .lhead2 .meta2 b{color:var(--c-text-2)}
+
+  .tbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .tbl th{text-align:left;padding:11px var(--sp-4);font-size:11px;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-weight:600;white-space:nowrap}
+  .tbl td{padding:12px var(--sp-4);border-bottom:1px solid var(--c-border);vertical-align:middle}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl tr.click{cursor:pointer}
+  .tbl tr.click:hover{background:var(--c-surface-2)}
+  .tbl .k-name{width:200px}
+  .tbl .k-num{width:96px}
+  .tbl td.nm{font-weight:700}
+  .tbl td.num,.tbl th.num{text-align:right;font-variant-numeric:tabular-nums}
+  .tbl .mono{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-3)}
+  .tbl .na{color:var(--c-text-3)}
+  .tbl .used{font-size:var(--fs-xs);color:var(--c-text-2)}
+  .tbl .used .na2{color:var(--c-text-3)}
+
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;white-space:nowrap}
+  .badge.ok{background:var(--c-success-soft);color:var(--c-success)}
+  .badge.warn{background:var(--c-warning-soft);color:var(--c-warning)}
+  .badge.off{background:#eef0f3;color:var(--c-text-2)}
+
+  .phead2{display:flex;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-3)}
+  .phead2 h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead2 .back2{margin-left:auto;font-size:var(--fs-xs);color:var(--c-primary);cursor:pointer}
+  .subtabs{display:flex;gap:var(--sp-5);border-bottom:1px solid var(--c-border);margin-bottom:var(--sp-4)}
+  .subtabs .st2{padding:var(--sp-2) 0;font-size:var(--fs-sm);color:var(--c-text-2);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer}
+  .subtabs .st2.on{color:var(--c-primary);font-weight:700;border-bottom-color:var(--c-primary)}
+  .qrow{display:flex;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-3)}
+
+  /* 좌 섹션 → 우 가르친 항목. 오퍼레이터 화면과 같은 구조 */
+  .relsplit{display:flex;gap:0;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden;min-height:420px}
+  .seclist{flex:0 0 268px;border-right:1px solid var(--c-border);background:var(--c-surface-2);overflow:auto;padding:var(--sp-2) 0}
+  .secitem{display:block;width:100%;text-align:left;border:0;background:none;padding:9px var(--sp-4);cursor:pointer;font-family:inherit}
+  .secitem b{display:block;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);line-height:1.4}
+  .secitem .m{display:block;font-size:10px;color:var(--c-text-3);margin-top:2px;font-variant-numeric:tabular-nums}
+  .secitem:hover{background:#fff}
+  .secitem.on{background:#fff;box-shadow:inset 2px 0 0 var(--c-primary)}
+  .secitem.on b{color:var(--c-primary)}
+  .relpane{flex:1;min-width:0;overflow:auto}
+  .sech{padding:var(--sp-4) var(--sp-5) var(--sp-3);border-bottom:1px solid var(--c-border)}
+  .sech h3{font-size:var(--fs-base);font-weight:700}
+  .sech .sm{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .sech .sm b{color:var(--c-text-2)}
+  .grph{padding:9px var(--sp-5);background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2)}
+  .grph .gd{font-weight:400;color:var(--c-text-3);margin-left:6px}
+  .itm{padding:11px var(--sp-5);border-bottom:1px solid var(--c-border)}
+  .itm:last-child{border-bottom:0}
+  .itm .it{display:flex;align-items:baseline;gap:6px}
+  .itm .it b{font-size:var(--fs-sm);font-weight:700}
+  .itm .it .p{font-size:11px;color:var(--c-text-3);font-variant-numeric:tabular-nums;margin-left:auto}
+  .itm .idf{font-size:var(--fs-xs);color:var(--c-text-2);line-height:1.7;margin-top:3px}
+  .itm .idf.none7{color:var(--c-text-3)}
+  .itm.used2{background:#fdfbf4}
+  .itm .star{font-size:10px;font-weight:700;color:#b8860b;background:#fdf6e3;border:1px solid #e8d9a8;border-radius:20px;padding:1px 7px}
+
+  .usedtbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm);background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .usedtbl th{text-align:left;padding:10px var(--sp-4);font-size:11px;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-weight:600}
+  .usedtbl td{padding:12px var(--sp-4);border-bottom:1px solid var(--c-border)}
+  .usedtbl tr:last-child td{border-bottom:0}
+  .usedtbl .kchip{display:inline-block;font-size:11px;font-weight:600;color:var(--c-text-2);background:var(--c-surface-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:2px 9px;margin:1px 2px 1px 0}
+
+  .note{margin-top:var(--sp-4);font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.8}
+  .note b{color:var(--c-text-2)}
+
+  .empty{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8);text-align:center}
+  .empty .t{font-size:var(--fs-base);font-weight:600;margin-bottom:6px}
+  .empty .s{font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7}
+
+  .note2{max-width:1180px;margin:-18px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
+  .note2 b{color:var(--c-text-2)}
+
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  body.embedded .sec-label{margin-top:0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">MG-09 · 매니저 · 웹</span>
+    <h1>교안 &#8212; 이 기수가 무엇을 가르쳤나</h1>
+    <p><b>오퍼레이터 화면(OP-06 &#8250; 교안)에서 생성&#183;편집만 뺀 것</b>이다. 목록 &#183; 섹션 &#183; 쓰인 회차를 그대로 본다.</p>
+    <ul>
+      <li><b>목적은 어휘와 맥락</b>이다. 히트맵&#183;대시보드&#183;브리프가 <code>HITL Trigger</code> <code>Graph 구성</code> 같은 이름을 쓰는데, <b>8회차 &#215; 3개 = 24개 낯선 용어</b>가 지나가도 그것이 커리큘럼 어디쯤인지 알려주는 화면이 없었다 &#8212; <b>새로 배정된 매니저에게는 자기 화면이 외국어</b>다.</li>
+      <li><b>판단하려고 보는 것이 아니다.</b> 매니저는 전공자가 아닐 수 있어 <i>"이 위치가 맞나"</i>를 검증할 수 없고, 16번이 <i>"개념 이름만 읽어주세요. <b>설명은 하지 않아도 됩니다</b>"</i>라고 면제했다 &#8212; 학생 질문은 <b>강사에게</b> 간다. 이 화면은 <b>매니저 자신이 맥락을 갖는 자리</b>다.</li>
+      <li><b>빼는 것은 권한과 범위뿐</b>이다 &#8212; 등록&#183;재분석&#183;새 버전&#183;연결 변경이 없고, 기관 전체가 아니라 <b>담당 기수에 연결된 교안</b>만 본다.</li>
+      <li><b><code>쓰인 회차</code> 탭이 매니저에게 가장 쓸모 있다.</b> 오퍼레이터의 <code>연결된 프로젝트</code>와 같은 데이터인데, 매니저에게는 <b>히트맵에서 본 이름이 어느 회차 것인지</b>가 여기서 연결된다.</li>
+      <li><b>&#9733;로 검증 개념으로 쓰인 항목</b>을 표시한다. 한 섹션이 가르친 것이 9개인데 <b>그중 3개만 문항이 됐다</b>는 사실이 매니저의 화면을 읽는 열쇠다.</li>
+      <li><b>메뉴에 자리를 준다.</b> 17번은 <i>"링크로만 가면 되는 화면은 메뉴 자리를 안 준다"</i>고 했지만 <b>그 전제가 깨졌다</b> &#8212; 어휘 습득이 목적이면 <b>스스로 열어야</b> 하고, 링크로만이면 면담 대상이 있을 때만 볼 수 있다. 매니저 nav 5개 &#8594; <b>6개</b>.</li>
+      <li><b>모달&#183;오버레이를 만들지 않는다.</b> 브리프&#183;히트맵의 교안 위치는 <b><code>&#8599;</code> 새 탭</b>으로 이 화면을 연다 &#8212; 브리프가 모드라 나가면 낭독문을 잃지만 <b>새 탭이면 그대로 남는다.</b></li>
+      <li><b>검색이 없다.</b> 기수당 교안이 3~5개라 목록으로 충분하다.</li>
+    </ul>
+  </div>
+
+  <div class="rpage" id="page-list">
+  <div class="sec-label">&#9312; 교안 목록 — 이 기수에 연결된 것만</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/curriculum</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item on"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교안 &#8250; 7기</div><h2>교안</h2></div>
+          <div class="lhead2"><span class="t5">교안</span><span class="tot2">3개</span>
+            <span class="meta2">이 기수 회차에 연결된 것만 &#183; <b>등록&#183;재분석은 오퍼레이터</b></span></div>
+          <div class="card">
+            <table class="tbl">
+              <thead><tr><th class="k-name">교안</th><th class="k-num">버전</th><th class="num k-num">섹션</th><th class="num k-num">가르친 항목</th><th>쓰인 회차</th><th class="k-num">분석</th></tr></thead>
+              <tbody>
+                <tr class="click"><td class="nm">AI_LLMOps</td><td class="mono">v2</td><td class="num">12</td><td class="num">87</td><td><span class="used">미프 3차 &#183; 4차</span></td><td><span class="badge ok">분석 완료</span></td></tr>
+                <tr class="click"><td class="nm">Streamlit 실습</td><td class="mono">v1</td><td class="num">4</td><td class="num">22</td><td><span class="used">미프 3차</span></td><td><span class="badge ok">분석 완료</span></td></tr>
+                <tr class="click"><td class="nm">Kubernetes 기초</td><td class="mono">v1</td><td class="num">6</td><td class="num">31</td><td><span class="used">미프 2차</span></td><td><span class="badge ok">분석 완료</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="tablefoot"><span class="range">1&#8211;3 / 3개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+          <div class="note">&#183; <b>목적은 어휘와 맥락</b>이다 &#8212; 히트맵&#183;대시보드가 쓰는 개념 이름이 <b>커리큘럼 어디쯤인지</b> 여기서 확인한다.<br>
+            &#183; <b>등록&#183;재분석&#183;연결 변경이 없다.</b> 교안은 기관 자산이고 오퍼레이터가 관리한다(OP-06).<br>
+            &#183; <b>기관 전체가 아니라 이 기수 것만</b> 보인다 &#8212; 다른 기수 교안은 담당 범위가 아니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="note2">&#183; <b>OP-06 &#8250; 교안에서 생성&#183;편집만 뺀 화면</b>이다 &#8212; 목록&#183;섹션&#183;쓰인 회차 구조가 같다. <b>같은 것을 두 번 설계하지 않는다.</b> &#183; 진입은 <b>메뉴</b>와 <b>브리프&#183;히트맵의 <code>&#8599;</code> 새 탭</b> 둘이다 &#8212; 모달&#183;오버레이를 만들지 않는다.</div>
+  <div class="rpage" id="page-sec">
+  <div class="sec-label">&#9313; 교안 상세 › 섹션 — ★가 검증 개념으로 쓰인 항목</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/curriculum</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item on"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교안 &#8250; 7기 &#8250; <b style="color:var(--c-primary)">AI_LLMOps v2</b></div></div>
+          <div class="phead2"><h2>AI_LLMOps <span class="mono na">v2</span></h2>
+            <span class="badge ok">분석 완료</span><span class="back2">&#8592; 교안 목록</span></div>
+          <div class="subtabs"><span class="st2 on">섹션 12</span><span class="st2">쓰인 회차 2</span></div>
+          <div class="qrow"><span class="badge off">12개 섹션 &#183; 168쪽</span>
+            <span class="meta2">등록 07-02 &#183; <b>재분석&#183;새 버전은 오퍼레이터</b></span></div>
+          <div class="relsplit">
+            <div class="seclist"><button class="secitem on"><b>HITL (Human In The Loop)</b><span class="m">p.48&#8211;60 &#183; 항목 9</span></button><button class="secitem"><b>역할 기반 설계</b><span class="m">p.37&#8211;46 &#183; 항목 9</span></button><button class="secitem"><b>시점 관리 (Snapshot)</b><span class="m">p.62&#8211;75 &#183; 항목 7</span></button><button class="secitem"><b>Agent 시스템 구축 필요 기술</b><span class="m">p.128&#8211;150 &#183; 항목 11</span></button><button class="secitem"><b>Agent 시스템 평가</b><span class="m">p.95&#8211;156 &#183; 항목 15</span></button><button class="secitem"><b>AI Agent 설계 &#8212; 면접관 예제</b><span class="m">p.21&#8211;35 &#183; 항목 16</span></button><button class="secitem"><b>Trace 실행 관측</b><span class="m">p.77&#8211;154 &#183; 항목 12</span></button><button class="secitem"><b>LLMOps 개념 이해</b><span class="m">p.7&#8211;10 &#183; 항목 3</span></button></div>
+            <div class="relpane">
+              <div class="sech">
+                <div>
+                  <h3>HITL (Human In The Loop)</h3>
+                  <div class="sm">AI_LLMOps v2 &#183; <b>p.48&#8211;60</b> &#8212; 리포트와 면담이 이 위치를 가리킵니다</div>
+                </div>
+              </div>
+              <div class="grph">이 섹션이 가르친 것 <b>9</b><span class="gd">프로젝트에서 이 중 3개를 골라 문항을 만듭니다</span></div>
+              <div class="itm"><div class="it"><b>HITL 개념 정의</b><span class="p">p.48</span></div><div class="idf">HITL은 LLM 시스템의 의사결정을 통제하기 위한 Control Layer로, 실행 결과를 검증&#183;차단&#183;수정하며 사람을 시스템의 구성요소로 설계한다.</div></div><div class="itm"><div class="it"><b>HITL이 필요한 이유</b><span class="p">p.49</span></div><div class="idf">무한 재시도로 인한 비용 증가, Tool/API 호출 비용 리스크, 정책 위반으로 인한 법적&#183;보안 사고를 통제하기 위해 HITL이 필요하다.</div></div><div class="itm"><div class="it"><b>개입 지점 설계</b><span class="p">p.51</span></div><div class="idf">실행 전 승인, 실행 후 검토, 예외 발생 시 개입 세 가지 지점 중 무엇을 쓸지 비용과 위험으로 정한다.</div></div><div class="itm"><div class="it"><b>AgentState에 HITL 필드 추가</b><span class="p">p.54</span></div><div class="idf">사람 결정과 다음 단계를 상태 객체에 넣어 노드 사이로 넘긴다.</div></div><div class="itm used2"><div class="it"><b>HITL Trigger 조건 함수</b><span class="star">&#9733; 미프 3차 개념 1</span><span class="p">p.55</span></div><div class="idf">최대 반복 횟수와 거절 상태를 보고 <b>사람 확인이 필요한지</b> 판단한다. 조건이 참이면 그래프 실행을 멈추고 사용자 입력을 기다리는 노드로 넘긴다.</div></div><div class="itm"><div class="it"><b>중단과 재개</b><span class="p">p.56</span></div><div class="idf">중단 지점을 저장하고 사람 입력이 들어오면 그 지점부터 이어서 실행한다.</div></div><div class="itm"><div class="it"><b>HITL Design Checklist와 사용자 부담 Trade-off</b><span class="p">p.58</span></div><div class="idf">확인 지점이 많으면 안전하지만 사용자가 지치고, 적으면 빠르지만 잘못된 실행을 놓친다.</div></div><div class="itm"><div class="it"><b>승인 UI 패턴</b><span class="p">p.59</span></div><div class="idf">무엇을 승인하는지 보여주고 되돌릴 수 있게 만든다.</div></div><div class="itm"><div class="it"><b>HITL 요약</b><span class="p">p.60</span></div><div class="idf none7">정의문이 추출되지 않았습니다 &#8212; 섹션 요약 항목입니다.</div></div>
+            </div>
+          </div>
+          <div class="note">&#183; <b>&#9733;는 검증 개념으로 쓰인 항목</b>이다 &#8212; 이 섹션이 가르친 것이 9개인데 <b>그중 하나만 문항이 됐다.</b> 나머지는 교안에 있지만 <b>묻지 않았다.</b><br>
+            &#183; <b>정의문은 교안 분석이 뽑은 것</b>이고 없는 경우도 있다 &#8212; 지어내지 않는다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-sec2">
+  <div class="sec-label">&#9314; 다른 섹션 — 검증 개념이 없는 섹션</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/curriculum</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item on"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교안 &#8250; 7기 &#8250; <b style="color:var(--c-primary)">AI_LLMOps v2</b></div></div>
+          <div class="phead2"><h2>AI_LLMOps <span class="mono na">v2</span></h2>
+            <span class="badge ok">분석 완료</span><span class="back2">&#8592; 교안 목록</span></div>
+          <div class="subtabs"><span class="st2 on">섹션 12</span><span class="st2">쓰인 회차 2</span></div>
+          <div class="qrow"><span class="badge off">12개 섹션 &#183; 168쪽</span>
+            <span class="meta2">등록 07-02 &#183; <b>재분석&#183;새 버전은 오퍼레이터</b></span></div>
+          <div class="relsplit">
+            <div class="seclist"><button class="secitem"><b>HITL (Human In The Loop)</b><span class="m">p.48&#8211;60 &#183; 항목 9</span></button><button class="secitem on"><b>역할 기반 설계</b><span class="m">p.37&#8211;46 &#183; 항목 9</span></button><button class="secitem"><b>시점 관리 (Snapshot)</b><span class="m">p.62&#8211;75 &#183; 항목 7</span></button><button class="secitem"><b>Agent 시스템 구축 필요 기술</b><span class="m">p.128&#8211;150 &#183; 항목 11</span></button><button class="secitem"><b>Agent 시스템 평가</b><span class="m">p.95&#8211;156 &#183; 항목 15</span></button><button class="secitem"><b>AI Agent 설계 &#8212; 면접관 예제</b><span class="m">p.21&#8211;35 &#183; 항목 16</span></button><button class="secitem"><b>Trace 실행 관측</b><span class="m">p.77&#8211;154 &#183; 항목 12</span></button><button class="secitem"><b>LLMOps 개념 이해</b><span class="m">p.7&#8211;10 &#183; 항목 3</span></button></div>
+            <div class="relpane">
+              <div class="sech">
+                <div>
+                  <h3>역할 기반 설계</h3>
+                  <div class="sm">AI_LLMOps v2 &#183; <b>p.37&#8211;46</b> &#8212; 리포트와 면담이 이 위치를 가리킵니다</div>
+                </div>
+              </div>
+              <div class="grph">이 섹션이 가르친 것 <b>5</b><span class="gd">프로젝트에서 이 중 3개를 골라 문항을 만듭니다</span></div>
+              <div class="itm"><div class="it"><b>역할 분리의 필요</b><span class="p">p.37</span></div><div class="idf">한 에이전트가 계획과 실행을 같이 하면 실패 원인을 가릴 수 없다.</div></div><div class="itm"><div class="it"><b>Supervisor 패턴</b><span class="p">p.39</span></div><div class="idf">상위 에이전트가 하위 에이전트에 작업을 배분하고 결과를 모은다.</div></div><div class="itm"><div class="it"><b>Worker 정의</b><span class="p">p.41</span></div><div class="idf">각 Worker는 한 가지 도구만 쓰고 자기 결과에만 책임진다.</div></div><div class="itm"><div class="it"><b>역할 간 통신</b><span class="p">p.43</span></div><div class="idf">상태 객체를 공유하되 쓰기 권한은 역할별로 나눈다.</div></div><div class="itm"><div class="it"><b>역할 기반 설계 요약</b><span class="p">p.46</span></div><div class="idf none7">정의문이 추출되지 않았습니다.</div></div>
+            </div>
+          </div>
+          <div class="note">&#183; <b>&#9733;는 검증 개념으로 쓰인 항목</b>이다 &#8212; 이 섹션이 가르친 것이 5개인데 <b>그중 하나만 문항이 됐다.</b> 나머지는 교안에 있지만 <b>묻지 않았다.</b><br>
+            &#183; <b>정의문은 교안 분석이 뽑은 것</b>이고 없는 경우도 있다 &#8212; 지어내지 않는다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-used">
+  <div class="sec-label">&#9315; 교안 상세 › 쓰인 회차 — 오퍼레이터의 `연결된 프로젝트`</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/curriculum</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item on"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교안 &#8250; 7기 &#8250; <b style="color:var(--c-primary)">AI_LLMOps v2</b></div></div>
+          <div class="phead2"><h2>AI_LLMOps <span class="mono na">v2</span></h2>
+            <span class="badge ok">분석 완료</span><span class="back2">&#8592; 교안 목록</span></div>
+          <div class="subtabs"><span class="st2">섹션 12</span><span class="st2 on">쓰인 회차 2</span></div>
+          <table class="usedtbl">
+            <thead><tr><th>회차</th><th>검증 개념 3건</th><th>담당 반 진행</th><th>결과</th></tr></thead>
+            <tbody>
+              <tr><td><b>미프 3차</b></td>
+                <td><span class="kchip">&#9733; HITL Trigger 조건 함수</span><span class="kchip">&#9733; Graph 구성</span><span class="kchip">&#9733; State 관리</span></td>
+                <td>응시 58/71</td><td><span class="badge off">발행 전</span></td></tr>
+              <tr><td><b>미프 4차</b></td>
+                <td><span class="kchip na">검증 개념 미확정</span></td>
+                <td class="na">&#8212;</td><td><span class="badge off">예정</span></td></tr>
+            </tbody>
+          </table>
+          <div class="note">&#183; <b>히트맵에서 본 이름이 어느 회차 것인지</b>가 여기서 연결된다 &#8212; 오퍼레이터의 <code>연결된 프로젝트</code>와 같은 데이터이지만, 매니저에게는 <b>회차&#8594;개념</b> 방향이 쓸모 있다.<br>
+            &#183; <b>이 교안은 미프 3차와 4차에 걸쳐 있다</b> &#8212; 한 교안이 여러 회차에 쓰이고, 한 회차가 여러 교안을 쓴다(14번 4-3).<br>
+            &#183; <b>연결을 바꾸지 않는다</b> &#8212; 교안&#8594;회차 연결은 오퍼레이터가 프로젝트를 만들 때 정한다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-empty">
+  <div class="sec-label">&#9316; 상태 · 연결된 교안 없음</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/curriculum</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item on"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교안 &#8250; 7기</div><h2>교안</h2></div>
+          <div class="lhead2"><span class="t5">교안</span><span class="tot2">0개</span></div>
+          <div class="empty"><div class="t">이 기수 회차에 연결된 교안이 없습니다</div>
+            <div class="s">프로젝트가 만들어지고 교안이 연결되면 여기에 나타납니다.<br>
+              <b>등록은 오퍼레이터가 합니다.</b></div></div>
+          <div class="note">&#183; <b>등록 유도 문구를 넣지 않는다</b> &#8212; 매니저에게 등록 권한이 없다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+</div>
+<script>
+  var PAGE = { list:"page-list", sec:"page-sec", sec2:"page-sec2",
+               used:"page-used", empty:"page-empty" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "list";
+    var id = PAGE[h] || "page-list";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+</script>
+</body>
+</html>

@@ -20,6 +20,11 @@
     --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
     --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
     --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    /* 목업은 1920x1080 화면을 그대로 그리고, 보이는 폭에 맞춰 축소만 한다 */
+    /* 본문 기본 상한 — 1920에서 표·목록이 늘어지는 것을 막는다.
+       1512에서는 가용폭 1264px이라 걸리지 않고, 넓은 화면만 잡힌다(=Tailwind max-w-7xl) */
+    --w-app:1280px;
+    --screen-w:1920px; --screen-h:1080px; --k:.6625;
     --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
     --mono:ui-monospace,Menlo,monospace;
   }
@@ -32,12 +37,12 @@
   .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
   .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
 
-  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .viewport{width:var(--screen-w);zoom:var(--k);border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
   .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
   .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
   .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
 
-  .app{display:flex;flex-direction:column;min-height:620px}
+  .app{display:flex;flex-direction:column;height:var(--screen-h)}
   .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
   .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
   .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700}
@@ -55,6 +60,8 @@
   .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
   .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
   .content{flex:1;background:var(--c-bg);padding:var(--sp-6);min-width:0}
+  /* 상한은 .content 자신이 아니라 자식에 건다 — .content가 배경을 계속 꽉 채워야 이음선이 안 생긴다 */
+  .content > *{max-width:var(--w-app);margin-left:auto;margin-right:auto}
   .phead{margin-bottom:var(--sp-4)}
   .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
   .phead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
@@ -180,14 +187,13 @@
     <p>스코프가 <b>250명 &#183; 10반</b>이라 개인은 볼 수 없고 볼 필요도 없다 &#8212; 개별 학생 위험은 매니저가 처리한다. 여기에는 <b>반 단위 이상에서만 보이고 오퍼레이터만 조치할 수 있는 것</b>만 올린다.</p>
     <ul>
       <li><b><code>조치 필요</code> 네 줄이 이 화면의 존재 이유</b>다. 나머지 세 블록(회차&#183;반 비교&#183;비용)은 그 네 줄을 읽기 위한 배경이다.</li>
-      <li><b>정렬은 되돌리기 어려운 순서</b>다 &#8212; &#9312; 미배정 &#8594; &#9313; 개념 공백 &#8594; &#9314; 집단 미달 &#8594; &#9315; 면담 적체. <b>띠에 이유는 쓰지 않는다.</b></li>
-      <li><b>목적지는 오퍼레이터가 실제로 할 수 있는 것</b>이어야 한다. 집단 미달의 링크를 <code>분석</code>에서 <b><code>다음 회차 개념에 반영</code></b>으로 바꿨다 &#8212; 9-6이 <i>"시스템은 표시까지만 하고 이후 처리는 기관 판단"</i>이라 했고, 그중 <b>오퍼레이터만 할 수 있는 건 다음 회차 개념 교체</b>다(OP-04 구성). <b>반 전체 공지는 기능이 정의된 적 없어 만들지 않는다.</b></li>
+      <li><b>정렬은 되돌리기 어려운 순서</b>다 &#8212; &#9312; 미배정(구조 문제라 그 반 전체가 방치된다) &#8594; &#9313; 개념 공백(<b>다음 회차 설계에 반영해야 늦지 않는다</b>) &#8594; &#9314; 집단 미달 &#8594; &#9315; 면담 적체.</li>
       <li><b>반 비교에 등수를 붙이지 않는다.</b> 막대만 두고 순위 숫자를 쓰지 않는다 &#8212; <b>매니저 줄세우기가 되면 그 지표를 관리하려는 행동</b>이 나온다.</li>
-      <li><b>막대는 9-6으로 빠진 개념을 뺀 뒤 센다.</b> 반 문제로 판정된 개념을 그대로 세면 <b>그 반 막대만 통째로 올라가</b> 개인 위험이 많은 반처럼 보인다 &#8212; 처방이 정반대인데 같아 보인다.</li>
-      <li><b>회차를 전체 중 몇 번째인지로 쓴다</b>(<code>미프 3차 / 8회</code>). 오퍼레이터는 기수를 <b>운영</b>하는 사람이라 <i>"아직 5회 남았다"</i>와 <i>"마지막 회차다"</i>는 판단이 완전히 다르다 &#8212; 매니저에겐 필요 없던 정보다.</li>
-      <li><b>면담 적체는 개인 대기가 아니라 회차 경과</b>다. 리포트가 <b>일괄 발행</b>되므로(10-2) 등재일이 회차 안에서 전부 같다. <b>다른 반과의 비교를 함께 준다</b> &#8212; 11일이 긴지 아닌지는 그것으로만 판단된다.</li>
-      <li><b>비용은 세 값을 나란히</b> 둔다(총액&#183;세션 수&#183;세션당 증감) &#8212; 하나만 두면 <b>양이 늘어서인지 단가가 올라서인지</b> 모른 채 놀라기만 한다. <b>절대 금액은 쓰지 않는다</b> &#8212; 판단 기준이 없고 산식도 정의된 적 없다.</li>
-      <li><b>여기서 처리하지 않는다.</b> 요약과 링크만 &#8212; <b>지표판이 작업대를 겸하면 둘 다 못 한다.</b> 대신 <b>모든 블록에 목적지가 있다</b>(비용 &#8594; 운영 관리 비용 탭).</li>
+      <li><b>막대는 9-6으로 빠진 개념을 뺀 뒤 센다.</b> 반 문제로 판정된 개념을 그대로 세면 <b>그 반 막대만 통째로 올라가</b> 개인 위험이 많은 반처럼 보인다 &#8212; 집단 미달은 <code>조치 필요</code>가 따로 말한다.</li>
+      <li><b>면담 적체는 개인 대기가 아니라 회차 경과</b>다. 리포트가 <b>일괄 발행</b>되므로(10-2) 등재일이 회차 안에서 전부 같다 &#8212; <code>D반 &#183; 미프 2차 면담 11일째</code>가 정확한 표현이다.</li>
+      <li><b>비용은 절대량이 아니라 전월 대비 증감</b>이다. 절대 금액은 판단 기준이 없고, <b>산식이 정의된 적도 없다</b> &#8212; 화면에 그 사실을 밝힌다.</li>
+      <li><b>여기서 처리하지 않는다.</b> 요약과 링크만이고 각 줄은 OP-02&#183;OP-04&#183;OP-06으로 간다 &#8212; <b>지표판이 작업대를 겸하면 둘 다 못 한다.</b></li>
+      <li><b>개별 학생 위험 목록이 없다.</b> 매니저 소관이고(MG-01&#183;MG-03) 여기엔 <b>면담 메뉴 자체가 없다</b> &#8212; 담당 반이 없기 때문이다.</li>
     </ul>
   </div>
 
@@ -218,7 +224,7 @@
           </div>
           <div class="sec2">
             <div class="sh2"><span class="t4">조치 필요</span><span class="s4">&#183; 4건</span></div>
-            <div class="card2"><div class="todo2"><div class="tr3 str"><span class="ic3">&#9888;</span><span class="kd">미배정</span><span class="bd2"><b>F반</b>에 담당 매니저가 없습니다<span class="sub3">면담&#183;독촉을 아무도 처리하지 않습니다 &#183; 25명</span></span><span class="go2">운영 관리 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">개념 공백</span><span class="bd2">미프 3차 &#183; <b>"State 관리"</b> 코드 매칭 0 &#8212; <b>8팀 중 6팀</b><span class="sub3">그 개념이 코드에 없어 묻지 못했습니다 &#8212; 개념 선택이 프로젝트와 안 맞았을 수 있습니다</span></span><span class="go2">프로젝트 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">집단 미달</span><span class="bd2"><b>C반</b> &#183; "Graph 구성" <b>14/25</b> 2단 이하<span class="sub3">절반을 넘어 반 문제로 판정 &#8212; 개인 위험 사유에서 빠집니다(9-6). 시스템은 표시까지만 하고 <b>이후 처리는 기관 판단</b>입니다</span></span><span class="go2">다음 회차 개념에 반영 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">면담 적체</span><span class="bd2"><b>D반</b> &#183; 미프 2차 면담이 <b>11일째</b> 안 끝났습니다<span class="sub3">예정 7명 &#183; 다른 반은 3~5일 &#183; 회차 경과 기준(등재일은 반마다 같음)</span></span><span class="go2">운영 관리 &#8599;</span></div></div></div>
+            <div class="card2"><div class="todo2"><div class="tr3 str"><span class="ic3">&#9888;</span><span class="kd">미배정</span><span class="bd2"><b>F반</b>에 담당 매니저가 없습니다<span class="sub3">면담&#183;독촉을 아무도 처리하지 않습니다 &#183; 25명</span></span><span class="go2">운영 관리 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">개념 공백</span><span class="bd2">미프 3차 &#183; <b>"State 관리"</b> 코드 매칭 0 &#8212; <b>8팀 중 6팀</b><span class="sub3">그 개념이 코드에 없어 묻지 못했습니다 &#8212; 개념 선택이 프로젝트와 안 맞았을 수 있습니다</span></span><span class="go2">프로젝트 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">집단 미달</span><span class="bd2"><b>C반</b> &#183; "Graph 구성" <b>14/25</b> 2단 이하<span class="sub3">절반을 넘어 반 문제로 판정 &#8212; 개인 위험 사유에서 빠집니다(9-6). 시스템은 표시까지만 하고 <b>이후 처리는 기관 판단</b>입니다</span></span><span class="go2">분석에서 보기 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">면담 적체</span><span class="bd2"><b>D반</b> &#183; 미프 2차 면담이 <b>11일째</b> 안 끝났습니다<span class="sub3">예정 7명 &#183; 다른 반은 3~5일 &#183; 회차 경과 기준(등재일은 반마다 같음)</span></span><span class="go2">운영 관리 &#8599;</span></div></div></div>
           </div>
           <div class="sec2">
             <div class="sh2"><span class="t4">비용</span><span class="s4">&#183; 7월</span><span class="lk4">운영 관리 &#8599;</span></div>
@@ -229,7 +235,7 @@
     </div>
   </div>
   </div>
-  <div class="note2">&#183; <b>정렬 근거</b> &#8212; &#9312; 미배정(그 반 전체가 방치된다) &#8594; &#9313; 개념 공백(<b>다음 회차 설계 전에 고쳐야 늦지 않는다</b>) &#8594; &#9314; 집단 미달 &#8594; &#9315; 면담 적체. &#183; <b>반 비교는 직전 회차 기준</b>이다 &#8212; 이번 회차는 리포트 발행 전이라 위험 판정이 아직 없다. 어느 회차 기준인지를 항상 적는다. &#183; <b>파이프라인의 <code>분석 실패</code>는 그 자체가 링크</b>다 &#8212; 유일하게 붉은 값인데 갈 곳이 없으면 안 된다.</div>
+  <div class="note2">&#183; <b>정렬 근거</b> &#8212; &#9312; 미배정(그 반 전체가 방치된다) &#8594; &#9313; 개념 공백(<b>다음 회차 설계 전에 고쳐야 늦지 않는다</b>) &#8594; &#9314; 집단 미달 &#8594; &#9315; 면담 적체. &#183; <b>반 비교는 직전 회차 기준</b>이다 &#8212; 이번 회차는 리포트 발행 전이라 위험 판정이 아직 없다. 어느 회차 기준인지를 항상 적는다.</div>
   <div class="rpage" id="page-ok">
   <div class="sec-label">&#9313; 조치 필요 0 — 정상</div>
   <div class="viewport">
@@ -333,7 +339,7 @@
           </div>
           <div class="sec2">
             <div class="sh2"><span class="t4">조치 필요</span><span class="s4">&#183; 4건</span></div>
-            <div class="card2"><div class="todo2"><div class="tr3 str"><span class="ic3">&#9888;</span><span class="kd">개념 공백</span><span class="bd2">미프 3차 &#183; <b>"State 관리"</b> 코드 매칭 0 &#8212; <b>8팀 중 6팀</b><span class="sub3">개념 선택이 프로젝트와 안 맞았을 수 있습니다</span></span><span class="go2">프로젝트 &#8599;</span></div></div><div class="todo2"><div class="tr3 str"><span class="ic3">&#9888;</span><span class="kd">집단 미달</span><span class="bd2"><b>7개 반</b>에서 "Graph 구성"이 절반 이상 2단 이하<span class="sub3">A&#183;C&#183;D&#183;F&#183;H&#183;I&#183;J반 &#183; <b>한 반이 아니라 기수 전체</b>라 <b>개념 자체를 다시 봐야</b> 합니다</span></span><span class="go2">다음 회차 개념에 반영 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">집단 미달</span><span class="bd2"><b>C반</b> &#183; "HITL Trigger" <b>13/25</b> 2단 이하</span><span class="go2">다음 회차 개념에 반영 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">면담 적체</span><span class="bd2"><b>D반</b> &#183; 미프 2차 면담이 <b>11일째</b> 안 끝났습니다<span class="sub3">예정 7명</span></span><span class="go2">운영 관리 &#8599;</span></div></div></div>
+            <div class="card2"><div class="todo2"><div class="tr3 str"><span class="ic3">&#9888;</span><span class="kd">개념 공백</span><span class="bd2">미프 3차 &#183; <b>"State 관리"</b> 코드 매칭 0 &#8212; <b>8팀 중 6팀</b><span class="sub3">개념 선택이 프로젝트와 안 맞았을 수 있습니다</span></span><span class="go2">프로젝트 &#8599;</span></div></div><div class="todo2"><div class="tr3 str"><span class="ic3">&#9888;</span><span class="kd">집단 미달</span><span class="bd2"><b>7개 반</b>에서 "Graph 구성"이 절반 이상 2단 이하<span class="sub3">A&#183;C&#183;D&#183;F&#183;H&#183;I&#183;J반 &#183; <b>한 반이 아니라 기수 전체</b>라 <b>교안 쪽을 봐야</b> 합니다</span></span><span class="go2">분석에서 보기 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">집단 미달</span><span class="bd2"><b>C반</b> &#183; "HITL Trigger" <b>13/25</b> 2단 이하</span><span class="go2">분석에서 보기 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">면담 적체</span><span class="bd2"><b>D반</b> &#183; 미프 2차 면담이 <b>11일째</b> 안 끝났습니다<span class="sub3">예정 7명</span></span><span class="go2">운영 관리 &#8599;</span></div></div></div>
           </div>
           <div class="sec2">
             <div class="sh2"><span class="t4">비용</span><span class="s4">&#183; 7월</span><span class="lk4">운영 관리 &#8599;</span></div>
@@ -409,7 +415,7 @@
           </div>
           <div class="sec2">
             <div class="sh2"><span class="t4">조치 필요</span><span class="s4">&#183; 4건</span></div>
-            <div class="card2"><div class="todo2"><div class="tr3 str"><span class="ic3">&#9888;</span><span class="kd">미배정</span><span class="bd2"><b>F반</b>에 담당 매니저가 없습니다<span class="sub3">면담&#183;독촉을 아무도 처리하지 않습니다 &#183; 25명</span></span><span class="go2">운영 관리 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">개념 공백</span><span class="bd2">미프 3차 &#183; <b>"State 관리"</b> 코드 매칭 0 &#8212; <b>8팀 중 6팀</b><span class="sub3">그 개념이 코드에 없어 묻지 못했습니다 &#8212; 개념 선택이 프로젝트와 안 맞았을 수 있습니다</span></span><span class="go2">프로젝트 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">집단 미달</span><span class="bd2"><b>C반</b> &#183; "Graph 구성" <b>14/25</b> 2단 이하<span class="sub3">절반을 넘어 반 문제로 판정 &#8212; 개인 위험 사유에서 빠집니다(9-6). 시스템은 표시까지만 하고 <b>이후 처리는 기관 판단</b>입니다</span></span><span class="go2">다음 회차 개념에 반영 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">면담 적체</span><span class="bd2"><b>D반</b> &#183; 미프 2차 면담이 <b>11일째</b> 안 끝났습니다<span class="sub3">예정 7명 &#183; 다른 반은 3~5일 &#183; 회차 경과 기준(등재일은 반마다 같음)</span></span><span class="go2">운영 관리 &#8599;</span></div></div></div>
+            <div class="card2"><div class="todo2"><div class="tr3 str"><span class="ic3">&#9888;</span><span class="kd">미배정</span><span class="bd2"><b>F반</b>에 담당 매니저가 없습니다<span class="sub3">면담&#183;독촉을 아무도 처리하지 않습니다 &#183; 25명</span></span><span class="go2">운영 관리 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">개념 공백</span><span class="bd2">미프 3차 &#183; <b>"State 관리"</b> 코드 매칭 0 &#8212; <b>8팀 중 6팀</b><span class="sub3">그 개념이 코드에 없어 묻지 못했습니다 &#8212; 개념 선택이 프로젝트와 안 맞았을 수 있습니다</span></span><span class="go2">프로젝트 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">집단 미달</span><span class="bd2"><b>C반</b> &#183; "Graph 구성" <b>14/25</b> 2단 이하<span class="sub3">절반을 넘어 반 문제로 판정 &#8212; 개인 위험 사유에서 빠집니다(9-6). 시스템은 표시까지만 하고 <b>이후 처리는 기관 판단</b>입니다</span></span><span class="go2">분석에서 보기 &#8599;</span></div></div><div class="todo2"><div class="tr3 "><span class="ic3">&#9888;</span><span class="kd">면담 적체</span><span class="bd2"><b>D반</b> &#183; 미프 2차 면담이 <b>11일째</b> 안 끝났습니다<span class="sub3">예정 7명 &#183; 다른 반은 3~5일 &#183; 회차 경과 기준(등재일은 반마다 같음)</span></span><span class="go2">운영 관리 &#8599;</span></div></div></div>
           </div>
           <div class="sec2">
             <div class="sh2"><span class="t4">비용</span><span class="s4">&#183; 7월</span><span class="lk4">운영 관리 &#8599;</span></div>
@@ -434,6 +440,18 @@
   if(window.self !== window.top) document.body.classList.add("embedded");
   window.addEventListener("hashchange", route);
   route();
+
+  // 목업 = 1920x1080 실화면. 보이는 폭에 맞춰 배율만 조절해 비율을 지킨다
+  function fitScreen(){
+    var p = document.querySelector(".page");
+    if(!p) return;
+    var cs = getComputedStyle(p);
+    var w = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if(w > 0) document.documentElement.style.setProperty("--k", w / 1920);
+  }
+  window.addEventListener("resize", fitScreen);
+  window.addEventListener("load", fitScreen);
+  fitScreen();
 </script>
 </body>
 </html>

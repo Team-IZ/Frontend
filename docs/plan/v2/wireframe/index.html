@@ -161,7 +161,7 @@
 
       <div class="grp">
         <div class="gt"><span class="dot op"></span>오퍼레이터</div>
-        <div class="subgrp open" id="g-op01">
+        <div class="subgrp" id="g-op01">
           <button class="item parent" data-toggle="g-op01"><span class="code">OP-01</span>대시보드 · 지표판<span class="step">7단계</span><span class="cev">›</span></button>
           <div class="subwrap">
             <button class="item sub" data-src="operator/dashboard.html#dash" data-nm="OP-01 · ① 기본 (시작)" data-def="OP-01-dashboard">① 기본 (시작)</button>
@@ -186,6 +186,7 @@
           <button class="item parent" data-toggle="g-op04"><span class="code">OP-04</span>프로젝트 상세<span class="step">1단계</span><span class="cev">›</span></button>
           <div class="subwrap">
             <button class="item sub" data-src="operator/projects.html#config" data-nm="OP-04 · 상세 › 구성" data-def="OP-04-project-detail">구성</button>
+            <button class="item sub" data-src="operator/projects.html#pick" data-nm="OP-04 · 검증 개념 선택 (이력)" data-def="OP-04-project-detail">검증 개념 선택</button>
             <button class="item sub" data-src="operator/projects.html#schedule" data-nm="OP-04 · 상세 › 일정" data-def="OP-04-project-detail">일정</button>
             <button class="item sub" data-src="operator/projects.html#status" data-nm="OP-04 · 상세 › 현황" data-def="OP-04-project-detail">현황 · 개념 공백</button>
             <button class="item sub" data-src="operator/projects.html#draft" data-nm="OP-04 · 개념 미확정" data-def="OP-04-project-detail">개념 미확정 · 탭 잠김</button>
@@ -223,7 +224,7 @@
 
       <div class="grp">
         <div class="gt"><span class="dot mgr"></span>매니저</div>
-        <div class="subgrp open" id="g-mg01">
+        <div class="subgrp" id="g-mg01">
           <button class="item parent" data-toggle="g-mg01"><span class="code">MG-01</span>대시보드 · 인박스<span class="step">7단계</span><span class="cev">›</span></button>
           <div class="subwrap">
             <button class="item sub" data-src="manager/dashboard.html#inbox" data-nm="MG-01 · ① 기본 (시작)" data-def="MG-01-dashboard">① 기본 (시작)</button>
@@ -271,17 +272,16 @@
             <button class="item sub" data-src="manager/interview-brief.html#confirm" data-nm="MG-04 · ⑦ 저장 확인" data-def="MG-04-interview-brief">⑦ 저장 확인</button>
           </div>
         </div>
-        <div class="subgrp open" id="g-mg05">
+        <div class="subgrp" id="g-mg05">
           <button class="item parent" data-toggle="g-mg05"><span class="code">MG-05</span>교육생 명부<span class="step">8단계</span><span class="cev">›</span></button>
           <div class="subwrap">
             <button class="item sub" data-src="manager/trainees.html#list" data-nm="MG-05 · ① 기본 (시작)" data-def="MG-05-trainee-list">① 기본 (시작)</button>
             <button class="item sub" data-src="manager/trainees.html#past" data-nm="MG-05 · ② 지난 회차" data-def="MG-05-trainee-list">② 지난 회차</button>
             <button class="item sub" data-src="manager/trainees.html#top" data-nm="MG-05 · ③ 우수순" data-def="MG-05-trainee-list">③ 우수순</button>
             <button class="item sub" data-src="manager/trainees.html#risk" data-nm="MG-05 · ④ 위험순" data-def="MG-05-trainee-list">④ 위험순</button>
-            <button class="item sub" data-src="manager/trainees.html#fav" data-nm="MG-05 · ⑤ 즐겨찾기만" data-def="MG-05-trainee-list">⑤ 즐겨찾기만</button>
-            <button class="item sub" data-src="manager/trainees.html#account" data-nm="MG-05 · ⑥ 계정 상태" data-def="MG-05-trainee-list">⑥ 계정 상태</button>
-            <button class="item sub" data-src="manager/trainees.html#noresult" data-nm="MG-05 · ⑦ 검색 결과 없음" data-def="MG-05-trainee-list">⑦ 검색 결과 없음</button>
-            <button class="item sub" data-src="manager/trainees.html#pre" data-nm="MG-05 · ⑧ 회차 결과 전" data-def="MG-05-trainee-list">⑧ 회차 결과 전</button>
+            <button class="item sub" data-src="manager/trainees.html#account" data-nm="MG-05 · ⑤ 계정 상태" data-def="MG-05-trainee-list">⑤ 계정 상태</button>
+            <button class="item sub" data-src="manager/trainees.html#noresult" data-nm="MG-05 · ⑥ 검색 결과 없음" data-def="MG-05-trainee-list">⑥ 검색 결과 없음</button>
+            <button class="item sub" data-src="manager/trainees.html#pre" data-nm="MG-05 · ⑦ 회차 결과 전" data-def="MG-05-trainee-list">⑦ 회차 결과 전</button>
           </div>
         </div>
         <div class="subgrp" id="g-mg06">
@@ -297,7 +297,18 @@
             <button class="item sub" data-src="manager/trainee-detail.html#empty" data-nm="MG-06 · ⑧ 기록 없음" data-def="MG-06-trainee-detail">⑧ 기록 없음</button>
           </div>
         </div>
-        <button class="item todo"><span class="code">MG-07</span>프로젝트 목록</button>
+        <div class="subgrp" id="g-mg07">
+          <button class="item parent" data-toggle="g-mg07"><span class="code">MG-07</span>프로젝트 목록<span class="step">8단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/projects.html#list" data-nm="MG-07 · ① 기본 (시작)" data-def="MG-07-project-list">① 기본 (시작)</button>
+            <button class="item sub" data-src="manager/projects.html#class" data-nm="MG-07 · ② 반 필터" data-def="MG-07-project-list">② 반 필터</button>
+            <button class="item sub" data-src="manager/projects.html#stage" data-nm="MG-07 · ③ 단계가 다 다를 때" data-def="MG-07-project-list">③ 단계가 다 다를 때</button>
+            <button class="item sub" data-src="manager/projects.html#filter" data-nm="MG-07 · ④ 유형 필터" data-def="MG-07-project-list">④ 유형 필터</button>
+            <button class="item sub" data-src="manager/projects.html#clear" data-nm="MG-07 · ⑤ 조치 없음" data-def="MG-07-project-list">⑤ 조치 없음</button>
+            <button class="item sub" data-src="manager/projects.html#empty" data-nm="MG-07 · ⑥ 프로젝트 없음" data-def="MG-07-project-list">⑥ 프로젝트 없음</button>
+            <button class="item sub" data-src="manager/projects.html#notready" data-nm="MG-07 · ⑦ 다음 회차 준비 전" data-def="MG-07-project-list">⑦ 다음 회차 준비 전</button>
+          </div>
+        </div>
         <div class="subgrp" id="g-mg08">
           <button class="item parent" data-toggle="g-mg08"><span class="code">MG-08</span>프로젝트 상세<span class="step">4단계</span><span class="cev">›</span></button>
           <div class="subwrap">
@@ -322,7 +333,16 @@
           </div>
         </div>
 
-        <button class="item todo"><span class="code">MG-09</span>교안 뷰어</button>
+        <div class="subgrp" id="g-mg09">
+          <button class="item parent" data-toggle="g-mg09"><span class="code">MG-09</span>교안<span class="step">8단계</span><span class="cev">›</span></button>
+          <div class="subwrap">
+            <button class="item sub" data-src="manager/curriculum.html#list" data-nm="MG-09 · ① 교안 목록" data-def="MG-09-curriculum-viewer">① 목록</button>
+            <button class="item sub" data-src="manager/curriculum.html#sec" data-nm="MG-09 · ② 상세 › 섹션" data-def="MG-09-curriculum-viewer">② 상세 › 섹션</button>
+            <button class="item sub" data-src="manager/curriculum.html#sec2" data-nm="MG-09 · ③ 다른 섹션" data-def="MG-09-curriculum-viewer">③ 다른 섹션</button>
+            <button class="item sub" data-src="manager/curriculum.html#used" data-nm="MG-09 · ④ 상세 › 쓰인 회차" data-def="MG-09-curriculum-viewer">④ 쓰인 회차</button>
+            <button class="item sub" data-src="manager/curriculum.html#empty" data-nm="MG-09 · ⑤ 연결된 교안 없음" data-def="MG-09-curriculum-viewer">⑤ 교안 없음</button>
+          </div>
+        </div>
       </div>
 
       <div class="grp">
@@ -425,7 +445,8 @@
     routes[route] = btn;
   });
 
-  function select(btn, skipHash){
+  // keepClosed — 첫 로드에서는 선택된 브랜치도 펼치지 않는다. 디폴트는 무조건 전체 접힘
+  function select(btn, skipHash, keepClosed){
     var src = btn.getAttribute('data-src');
     // 해시만 바뀌면 iframe이 다시 로드되지 않는다. src를 매번 새로 넣어 라우팅을 태운다
     view.src = src;
@@ -437,7 +458,7 @@
     if(prev) prev.classList.remove('on');
     btn.classList.add('on');
     var sg = btn.closest('.subgrp');
-    if(sg) sg.classList.add('open');
+    if(sg && !keepClosed) sg.classList.add('open');
     if(!skipHash && location.hash !== btn.dataset.route) location.hash = btn.dataset.route;
   }
 
@@ -462,9 +483,9 @@
   document.querySelector('.prog .bar i').style.width = (doneScreens.size / total * 100) + '%';
 
   var initial = routes[location.hash] || list.querySelector('[data-src]');
-  select(initial, true);
+  select(initial, true, true);
 
-  // 전체 펼치기/접기 — 현재 선택된 화면 브랜치는 항상 열려 있다
+  // 전체 펼치기/접기 — 팀원이 전체 구조를 훑을 때만 쓴다
   var expandall = document.getElementById('expandall');
   expandall.addEventListener('click', function(){
     var expand = expandall.dataset.state === 'collapsed';

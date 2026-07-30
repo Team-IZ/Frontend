@@ -20,6 +20,8 @@
     --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
     --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
     --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    /* 목업은 1920x1080 화면을 그대로 그리고, 보이는 폭에 맞춰 축소만 한다 */
+    --screen-w:1920px; --screen-h:1080px; --k:.6625;
     --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
     --mono:ui-monospace,Menlo,monospace;
   }
@@ -32,12 +34,12 @@
   .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
   .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
 
-  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .viewport{width:var(--screen-w);zoom:var(--k);border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
   .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
   .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
   .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
 
-  .app{display:flex;flex-direction:column;min-height:620px}
+  .app{display:flex;flex-direction:column;height:var(--screen-h)}
   .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
   .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
   .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700}
@@ -597,6 +599,18 @@
   if(window.self !== window.top) document.body.classList.add("embedded");
   window.addEventListener("hashchange", route);
   route();
+
+  // 목업 = 1920x1080 실화면. 보이는 폭에 맞춰 배율만 조절해 비율을 지킨다
+  function fitScreen(){
+    var p = document.querySelector(".page");
+    if(!p) return;
+    var cs = getComputedStyle(p);
+    var w = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if(w > 0) document.documentElement.style.setProperty("--k", w / 1920);
+  }
+  window.addEventListener("resize", fitScreen);
+  window.addEventListener("load", fitScreen);
+  fitScreen();
 </script>
 </body>
 </html>

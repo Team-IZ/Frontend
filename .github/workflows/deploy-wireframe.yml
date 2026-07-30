@@ -1,11 +1,13 @@
 name: Deploy wireframe
 
-# 와이어프레임 카탈로그를 GitHub Pages로 발행한다.
-# 소스는 docs/plan/v2/wireframe/ 하나뿐 — gh-pages 브랜치로 복사하지 않는다.
+# 화면정의(카탈로그 + 정의 문서)를 GitHub Pages로 발행한다.
+# 발행 루트는 docs/plan/v2 — gh-pages 브랜치로 복사하지 않는다.
+# wireframe만 올리면 카탈로그의 "정의 문서 ↗"(../definition/*.md)가 루트 밖을 가리켜 404가 된다.
+# 루트(/)로 들어오면 docs/plan/v2/index.html이 wireframe/으로 보낸다 — 기존 공유 링크 유지.
 on:
   push:
     branches: [mockup]
-    paths: ['docs/plan/v2/wireframe/**']
+    paths: ['docs/plan/v2/**']
   workflow_dispatch:
 
 permissions:
@@ -28,6 +30,6 @@ jobs:
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: docs/plan/v2/wireframe
+          path: docs/plan/v2
       - id: deploy
         uses: actions/deploy-pages@v4

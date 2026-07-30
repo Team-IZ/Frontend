@@ -19,6 +19,13 @@
     --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
     --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
     --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    /* 목업은 1920x1080 화면을 그대로 그리고, 보이는 폭에 맞춰 축소만 한다 */
+    /* 본문 기본 상한 — 1920에서 표·목록이 늘어지는 것을 막는다.
+       1512에서는 가용폭 1264px이라 걸리지 않고, 넓은 화면만 잡힌다(=Tailwind max-w-7xl) */
+    --w-app:1280px;
+    /* 표 컬럼 폭 — 유형별 고정값 1벌 */
+    --col-num:92px; --col-badge:108px; --col-date:124px; --col-act:96px;
+    --screen-w:1920px; --screen-h:1080px; --k:.6625;
     --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
     --mono:ui-monospace,Menlo,monospace;
   }
@@ -31,12 +38,12 @@
   .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
   .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
 
-  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .viewport{width:var(--screen-w);zoom:var(--k);border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
   .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
   .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
   .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
 
-  .app{display:flex;flex-direction:column;min-height:620px}
+  .app{display:flex;flex-direction:column;height:var(--screen-h)}
   .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
   .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
   .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700}
@@ -54,12 +61,20 @@
   .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
   .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
   .content{flex:1;background:var(--c-bg);padding:var(--sp-6);min-width:0}
+  /* 상한은 .content 자신이 아니라 자식에 건다 — .content가 배경을 계속 꽉 채워야 이음선이 안 생긴다 */
+  .content > *{max-width:var(--w-app);margin-left:auto;margin-right:auto}
   .phead{margin-bottom:var(--sp-4)}
   .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
   .phead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
 
   .lhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-4)}
   .lhead .ttl{font-size:var(--fs-lg);font-weight:700;display:flex;align-items:baseline;gap:var(--sp-2)}
+  .foot3{margin-top:var(--sp-4);font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.8}
+  .foot3 b{color:var(--c-text-2)}
+  .lhead .ttl .scope3{font-size:var(--fs-xs);color:var(--c-text-3);margin-left:var(--sp-3);font-weight:400}
+  .lhead .ttl .scope3 b{color:var(--c-text-2);font-weight:600}
+  .lhead .ttl .cnts3{font-size:var(--fs-xs);color:var(--c-text-2);margin-left:var(--sp-3);font-weight:400}
+  .lhead .ttl .cnts3 b{color:var(--c-warning);font-weight:700}
   .lhead .ttl .cnt{font-size:var(--fs-xs);font-weight:600;color:var(--c-text-3)}
   .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-xs);cursor:pointer;padding:8px 13px}
   .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong)}
@@ -71,7 +86,7 @@
   .ltool .fil .k{color:var(--c-text-3)}
 
   .card{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
-  .dtbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .dtbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
   .dtbl th{text-align:left;padding:11px var(--sp-4);font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-weight:600;white-space:nowrap}
   .dtbl td{padding:12px var(--sp-4);border-bottom:1px solid var(--c-border);vertical-align:middle}
   .dtbl tr:last-child td{border-bottom:0}
@@ -89,6 +104,54 @@
   .st.done{background:var(--c-success-soft);color:var(--c-success)} .st.done .dot{background:var(--c-success)}
   .st.warn{background:var(--c-warning-soft);color:var(--c-warning)} .st.warn .dot{background:var(--c-warning)}
 
+  .dtbl th.c-nm{width:112px}
+  .dtbl th.c-ty{width:64px}
+  .dtbl th.c-dt{width:var(--col-date)}
+
+
+  .dtbl th.c-st2{width:var(--col-badge)}
+  .dtbl th.c-bk{width:180px}
+  .dtbl th.c-cpt{width:230px}
+  /* 설계가 완결됐나 — 빈 칸이 곧 할 일이다 */
+  .dtbl td.bk3{font-size:var(--fs-xs);color:var(--c-text-2);line-height:1.7}
+  .dtbl td.bk3 .b1{display:block}
+  .dtbl td.bk3 .none5{color:var(--c-text-3)}
+  .dtbl td.bk3 .miss{color:var(--c-warning);font-weight:600}
+  .dtbl td.cpt3 .miss{font-size:var(--fs-xs);color:var(--c-warning);font-weight:600}
+  .dtbl td.cpt3 .nouse2{font-size:var(--fs-xs);color:var(--c-text-3)}
+  .dtbl td.due3{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--c-text-2)}
+  .dtbl td.due3 .miss{color:var(--c-warning);font-weight:600}
+  .dtbl td.due3 .left{display:block;font-size:11px;color:var(--c-text-3);margin-top:2px}
+  .dtbl td.due3 .left.hot{color:var(--c-danger);font-weight:700}
+  /* 마감 임박 + 준비 중 = 이 화면의 유일한 경고 */
+  .dtbl tr.risk3 td{background:#fdf7ef}
+  .st.prep{background:var(--c-warning-soft);color:var(--c-warning)} .st.prep .dot{background:var(--c-warning)}
+  .st.ready{background:var(--c-primary-soft);color:var(--c-primary)} .st.ready .dot{background:var(--c-primary)}
+  .dtbl td.pn3 b{font-weight:700}
+  .dtbl td.pn3 .sub{font-size:11px;color:var(--c-text-3);margin-top:2px}
+
+
+
+
+
+
+  /* 검증 개념 선택 — 고르는 순간 그 회차 모든 학생의 문항이 된다 */
+  .pickhead{font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);padding:var(--sp-4) var(--sp-5) var(--sp-2);border-top:1px solid var(--c-border)}
+  .pickhead:first-of-type{border-top:0;padding-top:var(--sp-2)}
+  .pickhead .na{font-weight:400;color:var(--c-text-3)}
+  .pk{display:grid;grid-template-columns:22px 1fr auto;gap:2px var(--sp-3);padding:11px var(--sp-5);border-top:1px solid var(--c-border);cursor:pointer;align-items:baseline}
+  .pk:hover{background:var(--c-surface-2)}
+  .pk .bx{width:15px;height:15px;border:1.5px solid var(--c-border-strong);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;color:transparent;grid-row:span 3}
+  .pk.on{background:var(--c-primary-soft)}
+  .pk.on .bx{background:var(--c-primary);border-color:var(--c-primary);color:#fff}
+  .pk .pn{font-size:var(--fs-sm);font-weight:700}
+  .pk .pp{font-size:11px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .pk .pd{grid-column:2/4;font-size:var(--fs-xs);color:var(--c-text-2);line-height:1.6}
+  .pk .hist{grid-column:2/4;font-size:var(--fs-xs);line-height:1.6;margin-bottom:1px}
+  .pk .hist.warn{color:var(--c-warning);font-weight:600}
+  .pk .hist.ok{color:var(--c-text-3)}
+  .savebar{display:flex;align-items:center;gap:var(--sp-2);margin-top:var(--sp-4)}
+  .savebar .l{flex:1;font-size:var(--fs-xs);color:var(--c-text-3)}
   .kchip{display:inline-block;font-size:11px;font-weight:600;color:var(--c-text-2);background:var(--c-surface-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:2px 9px;margin:1px 2px 1px 0}
   .kmiss{font-size:11px;font-weight:600;color:var(--c-warning)}
   .na{color:var(--c-text-3)}
@@ -184,11 +247,22 @@
   <div class="doc-head">
     <span class="id">OP-03 · OP-04 · 오퍼레이터 · 웹</span>
     <h1>프로젝트 — 목록 · 상세</h1>
-    <p><b>회차를 만들고 무엇으로 잴지 정하는 화면.</b> 프로젝트 생성 시 <b>교안 연결(1개 이상) + 검증 개념 3건</b>을 확정한다 — 이 3건이 그 회차 모든 학생의 문항 3개가 되고, 팀·반이 달라도 같은 축으로 비교된다. <b>한 회차가 교안 하나에만 걸치지 않으므로 교안은 여러 개를 붙일 수 있고</b>, 검증 개념 후보는 연결한 교안들이 가르친 항목을 합쳐서 만든다. 요구사항은 교안과 <b>별개 입력</b>이고 구현 P/F에만 쓴다. 팀 편성·독촉·리포트는 매니저 화면(MG-08) 소관이라 여기 없다.</p>
+    <p><b>회차를 만들고 무엇으로 잴지 정하는 화면.</b> 프로젝트 생성 시 <b>교안 연결(1개 이상) + 검증 개념 3건</b>을 확정한다 &#8212; 이 3건이 그 회차 모든 학생의 문항 3개가 되고, 팀&#183;반이 달라도 같은 축으로 비교된다.</p>
+    <ul>
+      <li><b>이 목록이 답하는 질문은 하나 &#8212; 회차 설계가 완결됐나.</b> 회차가 굴러가려면 넷이 있어야 한다: <b>교안 1개 이상 &#183; 검증 개념 3건 &#183; 제출 마감 &#183; 응시 창.</b> 하나라도 비면 문항을 만들 수 없다.</li>
+      <li><b>진행률&#183;조치 열을 두지 않는다.</b> 18번 2-3이 정한 열에 <b>진행이 없다</b> &#8212; 관측은 다른 화면 몫이다. <code>개념 공백</code>&#183;<code>분석 실패</code>는 <b>OP-01 <code>조치 필요</code></b>(로그인 직후 화면), 반별 제출&#183;응시율은 <b>OP-04 <code>현황</code> 탭</b>이 답한다. 목록에 넣으면 <b>같은 사실이 세 곳</b>에 있다.</li>
+      <li><b>상태가 시간이 아니라 설계 기준</b>이다. <code>예정</code>은 제출 마감 열이 이미 말한다 &#8212; 오퍼레이터에게 필요한 것은 <b>손댈 게 남았나</b>다. <b>준비 중</b>(빈 것이 있다) &#8594; <b>준비됨</b>(완결&#183;시작 전) &#8594; <b>진행 중</b> &#8594; <b>종료</b>.</li>
+      <li><b>빈 칸이 곧 할 일이다.</b> <code>교안 연결 안 됨</code> <code>&#9888; 미확정</code> <code>미설정</code>이 각각 어느 탭을 열어야 하는지를 가리킨다 &#8212; 별도 조치 열이 필요 없는 이유다.</li>
+      <li><b>이 화면의 유일한 경고는 조합</b>이다 &#8212; <b>마감 임박 + 준비 중.</b> 상태 하나나 날짜 하나로는 안 보이고 <b>둘이 만나야</b> 보인다(<code>07-21 &#183; 5일 남음 &#183; 준비 중</code>). 행 배경으로 표시한다.</li>
+      <li><b>교안과 검증 개념은 별개 열</b>이다. 오퍼레이터는 <b>교안 연결과 개념 선택을 각각 하는 사람</b>이라 두 작업이 갈린다 &#8212; 매니저(MG-07)는 읽기만 하니 한 열로 합쳤다.</li>
+      <li><b>교안은 세로 나열</b>한다. 오퍼레이터에게 교안은 <b>핵심 입력</b>이라 정확히 무엇이 붙었는지 다 보여야 한다 &#8212; 검증 개념 후보가 <b>연결한 교안 전체의 합집합</b>이기 때문이다(14번 4-3). 개념은 3건 고정이라 배지 가로.</li>
+      <li><b>기본 정렬은 준비 필요 순</b>이다(매니저는 최신순). 예정 회차가 <b>매니저에게는 빈 행이고 오퍼레이터에게는 맨 위</b>다.</li>
+      <li><b>교안 필터가 있다.</b> 교안을 <b>재분석하면 <code>teaches</code>가 바뀌므로</b> 어느 회차가 영향받는지 좁혀 봐야 한다 &#8212; 매니저에게는 없는 필요다.</li>
+    </ul>
   </div>
 
   <div class="rpage" id="page-list">
-  <div class="sec-label">화면 · 프로젝트 목록 (OP-03)</div>
+  <div class="sec-label">① 프로젝트 목록 — 설계가 완결됐나 · 준비 중이 맨 위</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects</span></div>
     <div class="app">
@@ -206,60 +280,66 @@
           <div class="phead"><div class="crumb">프로젝트 › 7기</div><h2>프로젝트</h2></div>
 
           <div class="lhead">
-            <div class="ttl">프로젝트 <span class="cnt">총 4개</span></div>
+            <div class="ttl">프로젝트 <span class="cnt">총 5개</span><span class="scope3">7기 전체 · <b>10반 250명</b>이 같은 회차를 한다</span><span class="cnts3">준비 중 <b>2</b> · 진행 중 1 · 종료 1</span></div>
             <button class="btn">+ 프로젝트 생성</button>
           </div>
           <div class="ltool">
             <div class="search">🔍 프로젝트명 검색</div>
+            <div class="fil"><span class="k">교안</span> 전체 ▾</div>
             <div class="fil"><span class="k">유형</span> 전체 ▾</div>
             <div class="fil"><span class="k">상태</span> 전체 ▾</div>
-            <div class="fil"><span class="k">정렬</span> 최신순 ▾</div>
+            <div class="fil"><span class="k">정렬</span> 준비 필요 순 ▾</div>
           </div>
 
           <div class="card">
             <table class="dtbl">
-              <thead><tr><th>프로젝트</th><th>유형</th><th>교안</th><th>질문에 쓸 항목</th><th>제출 마감</th><th>진행</th><th>상태</th></tr></thead>
+              <thead><tr><th class="c-nm">프로젝트</th><th class="c-ty">유형</th><th class="c-bk">교안</th><th class="c-cpt">검증 개념 3건</th><th class="c-dt">제출 마감</th><th class="c-st2">상태</th></tr></thead>
               <tbody>
                 <tr class="click">
-                  <td class="name"><b>미프 3차</b></td>
+                  <td class="pn3"><b>미프 5차</b></td>
                   <td>미프</td>
-                  <td>AI_LLMOps <span class="na">v2</span><div class="sub">Streamlit 실습 v1</div></td>
-                  <td><span class="kchip">HITL</span><span class="kchip">역할 기반 설계</span><span class="kchip">시점 관리</span></td>
-                  <td class="date">07-14 18:00</td>
-                  <td class="num">응시 198/231</td>
-                  <td><span class="st run"><span class="dot"></span>진행 중</span></td>
+                  <td class="bk3"><span class="miss">교안 연결 안 됨</span></td>
+                  <td class="cpt3"><span class="nouse2">교안을 먼저 연결해야 후보가 나옵니다</span></td>
+                  <td class="due3"><span class="miss">미설정</span></td>
+                  <td><span class="st prep"><span class="dot"></span>준비 중</span></td>
+                </tr>
+                <tr class="click risk3">
+                  <td class="pn3"><b>미프 4차</b></td>
+                  <td>미프</td>
+                  <td class="bk3"><span class="b1">AI_LLMOps v2</span></td>
+                  <td class="cpt3"><span class="miss">⚠ 미확정 · 후보 8건에서 3건</span></td>
+                  <td class="due3">07-21 18:00<span class="left hot">5일 남음</span></td>
+                  <td><span class="st prep"><span class="dot"></span>준비 중</span></td>
                 </tr>
                 <tr class="click">
-                  <td class="name"><b>미프 4차</b></td>
-                  <td>미프</td>
-                  <td>AI_LLMOps <span class="na">v2</span></td>
-                  <td><span class="kmiss">⚠ 항목 미확정</span></td>
-                  <td class="date">07-21 18:00</td>
-                  <td class="na">—</td>
-                  <td><span class="st plan"><span class="dot"></span>예정</span></td>
-                </tr>
-                <tr class="click">
-                  <td class="name"><b>미프 2차</b></td>
-                  <td>미프</td>
-                  <td>Kubernetes 기초 <span class="na">v1</span></td>
-                  <td><span class="kchip">Service</span><span class="kchip">Deployment</span><span class="kchip">ConfigMap</span></td>
-                  <td class="date">07-04 18:00</td>
-                  <td class="num">발행 완료</td>
-                  <td><span class="st done"><span class="dot"></span>종료</span></td>
-                </tr>
-                <tr class="click">
-                  <td class="name"><b>빅프</b><div class="sub">본인 커밋 영역 기준</div></td>
+                  <td class="pn3"><b>빅프</b><div class="sub">총 3회 · 첫 동작 · +2주 · 마감</div></td>
                   <td>빅프</td>
-                  <td class="na">—</td>
-                  <td class="na">본인 커밋 영역</td>
-                  <td class="date">09-26 18:00</td>
-                  <td class="num">1/3 회차</td>
+                  <td class="bk3"><span class="none5">해당 없음</span></td>
+                  <td class="cpt3"><span class="nouse2">본인 커밋 영역 — 사람마다 다름</span></td>
+                  <td class="due3">09-26 18:00<span class="left">72일 남음</span></td>
+                  <td><span class="st ready"><span class="dot"></span>준비됨</span></td>
+                </tr>
+                <tr class="click">
+                  <td class="pn3"><b>미프 3차</b></td>
+                  <td>미프</td>
+                  <td class="bk3"><span class="b1">AI_LLMOps v2</span><span class="b1">Streamlit 실습 v1</span></td>
+                  <td class="cpt3"><span class="kchip">HITL Trigger</span><span class="kchip">Graph 구성</span><span class="kchip">State 관리</span></td>
+                  <td class="due3">07-14 18:00<span class="left">지남</span></td>
                   <td><span class="st run"><span class="dot"></span>진행 중</span></td>
+                </tr>
+                <tr class="click">
+                  <td class="pn3"><b>미프 2차</b></td>
+                  <td>미프</td>
+                  <td class="bk3"><span class="b1">Kubernetes 기초 v1</span></td>
+                  <td class="cpt3"><span class="kchip">Service</span><span class="kchip">Deployment</span><span class="kchip">ConfigMap</span></td>
+                  <td class="due3">07-04 18:00<span class="left">지남</span></td>
+                  <td><span class="st done"><span class="dot"></span>종료</span></td>
                 </tr>
               </tbody>
             </table>
           </div>
-          <div class="tablefoot"><span class="range">1–4 / 4개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+          <div class="tablefoot"><span class="range">1–5 / 5개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+          <div class="foot3">· <b>프로젝트에 반을 지정하지 않는다.</b> 검증 개념 3건이 프로젝트 단위로 고정되고 <b>모든 반·팀·개인이 같은 3건으로 평가</b>된다(14번 4-3) — 반별로 다르게 고르면 <b>반끼리 비교가 불가능해진다.</b><br>· <b>배정은 다른 화면 몫이다</b> — 학생을 반에 넣는 것은 <b>운영 관리 › 반·명단</b>(기수 세팅 시 1회), 학생을 팀에 넣는 것은 <b>매니저가 프로젝트마다</b>(MG-08 팀 탭).<br>· <b>반별 진행은 상세 › 현황</b>이 답한다 — 목록은 설계가 완결됐는지만 본다.</div>
         </div>
       </div>
     </div>
@@ -268,7 +348,7 @@
   </div>
 
   <div class="rpage" id="page-create">
-  <div class="sec-label">상태 · [+ 프로젝트 생성] 클릭 → 모달</div>
+  <div class="sec-label">② [+ 프로젝트 생성] → 모달</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects</span></div>
     <div class="app">
@@ -284,8 +364,8 @@
         </div>
         <div class="content">
           <div class="phead"><div class="crumb">프로젝트 › 7기</div><h2>프로젝트</h2></div>
-          <div class="lhead"><div class="ttl">프로젝트 <span class="cnt">총 4개</span></div><button class="btn">+ 프로젝트 생성</button></div>
-          <div class="ltool"><div class="search">🔍 프로젝트명 검색</div><div class="fil"><span class="k">유형</span> 전체 ▾</div><div class="fil"><span class="k">상태</span> 전체 ▾</div><div class="fil"><span class="k">정렬</span> 최신순 ▾</div></div>
+          <div class="lhead"><div class="ttl">프로젝트 <span class="cnt">총 5개</span><span class="scope3">7기 전체 · <b>10반 250명</b>이 같은 회차를 한다</span><span class="cnts3">준비 중 <b>2</b> · 진행 중 1 · 종료 1</span></div><button class="btn">+ 프로젝트 생성</button></div>
+          <div class="ltool"><div class="search">🔍 프로젝트명 검색</div><div class="fil"><span class="k">유형</span> 전체 ▾</div><div class="fil"><span class="k">상태</span> 전체 ▾</div><div class="fil"><span class="k">정렬</span> 준비 필요 순 ▾</div></div>
           <div class="card" style="height:180px"></div>
         </div>
       </div>
@@ -312,7 +392,7 @@
             <div class="note">한 회차가 교안 하나에만 걸치지 않는다 — 여러 개를 고르면 아래 후보가 <b>합쳐져서</b> 나온다.</div>
           </div>
           <div class="fld">
-            <div class="fl">질문에 쓸 항목 <span class="req">3건 고정</span> <span class="hint">· 이 회차 모든 학생의 문항 3개</span></div>
+            <div class="fl">검증 개념 <span class="req">3건 고정</span> <span class="hint">· 이 회차 모든 학생의 문항 3개</span></div>
             <div class="picker">
               <div class="ph"><span>교안이 가르친 항목</span><b>3개 선택됨</b></div>
               <div class="scroll">
@@ -347,7 +427,7 @@
   </div>
 
   <div class="rpage" id="page-config">
-  <div class="sec-label">화면 · 프로젝트 상세 › 구성 (OP-04)</div>
+  <div class="sec-label">③ 상세 › 구성 — 설계가 다 채워진 회차</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects/mif-3</span></div>
     <div class="app">
@@ -380,7 +460,7 @@
           </div>
 
           <div class="blk">
-            <div class="bh"><h3>질문에 쓸 항목 <span class="meta">· 3건 고정 · 문항 3개</span></h3><span class="act">변경</span></div>
+            <div class="bh"><h3>검증 개념 <span class="meta">· 3건 고정 · 문항 3개</span></h3><span class="act">변경</span></div>
             <div class="kv"><span class="k">1</span><span class="v">HITL (Human In The Loop) <span class="na">· AI_LLMOps v2 · p.48–60</span></span></div>
             <div class="kv"><span class="k">2</span><span class="v">역할 기반 설계 <span class="na">· AI_LLMOps v2 · p.37–46</span></span></div>
             <div class="kv"><span class="k">3</span><span class="v">시점 관리 (Snapshot) <span class="na">· AI_LLMOps v2 · p.62–75</span></span></div>
@@ -401,8 +481,59 @@
 
   </div>
 
+  <div class="rpage" id="page-pick">
+  <div class="sec-label">④ 상세 › 구성 › 검증 개념 선택 — 지난 회차 이력이 붙는다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects/mif-5</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item on"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="ctxbar">
+            <div>
+              <span class="back">← 프로젝트</span>
+              <div class="cname">미프 5차 <span class="st plan"><span class="dot"></span>예정</span></div>
+              <div class="cmeta">미프 · 제출 마감 08-06 18:00 · 교안 2개 (AI_LLMOps v2 · Streamlit 실습 v1)</div>
+            </div>
+          </div>
+          <div class="tabs"><span class="t on">구성</span><span class="t">일정</span><span class="t">현황</span></div>
+          <div class="blk">
+            <div class="bh"><h3>검증 개념 선택 <span class="meta">· 3건 고정 · 2건 선택됨</span></h3></div>
+            <div class="pickhead">교안 <b>AI_LLMOps v2</b> <span class="na">· 가르친 항목 8건</span></div>
+            <div class="pk on"><span class="bx">✓</span><span class="pn">HITL Trigger 조건 함수</span><span class="pp">p.55</span>
+              <span class="pd">should_trigger_hitl에서 최대 반복 횟수와 거절 상태를 보고 사람 확인이 필요한지 판단한다</span></div>
+            <div class="pk"><span class="bx"></span><span class="pn">Graph 구성</span><span class="pp">p.62</span>
+              <span class="hist warn">⚠ 미프 3차에서 <b>집단 미달</b> — 7개 반에서 절반 이상 2단 이하</span>
+              <span class="pd">노드와 엣지로 실행 순서를 정의하고 조건부 분기를 붙인다</span></div>
+            <div class="pk on"><span class="bx">✓</span><span class="pn">State 관리</span><span class="pp">p.71</span>
+              <span class="hist ok">미프 3차에서 사용 · 평균 3.3단</span>
+              <span class="pd">AgentState를 TypedDict로 정의하고 노드 간에 넘긴다</span></div>
+            <div class="pk"><span class="bx"></span><span class="pn">Checkpointer 저장</span><span class="pp">p.88</span>
+              <span class="pd">SQLite에 실행 스냅샷을 남겨 중단 지점부터 재개한다</span></div>
+            <div class="pickhead">교안 <b>Streamlit 실습 v1</b> <span class="na">· 가르친 항목 5건</span></div>
+            <div class="pk"><span class="bx"></span><span class="pn">세션 상태</span><span class="pp">p.24</span>
+              <span class="pd">st.session_state로 재실행 사이에 값을 유지한다</span></div>
+            <div class="pk"><span class="bx"></span><span class="pn">콜백과 rerun</span><span class="pp">p.31</span>
+              <span class="hist warn">⚠ 미프 1차에서 <b>코드 매칭 0</b> — 8팀 중 7팀</span>
+              <span class="pd">버튼 콜백에서 상태를 바꾸고 스크립트를 다시 돌린다</span></div>
+            <div class="note">· <b>지난 회차 이력은 같은 교안이 붙었을 때만 나타납니다</b> — 검증 개념은 그 회차 교안이 가르친 것에서만 나오므로(14번 4-3), 교안이 바뀌면 후보 자체가 달라집니다.<br>· <b>집단 미달은 "다시 물어야 한다"는 뜻도 "피해야 한다"는 뜻도 아닙니다.</b> 판단은 사람이 합니다 — 교안을 보강했다면 다시 넣어 확인할 수 있고, 그대로면 같은 결과가 나옵니다.<br>· <b>코드 매칭 0</b>은 그 개념이 학생 코드에 없어 <b>묻지 못한 것</b>입니다 — 개념이 과제와 안 맞았다는 신호입니다.</div>
+          </div>
+          <div class="savebar"><span class="l">3건을 골라야 저장할 수 있습니다 · 지금 2건</span><button class="btn ghost">취소</button><button class="btn off">저장</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
   <div class="rpage" id="page-schedule">
-  <div class="sec-label">화면 · 프로젝트 상세 › 일정</div>
+  <div class="sec-label">⑤ 상세 › 일정</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects/mif-3/schedule</span></div>
     <div class="app">
@@ -450,7 +581,7 @@
   </div>
 
   <div class="rpage" id="page-status">
-  <div class="sec-label">화면 · 프로젝트 상세 › 현황 (개념 공백 경고)</div>
+  <div class="sec-label">⑥ 상세 › 현황 — 반별 제출·응시율 · 개념 공백 경고</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects/mif-3/status</span></div>
     <div class="app">
@@ -509,7 +640,7 @@
   </div>
 
   <div class="rpage" id="page-draft">
-  <div class="sec-label">상태 · 검증 개념 미확정 (미프 4차) — 나머지 탭 잠김</div>
+  <div class="sec-label">⑦ 준비 중 회차 — 개념이 없으면 일정·현황이 열리지 않는다</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects/mif-4</span></div>
     <div class="app">
@@ -536,7 +667,7 @@
 
           <div class="alert info">
             <span>ℹ</span>
-            <div><b>질문에 쓸 항목 3건을 먼저 정하세요</b>
+            <div><b>검증 개념 3건을 먼저 정하세요</b>
               <span class="sub">항목이 정해져야 문항을 만들 수 있어 일정·현황 탭이 열리지 않습니다.</span>
             </div>
           </div>
@@ -547,7 +678,7 @@
           </div>
 
           <div class="blk">
-            <div class="bh"><h3>질문에 쓸 항목 <span class="meta">· 3건 고정</span></h3><button class="btn">개념 선택</button></div>
+            <div class="bh"><h3>검증 개념 <span class="meta">· 3건 고정</span></h3><button class="btn">개념 선택</button></div>
             <div class="note">아직 선택되지 않았습니다.</div>
           </div>
 
@@ -576,6 +707,18 @@
   if(window.self !== window.top) document.body.classList.add("embedded");
   window.addEventListener("hashchange", route);
   route();
+
+  // 목업 = 1920x1080 실화면. 보이는 폭에 맞춰 배율만 조절해 비율을 지킨다
+  function fitScreen(){
+    var p = document.querySelector(".page");
+    if(!p) return;
+    var cs = getComputedStyle(p);
+    var w = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if(w > 0) document.documentElement.style.setProperty("--k", w / 1920);
+  }
+  window.addEventListener("resize", fitScreen);
+  window.addEventListener("load", fitScreen);
+  fitScreen();
 </script>
 </body>
 </html>

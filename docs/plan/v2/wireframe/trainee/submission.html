@@ -100,6 +100,27 @@
   .kv .v{flex:1;font-family:var(--mono);font-size:var(--fs-xs);word-break:break-all}
   .kv .v .n{font-family:var(--font);font-size:var(--fs-sm)}
 
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
   body.embedded .sec-label{margin-top:0}
@@ -116,6 +137,35 @@
       <li><b>진행률 막대를 두지 않는다.</b> 실제로 알 수 없는 값을 퍼센트로 보여주는 것은 거짓말이다. 분석 중에는 상태와 알림 약속만 준다.</li>
       <li><b>제출 후에는 홈으로 보낸다.</b> 세션 시작 버튼은 홈 한 곳에만 둬서 진입점을 하나로 유지한다.</li>
     </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 코드 제출 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">제출 — 두 경로</td></tr>
+        <tr><td class="no">—</td><td class="st">GitHub 저장소</td><td class="code">POST /submissions</td><td class="msg">주소 + 브랜치 · <b>기관 조직 안이면 권한이 따로 필요 없다</b><span class="nx">→ 제출</span></td><td><a class="mk2" href="#form">#form</a></td></tr>
+        <tr><td class="no">—</td><td class="st">ZIP 업로드</td><td class="code">—</td><td class="msg"><b>최대 50MB</b> · <code>node_modules</code> 제외 안내<span class="nx">→ 조직 밖·비공개 저장소의 경로</span></td><td><a class="mk2" href="#zip">#zip</a></td></tr>
+        <tr class="grp"><td colspan="5">제출 전 차단 — 눌러 보고 실패하게 두지 않는다</td></tr>
+        <tr><td class="no">—</td><td class="st">저장소 확인 실패</td><td class="code">REPO_NOT_FOUND</td><td class="msg"><b>저장소를 찾지 못했어요</b> · [ZIP으로 올리기] 같이 준다<span class="nx">→ 비공개·조직 밖이면 ZIP이 정답</span></td><td><a class="mk2" href="#invalid">#invalid</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>ZIP 용량 초과</b></td><td class="code">FILE_TOO_LARGE</td><td class="msg"><b>50MB를 넘어 제출할 수 없어요</b> · 빼야 할 폴더를 알려준다<span class="nx">→ 다시 압축</span></td><td><a class="mk2" href="#toobig">#toobig</a></td></tr>
+        <tr class="grp"><td colspan="5">제출 후 — 되돌릴 수 있는 구간이 정해져 있다</td></tr>
+        <tr><td class="no">—</td><td class="st">분석 중</td><td class="code">—</td><td class="msg"><b>남은 시간을 알려주지 않는다</b><span class="nx">→ 대기</span></td><td><a class="mk2" href="#submitted">#submitted</a></td></tr>
+        <tr><td class="no">—</td><td class="st">분석 완료 · 재제출 가능</td><td class="code">—</td><td class="msg"><b>시작 전까지는 다시 제출할 수 있어요</b><span class="nx">→ 수정 후 재제출</span></td><td><a class="mk2" href="#resubmit">#resubmit</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>세션 시작 후 잠김</b></td><td class="code">SUBMISSION_LOCKED</td><td class="msg"><b>질문이 지금 제출된 코드로 만들어졌어요</b> · 코드가 바뀌면 질문과 답이 어긋난다<span class="nx">→ <b>되돌릴 수 없다</b></span></td><td><a class="mk2" href="#locked">#locked</a></td></tr>
+        <tr><td class="no">—</td><td class="st">분석 실패</td><td class="code">ANALYSIS_FAILED</td><td class="msg"><b>분석할 코드를 찾지 못했습니다</b> · 브랜치·소스 폴더 확인<span class="nx">→ 마감 전이면 재제출 · 지났으면 매니저</span></td><td><a class="mk2" href="#failed">#failed</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>제출 마감 후</b></td><td class="code">DEADLINE_PASSED</td><td class="msg"><b>제출 기한이 지났어요</b> · <code>미제출</code>로 기록<span class="nx">→ 매니저 문의 — <b>폼을 열지 않는다</b></span></td><td><a class="mk2" href="#closed">#closed</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>재제출은 세션 시작 전까지만.</b> 문항이 <b>제출된 그 코드</b>로 만들어지므로 코드가 바뀌면 질문과 답이 어긋난다 — 경계를 <b>잠금 화면</b>으로 분명히 보여준다.<br>
+    · <b>막을 것은 누르기 전에 막는다.</b> 저장소를 못 찾거나 용량이 넘으면 제출 버튼을 누르기 전에 알리고, <b>대안(ZIP · 재압축)을 같이 준다</b>.<br>
+    · <b>실패 문구는 학생이 고칠 수 있는 말로.</b> 내부 오류가 아니라 <b>브랜치가 비었는지 · 소스 폴더가 있는지</b>를 짚는다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
   </div>
 
   <div class="rpage" id="page-form">
@@ -167,6 +217,30 @@
           <div class="drop"><span class="ic">⤒</span>ZIP 파일을 끌어다 놓거나 눌러서 고르세요</div>
           <div class="fh">최대 50MB · <code>node_modules</code>, <code>.venv</code> 같은 폴더는 빼고 압축해 주세요.</div>
           <div class="cta"><span class="aside">파일을 고르면 제출할 수 있어요</span><button class="btn off">제출</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-toobig">
+  <div class="sec-label">상태 · ZIP 용량 초과 (제출 전 차단)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/submit/mif-3</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <span class="back">← 홈</span>
+        <div class="ph"><h2>미프 3차 코드 제출</h2><div class="due">제출 마감 07-14 18:00 · <b>1일 4시간 남음</b></div></div>
+
+        <div class="card">
+          <div class="seg"><span class="tg">GitHub 저장소</span><span class="tg on">ZIP 업로드</span></div>
+          <div class="drop"><span class="ic">⤒</span>ZIP 파일을 끌어다 놓거나 눌러서 고르세요</div>
+          <div class="fh"><b style="color:var(--c-danger)">node_modules · .venv 같은 폴더를 빼고 다시 압축해 주세요.</b> 최대 50MB.</div>
+          <div class="cta"><span class="aside">project.zip · 128MB — 50MB를 넘어 제출할 수 없어요</span><button class="btn off">제출</button></div>
         </div>
       </div>
     </div>
@@ -303,6 +377,40 @@
   </div>
   </div>
 
+  <div class="rpage" id="page-closed">
+  <div class="sec-label">상태 · 제출 마감 후 (제출할 수 없다)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/submit/mif-3</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <span class="back">← 홈</span>
+        <div class="ph"><h2>미프 3차 코드 제출</h2><div class="due">제출 마감 07-14 18:00 · 지남</div></div>
+
+        <div class="state warn">
+          <span class="ic">🔒</span>
+          <div class="tx">
+            <h3>이제 다시 제출할 수 없어요</h3>
+            <p>이해도 확인을 시작해서 잠겼습니다.</p>
+            <div class="sub">질문이 지금 제출된 코드로 만들어졌어요. 코드가 바뀌면 질문과 답이 어긋납니다.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>제출한 내용</h3>
+          <div class="kv"><span class="k">저장소</span><span class="v">github.com/team-a/miniproject-3</span></div>
+          <div class="kv"><span class="k">브랜치</span><span class="v">main</span></div>
+          <div class="kv"><span class="k">최근 커밋</span><span class="v">a3f9c21 · feat: HITL 재시도 상한 추가 <span class="n">(07-13 22:12)</span></span></div>
+          <div class="cta"><button class="btn">홈으로</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
   <div class="rpage" id="page-failed">
   <div class="sec-label">상태 · 분석 실패 + 커밋 이메일 미확인</div>
   <div class="viewport">
@@ -345,7 +453,7 @@
 
 </div>
 <script>
-  var PAGE = { form:"page-form", zip:"page-zip", invalid:"page-invalid", submitted:"page-submitted",
+  var PAGE = { cases:"page-cases", "closed":"page-closed", toobig:"page-toobig", form:"page-form", zip:"page-zip", invalid:"page-invalid", submitted:"page-submitted",
                resubmit:"page-resubmit", locked:"page-locked", failed:"page-failed" };
   function route(){
     var h = (location.hash || "").slice(1) || "form";

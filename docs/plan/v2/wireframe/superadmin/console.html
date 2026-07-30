@@ -208,6 +208,27 @@
   .pg{min-width:32px;height:32px;padding:0 6px;border:1px solid var(--c-border);border-radius:var(--r-sm);display:inline-flex;align-items:center;justify-content:center;background:#fff;font-size:var(--fs-sm);color:var(--c-text-2);cursor:pointer}
   .pg.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary);font-weight:600}
 
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
   body.embedded .sec-label{margin-top:0}
@@ -225,6 +246,79 @@
       <li><b>모델 · 단가가 새로 생겼다</b>(SA-03). 채점 모델은 플랫폼이 고정하고 기관은 티어 이름만 고른다 — 모델이 단종돼도 기관 쪽에서 할 일이 없다.</li>
       <li><b>고아 기관을 만들지 않는다.</b> 마지막 오퍼레이터 정지는 차단한다 — 기관에 들어갈 수 있는 사람이 아무도 없어진다.</li>
     </ul>
+  </div>
+
+  <div class="rpage" id="page-cases-sa01">
+  <div class="sec-label">케이스 계약 · SA-01 기관 목록 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr><td class="no">—</td><td class="st">목록 · 요약</td><td class="code">GET /admin/orgs</td><td class="msg">기관 표 + 요약 지표 4<span class="nx">→ 행 클릭 → 상세</span></td><td><a class="mk2" href="#list">#list</a></td></tr>
+        <tr><td class="no">—</td><td class="st">기관 0</td><td class="code">—</td><td class="msg"><b>아직 등록된 기관이 없습니다</b> + 생성 유도<span class="nx">→ 생성</span></td><td><a class="mk2" href="#empty">#empty</a></td></tr>
+        <tr><td class="no">1</td><td class="st"><b>중복 기관명</b></td><td class="code">ORG_NAME_TAKEN</td><td class="msg">입력 중 <b>✗</b> + <b>이미 있는 기관명입니다</b> · 제출 버튼 비활성<span class="nx">→ 이름 변경 — <b>제출 전에 막는다</b></span></td><td><a class="mk2" href="#dupname">#dupname</a></td></tr>
+        <tr><td class="no">3</td><td class="st"><b>생성 실패 · 롤백</b></td><td class="code">ORG_CREATE_FAILED</td><td class="msg"><b>기관을 만들지 못했습니다</b> · 입력값 유지<span class="nx">→ 재시도 — <b>아무것도 만들어지지 않는다</b></span></td><td><a class="mk2" href="#createfail">#createfail</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>중복 기관명은 제출 전에 막는다.</b> 생성 모달이 <i>"실시간 중복 확인"</i>이라고 써 놓고 <b>✗ 화면이 없었다</b> — 눌러 보고 실패하면 그때까지 입력한 것이 헛일이 된다.<br>
+    · <b>생성 실패는 아무것도 남기지 않는다.</b> <code>활성 · 오퍼레이터 미배정</code>이 정상 흐름이라 반쯤 만들어진 기관이 목록에 있으면 정상인지 실패인지 구분되지 않는다.<br>
+    · <b>정지 기관을 숨기지 않는다.</b> 숨기면 <i>"우리 기관이 안 보인다"</i>는 문의에 정지인지 삭제인지 화면으로 확인할 방법이 없다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
+  </div>
+
+  <div class="rpage" id="page-cases-sa02">
+  <div class="sec-label">케이스 계약 · SA-02 기관 상세 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">오퍼레이터 — 슈퍼어드민은 첫 한 명만 넣는다</td></tr>
+        <tr><td class="no">—</td><td class="st">오퍼레이터 0</td><td class="code">—</td><td class="msg"><b>오퍼레이터가 없어 이 기관은 아직 시작되지 않았습니다</b><span class="nx">→ 초대 — <b>이 목록의 핵심 신호</b></span></td><td><a class="mk2" href="#noop">#noop</a></td></tr>
+        <tr><td class="no">2·N1</td><td class="st">이메일 형식 · 중복 · <b>도메인 밖</b></td><td class="code">INVALID_EMAIL<br>ALREADY_INVITED<br>DOMAIN_NOT_ALLOWED</td><td class="msg">모달 필드 하단 · <b>제출 전 차단</b><span class="nx">→ 재입력 — 기관 도메인 밖 주소는 초대할 수 없다</span></td><td><a class="mk2" href="#invite">#invite</a></td></tr>
+        <tr><td class="no">4·5</td><td class="st"><b>초대 메일 실패 · 토큰 생성 실패</b></td><td class="code">INVITE_MAIL_FAILED<br>INVITE_TOKEN_FAILED</td><td class="msg"><b>지정됐지만 초대 메일이 나가지 않았습니다</b> + [재발송]<span class="nx">→ 재발송 — <b>자리는 지우지 않는다</b>(중복 초대와 재시도를 구분하려고)</span></td><td><a class="mk2" href="#mailfail">#mailfail</a></td></tr>
+        <tr><td class="no">N2</td><td class="st"><b>마지막 오퍼레이터 정지</b></td><td class="code">LAST_OPERATOR</td><td class="msg"><b>차단</b> — 정지할 수 없다고 말한다<span class="nx">→ 다른 오퍼레이터를 먼저 초대 — <b>고아 기관 방지</b></span></td><td><a class="mk2" href="#lastblock">#lastblock</a></td></tr>
+        <tr class="grp"><td colspan="5">사용량 · 설정</td></tr>
+        <tr><td class="no">6</td><td class="st"><b>사용량 집계 실패</b></td><td class="code">USAGE_UNAVAILABLE</td><td class="msg"><b>사용량을 불러오지 못했습니다</b> · <b>이 영역만</b> 실패, 기관 정보는 그대로<span class="nx">→ 재조회 — <b>0으로 보여주지 않는다</b></span></td><td><a class="mk2" href="#usagefail">#usagefail</a></td></tr>
+        <tr><td class="no">—</td><td class="st">기관 정지</td><td class="code">PATCH /admin/orgs/{id}</td><td class="msg">소속 전원 로그인 차단 · <b>데이터는 보존</b><span class="nx">→ 설정 탭</span></td><td><a class="mk2" href="#settings">#settings</a></td></tr>
+        <tr class="grp"><td colspan="5">기관 삭제</td></tr>
+        <tr><td class="no">7</td><td class="st">기관 삭제 요청</td><td class="code">DELETE /admin/orgs/{id}</td><td class="msg">확인 모달 — <b>기관명을 입력해야</b> 삭제된다 · <b>즉시 파기 아님</b><span class="nx">→ soft-delete · 보존기간(180일) 경과 후 파기 · 그전까지 복구 가능</span></td><td><a class="mk2" href="#deleteconfirm">#deleteconfirm</a></td></tr>
+        <tr><td class="no">8</td><td class="st">보존기간 경과 전 파기 요청</td><td class="code">RETENTION_NOT_MET</td><td class="msg"><b>차단</b> — 보존기간이 남아 파기할 수 없다고 말한다<span class="nx">→ 대기 · <b>그림 없음</b>(운영자가 API로 요청하는 경로)</span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>집계 실패를 0으로 보여주지 않는다.</b> <b>안 쓴 것</b>과 <b>못 읽은 것</b>은 다르다 — 0으로 그리면 청구액이 실제보다 작아 보인다.<br>
+    · <b>실패는 그 영역만 막는다.</b> 사용량 하나 때문에 화면 전체를 에러로 덮으면 지원 업무가 멈춘다.<br>
+    · <b>초대 메일이 실패해도 자리를 지우지 않는다.</b> 지우면 같은 주소로 다시 초대했을 때 중복 초대인지 재시도인지 구분되지 않는다.<br>
+    · <b>마지막 오퍼레이터는 정지할 수 없다.</b> 기관에 들어갈 수 있는 사람이 아무도 없어진다.<br>
+    · <b>삭제는 즉시 파기가 아니다.</b> 보존기간이 지나야 지워지고 그전까지 복구할 수 있다 — 계약 종료만 하려면 <b>정지</b>로 충분하다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
+  </div>
+
+  <div class="rpage" id="page-cases-sa03">
+  <div class="sec-label">케이스 계약 · SA-03 플랫폼 설정 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr><td class="no">—</td><td class="st">채점 모델 변경</td><td class="code">—</td><td class="msg">확인 모달 — <b>전 기관 재캘리브레이션</b><span class="nx">→ 확정 시 버전이 다른 결과끼리 비교를 막는다</span></td><td><a class="mk2" href="#modelchange">#modelchange</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>단가 미입력</b></td><td class="code">—</td><td class="msg">비용 화면에 <b>단가 미설정</b> · 금액에 합산하지 않는다<span class="nx">→ 단가 입력 — <b>0으로 계산하면 청구액이 작아 보인다</b></span></td><td><a class="mk2" href="#nopricing">#nopricing</a></td></tr>
+        <tr><td class="no">—</td><td class="st">마지막 슈퍼어드민 정지</td><td class="code">LAST_SUPERADMIN</td><td class="msg"><b>차단</b><span class="nx">→ —</span></td><td><a class="mk2" href="#accounts">#accounts</a></td></tr>
+        <tr class="grp"><td colspan="5">그림 없음</td></tr>
+        <tr><td class="no">N3</td><td class="st">권한 없는 접근</td><td class="code">403</td><td class="msg">슈퍼어드민이 아니면 <b>콘솔 자체에 닿지 않는다</b><span class="nx">→ 로그인 — 서버가 초기 화면을 정한다</span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>단가 미입력을 0으로 계산하지 않는다.</b> 0으로 합산하면 청구액이 실제보다 작아 보이고, 그 화면을 보고 예산이 남았다고 판단하면 틀린 결정이 쌓인다 — SA-02의 집계 실패와 같은 원칙이다.<br>
+    · <b>채점 모델 변경은 되돌릴 수 없다고 먼저 말한다.</b> 전 기관 재캘리브레이션이 필요하고 버전이 다른 결과끼리는 비교가 성립하지 않는다.<br>
+    · <b>마지막 슈퍼어드민은 정지할 수 없다.</b> 풀어 줄 상위 권한이 아예 없어 기관보다 더 치명적이다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
   </div>
 
   <div class="rpage" id="page-list">
@@ -266,7 +360,6 @@
             </table>
           </div>
           <div class="tablefoot"><span class="range">1–14 / 14개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-          <div class="mininote" style="margin-top:16px"><b>`오퍼레이터 미배정`이 이 목록의 핵심 신호다.</b> 기관을 만들어도 오퍼레이터가 없으면 기수도 명단도 만들어지지 않아 아무것도 시작되지 않는다. 정지 기관은 목록에서 숨기지 않는다 — 계약·비용 이력이 붙어 있다.</div>
         </div>
       </div>
     </div>
@@ -297,22 +390,119 @@
     </div>
     <div class="overlay">
       <div class="modal2">
-        <div class="mh"><h4>기관 생성 (테넌트 프로비저닝)</h4><span class="x">✕</span></div>
+        <div class="mh"><h4>기관 생성</h4><span class="x">✕</span></div>
         <div class="mb">
           <div class="field">
             <label>기관명</label>
             <div class="inp filled" style="justify-content:space-between">코드베이스 아카데미 <span style="color:var(--c-success);font-weight:700">✓</span></div>
-            <div class="fhint" style="color:var(--c-success)">✓ 사용 가능한 이름 — 입력 중 <b>실시간 중복 확인</b>. 이미 있으면 ✗와 경고를 띄운다.</div>
+            <div class="fhint" style="color:var(--c-success)">사용 가능한 이름입니다</div>
           </div>
           <div class="field">
             <label>도메인</label>
             <div class="inp filled">codebase.ac.kr</div>
-            <div class="fhint">이 도메인 밖 주소로는 계정 초대를 보낼 수 없다.</div>
+            <div class="fhint">이 도메인 주소로만 초대할 수 있습니다</div>
           </div>
           <div class="field">
             <label>데이터 보존기간</label>
             <div class="inp">180일 ▾</div>
-            <div class="fhint">종료 기수의 코드·문답·채점 근거 보관 기간. 설정 탭에서 바꾼다.</div>
+            <div class="fhint">종료 기수 데이터 보관 기간</div>
+          </div>
+        </div>
+        <div class="mf"><button class="btn ghost">취소</button><button class="btn">기관 생성</button></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-dupname">
+  <div class="sec-label">상태 · 중복 기관명 (실시간 확인 · 제출 전 차단)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/orgs</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="brand"><span class="mk">◆</span>IZ-Get<span class="tag">플랫폼 콘솔</span></div>
+        <div class="right"><span class="gear">⚙</span><div class="me">김운영 · 슈퍼어드민 <span class="av">운</span></div></div>
+      </div>
+      <div class="body">
+        <div class="nav"><div class="sect">플랫폼</div><div class="item on"><span class="ic">▤</span>기관</div></div>
+        <div class="content">
+          <div class="phead"><div><h2>기관</h2></div><button class="btn">+ 기관 생성</button></div>
+          <div class="metrics" style="opacity:.5">
+            <div class="mcard"><div class="lbl">총 기관</div><div class="val">14</div></div>
+            <div class="mcard"><div class="lbl">총 교육생</div><div class="val">1,284</div></div>
+            <div class="mcard"><div class="lbl">이번 달 AI 비용</div><div class="val">$2,140</div></div>
+            <div class="mcard"><div class="lbl">저장량</div><div class="val">82 GB</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay">
+      <div class="modal2">
+        <div class="mh"><h4>기관 생성</h4><span class="x">✕</span></div>
+        <div class="mb">
+          <div class="field">
+            <label>기관명</label>
+            <div class="inp filled" style="justify-content:space-between;border-color:var(--c-danger)">그린컴퍼니 부트캠프 <span style="color:var(--c-danger);font-weight:700">✗</span></div>
+            <div class="fhint" style="color:var(--c-danger)">이미 있는 기관명입니다</div>
+          </div>
+          <div class="field">
+            <label>도메인</label>
+            <div class="inp filled">codebase.ac.kr</div>
+            <div class="fhint">이 도메인 주소로만 초대할 수 있습니다</div>
+          </div>
+          <div class="field">
+            <label>데이터 보존기간</label>
+            <div class="inp">180일 ▾</div>
+            <div class="fhint">종료 기수 데이터 보관 기간</div>
+          </div>
+        </div>
+        <div class="mf"><button class="btn ghost">취소</button><button class="btn off">기관 생성</button></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-createfail">
+  <div class="sec-label">상태 · 기관 생성 실패 (롤백 · 입력값 유지)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/orgs</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="brand"><span class="mk">◆</span>IZ-Get<span class="tag">플랫폼 콘솔</span></div>
+        <div class="right"><span class="gear">⚙</span><div class="me">김운영 · 슈퍼어드민 <span class="av">운</span></div></div>
+      </div>
+      <div class="body">
+        <div class="nav"><div class="sect">플랫폼</div><div class="item on"><span class="ic">▤</span>기관</div></div>
+        <div class="content">
+          <div class="phead"><div><h2>기관</h2></div><button class="btn">+ 기관 생성</button></div>
+          <div class="metrics" style="opacity:.5">
+            <div class="mcard"><div class="lbl">총 기관</div><div class="val">14</div></div>
+            <div class="mcard"><div class="lbl">총 교육생</div><div class="val">1,284</div></div>
+            <div class="mcard"><div class="lbl">이번 달 AI 비용</div><div class="val">$2,140</div></div>
+            <div class="mcard"><div class="lbl">저장량</div><div class="val">82 GB</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay">
+      <div class="modal2">
+        <div class="mh"><h4>기관 생성</h4><span class="x">✕</span></div>
+        <div class="mb">
+          <div class="fhint" style="background:var(--c-danger-soft);color:var(--c-danger);padding:11px 12px;border-radius:8px;margin-bottom:16px;line-height:1.6"><b>기관을 만들지 못했습니다.</b> 잠시 후 다시 시도해 주세요.<br>아무것도 만들어지지 않았고 입력한 내용은 그대로 있습니다.</div>
+          <div class="field">
+            <label>기관명</label>
+            <div class="inp filled" style="justify-content:space-between">코드베이스 아카데미 <span style="color:var(--c-success);font-weight:700">✓</span></div>
+            <div class="fhint" style="color:var(--c-success)">사용 가능한 이름입니다</div>
+          </div>
+          <div class="field">
+            <label>도메인</label>
+            <div class="inp filled">codebase.ac.kr</div>
+            <div class="fhint">이 도메인 주소로만 초대할 수 있습니다</div>
+          </div>
+          <div class="field">
+            <label>데이터 보존기간</label>
+            <div class="inp">180일 ▾</div>
+            <div class="fhint">종료 기수 데이터 보관 기간</div>
           </div>
         </div>
         <div class="mf"><button class="btn ghost">취소</button><button class="btn">기관 생성</button></div>
@@ -375,7 +565,7 @@
             <div class="irow"><span class="k">데이터 보존기간</span><span class="v">180일</span></div>
             <div class="irow"><span class="k">공개 범위 기본값</span><span class="v">요약</span></div>
           </div>
-          <div class="subttl">기수 <span class="n">· 읽기전용 — 개설·반 편성·명단은 오퍼레이터(OP-06)</span></div>
+          <div class="subttl">기수 <span class="n">· 읽기전용</span></div>
           <div class="card" style="margin-bottom:14px">
             <table class="tbl">
               <thead><tr><th class="k-name">기수</th><th class="k-badge">상태</th><th class="num k-num">반</th><th class="num k-num">교육생</th><th>기간</th></tr></thead>
@@ -386,7 +576,6 @@
               </tbody>
             </table>
           </div>
-          <div class="mininote"><b>기수를 여기서 열지 않는다.</b> 지원·과금 맥락의 읽기전용 가시성만 두고, 학생 데이터는 테넌트 경계 밖이라 들어가지 않는다.</div>
         </div>
       </div>
     </div>
@@ -428,7 +617,6 @@
             <div class="irow"><span class="k">오퍼레이터</span><span class="v miss">미배정</span></div>
           </div>
           <div class="subttl">기수</div>
-          <div class="mininote">개설된 기수가 없습니다.</div>
         </div>
       </div>
     </div>
@@ -450,8 +638,6 @@
           <div class="phead"><div><div class="crumb">기관 › <b>그린컴퍼니 부트캠프</b></div><h2>그린컴퍼니 부트캠프 <span class="badge ok" style="vertical-align:3px">활성</span></h2></div></div>
           <div class="tabs"><span class="t">개요</span><span class="t on">오퍼레이터</span><span class="t">사용량 · AI 비용</span><span class="t">설정</span></div>
 
-          <div style="font-size:12px;color:var(--c-warning);background:var(--c-warning-soft);border-radius:var(--r-md);padding:10px 14px;margin-bottom:16px">⚠ 슈퍼어드민이 넣는 계정은 <b>오퍼레이터뿐</b>이다(부트스트랩·복구). <b>반 담당 매니저 초대·반 배정·정지는 오퍼레이터가 기관 안에서</b>(OP-06) 한다 — 테넌트 경계.</div>
-
           <div class="toolbar">
             <div class="filter" style="color:var(--c-text-3);font-size:12px">이 기관의 오퍼레이터 계정</div>
             <button class="btn">+ 오퍼레이터 초대</button>
@@ -467,7 +653,6 @@
               </tbody>
             </table>
           </div>
-          <div class="mininote" style="margin-top:16px"><b>이 탭은 계정 관리이지 매니저 관리가 아니다.</b> 퇴사한 계정도 지우지 않고 정지로 남긴다 — 과거 기수의 배정 이력에 이름이 붙어 있고, 지우면 그 이력이 끊긴다.</div>
         </div>
       </div>
     </div>
@@ -499,11 +684,7 @@
           <div class="field">
             <label>이메일</label>
             <div class="inp filled">choi@green.com</div>
-            <div class="fhint">
-              <b>권한을 고르는 칸이 없다</b> — 이 화면에서 보내는 초대는 오퍼레이터 하나뿐이라 초대하는 화면이 곧 역할이다.<br>
-              <b>기수 배정도 없다</b> — 오퍼레이터는 기관 전체를 본다.<br>
-              이 주소로 초대 메일이 나가고, 받는 사람은 <b>AU-02</b>에서 이름·비밀번호만 정하면 된다.
-            </div>
+            <div class="fhint">이 주소로 초대 메일이 갑니다</div>
           </div>
         </div>
         <div class="mf"><button class="btn ghost">취소</button><button class="btn">초대 발송</button></div>
@@ -530,7 +711,7 @@
           <div class="alertbar warn">
             <span>⚠</span>
             <div><b>오퍼레이터로 지정됐지만 초대 메일이 나가지 않았습니다</b>
-              <span class="d">계정 자리는 만들어졌고 링크만 실패했습니다. 자리를 지우지 않는 이유 — 지우면 같은 주소로 다시 초대했을 때 중복 초대인지 재시도인지 구분되지 않습니다.</span>
+              <span class="d">계정 자리는 만들어졌고 링크만 실패했습니다.</span>
             </div>
           </div>
 
@@ -588,7 +769,7 @@
               이 기관의 <b>마지막 오퍼레이터</b>입니다
               <span class="d">정지하면 기관에 들어갈 수 있는 사람이 아무도 없어지고, 기수·명단·매니저를 손댈 방법이 사라집니다.</span>
             </div>
-            <div class="fhint">새 오퍼레이터를 먼저 초대해 활성화된 뒤에 정지할 수 있습니다.<br>기관 자체를 멈추려는 것이라면 계정이 아니라 <b>설정 탭의 기관 상태</b>를 정지로 바꾸세요 — 계정은 남고 로그인만 막힙니다.</div>
+            <div class="fhint">새 오퍼레이터를 초대한 뒤에 정지할 수 있습니다</div>
           </div>
         </div>
         <div class="mf"><button class="btn ghost">닫기</button><button class="btn">오퍼레이터 초대</button></div>
@@ -620,7 +801,6 @@
                 <div class="r"><div class="t"><span class="nm">채점 근거 (evidence)</span><span class="vv">1.6 GB</span></div><div class="bar"><i style="width:17%;background:var(--c-warning)"></i></div></div>
                 <div class="r"><div class="t"><span class="nm">리포트 · 내보내기 PDF</span><span class="vv">0.9 GB</span></div><div class="bar"><i style="width:10%;background:var(--c-success)"></i></div></div>
               </div>
-              <div class="mininote" style="margin-top:14px;font-size:12px"><b>문답 원문은 화면에 안 보여줘도 저장한다</b> — 이의 조사·재채점 실험의 입력이 전부 원문이라서다. 보존기간(180일) 경과분은 정책에 따라 파기.</div>
             </div>
             <div class="panel">
               <h4>사용 규모 <span class="tot">이번 달</span></h4>
@@ -630,7 +810,6 @@
                 <div class="irow"><span class="k">채점 회차</span><span class="v">1,840</span></div>
                 <div class="irow"><span class="k">발행 리포트</span><span class="v">96</span></div>
               </div>
-              <div class="mininote" style="margin-top:14px;font-size:12px">세션 1건 = 문제 3개다. 학생 1명이 기수 전체에서 미프 6~8회 + 빅프 3회를 본다.</div>
             </div>
           </div>
           <div class="panel" style="margin-top:16px">
@@ -645,9 +824,29 @@
               </tbody>
               <tfoot><tr><td>합계</td><td>5,080</td><td>29.7M / 6.1M</td><td>$412</td></tr></tfoot>
             </table>
-            <div class="mininote" style="margin-top:12px;font-size:12px"><b>이상 사용은 절대량이 아니라 증감으로 본다.</b> 예산 상한을 넘으면 기관 상태가 <span class="badge warn" style="font-size:10px">예산 초과</span>로 바뀌고 경고가 붙는다 — 서비스 중단은 아니다. 집계가 실패하면 이 영역만 오류 상태가 되고 나머지는 그대로 보인다.</div>
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-usagefail">
+  <div class="sec-label">상태 · 사용량 집계 실패 (기관 정보·다른 탭은 그대로)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/orgs/greencompany/usage</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="brand"><span class="mk">◆</span>IZ-Get<span class="tag">플랫폼 콘솔</span></div>
+        <div class="right"><span class="gear">⚙</span><div class="me">김운영 · 슈퍼어드민 <span class="av">운</span></div></div>
+      </div>
+      <div class="body">
+        <div class="nav"><div class="sect">플랫폼</div><div class="item on"><span class="ic">▤</span>기관</div></div>
+        <div class="content">
+          <div class="phead"><div><div class="crumb">기관 › <b>그린컴퍼니 부트캠프</b></div><h2>그린컴퍼니 부트캠프</h2></div><div class="filter">기간 <span class="sel">이번 달 ▾</span></div></div>
+          <div class="tabs"><span class="t">개요</span><span class="t">오퍼레이터</span><span class="t on">사용량 · AI 비용</span><span class="t">설정</span></div>
+          <div class="panel" style="text-align:center;padding:64px 24px"><div style="font-size:26px;color:var(--c-warning);margin-bottom:12px">◷</div><div style="font-size:var(--fs-lg);font-weight:700;margin-bottom:6px">사용량을 불러오지 못했습니다</div><div style="font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.7">잠시 후 다시 시도해 주세요.<br>저장량 · 사용 규모 · AI 비용은 지금 확인할 수 없습니다.</div><button class="btn ghost" style="margin-top:18px">다시 불러오기</button></div>
+          </div>
       </div>
     </div>
   </div>
@@ -669,27 +868,27 @@
           <div class="tabs"><span class="t">개요</span><span class="t">오퍼레이터</span><span class="t">사용량 · AI 비용</span><span class="t on">설정</span></div>
 
           <div class="setrow">
-            <div class="l"><div class="t">기관 상태</div><div class="d">정지하면 소속 오퍼레이터·매니저·교육생의 로그인이 막힌다. 데이터는 보존.</div></div>
+            <div class="l"><div class="t">기관 상태</div><div class="d">정지하면 소속 계정의 로그인이 막힙니다. 데이터는 보존됩니다</div></div>
             <span class="selbox">활성 ▾</span>
           </div>
           <div class="setrow">
-            <div class="l"><div class="t">AI 월 예산 상한</div><div class="d">넘으면 `예산 초과` 배지와 경고가 붙는다. 서비스 중단은 아니다.</div></div>
+            <div class="l"><div class="t">AI 월 예산 상한</div><div class="d">넘으면 경고가 표시됩니다. 서비스는 중단되지 않습니다</div></div>
             <span class="selbox">$600 ▾</span>
           </div>
           <div class="setrow">
-            <div class="l"><div class="t">기관 · 월 토큰 한도</div><div class="d">넘으면 새 세션이 열리지 않고, 진행 중 세션은 완료된 문제까지 저장하고 종료한다.</div></div>
+            <div class="l"><div class="t">기관 · 월 토큰 한도</div><div class="d">넘으면 새 세션이 열리지 않습니다</div></div>
             <span class="selbox">200M ▾</span>
           </div>
           <div class="setrow">
-            <div class="l"><div class="t">데이터 보존기간</div><div class="d">종료 기수의 코드·문답 원문·채점 근거 보관 기간. 경과분 파기.</div></div>
+            <div class="l"><div class="t">데이터 보존기간</div><div class="d">종료 기수 데이터 보관 기간</div></div>
             <span class="selbox">180일 ▾</span>
           </div>
           <div class="setrow">
-            <div class="l"><div class="t">신규 기수 공개 범위 기본값</div><div class="d">교육생에게 결과를 어디까지 여는지의 기본값. 회차별 조정은 매니저가 한다.</div></div>
+            <div class="l"><div class="t">신규 기수 공개 범위 기본값</div><div class="d">교육생에게 결과를 어디까지 공개할지의 기본값</div></div>
             <span class="selbox">요약 ▾</span>
           </div>
           <div class="setrow">
-            <div class="l"><div class="t">GitHub 조직 연동</div><div class="d">오퍼레이터가 1회 승인하면 기관 저장소 전체가 커버된다. 학생 개인 토큰은 받지 않는다.</div></div>
+            <div class="l"><div class="t">GitHub 조직 연동</div><div class="d">기관 저장소를 한 번에 연동합니다</div></div>
             <span class="tgl"></span>
           </div>
           <div class="setrow">
@@ -697,15 +896,89 @@
             <span class="tgl"></span>
           </div>
           <div class="setrow">
-            <div class="l"><div class="t">빅프 기여도 분석</div><div class="d">커밋 기준 기여도. 미프에는 쓰지 않는다.</div></div>
+            <div class="l"><div class="t">빅프 기여도 분석</div><div class="d">커밋 기준 기여도</div></div>
             <span class="tgl off"></span>
           </div>
           <div class="setrow danger">
-            <div class="l"><div class="t" style="color:var(--c-danger)">기관 삭제</div><div class="d">soft-delete — 보존기간이 지난 뒤 파기된다. 즉시 물리 삭제는 할 수 없다.</div></div>
+            <div class="l"><div class="t" style="color:var(--c-danger)">기관 삭제</div><div class="d">보존기간이 지난 뒤 파기됩니다</div></div>
             <button class="btn ghost" style="color:var(--c-danger);border-color:#e6c3bd">기관 삭제</button>
           </div>
         </div>
       </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-deleteconfirm">
+  <div class="sec-label">상태 · [기관 삭제] 클릭 → 확인 모달 (즉시 파기 아님)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/orgs/greencompany/settings</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="brand"><span class="mk">◆</span>IZ-Get<span class="tag">플랫폼 콘솔</span></div>
+        <div class="right"><span class="gear">⚙</span><div class="me">김운영 · 슈퍼어드민 <span class="av">운</span></div></div>
+      </div>
+      <div class="body">
+        <div class="nav"><div class="sect">플랫폼</div><div class="item on"><span class="ic">▤</span>기관</div></div>
+        <div class="content">
+          <div class="phead"><div><div class="crumb">기관 › <b>그린컴퍼니 부트캠프</b></div><h2>그린컴퍼니 부트캠프</h2></div></div>
+          <div class="tabs"><span class="t">개요</span><span class="t">오퍼레이터</span><span class="t">사용량 · AI 비용</span><span class="t on">설정</span></div>
+
+          <div class="setrow">
+            <div class="l"><div class="t">기관 상태</div><div class="d">정지하면 소속 계정의 로그인이 막힙니다. 데이터는 보존됩니다</div></div>
+            <span class="selbox">활성 ▾</span>
+          </div>
+          <div class="setrow">
+            <div class="l"><div class="t">AI 월 예산 상한</div><div class="d">넘으면 경고가 표시됩니다. 서비스는 중단되지 않습니다</div></div>
+            <span class="selbox">$600 ▾</span>
+          </div>
+          <div class="setrow">
+            <div class="l"><div class="t">기관 · 월 토큰 한도</div><div class="d">넘으면 새 세션이 열리지 않습니다</div></div>
+            <span class="selbox">200M ▾</span>
+          </div>
+          <div class="setrow">
+            <div class="l"><div class="t">데이터 보존기간</div><div class="d">종료 기수 데이터 보관 기간</div></div>
+            <span class="selbox">180일 ▾</span>
+          </div>
+          <div class="setrow">
+            <div class="l"><div class="t">신규 기수 공개 범위 기본값</div><div class="d">교육생에게 결과를 어디까지 공개할지의 기본값</div></div>
+            <span class="selbox">요약 ▾</span>
+          </div>
+          <div class="setrow">
+            <div class="l"><div class="t">GitHub 조직 연동</div><div class="d">기관 저장소를 한 번에 연동합니다</div></div>
+            <span class="tgl"></span>
+          </div>
+          <div class="setrow">
+            <div class="l"><div class="t">ZIP 업로드</div><div class="d">조직 밖 저장소를 내는 경로. 끄면 GitHub 연동만 남는다.</div></div>
+            <span class="tgl"></span>
+          </div>
+          <div class="setrow">
+            <div class="l"><div class="t">빅프 기여도 분석</div><div class="d">커밋 기준 기여도</div></div>
+            <span class="tgl off"></span>
+          </div>
+          <div class="setrow danger">
+            <div class="l"><div class="t" style="color:var(--c-danger)">기관 삭제</div><div class="d">보존기간이 지난 뒤 파기됩니다</div></div>
+            <button class="btn ghost" style="color:var(--c-danger);border-color:#e6c3bd">기관 삭제</button>
+          </div>
+        </div>
+      </div>
+    <div class="overlay">
+      <div class="modal2" style="width:520px">
+        <div class="mh"><h4 style="color:var(--c-danger)">그린컴퍼니 부트캠프를 삭제할까요?</h4><span class="x">✕</span></div>
+        <div class="mb">
+          <div class="warn" style="margin-bottom:16px">
+            <b>지금 바로 지워지지 않습니다</b>
+            <span class="d">보존기간(180일)이 지난 뒤 파기됩니다. 그전까지는 복구할 수 있습니다.</span>
+          </div>
+          <div class="field">
+            <label>확인을 위해 기관명을 입력하세요</label>
+            <div class="inp">그린컴퍼니 부트캠프</div>
+          </div>
+          <div class="fhint">삭제하면 소속 오퍼레이터 · 매니저 · 교육생이 모두 로그인할 수 없습니다</div>
+        </div>
+        <div class="mf"><button class="btn ghost">취소</button><button class="btn danger">삭제</button></div>
+      </div>
+    </div>
     </div>
   </div>
   </div>
@@ -726,7 +999,7 @@
           <div class="tabs"><span class="t on">모델 · 단가</span><span class="t">슈퍼어드민 계정</span></div>
 
           <div class="setrow">
-            <div class="l"><div class="t">채점 모델 <span class="badge info" style="margin-left:4px">전 기관 공통</span></div><div class="d">기관이 바꿀 수 없다. 바꾸면 <b>전 기관 재캘리브레이션</b>이 필요하고, 버전이 다른 결과끼리는 화면에서 비교를 막는다.</div></div>
+            <div class="l"><div class="t">채점 모델 <span class="badge info" style="margin-left:4px">전 기관 공통</span></div><div class="d">기관이 바꿀 수 없다. 바꾸면 <b>전 기관 재캘리브레이션</b>이 필요합니다</div></div>
             <span class="selbox" style="font-family:var(--mono);font-size:12px">claude-opus-5 ▾</span>
           </div>
           <div class="setrow">
@@ -734,7 +1007,7 @@
             <span class="selbox" style="font-family:var(--mono);font-size:12px">cal-2026-04</span>
           </div>
 
-          <div class="subttl" style="margin-top:24px">티어 매핑 <span class="n">· 질문 생성 · 요약 — 기관은 티어 이름만 고른다</span></div>
+          <div class="subttl" style="margin-top:24px">티어 매핑 <span class="n">· 질문 생성 · 요약</span></div>
           <div class="card" style="margin-bottom:14px">
             <table class="tbl">
               <thead><tr><th class="k-name">티어</th><th>모델</th><th>쓰이는 곳</th><th></th></tr></thead>
@@ -745,7 +1018,6 @@
               </tbody>
             </table>
           </div>
-          <div class="mininote" style="margin-bottom:24px"><b>모델이 단종돼도 기관은 아무것도 하지 않는다.</b> 기관 화면에는 티어 이름만 있고, 매핑을 여기서 갈아 끼우면 끝난다.</div>
 
           <div class="subttl">단가 <span class="n">· 100만 토큰당</span></div>
           <div class="panel">
@@ -794,9 +1066,9 @@
           <div class="field">
             <div class="warnbox">
               <b>14개 기관 전체가 재캘리브레이션 대기 상태가 됩니다</b>
-              <span class="d">끝나기 전까지 전 기관 화면에 배너가 걸리고, 이전 버전으로 채점된 결과와는 <b>비교를 막습니다</b> — 히트맵의 회차 간 비교와 단계 하락 판정이 그 대상입니다.</span>
+              <span class="d">끝나기 전까지 이전 버전으로 채점된 결과와는 비교할 수 없습니다.</span>
             </div>
-            <div class="fhint">진행 중인 세션은 기존 모델로 끝까지 채점됩니다. 바뀐 모델은 <b>변경 이후 시작되는 세션</b>부터 적용됩니다.</div>
+            <div class="fhint">진행 중인 세션은 기존 모델로 끝까지 채점됩니다</div>
           </div>
         </div>
         <div class="mf"><button class="btn ghost">취소</button><button class="btn danger">변경하고 재캘리브레이션 시작</button></div>
@@ -823,7 +1095,7 @@
           <div class="alertbar warn">
             <span>⚠</span>
             <div><b><span style="font-family:var(--mono);font-size:12px">claude-opus-6</span> 단가가 입력되지 않았습니다</b>
-              <span class="d">이 모델이 쓰인 만큼은 비용 화면에서 <b>단가 미설정</b>으로 표시되고 금액에 합산되지 않습니다 — 0으로 계산하면 청구액이 실제보다 작아 보입니다.</span>
+              <span class="d">이 모델이 쓰인 만큼은 비용 화면에서 <b>단가 미설정</b>으로 표시되고 금액에 합산되지 않습니다</span>
             </div>
           </div>
 
@@ -869,16 +1141,16 @@
             </table>
           </div>
           <div class="tablefoot"><span class="range">1–2 / 2개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-          <div class="mininote" style="margin-top:16px"><b>마지막 한 명은 정지할 수 없다.</b> 지금은 2명이라 두 줄 다 정지가 살아 있고, 한 명이 되면 그 줄의 정지가 잠긴다 — 기관의 마지막 오퍼레이터와 같은 규칙이다.</div>
         </div>
       </div>
     </div>
   </div>
   </div>
 
+
 </div>
 <script>
-  var PAGE = { list:"page-list", create:"page-create", empty:"page-empty",
+  var PAGE = { deleteconfirm:"page-deleteconfirm", "cases-sa01":"page-cases-sa01", "cases-sa02":"page-cases-sa02", "cases-sa03":"page-cases-sa03", dupname:"page-dupname", createfail:"page-createfail", usagefail:"page-usagefail", list:"page-list", create:"page-create", empty:"page-empty",
                overview:"page-overview", noop:"page-noop", operators:"page-operators",
                invite:"page-invite", mailfail:"page-mailfail", lastblock:"page-lastblock",
                usage:"page-usage", settings:"page-settings",

@@ -188,7 +188,6 @@
   .reqline:first-of-type{border-top:0}
   .reqline .n{color:var(--c-text-3);font-size:var(--fs-xs);flex:0 0 18px;font-variant-numeric:tabular-nums}
 
-  .note{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:var(--sp-2)}
   .alert{display:flex;gap:var(--sp-2);align-items:flex-start;border-radius:var(--r-md);padding:10px var(--sp-4);font-size:var(--fs-sm);margin-bottom:var(--sp-4)}
   .alert.warn{background:var(--c-warning-soft);color:var(--c-warning);border:1px solid #e6d3a8}
   .alert.info{background:var(--c-info-soft);color:var(--c-info);border:1px solid #cfe0f0}
@@ -237,6 +236,30 @@
   .crow2 .cnt2{margin-left:auto;font-size:11px;color:var(--c-text-3)}
 
   /* 목업 인덱스(iframe)에서 열릴 때 — 한 번에 한 화면만. 스크롤로 찾지 않는다 */
+  .note2{max-width:1180px;margin:14px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
+  .note2 b{color:var(--c-text-2)}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
   body.embedded .sec-label{margin-top:0}
@@ -259,6 +282,61 @@
       <li><b>기본 정렬은 준비 필요 순</b>이다(매니저는 최신순). 예정 회차가 <b>매니저에게는 빈 행이고 오퍼레이터에게는 맨 위</b>다.</li>
       <li><b>교안 필터가 있다.</b> 교안을 <b>재분석하면 <code>teaches</code>가 바뀌므로</b> 어느 회차가 영향받는지 좁혀 봐야 한다 &#8212; 매니저에게는 없는 필요다.</li>
     </ul>
+  </div>
+
+  <div class="rpage" id="page-cases-op03">
+  <div class="sec-label">케이스 계약 · OP-03 프로젝트 목록 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">목록 — 준비 중이 맨 위</td></tr>
+        <tr><td class="no">—</td><td class="st">기본</td><td class="code">GET /projects?cohort=</td><td class="msg"><b>준비 필요 순</b> 정렬 · 교안 · 검증 개념 3건 · 상태<span class="nx">→ 행 클릭 → 상세</span></td><td><a class="mk2" href="#list">#list</a></td></tr>
+        <tr><td class="no">—</td><td class="st">프로젝트 0</td><td class="code">—</td><td class="msg">빈 상태 + <b>생성 유도</b><span class="nx">→ 생성 — <b>여기는 만들 권한이 있다</b>(매니저 쪽과 반대)</span></td><td><a class="mk2" href="#list">#list</a></td></tr>
+        <tr class="grp"><td colspan="5">생성 — 교안이 있어야 개념이 나온다</td></tr>
+        <tr><td class="no">—</td><td class="st">생성 모달</td><td class="code">POST /projects</td><td class="msg">이름 · 유형 · <b>교안 연결(1개 이상)</b> · <b>검증 개념 3건 고정</b><span class="nx">→ 생성 → 상세</span></td><td><a class="mk2" href="#create">#create</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>교안 미등록</b></td><td class="code">—</td><td class="msg"><b>등록된 교안이 없습니다</b> · 생성 버튼 비활성<span class="nx">→ 운영 관리 › 교안 — <b>기수 세팅 직후 실제로 겪는다</b></span></td><td><a class="mk2" href="#nocur">#nocur</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>연결한 교안에 항목 0</b></td><td class="code">—</td><td class="msg"><b>가르친 항목이 아직 없습니다</b> · 생성 버튼 비활성<span class="nx">→ 교안 상태 확인 — <b>분석 미완 또는 실패</b></span></td><td><a class="mk2" href="#noitem">#noitem</a></td></tr>
+        <tr><td class="no">—</td><td class="st">교안 0개 선택</td><td class="code">—</td><td class="msg">항목 목록 비활성 + <b>저장 차단</b><span class="nx">→ 교안 선택 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+        <tr class="grp"><td colspan="5">실패</td></tr>
+        <tr><td class="no">—</td><td class="st">생성 실패</td><td class="code">PROJECT_CREATE_FAILED</td><td class="msg"><b>만들지 못했습니다</b> · 입력값 유지<span class="nx">→ 재시도 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>교안이 검증 개념의 출발점이다.</b> 교안을 연결해야 <b>가르친 항목</b>이 나오고 그중 3건을 고른다 — 교안이 없거나 분석이 안 끝났으면 프로젝트를 만들 수 없다.<br>
+    · <b>못 만드는 이유를 구분한다.</b> <b>교안이 없는 것</b>과 <b>교안은 있는데 항목이 안 나온 것</b>은 가야 할 곳이 다르다 — 앞은 등록, 뒤는 분석 상태 확인.<br>
+    · <b>빈 상태에 생성을 권한다.</b> 매니저 화면과 반대다 — 오퍼레이터는 만들 권한이 있다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
+  </div>
+
+  <div class="rpage" id="page-cases-op04">
+  <div class="sec-label">케이스 계약 · OP-04 프로젝트 상세 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">구성 — 개념이 정해져야 나머지가 열린다</td></tr>
+        <tr><td class="no">—</td><td class="st">구성</td><td class="code">GET /projects/{id}</td><td class="msg">교안 연결 · <b>검증 개념 3건</b> · 요구사항<span class="nx">→ 개념 선택</span></td><td><a class="mk2" href="#config">#config</a></td></tr>
+        <tr><td class="no">—</td><td class="st">검증 개념 선택</td><td class="code">PATCH /projects/{id}/concepts</td><td class="msg"><b>지난 회차 이력이 붙는다</b> — 같은 개념을 반복하지 않게<span class="nx">→ 3건 저장</span></td><td><a class="mk2" href="#pick">#pick</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>개념 미확정</b></td><td class="code">—</td><td class="msg"><b>검증 개념 3건을 먼저 정하세요</b> · <b>일정·현황 탭이 열리지 않는다</b><span class="nx">→ 개념 선택 — 항목이 없으면 문항을 만들 수 없다</span></td><td><a class="mk2" href="#draft">#draft</a></td></tr>
+        <tr class="grp"><td colspan="5">일정 · 현황</td></tr>
+        <tr><td class="no">—</td><td class="st">일정</td><td class="code">—</td><td class="msg">제출 마감 · 응시 창<span class="nx">→ —</span></td><td><a class="mk2" href="#schedule">#schedule</a></td></tr>
+        <tr><td class="no">—</td><td class="st">현황</td><td class="code">—</td><td class="msg"><b>반별 제출 → 분석 → 응시</b><span class="nx">→ —</span></td><td><a class="mk2" href="#status">#status</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>개념 공백</b></td><td class="code">—</td><td class="msg"><b>학생 코드에서 발견되지 않습니다</b> · 몇 팀인지 쓴다<span class="nx">→ <b>학생 문제가 아니라 개념 선택 문제</b> · 다음 회차에 교체 검토</span></td><td><a class="mk2" href="#status">#status</a></td></tr>
+        <tr><td class="no">—</td><td class="st">분석 실패 다수</td><td class="code">—</td><td class="msg">현황 탭 상단 경고 · <b>반별 실패 수</b><span class="nx">→ 교안·저장소 확인</span></td><td><a class="mk2" href="#status">#status</a></td></tr>
+        <tr class="grp"><td colspan="5">실패</td></tr>
+        <tr><td class="no">—</td><td class="st">개념 저장 실패</td><td class="code">CONCEPT_SAVE_FAILED</td><td class="msg"><b>저장하지 못했습니다</b> · 선택 유지<span class="nx">→ 재시도 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>개념 3건이 이 화면의 관문이다.</b> 정해지기 전에는 일정·현황 탭이 <b>열리지 않는다</b> — 문항을 만들 수 없으므로 일정을 잡을 대상도 없다.<br>
+    · <b>개념 공백은 학생 문제가 아니다.</b> 고른 개념이 학생 코드에 없으면 그 개념은 물을 수 없다 — 화면이 <b>개념 선택이 이 프로젝트와 맞지 않았을 수 있다</b>고 말하고, 해당 학생은 남은 문항으로 진행한다.<br>
+    · <b>개념 선택에 지난 회차 이력을 붙인다.</b> 같은 개념을 반복해서 고르면 회차 간 비교가 되지 않는다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
   </div>
 
   <div class="rpage" id="page-list">
@@ -389,8 +467,7 @@
               <div class="crow2 on"><span class="ck">✓</span>Streamlit 실습 <span class="ver">v1</span><span class="cnt2">가르친 항목 9</span></div>
               <div class="crow2"><span class="ck"></span>Kubernetes 기초 <span class="ver">v1</span><span class="cnt2">가르친 항목 18</span></div>
             </div>
-            <div class="note">한 회차가 교안 하나에만 걸치지 않는다 — 여러 개를 고르면 아래 후보가 <b>합쳐져서</b> 나온다.</div>
-          </div>
+                      </div>
           <div class="fld">
             <div class="fl">검증 개념 <span class="req">3건 고정</span> <span class="hint">· 이 회차 모든 학생의 문항 3개</span></div>
             <div class="picker">
@@ -408,21 +485,133 @@
                 <div class="opt"><span class="ck"></span><div class="ob"><div class="on1"><b>세션 상태와 재실행</b><span class="pg3">p.22</span></div><div class="odf">위젯을 조작하면 스크립트가 처음부터 다시 실행되며, 유지해야 할 값은 session_state에 둔다.</div></div></div>
               </div>
             </div>
-            <div class="note">
-              <b>후보는 교안 분석이 내놓은 `가르친 항목`이고, 교안 · 섹션으로 묶어 보여준다.</b> 합쳐서 늘어놓으면 <span style="font-family:var(--mono)">p.53</span>이 어느 교안 어느 섹션의 53쪽인지 알 수 없다.<br>
-              <b>정의문을 같이 보여준다.</b> 이름만으로는 무엇을 묻게 될지 판단할 수 없다 — 고르는 순간 그게 그 회차 <b>모든 학생의 문항</b>이 된다.<br>
-            </div>
-          </div>
+                      </div>
           <div class="fld">
             <div class="fl">요구사항 <span class="hint">· 선택 · 교안과 별개 · 한 줄에 하나</span></div>
             <div class="inp ta">좋아요 버튼<br>댓글 작성<br>정렬 기능</div>
-            <div class="note">과제 요구사항 문서에서 옮겨 적습니다. 구현 여부(P/F) 확인에만 쓰고 이해도 결과와 섞지 않습니다.</div>
-          </div>
+                      </div>
         </div>
         <div class="df"><button class="btn ghost">취소</button><button class="btn">생성</button></div>
       </div>
     </div>
   </div>
+  <div class="note2">한 회차가 교안 하나에만 걸치지 않는다 — 여러 개를 고르면 아래 후보가 <b>합쳐져서</b> 나온다. <b>후보는 교안 분석이 내놓은 `가르친 항목`이고, 교안 · 섹션으로 묶어 보여준다.</b> 합쳐서 늘어놓으면 <span style="font-family:var(--mono)">p.53</span>이 어느 교안 어느 섹션의 53쪽인지 알 수 없다. <b>정의문을 같이 보여준다.</b> 이름만으로는 무엇을 묻게 될지 판단할 수 없다 — 고르는 순간 그게 그 회차 <b>모든 학생의 문항</b>이 된다. 과제 요구사항 문서에서 옮겨 적습니다. 구현 여부(P/F) 확인에만 쓰고 이해도 결과와 섞지 않습니다.</div>
+
+  </div>
+
+  <div class="rpage" id="page-nocur">
+  <div class="sec-label">&#9313;-1 교안 미등록 &#8212; 프로젝트를 만들 수 없다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>추이</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item on"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">프로젝트 › 7기</div><h2>프로젝트</h2></div>
+          <div class="lhead"><div class="ttl">프로젝트 <span class="cnt">총 5개</span><span class="scope3">7기 전체 · <b>10반 250명</b>이 같은 회차를 한다</span><span class="cnts3">준비 중 <b>2</b> · 진행 중 1 · 종료 1</span></div><button class="btn">+ 프로젝트 생성</button></div>
+          <div class="ltool"><div class="search">🔍 프로젝트명 검색</div><div class="fil"><span class="k">유형</span> 전체 ▾</div><div class="fil"><span class="k">상태</span> 전체 ▾</div><div class="fil"><span class="k">정렬</span> 준비 필요 순 ▾</div></div>
+          <div class="card" style="height:180px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="backdrop">
+      <div class="dialog">
+        <div class="dh"><h3>프로젝트 생성 <span style="font-size:12px;color:var(--c-text-3);font-weight:400">· 7기</span></h3><span class="x">✕</span></div>
+        <div class="db">
+          <div class="fld">
+            <div class="fl">프로젝트명 <span class="req">필수</span></div>
+            <div class="inp">미프 5차</div>
+          </div>
+          <div class="fld">
+            <div class="fl">유형</div>
+            <div class="toggle"><span class="tg on">미프</span><span class="tg">빅프</span></div>
+          </div>
+          <div class="fld">
+            <div class="fl">교안 연결 <span class="req">1개 이상</span> <span class="hint">· 검증 개념이 여기서 나온다</span></div>
+            <div class="clist"><div class="crow2" style="color:var(--c-text-3);justify-content:center;padding:18px">등록된 교안이 없습니다 &#8212; <b>운영 관리 › 교안</b>에서 먼저 등록하세요</div></div>
+                      </div>
+          <div class="fld">
+            <div class="fl">검증 개념 <span class="req">3건 고정</span> <span class="hint">· 이 회차 모든 학생의 문항 3개</span></div>
+            <div class="picker"><div class="ph"><span>교안이 가르친 항목</span><b>0개</b></div><div class="scroll" style="padding:20px;text-align:center;color:var(--c-text-3)">연결된 교안이 없습니다</div></div>
+                      </div>
+          <div class="fld">
+            <div class="fl">요구사항 <span class="hint">· 선택 · 교안과 별개 · 한 줄에 하나</span></div>
+            <div class="inp ta">좋아요 버튼<br>댓글 작성<br>정렬 기능</div>
+                      </div>
+        </div>
+        <div class="df"><button class="btn ghost">취소</button><button class="btn off">생성</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="note2">한 회차가 교안 하나에만 걸치지 않는다 — 여러 개를 고르면 아래 후보가 <b>합쳐져서</b> 나온다. <b>후보는 교안 분석이 내놓은 `가르친 항목`이고, 교안 · 섹션으로 묶어 보여준다.</b> 합쳐서 늘어놓으면 <span style="font-family:var(--mono)">p.53</span>이 어느 교안 어느 섹션의 53쪽인지 알 수 없다. <b>정의문을 같이 보여준다.</b> 이름만으로는 무엇을 묻게 될지 판단할 수 없다 — 고르는 순간 그게 그 회차 <b>모든 학생의 문항</b>이 된다. 과제 요구사항 문서에서 옮겨 적습니다. 구현 여부(P/F) 확인에만 쓰고 이해도 결과와 섞지 않습니다.</div>
+
+  </div>
+
+  <div class="rpage" id="page-noitem">
+  <div class="sec-label">&#9313;-2 연결한 교안에 항목 0 &#8212; 분석 미완 · 실패</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>추이</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item on"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">프로젝트 › 7기</div><h2>프로젝트</h2></div>
+          <div class="lhead"><div class="ttl">프로젝트 <span class="cnt">총 5개</span><span class="scope3">7기 전체 · <b>10반 250명</b>이 같은 회차를 한다</span><span class="cnts3">준비 중 <b>2</b> · 진행 중 1 · 종료 1</span></div><button class="btn">+ 프로젝트 생성</button></div>
+          <div class="ltool"><div class="search">🔍 프로젝트명 검색</div><div class="fil"><span class="k">유형</span> 전체 ▾</div><div class="fil"><span class="k">상태</span> 전체 ▾</div><div class="fil"><span class="k">정렬</span> 준비 필요 순 ▾</div></div>
+          <div class="card" style="height:180px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="backdrop">
+      <div class="dialog">
+        <div class="dh"><h3>프로젝트 생성 <span style="font-size:12px;color:var(--c-text-3);font-weight:400">· 7기</span></h3><span class="x">✕</span></div>
+        <div class="db">
+          <div class="fld">
+            <div class="fl">프로젝트명 <span class="req">필수</span></div>
+            <div class="inp">미프 5차</div>
+          </div>
+          <div class="fld">
+            <div class="fl">유형</div>
+            <div class="toggle"><span class="tg on">미프</span><span class="tg">빅프</span></div>
+          </div>
+          <div class="fld">
+            <div class="fl">교안 연결 <span class="req">1개 이상</span> <span class="hint">· 검증 개념이 여기서 나온다</span></div>
+            <div class="clist">
+              <div class="crow2 on"><span class="ck">✓</span>AI_LLMOps <span class="ver">v2</span><span class="cnt2">가르친 항목 24</span></div>
+              <div class="crow2 on"><span class="ck">✓</span>Streamlit 실습 <span class="ver">v1</span><span class="cnt2">가르친 항목 9</span></div>
+              <div class="crow2"><span class="ck"></span>Kubernetes 기초 <span class="ver">v1</span><span class="cnt2">가르친 항목 18</span></div>
+            </div>
+                      </div>
+          <div class="fld">
+            <div class="fl">검증 개념 <span class="req">3건 고정</span> <span class="hint">· 이 회차 모든 학생의 문항 3개</span></div>
+            <div class="picker"><div class="ph"><span>교안이 가르친 항목</span><b>0개</b></div><div class="scroll" style="padding:20px;text-align:center;color:var(--c-text-3)">이 교안에서 가르친 항목이 아직 없습니다<br><span style="font-size:11px">분석이 끝나지 않았거나 실패했습니다 &#8212; 운영 관리 › 교안에서 상태를 확인하세요</span></div></div>
+                      </div>
+          <div class="fld">
+            <div class="fl">요구사항 <span class="hint">· 선택 · 교안과 별개 · 한 줄에 하나</span></div>
+            <div class="inp ta">좋아요 버튼<br>댓글 작성<br>정렬 기능</div>
+                      </div>
+        </div>
+        <div class="df"><button class="btn ghost">취소</button><button class="btn off">생성</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="note2">한 회차가 교안 하나에만 걸치지 않는다 — 여러 개를 고르면 아래 후보가 <b>합쳐져서</b> 나온다. <b>후보는 교안 분석이 내놓은 `가르친 항목`이고, 교안 · 섹션으로 묶어 보여준다.</b> 합쳐서 늘어놓으면 <span style="font-family:var(--mono)">p.53</span>이 어느 교안 어느 섹션의 53쪽인지 알 수 없다. <b>정의문을 같이 보여준다.</b> 이름만으로는 무엇을 묻게 될지 판단할 수 없다 — 고르는 순간 그게 그 회차 <b>모든 학생의 문항</b>이 된다. 과제 요구사항 문서에서 옮겨 적습니다. 구현 여부(P/F) 확인에만 쓰고 이해도 결과와 섞지 않습니다.</div>
 
   </div>
 
@@ -456,28 +645,26 @@
             <div class="bh"><h3>교안 연결 <span class="meta">· 2개 · 검증 개념의 출처</span></h3><span class="act">변경</span></div>
             <div class="kv"><span class="k">교안 1</span><span class="v">AI_LLMOps <span class="na">v2</span> · 등록 06-28</span></div>
             <div class="kv"><span class="k">교안 2</span><span class="v">Streamlit 실습 <span class="na">v1</span> · 등록 07-02</span></div>
-            <div class="note">이 회차 문항은 <b>여기 적힌 버전</b> 기준으로 만들어집니다. 교안이 여러 개면 가르친 항목이 합쳐져 검증 개념 후보가 됩니다.</div>
-          </div>
+                      </div>
 
           <div class="blk">
             <div class="bh"><h3>검증 개념 <span class="meta">· 3건 고정 · 문항 3개</span></h3><span class="act">변경</span></div>
             <div class="kv"><span class="k">1</span><span class="v">HITL (Human In The Loop) <span class="na">· AI_LLMOps v2 · p.48–60</span></span></div>
             <div class="kv"><span class="k">2</span><span class="v">역할 기반 설계 <span class="na">· AI_LLMOps v2 · p.37–46</span></span></div>
             <div class="kv"><span class="k">3</span><span class="v">시점 관리 (Snapshot) <span class="na">· AI_LLMOps v2 · p.62–75</span></span></div>
-            <div class="note">반·팀이 달라도 같은 3개 항목으로 평가됩니다. 이 3건이 그 회차 모든 학생의 문항이 됩니다.</div>
-          </div>
+                      </div>
 
           <div class="blk">
             <div class="bh"><h3>요구사항 <span class="meta">· 교안과 별개 · 구현 P/F 전용</span></h3><span class="act">편집</span></div>
             <div class="reqline"><span class="n">1</span><span>좋아요 버튼</span></div>
             <div class="reqline"><span class="n">2</span><span>댓글 작성</span></div>
             <div class="reqline"><span class="n">3</span><span>정렬 기능</span></div>
-            <div class="note">이해도 결과와 합산하지 않습니다. 진도 파악과 문항 필터에만 씁니다.</div>
-          </div>
+                      </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2">이 회차 문항은 <b>여기 적힌 버전</b> 기준으로 만들어집니다. 교안이 여러 개면 가르친 항목이 합쳐져 검증 개념 후보가 됩니다. 반·팀이 달라도 같은 3개 항목으로 평가됩니다. 이 3건이 그 회차 모든 학생의 문항이 됩니다. 이해도 결과와 합산하지 않습니다. 진도 파악과 문항 필터에만 씁니다.</div>
 
   </div>
 
@@ -524,13 +711,13 @@
             <div class="pk"><span class="bx"></span><span class="pn">콜백과 rerun</span><span class="pp">p.31</span>
               <span class="hist warn">⚠ 미프 1차에서 <b>코드 매칭 0</b> — 8팀 중 7팀</span>
               <span class="pd">버튼 콜백에서 상태를 바꾸고 스크립트를 다시 돌린다</span></div>
-            <div class="note">· <b>지난 회차 이력은 같은 교안이 붙었을 때만 나타납니다</b> — 검증 개념은 그 회차 교안이 가르친 것에서만 나오므로(14번 4-3), 교안이 바뀌면 후보 자체가 달라집니다.<br>· <b>집단 미달은 "다시 물어야 한다"는 뜻도 "피해야 한다"는 뜻도 아닙니다.</b> 판단은 사람이 합니다 — 교안을 보강했다면 다시 넣어 확인할 수 있고, 그대로면 같은 결과가 나옵니다.<br>· <b>코드 매칭 0</b>은 그 개념이 학생 코드에 없어 <b>묻지 못한 것</b>입니다 — 개념이 과제와 안 맞았다는 신호입니다.</div>
-          </div>
+                      </div>
           <div class="savebar"><span class="l">3건을 골라야 저장할 수 있습니다 · 지금 2건</span><button class="btn ghost">취소</button><button class="btn off">저장</button></div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2">· <b>지난 회차 이력은 같은 교안이 붙었을 때만 나타납니다</b> — 검증 개념은 그 회차 교안이 가르친 것에서만 나오므로(14번 4-3), 교안이 바뀌면 후보 자체가 달라집니다. · <b>집단 미달은 "다시 물어야 한다"는 뜻도 "피해야 한다"는 뜻도 아닙니다.</b> 판단은 사람이 합니다 — 교안을 보강했다면 다시 넣어 확인할 수 있고, 그대로면 같은 결과가 나옵니다. · <b>코드 매칭 0</b>은 그 개념이 학생 코드에 없어 <b>묻지 못한 것</b>입니다 — 개념이 과제와 안 맞았다는 신호입니다.</div>
   </div>
   <div class="rpage" id="page-schedule">
   <div class="sec-label">⑤ 상세 › 일정</div>
@@ -679,24 +866,23 @@
 
           <div class="blk">
             <div class="bh"><h3>검증 개념 <span class="meta">· 3건 고정</span></h3><button class="btn">개념 선택</button></div>
-            <div class="note">아직 선택되지 않았습니다.</div>
-          </div>
+                      </div>
 
           <div class="blk">
             <div class="bh"><h3>요구사항 <span class="meta">· 선택</span></h3><span class="act">편집</span></div>
-            <div class="note">입력된 요구사항이 없습니다.</div>
-          </div>
+                      </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2">아직 선택되지 않았습니다. 입력된 요구사항이 없습니다.</div>
 
   </div>
 
 </div>
 <script>
   // 마스터-디테일 해시 라우팅 (v1 curriculum·report와 동일 규약)
-  var PAGE = { list:"page-list", create:"page-create", config:"page-config",
+  var PAGE = { "cases-op03":"page-cases-op03", "cases-op04":"page-cases-op04", list:"page-list", create:"page-create", nocur:"page-nocur", noitem:"page-noitem", config:"page-config", pick:"page-pick",
                schedule:"page-schedule", status:"page-status", draft:"page-draft" };
   function route(){
     var h = (location.hash || "").slice(1) || "list";

@@ -186,8 +186,29 @@
   .empty .t{font-size:var(--fs-base);font-weight:600;margin-bottom:6px}
   .empty .s{font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7}
 
-  .note2{max-width:1180px;margin:-18px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
+  .note2{max-width:1180px;margin:14px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
   .note2 b{color:var(--c-text-2)}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
 
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
@@ -210,6 +231,38 @@
       <li><b>완료율을 두지 않는다.</b> 매니저 평가 지표가 되면 <b>15분짜리 형식 면담</b>으로 숫자를 채우는 행동이 나온다.</li>
       <li><b>행 전체 클릭을 만들지 않는다.</b> 이름 &#8594; <b>MG-06 조회</b>, <code>[브리프 열기]</code> &#8594; <b>MG-04 작업</b> &#8212; 목적지가 다른 두 동작을 한 클릭에 묶지 않는다.</li>
     </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 면담 목록 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">목록 — 자동 등재된 대상</td></tr>
+        <tr><td class="no">—</td><td class="st">기본</td><td class="code">GET /interviews?round=</td><td class="msg"><b>무효 응시가 맨 위</b>, 그다음 지속 저점<span class="nx">→ 행에서 브리프 열기</span></td><td><a class="mk2" href="#list">#list</a></td></tr>
+        <tr><td class="no">—</td><td class="st">종결만</td><td class="code">—</td><td class="msg">이미 끝낸 면담<span class="nx">→ 회고</span></td><td><a class="mk2" href="#done">#done</a></td></tr>
+        <tr><td class="no">—</td><td class="st">지난 회차</td><td class="code">—</td><td class="msg">전부 <b>종결</b>이라 <b>경고 줄을 숨긴다</b><span class="nx">→ 회고용 화면</span></td><td><a class="mk2" href="#past">#past</a></td></tr>
+        <tr class="grp"><td colspan="5">판정할 수 없거나 대상이 없을 때</td></tr>
+        <tr><td class="no">—</td><td class="st">이번 회차 대상 없음</td><td class="code">—</td><td class="msg"><b>이번 회차 면담 대상이 없습니다</b> + <b>2단 이하 1개는 다시 보기로 처리</b>된다고 함께 밝힌다<span class="nx">→ 대기 — 필터가 걸러낸 0이 아님을 밝힌다</span></td><td><a class="mk2" href="#empty">#empty</a></td></tr>
+        <tr><td class="no">—</td><td class="st">회차 결과 전</td><td class="code">—</td><td class="msg"><b>이 회차는 아직 결과가 없어요</b><span class="nx">→ 이해도 확인이 끝나면 <b>자동 등재</b></span></td><td><a class="mk2" href="#pending">#pending</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>미프 1차</b></td><td class="code">—</td><td class="msg"><b>위험 유형이 붙지 않는다</b> · <code>관찰</code> 배지 + <code>2단 이하 n개</code>만<span class="nx">→ 비교할 직전 회차가 없다 — 안내 줄로 밝힌다</span></td><td><a class="mk2" href="#first">#first</a></td></tr>
+        <tr class="grp"><td colspan="5">행 액션 — 상태가 바뀐다</td></tr>
+        <tr><td class="no">—</td><td class="st"><b>무효 응시 확인</b></td><td class="code">PATCH /interviews/{id}</td><td class="msg"><b>자동 확정하지 않는다</b> · [무효로 처리하고 재응시 안내] / [그대로 두기]<span class="nx">→ 사람이 판정 — 시스템은 <b>본 것만</b> 보여준다</span></td><td><a class="mk2" href="#void">#void</a></td></tr>
+        <tr><td class="no">—</td><td class="st">제외</td><td class="code">PATCH /interviews/{id}</td><td class="msg"><b>체크가 아니라 버튼</b> — 누르면 상태가 바뀌고 <b>[되돌리기]</b>가 남는다<span class="nx">→ 되돌릴 수 있게 남긴다</span></td><td><a class="mk2" href="#exclude">#exclude</a></td></tr>
+        <tr><td class="no">—</td><td class="st">브리프 열기</td><td class="code">—</td><td class="msg"><b>모드</b>로 전환 — 사이드바를 가린다<span class="nx">→ MG-04</span></td><td><a class="mk2" href="#list">#list</a></td></tr>
+        <tr class="grp"><td colspan="5">실패</td></tr>
+        <tr><td class="no">—</td><td class="st">상태 변경 실패</td><td class="code">INTERVIEW_UPDATE_FAILED</td><td class="msg"><b>그 행만</b> <code>바꾸지 못했습니다 · 다시</code><span class="nx">→ 재시도 — <b>그림 없음</b> · 목록 전체를 비우지 않는다</span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>대상은 자동 등재된다.</b> 매니저가 고르는 목록이 아니라 <b>이해도 확인 결과가 만든 목록</b>이다 — 회차 결과가 나오기 전에는 비어 있는 것이 정상이다.<br>
+    · <b>무효 응시는 자동 확정하지 않는다.</b> 시스템은 <b>본 것</b>(무응답 문항 수 · 응답 시간)만 보여주고 <b>판정은 사람이 한다</b> — 못한 것과 안 한 것은 다르다.<br>
+    · <b>제외는 되돌릴 수 있다.</b> 버튼으로 상태를 바꾸되 <code>되돌리기</code>를 남긴다 — 잘못 눌러 사라지면 그 사람은 이 회차에서 아무도 안 본다.<br>
+    · <b>1차에는 위험 유형을 붙이지 않는다.</b> 유형이 <b>직전 회차 대비</b>라 비교 대상이 없다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
   </div>
 
   <div class="rpage" id="page-list">
@@ -261,9 +314,9 @@
       </div>
     </div>
   </div>
-  </div>
   <div class="note2">&#183; <b>등재는 자동, 제외는 수동</b>이다 &#8212; 판정(9-2)이 대상을 정하고 매니저는 <b>빼는 것</b>만 한다. 넣는 것을 수동으로 하면 <b>반마다 기준이 달라진다.</b> <b>종결 행에는 효과 판정이 없다</b> &#8212; 다음 회차에 다시 등재됐는지는 <b>그 회차 목록에 이미 드러난다.</b></div>
-  <div class="rpage" id="page-done">
+  </div>
+    <div class="rpage" id="page-done">
   <div class="sec-label">&#9313; 종결만 — 이 회차에 무엇을 약속했나</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/interviews</span></div>
@@ -576,7 +629,7 @@
 
 </div>
 <script>
-  var PAGE = { list:"page-list", done:"page-done", "void":"page-void",
+  var PAGE = { cases:"page-cases", list:"page-list", done:"page-done", "void":"page-void",
                exclude:"page-exclude", past:"page-past",
                empty:"page-empty", pending:"page-pending", first:"page-first" };
   function route(){

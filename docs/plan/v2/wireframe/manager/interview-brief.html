@@ -197,8 +197,29 @@
   .modal .mf{padding:var(--sp-3) var(--sp-5);border-top:1px solid var(--c-border);display:flex;gap:var(--sp-2);justify-content:flex-end;background:var(--c-surface-2)}
   .viewport{position:relative}
 
-  .note2{max-width:1180px;margin:-18px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
+  .note2{max-width:1180px;margin:14px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
   .note2 b{color:var(--c-text-2)}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
 
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
@@ -222,6 +243,38 @@
       <li><b>만나면 종결이다.</b> <code>다음에 할 것</code>이 비어도 저장된다 &#8212; 확인만 한 번 한다.</li>
       <li><b>이탈 기록은 무효 응시 브리프에서만</b>(14번 4-4). 일반 브리프에 띄우면 면담이 추궁이 된다. <b>무효 응시 브리프의 질문 3개와 응시 창 기한은 확정 전</b>이다 &#8212; 16번에 그 케이스가 없어 9-4 원칙에서 유도했다.</li>
     </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 면담 브리프 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">브리프 — 네 블록이 곧 30분의 순서</td></tr>
+        <tr><td class="no">—</td><td class="st">기본</td><td class="code">GET /interviews/{id}/brief</td><td class="msg">① 낭독문 · ② 질문 4개 · ③ 원인 · ④ 다음에 할 것<span class="nx">→ 면담 진행</span></td><td><a class="mk2" href="#brief">#brief</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>첫 면담</b></td><td class="code">—</td><td class="msg">①의 <b>지난 약속 줄이 통째로 빠진다</b><span class="nx">→ 이어받을 것이 없다</span></td><td><a class="mk2" href="#first">#first</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>무효 응시</b></td><td class="code">—</td><td class="msg"><b>여는 문장도 질문도 다르다</b> · <code>채점하지 않음</code> · 이탈 기록은 <b>여기서만</b><span class="nx">→ 그날 무슨 일이 있었는지 — <b>추궁이 아니다</b></span></td><td><a class="mk2" href="#void">#void</a></td></tr>
+        <tr class="grp"><td colspan="5">③ 원인 선택 → ④ 라우팅</td></tr>
+        <tr><td class="no">—</td><td class="st">하나 고르면</td><td class="code">—</td><td class="msg">④에 목적지 한 줄<span class="nx">→ 해당 화면으로</span></td><td><a class="mk2" href="#one">#one</a></td></tr>
+        <tr><td class="no">—</td><td class="st">여러 개 고르면</td><td class="code">—</td><td class="msg"><b>목적지도 기록도 여러 줄</b><span class="nx">→ 각각으로</span></td><td><a class="mk2" href="#multi">#multi</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>난이도 상승</b></td><td class="code">—</td><td class="msg">그 개념이 <b>이미 반 문제로 판정됐으면</b> ④에 알린다<span class="nx">→ <b>매니저가 세지 않게 한다</b></span></td><td><a class="mk2" href="#group">#group</a></td></tr>
+        <tr><td class="no">—</td><td class="st">③ 미체크</td><td class="code">—</td><td class="msg">④ 자리에 <i>고르지 않아도 저장할 수 있어요</i><span class="nx">→ 저장 가능 — <b>면담이 항상 원인을 찾아내지는 않는다</b></span></td><td><a class="mk2" href="#brief">#brief</a></td></tr>
+        <tr><td class="no">—</td><td class="st">개념이 <code>코드 매칭 0</code></td><td class="code">—</td><td class="msg">막힌 개념 목록에서 <b>제외</b>하고 각주로 표시<span class="nx">→ 묻지 않은 것을 물었다고 하지 않는다</span></td><td><a class="mk2" href="#brief">#brief</a></td></tr>
+        <tr class="grp"><td colspan="5">저장</td></tr>
+        <tr><td class="no">—</td><td class="st"><b>비워 두고 저장</b></td><td class="code">—</td><td class="msg">확인 모달 — <b>다음 회차 브리프에 이어받을 것이 없습니다</b><span class="nx">→ [비워 두고 저장] / [돌아가서 적기]</span></td><td><a class="mk2" href="#confirm">#confirm</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>저장 실패</b></td><td class="code">BRIEF_SAVE_FAILED</td><td class="msg"><b>적으신 내용은 그대로 남아 있습니다</b> + [다시 저장]<span class="nx">→ 재시도 — <b>면담 중이라 날리면 안 된다</b></span></td><td><a class="mk2" href="#savefail">#savefail</a></td></tr>
+        <tr><td class="no">—</td><td class="st">나가기(저장 안 함)</td><td class="code">—</td><td class="msg">모드에서 목록으로 — <b>나가는 길이 있다</b><span class="nx">→ MG-03</span></td><td><a class="mk2" href="#brief">#brief</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>저장 실패에 창을 닫으면 기록이 사라진다.</b> 면담 30분 동안 적은 것이라 재시도를 화면에 남기고 <b>입력값을 지우지 않는다</b> — 이 화면에서 가장 비싼 실패다.<br>
+    · <b>③은 분류 라벨이 아니라 라우팅 스위치다.</b> 무엇을 고르느냐가 ④의 목적지를 바꾼다 — 고르지 않아도 저장은 된다.<br>
+    · <b>무효 응시 브리프는 다른 화면이다.</b> <code>3개 중 0개</code>가 아니라 응시 자체를 안 한 것이라 기본 문장을 쓰면 말이 안 된다.<br>
+    · <b>이탈 기록은 무효 응시 브리프에서만.</b> 일반 브리프에 띄우면 면담이 추궁이 된다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
   </div>
 
   <div class="rpage" id="page-brief">
@@ -273,9 +326,9 @@
       </div></div>
     </div>
   </div>
-  </div>
   <div class="note2">&#183; <b>기록 3칸의 둘째는 &#9315;에서 자동으로 채워진다</b>(16번 4-3) &#8212; 매니저가 옮겨 적을 이유가 없다. 첫째 칸이 <code>어디서 막혔나</code>가 아니라 <b><code>무엇 때문이라고 했나</code></b>인 이유도 같다 &#8212; <b>어디서 막혔는지는 시스템이 이미 안다.</b></div>
-  <div class="rpage" id="page-one">
+  </div>
+    <div class="rpage" id="page-one">
   <div class="sec-label">&#9313; 하나 고르면 &#8212; 소관이 갈리면 줄이 쪼개진다</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/interviews/1042/brief</span></div>
@@ -585,11 +638,72 @@
   </div>
   </div>
 
+  <div class="rpage" id="page-savefail">
+  <div class="sec-label">&#9319; 저장 실패 &#8212; 적은 내용을 그대로 두고 다시 시도한다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/interviews/1042/brief</span></div>
+    <div class="app mode">
+      <div class="modebar">
+        <span class="bk">&#8592; 목록으로 (저장 안 함)</span>
+        <span class="who2"><span class="n2">김민준</span><span class="m2">A반 &#183; 7기</span></span>
+        <span class="rbadge down" style="margin-left:8px">단계 하락</span>
+        <span class="rt">미프 3차 &#183; 2단 이하 <b style="color:var(--c-text)">1 &#8594; 2</b></span>
+      </div>
+      <div class="sheet"><div class="inner">
+          <div class="blk">
+            <div class="bh"><span class="no">&#9312;</span><span class="t2">여는 말</span></div>
+            <div class="bb"><div class="read">"지난 회차에는 3개 중 <b>1개</b>에서 멈췄는데, 이번에는 <b>2개</b>에서 멈췄어요.<br>
+              점수 얘기를 하려는 게 아니라, <b>무엇이 달라졌는지</b> 같이 보려고 불렀어요."</div>
+            <div class="kw">이야기할 개념 &#8212; <b>HITL Trigger</b></div>
+            <div class="excl">Graph 구성은 <b>반 절반 이상이 같은 지점</b>이라 개인 사유에서 빠졌습니다(9-6).</div>
+            <div class="prev"><span class="mk">&#9888;</span><span>지난 면담(6/22)에서 정한 것 &#8212; <b>"담당 기능 흐름 그려오기"</b></span></div></div>
+          </div>
+          <div class="blk">
+            <div class="bh"><span class="no">&#9313;</span><span class="t2">질문</span></div>
+            <div class="bb"><ul class="qs">
+              <li>이전 프로젝트와 비교해서 가장 달랐던 점이 뭐였어요?</li>
+              <li>이번에 어떤 역할을 맡았어요?</li>
+              <li>만들면서 제일 자신 없던 부분은요?</li>
+              <li>답하기 어려웠던 게 코드 때문이었어요, 설명하는 방식 때문이었어요?</li>
+            </ul></div>
+          </div>
+          <div class="blk">
+            <div class="bh"><span class="no">&#9314;</span><span class="t2">들은 것</span></div>
+            <div class="bb"><div class="causes"><span class="cz on"><span class="bx"></span>개념 이해 부족</span><span class="cz"><span class="bx"></span>담당 범위 밖</span><span class="cz"><span class="bx"></span>구현 시간 부족</span><span class="cz"><span class="bx"></span>설명&#183;표현 어려움</span><span class="cz"><span class="bx"></span>난이도 상승</span><span class="cz"><span class="bx"></span>팀 의존</span><span class="cz"><span class="bx"></span>컨디션&#183;심리</span></div></div>
+          </div>
+          <div class="blk">
+            <div class="bh"><span class="no">&#9315;</span><span class="t2">보낼 곳</span></div>
+            <div class="bb"><div class="dest"><span class="fr">개념 이해 부족</span><span class="to"><a>교안 AI_LLMOps &#183; 3장 36&#8211;46쪽</a> 안내</span><span class="own me2">매니저</span></div><div class="dest sub2"><span class="fr"></span><span class="to">강사 Q&amp;A 안내</span><span class="own pass">전달만</span></div></div>
+          </div>
+          <div class="rec">
+            <div class="rh2"><span class="t2">기록</span><span class="lk2">전체 이력 &#8599;</span></div>
+            <div class="g3">
+              <div class="f"><div class="k3">무엇 때문이라고 했나</div><div class="in">사람 확인을 왜 그 자리에 뒀는지 자기도 모르겠다고 함</div></div>
+              <div class="f"><div class="k3">어디로 보냈나 <span class="au">&#183; &#9315;에서 자동</span></div><div class="in auto">교안 AI_LLMOps 3장 36&#8211;46쪽 안내 &#183; 강사 Q&amp;A 안내</div></div>
+              <div class="f"><div class="k3">다음에 할 것</div><div class="in ph"></div></div>
+            </div>
+          </div>
+          <div class="save"><span class="warn3"></span><span class="rt2"><button class="btn ghost">취소</button><button class="btn">저장하고 종결</button></span></div>
+      </div></div>
+          <div class="mask">
+            <div class="modal">
+              <div class="mh">저장하지 못했습니다</div>
+              <div class="mb">
+                <p>적으신 내용은 <b>그대로 남아 있습니다.</b> 잠시 후 다시 시도해 주세요.</p>
+                <p style="margin-top:8px;color:var(--c-text-3);font-size:var(--fs-xs)">창을 닫으면 지금까지 적은 것이 사라집니다.</p>
+              </div>
+              <div class="mf"><button class="btn ghost">닫기</button><button class="btn">다시 저장</button></div>
+            </div>
+          </div>
+    </div>
+  </div>
+  </div>
+
 </div>
 <script>
-  var PAGE = { brief:"page-brief", one:"page-one", multi:"page-multi",
+  var PAGE = { cases:"page-cases", brief:"page-brief", one:"page-one", multi:"page-multi",
                group:"page-group", first:"page-first", "void":"page-void",
-               confirm:"page-confirm" };
+               confirm:"page-confirm", savefail:"page-savefail" };
   function route(){
     var h = (location.hash || "").slice(1) || "brief";
     var id = PAGE[h] || "page-brief";

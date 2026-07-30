@@ -156,7 +156,6 @@
   .pg{min-width:32px;height:32px;padding:0 6px;border:1px solid var(--c-border);border-radius:var(--r-sm);display:inline-flex;align-items:center;justify-content:center;background:#fff;font-size:var(--fs-sm);color:var(--c-text-2);cursor:pointer}
   .pg.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary);font-weight:600}
 
-  .note{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:var(--sp-3);line-height:1.7}
   .alert{display:flex;gap:var(--sp-2);align-items:flex-start;border-radius:var(--r-md);padding:10px var(--sp-4);font-size:var(--fs-sm);margin-bottom:var(--sp-4)}
   .alert.warn{background:var(--c-warning-soft);color:var(--c-warning);border:1px solid #e6d3a8}
   .alert.info{background:var(--c-info-soft);color:var(--c-info);border:1px solid #cfe0f0}
@@ -293,6 +292,30 @@
   .costbar{height:6px;background:#eef0f3;border-radius:20px;margin-top:var(--sp-2);overflow:hidden}
   .costbar > i{display:block;height:100%;background:var(--c-warning);border-radius:20px}
 
+  .note2{max-width:1180px;margin:14px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
+  .note2 b{color:var(--c-text-2)}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
   body.embedded .sec-label{margin-top:0}
@@ -310,6 +333,55 @@
       <li><b>매니저 초대에 권한 선택이 없다.</b> 총괄/담당이 폐기되어 매니저가 한 종류뿐이다 — 대신 <b>반 배정</b>만 고른다.</li>
       <li><b>배정은 표가 아니라 작업이라 모드로 연다.</b> 여러 번 반복 배정하는 동안 좌우가 동시에 보여야 한다.</li>
     </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 운영 관리 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">① 기수 — 반·명단이 여기 담긴다</td></tr>
+        <tr><td class="no">—</td><td class="st">기수 목록</td><td class="code">GET /admin/cohorts</td><td class="msg">진행 중 · 종료 · 반·교육생 수<span class="nx">→ 행 클릭 → 반·명단</span></td><td><a class="mk2" href="#cohort">#cohort</a></td></tr>
+        <tr><td class="no">—</td><td class="st">기수 생성</td><td class="code">POST /admin/cohorts</td><td class="msg">이름 · 기간<span class="nx">→ 생성</span></td><td><a class="mk2" href="#cohort-create">#cohort-create</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>기수 0</b></td><td class="code">—</td><td class="msg"><b>첫 기수를 만드세요</b> + 생성 유도<span class="nx">→ 생성 — <b>여기가 시작점</b></span></td><td><a class="mk2" href="#empty">#empty</a></td></tr>
+        <tr class="grp"><td colspan="5">② 반 · 명단 — 한 탭에 둘을 같이</td></tr>
+        <tr><td class="no">—</td><td class="st">반 · 명단</td><td class="code">GET /admin/classes</td><td class="msg">반별 인원 · <b>담당 매니저</b> · 명단<span class="nx">→ —</span></td><td><a class="mk2" href="#classes">#classes</a></td></tr>
+        <tr><td class="no">—</td><td class="st">반 추가</td><td class="code">POST /admin/classes</td><td class="msg">이름 · 정원<span class="nx">→ 추가</span></td><td><a class="mk2" href="#class-add">#class-add</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>명단 추가 · CSV</b></td><td class="code">POST /admin/roster</td><td class="msg"><b>유효 n · 이미 등록 n(건너뜀) · 형식 오류 n(행 번호)</b><span class="nx">→ <b>유효 행은 등록</b> — 한 줄 때문에 전체를 막지 않는다</span></td><td><a class="mk2" href="#roster-add">#roster-add</a></td></tr>
+        <tr><td class="no">—</td><td class="st">명단 추가 · 직접 입력</td><td class="code">—</td><td class="msg">지각 등록 1~2명<span class="nx">→ 형식·중복을 그 자리에서</span></td><td><a class="mk2" href="#roster-manual">#roster-manual</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>도메인 밖 이메일</b></td><td class="code">DOMAIN_NOT_ALLOWED</td><td class="msg"><b>등록 차단</b><span class="nx">→ 기관 도메인 주소만</span></td><td><a class="mk2" href="#roster-add">#roster-add</a></td></tr>
+        <tr><td class="no">—</td><td class="st">벌크 선택</td><td class="code">—</td><td class="msg">여러 명 선택 → 벌크바<span class="nx">→ 반 배정 · 초대 재발송</span></td><td><a class="mk2" href="#bulk">#bulk</a></td></tr>
+        <tr class="grp"><td colspan="5">반 배정 모드 — 좌우가 동시에 보여야 한다</td></tr>
+        <tr><td class="no">—</td><td class="st">① 진입</td><td class="code">—</td><td class="msg">반·교육생 모두 미선택 · 실행 비활성<span class="nx">→ 둘 다 고른다</span></td><td><a class="mk2" href="#assign-idle">#assign-idle</a></td></tr>
+        <tr><td class="no">—</td><td class="st">② 선택</td><td class="code">PATCH /admin/roster/assign</td><td class="msg">반 + 교육생 선택 → 실행 활성<span class="nx">→ 배정</span></td><td><a class="mk2" href="#assign">#assign</a></td></tr>
+        <tr><td class="no">—</td><td class="st">③ 배정 직후</td><td class="code">—</td><td class="msg"><b>되돌리기</b>가 남는다<span class="nx">→ 잘못 넣으면 되돌린다</span></td><td><a class="mk2" href="#assign-done">#assign-done</a></td></tr>
+        <tr><td class="no">—</td><td class="st">④ 미배정 0</td><td class="code">—</td><td class="msg"><b>더 배정할 사람이 없습니다</b><span class="nx">→ 모드 종료</span></td><td><a class="mk2" href="#assign-empty">#assign-empty</a></td></tr>
+        <tr class="grp"><td colspan="5">③ 매니저 — 계정이 아니라 담당 배정</td></tr>
+        <tr><td class="no">—</td><td class="st">매니저 목록</td><td class="code">GET /admin/managers</td><td class="msg">담당 반 · 담당 인원 · 상태<span class="nx">→ 반 배정 · 정지</span></td><td><a class="mk2" href="#managers">#managers</a></td></tr>
+        <tr><td class="no">—</td><td class="st">매니저 초대</td><td class="code">POST /admin/managers/invite</td><td class="msg"><b>권한 선택이 없다</b> — 매니저는 한 종류<span class="nx">→ <b>반 배정만</b> 고른다</span></td><td><a class="mk2" href="#mgr-invite">#mgr-invite</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>담당 없는 반</b></td><td class="code">—</td><td class="msg"><code>담당 없음</code> 배지 + 배정 유도<span class="nx">→ <b>OP-01 조치 필요와 같은 신호</b></span></td><td><a class="mk2" href="#managers">#managers</a></td></tr>
+        <tr class="grp"><td colspan="5">④ 교안 — 검증 개념의 원천</td></tr>
+        <tr><td class="no">—</td><td class="st">교안 목록</td><td class="code">GET /admin/curricula</td><td class="msg">섹션 · 항목 · <b>연결된 프로젝트</b> · 상태<span class="nx">→ 행 클릭 → 상세</span></td><td><a class="mk2" href="#curriculum">#curriculum</a></td></tr>
+        <tr><td class="no">—</td><td class="st">섹션 상세</td><td class="code">—</td><td class="msg">가르친 항목 · 페이지<span class="nx">→ —</span></td><td><a class="mk2" href="#cur-detail">#cur-detail</a></td></tr>
+        <tr><td class="no">—</td><td class="st">연결된 프로젝트</td><td class="code">—</td><td class="msg">어느 회차가 이 교안을 쓰는가<span class="nx">→ <b>재분석 전 안전장치</b></span></td><td><a class="mk2" href="#cur-used">#cur-used</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>재분석 — 쓰는 회차가 있음</b></td><td class="code">—</td><td class="msg">확인 모달 — <b>이미 응시한 문항·리포트는 유지</b><span class="nx">→ 새 결과는 <b>다음 회차부터</b></span></td><td><a class="mk2" href="#cur-reanalyze">#cur-reanalyze</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>분석 실패</b></td><td class="code">—</td><td class="msg">사유 + 재분석 · 파일 교체<span class="nx">→ <b>그 교안은 프로젝트에 연결할 수 없다</b></span></td><td><a class="mk2" href="#cur-fail">#cur-fail</a></td></tr>
+        <tr class="grp"><td colspan="5">⑤ 비용</td></tr>
+        <tr><td class="no">—</td><td class="st">비용</td><td class="code">GET /admin/cost</td><td class="msg">기수·반별 AI 비용<span class="nx">→ —</span></td><td><a class="mk2" href="#cost">#cost</a></td></tr>
+        <tr class="grp"><td colspan="5">실패</td></tr>
+        <tr><td class="no">—</td><td class="st">저장 실패</td><td class="code">ADMIN_SAVE_FAILED</td><td class="msg"><b>저장하지 못했습니다</b> · 입력값 유지<span class="nx">→ 재시도 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>CSV는 한 줄 때문에 전체를 막지 않는다.</b> 유효 행은 등록하고 오류 행만 <b>행 번호</b>로 알린다 — 수백 명을 다시 올리게 하면 아무도 안 쓴다.<br>
+    · <b>배정은 표가 아니라 작업이라 모드로 연다.</b> 여러 번 반복하는 동안 <b>좌우가 동시에</b> 보여야 하고, 배정 직후에는 <b>되돌리기</b>를 남긴다.<br>
+    · <b>매니저 초대에 권한 선택이 없다.</b> 총괄/담당이 폐기되어 매니저가 한 종류뿐이다 — 고를 것은 <b>반 배정</b>뿐이다.<br>
+    · <b>교안 재분석은 쓰는 회차를 먼저 보여준다.</b> 이미 응시한 문항과 리포트는 그대로 두고 <b>새 결과는 다음 회차부터</b> — 지난 회차 결과가 바뀌면 비교가 깨진다.<br>
+    · <b>오퍼레이터 계정은 여기서 다루지 않는다.</b> 초대·정지는 <b>슈퍼어드민</b>(SA-02) 소관이다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
   </div>
 
   <div class="rpage" id="page-cohort">
@@ -358,12 +430,12 @@
               </table>
             </div>
             <div class="tablefoot"><span class="range">1–3 / 3개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-            <div class="note"><b>상단의 기수 스위처가 아래 탭들의 범위를 정한다.</b> 반·명단·비용은 전부 "지금 고른 기수"이고, 매니저와 교안만 기관 전체다 — 매니저는 기수를 옮겨 다니고 교안은 여러 기수가 같이 쓴다.</div>
-          </div>
+                      </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2"><b>상단의 기수 스위처가 아래 탭들의 범위를 정한다.</b> 반·명단·비용은 전부 "지금 고른 기수"이고, 매니저와 교안만 기관 전체다 — 매니저는 기수를 옮겨 다니고 교안은 여러 기수가 같이 쓴다.</div>
   </div>
 
   <div class="rpage" id="page-cohort-create">
@@ -503,12 +575,12 @@
               </table>
             </div>
             <div class="tablefoot"><span class="range">1–25 / 250명</span><div class="pages"><span class="pg">‹</span><span class="pg on">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">›</span></div><span class="rspace"></span></div>
-            <div class="note"><b>반과 명단을 한 탭에 둔다.</b> 반을 만드는 것과 명단을 넣는 것은 한 흐름이라 탭이 갈리면 계속 오간다 — 반 하나를 추가하고 바로 그 반에 사람을 넣는 것이 실제 동선이다.</div>
-          </div>
+                      </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2"><b>반과 명단을 한 탭에 둔다.</b> 반을 만드는 것과 명단을 넣는 것은 한 흐름이라 탭이 갈리면 계속 오간다 — 반 하나를 추가하고 바로 그 반에 사람을 넣는 것이 실제 동선이다.</div>
   </div>
 
   <div class="rpage" id="page-bulk">
@@ -550,16 +622,12 @@
               </table>
             </div>
             <div class="tablefoot"><span class="range">1–25 / 250명 · 2명 선택</span><div class="pages"><span class="pg">‹</span><span class="pg on">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">›</span></div><span class="rspace"></span></div>
-            <div class="note">
-              <b>벌크바를 표 위에 끼워 넣지 않고 헤더 행을 갈아끼운다.</b> 삽입하면 첫 체크에서 표가 아래로 밀려 <b>방금 누른 행이 움직인다</b> — 연속으로 체크할 때 제일 나쁘다. 헤더를 치환하면 높이가 같아 점프가 0이고, 스크롤해도 헤더가 붙어 있어 선택 수가 화면 밖으로 나가지 않는다.<br>
-              <b>`반 배정 →`은 배정 모드를 열고 고른 2명을 그대로 들고 간다.</b> 선택이 리셋되면 방금 한 일을 모드에서 다시 해야 한다.<br>
-              <b>`초대 재발송`이 같이 있는 이유</b> — 계정 일이지만 대상이 같은 명단이고, 초대됨 상태만 걸러 한꺼번에 보내는 것이 실제 동선이다.
-            </div>
-          </div>
+                      </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2"><b>벌크바를 표 위에 끼워 넣지 않고 헤더 행을 갈아끼운다.</b> 삽입하면 첫 체크에서 표가 아래로 밀려 <b>방금 누른 행이 움직인다</b> — 연속으로 체크할 때 제일 나쁘다. 헤더를 치환하면 높이가 같아 점프가 0이고, 스크롤해도 헤더가 붙어 있어 선택 수가 화면 밖으로 나가지 않는다. <b>`반 배정 →`은 배정 모드를 열고 고른 2명을 그대로 들고 간다.</b> 선택이 리셋되면 방금 한 일을 모드에서 다시 해야 한다. <b>`초대 재발송`이 같이 있는 이유</b> — 계정 일이지만 대상이 같은 명단이고, 초대됨 상태만 걸러 한꺼번에 보내는 것이 실제 동선이다.</div>
   </div>
 
   <div class="rpage" id="page-class-add">
@@ -720,12 +788,12 @@
               </table>
             </div>
             <div class="tablefoot"><span class="range">1–3 / 3명</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-            <div class="note"><b>반 카드를 눌러도 배정이 실행되지 않는다.</b> 이전 안은 반을 누르는 순간 25명이 이동했는데, 정원이 적힌 <b>정보 카드처럼 생긴 것을 눌렀더니 실행</b>되는 것은 어포던스가 어긋난다 — 여기서 반 클릭은 <b>"이 반을 채우는 중"을 고르는 것</b>이다.<br><b>순서를 강제하지 않는다.</b> 반을 먼저 골라도, 사람을 먼저 골라도 되고, <b>둘 다 정해졌을 때</b> 실행 버튼이 살아난다.<br><b>정원을 같이 적는다.</b> `25명`만 있으면 더 넣어도 되는지 판단할 수 없다 — A·B·C는 찼고 F반만 3자리 남았다는 것이 한눈에 보여야 한다.</div>
-          </div>
+                      </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2"><b>반 카드를 눌러도 배정이 실행되지 않는다.</b> 이전 안은 반을 누르는 순간 25명이 이동했는데, 정원이 적힌 <b>정보 카드처럼 생긴 것을 눌렀더니 실행</b>되는 것은 어포던스가 어긋난다 — 여기서 반 클릭은 <b>"이 반을 채우는 중"을 고르는 것</b>이다. <b>순서를 강제하지 않는다.</b> 반을 먼저 골라도, 사람을 먼저 골라도 되고, <b>둘 다 정해졌을 때</b> 실행 버튼이 살아난다. <b>정원을 같이 적는다.</b> `25명`만 있으면 더 넣어도 되는지 판단할 수 없다 — A·B·C는 찼고 F반만 3자리 남았다는 것이 한눈에 보여야 한다.</div>
   </div>
 
   <div class="rpage" id="page-assign">
@@ -768,12 +836,12 @@
               </table>
             </div>
             <div class="tablefoot"><span class="range">1–3 / 3명</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-            <div class="note"><b>실행은 오른쪽에서 한다.</b> 사람을 고른 자리 바로 옆에 <span style="font-family:var(--mono)">F반에 넣기</span>가 뜬다 — 왼쪽으로 시선을 되돌리지 않는다. 이전 안은 오른쪽에서 체크하고 <b>왼쪽으로 돌아가 눌러야</b> 했는데, 읽기 방향과 반대라 매번 되짚게 된다.<br><b>넣기 전에 결과를 보여준다</b> — <span style="font-family:var(--mono)">22 → 24 / 25 · 1자리 남음</span>. 왼쪽 레일에도 같은 값이 뜬다.<br><b>정원 초과를 막지는 않는다.</b> 중도 합류·반 통폐합으로 실제로 생기고, 막으면 운영이 멈춘다 — 넘는다는 사실만 알린다.<br><b>직전 기수 열</b>은 재수강생을 같은 반에 다시 넣을지 판단하는 근거다.</div>
-          </div>
+                      </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2"><b>실행은 오른쪽에서 한다.</b> 사람을 고른 자리 바로 옆에 <span style="font-family:var(--mono)">F반에 넣기</span>가 뜬다 — 왼쪽으로 시선을 되돌리지 않는다. 이전 안은 오른쪽에서 체크하고 <b>왼쪽으로 돌아가 눌러야</b> 했는데, 읽기 방향과 반대라 매번 되짚게 된다. <b>넣기 전에 결과를 보여준다</b> — <span style="font-family:var(--mono)">22 → 24 / 25 · 1자리 남음</span>. 왼쪽 레일에도 같은 값이 뜬다. <b>정원 초과를 막지는 않는다.</b> 중도 합류·반 통폐합으로 실제로 생기고, 막으면 운영이 멈춘다 — 넘는다는 사실만 알린다. <b>직전 기수 열</b>은 재수강생을 같은 반에 다시 넣을지 판단하는 근거다.</div>
   </div>
 
   <div class="rpage" id="page-assign-done">
@@ -815,12 +883,12 @@
               </table>
             </div>
             <div class="tablefoot"><span class="range">1–1 / 1명</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-            <div class="note"><b>즉시 실행 + 되돌리기.</b> 확인 모달을 세우면 반복 배정이 안 되고(250명을 스무 번 나눠 넣는다), 안 세우면 잘못 누른 25명을 손으로 되돌려야 한다 — <b>누가 어느 반에 들어갔는지 이름으로 확인해 주고, 아니면 한 번에 물린다.</b> 다음 배정을 하거나 닫으면 사라진다.<br><b>선택과 반이 함께 풀린다.</b> 배정이 끝나면 "F반 채우는 중" 상태도 해제된다 — 다음 사람들을 다른 반에 넣는 것이 보통이라 유지하면 오배정이 난다.<br><b>목록에서 그 사람들이 빠진다</b>(미배정 3 → 1). 남은 일이 줄어드는 것이 보여야 어디까지 했는지 안다.</div>
-          </div>
+                      </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2"><b>즉시 실행 + 되돌리기.</b> 확인 모달을 세우면 반복 배정이 안 되고(250명을 스무 번 나눠 넣는다), 안 세우면 잘못 누른 25명을 손으로 되돌려야 한다 — <b>누가 어느 반에 들어갔는지 이름으로 확인해 주고, 아니면 한 번에 물린다.</b> 다음 배정을 하거나 닫으면 사라진다. <b>선택과 반이 함께 풀린다.</b> 배정이 끝나면 "F반 채우는 중" 상태도 해제된다 — 다음 사람들을 다른 반에 넣는 것이 보통이라 유지하면 오배정이 난다. <b>목록에서 그 사람들이 빠진다</b>(미배정 3 → 1). 남은 일이 줄어드는 것이 보여야 어디까지 했는지 안다.</div>
   </div>
 
   <div class="rpage" id="page-assign-empty">
@@ -848,12 +916,12 @@
               <p>7기 250명 · 미배정 없음</p>
               <div class="cta"><button class="btn ghost">전체 명단 보기</button><button class="btn">완료</button></div>
             </div>
-            <div class="note"><b>이미 배정된 사람을 옮기려면</b> 위 <span style="font-family:var(--mono)">범위</span> 필터를 <b>전체</b>로 바꾼다 — 현재 소속 열이 생기고, 반 통폐합처럼 여러 명을 한꺼번에 옮기는 일이 같은 화면에서 된다. 한 명만 옮기는 것은 명단 탭의 <b>반 변경</b>이 빠르다.<br><b>완료 버튼이 여기서만 강조된다</b> — 남은 일이 없을 때만 "끝났다"고 말할 수 있다.</div>
-          </div>
+                      </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2"><b>이미 배정된 사람을 옮기려면</b> 위 <span style="font-family:var(--mono)">범위</span> 필터를 <b>전체</b>로 바꾼다 — 현재 소속 열이 생기고, 반 통폐합처럼 여러 명을 한꺼번에 옮기는 일이 같은 화면에서 된다. 한 명만 옮기는 것은 명단 탭의 <b>반 변경</b>이 빠르다. <b>완료 버튼이 여기서만 강조된다</b> — 남은 일이 없을 때만 "끝났다"고 말할 수 있다.</div>
   </div>
 
   <div class="rpage" id="page-managers">
@@ -910,12 +978,12 @@
               </table>
             </div>
             <div class="tablefoot"><span class="range">1–9 / 9명</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-            <div class="note"><b>퇴사한 매니저를 지우지 않고 정지로 남긴다.</b> 담당 반 배정이 <b>기간형 이력</b>이라 6기 A반의 담당이 누구였는지가 그 계정에 붙어 있다 — 지우면 지난 기수의 기록이 끊긴다.</div>
-          </div>
+                      </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2"><b>퇴사한 매니저를 지우지 않고 정지로 남긴다.</b> 담당 반 배정이 <b>기간형 이력</b>이라 6기 A반의 담당이 누구였는지가 그 계정에 붙어 있다 — 지우면 지난 기수의 기록이 끊긴다.</div>
   </div>
 
   <div class="rpage" id="page-mgr-invite">
@@ -1007,12 +1075,12 @@
               </table>
             </div>
             <div class="tablefoot"><span class="range">1–4 / 4개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-            <div class="note"><b>교안이 여기 있는 이유</b> — 기수마다 몇 번 손대고 마는 화면이라 나브 자리를 주지 않았다. 매니저 쪽에는 목록이 아예 없고, 리포트·면담이 가리키는 <b>항목 한 장</b>만 링크로 열린다.<br><b>`가르친 항목`이 프로젝트에서 고를 후보다.</b> 이 중 3개가 그 회차의 문항이 된다.</div>
-          </div>
+                      </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2"><b>교안이 여기 있는 이유</b> — 기수마다 몇 번 손대고 마는 화면이라 나브 자리를 주지 않았다. 매니저 쪽에는 목록이 아예 없고, 리포트·면담이 가리키는 <b>항목 한 장</b>만 링크로 열린다. <b>`가르친 항목`이 프로젝트에서 고를 후보다.</b> 이 중 3개가 그 회차의 문항이 된다.</div>
   </div>
 
   <div class="rpage" id="page-cur-detail">
@@ -1066,14 +1134,13 @@
               <div class="itm"><div class="it"><b>Supervisor 패턴의 HITL 실행 흐름</b><span class="p">p.53</span></div><div class="idf">Supervisor가 HITL Trigger 함수로 개입 조건을 판정하고, Human은 APPROVE/REVISE/ABORT로 최종 의사결정을 수행한다.</div></div>
               <div class="itm"><div class="it"><b>HITL Design Checklist과 사용자 부담 Trade-off</b><span class="p">p.58</span></div><div class="idf">개입 조건(정량+정책), 개입 방식, 개입 이후 흐름을 정의해야 하며, 안전성 vs 사용성 Trade-off를 위해 3가지 방안을 고려한다.</div></div>
               <div class="more">2개 더 보기 ▾</div>
-              <div class="note"><b>교안 분석이 내놓는 것은 이 목록 하나다.</b> 섹션 · 페이지 · 가르친 항목 · 정의 — 프로젝트에서 <b>3개를 고르면 그게 그 회차의 문항</b>이 된다.</div>
-
-            </div>
+                          </div>
           </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2"><b>교안 분석이 내놓는 것은 이 목록 하나다.</b> 섹션 · 페이지 · 가르친 항목 · 정의 — 프로젝트에서 <b>3개를 고르면 그게 그 회차의 문항</b>이 된다.</div>
   </div>
 
   <div class="rpage" id="page-cur-nocode">
@@ -1163,11 +1230,11 @@
             </table>
           </div>
           <div class="tablefoot"><span class="range">1–2 / 2개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-          <div class="note"><b>여기서 회차를 고치지 않는다</b> — 행을 누르면 그 프로젝트 화면으로 간다. 이 탭이 있는 이유는 조회가 아니라 <b>안전장치</b>다: 이미 응시가 시작된 회차의 문항은 <b>지금 이 버전 기준</b>으로 만들어져 있어서, 다시 분석하거나 새 버전을 올리면 학생이 본 질문과 리포트의 교안 위치가 어긋난다.</div>
-        </div>
+                  </div>
       </div>
     </div>
   </div>
+  <div class="note2"><b>여기서 회차를 고치지 않는다</b> — 행을 누르면 그 프로젝트 화면으로 간다. 이 탭이 있는 이유는 조회가 아니라 <b>안전장치</b>다: 이미 응시가 시작된 회차의 문항은 <b>지금 이 버전 기준</b>으로 만들어져 있어서, 다시 분석하거나 새 버전을 올리면 학생이 본 질문과 리포트의 교안 위치가 어긋난다.</div>
   </div>
 
   <div class="rpage" id="page-cur-reanalyze">
@@ -1296,17 +1363,17 @@
               </table>
             </div>
             <div class="tablefoot"><span class="range">1–10 / 10개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-            <div class="note"><b>매니저에게는 비용을 보여주지 않는다.</b> 보이면 "비싸니까 세션 짧게"라는 잘못된 압력이 생긴다 — 반별 비용은 오퍼레이터가 운영 규모를 보는 값이지 매니저를 평가하는 값이 아니다.<br><b>모델별 단가는 여기 없다.</b> 플랫폼이 정하고 기관은 티어 이름만 본다.</div>
-          </div>
+                      </div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2"><b>매니저에게는 비용을 보여주지 않는다.</b> 보이면 "비싸니까 세션 짧게"라는 잘못된 압력이 생긴다 — 반별 비용은 오퍼레이터가 운영 규모를 보는 값이지 매니저를 평가하는 값이 아니다. <b>모델별 단가는 여기 없다.</b> 플랫폼이 정하고 기관은 티어 이름만 본다.</div>
   </div>
 
 </div>
 <script>
-  var PAGE = { cohort:"page-cohort", "cohort-create":"page-cohort-create", empty:"page-empty",
+  var PAGE = { cases:"page-cases", cohort:"page-cohort", "cohort-create":"page-cohort-create", empty:"page-empty",
                classes:"page-classes", bulk:"page-bulk", "class-add":"page-class-add",
                "roster-add":"page-roster-add", "roster-manual":"page-roster-manual",
                "assign-idle":"page-assign-idle", assign:"page-assign",

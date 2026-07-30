@@ -111,61 +111,165 @@
   .fil{border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);cursor:pointer}
   .fil .k{color:var(--c-text-3)}
   .fil.on{background:var(--c-primary-soft);border-color:#cdd4f2;color:var(--c-primary);font-weight:600}
-  .seg2{display:inline-flex;border:1px solid var(--c-border-strong);border-radius:20px;overflow:hidden}
-  .seg2 span{padding:7px 14px;font-size:var(--fs-xs);cursor:pointer;color:var(--c-text-2);background:#fff;border-right:1px solid var(--c-border)}
+  .fil .n7{display:inline-block;background:var(--c-primary);color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:0 5px;margin-left:4px}
+  .fil .x2{color:var(--c-text-3);margin-left:5px}
+  .mwrap{position:relative;display:inline-block}
+  .msel{position:absolute;top:calc(100% + 5px);left:0;z-index:5;min-width:190px;background:#fff;border:1px solid var(--c-border-strong);border-radius:var(--r-md);box-shadow:0 6px 18px rgba(20,24,40,.13);padding:5px 0}
+  .msel .mf{padding:7px var(--sp-3) 4px;margin-top:4px;border-top:1px solid var(--c-border);text-align:right}
+  .msel .mf a{font-size:10px;color:var(--c-primary);font-weight:600}
+  .msel.wide{min-width:224px}
+  .msel .o1{display:flex;align-items:baseline;gap:8px;padding:7px var(--sp-3) 7px 26px;font-size:var(--fs-xs);color:var(--c-text-2);cursor:pointer;white-space:nowrap;position:relative}
+  .msel .o1.ck{color:var(--c-text);font-weight:700}
+  .msel .o1.ck:before{content:"";position:absolute;left:12px;top:9px;width:4px;height:8px;border:solid var(--c-primary);border-width:0 1.8px 1.8px 0;transform:rotate(42deg)}
+  .msel .o1 em{margin-left:auto;font-style:normal;font-size:10px;color:var(--c-text-3);font-weight:400}
+  .msel .mf2{padding:8px var(--sp-3) 4px;margin-top:4px;border-top:1px solid var(--c-border);font-size:10px;color:var(--c-text-3);line-height:1.55;white-space:normal}
+  .msel .mf2 b{color:var(--c-text-2)}
+  .msel .o{display:flex;align-items:center;gap:8px;padding:6px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);cursor:pointer;white-space:nowrap}
+  .msel .o .cb{width:13px;height:13px;border:1px solid var(--c-border-strong);border-radius:3px;flex-shrink:0;background:#fff}
+  .msel .o.ck{color:var(--c-text);font-weight:600}
+  .msel .o.ck .cb{background:var(--c-primary);border-color:var(--c-primary);position:relative}
+  .msel .o.ck .cb:after{content:"";position:absolute;left:3.5px;top:1px;width:4px;height:7px;border:solid #fff;border-width:0 1.6px 1.6px 0;transform:rotate(42deg)}
+
+  /* 회차 범위 — 시작·끝을 직접 고른다. 프리셋으로 묶으면 그 묶음의 근거를 못 댄다 */
+  .msel.rgw{min-width:250px}
+  .msel .rgh{display:flex;padding:7px var(--sp-3) 6px;border-bottom:1px solid var(--c-border);font-size:10px;font-weight:700;color:var(--c-text-3)}
+  .msel .rgh span{flex:1}
+  .msel .rgc{display:flex}
+  .msel .rgc .rgl{flex:1;padding:3px 0}
+  .msel .rgc .rgl:first-child{border-right:1px solid var(--c-border)}
+  .msel .rgc .o1{padding-left:24px;padding-right:var(--sp-2)}
+  .msel .rgc .o1.ck:before{left:10px}
+
+  /* 회차 범위 — 시작·끝을 직접 고른다. 프리셋으로 묶으면 그 묶음의 근거를 못 댄다 */
+  .msel.rgw{min-width:250px}
+  .msel .rgh{display:flex;padding:7px var(--sp-3) 6px;border-bottom:1px solid var(--c-border);font-size:10px;font-weight:700;color:var(--c-text-3)}
+  .msel .rgh span{flex:1}
+  .msel .rgc{display:flex}
+  .msel .rgc .rgl{flex:1;padding:3px 0}
+  .msel .rgc .rgl:first-child{border-right:1px solid var(--c-border)}
+  .msel .rgc .o1{padding-left:24px;padding-right:var(--sp-2)}
+  .msel .rgc .o1.ck:before{left:10px}
+
+  /* 회차 범위 — 시작·끝을 직접 고른다. 프리셋으로 묶으면 그 묶음의 근거를 못 댄다 */
+  .msel.rgw{min-width:250px}
+  .msel .rgh{display:flex;padding:7px var(--sp-3) 6px;border-bottom:1px solid var(--c-border);font-size:10px;font-weight:700;color:var(--c-text-3)}
+  .msel .rgh span{flex:1}
+  .msel .rgc{display:flex}
+  .msel .rgc .rgl{flex:1;padding:3px 0}
+  .msel .rgc .rgl:first-child{border-right:1px solid var(--c-border)}
+  .msel .rgc .o1{padding-left:24px;padding-right:var(--sp-2)}
+  .msel .rgc .o1.ck:before{left:10px}
+
+  /* 계층 토글 — 무엇을 행으로 놓을지. 이것이 반 선택 방식까지 정한다 */
+  .seg2{display:inline-flex;border:1px solid var(--c-border-strong);border-radius:20px;overflow:hidden;vertical-align:middle}
+  .seg2 span{padding:7px 15px;font-size:var(--fs-xs);cursor:pointer;color:var(--c-text-2);background:#fff;border-right:1px solid var(--c-border)}
   .seg2 span:last-child{border-right:0}
-  .seg2 span.on{background:var(--c-primary);color:#fff;font-weight:600}
+  .seg2 span.on{background:var(--c-primary);color:#fff;font-weight:700}
+  /* 라디오 — 단일 선택. 컨트롤 모양이 곧 규칙이다 */
+  .msel .o .rb{width:13px;height:13px;border:1px solid var(--c-border-strong);border-radius:50%;flex-shrink:0;background:#fff;position:relative}
+  .msel .o.ck .rb{border-color:var(--c-primary);border-width:2px}
+  .msel .o.ck .rb:after{content:"";position:absolute;left:2.5px;top:2.5px;width:6px;height:6px;border-radius:50%;background:var(--c-primary)}
 
-  /* 추이 표 — 위험자 비율은 회차가 달라도 비교된다(9-2가 개수로 정의됐으므로) */
-  .trwrap{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5)}
-  .trtbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
-  .trtbl th{font-size:11px;color:var(--c-text-3);font-weight:700;padding:0 var(--sp-2) var(--sp-2);text-align:center;white-space:nowrap}
-  .trtbl th.rh{text-align:left;width:150px;padding-left:0}
-  .trtbl th.tr7{text-align:right;width:118px;padding-right:0}
-  .trtbl td{padding:6px var(--sp-2);vertical-align:middle}
-  .trtbl td.rh{width:150px;padding-left:0;white-space:nowrap;font-size:var(--fs-sm);font-weight:600}
+  /* 회차 범위 — 시작·끝을 직접 고른다. 프리셋으로 묶으면 그 묶음의 근거를 못 댄다 */
+  .msel.rgw{min-width:250px}
+  .msel .rgh{display:flex;padding:7px var(--sp-3) 6px;border-bottom:1px solid var(--c-border);font-size:10px;font-weight:700;color:var(--c-text-3)}
+  .msel .rgh span{flex:1}
+  .msel .rgc{display:flex}
+  .msel .rgc .rgl{flex:1;padding:3px 0}
+  .msel .rgc .rgl:first-child{border-right:1px solid var(--c-border)}
+  .msel .rgc .o1{padding-left:24px;padding-right:var(--sp-2)}
+  .msel .rgc .o1.ck:before{left:10px}
+
+  /* ═══ 추이 표 — 세 블록 ═══
+     회차 격자(측정값 · 색으로 읽는다) | 요약(격자의 파생) | 제외(격자에 안 든 것)
+     읽는 법이 다르므로 블록을 시각적으로 가른다 */
+  .trwrap{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5) var(--sp-5)}
+  .trscroll{overflow-x:auto}
+  .trtbl{border-collapse:separate;border-spacing:0;font-size:var(--fs-sm)}
+
+  /* 블록 머리 — 열 위에 블록 이름을 붙인다 */
+  .trtbl th.blk{font-size:10px;font-weight:700;color:var(--c-text-3);text-align:left;padding:0 0 6px;letter-spacing:.04em;white-space:nowrap}
+  .trtbl th.blk.c{text-align:center}
+  .trtbl th.blk span{font-weight:400;opacity:.72}
+  .trtbl th.bsep,.trtbl td.bsep{width:var(--sp-5);min-width:var(--sp-5);padding:0;border:0;background:transparent}
+
+  /* 행 머리 — 가로 스크롤에도 남는다 */
+  .trtbl th.rh,.trtbl td.rh{position:sticky;left:0;background:var(--c-surface);z-index:2;text-align:left;width:158px;min-width:158px;padding-left:0}
+  .trtbl th.rh{vertical-align:bottom;padding-bottom:var(--sp-2)}
+  .trtbl th.rh .ax1{display:block;font-size:var(--fs-sm);font-weight:700;color:var(--c-text-2);margin-bottom:5px}
+  .trtbl th.rh .ax2{display:block;font-size:10px;font-weight:400;color:var(--c-text-3);line-height:1.6}
+  .trtbl th.rh .ax2 b{color:var(--c-text-2);font-weight:700}
+  .trtbl td.rh{font-size:var(--fs-sm);font-weight:600;white-space:nowrap;padding:6px 0}
   .trtbl td.rh small{color:var(--c-text-3);font-weight:400;font-size:11px;margin-left:4px}
-  .trtbl td.rh .man3{font-size:10px;color:var(--c-text-3);font-weight:400;margin-left:5px}
-  .trtbl td.rh .man3.none{color:var(--c-danger);font-weight:700}
-  .trtbl tr.tot td{border-bottom:1px solid var(--c-border-strong);padding-bottom:var(--sp-3)}
+  .trtbl td.rh .dr3{color:var(--c-primary);cursor:pointer}
+  .trtbl tr:hover td.rh .dr3{text-decoration:underline}
   .trtbl tr.tot td.rh{font-weight:700}
-  .trtbl tr.first td{padding-top:var(--sp-3)}
-  /* 값 셀 — 막대가 아니라 숫자 + 배경 농도. 회차 간 비교가 목적이라 정렬이 우선 */
-  .pc2{display:block;text-align:center;font-variant-numeric:tabular-nums;font-weight:700;font-size:var(--fs-sm);border-radius:5px;padding:5px 0;color:#241108}
-  .pc2.p0{background:#eef7f1;color:var(--c-text-2)}
-  .pc2.p1{background:#dcefe3}
-  .pc2.p2{background:#f7e9c4}
-  .pc2.p3{background:#f2c98f}
-  .pc2.p4{background:#e59f7d}
-  .pc2.p5{background:#d9705c;color:#fff}
-  .pc2.na2{background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);color:var(--c-text-3);font-weight:400}
-  .pc2 small{display:block;font-size:9px;font-weight:600;opacity:.7}
-  /* 추세 — 세 회차 이상이면 방향이 값이다 */
-  .trend{text-align:right;white-space:nowrap;font-size:var(--fs-xs);font-weight:700;font-variant-numeric:tabular-nums}
-  .trend.up{color:var(--c-danger)}
-  .trend.dn{color:var(--c-success)}
-  .trend.flat{color:var(--c-text-3)}
-  .trend .lb2{display:block;font-size:10px;font-weight:600;color:var(--c-text-3)}
-  .trnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.7;margin-top:var(--sp-3);padding-top:var(--sp-3);border-top:1px solid var(--c-border)}
-  .trnote b{color:var(--c-text-2)}
 
-  /* 기수 간 비교 */
-  .cotbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
-  .cotbl th{text-align:left;padding:10px var(--sp-4);font-size:11px;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-weight:600;white-space:nowrap}
-  .cotbl td{padding:12px var(--sp-4);border-bottom:1px solid var(--c-border);vertical-align:middle}
-  .cotbl tr:last-child td{border-bottom:0}
-  .cotbl th.c-cp{width:200px}
-  .cotbl th.c-v{width:96px;text-align:center}
-  .cotbl th.c-d{width:104px;text-align:right}
-  .cotbl td.cp3{font-weight:700}
-  .cotbl td.cp3 .src3{display:block;font-size:11px;color:var(--c-text-3);font-weight:400;margin-top:2px}
-  .cotbl td.vv2{text-align:center}
-  .cotbl td.dd{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}
-  .cotbl td.dd.up{color:var(--c-danger)}
-  .cotbl td.dd.dn{color:var(--c-success)}
-  .cotbl td.dd.flat{color:var(--c-text-3)}
-  .cotbl .nocmp{font-size:var(--fs-xs);color:var(--c-text-3)}
-  .cotbl tr.newrow td{background:var(--c-surface-2)}
+  /* 회차 열 머리 2단 — 프로젝트가 없으면 어느 회차인지 짚을 수 없다(MG-02 규약) */
+  .trtbl th.rd{text-align:center;padding:0 3px var(--sp-2);white-space:nowrap;cursor:pointer;min-width:104px}
+  .trtbl th.rd .rn{display:block;font-size:var(--fs-sm);font-weight:700;color:var(--c-text)}
+  .trtbl th.rd .rp{display:block;font-size:10px;font-weight:400;color:var(--c-text-3);margin-top:1px;max-width:104px;overflow:hidden;text-overflow:ellipsis}
+  .trtbl th.rd:hover .rp{color:var(--c-primary)}
+  .trtbl th.rd.nostart{cursor:default}
+  .trtbl th.rd.nostart .rn{color:var(--c-text-3);font-weight:400}
+
+  /* 셀 — MG-02와 같은 램프. 위험자 비율은 높을수록 나쁘므로 역방향으로 붙는다 */
+  .trtbl td.cel{padding:2px 3px;vertical-align:top}
+  .pc2{display:block;width:104px;height:42px;border-radius:6px;text-align:center;font-variant-numeric:tabular-nums;font-weight:700;color:#241108;cursor:pointer;border:1px solid transparent;padding-top:6px}
+  .pc2:hover{border-color:rgba(0,0,0,.28)}
+  .pc2{height:auto;min-height:58px;padding:7px 0 6px;line-height:1.25}
+  .pc2 small{display:block;font-size:10px;font-weight:600;opacity:.76;margin-top:1px}
+  .pc2 small.gp{font-size:11px;font-weight:800;opacity:1;margin-top:3px;padding-top:3px;border-top:1px solid rgba(0,0,0,.13)}
+  .pc2.l4 small.gp,.pc2.l0 small.gp{border-top-color:rgba(255,255,255,.3)}
+  .pc2.basec{background:var(--c-surface-2);color:var(--c-text);border:1px dashed var(--c-border-strong);cursor:default}
+  .pc2.basec:hover{border-color:var(--c-border-strong)}
+  .pc2.l0{background:#57b083;color:#fff}
+  .pc2.l1{background:#a9cf8e}
+  .pc2.l2{background:#ecc95e}
+  .pc2.l3{background:#ec9a5c}
+  .pc2.l4{background:#df6150;color:#fff}
+  /* 값이 아닌 칸 — 값 자리에 색 글자만 두면 값처럼 보인다 */
+  .pc2.na2,.pc2.pend2{background:repeating-linear-gradient(45deg,#eceef1,#eceef1 5px,#e2e5ea 5px,#e2e5ea 10px);color:var(--c-text-3);font-weight:600;font-size:var(--fs-xs);cursor:default;padding-top:8px}
+  .pc2.na2:hover,.pc2.pend2:hover{border-color:transparent}
+  .pc2.pend2 small,.pc2.na2 small{opacity:1;font-weight:400;font-size:9px}
+
+  /* 요약 블록 — 방향은 연속 횟수가 값이다 */
+  .trtbl th.sm,.trtbl td.sm{background:var(--c-surface-2);white-space:nowrap;padding-left:var(--sp-3);padding-right:var(--sp-3)}
+  .trtbl th.sm{text-align:left;font-size:10px;color:var(--c-text-3);font-weight:700;padding-top:6px;padding-bottom:6px;border-top-left-radius:var(--r-sm);border-top-right-radius:var(--r-sm)}
+  .trtbl th.sm span{font-weight:400;opacity:.72;margin-left:3px}
+  .trtbl td.sm{padding-top:6px;padding-bottom:6px}
+  .trtbl tr:last-child td.sm{border-bottom-left-radius:var(--r-sm);border-bottom-right-radius:var(--r-sm)}
+  .dirw{display:flex;align-items:center;gap:7px}
+  .dirw .ar{font-size:16px;font-weight:800;line-height:1;width:14px}
+  .dirw .dl{font-size:var(--fs-xs);font-weight:700}
+  .dirw .dn2{display:block;font-size:10px;font-weight:400;color:var(--c-text-3);line-height:1.45;white-space:nowrap}
+  .dirw.up .ar,.dirw.up .dl{color:var(--c-danger)}
+  .dirw.dn .ar,.dirw.dn .dl{color:var(--c-success)}
+  .dirw.flat .ar,.dirw.flat .dl{color:var(--c-text-3)}
+
+  /* 제외 블록 — 미집계 3종. 9px 회색 텍스트로는 쏠림이 안 읽힌다 */
+  .trtbl th.ex,.trtbl td.ex{padding-left:var(--sp-4);white-space:nowrap;vertical-align:middle}
+  .trtbl th.ex{text-align:left;font-size:10px;color:var(--c-text-3);font-weight:700;padding-bottom:var(--sp-2)}
+  .trtbl th.ex span{font-weight:400;opacity:.72;margin-left:3px}
+  .exw{display:flex;align-items:center;gap:8px}
+  .exw .en{font-size:var(--fs-sm);font-weight:700;font-variant-numeric:tabular-nums;width:20px;text-align:right}
+  .exw.hot4 .en{color:var(--c-danger)}
+  .exw .ebar{display:flex;gap:1.5px;width:64px;min-width:64px;height:9px}
+  .exw .ebar i{display:block;height:9px;border-radius:2px}
+  .exw .eb1,.exkey .eb1{background:#8f9bb8}
+  .exw .eb2,.exkey .eb2{background:var(--c-danger)}
+  .exw .eb3,.exkey .eb3{background:#c9b06f}
+  .trtbl tr.first td{padding-top:var(--sp-3)}
+  .exw .zero2{color:var(--c-text-3);font-weight:400}
+  .exkey{display:flex;align-items:center;gap:14px;font-size:10px;color:var(--c-text-3);margin-top:var(--sp-3);padding-left:158px;flex-wrap:wrap}
+  .exkey span{display:flex;align-items:center;gap:4px}
+  .exkey i{width:10px;height:9px;border-radius:2px;display:inline-block}
+  .exkey .rmp{display:flex;gap:2px;margin:0 4px}
+  .exkey .rmp i{width:14px}
+  /* 기수 간 비교 — 회차 흐름과 같은 격자를 쓴다 */
+  .trtbl tr.newrow td.rh,.trtbl tr.newrow td.sm{opacity:.72}
+  .trtbl td.ex .vr2{font-size:var(--fs-xs);color:var(--c-text-2)}
+  .trtbl td.ex .vr2 b{color:var(--c-danger)}
 
   /* 판정 — 표 아래 한 줄 (MG-02 규약) */
   .verdict{display:flex;align-items:flex-start;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--c-border);font-size:var(--fs-sm)}
@@ -177,17 +281,13 @@
   .verdict .vs b{display:inline;margin:0}
   .verdict .vact{display:flex;gap:6px;margin-left:auto;flex-shrink:0;align-self:center}
 
-  .keyrow{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--c-text-3);margin-top:var(--sp-3);padding-left:158px}
-  .keyrow .sw{width:22px;height:13px;border-radius:3px;display:inline-block}
 
   .empty{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8);text-align:center}
   .empty .t{font-size:var(--fs-base);font-weight:600;margin-bottom:6px}
   .empty .s{font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.8}
   .empty .s b{color:var(--c-text-2)}
 
-  .hint3{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.7;margin-top:var(--sp-3)}
-  .hint3 b{color:var(--c-text-2)}
-  .note2{max-width:1180px;margin:-18px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
+  .note2{max-width:1180px;margin:14px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
   .note2 b{color:var(--c-text-2)}
 
   body.embedded .rpage{display:none}
@@ -207,14 +307,15 @@
       <li><b>OP-01 반 비교와 같은 값</b>을 쓴다 &#8212; 그 막대가 <b>이 표의 마지막 열</b>이다. 클릭해서 넘어왔을 때 <b>숫자가 이어져야</b> 한다.</li>
       <li><b>3회차부터 방향을 말한다.</b> 2회로는 <b>추세인지 우연인지</b> 갈리지 않는다 &#8212; 9-2가 위험을 2회 비교로 판정하는 것과 같은 논리다.</li>
       <li><b>기수 간 비교는 같은 교안&#183;같은 개념만</b> 한다. 커리큘럼이 같으면 비교 가능하고(14번 61줄 &#8212; <i>"기수 끝나면 수업 진단(다음 기수 개선)"</i>), <b>새로 고른 개념은 비교 대상이 아니라고 말한다.</b></li>
-      <li><b>등수를 붙이지 않는다.</b> OP-01과 같은 원칙 &#8212; <b>매니저 줄세우기가 되면 그 지표를 관리하려는 행동</b>이 나온다. 담당 매니저는 <b>공백을 보기 위해</b>만 쓴다.</li>
+      <li><b>등수를 붙이지 않는다.</b> OP-01과 같은 원칙 &#8212; <b>매니저 줄세우기가 되면 그 지표를 관리하려는 행동</b>이 나온다. 담당 매니저 이름은 <b>누구와 이야기할지</b>를 위해서만 쓴다.</li>
+      <li><b>화면이 기준을 정하는 조건 필터를 만들지 않는다.</b> <i>"매 회차 오르는 반만"</i>&#183;<i>"담당 없는 반만"</i>처럼 <b>임계값이나 상태를 화면이 정해 걸러내면</b> 기획에서 근거를 댈 수 없다 &#8212; 반&#183;팀을 <b>복수로 고르는 것</b>은 오퍼레이터가 하고, <code>미배정 반</code>은 <b>OP-01 조치 필요</b>의 한 줄이다(18번 99줄).</li>
       <li><b>개인이 없다.</b> 추이 화면에서 개인은 뜻이 없고(개인 이력은 <b>MG-06 타임라인</b>), 12-3이 히트맵에 개인을 넣은 것은 <b>매니저 기준</b>이다.</li>
       <li><b>저장&#183;공유&#183;PDF가 없다.</b> 고정 시점 스냅샷은 <b>OP-05 기수 리포트</b>가 하고, 이 화면의 발견이 <b>거기로 간다.</b></li>
     </ul>
   </div>
 
   <div class="rpage" id="page-round">
-  <div class="sec-label">&#9312; 회차 흐름 — OP-01 반 비교 막대가 맨 오른쪽 열이 된다</div>
+  <div class="sec-label">&#9312; 회차 흐름 — 등록된 회차만 · 미집계 열 · 집계 전</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
     <div class="app">
@@ -232,34 +333,35 @@
           <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; 회차 흐름</div><h2>추이</h2></div>
           <div class="tabs"><span class="t on">회차 흐름</span><span class="t">기수 간 비교</span></div>
           <div class="ltool">
-            <span class="seg2"><span class="on">반별</span><span>팀</span></span>
-            <div class="fil"><span class="k">정렬</span> 최근 회차 높은 순 &#9662;</div>
-            <div class="fil">&#9888; 계속 오르는 반만</div>
+            <span class="seg2"><span class="on">반별</span><span class="">팀</span></span>
+            <div class="fil"><span class="k">반</span> 전체 10반 &#9662;</div>
+            <div class="fil"><span class="k">회차</span> 1차 &#8211; 4차 &#9662;</div>
+            <div class="fil"><span class="k">정렬</span> 최근 회차 나쁜 순 &#9662;</div>
           </div>
-          <div class="trwrap"><table class="trtbl">
-              <tr><th class="rh">반</th><th>미프 1차</th><th>미프 2차</th><th>미프 3차</th><th>미프 4차</th><th class="tr7">1차 &#8594; 최근</th></tr>
-              <tr class="tot"><td class="rh">기수 전체<small>250명</small></td><td><span class="pc2 p1">12%<small>30/250</small></span></td><td><span class="pc2 p2">16%<small>40/250</small></span></td><td><span class="pc2 p2">19%<small>47/250</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;7p<span class="lb2">계속 오름</span></td></tr>
-              <tr class="first"><td class="rh">C반<small>25명</small><span class="man3">김서연</span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">24%<small>6/25</small></span></td><td><span class="pc2 p5">32%<small>8/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;16p<span class="lb2">계속 오름</span></td></tr>
-              <tr class=""><td class="rh">D반<small>25명</small><span class="man3">이준호</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 p4">28%<small>7/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;16p<span class="lb2">계속 오름</span></td></tr>
-              <tr class=""><td class="rh">I반<small>25명</small><span class="man3">최민아</span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 p4">28%<small>7/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;12p<span class="lb2">계속 오름</span></td></tr>
-              <tr class=""><td class="rh">A반<small>25명</small><span class="man3">박지현</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 p3">24%<small>6/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;12p<span class="lb2">계속 오름</span></td></tr>
-              <tr class=""><td class="rh">F반<small>25명</small><span class="man3 none">담당 없음</span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 p3">24%<small>6/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;8p<span class="lb2">계속 오름</span></td></tr>
-              <tr class=""><td class="rh">B반<small>25명</small><span class="man3">정하윤</span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;12p<span class="lb2">계속 오름</span></td></tr>
-              <tr class=""><td class="rh">H반<small>25명</small><span class="man3 none">담당 없음</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;8p<span class="lb2">계속 오름</span></td></tr>
-              <tr class=""><td class="rh">J반<small>25명</small><span class="man3">윤서진</span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;8p<span class="lb2">계속 오름</span></td></tr>
-              <tr class=""><td class="rh">E반<small>25명</small><span class="man3">강태영</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+4p<span class="lb2">보합</span></td></tr>
-              <tr class=""><td class="rh">G반<small>25명</small><span class="man3">한지민</span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+4p<span class="lb2">보합</span></td></tr>
-            </table>
-          <div class="trnote">&#183; <b>위험자 = 2단 이하 개념이 2개 이상인 학생</b>(9-2). 회차마다 개념이 달라도 <b>판정 기준이 같아서</b> 비교된다 &#8212; <b>평균 도달은 비교할 수 없다</b>(다른 것을 물은 값이다).<br>&#183; <b>OP-01 반 비교 막대와 같은 값</b>이다 &#8212; 그 막대가 <b>맨 오른쪽 열</b>이다.<br>&#183; <b>집단 미달(9-6)로 빠진 개념은 여기서도 빠진다</b> &#8212; OP-01과 같은 계산이어야 두 화면 숫자가 이어진다.<br>&#183; <b>등수를 쓰지 않는다.</b> 정렬만 하고 순위 숫자를 붙이지 않는다 &#8212; <b>매니저 줄세우기가 되면 그 지표를 관리하려는 행동</b>이 나온다.</div>
+          <div class="trwrap"><div class="trscroll"><table class="trtbl">
+              <tr><th class="rh"></th><th class="bsep"></th><th class="blk c" colspan="4">회차 격자 <span>&#183; 열 머리 클릭 &#8594; 그 회차 현황</span></th><th class="bsep"></th><th class="blk">제외</th></tr>
+              <tr><th class="rh"><span class="ax1">반</span><span class="ax2">숫자 = 위험자 비율</span><span class="ax2"><b>색 = 기수보다 좋다 / 나쁘다</b></span></th><th class="bsep"></th><th class="rd"><span class="rn">1차</span><span class="rp">K8s 배포 실습</span></th><th class="rd"><span class="rn">2차</span><span class="rp">REST API 서버</span></th><th class="rd"><span class="rn">3차</span><span class="rp">LangGraph 챗봇</span></th><th class="rd"><span class="rn">4차</span><span class="rp">RAG 파이프라인</span></th><th class="bsep"></th><th class="ex">미집계 <span>판정에서 빠진 사람</span></th></tr>
+              <tr class="tot"><td class="rh">기수 전체<small>250명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 basec" title="위험자 28명 / 채점 231명">12%</span></td><td class="cel"><span class="pc2 basec" title="위험자 37명 / 채점 238명">16%</span></td><td class="cel"><span class="pc2 basec" title="위험자 44명 / 채점 234명">19%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">16</span><span class="ebar"><i class="eb1" style="width:56.2%"></i><i class="eb2" style="width:31.2%"></i><i class="eb3" style="width:12.5%"></i></span></span></td></tr>
+              <tr class="first"><td class="rh"><span class="dr3">C반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 6명 / 채점 25명 &#183; 기수보다 나쁨">24%</span></td><td class="cel"><span class="pc2 l4" title="위험자 8명 / 채점 25명 &#183; 기수보다 나쁨">32%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">4</span><span class="ebar"><i class="eb1" style="width:50.0%"></i><i class="eb2" style="width:50.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">D반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2" title="위험자 3명 / 채점 25명 &#183; 기수과 같음">12%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 l4" title="위험자 7명 / 채점 25명 &#183; 기수보다 나쁨">28%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb1" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">I반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 l4" title="위험자 7명 / 채점 25명 &#183; 기수보다 나쁨">28%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en zero2">&#8213;</span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">A반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2" title="위험자 3명 / 채점 25명 &#183; 기수과 같음">12%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 l4" title="위험자 6명 / 채점 25명 &#183; 기수보다 나쁨">25%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb3" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">F반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 l4" title="위험자 6명 / 채점 25명 &#183; 기수보다 나쁨">24%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">5</span><span class="ebar"><i class="eb1" style="width:60.0%"></i><i class="eb2" style="width:40.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">B반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l0" title="위험자 2명 / 채점 25명 &#183; 기수보다 좋음">8%</span></td><td class="cel"><span class="pc2 l2" title="위험자 4명 / 채점 25명 &#183; 기수과 같음">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb1" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">H반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2" title="위험자 3명 / 채점 25명 &#183; 기수과 같음">12%</span></td><td class="cel"><span class="pc2 l2" title="위험자 4명 / 채점 25명 &#183; 기수과 같음">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">2</span><span class="ebar"><i class="eb1" style="width:50.0%"></i><i class="eb2" style="width:50.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">J반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l0" title="위험자 2명 / 채점 25명 &#183; 기수보다 좋음">8%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 4명 / 채점 25명 &#183; 기수보다 좋음">16%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en zero2">&#8213;</span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">E반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2" title="위험자 3명 / 채점 25명 &#183; 기수과 같음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 4명 / 채점 25명 &#183; 기수보다 좋음">16%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb1" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">G반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l0" title="위험자 2명 / 채점 25명 &#183; 기수보다 좋음">8%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb3" style="width:100.0%"></i></span></span></td></tr>
+            </table></div>
           </div>
-          <div class="keyrow">위험자 비율 <span class="sw" style="background:#eef7f1"></span><span class="sw" style="background:#dcefe3"></span><span class="sw" style="background:#f7e9c4"></span><span class="sw" style="background:#f2c98f"></span><span class="sw" style="background:#e59f7d"></span><span class="sw" style="background:#d9705c"></span> 높음<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 아직 안 함</div>
-          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-danger)">&#9888;</span><span class="vx"><b>기수 전체가 세 회차 연속 올랐다 · 10개 반 전부 같은 방향</b><span class="vs">12% &#8594; 16% &#8594; 19%. <b>특정 반이 아니라 전체</b>가 오르므로 <b>회차가 어려워지는 것</b>과 <b>누적 공백</b> 둘 중 하나다 &#8212; 어느 쪽인지는 <b>회차별 검증 개념</b>을 봐야 갈린다. <b>기수 간 비교</b>에서 지난 기수도 같은 모양이었는지 확인하세요.</span></span></span><span class="vact"><button class="btn">기수 간 비교</button><button class="btn ghost">회차 설계 보기</button></span></div>
+          <div class="exkey"><span>기수보다 좋음<span class="rmp"><i style="background:#57b083"></i><i style="background:#a9cf8e"></i><i style="background:#ecc95e"></i><i style="background:#ec9a5c"></i><i style="background:#df6150"></i></span>기수보다 나쁨</span><span><i style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px)"></i>값이 아직 없음</span><span style="margin-left:auto">미집계<i class="eb1"></i>미응시<i class="eb2"></i>무효 응시<i class="eb3"></i>중단</span></div>
+          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-danger)">&#9888;</span><span class="vx"><b>C반 · D반 · A반이 세 회차 내리 기수에서 멀어지고 있다</b><span class="vs">기수 전체가 <code>12 &#8594; 16 &#8594; 19%</code>로 오른 것은 <b>회차가 어려워졌다는 뜻일 뿐</b>이라 그 자체로는 아무것도 아니다 &#8212; <b>같은 회차를 10반이 다 봤으므로</b> 난이도는 모두에게 똑같이 걸렸다. 읽을 것은 <b>거기서 벌어지는 격차</b>다. C반은 <code>+4 &#8594; +8 &#8594; +13p</code>로 <b>매 회차 더 멀어졌고</b>, G반은 <code>-4 &#8594; -4 &#8594; -7p</code>로 <b>계속 기수보다 좋다.</b></span></span></span><span class="vact"><button class="btn">C반 팀별로 보기</button><button class="btn ghost">기수 간 비교</button></span></div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2">&#183; <b>위험자 = 2단 이하 개념이 2개 이상인 학생</b>(9-2). 회차마다 개념이 달라도 <b>판정 기준이 같아서</b> 비교된다 &#8212; <b>평균 도달은 비교할 수 없다</b>(다른 것을 물은 값이다). &#183; <b>분모는 채점된 사람</b>이다 &#8212; 미응시&#183;무효 응시&#183;중단은 <b>판정과 평균에서 빠지고</b>(14-1 &#183; 9-4) <b>미집계 열</b>에 따로 센다. 위험 목록에는 오르지만 <b>비율에는 안 들어간다.</b> &#183; <b>리포트 미발행 회차는 <code>집계 전</code></b>이다 &#8212; 위험 판정은 <b>발행 시점에 켜진다</b>(9-2 &#183; 일괄 발행). OP-01 반 비교가 <i>"미프 2차 기준"</i>이라 쓰는 것과 같은 이유다. &#183; <b>열은 등록된 프로젝트만큼</b> 생긴다 &#8212; 미프는 기수마다 <b>6~8차</b>로 다르므로(14번 &#183; 17번) <b>회차 수를 화면이 정해두지 않는다.</b> 등록 안 된 회차는 <b>열이 없다.</b> &#183; <b>미프끼리는 값을 직접 비교할 수 없다</b> &#8212; 회차마다 <b>개념&#183;코드&#183;난이도가 다르다.</b> <code>12% &#8594; 19%</code>가 <b>나빠진 것인지 그 회차가 어려웠던 것인지</b> 값만으로는 갈리지 않는다. &#183; <b>난이도는 기수 전체를 빼면 상쇄된다</b> &#8212; 같은 회차&#183;같은 개념을 <b>10반이 다 본다.</b> 그래서 <b>색은 값이 아니라 기수 대비 격차</b>로 칠하고, 방향도 <b>격차의 방향</b>을 센다. <code>19%</code>가 붉지 않고 <code>+13p</code>가 붉다. &#183; <b>기수 전체 행에는 방향이 없다</b> &#8212; 뺄 기준이 없다. <i>"기수 전체가 나아지고 있나"</i>는 <b>기수 간 비교 탭</b>의 질문이다. &#183; <b>격차 눈금은 &#177;3p &#183; &#177;10p</b>다 &#8212; 회차 난이도가 상쇄된 뒤라 <b>0을 기준으로 대칭</b>이면 되고, 값 자체에 경계를 긋는 것과 다르다. &#183; <b>회차 범위를 좁히면 격차의 방향도 그 구간에서</b> 다시 센다. &#183; <b>담당 매니저 이름을 쓰지 않는다</b> &#8212; 반 값 옆에 사람 이름이 붙으면 <b>그 사람 성적</b>으로 읽힌다(18번 116줄). &#183; <b>반 이름 &#8594; 그 반 팀 계층</b>이다 &#8212; 오퍼레이터는 <b>매니저 화면에 갈 수 없으므로</b> 드릴다운이 이 화면 안에 있어야 한다(17번 106줄). &#183; <b>OP-01 반 비교 막대와 같은 값</b>이다 &#8212; 그 막대가 <b>가장 최근 발행 회차</b> 열이다. &#183; <b>빅프는 이 표에 없다</b> &#8212; 위험 유형이 다르다(9-2 &#8212; <code>코드 대비 이해 부족</code>&#183;<code>참여 저조</code>는 <b>기여도 축</b>이라 <code>2단 이하 개수</code>와 판정식이 다르다). &#183; <b>등수를 쓰지 않는다.</b> 정렬만 하고 순위 숫자를 붙이지 않는다 &#8212; <b>매니저 줄세우기가 되면 그 지표를 관리하려는 행동</b>이 나온다.</div>
   </div>
-  <div class="note2">&#183; <b>OP-01은 스냅샷, 여기는 흐름</b>이다 &#8212; 오퍼레이터의 질문 대부분은 이미 다른 화면이 답하고(회차 상태 OP-01 &#183; 반별 응시율 OP-04 &#183; 교안 OP-06 &#183; 배정 OP-06), <b>답이 없던 질문은 "우리가 나아지고 있나" 하나</b>였다. &#183; <b>히트맵&#183;위험 목록을 만들지 않는다</b> &#8212; 그건 MG-02&#183;MG-03의 확대판이고, 오퍼레이터는 그것으로 <b>할 수 있는 일이 없다.</b></div>
   <div class="rpage" id="page-one">
   <div class="sec-label">&#9313; 한 반만 오를 때 — 회차 난이도로 설명되지 않는다</div>
   <div class="viewport">
@@ -279,28 +381,30 @@
           <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; 회차 흐름</div><h2>추이</h2></div>
           <div class="tabs"><span class="t on">회차 흐름</span><span class="t">기수 간 비교</span></div>
           <div class="ltool">
-            <span class="seg2"><span class="on">반별</span><span>팀</span></span>
-            <div class="fil"><span class="k">정렬</span> 최근 회차 높은 순 &#9662;</div>
-            <div class="fil">&#9888; 계속 오르는 반만</div>
+            <span class="seg2"><span class="on">반별</span><span class="">팀</span></span>
+            <div class="fil"><span class="k">반</span> 전체 10반 &#9662;</div>
+            <div class="fil"><span class="k">회차</span> 1차 &#8211; 4차 &#9662;</div>
+            <div class="fil"><span class="k">정렬</span> 최근 회차 나쁜 순 &#9662;</div>
           </div>
-          <div class="trwrap"><table class="trtbl">
-              <tr><th class="rh">반</th><th>미프 1차</th><th>미프 2차</th><th>미프 3차</th><th>미프 4차</th><th class="tr7">1차 &#8594; 최근</th></tr>
-              <tr class="tot"><td class="rh">기수 전체<small>250명</small></td><td><span class="pc2 p1">12%<small>30/250</small></span></td><td><span class="pc2 p1">13%<small>33/250</small></span></td><td><span class="pc2 p2">14%<small>35/250</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+2p<span class="lb2">보합</span></td></tr>
-              <tr class="first"><td class="rh">F반<small>25명</small><span class="man3 none">담당 없음</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p3">24%<small>6/25</small></span></td><td><span class="pc2 p5">32%<small>8/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;20p<span class="lb2">계속 오름</span></td></tr>
-              <tr class=""><td class="rh">C반<small>25명</small><span class="man3">김서연</span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+0p<span class="lb2">보합</span></td></tr>
-              <tr class=""><td class="rh">A반<small>25명</small><span class="man3">박지현</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+0p<span class="lb2">보합</span></td></tr>
-              <tr class=""><td class="rh">D반<small>25명</small><span class="man3">이준호</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+0p<span class="lb2">보합</span></td></tr>
-              <tr class=""><td class="rh">E반<small>25명</small><span class="man3">강태영</span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+4p<span class="lb2">보합</span></td></tr>
-              <tr class=""><td class="rh">G반<small>25명</small><span class="man3">한지민</span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+0p<span class="lb2">보합</span></td></tr>
-            </table>
-          <div class="trnote">&#183; <b>위험자 = 2단 이하 개념이 2개 이상인 학생</b>(9-2). 회차마다 개념이 달라도 <b>판정 기준이 같아서</b> 비교된다 &#8212; <b>평균 도달은 비교할 수 없다</b>(다른 것을 물은 값이다).<br>&#183; <b>OP-01 반 비교 막대와 같은 값</b>이다 &#8212; 그 막대가 <b>맨 오른쪽 열</b>이다.<br>&#183; <b>집단 미달(9-6)로 빠진 개념은 여기서도 빠진다</b> &#8212; OP-01과 같은 계산이어야 두 화면 숫자가 이어진다.<br>&#183; <b>등수를 쓰지 않는다.</b> 정렬만 하고 순위 숫자를 붙이지 않는다 &#8212; <b>매니저 줄세우기가 되면 그 지표를 관리하려는 행동</b>이 나온다.</div>
+          <div class="trwrap"><div class="trscroll"><table class="trtbl">
+              <tr><th class="rh"></th><th class="bsep"></th><th class="blk c" colspan="4">회차 격자 <span>&#183; 열 머리 클릭 &#8594; 그 회차 현황</span></th><th class="bsep"></th><th class="blk">제외</th></tr>
+              <tr><th class="rh"><span class="ax1">반</span><span class="ax2">숫자 = 위험자 비율</span><span class="ax2"><b>색 = 기수보다 좋다 / 나쁘다</b></span></th><th class="bsep"></th><th class="rd"><span class="rn">1차</span><span class="rp">K8s 배포 실습</span></th><th class="rd"><span class="rn">2차</span><span class="rp">REST API 서버</span></th><th class="rd"><span class="rn">3차</span><span class="rp">LangGraph 챗봇</span></th><th class="rd"><span class="rn">4차</span><span class="rp">RAG 파이프라인</span></th><th class="bsep"></th><th class="ex">미집계 <span>판정에서 빠진 사람</span></th></tr>
+              <tr class="tot"><td class="rh">기수 전체<small>250명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 basec" title="위험자 28명 / 채점 231명">12%</span></td><td class="cel"><span class="pc2 basec" title="위험자 31명 / 채점 238명">13%</span></td><td class="cel"><span class="pc2 basec" title="위험자 33명 / 채점 234명">14%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">12</span><span class="ebar"><i class="eb1" style="width:58.3%"></i><i class="eb2" style="width:25.0%"></i><i class="eb3" style="width:16.7%"></i></span></span></td></tr>
+              <tr class="first"><td class="rh"><span class="dr3">F반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2" title="위험자 3명 / 채점 25명 &#183; 기수과 같음">12%</span></td><td class="cel"><span class="pc2 l4" title="위험자 6명 / 채점 25명 &#183; 기수보다 나쁨">24%</span></td><td class="cel"><span class="pc2 l4" title="위험자 8명 / 채점 25명 &#183; 기수보다 나쁨">32%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">5</span><span class="ebar"><i class="eb1" style="width:60.0%"></i><i class="eb2" style="width:40.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">C반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb1" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">A반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2" title="위험자 3명 / 채점 25명 &#183; 기수과 같음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en zero2">&#8213;</span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">D반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2" title="위험자 3명 / 채점 25명 &#183; 기수과 같음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb3" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">E반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l0" title="위험자 2명 / 채점 25명 &#183; 기수보다 좋음">8%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en zero2">&#8213;</span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">G반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l0" title="위험자 2명 / 채점 25명 &#183; 기수보다 좋음">8%</span></td><td class="cel"><span class="pc2 l0" title="위험자 2명 / 채점 25명 &#183; 기수보다 좋음">8%</span></td><td class="cel"><span class="pc2 l0" title="위험자 2명 / 채점 25명 &#183; 기수보다 좋음">8%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en zero2">&#8213;</span></span></td></tr>
+            </table></div>
           </div>
-          <div class="keyrow">위험자 비율 <span class="sw" style="background:#eef7f1"></span><span class="sw" style="background:#dcefe3"></span><span class="sw" style="background:#f7e9c4"></span><span class="sw" style="background:#f2c98f"></span><span class="sw" style="background:#e59f7d"></span><span class="sw" style="background:#d9705c"></span> 높음<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 아직 안 함</div>
-          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-danger)">&#9888;</span><span class="vx"><b>F반만 오르고 있다 · 담당 매니저가 07-11부터 없다</b><span class="vs">기수 전체는 <b>12% &#8594; 14%</b>로 거의 그대로인데 F반은 <b>12% &#8594; 32%</b>다. <b>회차 난이도로는 설명되지 않는다</b> &#8212; 매니저 공백이 시작된 시점이 <b>미프 2차 응시 창</b>이고, 그 회차부터 벌어졌다.</span></span></span><span class="vact"><button class="btn">매니저 배정</button></span></div>
+          <div class="exkey"><span>기수보다 좋음<span class="rmp"><i style="background:#57b083"></i><i style="background:#a9cf8e"></i><i style="background:#ecc95e"></i><i style="background:#ec9a5c"></i><i style="background:#df6150"></i></span>기수보다 나쁨</span><span><i style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px)"></i>값이 아직 없음</span><span style="margin-left:auto">미집계<i class="eb1"></i>미응시<i class="eb2"></i>무효 응시<i class="eb3"></i>중단</span></div>
+          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-danger)">&#9888;</span><span class="vx"><b>F반만 격차가 벌어진다 · 나머지 반은 기수와 붙어 있다</b><span class="vs">F반은 <code>0 &#8594; +11 &#8594; +18p</code>로 멀어지는데 나머지 반은 <b>전부 기수 쪽으로 붙거나 좋아지는 방향</b>이다 &#8212; <b>회차 난이도가 아니라 이 반의 문제</b>다. 같은 회차&#183;같은 개념을 본 다섯 반이 그렇지 않기 때문이다. <b>미집계 5건</b>도 이 반에 몰렸다 &#8212; 값의 신뢰도부터 확인해야 한다.</span></span></span><span class="vact"><button class="btn">F반 팀별로 보기</button></span></div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2">&#183; <b>위험자 = 2단 이하 개념이 2개 이상인 학생</b>(9-2). 회차마다 개념이 달라도 <b>판정 기준이 같아서</b> 비교된다 &#8212; <b>평균 도달은 비교할 수 없다</b>(다른 것을 물은 값이다). &#183; <b>분모는 채점된 사람</b>이다 &#8212; 미응시&#183;무효 응시&#183;중단은 <b>판정과 평균에서 빠지고</b>(14-1 &#183; 9-4) <b>미집계 열</b>에 따로 센다. 위험 목록에는 오르지만 <b>비율에는 안 들어간다.</b> &#183; <b>리포트 미발행 회차는 <code>집계 전</code></b>이다 &#8212; 위험 판정은 <b>발행 시점에 켜진다</b>(9-2 &#183; 일괄 발행). OP-01 반 비교가 <i>"미프 2차 기준"</i>이라 쓰는 것과 같은 이유다. &#183; <b>열은 등록된 프로젝트만큼</b> 생긴다 &#8212; 미프는 기수마다 <b>6~8차</b>로 다르므로(14번 &#183; 17번) <b>회차 수를 화면이 정해두지 않는다.</b> 등록 안 된 회차는 <b>열이 없다.</b> &#183; <b>미프끼리는 값을 직접 비교할 수 없다</b> &#8212; 회차마다 <b>개념&#183;코드&#183;난이도가 다르다.</b> <code>12% &#8594; 19%</code>가 <b>나빠진 것인지 그 회차가 어려웠던 것인지</b> 값만으로는 갈리지 않는다. &#183; <b>난이도는 기수 전체를 빼면 상쇄된다</b> &#8212; 같은 회차&#183;같은 개념을 <b>10반이 다 본다.</b> 그래서 <b>색은 값이 아니라 기수 대비 격차</b>로 칠하고, 방향도 <b>격차의 방향</b>을 센다. <code>19%</code>가 붉지 않고 <code>+13p</code>가 붉다. &#183; <b>기수 전체 행에는 방향이 없다</b> &#8212; 뺄 기준이 없다. <i>"기수 전체가 나아지고 있나"</i>는 <b>기수 간 비교 탭</b>의 질문이다. &#183; <b>격차 눈금은 &#177;3p &#183; &#177;10p</b>다 &#8212; 회차 난이도가 상쇄된 뒤라 <b>0을 기준으로 대칭</b>이면 되고, 값 자체에 경계를 긋는 것과 다르다. &#183; <b>회차 범위를 좁히면 격차의 방향도 그 구간에서</b> 다시 센다. &#183; <b>담당 매니저 이름을 쓰지 않는다</b> &#8212; 반 값 옆에 사람 이름이 붙으면 <b>그 사람 성적</b>으로 읽힌다(18번 116줄). &#183; <b>반 이름 &#8594; 그 반 팀 계층</b>이다 &#8212; 오퍼레이터는 <b>매니저 화면에 갈 수 없으므로</b> 드릴다운이 이 화면 안에 있어야 한다(17번 106줄). &#183; <b>OP-01 반 비교 막대와 같은 값</b>이다 &#8212; 그 막대가 <b>가장 최근 발행 회차</b> 열이다. &#183; <b>빅프는 이 표에 없다</b> &#8212; 위험 유형이 다르다(9-2 &#8212; <code>코드 대비 이해 부족</code>&#183;<code>참여 저조</code>는 <b>기여도 축</b>이라 <code>2단 이하 개수</code>와 판정식이 다르다). &#183; <b>등수를 쓰지 않는다.</b> 정렬만 하고 순위 숫자를 붙이지 않는다 &#8212; <b>매니저 줄세우기가 되면 그 지표를 관리하려는 행동</b>이 나온다.</div>
   </div>
   <div class="rpage" id="page-early">
   <div class="sec-label">&#9314; 2회차까지 — 값은 주고 해석은 미룬다</div>
@@ -321,30 +425,294 @@
           <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; 회차 흐름</div><h2>추이</h2></div>
           <div class="tabs"><span class="t on">회차 흐름</span><span class="t">기수 간 비교</span></div>
           <div class="ltool">
-            <span class="seg2"><span class="on">반별</span><span>팀</span></span>
-            <div class="fil"><span class="k">정렬</span> 최근 회차 높은 순 &#9662;</div>
-            <div class="fil">&#9888; 계속 오르는 반만</div>
+            <span class="seg2"><span class="on">반별</span><span class="">팀</span></span>
+            <div class="fil"><span class="k">반</span> 전체 10반 &#9662;</div>
+            <div class="fil"><span class="k">회차</span> 1차 &#8211; 4차 &#9662;</div>
+            <div class="fil"><span class="k">정렬</span> 최근 회차 나쁜 순 &#9662;</div>
           </div>
-          <div class="trwrap"><table class="trtbl">
-              <tr><th class="rh">반</th><th>미프 1차</th><th>미프 2차</th><th>미프 3차</th><th>미프 4차</th><th class="tr7">1차 &#8594; 최근</th></tr>
-              <tr class="tot"><td class="rh">기수 전체<small>250명</small></td><td><span class="pc2 p1">12%<small>30/250</small></span></td><td><span class="pc2 p2">16%<small>40/250</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">&#8212;<span class="lb2">회차 부족</span></td></tr>
-              <tr class="first"><td class="rh">C반<small>25명</small><span class="man3">김서연</span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">24%<small>6/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">&#8212;<span class="lb2">회차 부족</span></td></tr>
-              <tr class=""><td class="rh">A반<small>25명</small><span class="man3">박지현</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">&#8212;<span class="lb2">회차 부족</span></td></tr>
-              <tr class=""><td class="rh">F반<small>25명</small><span class="man3 none">담당 없음</span></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">20%<small>5/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">&#8212;<span class="lb2">회차 부족</span></td></tr>
-              <tr class=""><td class="rh">E반<small>25명</small><span class="man3">강태영</span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 p1">12%<small>3/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">&#8212;<span class="lb2">회차 부족</span></td></tr>
-              <tr class=""><td class="rh">G반<small>25명</small><span class="man3">한지민</span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 p1">8%<small>2/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">&#8212;<span class="lb2">회차 부족</span></td></tr>
-            </table>
-          <div class="trnote">&#183; <b>위험자 = 2단 이하 개념이 2개 이상인 학생</b>(9-2). 회차마다 개념이 달라도 <b>판정 기준이 같아서</b> 비교된다 &#8212; <b>평균 도달은 비교할 수 없다</b>(다른 것을 물은 값이다).<br>&#183; <b>OP-01 반 비교 막대와 같은 값</b>이다 &#8212; 그 막대가 <b>맨 오른쪽 열</b>이다.<br>&#183; <b>집단 미달(9-6)로 빠진 개념은 여기서도 빠진다</b> &#8212; OP-01과 같은 계산이어야 두 화면 숫자가 이어진다.<br>&#183; <b>등수를 쓰지 않는다.</b> 정렬만 하고 순위 숫자를 붙이지 않는다 &#8212; <b>매니저 줄세우기가 되면 그 지표를 관리하려는 행동</b>이 나온다.</div>
+          <div class="trwrap"><div class="trscroll"><table class="trtbl">
+              <tr><th class="rh"></th><th class="bsep"></th><th class="blk c" colspan="3">회차 격자 <span>&#183; 열 머리 클릭 &#8594; 그 회차 현황</span></th><th class="bsep"></th><th class="blk">제외</th></tr>
+              <tr><th class="rh"><span class="ax1">반</span><span class="ax2">숫자 = 위험자 비율</span><span class="ax2"><b>색 = 기수보다 좋다 / 나쁘다</b></span></th><th class="bsep"></th><th class="rd"><span class="rn">1차</span><span class="rp">K8s 배포 실습</span></th><th class="rd"><span class="rn">2차</span><span class="rp">REST API 서버</span></th><th class="rd"><span class="rn">3차</span><span class="rp">LangGraph 챗봇</span></th><th class="bsep"></th><th class="ex">미집계 <span>판정에서 빠진 사람</span></th></tr>
+              <tr class="tot"><td class="rh">기수 전체<small>250명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 basec" title="위험자 28명 / 채점 231명">12%</span></td><td class="cel"><span class="pc2 basec" title="위험자 37명 / 채점 238명">16%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">11</span><span class="ebar"><i class="eb1" style="width:54.5%"></i><i class="eb2" style="width:27.3%"></i><i class="eb3" style="width:18.2%"></i></span></span></td></tr>
+              <tr class="first"><td class="rh"><span class="dr3">C반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 6명 / 채점 25명 &#183; 기수보다 나쁨">24%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">2</span><span class="ebar"><i class="eb1" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">A반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2" title="위험자 3명 / 채점 25명 &#183; 기수과 같음">12%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb2" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">F반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">3</span><span class="ebar"><i class="eb1" style="width:66.7%"></i><i class="eb2" style="width:33.3%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">G반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l0" title="위험자 2명 / 채점 25명 &#183; 기수보다 좋음">8%</span></td><td class="cel"><span class="pc2 l0" title="위험자 2명 / 채점 25명 &#183; 기수보다 좋음">8%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en zero2">&#8213;</span></span></td></tr>
+            </table></div>
           </div>
-          <div class="keyrow">위험자 비율 <span class="sw" style="background:#eef7f1"></span><span class="sw" style="background:#dcefe3"></span><span class="sw" style="background:#f7e9c4"></span><span class="sw" style="background:#f2c98f"></span><span class="sw" style="background:#e59f7d"></span><span class="sw" style="background:#d9705c"></span> 높음<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 아직 안 함</div>
-          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-info)">&#9432;</span><span class="vx"><b>아직 방향을 말하지 않는다</b><span class="vs"><b>3회차부터</b> 추세를 씁니다 &#8212; 2회로는 <b>오르는 중인지 한 번 튄 것인지</b> 갈리지 않아요. 9-2가 위험을 <b>2회 비교</b>로 판정하는 것과 같은 이유입니다. 값은 지금도 보이고, <b>화면이 해석만 미룹니다.</b></span></span></span></div>
+          <div class="exkey"><span>기수보다 좋음<span class="rmp"><i style="background:#57b083"></i><i style="background:#a9cf8e"></i><i style="background:#ecc95e"></i><i style="background:#ec9a5c"></i><i style="background:#df6150"></i></span>기수보다 나쁨</span><span><i style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px)"></i>값이 아직 없음</span><span style="margin-left:auto">미집계<i class="eb1"></i>미응시<i class="eb2"></i>무효 응시<i class="eb3"></i>중단</span></div>
+          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-info)">&#9432;</span><span class="vx"><b>아직 방향을 말하지 않는다</b><span class="vs"><b>3회차부터</b> 방향을 씁니다 &#8212; 2회로는 <b>격차가 벌어지는 중인지 한 번 튄 것인지</b> 갈리지 않아요. 9-2가 위험을 <b>2회 비교</b>로 판정하는 것과 같은 이유입니다. <b>격차 자체는 지금도 셀에 보이고</b> 화면이 해석만 미룹니다.</span></span></span></div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2">&#183; <b>위험자 = 2단 이하 개념이 2개 이상인 학생</b>(9-2). 회차마다 개념이 달라도 <b>판정 기준이 같아서</b> 비교된다 &#8212; <b>평균 도달은 비교할 수 없다</b>(다른 것을 물은 값이다). &#183; <b>분모는 채점된 사람</b>이다 &#8212; 미응시&#183;무효 응시&#183;중단은 <b>판정과 평균에서 빠지고</b>(14-1 &#183; 9-4) <b>미집계 열</b>에 따로 센다. 위험 목록에는 오르지만 <b>비율에는 안 들어간다.</b> &#183; <b>리포트 미발행 회차는 <code>집계 전</code></b>이다 &#8212; 위험 판정은 <b>발행 시점에 켜진다</b>(9-2 &#183; 일괄 발행). OP-01 반 비교가 <i>"미프 2차 기준"</i>이라 쓰는 것과 같은 이유다. &#183; <b>열은 등록된 프로젝트만큼</b> 생긴다 &#8212; 미프는 기수마다 <b>6~8차</b>로 다르므로(14번 &#183; 17번) <b>회차 수를 화면이 정해두지 않는다.</b> 등록 안 된 회차는 <b>열이 없다.</b> &#183; <b>미프끼리는 값을 직접 비교할 수 없다</b> &#8212; 회차마다 <b>개념&#183;코드&#183;난이도가 다르다.</b> <code>12% &#8594; 19%</code>가 <b>나빠진 것인지 그 회차가 어려웠던 것인지</b> 값만으로는 갈리지 않는다. &#183; <b>난이도는 기수 전체를 빼면 상쇄된다</b> &#8212; 같은 회차&#183;같은 개념을 <b>10반이 다 본다.</b> 그래서 <b>색은 값이 아니라 기수 대비 격차</b>로 칠하고, 방향도 <b>격차의 방향</b>을 센다. <code>19%</code>가 붉지 않고 <code>+13p</code>가 붉다. &#183; <b>기수 전체 행에는 방향이 없다</b> &#8212; 뺄 기준이 없다. <i>"기수 전체가 나아지고 있나"</i>는 <b>기수 간 비교 탭</b>의 질문이다. &#183; <b>격차 눈금은 &#177;3p &#183; &#177;10p</b>다 &#8212; 회차 난이도가 상쇄된 뒤라 <b>0을 기준으로 대칭</b>이면 되고, 값 자체에 경계를 긋는 것과 다르다. &#183; <b>회차 범위를 좁히면 격차의 방향도 그 구간에서</b> 다시 센다. &#183; <b>담당 매니저 이름을 쓰지 않는다</b> &#8212; 반 값 옆에 사람 이름이 붙으면 <b>그 사람 성적</b>으로 읽힌다(18번 116줄). &#183; <b>반 이름 &#8594; 그 반 팀 계층</b>이다 &#8212; 오퍼레이터는 <b>매니저 화면에 갈 수 없으므로</b> 드릴다운이 이 화면 안에 있어야 한다(17번 106줄). &#183; <b>OP-01 반 비교 막대와 같은 값</b>이다 &#8212; 그 막대가 <b>가장 최근 발행 회차</b> 열이다. &#183; <b>빅프는 이 표에 없다</b> &#8212; 위험 유형이 다르다(9-2 &#8212; <code>코드 대비 이해 부족</code>&#183;<code>참여 저조</code>는 <b>기여도 축</b>이라 <code>2단 이하 개수</code>와 판정식이 다르다). &#183; <b>등수를 쓰지 않는다.</b> 정렬만 하고 순위 숫자를 붙이지 않는다 &#8212; <b>매니저 줄세우기가 되면 그 지표를 관리하려는 행동</b>이 나온다.</div>
+  </div>
+  <div class="rpage" id="page-pick">
+  <div class="sec-label">&#9315; 반 복수 선택 — 비교하고 싶은 반만 나란히</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item on"><span class="ic">&#9651;</span>추이</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; 회차 흐름</div><h2>추이</h2></div>
+          <div class="tabs"><span class="t on">회차 흐름</span><span class="t">기수 간 비교</span></div>
+          <div class="ltool">
+            <span class="seg2"><span class="on">반별</span><span class="">팀</span></span>
+            <div class="mwrap">
+            <div class="fil on"><span class="k">반</span> C반 &#183; F반 &#183; G반<span class="n7">3</span><span class="x2">&#10005;</span></div>
+            <div class="msel">
+              <div class="o"><span class="cb"></span>A반</div>
+              <div class="o"><span class="cb"></span>B반</div>
+              <div class="o ck"><span class="cb"></span>C반</div>
+              <div class="o"><span class="cb"></span>D반</div>
+              <div class="o"><span class="cb"></span>E반</div>
+              <div class="o ck"><span class="cb"></span>F반</div>
+              <div class="o ck"><span class="cb"></span>G반</div>
+              <div class="o"><span class="cb"></span>H반</div>
+              <div class="o"><span class="cb"></span>I반</div>
+              <div class="o"><span class="cb"></span>J반</div>
+              <div class="mf"><a>선택 해제</a></div>
+            </div>
+            </div>
+            <div class="fil"><span class="k">회차</span> 1차 &#8211; 4차 &#9662;</div>
+            <div class="fil"><span class="k">정렬</span> 최근 회차 나쁜 순 &#9662;</div>
+          </div>
+          <div class="trwrap"><div class="trscroll"><table class="trtbl">
+              <tr><th class="rh"></th><th class="bsep"></th><th class="blk c" colspan="4">회차 격자 <span>&#183; 열 머리 클릭 &#8594; 그 회차 현황</span></th><th class="bsep"></th><th class="blk">제외</th></tr>
+              <tr><th class="rh"><span class="ax1">반</span><span class="ax2">숫자 = 위험자 비율</span><span class="ax2"><b>색 = 기수보다 좋다 / 나쁘다</b></span></th><th class="bsep"></th><th class="rd"><span class="rn">1차</span><span class="rp">K8s 배포 실습</span></th><th class="rd"><span class="rn">2차</span><span class="rp">REST API 서버</span></th><th class="rd"><span class="rn">3차</span><span class="rp">LangGraph 챗봇</span></th><th class="rd"><span class="rn">4차</span><span class="rp">RAG 파이프라인</span></th><th class="bsep"></th><th class="ex">미집계 <span>판정에서 빠진 사람</span></th></tr>
+              <tr class="tot"><td class="rh">기수 전체<small>250명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 basec" title="위험자 28명 / 채점 231명">12%</span></td><td class="cel"><span class="pc2 basec" title="위험자 37명 / 채점 238명">16%</span></td><td class="cel"><span class="pc2 basec" title="위험자 44명 / 채점 234명">19%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">16</span><span class="ebar"><i class="eb1" style="width:56.2%"></i><i class="eb2" style="width:31.2%"></i><i class="eb3" style="width:12.5%"></i></span></span></td></tr>
+              <tr class="first"><td class="rh"><span class="dr3">C반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 6명 / 채점 25명 &#183; 기수보다 나쁨">24%</span></td><td class="cel"><span class="pc2 l4" title="위험자 8명 / 채점 25명 &#183; 기수보다 나쁨">32%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">4</span><span class="ebar"><i class="eb1" style="width:50.0%"></i><i class="eb2" style="width:50.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">F반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 l4" title="위험자 6명 / 채점 25명 &#183; 기수보다 나쁨">24%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">5</span><span class="ebar"><i class="eb1" style="width:60.0%"></i><i class="eb2" style="width:40.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">G반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l0" title="위험자 2명 / 채점 25명 &#183; 기수보다 좋음">8%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb3" style="width:100.0%"></i></span></span></td></tr>
+            </table></div>
+          </div>
+          <div class="exkey"><span>기수보다 좋음<span class="rmp"><i style="background:#57b083"></i><i style="background:#a9cf8e"></i><i style="background:#ecc95e"></i><i style="background:#ec9a5c"></i><i style="background:#df6150"></i></span>기수보다 나쁨</span><span><i style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px)"></i>값이 아직 없음</span><span style="margin-left:auto">미집계<i class="eb1"></i>미응시<i class="eb2"></i>무효 응시<i class="eb3"></i>중단</span></div>
+          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-warning)">&#9888;</span><span class="vx"><b>고른 세 반이 서로 다른 모양이다 · 같은 조치로 묶을 수 없다</b><span class="vs">C반은 <code>+4 &#8594; +8 &#8594; +13p</code>로 <b>매 회차 멀어지고</b>, F반은 <code>+4 &#8594; +4 &#8594; +5p</code>로 <b>벌어진 채 멈춰 있고</b>, G반은 <code>-4 &#8594; -4 &#8594; -7p</code>로 <b>기수보다 좋다.</b> <b>OP-01 반 비교에서 하위 세 반을 눌러 왔지만</b> G반은 최근 값이 낮을 뿐 <b>기수 대비로는 문제가 아니다</b> &#8212; 값 순위와 격차는 다른 것이다.</span></span></span><span class="vact"><button class="btn">C반 팀별로 보기</button><button class="btn ghost">회차 설계 보기</button></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note2">&#183; <b>반&#183;팀은 복수로 고른다</b> &#8212; 10반을 한 번에 띄우면 <b>표가 아니라 목록</b>이 되고, 하나만 고르면 <b>기수 전체와만</b> 비교된다. <b>OP-01 반 비교에서 누르고 온 반들</b>이 여기서 그대로 켜져 있어야 한다. &#183; <b>조건 필터를 만들지 않는다</b> &#8212; <i>"매 회차 오르는 반만"</i>처럼 <b>화면이 기준을 정해 걸러내면</b> 그 기준의 근거를 기획에서 댈 수 없다. 고르는 것은 <b>오퍼레이터</b>다. &#183; <b>기수 전체 행은 선택과 무관하게 남는다</b> &#8212; 골라낸 반이 <b>기수보다 나쁜지</b>를 봐야 뜻이 생긴다.</div>
+  </div>
+  <div class="rpage" id="page-range">
+  <div class="sec-label">&#9316; 회차 범위 — 등록된 것을 다 띄우지 않는다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item on"><span class="ic">&#9651;</span>추이</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; 회차 흐름</div><h2>추이</h2></div>
+          <div class="tabs"><span class="t on">회차 흐름</span><span class="t">기수 간 비교</span></div>
+          <div class="ltool">
+            <span class="seg2"><span class="on">반별</span><span class="">팀</span></span>
+            <div class="fil"><span class="k">반</span> 전체 10반 &#9662;</div>
+            <div class="mwrap"><div class="fil on"><span class="k">회차</span> 1차 &#8211; 5차 &#9662;</div>
+            <div class="msel rgw">
+              <div class="rgh"><span>시작</span><span>끝</span></div>
+              <div class="rgc">
+                <div class="rgl">
+                <div class="o1 ck">1차<em></em></div>
+                <div class="o1">2차<em></em></div>
+                <div class="o1">3차<em></em></div>
+                <div class="o1">4차<em>미발행</em></div>
+                <div class="o1">5차<em>시작 전</em></div>
+                </div>
+                <div class="rgl">
+                <div class="o1">1차<em></em></div>
+                <div class="o1">2차<em></em></div>
+                <div class="o1">3차<em></em></div>
+                <div class="o1">4차<em>미발행</em></div>
+                <div class="o1 ck">5차<em>시작 전</em></div>
+                </div>
+              </div>
+              <div class="mf2">범위를 좁히면 <b>격차의 방향도 그 구간에서</b> 다시 센다</div>
+            </div>
+            </div>
+            <div class="fil"><span class="k">정렬</span> 최근 회차 나쁜 순 &#9662;</div>
+          </div>
+          <div class="trwrap"><div class="trscroll"><table class="trtbl">
+              <tr><th class="rh"></th><th class="bsep"></th><th class="blk c" colspan="5">회차 격자 <span>&#183; 열 머리 클릭 &#8594; 그 회차 현황</span></th><th class="bsep"></th><th class="blk">제외</th></tr>
+              <tr><th class="rh"><span class="ax1">반</span><span class="ax2">숫자 = 위험자 비율</span><span class="ax2"><b>색 = 기수보다 좋다 / 나쁘다</b></span></th><th class="bsep"></th><th class="rd"><span class="rn">1차</span><span class="rp">K8s 배포 실습</span></th><th class="rd"><span class="rn">2차</span><span class="rp">REST API 서버</span></th><th class="rd"><span class="rn">3차</span><span class="rp">LangGraph 챗봇</span></th><th class="rd"><span class="rn">4차</span><span class="rp">RAG 파이프라인</span></th><th class="rd nostart"><span class="rn">5차</span><span class="rp">멀티에이전트</span></th><th class="bsep"></th><th class="ex">미집계 <span>판정에서 빠진 사람</span></th></tr>
+              <tr class="tot"><td class="rh">기수 전체<small>250명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 basec" title="위험자 28명 / 채점 231명">12%</span></td><td class="cel"><span class="pc2 basec" title="위험자 37명 / 채점 238명">16%</span></td><td class="cel"><span class="pc2 basec" title="위험자 44명 / 채점 234명">19%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="cel"><span class="pc2 na2">&#8213;<small>시작 전</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">16</span><span class="ebar"><i class="eb1" style="width:56.2%"></i><i class="eb2" style="width:31.2%"></i><i class="eb3" style="width:12.5%"></i></span></span></td></tr>
+              <tr class="first"><td class="rh"><span class="dr3">C반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 6명 / 채점 25명 &#183; 기수보다 나쁨">24%</span></td><td class="cel"><span class="pc2 l4" title="위험자 8명 / 채점 25명 &#183; 기수보다 나쁨">32%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="cel"><span class="pc2 na2">&#8213;<small>시작 전</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">4</span><span class="ebar"><i class="eb1" style="width:50.0%"></i><i class="eb2" style="width:50.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">D반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2" title="위험자 3명 / 채점 25명 &#183; 기수과 같음">12%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 l4" title="위험자 7명 / 채점 25명 &#183; 기수보다 나쁨">28%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="cel"><span class="pc2 na2">&#8213;<small>시작 전</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb1" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">I반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 l4" title="위험자 7명 / 채점 25명 &#183; 기수보다 나쁨">28%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="cel"><span class="pc2 na2">&#8213;<small>시작 전</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en zero2">&#8213;</span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">E반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2" title="위험자 3명 / 채점 25명 &#183; 기수과 같음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 4명 / 채점 25명 &#183; 기수보다 좋음">16%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="cel"><span class="pc2 na2">&#8213;<small>시작 전</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb1" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">G반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l0" title="위험자 2명 / 채점 25명 &#183; 기수보다 좋음">8%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="cel"><span class="pc2 na2">&#8213;<small>시작 전</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb3" style="width:100.0%"></i></span></span></td></tr>
+            </table></div>
+          </div>
+          <div class="exkey"><span>기수보다 좋음<span class="rmp"><i style="background:#57b083"></i><i style="background:#a9cf8e"></i><i style="background:#ecc95e"></i><i style="background:#ec9a5c"></i><i style="background:#df6150"></i></span>기수보다 나쁨</span><span><i style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px)"></i>값이 아직 없음</span><span style="margin-left:auto">미집계<i class="eb1"></i>미응시<i class="eb2"></i>무효 응시<i class="eb3"></i>중단</span></div>
+          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-info)">&#9432;</span><span class="vx"><b>시작과 끝을 직접 고른다</b><span class="vs"><code>최근 3회</code> 같은 <b>프리셋으로 묶지 않는다</b> &#8212; 그 묶음의 근거를 기획에서 댈 수 없다(E8). 기본은 <b>1차 &#8211; 4차</b>(발행 + 진행 중)이고 <b>5차는 시작 전</b>이라 빠져 있다. <b>범위를 좁히면 격차의 방향도 그 구간에서</b> 다시 센다 &#8212; <code>3차 &#8211; 4차</code>로 보면 <b>1&#183;2차는 계산에 안 들어간다.</b></span></span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note2">&#183; <b>시작 &#183; 끝을 직접 고른다</b> &#8212; <code>최근 3회</code>처럼 <b>화면이 묶어두면</b> 그 묶음의 근거를 댈 수 없다(E8). 회차 수가 기수마다 <b>6~8로 다르므로</b> 프리셋이 어느 기수에서는 안 맞는다. &#183; <b>기본은 발행 + 진행 중</b>이다 &#8212; 시작 전 회차를 열로 띄우면 <b>값 없는 칸이 표 폭을 먹는다.</b> &#183; <b>범위가 방향 판정을 바꾼다</b> &#8212; 격차의 단조성은 <b>보이는 구간</b>에서 세므로 구간을 좁히면 <code>3회 연속</code>이 <code>2회</code>가 된다. 드롭다운이 그 사실을 말한다. &#183; <b>가로 스크롤에도 반 이름 열은 남는다</b>(sticky).</div>
+  </div>
+  <div class="rpage" id="page-sort">
+  <div class="sec-label">&#9317; 정렬 — 무엇을 먼저 보고 싶은가</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item on"><span class="ic">&#9651;</span>추이</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; 회차 흐름</div><h2>추이</h2></div>
+          <div class="tabs"><span class="t on">회차 흐름</span><span class="t">기수 간 비교</span></div>
+          <div class="ltool">
+            <span class="seg2"><span class="on">반별</span><span class="">팀</span></span>
+            <div class="fil"><span class="k">반</span> 전체 10반 &#9662;</div>
+            <div class="fil"><span class="k">회차</span> 1차 &#8211; 4차 &#9662;</div>
+            <div class="mwrap"><div class="fil on"><span class="k">정렬</span> 격차 벌어진 회차가 긴 순 &#9662;</div>
+            <div class="msel wide">
+              <div class="o1">최근 회차 나쁜 순<em>가장 최근 발행 회차 기준</em></div>
+              <div class="o1">기수 대비 격차 큰 순<em>지금 격차</em></div>
+              <div class="o1 ck">격차 벌어진 회차가 긴 순<em>연속 횟수</em></div>
+              <div class="o1">미집계 많은 순<em>분모가 많이 깎인 반</em></div>
+              <div class="o1">반 이름순<em>위치를 고정해 찾을 때</em></div>
+            </div>
+            </div>
+          </div>
+          <div class="trwrap"><div class="trscroll"><table class="trtbl">
+              <tr><th class="rh"></th><th class="bsep"></th><th class="blk c" colspan="4">회차 격자 <span>&#183; 열 머리 클릭 &#8594; 그 회차 현황</span></th><th class="bsep"></th><th class="blk">제외</th></tr>
+              <tr><th class="rh"><span class="ax1">반</span><span class="ax2">숫자 = 위험자 비율</span><span class="ax2"><b>색 = 기수보다 좋다 / 나쁘다</b></span></th><th class="bsep"></th><th class="rd"><span class="rn">1차</span><span class="rp">K8s 배포 실습</span></th><th class="rd"><span class="rn">2차</span><span class="rp">REST API 서버</span></th><th class="rd"><span class="rn">3차</span><span class="rp">LangGraph 챗봇</span></th><th class="rd"><span class="rn">4차</span><span class="rp">RAG 파이프라인</span></th><th class="bsep"></th><th class="ex">미집계 <span>판정에서 빠진 사람</span></th></tr>
+              <tr class="tot"><td class="rh">기수 전체<small>250명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 basec" title="위험자 28명 / 채점 231명">12%</span></td><td class="cel"><span class="pc2 basec" title="위험자 37명 / 채점 238명">16%</span></td><td class="cel"><span class="pc2 basec" title="위험자 44명 / 채점 234명">19%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">16</span><span class="ebar"><i class="eb1" style="width:56.2%"></i><i class="eb2" style="width:31.2%"></i><i class="eb3" style="width:12.5%"></i></span></span></td></tr>
+              <tr class="first"><td class="rh"><span class="dr3">C반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 6명 / 채점 25명 &#183; 기수보다 나쁨">24%</span></td><td class="cel"><span class="pc2 l4" title="위험자 8명 / 채점 25명 &#183; 기수보다 나쁨">32%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">4</span><span class="ebar"><i class="eb1" style="width:50.0%"></i><i class="eb2" style="width:50.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">D반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2" title="위험자 3명 / 채점 25명 &#183; 기수과 같음">12%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 l4" title="위험자 7명 / 채점 25명 &#183; 기수보다 나쁨">28%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb1" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">I반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 l4" title="위험자 7명 / 채점 25명 &#183; 기수보다 나쁨">28%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en zero2">&#8213;</span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">A반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2" title="위험자 3명 / 채점 25명 &#183; 기수과 같음">12%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 l4" title="위험자 6명 / 채점 25명 &#183; 기수보다 나쁨">25%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb3" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">F반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 4명 / 채점 25명 &#183; 기수보다 나쁨">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 l4" title="위험자 6명 / 채점 25명 &#183; 기수보다 나쁨">24%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">5</span><span class="ebar"><i class="eb1" style="width:60.0%"></i><i class="eb2" style="width:40.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">B반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l0" title="위험자 2명 / 채점 25명 &#183; 기수보다 좋음">8%</span></td><td class="cel"><span class="pc2 l2" title="위험자 4명 / 채점 25명 &#183; 기수과 같음">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb1" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">H반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2" title="위험자 3명 / 채점 25명 &#183; 기수과 같음">12%</span></td><td class="cel"><span class="pc2 l2" title="위험자 4명 / 채점 25명 &#183; 기수과 같음">16%</span></td><td class="cel"><span class="pc2 l4" title="위험자 5명 / 채점 25명 &#183; 기수보다 나쁨">20%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">2</span><span class="ebar"><i class="eb1" style="width:50.0%"></i><i class="eb2" style="width:50.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">J반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l0" title="위험자 2명 / 채점 25명 &#183; 기수보다 좋음">8%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 4명 / 채점 25명 &#183; 기수보다 좋음">16%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en zero2">&#8213;</span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">E반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2" title="위험자 3명 / 채점 25명 &#183; 기수과 같음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 4명 / 채점 25명 &#183; 기수보다 좋음">16%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb1" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh"><span class="dr3">G반</span><small>25명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l0" title="위험자 2명 / 채점 25명 &#183; 기수보다 좋음">8%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 l0" title="위험자 3명 / 채점 25명 &#183; 기수보다 좋음">12%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb3" style="width:100.0%"></i></span></span></td></tr>
+            </table></div>
+          </div>
+          <div class="exkey"><span>기수보다 좋음<span class="rmp"><i style="background:#57b083"></i><i style="background:#a9cf8e"></i><i style="background:#ecc95e"></i><i style="background:#ec9a5c"></i><i style="background:#df6150"></i></span>기수보다 나쁨</span><span><i style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px)"></i>값이 아직 없음</span><span style="margin-left:auto">미집계<i class="eb1"></i>미응시<i class="eb2"></i>무효 응시<i class="eb3"></i>중단</span></div>
+          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-info)">&#9432;</span><span class="vx"><b>정렬 키를 행에도 보여준다</b><span class="vs"><code>격차 벌어진 회차가 긴 순</code>으로 정렬하면 <b>요약 블록의 연속 횟수</b>가 정렬 키다 &#8212; 행에 그 값이 없으면 <i>"왜 이 순서인지"</i> 를 묻게 된다(E2). <b>최근 값 순위와 격차 순위는 다르다</b> &#8212; 값이 가장 높은 반이 <b>격차로는 기수와 비슷</b>할 수 있다. <b>기수 전체 행은 정렬에서 빠진다</b>(비교 기준선).</span></span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note2">&#183; <b>정렬 기준 4개가 서로 다른 질문</b>이다 &#8212; <code>최근 회차 나쁜 순</code>은 <i>"지금 어디가 제일 나쁜가"</i>, <code>기수 대비 격차 큰 순</code>은 <i>"지금 어디가 기수에서 제일 멀리 떨어졌나"</i>, <code>격차 벌어진 회차가 긴 순</code>은 <i>"어디가 계속 멀어지고 있나"</i>, <code>미집계 많은 순</code>은 <i>"어느 반의 값을 믿기 어려운가"</i>, <code>반 이름순</code>은 <i>"내가 아는 그 반을 찾겠다"</i>. &#183; <b>기본은 <code>최근 회차 나쁜 순</code></b>이다 &#8212; OP-01 반 비교에서 넘어왔을 때 <b>거기서 본 순서와 같아야</b> 한다. &#183; <b>등수 숫자를 붙이지 않는다</b> &#8212; 정렬만 한다.</div>
+  </div>
+  <div class="rpage" id="page-team">
+  <div class="sec-label">&#9318; 팀 — 계층을 바꾸면 반이 단일 선택이 된다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item on"><span class="ic">&#9651;</span>추이</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; <b style="color:var(--c-primary)">C반</b> &#8250; 팀</div><h2>추이</h2></div>
+          <div class="tabs"><span class="t on">회차 흐름</span><span class="t">기수 간 비교</span></div>
+          <div class="ltool">
+            <span class="seg2"><span class="">반별</span><span class="on">팀</span></span>
+            <div class="fil on"><span class="k">반</span> C반 &#9662;</div>
+            <div class="mwrap">
+            <div class="fil"><span class="k">팀</span> 전체 6팀 &#9662;</div>
+            <div class="msel">
+              <div class="o"><span class="cb"></span>1팀</div>
+              <div class="o"><span class="cb"></span>2팀</div>
+              <div class="o"><span class="cb"></span>3팀</div>
+              <div class="o"><span class="cb"></span>4팀</div>
+              <div class="o"><span class="cb"></span>5팀</div>
+              <div class="o"><span class="cb"></span>6팀</div>
+              <div class="mf"><a>전체 선택</a></div>
+            </div>
+            </div>
+            <div class="fil"><span class="k">회차</span> 1차 &#8211; 4차 &#9662;</div>
+            <div class="fil"><span class="k">정렬</span> 최근 회차 나쁜 순 &#9662;</div>
+          </div>
+          <div class="trwrap"><div class="trscroll"><table class="trtbl">
+              <tr><th class="rh"></th><th class="bsep"></th><th class="blk c" colspan="4">회차 격자 <span>&#183; 열 머리 클릭 &#8594; 그 회차 현황</span></th><th class="bsep"></th><th class="blk">제외</th></tr>
+              <tr><th class="rh"><span class="ax1">C반 &#8250; 팀</span><span class="ax2">숫자 = 위험자 비율</span><span class="ax2"><b>색 = C반보다 좋다 / 나쁘다</b></span></th><th class="bsep"></th><th class="rd"><span class="rn">1차</span><span class="rp">K8s 배포 실습</span></th><th class="rd"><span class="rn">2차</span><span class="rp">REST API 서버</span></th><th class="rd"><span class="rn">3차</span><span class="rp">LangGraph 챗봇</span></th><th class="rd"><span class="rn">4차</span><span class="rp">RAG 파이프라인</span></th><th class="bsep"></th><th class="ex">미집계 <span>판정에서 빠진 사람</span></th></tr>
+              <tr class="tot"><td class="rh">C반 전체<small>25명 &#183; 기수 대비 +13p</small></td><td class="bsep"></td><td class="cel"><span class="pc2 basec" title="위험자 4명 / 채점 25명">16%</span></td><td class="cel"><span class="pc2 basec" title="위험자 6명 / 채점 25명">24%</span></td><td class="cel"><span class="pc2 basec" title="위험자 8명 / 채점 25명">32%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw hot4"><span class="en">4</span><span class="ebar"><i class="eb1" style="width:50.0%"></i><i class="eb2" style="width:50.0%"></i></span></span></td></tr>
+              <tr class="first"><td class="rh">2팀<small>4명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 2명 / 채점 4명 &#183; C반보다 나쁨">50%</span></td><td class="cel"><span class="pc2 l4" title="위험자 3명 / 채점 4명 &#183; C반보다 나쁨">75%</span></td><td class="cel"><span class="pc2 l4" title="위험자 3명 / 채점 4명 &#183; C반보다 나쁨">75%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb2" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh">5팀<small>4명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l0" title="위험자 0명 / 채점 4명 &#183; C반보다 좋음">0%</span></td><td class="cel"><span class="pc2 l4" title="위험자 1명 / 채점 4명 &#183; C반보다 나쁨">25%</span></td><td class="cel"><span class="pc2 l4" title="위험자 3명 / 채점 4명 &#183; C반보다 나쁨">75%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb1" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh">3팀<small>4명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 1명 / 채점 4명 &#183; C반보다 나쁨">25%</span></td><td class="cel"><span class="pc2 l4" title="위험자 1명 / 채점 4명 &#183; C반보다 나쁨">25%</span></td><td class="cel"><span class="pc2 l4" title="위험자 2명 / 채점 4명 &#183; C반보다 나쁨">50%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en zero2">&#8213;</span></span></td></tr>
+              <tr class=""><td class="rh">1팀<small>4명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l0" title="위험자 0명 / 채점 4명 &#183; C반보다 좋음">0%</span></td><td class="cel"><span class="pc2 l4" title="위험자 1명 / 채점 4명 &#183; C반보다 나쁨">25%</span></td><td class="cel"><span class="pc2 l0" title="위험자 0명 / 채점 4명 &#183; C반보다 좋음">0%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb1" style="width:100.0%"></i></span></span></td></tr>
+              <tr class=""><td class="rh">4팀<small>4명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l4" title="위험자 1명 / 채점 4명 &#183; C반보다 나쁨">25%</span></td><td class="cel"><span class="pc2 l0" title="위험자 0명 / 채점 4명 &#183; C반보다 좋음">0%</span></td><td class="cel"><span class="pc2 l0" title="위험자 0명 / 채점 4명 &#183; C반보다 좋음">0%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en zero2">&#8213;</span></span></td></tr>
+              <tr class=""><td class="rh">6팀<small>5명</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l0" title="위험자 0명 / 채점 5명 &#183; C반보다 좋음">0%</span></td><td class="cel"><span class="pc2 l4" title="위험자 1명 / 채점 5명 &#183; C반보다 나쁨">25%</span></td><td class="cel"><span class="pc2 l0" title="위험자 0명 / 채점 5명 &#183; C반보다 좋음">0%</span></td><td class="cel"><span class="pc2 pend2">집계 전<small>리포트 미발행</small></span></td><td class="bsep"></td><td class="ex"><span class="exw"><span class="en">1</span><span class="ebar"><i class="eb2" style="width:100.0%"></i></span></span></td></tr>
+            </table></div>
+          </div>
+          <div class="exkey"><span>C반보다 좋음<span class="rmp"><i style="background:#57b083"></i><i style="background:#a9cf8e"></i><i style="background:#ecc95e"></i><i style="background:#ec9a5c"></i><i style="background:#df6150"></i></span>C반보다 나쁨</span><span><i style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px)"></i>값이 아직 없음</span><span style="margin-left:auto">미집계<i class="eb1"></i>미응시<i class="eb2"></i>무효 응시<i class="eb3"></i>중단</span></div>
+          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-warning)">&#9888;</span><span class="vx"><b>이번 회차는 2팀 · 5팀에 몰렸다 — 지난 회차의 그 팀이 아니다</b><span class="vs"><b>3차 기준</b> 2팀 <code>3/4</code> &#183; 5팀 <code>3/4</code>로 <b>C반 위험자 8명 중 6명</b>이 두 팀에 있다. 다만 <b>가로로 읽으면 안 된다</b> &#8212; 팀은 회차마다 다시 짜므로 <b>2차의 2팀과 3차의 2팀은 다른 사람들</b>이다. <b>세로로만</b> 읽는다: <i>"이번 회차에 어느 팀이 무너졌나."</i></span></span></span><span class="vact"><button class="btn">3차 · 2팀 명단</button><button class="btn ghost">반별로 돌아가기</button></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note2">&#183; <b>계층이 선택 방식을 정한다</b> &#8212; <code>반별</code>은 반 <b>복수 선택</b>(나란히 비교), <code>팀</code>은 반 <b>단일 선택 + 팀 복수 선택</b>이다. 팀 번호는 <b>반 안에서만 유일</b>하므로(C반 3팀 vs D반 3팀) 반이 여럿이면 <b>같은 이름의 다른 팀</b>이 한 표에 섞인다. &#183; <b>드릴다운이 이 화면 안에 있어야 한다</b> &#8212; 오퍼레이터는 <b>매니저 화면(MG-02)으로 갈 수 없다.</b> 17번 106줄이 오퍼레이터에게 교육생 메뉴를 안 준 대신 <i>"히트맵 드릴다운의 끝으로 간다"</i> 고 한 것이 <b>이 계층 이동</b>이다. &#183; <b>기준선이 기수에서 그 반으로 바뀐다</b> &#8212; 팀의 격차는 <b>같은 반 안에서</b> 재야 뜻이 있다. 열 머리와 요약 열 라벨이 같이 바뀐다. &#183; <b>방향 열을 쓰지 않는다</b> &#8212; 팀은 프로젝트마다 재편성되므로 (TeamMembership) <b>가로로 이으면 다른 사람들의 값을 잇는 것</b>이다. 자리를 비우지 않고 <code>방향 없음 &#183; 회차마다 팀을 다시 짠다</code>로 <b>왜 없는지</b>를 쓴다. &#183; <b>4명 팀에서 1명이면 25%</b>다 &#8212; 모집단이 작아 비율이 튀므로 <b>실수를 같이</b> 쓴다. &#183; <b>개인까지 내려가지 않는다</b> &#8212; 개인은 <b>이름과 답변</b>이 있어야 뜻이 생기고, 그건 회차 단위 화면(OP-04)의 일이다. 판정 줄의 <code>3차 &#183; 2팀 명단</code>이 그리로 간다.</div>
+  </div>
+  <div class="rpage" id="page-bigp">
+  <div class="sec-label">&#9319; 빅프 — 판정식이 달라 같은 표에 못 넣는다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item on"><span class="ic">&#9651;</span>추이</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; 회차 흐름</div><h2>추이</h2></div>
+          <div class="tabs"><span class="t on">회차 흐름</span><span class="t">기수 간 비교</span></div>
+          <div class="ltool">
+            <span class="seg2"><span class="on">반별</span><span class="">팀</span></span>
+            <div class="fil"><span class="k">반</span> 전체 10반 &#9662;</div>
+            <div class="fil on"><span class="k">회차</span> 빅프 &#9662;</div>
+            <div class="fil"><span class="k">정렬</span> 최근 회차 나쁜 순 &#9662;</div>
+          </div>
+          <div class="empty"><div class="t">빅프는 이 표에 넣지 않습니다</div><div class="s"><b>위험 유형이 다릅니다</b>(9-2) &#8212; 미프는 <code>2단 이하 개념 개수</code>로 판정하지만 빅프는 <b><code>코드 대비 이해 부족</code></b>&#183;<b><code>참여 저조</code></b>로 <b>기여도 축</b>이 들어갑니다.<br>판정식이 다른 값을 같은 비율로 쓰면 <b>가로로 이어 읽을 수 있는 것처럼</b> 보입니다.<br><b>빅프 3회차 안에서의 변화</b>는 별도로 봅니다 &#8212; 아직 시작 전입니다.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="note2">&#183; <b>미프&#183;빅프는 순차</b>다(10-2) &#8212; 빅프는 <b>마지막 8주</b>라 지금은 값이 없다. &#183; 6-2가 <b>빅프 성적 미반영</b>이라 했으므로 <b>기수 전체 비율에도 섞지 않는다.</b></div>
   </div>
   <div class="rpage" id="page-cohort">
-  <div class="sec-label">&#9315; 기수 간 비교 — 같은 교안 · 같은 개념만</div>
+  <div class="sec-label">&#9320; 기수 간 비교 — 같은 교안 · 같은 개념만</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
     <div class="app">
@@ -366,27 +734,27 @@
             <div class="fil on">같은 교안 &#183; 같은 개념만</div>
             <div class="fil"><span class="k">정렬</span> 나빠진 순 &#9662;</div>
           </div>
-          <div class="card"><table class="cotbl">
-              <thead><tr><th class="c-cp">검증 개념</th><th class="c-v">6기</th><th class="c-v">7기</th><th class="c-d">변화</th></tr></thead>
-              <tbody>
-                <tr><td class="cp3">Graph 구성<span class="src3">교안 AI_LLMOps &#183; 4장 p.62 &#183; 미프 3차</span></td><td class="vv2"><span class="pc2 p1">2.9</span></td><td class="vv2"><span class="pc2 p2">2.5</span></td><td class="dd up">-0.4<span class="lb2" style="display:block;font-size:10px;font-weight:600;color:var(--c-text-3)">나빠짐</span></td></tr>
-                <tr><td class="cp3">트랜잭션<span class="src3">교안 Kubernetes 기초 &#183; 3장 p.44 &#183; 미프 2차</span></td><td class="vv2"><span class="pc2 p1">3.2</span></td><td class="vv2"><span class="pc2 p1">2.9</span></td><td class="dd up">-0.3<span class="lb2" style="display:block;font-size:10px;font-weight:600;color:var(--c-text-3)">나빠짐</span></td></tr>
-                <tr><td class="cp3">HITL Trigger<span class="src3">교안 AI_LLMOps &#183; 3장 p.55 &#183; 미프 3차</span></td><td class="vv2"><span class="pc2 p2">2.7</span></td><td class="vv2"><span class="pc2 p1">2.8</span></td><td class="dd flat">+0.1<span class="lb2" style="display:block;font-size:10px;font-weight:600;color:var(--c-text-3)">비슷</span></td></tr>
-                <tr><td class="cp3">REST 설계<span class="src3">교안 Kubernetes 기초 &#183; 1장 p.12 &#183; 미프 1차</span></td><td class="vv2"><span class="pc2 p1">3.3</span></td><td class="vv2"><span class="pc2 p1">3.4</span></td><td class="dd flat">+0.1<span class="lb2" style="display:block;font-size:10px;font-weight:600;color:var(--c-text-3)">비슷</span></td></tr>
-                <tr class="newrow"><td class="cp3">State 관리<span class="src3">교안 AI_LLMOps &#183; 5장 p.88 &#183; 미프 3차</span></td><td class="vv2 nocmp">&#8212;</td><td class="vv2"><span class="pc2 p1">3.3</span></td><td class="dd flat"><span class="nocmp">6기에 없던 개념</span></td></tr>
-                <tr class="newrow"><td class="cp3">캐시 전략<span class="src3">교안 Kubernetes 기초 &#183; 5장 p.71 &#183; 미프 2차</span></td><td class="vv2 nocmp">&#8212;</td><td class="vv2"><span class="pc2 p1">3.4</span></td><td class="dd flat"><span class="nocmp">6기에 없던 개념</span></td></tr>
-              </tbody>
-            </table>
+          <div class="trwrap"><div class="trscroll"><table class="trtbl">
+              <tr><th class="rh"></th><th class="bsep"></th><th class="blk c" colspan="2">기수</th><th class="bsep"></th><th class="blk">요약</th><th class="blk">출처</th></tr>
+              <tr><th class="rh"><span class="ax1">검증 개념</span><span class="ax2">숫자 = 평균 도달 단계</span><span class="ax2"><b>색 = 절대 눈금</b> &#183; 1~4단</span><span class="ax2">같은 개념이라 두 기수에서 뜻이 같다</span></th><th class="bsep"></th><th class="rd"><span class="rn">6기</span><span class="rp">지난 기수</span></th><th class="rd"><span class="rn">7기</span><span class="rp">이번 기수</span></th><th class="bsep"></th><th class="sm">변화</th><th class="ex">교안 버전</th></tr>
+              <tr><td class="rh">Graph 구성<small>교안 AI_LLMOps &#183; 4장 p.62 &#183; 미프 3차</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2">2.9</span></td><td class="cel"><span class="pc2 l2">2.5</span></td><td class="bsep"></td><td class="sm"><span class="dirw up"><span class="ar">&#8600;</span><span><span class="dl">나빠짐</span><span class="dn2">-0.4단</span></span></span></td><td class="ex"><span class="vr2">v1 &#8594; <b>v2</b></span></td></tr>
+              <tr><td class="rh">트랜잭션<small>교안 Kubernetes 기초 &#183; 3장 p.44 &#183; 미프 2차</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l1">3.2</span></td><td class="cel"><span class="pc2 l2">2.9</span></td><td class="bsep"></td><td class="sm"><span class="dirw up"><span class="ar">&#8600;</span><span><span class="dl">나빠짐</span><span class="dn2">-0.3단</span></span></span></td><td class="ex"><span class="vr2">v3 &#183; 그대로</span></td></tr>
+              <tr><td class="rh">HITL Trigger<small>교안 AI_LLMOps &#183; 3장 p.55 &#183; 미프 3차</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l2">2.7</span></td><td class="cel"><span class="pc2 l2">2.8</span></td><td class="bsep"></td><td class="sm"><span class="dirw flat"><span class="ar">&#8212;</span><span><span class="dl">비슷</span><span class="dn2">+0.1단</span></span></span></td><td class="ex"><span class="vr2">v2 &#183; 그대로</span></td></tr>
+              <tr><td class="rh">REST 설계<small>교안 Kubernetes 기초 &#183; 1장 p.12 &#183; 미프 1차</small></td><td class="bsep"></td><td class="cel"><span class="pc2 l1">3.3</span></td><td class="cel"><span class="pc2 l1">3.4</span></td><td class="bsep"></td><td class="sm"><span class="dirw flat"><span class="ar">&#8212;</span><span><span class="dl">비슷</span><span class="dn2">+0.1단</span></span></span></td><td class="ex"><span class="vr2">v1 &#183; 그대로</span></td></tr>
+              <tr class="newrow"><td class="rh">State 관리<small>교안 AI_LLMOps &#183; 5장 p.88 &#183; 미프 3차</small></td><td class="bsep"></td><td class="cel"><span class="pc2 na2">&#8213;<small>없던 개념</small></span></td><td class="cel"><span class="pc2 l1">3.3</span></td><td class="bsep"></td><td class="sm"><span class="dirw flat"><span class="ar">&#8212;</span><span><span class="dl">비교 대상 아님</span><span class="dn2">6기에 없던 개념</span></span></span></td><td class="ex"><span class="vr2">v2</span></td></tr>
+              <tr class="newrow"><td class="rh">캐시 전략<small>교안 Kubernetes 기초 &#183; 5장 p.71 &#183; 미프 2차</small></td><td class="bsep"></td><td class="cel"><span class="pc2 na2">&#8213;<small>없던 개념</small></span></td><td class="cel"><span class="pc2 l1">3.4</span></td><td class="bsep"></td><td class="sm"><span class="dirw flat"><span class="ar">&#8212;</span><span><span class="dl">비교 대상 아님</span><span class="dn2">6기에 없던 개념</span></span></span></td><td class="ex"><span class="vr2">v3</span></td></tr>
+            </table></div>
           </div>
-          <div class="hint3">&#183; <b>같은 교안 &#183; 같은 개념만 비교한다.</b> 커리큘럼이 같으면 <b>같은 것을 물은 값</b>이라 비교가 성립한다 &#8212; 개념이 다르면 <b>다른 것을 물은 값</b>이다.<br>&#183; <b>새로 고른 개념은 비교 대상이 아니라고 말한다</b> &#8212; 빈칸으로 두면 <i>"0점"</i>이나 <i>"나빠졌다"</i>로 읽힌다.<br>&#183; <b>교안 버전을 함께 쓴다</b> &#8212; <b>교안을 고친 것이 효과가 있었나</b>가 이 표의 핵심 질문이고, 버전이 없으면 답할 수 없다.<br>&#183; <b>회차가 달라도 상관없다</b> &#8212; 6기 미프 2차와 7기 미프 3차에서 같은 개념을 물었다면 <b>같은 개념끼리</b> 비교한다.</div>
+          <div class="exkey"><span>1단<span class="rmp"><i style="background:#df6150"></i><i style="background:#ec9a5c"></i><i style="background:#ecc95e"></i><i style="background:#a9cf8e"></i><i style="background:#57b083"></i></span>4단</span><span><i style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px)"></i>그 기수에 없던 개념</span><span style="margin-left:auto">MG-02 히트맵과 같은 눈금</span></div>
           <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-warning)">&#9888;</span><span class="vx"><b>Graph 구성이 교안을 v2로 바꾼 뒤 오히려 나빠졌다</b><span class="vs">6기 <b>2.9</b> &#8594; 7기 <b>2.5</b> &#183; 교안 <b>v1 &#8594; v2</b>. <b>교안 개정이 도움이 되지 않았다</b>는 뜻이고, 7기에서는 <b>7개 반이 반 문제</b>로 판정됐습니다(6기는 3개 반). <b>다음 기수 전에 이 섹션을 다시 봐야</b> 합니다.</span></span></span><span class="vact"><button class="btn">교안에서 보기</button><button class="btn ghost">기수 리포트에 기록</button></span></div>
         </div>
       </div>
     </div>
   </div>
+  <div class="note2">&#183; <b>같은 교안 &#183; 같은 개념만 비교한다.</b> 커리큘럼이 같으면 <b>같은 것을 물은 값</b>이라 비교가 성립한다 &#8212; 개념이 다르면 <b>다른 것을 물은 값</b>이다. &#183; <b>새로 고른 개념은 비교 대상이 아니라고 말한다</b> &#8212; 빈칸으로 두면 <i>"0점"</i>이나 <i>"나빠졌다"</i>로 읽힌다. &#183; <b>교안 버전을 함께 쓴다</b> &#8212; <b>교안을 고친 것이 효과가 있었나</b>가 이 표의 핵심 질문이고, 버전이 없으면 답할 수 없다. &#183; <b>회차가 달라도 상관없다</b> &#8212; 6기 미프 2차와 7기 미프 3차에서 같은 개념을 물었다면 <b>같은 개념끼리</b> 비교한다. &#183; <b>반 단위 비교가 없다</b> &#8212; 6기 A반과 7기 A반은 <b>다른 사람들</b>이다. <b>개념만 기수를 걸쳐 같다.</b> &#183; <b>여기서는 평균 도달을 쓴다</b> &#8212; 같은 개념이라 비교 가능하다. 회차 흐름 탭이 <b>위험자 비율</b>을 쓰는 것과 값이 다른 이유다.</div>
   </div>
   <div class="rpage" id="page-nocohort">
-  <div class="sec-label">&#9316; 비교할 기수가 없을 때</div>
+  <div class="sec-label">&#9321; 비교할 기수가 없을 때</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
     <div class="app">
@@ -407,58 +775,18 @@
             <div class="fil" style="font-size:var(--fs-sm);font-weight:700;padding:7px 15px"><span class="k" style="font-weight:400">비교</span> 없음 &#9662;</div>
           </div>
           <div class="empty"><div class="t">비교할 기수가 없습니다</div><div class="s">7기가 <b>이 기관의 첫 기수</b>예요.<br>다음 기수가 같은 교안으로 진행되면 <b>같은 개념끼리</b> 비교할 수 있습니다.<br>지금은 <b>회차 흐름</b>에서 기수 안의 변화를 봅니다.</div></div>
-          <div class="hint3">&#183; <b>기수가 하나면 이 탭이 할 일이 없다</b> &#8212; 억지로 <b>다른 기관 평균</b>을 만들지 않는다. 그건 <b>커리큘럼이 다른 값</b>이다.</div>
         </div>
       </div>
     </div>
   </div>
-  </div>
-  <div class="rpage" id="page-team">
-  <div class="sec-label">&#9317; 팀 — 추세로 읽으면 안 되는 계층</div>
-  <div class="viewport">
-    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trend</span></div>
-    <div class="app">
-      <div class="topbar">
-        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
-        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
-      </div>
-      <div class="body">
-        <div class="nav">
-          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item on"><span class="ic">&#9651;</span>추이</div></div>
-          <div class="grp"><div class="item"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
-          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
-        </div>
-        <div class="content">
-          <div class="phead"><div class="crumb">추이 &#8250; 7기 &#8250; <b style="color:var(--c-primary)">C반</b></div><h2>추이</h2></div>
-          <div class="tabs"><span class="t on">회차 흐름</span><span class="t">기수 간 비교</span></div>
-          <div class="ltool">
-            <span class="seg2"><span>반별</span><span class="on">팀</span></span>
-            <div class="fil on"><span class="k">반</span> C반 &#9662;</div>
-            <div class="fil"><span class="k">정렬</span> 최근 회차 높은 순 &#9662;</div>
-          </div>
-          <div class="trwrap"><table class="trtbl">
-              <tr><th class="rh">팀</th><th>미프 1차</th><th>미프 2차</th><th>미프 3차</th><th>미프 4차</th><th class="tr7">1차 &#8594; 최근</th></tr>
-              <tr class="tot"><td class="rh">C반<small>25명 &#183; 김서연</small></td><td><span class="pc2 p2">16%<small>4/25</small></span></td><td><span class="pc2 p3">24%<small>6/25</small></span></td><td><span class="pc2 p5">32%<small>8/25</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;16p<span class="lb2">계속 오름</span></td></tr>
-              <tr class="first"><td class="rh">3팀<small>3명</small></td><td><span class="pc2 p5">33%<small>1/3</small></span></td><td><span class="pc2 p5">67%<small>2/3</small></span></td><td><span class="pc2 p5">100%<small>3/3</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;67p<span class="lb2">계속 오름</span></td></tr>
-              <tr class=""><td class="rh">5팀<small>3명</small></td><td><span class="pc2 p0">0%<small>0/3</small></span></td><td><span class="pc2 p5">33%<small>1/3</small></span></td><td><span class="pc2 p5">67%<small>2/3</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;67p<span class="lb2">계속 오름</span></td></tr>
-              <tr class=""><td class="rh">1팀<small>3명</small></td><td><span class="pc2 p5">33%<small>1/3</small></span></td><td><span class="pc2 p5">33%<small>1/3</small></span></td><td><span class="pc2 p5">33%<small>1/3</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+0p<span class="lb2">보합</span></td></tr>
-              <tr class=""><td class="rh">2팀<small>4명</small></td><td><span class="pc2 p0">0%<small>0/4</small></span></td><td><span class="pc2 p3">25%<small>1/4</small></span></td><td><span class="pc2 p3">25%<small>1/4</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend up">&#43;25p<span class="lb2">계속 오름</span></td></tr>
-              <tr class=""><td class="rh">4팀<small>3명</small></td><td><span class="pc2 p0">0%<small>0/3</small></span></td><td><span class="pc2 p0">0%<small>0/3</small></span></td><td><span class="pc2 p0">0%<small>0/3</small></span></td><td><span class="pc2 na2">&#8213;</span></td><td class="trend flat">+0p<span class="lb2">보합</span></td></tr>
-            </table>
-            <div class="trnote">&#183; <b>3명 팀에서 1명이면 33%</b>다 &#8212; <b>모집단이 작아 비율이 튄다.</b> 셀 아래 <b>실수</b>를 같이 쓴다.<br>&#183; <b>팀은 회차마다 재편성된다</b>(TeamMembership이 프로젝트 종속) &#8212; 가로로 읽으면 <b>다른 사람들의 값</b>을 이어 붙이는 것이다.</div>
-          </div>
-          <div class="keyrow">위험자 비율 <span class="sw" style="background:#eef7f1"></span><span class="sw" style="background:#dcefe3"></span><span class="sw" style="background:#f7e9c4"></span><span class="sw" style="background:#f2c98f"></span><span class="sw" style="background:#e59f7d"></span><span class="sw" style="background:#d9705c"></span> 높음<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 아직 안 함</div>
-          <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-info)">&#9432;</span><span class="vx"><b>팀은 회차마다 다시 짜므로 같은 팀이 아니다</b><span class="vs"><b>3팀 100%</b>는 <b>이번 회차 3팀</b>의 값이고 지난 회차 3팀과 <b>구성원이 다르다</b> &#8212; 팀은 프로젝트마다 재편성된다. <b>팀 흐름은 반 안에서 어느 팀이 이번에 무너졌나</b>를 보는 것이고, <b>추세로 읽으면 안 된다.</b></span></span></span><span class="vact"><button class="btn ghost">반별로 돌아가기</button></span></div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="note2">&#183; <b>기수가 하나면 이 탭이 할 일이 없다</b> &#8212; 억지로 <b>다른 기관 평균</b>을 만들지 않는다. 그건 <b>커리큘럼이 다른 값</b>이다.</div>
   </div>
 
 </div>
 <script>
   var PAGE = { round:"page-round", one:"page-one", early:"page-early",
-               cohort:"page-cohort", nocohort:"page-nocohort", team:"page-team" };
+               pick:"page-pick", range:"page-range", sort:"page-sort", team:"page-team", bigp:"page-bigp",
+               cohort:"page-cohort", nocohort:"page-nocohort" };
   function route(){
     var h = (location.hash || "").slice(1) || "round";
     var id = PAGE[h] || "page-round";

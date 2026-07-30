@@ -166,8 +166,29 @@
   .empty .t{font-size:var(--fs-base);font-weight:600;margin-bottom:6px}
   .empty .s{font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7}
 
-  .note2{max-width:1180px;margin:-18px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
+  .note2{max-width:1180px;margin:14px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
   .note2 b{color:var(--c-text-2)}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
 
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
@@ -193,6 +214,35 @@
       <li><b>이의제기 행을 만들지 않는다.</b> 접수 화면도 검토 화면도 정의된 적이 없다 &#8212; <b>갈 곳 없는 큐</b>를 대시보드에만 두지 않는다.</li>
       <li><b>평균 도달 단계&#183;응시율 추이가 없다.</b> 25명에서 무의미하다. 집계가 값을 하는 것은 개인을 못 보는 <b>오퍼레이터</b> 쪽이다.</li>
     </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 인박스 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">목록 · 필터</td></tr>
+        <tr><td class="no">—</td><td class="st">기본 — 지난 방문 이후</td><td class="code">GET /manager/inbox</td><td class="msg">마감 · 확인 · 면담 대기 · 미제출 <b>4개 밴드</b><span class="nx">→ 행에서 바로 처리</span></td><td><a class="mk2" href="#inbox">#inbox</a></td></tr>
+        <tr><td class="no">—</td><td class="st">전체</td><td class="code">—</td><td class="msg">필터를 끄면 남은 일이 전부 보인다<span class="nx">→ 처리</span></td><td><a class="mk2" href="#all">#all</a></td></tr>
+        <tr><td class="no">—</td><td class="st">처리됨 펼침</td><td class="code">—</td><td class="msg">같은 기간에 이미 처리한 것<span class="nx">→ 확인</span></td><td><a class="mk2" href="#done">#done</a></td></tr>
+        <tr><td class="no">—</td><td class="st">할 일 0</td><td class="code">—</td><td class="msg"><b>지난 방문 이후 새로 생긴 일이 없습니다</b> + <b>전체로 바꾸면 남은 일을 볼 수 있다</b>고 밝힌다<span class="nx">→ 필터 해제 — <b>필터가 켜진 0을 '일이 없다'로 읽히게 두지 않는다</b></span></td><td><a class="mk2" href="#clear">#clear</a></td></tr>
+        <tr><td class="no">—</td><td class="st">진행 중인 프로젝트 없음</td><td class="code">—</td><td class="msg"><b>진행 중인 프로젝트가 없습니다</b><span class="nx">→ 대기 — 생성 유도를 넣지 않는다(오퍼레이터 소관)</span></td><td><a class="mk2" href="#noproject">#noproject</a></td></tr>
+        <tr class="grp"><td colspan="5">행 액션</td></tr>
+        <tr><td class="no">—</td><td class="st">독촉 발송</td><td class="code">POST /manager/nudge</td><td class="msg">버튼이 <b>보냄 · 방금</b>으로 바뀐다 · 단건이라 모달 없음<span class="nx">→ 같은 행에서 재발송 가능</span></td><td><a class="mk2" href="#sent">#sent</a></td></tr>
+        <tr><td class="no">—</td><td class="st">팀 전원 독촉</td><td class="code">POST /manager/nudge/team</td><td class="msg">미제출 팀 단위로 한 번에<span class="nx">→ —</span></td><td><a class="mk2" href="#inbox">#inbox</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>독촉 대상이 이미 처리됨</b></td><td class="code">ALREADY_RESOLVED</td><td class="msg"><b>이미 제출했습니다</b> · 그 행을 목록에서 뺀다<span class="nx">→ <b>그림 없음</b> — 토스트 + 행 갱신. 마감 직전에 실제로 일어난다</span></td><td class="no">—</td></tr>
+        <tr><td class="no">—</td><td class="st">독촉 발송 실패</td><td class="code">NUDGE_FAILED</td><td class="msg"><b>보내지 못했습니다 · 다시</b> — 그 행만<span class="nx">→ 재시도 — <b>그림 없음</b>(버튼 상태만 바뀐다)</span></td><td class="no">—</td></tr>
+        <tr class="grp"><td colspan="5">실패</td></tr>
+        <tr><td class="no">—</td><td class="st">부분 실패</td><td class="code">—</td><td class="msg">실패한 <b>줄만</b> <code>불러오지 못함 · 다시</code><span class="nx">→ 재시도 — <b>화면 전체를 비우지 않는다</b></span></td><td><a class="mk2" href="#partial">#partial</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>필터가 켜진 0과 진짜 0을 구분한다.</b> <code>지난 방문 이후</code>로 걸러서 0인 것을 "할 일이 없다"로 읽히게 두면 남은 일을 놓친다.<br>
+    · <b>N1·N2는 그림이 없다.</b> 행 하나의 버튼·문구만 바뀌므로 화면을 따로 그리지 않는다 — 다만 <b>구현에는 반드시 있어야 하는 분기</b>다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
   </div>
 
   <div class="rpage" id="page-inbox">
@@ -231,9 +281,9 @@
       </div>
     </div>
   </div>
-  </div>
   <div class="note2">&#183; <b>정렬 근거</b> &#8212; &#9312; 지나면 복구가 안 되는 것 &#8594; &#9313; 확인해야 판정이 확정되는 것 &#8594; &#9314; 면담 대기 &#8594; &#9315; 미제출. <b>화면에는 분류만 쓴다.</b> &#183; <b>시점 정합</b> &#8212; 미프 3차 제출 마감(내일 18:00)이 곧 <b>미프 2차 다시 보기 창 마감</b>이다(11절 &#8212; 3일 또는 다음 제출일 중 빠른 쪽). 리포트 발행 전이므로 <b>미프 3차 면담&#183;다시 보기는 아직 없다.</b> &#183; <b>이름을 누르면 교육생 상세.</b></div>
-  <div class="rpage" id="page-done">
+  </div>
+    <div class="rpage" id="page-done">
   <div class="sec-label">&#9313; 처리됨 펼침 — 같은 기간 기준</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7</span></div>
@@ -440,7 +490,7 @@
 
 </div>
 <script>
-  var PAGE = { inbox:"page-inbox", done:"page-done", sent:"page-sent",
+  var PAGE = { cases:"page-cases", inbox:"page-inbox", done:"page-done", sent:"page-sent",
                all:"page-all", clear:"page-clear", noproject:"page-noproject",
                partial:"page-partial" };
   function route(){

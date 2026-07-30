@@ -361,6 +361,27 @@
   .chk .why{color:var(--c-text-3);font-size:var(--fs-xs);flex:1}
   .snip{background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-sm);padding:var(--sp-2) var(--sp-3);font-family:var(--mono);font-size:11px;color:var(--c-text-2);line-height:1.8;margin-top:var(--sp-2)}
 
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
   body.embedded .sec-label{margin-top:0}
@@ -382,6 +403,53 @@
   </div>
 
 
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 프로젝트 상세 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">팀 탭 — 상태가 순서대로 바뀐다</td></tr>
+        <tr><td class="no">—</td><td class="st">① 편성 전</td><td class="code">GET /projects/{id}/teams</td><td class="msg">팀이 없다 · <b>[자동 배분]은 여기서만</b><span class="nx">→ 팀 추가 / 자동 배분</span></td><td><a class="mk2" href="#team-empty">#team-empty</a></td></tr>
+        <tr><td class="no">—</td><td class="st">자동 배분 모달</td><td class="code">POST /teams/auto</td><td class="msg"><b>무작위가 기본값</b> · 실력 섞기는 <b>직전 회차 기록이 있어야</b> 쓸 수 있다<span class="nx">→ 배분 — <b>이미 제출한 팀은 대상에서 뺀다</b>(코드가 팀에 묶여 있다)</span></td><td><a class="mk2" href="#team-auto">#team-auto</a></td></tr>
+        <tr><td class="no">—</td><td class="st">② 편성 중</td><td class="code">—</td><td class="msg"><b>팀에 들어가지 않은 사람이 n명 있어요</b> · <b>[팀 편성 완료]가 잠긴다</b><span class="nx">→ 전원 배정 — <b>미배정이 있으면 제출이 열리지 않는다</b></span></td><td><a class="mk2" href="#team-partial">#team-partial</a></td></tr>
+        <tr><td class="no">—</td><td class="st">③ 전원 배정됨</td><td class="code">—</td><td class="msg"><b>확정하면 학생이 제출할 수 있게 되고 팀은 잠깁니다</b><span class="nx">→ 되돌릴 수 없는 것을 먼저 말한다</span></td><td><a class="mk2" href="#team-ready">#team-ready</a></td></tr>
+        <tr><td class="no">—</td><td class="st">④ 확정됨 · 제출 전</td><td class="code">PATCH /teams/lock</td><td class="msg"><b>[편성 다시 열기]</b>가 남는다<span class="nx">→ <b>아직 되돌릴 수 있다</b></span></td><td><a class="mk2" href="#team-locked">#team-locked</a></td></tr>
+        <tr><td class="no">—</td><td class="st">⑤ 제출 시작됨</td><td class="code">—</td><td class="msg"><b>[팀 이동]만</b> 남는다 — 편성 다시 열기가 사라진다<span class="nx">→ <b>되돌릴 수 없다</b> — 제출된 코드가 팀에 묶여 있다</span></td><td><a class="mk2" href="#team">#team</a></td></tr>
+        <tr class="grp"><td colspan="5">팀 편집</td></tr>
+        <tr><td class="no">—</td><td class="st">팀에 넣기</td><td class="code">PATCH /teams/{id}/members</td><td class="msg">미배정 인원을 고른다<span class="nx">→ —</span></td><td><a class="mk2" href="#team-assign">#team-assign</a></td></tr>
+        <tr><td class="no">—</td><td class="st">팀 행 클릭 → 편집</td><td class="code">—</td><td class="msg"><b>직전 회차 도달 단계를 같이 보여준다</b><span class="nx">→ 실력이 한쪽에 몰렸는지 확인</span></td><td><a class="mk2" href="#team-edit">#team-edit</a></td></tr>
+        <tr><td class="no">—</td><td class="st">팀 추가</td><td class="code">POST /teams</td><td class="msg">빈 팀을 만든다<span class="nx">→ —</span></td><td><a class="mk2" href="#team-add">#team-add</a></td></tr>
+        <tr class="grp"><td colspan="5">제출 현황</td></tr>
+        <tr><td class="no">—</td><td class="st">제출 현황</td><td class="code">GET /projects/{id}/submissions</td><td class="msg"><b>팀은 색 배지, 개인은 텍스트</b><span class="nx">→ —</span></td><td><a class="mk2" href="#submit">#submit</a></td></tr>
+        <tr><td class="no">—</td><td class="st">요구사항 충족 펼침</td><td class="code">—</td><td class="msg">팀 행을 펼친다 — <b>모달이 아니다</b><span class="nx">→ —</span></td><td><a class="mk2" href="#req">#req</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>독촉</b></td><td class="code">POST /nudge</td><td class="msg"><b>미제출은 팀 단위, 미응시는 개인</b><span class="nx">→ 응시 창이 남아 있으면 급하지 않다고 밝힌다</span></td><td><a class="mk2" href="#nudge">#nudge</a></td></tr>
+        <tr><td class="no">—</td><td class="st">분석 실패</td><td class="code">—</td><td class="msg">제출 현황에 <code>분석 실패 · 재시도</code><span class="nx">→ 그 팀만 — 나머지는 그대로</span></td><td><a class="mk2" href="#submit">#submit</a></td></tr>
+        <tr class="grp"><td colspan="5">결과 탭</td></tr>
+        <tr><td class="no">—</td><td class="st">발행 전</td><td class="code">—</td><td class="msg"><b>아직 발행 전</b> · 개인 리포트 비활성<span class="nx">→ 마감 후 발행</span></td><td><a class="mk2" href="#result-pre">#result-pre</a></td></tr>
+        <tr><td class="no">—</td><td class="st">반 종합</td><td class="code">GET /projects/{id}/results</td><td class="msg">개념별 도달 분포<span class="nx">→ —</span></td><td><a class="mk2" href="#result-class">#result-class</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>집단 미달</b>(반 절반)</td><td class="code">—</td><td class="msg">결과 탭 경고 + <b>면담 사유에서 제외</b><span class="nx">→ 개인 문제가 아니라 반 문제</span></td><td><a class="mk2" href="#result-class">#result-class</a></td></tr>
+        <tr><td class="no">—</td><td class="st">개인 · A안</td><td class="code">—</td><td class="msg"><b>점수 없음</b> · 도달 단계 강조<span class="nx">→ <b>축별 점수는 내부 값</b></span></td><td><a class="mk2" href="#result-person">#result-person</a></td></tr>
+        <tr><td class="no">—</td><td class="st">채점 근거 펼침</td><td class="code">—</td><td class="msg">그 판정의 근거 문답<span class="nx">→ —</span></td><td><a class="mk2" href="#result-person-open">#result-person-open</a></td></tr>
+        <tr><td class="no">—</td><td class="st">개인 · B안</td><td class="code">—</td><td class="msg">축별 점수 병기 <b>(대안)</b><span class="nx">→ <b>확정 전</b> — A안과 택일</span></td><td><a class="mk2" href="#result-person-b">#result-person-b</a></td></tr>
+        <tr><td class="no">—</td><td class="st">개념 <code>코드 매칭 0</code></td><td class="code">—</td><td class="msg">개념별 표에 <b>별도 열</b><span class="nx">→ <b>0단과 섞지 않는다</b></span></td><td><a class="mk2" href="#result-class">#result-class</a></td></tr>
+        <tr><td class="no">—</td><td class="st">다시 보기 발송</td><td class="code">POST /retry</td><td class="msg">대상과 기한을 확인하고 보낸다<span class="nx">→ —</span></td><td><a class="mk2" href="#retry-send">#retry-send</a></td></tr>
+        <tr class="grp"><td colspan="5">실패</td></tr>
+        <tr><td class="no">—</td><td class="st">자동 배분 실패</td><td class="code">AUTO_ASSIGN_FAILED</td><td class="msg"><b>배분하지 못했습니다</b> · 기존 편성 유지<span class="nx">→ 재시도 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+        <tr><td class="no">—</td><td class="st">편성 확정 실패</td><td class="code">TEAM_LOCK_FAILED</td><td class="msg"><b>확정하지 못했습니다</b> · 편성은 그대로<span class="nx">→ 재시도 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+        <tr><td class="no">—</td><td class="st">발행 · 발송 실패</td><td class="code">PUBLISH_FAILED<br>RETRY_SEND_FAILED</td><td class="msg"><b>보내지 못했습니다 · 다시</b><span class="nx">→ 재시도 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>팀 편성은 되돌릴 수 있는 구간이 정해져 있다.</b> <code>확정</code>까지는 다시 열 수 있지만 <b>제출이 시작되면 끝이다</b> — 제출된 코드가 팀에 묶여 있어 재배분하면 매핑이 깨진다. 화면은 그 경계를 <b>버튼이 사라지는 것</b>으로 보여준다.<br>
+    · <b>미배정이 있으면 제출이 열리지 않는다.</b> 팀이 없는 사람은 코드를 낼 수 없으므로 편성 완료를 잠근다.<br>
+    · <b>독촉은 대상 단위가 다르다.</b> 미제출은 <b>팀</b>(제출이 팀 단위라서), 미응시는 <b>개인</b>(응시가 개인이라서).<br>
+    · <b>개인 결과 A안 / B안은 아직 택일 전이다.</b> A안은 점수를 아예 안 보여주고 B안은 축별 점수를 병기한다 — <b>둘 다 그려 두고 고른다</b>.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
+  </div>
 
   <div class="rpage" id="page-team-empty">
   <div class="sec-label">화면 · 팀 탭 — 아직 편성 전 (자동 배분은 여기서만)</div>
@@ -439,47 +507,6 @@
   </div>
   </div>
 
-  <div class="rpage" id="page-team-partial">
-  <div class="sec-label">화면 · 팀 탭 — 편성 중 (미배정이 있으면 제출이 열리지 않는다)</div>
-  <div class="viewport">
-    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects/mif-3</span></div>
-    <div class="app">
-      <div class="topbar">
-        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
-        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
-      </div>
-      <div class="body">
-        <div class="nav">
-          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">▩</span>히트맵</div></div>
-          <div class="grp"><div class="item"><span class="ic">✎</span>면담<span class="bg">4</span></div></div>
-          <div class="grp"><div class="item"><span class="ic">◎</span>교육생</div><div class="item on"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">☰</span>교안</div></div>
-        </div>
-        <div class="content">
-          <div class="ctxbar">
-            <div>
-              <span class="back">← 프로젝트</span>
-              <div class="cname">미프 3차 <span class="st run"><span class="dot"></span>진행 중</span></div>
-              <div class="cmeta">
-                <span class="kc">A반 · 25명</span>
-                <span class="kc">교안 <b>AI_LLMOps v2</b></span>
-                <span class="kc">검증 개념 <b>HITL Trigger 조건 · Graph 구성 · State 관리</b></span>
-                <span class="kc">제출 마감 07-14 18:00</span>
-              </div>
-            </div>
-          </div>          <div class="tabs"><span class="t on">팀<span class="n">8팀</span></span><span class="t">제출 현황<span class="n">편성 후 열림</span></span><span class="t">결과<span class="n">발행 전</span></span></div>
-          <div class="alert warn"><span>⚠</span><div class="tx"><b>팀에 들어가지 않은 사람이 2명 있어요</b><span class="sub">한지우 · 서예준 — <b>전원이 팀에 들어가야 편성을 마칠 수 있어요</b></span></div><button class="btn">팀에 넣기</button></div>
-          <div class="lhead">
-            <div class="ttl">팀 <span class="cnt">8팀 · 23/25명</span></div>
-            <div style="display:flex;gap:var(--sp-2)"><button class="btn ghost">+ 팀 추가</button><button class="btn off">팀 편성 완료</button></div>
-          </div>
-          <div class="card"><table class="dtbl"><thead><tr><th class="k-name">팀</th><th class="k-num">인원</th><th>팀원</th><th class="k-badge">제출</th><th></th></tr></thead><tbody><tr class="click"><td class="nm">1팀</td><td class="num">3명</td><td>김민준 · 이서준 · 정하늘</td><td><span class="na">—</span></td><td class="act"><span class="amini">편집</span></td></tr><tr class="click"><td class="nm">2팀</td><td class="num">3명</td><td>오세훈 · 강지민 · 윤서아</td><td><span class="na">—</span></td><td class="act"><span class="amini">편집</span></td></tr><tr class="click"><td class="nm">3팀</td><td class="num">3명</td><td>임채원 · 백승우 · 노아린</td><td><span class="na">—</span></td><td class="act"><span class="amini">편집</span></td></tr><tr class="click"><td class="nm">4팀</td><td class="num">2명</td><td>박도윤 · 최유나</td><td><span class="st warn"><span class="dot"></span>자리 있음</span></td><td class="act"><span class="amini">편집</span></td></tr></tbody></table></div>
-          <div class="tablefoot"><span class="range">1–8 / 8팀</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-  </div>
-
   <div class="rpage" id="page-team-auto">
   <div class="sec-label">상태 · [자동 배분] 모달</div>
   <div class="viewport">
@@ -543,6 +570,47 @@
   </div>
 
 
+
+  <div class="rpage" id="page-team-partial">
+  <div class="sec-label">화면 · 팀 탭 — 편성 중 (미배정이 있으면 제출이 열리지 않는다)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects/mif-3</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">▩</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">✎</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">◎</span>교육생</div><div class="item on"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">☰</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="ctxbar">
+            <div>
+              <span class="back">← 프로젝트</span>
+              <div class="cname">미프 3차 <span class="st run"><span class="dot"></span>진행 중</span></div>
+              <div class="cmeta">
+                <span class="kc">A반 · 25명</span>
+                <span class="kc">교안 <b>AI_LLMOps v2</b></span>
+                <span class="kc">검증 개념 <b>HITL Trigger 조건 · Graph 구성 · State 관리</b></span>
+                <span class="kc">제출 마감 07-14 18:00</span>
+              </div>
+            </div>
+          </div>          <div class="tabs"><span class="t on">팀<span class="n">8팀</span></span><span class="t">제출 현황<span class="n">편성 후 열림</span></span><span class="t">결과<span class="n">발행 전</span></span></div>
+          <div class="alert warn"><span>⚠</span><div class="tx"><b>팀에 들어가지 않은 사람이 2명 있어요</b><span class="sub">한지우 · 서예준 — <b>전원이 팀에 들어가야 편성을 마칠 수 있어요</b></span></div><button class="btn">팀에 넣기</button></div>
+          <div class="lhead">
+            <div class="ttl">팀 <span class="cnt">8팀 · 23/25명</span></div>
+            <div style="display:flex;gap:var(--sp-2)"><button class="btn ghost">+ 팀 추가</button><button class="btn off">팀 편성 완료</button></div>
+          </div>
+          <div class="card"><table class="dtbl"><thead><tr><th class="k-name">팀</th><th class="k-num">인원</th><th>팀원</th><th class="k-badge">제출</th><th></th></tr></thead><tbody><tr class="click"><td class="nm">1팀</td><td class="num">3명</td><td>김민준 · 이서준 · 정하늘</td><td><span class="na">—</span></td><td class="act"><span class="amini">편집</span></td></tr><tr class="click"><td class="nm">2팀</td><td class="num">3명</td><td>오세훈 · 강지민 · 윤서아</td><td><span class="na">—</span></td><td class="act"><span class="amini">편집</span></td></tr><tr class="click"><td class="nm">3팀</td><td class="num">3명</td><td>임채원 · 백승우 · 노아린</td><td><span class="na">—</span></td><td class="act"><span class="amini">편집</span></td></tr><tr class="click"><td class="nm">4팀</td><td class="num">2명</td><td>박도윤 · 최유나</td><td><span class="st warn"><span class="dot"></span>자리 있음</span></td><td class="act"><span class="amini">편집</span></td></tr></tbody></table></div>
+          <div class="tablefoot"><span class="range">1–8 / 8팀</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
 
   <div class="rpage" id="page-team-ready">
   <div class="sec-label">화면 · 팀 탭 — 전원 배정됨 · 아직 확정 전</div>
@@ -585,69 +653,6 @@
   </div>
   </div>
 
-  <div class="rpage" id="page-team-auto">
-  <div class="sec-label">상태 · [자동 배분] 모달</div>
-  <div class="viewport">
-    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects/mif-3</span></div>
-    <div class="app">
-      <div class="topbar">
-        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
-        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
-      </div>
-      <div class="body">
-        <div class="nav">
-          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">▩</span>히트맵</div></div>
-          <div class="grp"><div class="item"><span class="ic">✎</span>면담<span class="bg">4</span></div></div>
-          <div class="grp"><div class="item"><span class="ic">◎</span>교육생</div><div class="item on"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">☰</span>교안</div></div>
-        </div>
-        <div class="content">
-          <div class="ctxbar">
-            <div>
-              <span class="back">← 프로젝트</span>
-              <div class="cname">미프 3차 <span class="st run"><span class="dot"></span>진행 중</span></div>
-              <div class="cmeta">
-                <span class="kc">A반 · 25명</span>
-                <span class="kc">교안 <b>AI_LLMOps v2</b></span>
-                <span class="kc">검증 개념 <b>HITL Trigger 조건 · Graph 구성 · State 관리</b></span>
-                <span class="kc">제출 마감 07-14 18:00</span>
-              </div>
-            </div>
-          </div>          <div class="tabs"><span class="t on">팀<span class="n">편성 전</span></span><span class="t">제출 현황<span class="n">—</span></span><span class="t">결과<span class="n">—</span></span></div>
-          <div class="lhead">
-            <div class="ttl">팀 <span class="cnt">아직 없음 · 25명 미배정</span></div>
-            <div style="display:flex;gap:var(--sp-2)"><button class="btn ghost">+ 팀 추가</button><button class="btn">자동 배분</button></div>
-          </div>
-          <div class="card" style="padding:var(--sp-8);text-align:center">
-            <div style="font-size:var(--fs-base);font-weight:600;margin-bottom:6px">팀을 먼저 짜야 코드를 받을 수 있어요</div>
-            <div style="font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7">제출은 팀 단위예요 — 팀원 중 <b>한 명</b>이 내면 팀 전체가 제출됩니다.<br><b>자동 배분</b>으로 한 번에 나누고, 마음에 안 들면 손으로 바꾸면 돼요.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="backdrop">
-      <div class="dialog" style="width:600px">
-        <div class="dh"><h3>자동 배분 <span style="font-size:12px;color:var(--c-text-3);font-weight:400">· A반 25명</span></h3><span class="x">✕</span></div>
-        <div class="db">
-          <div class="fld"><div class="fl">팀 크기</div><div class="inp sm">3~4명 ▾</div>
-            <div class="calc"><span class="ar">→</span><span class="res">8팀</span><span class="brk">3명 7팀 · 4명 1팀</span><span class="rest">✓ 남는 사람 없음</span></div>
-            <div class="fh">인원이 딱 나눠지지 않아 <b>범위</b>로 고릅니다 — 단일 인원으로 고정하면 남는 사람이 생겨요.</div></div>
-          <div class="fld"><div class="fl">섞는 방법</div>
-            <div class="chk on"><span class="bx">✓</span><span class="nm">무작위</span><span class="why">그냥 섞어서 나눕니다</span></div>
-            <div class="chk"><span class="bx"></span><span class="nm">실력 섞기</span><span class="why">직전 회차 도달 단계가 한쪽에 몰리지 않게 나눕니다</span></div>
-            <div class="fh">이번은 <b>미프 3차</b>라 직전 기록이 있어요. 1차라면 무작위만 쓸 수 있습니다.</div>
-          </div>
-          <div class="fld"><div class="fl">지난 회차와 겹치지 않게</div>
-            <div class="chk on"><span class="bx">✓</span><span class="nm">되도록 피하기</span><span class="why">2명 이상 겹치는 팀은 다시 뽑아요 — 안 되면 그대로 두고 알려드립니다</span></div>
-          </div>
-          <div class="fld"><div class="fh">결과가 마음에 안 들면 <b>다시 실행</b>하거나 팀 편집으로 바꾸면 돼요.</div></div>
-        </div>
-        <div class="df"><span class="l">25명이 8팀으로 나뉩니다</span><button class="btn ghost">취소</button><button class="btn">배분하기</button></div>
-      </div>
-    </div>
-  </div>
-  </div>
-
-
   <div class="rpage" id="page-team-locked">
   <div class="sec-label">화면 · 팀 탭 — 확정됨 · 아직 제출 전 (되돌릴 수 있다)</div>
   <div class="viewport">
@@ -688,69 +693,6 @@
   </div>
   </div>
 
-  <div class="rpage" id="page-team-auto">
-  <div class="sec-label">상태 · [자동 배분] 모달</div>
-  <div class="viewport">
-    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects/mif-3</span></div>
-    <div class="app">
-      <div class="topbar">
-        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
-        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
-      </div>
-      <div class="body">
-        <div class="nav">
-          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">▩</span>히트맵</div></div>
-          <div class="grp"><div class="item"><span class="ic">✎</span>면담<span class="bg">4</span></div></div>
-          <div class="grp"><div class="item"><span class="ic">◎</span>교육생</div><div class="item on"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">☰</span>교안</div></div>
-        </div>
-        <div class="content">
-          <div class="ctxbar">
-            <div>
-              <span class="back">← 프로젝트</span>
-              <div class="cname">미프 3차 <span class="st run"><span class="dot"></span>진행 중</span></div>
-              <div class="cmeta">
-                <span class="kc">A반 · 25명</span>
-                <span class="kc">교안 <b>AI_LLMOps v2</b></span>
-                <span class="kc">검증 개념 <b>HITL Trigger 조건 · Graph 구성 · State 관리</b></span>
-                <span class="kc">제출 마감 07-14 18:00</span>
-              </div>
-            </div>
-          </div>          <div class="tabs"><span class="t on">팀<span class="n">편성 전</span></span><span class="t">제출 현황<span class="n">—</span></span><span class="t">결과<span class="n">—</span></span></div>
-          <div class="lhead">
-            <div class="ttl">팀 <span class="cnt">아직 없음 · 25명 미배정</span></div>
-            <div style="display:flex;gap:var(--sp-2)"><button class="btn ghost">+ 팀 추가</button><button class="btn">자동 배분</button></div>
-          </div>
-          <div class="card" style="padding:var(--sp-8);text-align:center">
-            <div style="font-size:var(--fs-base);font-weight:600;margin-bottom:6px">팀을 먼저 짜야 코드를 받을 수 있어요</div>
-            <div style="font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7">제출은 팀 단위예요 — 팀원 중 <b>한 명</b>이 내면 팀 전체가 제출됩니다.<br><b>자동 배분</b>으로 한 번에 나누고, 마음에 안 들면 손으로 바꾸면 돼요.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="backdrop">
-      <div class="dialog" style="width:600px">
-        <div class="dh"><h3>자동 배분 <span style="font-size:12px;color:var(--c-text-3);font-weight:400">· A반 25명</span></h3><span class="x">✕</span></div>
-        <div class="db">
-          <div class="fld"><div class="fl">팀 크기</div><div class="inp sm">3~4명 ▾</div>
-            <div class="calc"><span class="ar">→</span><span class="res">8팀</span><span class="brk">3명 7팀 · 4명 1팀</span><span class="rest">✓ 남는 사람 없음</span></div>
-            <div class="fh">인원이 딱 나눠지지 않아 <b>범위</b>로 고릅니다 — 단일 인원으로 고정하면 남는 사람이 생겨요.</div></div>
-          <div class="fld"><div class="fl">섞는 방법</div>
-            <div class="chk on"><span class="bx">✓</span><span class="nm">무작위</span><span class="why">그냥 섞어서 나눕니다</span></div>
-            <div class="chk"><span class="bx"></span><span class="nm">실력 섞기</span><span class="why">직전 회차 도달 단계가 한쪽에 몰리지 않게 나눕니다</span></div>
-            <div class="fh">이번은 <b>미프 3차</b>라 직전 기록이 있어요. 1차라면 무작위만 쓸 수 있습니다.</div>
-          </div>
-          <div class="fld"><div class="fl">지난 회차와 겹치지 않게</div>
-            <div class="chk on"><span class="bx">✓</span><span class="nm">되도록 피하기</span><span class="why">2명 이상 겹치는 팀은 다시 뽑아요 — 안 되면 그대로 두고 알려드립니다</span></div>
-          </div>
-          <div class="fld"><div class="fh">결과가 마음에 안 들면 <b>다시 실행</b>하거나 팀 편집으로 바꾸면 돼요.</div></div>
-        </div>
-        <div class="df"><span class="l">25명이 8팀으로 나뉩니다</span><button class="btn ghost">취소</button><button class="btn">배분하기</button></div>
-      </div>
-    </div>
-  </div>
-  </div>
-
-
   <div class="rpage" id="page-team">
   <div class="sec-label">화면 · 팀 탭 — 제출 시작됨 (되돌릴 수 없다)</div>
   <div class="viewport">
@@ -786,68 +728,6 @@
           <div class="card"><table class="dtbl"><thead><tr><th class="k-name">팀</th><th class="k-num">인원</th><th>팀원</th><th class="k-badge">제출</th><th></th></tr></thead><tbody><tr class="click"><td class="nm">1팀</td><td class="num">3명</td><td>김민준 · 이서준 · 정하늘</td><td><span class="st ok"><span class="dot"></span>제출됨</span></td><td class="act"></td></tr><tr class="click"><td class="nm">2팀</td><td class="num">3명</td><td>오세훈 · 강지민 · 윤서아</td><td><span class="st ok"><span class="dot"></span>제출됨</span></td><td class="act"></td></tr><tr class="click"><td class="nm">3팀</td><td class="num">3명</td><td>임채원 · 백승우 · 노아린</td><td><span class="st wait"><span class="dot"></span>미제출</span></td><td class="act"></td></tr><tr class="click"><td class="nm">4팀</td><td class="num">4명</td><td>박도윤 · 최유나 · 한지우 · 서예준</td><td><span class="st wait"><span class="dot"></span>미제출</span></td><td class="act"></td></tr></tbody></table></div>
           <div class="tablefoot"><span class="range">1–8 / 8팀</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
         </div>
-      </div>
-    </div>
-  </div>
-  </div>
-
-  <div class="rpage" id="page-team-auto">
-  <div class="sec-label">상태 · [자동 배분] 모달</div>
-  <div class="viewport">
-    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects/mif-3</span></div>
-    <div class="app">
-      <div class="topbar">
-        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
-        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
-      </div>
-      <div class="body">
-        <div class="nav">
-          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">▩</span>히트맵</div></div>
-          <div class="grp"><div class="item"><span class="ic">✎</span>면담<span class="bg">4</span></div></div>
-          <div class="grp"><div class="item"><span class="ic">◎</span>교육생</div><div class="item on"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">☰</span>교안</div></div>
-        </div>
-        <div class="content">
-          <div class="ctxbar">
-            <div>
-              <span class="back">← 프로젝트</span>
-              <div class="cname">미프 3차 <span class="st run"><span class="dot"></span>진행 중</span></div>
-              <div class="cmeta">
-                <span class="kc">A반 · 25명</span>
-                <span class="kc">교안 <b>AI_LLMOps v2</b></span>
-                <span class="kc">검증 개념 <b>HITL Trigger 조건 · Graph 구성 · State 관리</b></span>
-                <span class="kc">제출 마감 07-14 18:00</span>
-              </div>
-            </div>
-          </div>          <div class="tabs"><span class="t on">팀<span class="n">편성 전</span></span><span class="t">제출 현황<span class="n">—</span></span><span class="t">결과<span class="n">—</span></span></div>
-          <div class="lhead">
-            <div class="ttl">팀 <span class="cnt">아직 없음 · 25명 미배정</span></div>
-            <div style="display:flex;gap:var(--sp-2)"><button class="btn ghost">+ 팀 추가</button><button class="btn">자동 배분</button></div>
-          </div>
-          <div class="card" style="padding:var(--sp-8);text-align:center">
-            <div style="font-size:var(--fs-base);font-weight:600;margin-bottom:6px">팀을 먼저 짜야 코드를 받을 수 있어요</div>
-            <div style="font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7">제출은 팀 단위예요 — 팀원 중 <b>한 명</b>이 내면 팀 전체가 제출됩니다.<br><b>자동 배분</b>으로 한 번에 나누고, 마음에 안 들면 손으로 바꾸면 돼요.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="backdrop">
-      <div class="dialog" style="width:600px">
-        <div class="dh"><h3>자동 배분 <span style="font-size:12px;color:var(--c-text-3);font-weight:400">· A반 25명</span></h3><span class="x">✕</span></div>
-        <div class="db">
-          <div class="fld"><div class="fl">팀 크기</div><div class="inp sm">3~4명 ▾</div>
-            <div class="calc"><span class="ar">→</span><span class="res">8팀</span><span class="brk">3명 7팀 · 4명 1팀</span><span class="rest">✓ 남는 사람 없음</span></div>
-            <div class="fh">인원이 딱 나눠지지 않아 <b>범위</b>로 고릅니다 — 단일 인원으로 고정하면 남는 사람이 생겨요.</div></div>
-          <div class="fld"><div class="fl">섞는 방법</div>
-            <div class="chk on"><span class="bx">✓</span><span class="nm">무작위</span><span class="why">그냥 섞어서 나눕니다</span></div>
-            <div class="chk"><span class="bx"></span><span class="nm">실력 섞기</span><span class="why">직전 회차 도달 단계가 한쪽에 몰리지 않게 나눕니다</span></div>
-            <div class="fh">이번은 <b>미프 3차</b>라 직전 기록이 있어요. 1차라면 무작위만 쓸 수 있습니다.</div>
-          </div>
-          <div class="fld"><div class="fl">지난 회차와 겹치지 않게</div>
-            <div class="chk on"><span class="bx">✓</span><span class="nm">되도록 피하기</span><span class="why">2명 이상 겹치는 팀은 다시 뽑아요 — 안 되면 그대로 두고 알려드립니다</span></div>
-          </div>
-          <div class="fld"><div class="fh">결과가 마음에 안 들면 <b>다시 실행</b>하거나 팀 편집으로 바꾸면 돼요.</div></div>
-        </div>
-        <div class="df"><span class="l">25명이 8팀으로 나뉩니다</span><button class="btn ghost">취소</button><button class="btn">배분하기</button></div>
       </div>
     </div>
   </div>
@@ -1623,7 +1503,7 @@
 
 </div>
 <script>
-  var PAGE = { "team-empty":"page-team-empty", team:"page-team", "team-edit":"page-team-edit",
+  var PAGE = { cases:"page-cases", "team-empty":"page-team-empty", team:"page-team", "team-edit":"page-team-edit",
                "team-add":"page-team-add", "team-partial":"page-team-partial", "team-ready":"page-team-ready", "team-locked":"page-team-locked", "team-auto":"page-team-auto", "team-assign":"page-team-assign", submit:"page-submit", req:"page-req", nudge:"page-nudge",
                "result-pre":"page-result-pre", "result-class":"page-result-class",
                "result-person":"page-result-person", "result-person-b":"page-result-person-b", "result-person-open":"page-result-person-open", "retry-send":"page-retry-send" };

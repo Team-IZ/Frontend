@@ -92,8 +92,6 @@
   .hmkey .scale{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--c-text-2)}
   .hmkey .scale .sw{width:18px;height:12px;border-radius:3px;display:inline-block}
   /* 판정은 표 아래 한 줄 — 위면 표보다 먼저 읽히고, 옆이면 세로로 꺾여 빽빽해진다 */
-  .note{max-width:1180px;margin:-18px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
-  .note b{color:var(--c-text-2)}
   .verdict{display:flex;align-items:flex-start;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--c-border);font-size:var(--fs-sm)}
   .verdict .vt{display:flex;align-items:flex-start;gap:8px;flex:1;min-width:340px}
   .verdict .vm{font-weight:700;font-size:15px;line-height:1.5}
@@ -164,12 +162,34 @@
   .fil.on{background:var(--c-primary-soft);border-color:#cdd4f2;color:var(--c-primary);font-weight:600}
 
 
-  .note{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:var(--sp-3);line-height:1.7}
-  .note b{color:var(--c-text-2)}
 
   .empty{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8);text-align:center;width:100%;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center}
   .empty .t{font-size:var(--fs-base);font-weight:600;margin-bottom:6px}
   .empty .s{font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7}
+
+  .note2{max-width:1180px;margin:14px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
+  .note2 b{color:var(--c-text-2)}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
 
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
@@ -192,6 +212,35 @@
       <li><b>표 좌상단에 세로·가로가 무엇인지</b> 쓴다. <code>개념 1·2·3</code>만으로는 그 열의 정체를 알 수 없다.</li>
       <li><b>y축 칸 폭 150px 고정.</b> 안 그러면 <code>담당 반</code>과 <code>김민준</code>의 길이 차이로 <b>화면마다 히트맵 위치가 달라진다.</b> 범례·단계 안내도 같은 들여쓰기.</li>
     </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 히트맵 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">드릴다운 3단 — 열은 그 회차의 검증 개념 3건</td></tr>
+        <tr><td class="no">—</td><td class="st">반별</td><td class="code">GET /heatmap?scope=class</td><td class="msg">담당 반 평균 + 반별 행<span class="nx">→ 행 클릭 → 팀</span></td><td><a class="mk2" href="#class">#class</a></td></tr>
+        <tr><td class="no">—</td><td class="st">팀</td><td class="code">—</td><td class="msg">그 반의 팀별 행<span class="nx">→ 행 클릭 → 개인</span></td><td><a class="mk2" href="#team">#team</a></td></tr>
+        <tr><td class="no">—</td><td class="st">개인</td><td class="code">—</td><td class="msg"><b>평균이 아니라 도달 단계 그대로</b><span class="nx">→ 이름 클릭 → 교육생 상세</span></td><td><a class="mk2" href="#person">#person</a></td></tr>
+        <tr><td class="no">—</td><td class="st">다시 보기 반영</td><td class="code">—</td><td class="msg"><b>↑</b>로 오른 것을 표시 · <b>위 평균은 1차 기준</b><span class="nx">→ 섞으면 평균이 위로 밀린다</span></td><td><a class="mk2" href="#retried">#retried</a></td></tr>
+        <tr class="grp"><td colspan="5">데이터가 없을 때 — 없음과 0을 구분한다</td></tr>
+        <tr><td class="no">—</td><td class="st"><b>문항 없음</b>(코드에 개념이 없어 못 물음)</td><td class="code">—</td><td class="msg">셀에 <code>―</code> · 열 전체면 열 머리에 <b>문항 없음</b><span class="nx">→ <b>학생 문제가 아니라 개념 선택 문제</b></span></td><td><a class="mk2" href="#person">#person</a></td></tr>
+        <tr><td class="no">—</td><td class="st">미응시</td><td class="code">—</td><td class="msg">셀을 비우고 행 끝에 <b>미응시</b><span class="nx">→ <b>0단과 다르다</b> · 평균 모집단에서 뺀다</span></td><td class="no">—</td></tr>
+        <tr><td class="no">—</td><td class="st">회차 결과 없음</td><td class="code">—</td><td class="msg"><b>이 회차는 아직 결과가 없어요</b> + 프로젝트를 바꾸라는 안내<span class="nx">→ 다른 회차 선택</span></td><td><a class="mk2" href="#empty">#empty</a></td></tr>
+        <tr class="grp"><td colspan="5">판정할 수 없을 때</td></tr>
+        <tr><td class="no">—</td><td class="st"><b>1회차 — 비교할 지난 회차가 없다</b></td><td class="code">—</td><td class="msg"><b>단계 하락 배지를 달지 않는다</b> · <b>이번이 첫 회차입니다</b><span class="nx">→ 다음 회차부터 판정 — <b>없는 비교를 지어내지 않는다</b></span></td><td><a class="mk2" href="#first">#first</a></td></tr>
+        <tr><td class="no">—</td><td class="st">응시 인원이 적은 팀</td><td class="code">—</td><td class="msg">평균은 내되 <b>인원 수를 같이 쓴다</b>(<code>3명</code>)<span class="nx">→ <b>순위를 매기지 않는다</b> — 3명 평균으로 팀을 줄세우지 않는다</span></td><td><a class="mk2" href="#team">#team</a></td></tr>
+        <tr><td class="no">—</td><td class="st">집계 실패</td><td class="code">HEATMAP_UNAVAILABLE</td><td class="msg"><b>불러오지 못했습니다</b> · <b>0으로 그리지 않는다</b><span class="nx">→ 재조회 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>1회차에는 단계 하락을 판정하지 않는다.</b> 배지가 <b>지난 회차 대비</b>인데 비교 대상이 없다 — 없는 비교를 지어내면 첫 회차 학생이 전부 하락으로 보인다.<br>
+    · <b>없음(<code>―</code>)과 0단과 미응시는 서로 다르다.</b> 코드에 개념이 없어 못 물은 것 · 물었는데 못 한 것 · 아예 안 본 것을 같은 칸으로 그리면 처방이 달라진다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
   </div>
 
   <div class="rpage" id="page-class">
@@ -223,8 +272,8 @@
         </div>
       </div>
     </div>
-  <div class="note">· <b>열은 그 회차의 검증 개념 3건</b> — 회차마다 다르므로 프로젝트 select로 하나씩 본다. <b>반·팀은 평균 / 개인은 도달 단계 그대로</b>(5-3). <b>절반 이상이 2단 이하면 반 문제</b>로 판정해 셀에 테두리를 두른다(9-6).</div>
-  </div>
+    </div>
+  <div class="note2">· <b>열은 그 회차의 검증 개념 3건</b> — 회차마다 다르므로 프로젝트 select로 하나씩 본다. <b>반·팀은 평균 / 개인은 도달 단계 그대로</b>(5-3). <b>절반 이상이 2단 이하면 반 문제</b>로 판정해 셀에 테두리를 두른다(9-6).</div>
   </div>
   <div class="rpage" id="page-team">
   <div class="sec-label">② 팀 — 어디에 몰렸나</div>
@@ -285,6 +334,39 @@
           </div>
           <div class="hmkey"><div class="scale">취약 <span class="sw" style="background:#df6150"></span><span class="sw" style="background:#ec9a5c"></span><span class="sw" style="background:#ecc95e"></span><span class="sw" style="background:#a9cf8e"></span><span class="sw" style="background:#57b083"></span> 양호<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 문항 없음</div><div class="lvline"><span><b>1단</b>무엇을 하는지</span><span><b>2단</b>왜 그렇게 했는지</span><span><b>3단</b>다른 방법과 비교</span><span><b>4단</b>언제 깨지는지</span></div></div>
           <div class="hmwrap"><table class="hmtbl"><tr><th class="axis"><span class="ax"><i>세로</i>팀 &#8250; 팀원</span><span class="ax"><i>가로</i>이 회차의 검증 개념 3건</span></th><th><span class="lv">개념 1</span>HITL Trigger</th><th><span class="lv">개념 2</span>Graph 구성</th><th><span class="lv">개념 3</span>State 관리</th><th></th></tr><tr class="avgrow"><td class="rowh">1팀 <small>3명</small></td><td class="hc l2">2.3<small>취약</small></td><td class="hc l2 grp2">2.0<small>취약</small></td><td class="hc l4">3.5</td><td class="rk2"></td></tr><tr class="grouprow"><td colspan="5">팀원 <span>· 이름 클릭 → 그 사람 이력</span></td></tr><tr class="perrow"><td class="rowh">김민준 </td><td class="hc l1">1단</td><td class="hc l2">2단</td><td class="hc l4">4단</td><td class="rk2"><span class="rbadge down">단계 하락</span></td></tr><tr class="perrow"><td class="rowh">이서준 </td><td class="hc l2">2단</td><td class="hc l2">2단</td><td class="hc l3">3단</td><td class="rk2"><span class="rbadge down">단계 하락</span></td></tr><tr class="perrow"><td class="rowh">정하늘 </td><td class="hc l4">4단</td><td class="hc l2">2단</td><td class="hc na">&#8213;</td><td class="rk2"></td></tr></table></div>                    <div class="verdict"><span class="vt"><span class="vm" style="color:var(--c-warning)">&#9888;</span><span class="vx"><b>김민준 · 이서준이 단계 하락</b><span class="vs">2단 이하가 지난 회차 0개에서 이번 2개로 늘었어요. <b>Graph 구성은 반 전체 문제라 빼면</b>, 두 사람에게 남는 건 <b>HITL Trigger 하나</b>입니다 — 면담은 그것부터.</span></span></span><span class="vact"><button class="btn">면담 브리프 열기</button></span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-first">
+  <div class="sec-label">상태 · 미프 1차 — 비교할 지난 회차가 없다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/heatmap</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item on"><span class="ic">▩</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">✎</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">☰</span>교안</div></div>
+        </div>
+        <div class="content">
+        <div class="hmcol">
+          <div class="phead"><div class="crumb">히트맵 &#8250; 7기 &#8250; 담당 반 &#8250; A반 &#8250; <b style="color:var(--c-primary)">1팀</b></div><h2>히트맵</h2></div>
+          <div class="ltool">
+            <span class="prjsel"><span class="k">프로젝트</span> 미프 1차 <span class="cv2">&#9662;</span></span>
+            <span class="seg2"><span>반별</span><span>팀</span><span class="on">개인</span></span>
+            <div class="fil on"><span class="k">반</span> A반 &#9662;</div>
+            <div class="fil on"><span class="k">팀</span> 1팀 &#9662;</div>
+            <div class="fil"><span class="k">정렬</span> 낮은 순 &#9662;</div>
+            <div class="fil">위험만</div>
+          </div>
+          <div class="hmkey"><div class="scale">취약 <span class="sw" style="background:#df6150"></span><span class="sw" style="background:#ec9a5c"></span><span class="sw" style="background:#ecc95e"></span><span class="sw" style="background:#a9cf8e"></span><span class="sw" style="background:#57b083"></span> 양호<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 문항 없음</div><div class="lvline"><span><b>1단</b>무엇을 하는지</span><span><b>2단</b>왜 그렇게 했는지</span><span><b>3단</b>다른 방법과 비교</span><span><b>4단</b>언제 깨지는지</span></div></div>
+          <div class="hmwrap"><table class="hmtbl"><tr><th class="axis"><span class="ax"><i>세로</i>팀 &#8250; 팀원</span><span class="ax"><i>가로</i>이 회차의 검증 개념 3건</span></th><th><span class="lv">개념 1</span>HITL Trigger</th><th><span class="lv">개념 2</span>Graph 구성</th><th><span class="lv">개념 3</span>State 관리</th><th></th></tr><tr class="avgrow"><td class="rowh">1팀 <small>3명</small></td><td class="hc l2">2.3<small>취약</small></td><td class="hc l2 grp2">2.0<small>취약</small></td><td class="hc l4">3.5</td><td class="rk2"></td></tr><tr class="grouprow"><td colspan="5">팀원 <span>· 이름 클릭 → 그 사람 이력</span></td></tr><tr class="perrow"><td class="rowh">김민준 </td><td class="hc l1">1단</td><td class="hc l2">2단</td><td class="hc l4">4단</td><td class="rk2"></td></tr><tr class="perrow"><td class="rowh">이서준 </td><td class="hc l2">2단</td><td class="hc l2">2단</td><td class="hc l3">3단</td><td class="rk2"></td></tr><tr class="perrow"><td class="rowh">정하늘 </td><td class="hc l4">4단</td><td class="hc l2">2단</td><td class="hc na">&#8213;</td><td class="rk2"></td></tr></table></div>                    <div class="verdict"><span class="vt"><span class="vm">·</span><span class="vx"><b>이번이 첫 회차입니다</b><span class="vs">비교할 지난 회차가 없어 <b>단계 하락은 판정하지 않습니다.</b> 지금 낮은 개념은 있지만 떨어진 것인지 원래 그런 것인지는 <b>다음 회차부터 알 수 있습니다.</b></span></span></span></div></div>
         </div>
       </div>
     </div>
@@ -355,7 +437,7 @@
 
 </div>
 <script>
-  var PAGE = { "class":"page-class", team:"page-team", person:"page-person",
+  var PAGE = { cases:"page-cases", first:"page-first", "class":"page-class", team:"page-team", person:"page-person",
                retried:"page-retried", empty:"page-empty" };
   function route(){
     var h = (location.hash || "").slice(1) || "class";

@@ -188,8 +188,29 @@
   .modal .mf{padding:var(--sp-3) var(--sp-5);border-top:1px solid var(--c-border);display:flex;gap:var(--sp-2);justify-content:flex-end;background:var(--c-surface-2)}
   .viewport{position:relative}
 
-  .note2{max-width:1180px;margin:-18px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
+  .note2{max-width:1180px;margin:14px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
   .note2 b{color:var(--c-text-2)}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
 
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
@@ -213,6 +234,35 @@
       <li><b>즐겨찾기를 만들지 않는다.</b> 14-2가 <i>"개인 북마크를 넣는다"</i>고 했지만 v2에서 근거를 잃었다 &#8212; <b>위험은 자동 판정</b>되어 면담 목록에 올라가고, 시스템이 못 잡는 관찰은 <b>면담 기록</b>에 쓰면 타임라인에 남는다. 무엇보다 <b>북마크의 값은 다른 곳에서 쓰일 때 생기는데</b> 지금은 자기가 설정된 목록만 필터하는 <b>닫힌 고리</b>였다.</li>
       <li><b>팀 열이 없다.</b> 팀은 <b>프로젝트마다 재편성되는 유동값</b>이라 사람에 고정으로 붙일 수 없다.</li>
     </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 교육생 명부 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">명부 — 회차 select가 이 화면의 변수</td></tr>
+        <tr><td class="no">—</td><td class="st">기본</td><td class="code">GET /trainees?round=</td><td class="msg"><b>위험과 우수를 같이 본다</b> · 도달 · 2단 이하 · 이번 회차 · 우수 누적<span class="nx">→ 이름 클릭 → MG-06</span></td><td><a class="mk2" href="#list">#list</a></td></tr>
+        <tr><td class="no">—</td><td class="st">지난 회차</td><td class="code">—</td><td class="msg">회차를 바꾸면 도달·배지가 그 회차 기준으로<span class="nx">→ 비교</span></td><td><a class="mk2" href="#past">#past</a></td></tr>
+        <tr><td class="no">—</td><td class="st">우수순 · 위험순</td><td class="code">—</td><td class="msg">정렬만 바뀐다 — <b>처리가 아니라 배치 판단용</b><span class="nx">→ 팀 구성 참고</span></td><td><a class="mk2" href="#top">#top</a></td></tr>
+        <tr class="grp"><td colspan="5">계정 상태 — 읽기만 한다</td></tr>
+        <tr><td class="no">—</td><td class="st">초대 대기 · 비활성</td><td class="code">—</td><td class="msg">행을 흐리게 + <b>사유·일자</b>(<code>07-20 발송 · 미수락</code>)<span class="nx">→ <b>초대·계정 생성 액션이 없다</b> — 오퍼레이터 소관</span></td><td><a class="mk2" href="#account">#account</a></td></tr>
+        <tr class="grp"><td colspan="5">비어 있을 때 — 이유를 구분한다</td></tr>
+        <tr><td class="no">—</td><td class="st"><b>반에 배정된 교육생 0</b></td><td class="code">—</td><td class="msg"><b>이 반에 등록된 교육생이 없습니다</b> · <b>명단은 오퍼레이터가 등록</b>한다고 밝힌다<span class="nx">→ 대기 — <b>생성 유도를 넣지 않는다</b>(할 수 없는 일)</span></td><td><a class="mk2" href="#noroster">#noroster</a></td></tr>
+        <tr><td class="no">—</td><td class="st">검색 결과 0</td><td class="code">—</td><td class="msg"><b>어느 범위에서 찾았는지</b>와 <b>계정 필터가 걸려 있다</b>는 사실을 함께<span class="nx">→ 필터 해제 — 0의 이유를 밝힌다</span></td><td><a class="mk2" href="#noresult">#noresult</a></td></tr>
+        <tr><td class="no">—</td><td class="st">회차 결과 전</td><td class="code">—</td><td class="msg">도달 칸은 비고 <b>프로필은 남는다</b><span class="nx">→ <b>팀 짜는 시점이 회차 시작 전</b>이라 이때 가장 많이 쓰인다</span></td><td><a class="mk2" href="#pre">#pre</a></td></tr>
+        <tr class="grp"><td colspan="5">실패</td></tr>
+        <tr><td class="no">—</td><td class="st">목록 불러오기 실패</td><td class="code">ROSTER_UNAVAILABLE</td><td class="msg"><b>불러오지 못했습니다 · 다시</b><span class="nx">→ 재시도 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>0이 왜 0인지를 구분한다.</b> 반에 아무도 없는 것 · 검색이 안 걸린 것 · 회차 결과가 아직 없는 것은 다음 행동이 전부 다르다.<br>
+    · <b>계정은 읽기만 한다.</b> 초대·생성·정지는 오퍼레이터(OP-06) 소관이라 이 화면에 액션을 두지 않는다 — 할 수 없는 일을 권하면 화면이 거짓말을 한다.<br>
+    · <b>정렬은 처리 순서가 아니다.</b> 위험순·우수순은 <b>팀을 짤 때 배치를 보는 용</b>이고, 처리할 사람은 면담 목록이 준다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
   </div>
 
   <div class="rpage" id="page-list">
@@ -267,9 +317,9 @@
       </div>
     </div>
   </div>
-  </div>
   <div class="note2">&#183; <b>v1과 목적이 바뀌었다.</b> v1 명부는 <i>"찾아서 상세로 가는 통로"</i>라 측정 정보를 일부러 다 뺐는데, v2에서는 <b>상세가 얇아지고 격자&#183;위험 목록이 다른 화면으로 갔다.</b> 통로로만 남으면 존재 이유가 없다. &#183; <b>팀 열은 v1대로 두지 않는다</b> &#8212; 팀은 프로젝트마다 재편성되는 유동값이라 사람에 고정으로 붙일 수 없다.</div>
-  <div class="rpage" id="page-past">
+  </div>
+    <div class="rpage" id="page-past">
   <div class="sec-label">&#9313; 지난 회차 — 회차 select가 이 화면의 변수</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trainees</span></div>
@@ -484,6 +534,39 @@
     </div>
   </div>
   </div>
+  <div class="rpage" id="page-noroster">
+  <div class="sec-label">&#9319; 상태 · 반에 배정된 교육생이 없음 (기수 세팅 중)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trainees</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교육생 &#8250; 7기 &#8250; 담당 반</div><h2>교육생</h2></div>
+          <div class="lhead">
+            <div class="ttl">교육생 <span class="cnt">0명</span></div>
+          </div>
+          <div class="ltool">
+            <div class="prjsel"><span class="k">회차</span> 미프 1차 <span class="cv2">&#9662;</span></div>
+            <div class="search">&#128269; 이름 검색</div>
+            <div class="fil"><span class="k">반</span> 담당 반 전체 &#9662;</div>
+            <div class="fil"><span class="k">계정</span> 활성 &#9662;</div>
+            <div class="fil"><span class="k">정렬</span> 이름순 &#9662;</div>
+          </div>
+          <div class="empty"><div class="t">이 반에 등록된 교육생이 없습니다</div><div class="s">기수 명단과 반 배정이 끝나면 여기에 나타납니다.<br>명단은 <b>오퍼레이터가 등록</b>합니다.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
   <div class="rpage" id="page-pre">
   <div class="sec-label">&#9317; 회차 결과 전 — 프로필은 남고 이번 회차만 빈다</div>
   <div class="viewport">
@@ -532,7 +615,7 @@
 
 </div>
 <script>
-  var PAGE = { list:"page-list", past:"page-past", top:"page-top",
+  var PAGE = { cases:"page-cases", noroster:"page-noroster", list:"page-list", past:"page-past", top:"page-top",
                risk:"page-risk", account:"page-account",
                noresult:"page-noresult", pre:"page-pre" };
   function route(){

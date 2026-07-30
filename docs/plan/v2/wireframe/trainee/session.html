@@ -149,6 +149,27 @@
   .icheck{display:flex;gap:var(--sp-2);align-items:center;margin-top:var(--sp-5);font-size:var(--fs-sm);color:var(--c-text-2)}
   .icheck .bx{width:17px;height:17px;border:1px solid var(--c-primary);border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#fff;background:var(--c-primary)}
 
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{text-align:left;background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55;text-align:left}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2);background:none;border-radius:0;line-height:1.55;overflow:visible;flex:none;padding:11px var(--sp-4)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
   body.embedded .sec-label{margin-top:0}
@@ -177,6 +198,47 @@
 
 
 
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 검증 세션 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">1차 — 막힐 때까지 올라간다</td></tr>
+        <tr><td class="no">—</td><td class="st">시작 전 안내</td><td class="code">GET /sessions/{id}</td><td class="msg"><b>30~40분 · 중간에 나갈 수 없다</b>를 먼저 말한다<span class="nx">→ 전체화면 진입 — <b>되돌릴 수 없는 것을 먼저</b></span></td><td><a class="mk2" href="#intro">#intro</a></td></tr>
+        <tr><td class="no">—</td><td class="st">질문 · 답변</td><td class="code">POST /answers</td><td class="msg">질문 + 코드 · 답변 입력<span class="nx">→ 제출 → 다음 질문</span></td><td><a class="mk2" href="#ask">#ask</a></td></tr>
+        <tr><td class="no">—</td><td class="st">호출부 펼침</td><td class="code">—</td><td class="msg"><b>이 함수를 쓰는 곳</b>을 펼쳐 본다<span class="nx">→ 맥락 확인</span></td><td><a class="mk2" href="#callers">#callers</a></td></tr>
+        <tr><td class="no">—</td><td class="st">꼬리질문</td><td class="code">—</td><td class="msg">앞 답변을 파고든다<span class="nx">→ 계단을 올라간다</span></td><td><a class="mk2" href="#thread">#thread</a></td></tr>
+        <tr><td class="no">—</td><td class="st">세 번째 질문</td><td class="code">—</td><td class="msg">다른 방법과 비교<span class="nx">→ —</span></td><td><a class="mk2" href="#deeper">#deeper</a></td></tr>
+        <tr><td class="no">—</td><td class="st">다음 질문 준비 중</td><td class="code">—</td><td class="msg"><b>남은 시간을 알려주지 않는다</b><span class="nx">→ 대기</span></td><td><a class="mk2" href="#waiting">#waiting</a></td></tr>
+        <tr class="grp"><td colspan="5">막을 것과 안 막을 것</td></tr>
+        <tr><td class="no">—</td><td class="st">답변이 짧을 때</td><td class="code">—</td><td class="msg"><b>차단하지 않는다</b> · 아는 만큼만 써 달라고 안내<span class="nx">→ 제출 가능 — 빈칸보다 낫다</span></td><td><a class="mk2" href="#short">#short</a></td></tr>
+        <tr><td class="no">—</td><td class="st">다시 설명 1회 사용</td><td class="code">—</td><td class="msg">남은 횟수를 보여준다(단계당 2회)<span class="nx">→ —</span></td><td><a class="mk2" href="#again">#again</a></td></tr>
+        <tr><td class="no">—</td><td class="st">다시 설명 소진</td><td class="code">—</td><td class="msg">버튼이 <b>사라진다</b> — 흐리게 두지 않는다<span class="nx">→ 자력으로</span></td><td><a class="mk2" href="#hintgone">#hintgone</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>창 이탈</b></td><td class="code">—</td><td class="msg">복귀 시 <b>경고 1회 · 기록</b> · <b>차단하지 않는다</b><span class="nx">→ 계속 — 막으면 우회하고 기록도 못 남긴다</span></td><td><a class="mk2" href="#away">#away</a></td></tr>
+        <tr class="grp"><td colspan="5">끝나는 방식 세 가지</td></tr>
+        <tr><td class="no">—</td><td class="st">이 문제 종료</td><td class="code">—</td><td class="msg">설명이 닿지 않으면 <b>여기서 접는다</b><span class="nx">→ 다음 문제 — 앞 문제는 닫힌다</span></td><td><a class="mk2" href="#stop">#stop</a></td></tr>
+        <tr><td class="no">—</td><td class="st">정상 종료</td><td class="code">POST /sessions/{id}/finish</td><td class="msg"><b>끝났어요</b> · 리포트는 회차 마감 후<span class="nx">→ 홈</span></td><td><a class="mk2" href="#end">#end</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>70분 초과</b></td><td class="code">SESSION_TIMEOUT</td><td class="msg"><b>답한 문제까지 저장</b> · 남은 문제는 <b>답하지 않은 것</b>으로<span class="nx">→ 리포트에 <code>중단</code>으로 남는다</span></td><td><a class="mk2" href="#timeout">#timeout</a></td></tr>
+        <tr class="grp"><td colspan="5">끊겼을 때</td></tr>
+        <tr><td class="no">—</td><td class="st">네트워크 끊김</td><td class="code">—</td><td class="msg"><b>답변을 로컬에 보존</b> · [다시 연결]<span class="nx">→ 복구 후 이어서 — <b>쓴 것을 날리지 않는다</b></span></td><td><a class="mk2" href="#offline">#offline</a></td></tr>
+        <tr class="grp"><td colspan="5">다시 보기 — 같은 화면의 변형</td></tr>
+        <tr><td class="no">—</td><td class="st">시작 전 안내</td><td class="code">—</td><td class="msg"><b>1차와 다른 점을 먼저</b> — 힌트 없음 · 판정 반영 안 됨<span class="nx">→ 진입</span></td><td><a class="mk2" href="#r-intro">#r-intro</a></td></tr>
+        <tr><td class="no">—</td><td class="st">막힌 질문</td><td class="code">—</td><td class="msg"><b>지난번에 막혔던 질문</b> · <b>1차 답변을 보여주지 않는다</b><span class="nx">→ 베껴 내는 것을 막는다</span></td><td><a class="mk2" href="#r-ask">#r-ask</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>통과</b></td><td class="code">—</td><td class="msg"><b>더 깊이 가지 않고 여기서 끝</b><span class="nx">→ 다음 개념 — <b>올라가면 재측정이 된다</b></span></td><td><a class="mk2" href="#r-pass">#r-pass</a></td></tr>
+        <tr><td class="no">—</td><td class="st">종료</td><td class="code">—</td><td class="msg"><b>해설이 열린다</b><span class="nx">→ 리포트</span></td><td><a class="mk2" href="#r-end">#r-end</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>응시 결과는 세 가지다 — 정상 종료 · 중단 · 무효 응시.</b> 70분을 넘기거나 하다가 나가면 <b>답한 데까지 저장</b>되고 리포트에 <code>중단</code>으로 남는다. 아예 안 들어온 <b>미응시</b>와 다르다.<br>
+    · <b>막지 않고 기록한다.</b> 창 이탈·짧은 답변을 차단하면 우회할 뿐이고 <b>기록조차 못 남긴다</b> — 판단은 매니저가 브리프에서 한다.<br>
+    · <b>다시 보기는 재측정이 아니다.</b> 막힌 질문을 통과하면 <b>거기서 끝</b>이고 더 올라가지 않는다 — 판정에 반영도 안 하면서 새 층을 물으면 학생 시간만 쓴다.<br>
+    · <b>1차 답변을 세션에 띄우지 않는다.</b> 리포트에서 이미 볼 수 있고, 세션에 있으면 그대로 베껴 낸다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
+  </div>
 
   <div class="rpage" id="page-intro">
   <div class="sec-label">상태 · 시작 전 안내 (되돌릴 수 없는 행동 앞)</div>
@@ -720,6 +782,22 @@
   </div>
 
 
+  <div class="rpage" id="page-timeout">
+  <div class="sec-label">상태 · 70분 초과 — 완료된 문제까지 저장하고 종료</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/session/mif-3</span><span class="fs">전체화면</span></div>
+    <div class="app">
+      <div class="sbar"><div class="l"><span class="qn">이해도 확인</span><span class="dots"><i class="done"></i><i class="done"></i><i></i></span></div><span class="el">70분 넘음</span></div>
+      <div class="center"><div class="msg"><span class="ic">◷</span>
+          <h3>시간이 다 되어 여기까지 저장했어요</h3>
+          <p><b>답한 문제까지는 그대로 저장</b>됐어요. 남은 문제는 <b>답하지 않은 것</b>으로 기록됩니다.</p>
+          <div class="sub">리포트는 회차 마감 후 발행됩니다 · 사정이 있었다면 매니저에게 알려 주세요</div>
+          <div class="act"><button class="btn">홈으로</button></div></div></div>
+    </div>
+  </div>
+  </div>
+
+
   <div class="rpage" id="page-r-intro">
   <div class="sec-label">다시 보기 · 시작 전 안내 (1차와 다른 점을 먼저)</div>
   <div class="viewport">
@@ -820,7 +898,7 @@
 
 </div>
 <script>
-  var PAGE = { intro:"page-intro", ask:"page-ask", callers:"page-callers", thread:"page-thread",
+  var PAGE = { cases:"page-cases", timeout:"page-timeout", intro:"page-intro", ask:"page-ask", callers:"page-callers", thread:"page-thread",
                short:"page-short", again:"page-again", hintgone:"page-hintgone", waiting:"page-waiting",
                deeper:"page-deeper", stop:"page-stop", next:"page-next", last:"page-last",
                away:"page-away", offline:"page-offline", end:"page-end",

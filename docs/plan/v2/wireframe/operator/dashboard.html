@@ -171,8 +171,29 @@
   .failrow{display:flex;align-items:center;gap:var(--sp-3);padding:13px var(--sp-5);font-size:var(--fs-sm);color:var(--c-text-3);border-top:1px solid var(--c-border)}
   .failrow .rtry{margin-left:auto;font-size:var(--fs-xs);color:var(--c-primary);cursor:pointer}
 
-  .note2{max-width:1180px;margin:-18px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
+  .note2{max-width:1180px;margin:14px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
   .note2 b{color:var(--c-text-2)}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
 
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
@@ -195,6 +216,34 @@
       <li><b>여기서 처리하지 않는다.</b> 요약과 링크만이고 각 줄은 OP-02&#183;OP-04&#183;OP-06으로 간다 &#8212; <b>지표판이 작업대를 겸하면 둘 다 못 한다.</b></li>
       <li><b>개별 학생 위험 목록이 없다.</b> 매니저 소관이고(MG-01&#183;MG-03) 여기엔 <b>면담 메뉴 자체가 없다</b> &#8212; 담당 반이 없기 때문이다.</li>
     </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 대시보드 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">지표판 — 기수 전체를 본다</td></tr>
+        <tr><td class="no">—</td><td class="st">기본</td><td class="code">GET /operator/dashboard</td><td class="msg">파이프라인 · <b>반 비교</b> · <b>조치 필요</b><span class="nx">→ 조치 항목 클릭 → 해당 화면</span></td><td><a class="mk2" href="#dash">#dash</a></td></tr>
+        <tr><td class="no">—</td><td class="st">회차 진행 전</td><td class="code">—</td><td class="msg">파이프라인 <code>0/250</code> · <b>반 비교는 직전 회차 기준</b>임을 강조<span class="nx">→ 혼동 방지 — 지금 회차 값이 아니다</span></td><td><a class="mk2" href="#pre">#pre</a></td></tr>
+        <tr class="grp"><td colspan="5">조치 필요 — 무엇이 없는지도 말한다</td></tr>
+        <tr><td class="no">—</td><td class="st">조치 필요 0</td><td class="code">—</td><td class="msg"><b>지금 조치할 운영 이슈가 없습니다</b> + <b>무엇이 없는지</b>(집단 미달·개념 공백·면담 적체·미배정)<span class="nx">→ 대기 — 항목을 나열해야 <b>안 본 것</b>과 구분된다</span></td><td><a class="mk2" href="#ok">#ok</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>집단 미달 다건</b></td><td class="code">—</td><td class="msg"><code>7개 반에서 "Graph 구성"</code>으로 <b>묶어서</b> 보여준다<span class="nx">→ <b>반 공지가 아니라 개념 자체를 다시 본다</b></span></td><td><a class="mk2" href="#multi">#multi</a></td></tr>
+        <tr><td class="no">—</td><td class="st">미배정 반</td><td class="code">—</td><td class="msg"><code>담당 없음</code> · 어느 반인지<span class="nx">→ 운영 관리 › 매니저 — 면담·독촉을 아무도 처리하지 않는다</span></td><td><a class="mk2" href="#assign">#assign</a></td></tr>
+        <tr class="grp"><td colspan="5">실패</td></tr>
+        <tr><td class="no">—</td><td class="st">부분 실패</td><td class="code">—</td><td class="msg">실패한 <b>블록만</b> <code>불러오지 못함 · 다시</code><span class="nx">→ 재시도 — <b>화면 전체를 비우지 않는다</b></span></td><td><a class="mk2" href="#partial">#partial</a></td></tr>
+        <tr><td class="no">—</td><td class="st">집계 실패</td><td class="code">DASHBOARD_UNAVAILABLE</td><td class="msg"><b>0으로 그리지 않는다</b><span class="nx">→ 재조회 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>조치 필요 0에 무엇이 없는지를 쓴다.</b> 빈 목록만 두면 <b>이슈가 없는 것</b>인지 <b>아직 안 본 것</b>인지 구분되지 않는다.<br>
+    · <b>집단 미달이 여러 반이면 반 문제가 아니다.</b> 같은 개념에서 여러 반이 미달하면 <b>개념 선택 자체</b>를 다시 봐야 한다 — 반마다 공지를 보내면 원인을 못 고친다.<br>
+    · <b>회차 시작 전 반 비교는 직전 회차 값이다.</b> 강조하지 않으면 지금 회차 결과로 읽는다.<br>
+    · <b>순위·등수를 붙이지 않는다.</b> 반 비교는 막대만 두고 1위·2위를 쓰지 않는다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
   </div>
 
   <div class="rpage" id="page-dash">
@@ -234,9 +283,9 @@
       </div>
     </div>
   </div>
-  </div>
   <div class="note2">&#183; <b>정렬 근거</b> &#8212; &#9312; 미배정(그 반 전체가 방치된다) &#8594; &#9313; 개념 공백(<b>다음 회차 설계 전에 고쳐야 늦지 않는다</b>) &#8594; &#9314; 집단 미달 &#8594; &#9315; 면담 적체. &#183; <b>반 비교는 직전 회차 기준</b>이다 &#8212; 이번 회차는 리포트 발행 전이라 위험 판정이 아직 없다. 어느 회차 기준인지를 항상 적는다.</div>
-  <div class="rpage" id="page-ok">
+  </div>
+    <div class="rpage" id="page-ok">
   <div class="sec-label">&#9313; 조치 필요 0 — 정상</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7</span></div>
@@ -429,7 +478,7 @@
 
 </div>
 <script>
-  var PAGE = { dash:"page-dash", ok:"page-ok", pre:"page-pre",
+  var PAGE = { cases:"page-cases", dash:"page-dash", ok:"page-ok", pre:"page-pre",
                multi:"page-multi", assign:"page-assign", partial:"page-partial" };
   function route(){
     var h = (location.hash || "").slice(1) || "dash";

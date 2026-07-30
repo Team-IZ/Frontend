@@ -153,7 +153,6 @@
   .tablefoot .rspace{flex:1}
   .pages{display:flex;gap:4px;justify-content:center}
   .pg{min-width:32px;height:32px;padding:0 6px;border:1px solid var(--c-border);border-radius:var(--r-sm);display:inline-flex;align-items:center;justify-content:center;background:#fff;font-size:var(--fs-sm);color:var(--c-text-2);cursor:pointer}
-  .note{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:var(--sp-3);line-height:1.7}
   .qrow{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-4)}
   .qrow .qact{margin-left:auto;display:flex;gap:var(--sp-2)}
   .relsplit{display:flex;gap:var(--sp-4);align-items:flex-start}
@@ -246,15 +245,34 @@
   .usedtbl tr:last-child td{border-bottom:0}
   .usedtbl .kchip{display:inline-block;font-size:11px;font-weight:600;color:var(--c-text-2);background:var(--c-surface-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:2px 9px;margin:1px 2px 1px 0}
 
-  .note{margin-top:var(--sp-4);font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.8}
-  .note b{color:var(--c-text-2)}
 
   .empty{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8);text-align:center}
   .empty .t{font-size:var(--fs-base);font-weight:600;margin-bottom:6px}
   .empty .s{font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7}
 
-  .note2{max-width:1180px;margin:-18px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
+  .note2{max-width:1180px;margin:14px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
   .note2 b{color:var(--c-text-2)}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
 
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
@@ -277,6 +295,34 @@
       <li><b>모달&#183;오버레이를 만들지 않는다.</b> 브리프&#183;히트맵의 교안 위치는 <b><code>&#8599;</code> 새 탭</b>으로 이 화면을 연다 &#8212; 브리프가 모드라 나가면 낭독문을 잃지만 <b>새 탭이면 그대로 남는다.</b></li>
       <li><b>검색이 없다.</b> 기수당 교안이 3~5개라 목록으로 충분하다.</li>
     </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 교안 뷰어 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">읽기 전용 — 쓰기 액션이 없다</td></tr>
+        <tr><td class="no">—</td><td class="st">교안 목록</td><td class="code">GET /curricula?cohort=</td><td class="msg"><b>이 기수 회차에 연결된 것만</b> · 섹션 수 · 항목 수 · 쓰인 회차<span class="nx">→ 행 클릭 → 상세</span></td><td><a class="mk2" href="#list">#list</a></td></tr>
+        <tr><td class="no">—</td><td class="st">섹션 상세</td><td class="code">—</td><td class="msg"><b>★가 검증 개념으로 쓰인 항목</b> · 페이지 위치<span class="nx">→ 리포트·면담이 이 위치를 가리킨다</span></td><td><a class="mk2" href="#sec">#sec</a></td></tr>
+        <tr><td class="no">—</td><td class="st">검증 개념이 없는 섹션</td><td class="code">—</td><td class="msg"><b>★ 없이 항목만</b><span class="nx">→ 그 섹션은 이 회차 문항에 안 쓰였다</span></td><td><a class="mk2" href="#sec2">#sec2</a></td></tr>
+        <tr><td class="no">—</td><td class="st">쓰인 회차</td><td class="code">—</td><td class="msg">이 교안이 어느 회차에 연결됐나<span class="nx">→ —</span></td><td><a class="mk2" href="#used">#used</a></td></tr>
+        <tr class="grp"><td colspan="5">추출이 덜 됐을 때 — 열 수는 있다</td></tr>
+        <tr><td class="no">—</td><td class="st"><b>정의문 없음</b></td><td class="code">—</td><td class="msg">항목은 있고 <b>정의문이 추출되지 않았습니다</b><span class="nx">→ <b>빈칸으로 두지 않는다</b> — 없는 것과 안 나온 것을 구분</span></td><td><a class="mk2" href="#nodef">#nodef</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>분석 실패한 교안</b></td><td class="code">—</td><td class="msg">목록에 <code>분석 실패</code> 배지 · 섹션·항목 수는 <code>―</code><span class="nx">→ <b>상세는 열리되 섹션이 없다</b> · 재분석은 오퍼레이터(OP-06)</span></td><td><a class="mk2" href="#failed">#failed</a></td></tr>
+        <tr><td class="no">—</td><td class="st">연결된 교안 0</td><td class="code">—</td><td class="msg"><b>이 기수 회차에 연결된 교안이 없습니다</b><span class="nx">→ 대기 — <b>등록 유도를 넣지 않는다</b>(권한 없음)</span></td><td><a class="mk2" href="#empty">#empty</a></td></tr>
+        <tr class="grp"><td colspan="5">실패</td></tr>
+        <tr><td class="no">—</td><td class="st">불러오기 실패</td><td class="code">CURRICULUM_UNAVAILABLE</td><td class="msg"><b>불러오지 못했습니다 · 다시</b><span class="nx">→ 재시도 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>이 화면은 어휘를 맞추는 곳이다.</b> 리포트와 면담이 가리키는 <b>교안 위치</b>를 매니저가 직접 열어 확인한다 — 그래서 <b>쓰기 액션이 하나도 없다</b>.<br>
+    · <b>등록·재분석은 오퍼레이터 소관</b>(OP-06)이라 빈 상태에도 유도 문구를 넣지 않는다.<br>
+    · <b>추출이 덜 된 것과 없는 것을 구분한다.</b> 정의문이 안 나온 항목은 빈칸이 아니라 <b>안 나왔다고 쓴다</b> — 빈칸이면 교안에 원래 없는 줄 알게 된다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
   </div>
 
   <div class="rpage" id="page-list">
@@ -309,16 +355,51 @@
             </table>
           </div>
           <div class="tablefoot"><span class="range">1&#8211;3 / 3개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-          <div class="note">&#183; <b>목적은 어휘와 맥락</b>이다 &#8212; 히트맵&#183;대시보드가 쓰는 개념 이름이 <b>커리큘럼 어디쯤인지</b> 여기서 확인한다.<br>
-            &#183; <b>등록&#183;재분석&#183;연결 변경이 없다.</b> 교안은 기관 자산이고 오퍼레이터가 관리한다(OP-06).<br>
-            &#183; <b>기관 전체가 아니라 이 기수 것만</b> 보인다 &#8212; 다른 기수 교안은 담당 범위가 아니다.</div>
-        </div>
+                  </div>
       </div>
     </div>
   </div>
+  <div class="note2">&#183; <b>OP-06 &#8250; 교안에서 생성&#183;편집만 뺀 화면</b>이다 &#8212; 목록&#183;섹션&#183;쓰인 회차 구조가 같다. <b>같은 것을 두 번 설계하지 않는다.</b> &#183; 진입은 <b>메뉴</b>와 <b>브리프&#183;히트맵의 <code>&#8599;</code> 새 탭</b> 둘이다 &#8212; 모달&#183;오버레이를 만들지 않는다.</div>
+  <div class="note2">&#183; <b>목적은 어휘와 맥락</b>이다 &#8212; 히트맵&#183;대시보드가 쓰는 개념 이름이 <b>커리큘럼 어디쯤인지</b> 여기서 확인한다. &#183; <b>등록&#183;재분석&#183;연결 변경이 없다.</b> 교안은 기관 자산이고 오퍼레이터가 관리한다(OP-06). &#183; <b>기관 전체가 아니라 이 기수 것만</b> 보인다 &#8212; 다른 기수 교안은 담당 범위가 아니다.</div>
+  </div>
+    <div class="rpage" id="page-failed">
+  <div class="sec-label">&#9318; 상태 · 분석 실패한 교안 (열 수는 있지만 섹션이 없다)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/curriculum</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item on"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교안 &#8250; 7기</div><h2>교안</h2></div>
+          <div class="lhead2"><span class="t5">교안</span><span class="tot2">3개</span>
+            <span class="meta2">이 기수 회차에 연결된 것만 &#183; <b>등록&#183;재분석은 오퍼레이터</b></span></div>
+          <div class="card">
+            <table class="tbl">
+              <thead><tr><th class="k-name">교안</th><th class="k-num">버전</th><th class="num k-num">섹션</th><th class="num k-num">가르친 항목</th><th>쓰인 회차</th><th class="k-num">분석</th></tr></thead>
+              <tbody>
+                <tr class="click"><td class="nm">AI_LLMOps</td><td class="mono">v2</td><td class="num">12</td><td class="num">87</td><td><span class="used">미프 3차 &#183; 4차</span></td><td><span class="badge ok">분석 완료</span></td></tr>
+                <tr class="click"><td class="nm">Streamlit 실습</td><td class="mono">v1</td><td class="num">4</td><td class="num">22</td><td><span class="used">미프 3차</span></td><td><span class="badge ok">분석 완료</span></td></tr>
+                <tr class="click"><td class="nm">Kubernetes 기초</td><td class="mono">v1</td><td class="num na">&#8213;</td><td class="num na">&#8213;</td><td><span class="used">미프 2차</span></td><td><span class="badge warn">분석 실패</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="tablefoot"><span class="range">1&#8211;3 / 3개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+                  </div>
+      </div>
+    </div>
   </div>
   <div class="note2">&#183; <b>OP-06 &#8250; 교안에서 생성&#183;편집만 뺀 화면</b>이다 &#8212; 목록&#183;섹션&#183;쓰인 회차 구조가 같다. <b>같은 것을 두 번 설계하지 않는다.</b> &#183; 진입은 <b>메뉴</b>와 <b>브리프&#183;히트맵의 <code>&#8599;</code> 새 탭</b> 둘이다 &#8212; 모달&#183;오버레이를 만들지 않는다.</div>
-  <div class="rpage" id="page-sec">
+  <div class="note2">&#183; <b>목적은 어휘와 맥락</b>이다 &#8212; 히트맵&#183;대시보드가 쓰는 개념 이름이 <b>커리큘럼 어디쯤인지</b> 여기서 확인한다. &#183; <b>등록&#183;재분석&#183;연결 변경이 없다.</b> 교안은 기관 자산이고 오퍼레이터가 관리한다(OP-06). &#183; <b>기관 전체가 아니라 이 기수 것만</b> 보인다 &#8212; 다른 기수 교안은 담당 범위가 아니다.</div>
+  </div>
+    <div class="rpage" id="page-sec">
   <div class="sec-label">&#9313; 교안 상세 › 섹션 — ★가 검증 개념으로 쓰인 항목</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/curriculum</span></div>
@@ -353,12 +434,53 @@
               <div class="itm"><div class="it"><b>HITL 개념 정의</b><span class="p">p.48</span></div><div class="idf">HITL은 LLM 시스템의 의사결정을 통제하기 위한 Control Layer로, 실행 결과를 검증&#183;차단&#183;수정하며 사람을 시스템의 구성요소로 설계한다.</div></div><div class="itm"><div class="it"><b>HITL이 필요한 이유</b><span class="p">p.49</span></div><div class="idf">무한 재시도로 인한 비용 증가, Tool/API 호출 비용 리스크, 정책 위반으로 인한 법적&#183;보안 사고를 통제하기 위해 HITL이 필요하다.</div></div><div class="itm"><div class="it"><b>개입 지점 설계</b><span class="p">p.51</span></div><div class="idf">실행 전 승인, 실행 후 검토, 예외 발생 시 개입 세 가지 지점 중 무엇을 쓸지 비용과 위험으로 정한다.</div></div><div class="itm"><div class="it"><b>AgentState에 HITL 필드 추가</b><span class="p">p.54</span></div><div class="idf">사람 결정과 다음 단계를 상태 객체에 넣어 노드 사이로 넘긴다.</div></div><div class="itm used2"><div class="it"><b>HITL Trigger 조건 함수</b><span class="star">&#9733; 미프 3차 개념 1</span><span class="p">p.55</span></div><div class="idf">최대 반복 횟수와 거절 상태를 보고 <b>사람 확인이 필요한지</b> 판단한다. 조건이 참이면 그래프 실행을 멈추고 사용자 입력을 기다리는 노드로 넘긴다.</div></div><div class="itm"><div class="it"><b>중단과 재개</b><span class="p">p.56</span></div><div class="idf">중단 지점을 저장하고 사람 입력이 들어오면 그 지점부터 이어서 실행한다.</div></div><div class="itm"><div class="it"><b>HITL Design Checklist와 사용자 부담 Trade-off</b><span class="p">p.58</span></div><div class="idf">확인 지점이 많으면 안전하지만 사용자가 지치고, 적으면 빠르지만 잘못된 실행을 놓친다.</div></div><div class="itm"><div class="it"><b>승인 UI 패턴</b><span class="p">p.59</span></div><div class="idf">무엇을 승인하는지 보여주고 되돌릴 수 있게 만든다.</div></div><div class="itm"><div class="it"><b>HITL 요약</b><span class="p">p.60</span></div><div class="idf none7">정의문이 추출되지 않았습니다 &#8212; 섹션 요약 항목입니다.</div></div>
             </div>
           </div>
-          <div class="note">&#183; <b>&#9733;는 검증 개념으로 쓰인 항목</b>이다 &#8212; 이 섹션이 가르친 것이 9개인데 <b>그중 하나만 문항이 됐다.</b> 나머지는 교안에 있지만 <b>묻지 않았다.</b><br>
-            &#183; <b>정의문은 교안 분석이 뽑은 것</b>이고 없는 경우도 있다 &#8212; 지어내지 않는다.</div>
-        </div>
+                  </div>
       </div>
     </div>
   </div>
+  <div class="note2">&#183; <b>&#9733;는 검증 개념으로 쓰인 항목</b>이다 &#8212; 이 섹션이 가르친 것이 9개인데 <b>그중 하나만 문항이 됐다.</b> 나머지는 교안에 있지만 <b>묻지 않았다.</b> &#183; <b>정의문은 교안 분석이 뽑은 것</b>이고 없는 경우도 있다 &#8212; 지어내지 않는다.</div>
+  </div>
+
+  <div class="rpage" id="page-nodef">
+  <div class="sec-label">&#9317; 상태 · 정의문이 추출되지 않은 항목</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/curriculum</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item on"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교안 &#8250; 7기 &#8250; <b style="color:var(--c-primary)">AI_LLMOps v2</b></div></div>
+          <div class="phead2"><h2>AI_LLMOps <span class="mono na">v2</span></h2>
+            <span class="badge ok">분석 완료</span><span class="back2">&#8592; 교안 목록</span></div>
+          <div class="subtabs"><span class="st2 on">섹션 12</span><span class="st2">쓰인 회차 2</span></div>
+          <div class="qrow"><span class="badge off">12개 섹션 &#183; 168쪽</span>
+            <span class="meta2">등록 07-02 &#183; <b>재분석&#183;새 버전은 오퍼레이터</b></span></div>
+          <div class="relsplit">
+            <div class="seclist"><button class="secitem on"><b>HITL (Human In The Loop)</b><span class="m">p.48&#8211;60 &#183; 항목 9</span></button><button class="secitem"><b>역할 기반 설계</b><span class="m">p.37&#8211;46 &#183; 항목 9</span></button><button class="secitem"><b>시점 관리 (Snapshot)</b><span class="m">p.62&#8211;75 &#183; 항목 7</span></button><button class="secitem"><b>Agent 시스템 구축 필요 기술</b><span class="m">p.128&#8211;150 &#183; 항목 11</span></button><button class="secitem"><b>Agent 시스템 평가</b><span class="m">p.95&#8211;156 &#183; 항목 15</span></button><button class="secitem"><b>AI Agent 설계 &#8212; 면접관 예제</b><span class="m">p.21&#8211;35 &#183; 항목 16</span></button><button class="secitem"><b>Trace 실행 관측</b><span class="m">p.77&#8211;154 &#183; 항목 12</span></button><button class="secitem"><b>LLMOps 개념 이해</b><span class="m">p.7&#8211;10 &#183; 항목 3</span></button></div>
+            <div class="relpane">
+              <div class="sech">
+                <div>
+                  <h3>HITL (Human In The Loop)</h3>
+                  <div class="sm">AI_LLMOps v2 &#183; <b>p.48&#8211;60</b> &#8212; 리포트와 면담이 이 위치를 가리킵니다</div>
+                </div>
+              </div>
+              <div class="grph">이 섹션이 가르친 것 <b>9</b><span class="gd">프로젝트에서 이 중 3개를 골라 문항을 만듭니다</span></div>
+              <div class="itm"><div class="it"><b>HITL 개념 정의</b><span class="p">p.48</span></div><div class="idf">HITL은 LLM 시스템의 의사결정을 통제하기 위한 Control Layer로, 실행 결과를 검증&#183;차단&#183;수정하며 사람을 시스템의 구성요소로 설계한다.</div></div><div class="itm"><div class="it"><b>HITL이 필요한 이유</b><span class="p">p.49</span></div><div class="idf" style="color:var(--c-text-3);font-style:italic">정의문이 추출되지 않았습니다</div></div><div class="itm"><div class="it"><b>개입 지점 설계</b><span class="p">p.51</span></div><div class="idf" style="color:var(--c-text-3);font-style:italic">정의문이 추출되지 않았습니다</div></div><div class="itm"><div class="it"><b>AgentState에 HITL 필드 추가</b><span class="p">p.54</span></div><div class="idf" style="color:var(--c-text-3);font-style:italic">정의문이 추출되지 않았습니다</div></div><div class="itm used2"><div class="it"><b>HITL Trigger 조건 함수</b><span class="star">&#9733; 미프 3차 개념 1</span><span class="p">p.55</span></div><div class="idf" style="color:var(--c-text-3);font-style:italic">정의문이 추출되지 않았습니다</div></div><div class="itm"><div class="it"><b>중단과 재개</b><span class="p">p.56</span></div><div class="idf" style="color:var(--c-text-3);font-style:italic">정의문이 추출되지 않았습니다</div></div><div class="itm"><div class="it"><b>HITL Design Checklist와 사용자 부담 Trade-off</b><span class="p">p.58</span></div><div class="idf" style="color:var(--c-text-3);font-style:italic">정의문이 추출되지 않았습니다</div></div><div class="itm"><div class="it"><b>승인 UI 패턴</b><span class="p">p.59</span></div><div class="idf" style="color:var(--c-text-3);font-style:italic">정의문이 추출되지 않았습니다</div></div><div class="itm"><div class="it"><b>HITL 요약</b><span class="p">p.60</span></div><div class="idf none7">정의문이 추출되지 않았습니다 &#8212; 섹션 요약 항목입니다.</div></div>
+            </div>
+          </div>
+                  </div>
+      </div>
+    </div>
+  </div>
+  <div class="note2">&#183; <b>&#9733;는 검증 개념으로 쓰인 항목</b>이다 &#8212; 이 섹션이 가르친 것이 9개인데 <b>그중 하나만 문항이 됐다.</b> 나머지는 교안에 있지만 <b>묻지 않았다.</b> &#183; <b>정의문은 교안 분석이 뽑은 것</b>이고 없는 경우도 있다 &#8212; 지어내지 않는다.</div>
   </div>
   <div class="rpage" id="page-sec2">
   <div class="sec-label">&#9314; 다른 섹션 — 검증 개념이 없는 섹션</div>
@@ -395,12 +517,11 @@
               <div class="itm"><div class="it"><b>역할 분리의 필요</b><span class="p">p.37</span></div><div class="idf">한 에이전트가 계획과 실행을 같이 하면 실패 원인을 가릴 수 없다.</div></div><div class="itm"><div class="it"><b>Supervisor 패턴</b><span class="p">p.39</span></div><div class="idf">상위 에이전트가 하위 에이전트에 작업을 배분하고 결과를 모은다.</div></div><div class="itm"><div class="it"><b>Worker 정의</b><span class="p">p.41</span></div><div class="idf">각 Worker는 한 가지 도구만 쓰고 자기 결과에만 책임진다.</div></div><div class="itm"><div class="it"><b>역할 간 통신</b><span class="p">p.43</span></div><div class="idf">상태 객체를 공유하되 쓰기 권한은 역할별로 나눈다.</div></div><div class="itm"><div class="it"><b>역할 기반 설계 요약</b><span class="p">p.46</span></div><div class="idf none7">정의문이 추출되지 않았습니다.</div></div>
             </div>
           </div>
-          <div class="note">&#183; <b>&#9733;는 검증 개념으로 쓰인 항목</b>이다 &#8212; 이 섹션이 가르친 것이 5개인데 <b>그중 하나만 문항이 됐다.</b> 나머지는 교안에 있지만 <b>묻지 않았다.</b><br>
-            &#183; <b>정의문은 교안 분석이 뽑은 것</b>이고 없는 경우도 있다 &#8212; 지어내지 않는다.</div>
-        </div>
+                  </div>
       </div>
     </div>
   </div>
+  <div class="note2">&#183; <b>&#9733;는 검증 개념으로 쓰인 항목</b>이다 &#8212; 이 섹션이 가르친 것이 5개인데 <b>그중 하나만 문항이 됐다.</b> 나머지는 교안에 있지만 <b>묻지 않았다.</b> &#183; <b>정의문은 교안 분석이 뽑은 것</b>이고 없는 경우도 있다 &#8212; 지어내지 않는다.</div>
   </div>
   <div class="rpage" id="page-used">
   <div class="sec-label">&#9315; 교안 상세 › 쓰인 회차 — 오퍼레이터의 `연결된 프로젝트`</div>
@@ -433,13 +554,11 @@
                 <td class="na">&#8212;</td><td><span class="badge off">예정</span></td></tr>
             </tbody>
           </table>
-          <div class="note">&#183; <b>히트맵에서 본 이름이 어느 회차 것인지</b>가 여기서 연결된다 &#8212; 오퍼레이터의 <code>연결된 프로젝트</code>와 같은 데이터이지만, 매니저에게는 <b>회차&#8594;개념</b> 방향이 쓸모 있다.<br>
-            &#183; <b>이 교안은 미프 3차와 4차에 걸쳐 있다</b> &#8212; 한 교안이 여러 회차에 쓰이고, 한 회차가 여러 교안을 쓴다(14번 4-3).<br>
-            &#183; <b>연결을 바꾸지 않는다</b> &#8212; 교안&#8594;회차 연결은 오퍼레이터가 프로젝트를 만들 때 정한다.</div>
-        </div>
+                  </div>
       </div>
     </div>
   </div>
+  <div class="note2">&#183; <b>히트맵에서 본 이름이 어느 회차 것인지</b>가 여기서 연결된다 &#8212; 오퍼레이터의 <code>연결된 프로젝트</code>와 같은 데이터이지만, 매니저에게는 <b>회차&#8594;개념</b> 방향이 쓸모 있다. &#183; <b>이 교안은 미프 3차와 4차에 걸쳐 있다</b> &#8212; 한 교안이 여러 회차에 쓰이고, 한 회차가 여러 교안을 쓴다(14번 4-3). &#183; <b>연결을 바꾸지 않는다</b> &#8212; 교안&#8594;회차 연결은 오퍼레이터가 프로젝트를 만들 때 정한다.</div>
   </div>
   <div class="rpage" id="page-empty">
   <div class="sec-label">&#9316; 상태 · 연결된 교안 없음</div>
@@ -462,16 +581,16 @@
           <div class="empty"><div class="t">이 기수 회차에 연결된 교안이 없습니다</div>
             <div class="s">프로젝트가 만들어지고 교안이 연결되면 여기에 나타납니다.<br>
               <b>등록은 오퍼레이터가 합니다.</b></div></div>
-          <div class="note">&#183; <b>등록 유도 문구를 넣지 않는다</b> &#8212; 매니저에게 등록 권한이 없다.</div>
-        </div>
+                  </div>
       </div>
     </div>
   </div>
+  <div class="note2">&#183; <b>등록 유도 문구를 넣지 않는다</b> &#8212; 매니저에게 등록 권한이 없다.</div>
   </div>
 
 </div>
 <script>
-  var PAGE = { list:"page-list", sec:"page-sec", sec2:"page-sec2",
+  var PAGE = { cases:"page-cases", failed:"page-failed", nodef:"page-nodef", list:"page-list", sec:"page-sec", sec2:"page-sec2",
                used:"page-used", empty:"page-empty" };
   function route(){
     var h = (location.hash || "").slice(1) || "list";

@@ -106,6 +106,27 @@
   .banner .sub{display:block;color:var(--c-text-2);font-size:var(--fs-xs);margin-top:2px}
   .banner .act{margin-left:auto;font-weight:700;font-size:var(--fs-xs);cursor:pointer;white-space:nowrap}
 
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
   body.embedded .rpage{display:none}
   body.embedded .rpage.on{display:block}
   body.embedded .sec-label{margin-top:0}
@@ -123,6 +144,38 @@
       <li><b>모르는 값을 아는 척한다</b> — 분석에 남은 시간은 예측하지 않는다. 진행률 막대도 두지 않는다.</li>
       <li><b>확정 안 된 판정을 보여준다</b> — 요구사항 충족(P/F)은 매니저가 확인해야 확정되므로 <b>학생 화면에 없다</b>(매니저의 제출 현황 소관).</li>
     </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 홈 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">회차 진행 — 4단계가 순서대로</td></tr>
+        <tr><td class="no">—</td><td class="st">① 미제출</td><td class="code">GET /home</td><td class="msg"><b>제출 마감까지 남은 시간</b> + [코드 제출]<span class="nx">→ TR-02</span></td><td><a class="mk2" href="#todo">#todo</a></td></tr>
+        <tr><td class="no">—</td><td class="st">② 분석 중</td><td class="code">—</td><td class="msg"><b>남은 시간을 알려주지 않는다</b> · 화면을 켜 두지 않아도 된다<span class="nx">→ 알림을 기다린다 — <b>틀린 예측을 하지 않는다</b></span></td><td><a class="mk2" href="#analyzing">#analyzing</a></td></tr>
+        <tr><td class="no">—</td><td class="st">③ 응시 가능</td><td class="code">—</td><td class="msg"><b>남은 시간을 초 단위로</b> · 30~40분 · <b>중간에 나갈 수 없다</b>고 먼저 말한다<span class="nx">→ TR-03 — <b>되돌릴 수 없는 것을 먼저 알린다</b></span></td><td><a class="mk2" href="#ready">#ready</a></td></tr>
+        <tr><td class="no">—</td><td class="st">④ 응시 완료</td><td class="code">—</td><td class="msg"><b>리포트는 회차 마감 후 한꺼번에</b> 발행된다고 밝힌다<span class="nx">→ 대기</span></td><td><a class="mk2" href="#done">#done</a></td></tr>
+        <tr class="grp"><td colspan="5">회차 밖</td></tr>
+        <tr><td class="no">—</td><td class="st">다시 보기 대상</td><td class="code">—</td><td class="msg">기한 + 대상 개념 · <b>기존 결과는 그대로</b><span class="nx">→ TR-03 다시 보기 — 기록에만 남는다</span></td><td><a class="mk2" href="#retry">#retry</a></td></tr>
+        <tr><td class="no">—</td><td class="st">진행 중인 회차 없음</td><td class="code">—</td><td class="msg"><b>지금은 예정된 일정이 없어요</b> + 지난 회차 목록<span class="nx">→ 리포트 열람</span></td><td><a class="mk2" href="#none">#none</a></td></tr>
+        <tr class="grp"><td colspan="5">막혔을 때 — 무엇이 끝났는지 구분한다</td></tr>
+        <tr><td class="no">—</td><td class="st">분석 실패</td><td class="code">—</td><td class="msg"><b>저장소가 비어 있거나 접근할 수 없었어요</b> + [다시 제출]<span class="nx">→ <b>마감 전이면 고쳐서 다시</b> · 조직 밖이면 ZIP</span></td><td><a class="mk2" href="#failed">#failed</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>제출 마감 지남</b></td><td class="code">—</td><td class="msg"><b>제출 기한이 지났어요</b> · <code>미제출</code>로 기록 · <b>이해도 확인도 열리지 않는다</b><span class="nx">→ 매니저 문의 — <b>이 회차는 끝났다</b></span></td><td><a class="mk2" href="#missed">#missed</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>응시 창 마감</b></td><td class="code">—</td><td class="msg"><b>응시 기한이 지났어요</b> · <code>미응시</code>로 기록<span class="nx">→ 매니저 문의 — 제출은 했지만 응시를 못 했다</span></td><td><a class="mk2" href="#closed">#closed</a></td></tr>
+        <tr class="grp"><td colspan="5">상시</td></tr>
+        <tr><td class="no">—</td><td class="st">커밋 이메일 미확인</td><td class="code">—</td><td class="msg">상단 안내 — <b>제출은 되지만</b> 빅프 기여도가 안 잡힐 수 있다<span class="nx">→ 확인하기 — 막지 않는다</span></td><td><a class="mk2" href="#todo">#todo</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>홈은 지금 할 일 하나만 크게 보여준다.</b> 4단계(제출 → 분석 → 이해도 확인 → 리포트) 중 <b>지금 어디인지</b>가 화면의 전부다.<br>
+    · <b>미제출과 미응시는 다르다.</b> 제출을 안 하면 분석도 응시도 없어 <b>회차가 통째로 끝나고</b>, 제출은 했는데 응시를 못 하면 <b>응시만</b> 놓친다 — 매니저가 보는 사유가 다르다.<br>
+    · <b>남은 시간을 모를 때는 말하지 않는다.</b> 분석은 코드 크기에 따라 달라 예측이 틀린다 — <b>끝나면 알려준다</b>고만 쓴다.<br>
+    · <b>되돌릴 수 없는 것을 시작 전에 말한다.</b> 이해도 확인은 <b>중간에 나갈 수 없다</b>는 것을 버튼 위에 먼저 쓴다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
   </div>
 
   <div class="rpage" id="page-todo">
@@ -389,6 +442,42 @@
   </div>
   </div>
 
+  <div class="rpage" id="page-missed">
+  <div class="sec-label">상태 · 제출 마감 지남 (제출을 안 함)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/home</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <div class="slab">지금 할 일</div>
+      <div class="card mute">
+        <div class="cbody">
+          <div class="cmeta">미프 3차 <span class="sub">· A반 3팀 · 교안 AI_LLMOps</span></div>
+          <h3><em>제출 기한</em>이 지났어요</h3>
+          <div class="guide">
+            <div class="gl"><span class="k">–</span><div>제출 마감은 07-14 18:00이었어요. 이번 회차는 <b>미제출</b>로 기록됩니다.</div></div>
+            <div class="gl"><span class="k">→</span><div>제출하지 않아 <b>이해도 확인도 열리지 않습니다.</b> 사정이 있었다면 매니저에게 알려 주세요.</div></div>
+          </div>
+          <div class="cta"><button class="btn ghost">매니저에게 문의</button></div>
+        </div>
+      </div>
+      <div class="sblock">
+        <div class="slab">예정</div>
+        <div class="prow soon"><span class="nm">미프 4차</span><span class="st">제출 07-21 · 이해도 확인 07-22~23</span><span class="tag">예정</span></div>
+      </div>
+      <div class="sblock">
+        <div class="slab">지난 회차<span class="more">전체 보기 → 내 리포트</span></div>
+        <div class="prow"><span class="nm">미프 2차</span><span class="st">완료 · 다시 보기 1건 완료</span><span class="go">리포트 보기 →</span></div>
+        <div class="prow"><span class="nm">미프 1차</span><span class="st">완료</span><span class="go">리포트 보기 →</span></div>
+      </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
   <div class="rpage" id="page-none">
   <div class="sec-label">상태 · 진행 중인 회차 없음</div>
   <div class="viewport">
@@ -421,7 +510,7 @@
   </div>
 </div>
 <script>
-  var PAGE = { todo:"page-todo", analyzing:"page-analyzing", ready:"page-ready", done:"page-done",
+  var PAGE = { cases:"page-cases", missed:"page-missed", todo:"page-todo", analyzing:"page-analyzing", ready:"page-ready", done:"page-done",
                retry:"page-retry", failed:"page-failed", closed:"page-closed", none:"page-none" };
   function route(){
     var h = (location.hash || "").slice(1) || "todo";

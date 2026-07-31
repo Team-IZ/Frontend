@@ -294,9 +294,7 @@ export default function InviteSignup() {
             title="이미 활성화된 계정입니다"
             description={`${error.email}으로 바로 로그인하면 돼요.`}
             aux="이전 기수에서 쓰던 계정이면 그대로 로그인하면 새 기수가 보입니다. 비밀번호가 기억나지 않으면 로그인 화면에서 재설정할 수 있어요."
-            actions={
-              <Button onClick={() => navigate('/shared/login')}>로그인</Button>
-            }
+            actions={<Button onClick={() => navigate('/shared/login')}>로그인</Button>}
           />
         )
       case 'NOT_IN_ROSTER':
@@ -308,7 +306,11 @@ export default function InviteSignup() {
             description="이 주소는 이번 기수 명단에서 찾지 못했어요."
             aux="다른 주소로 초대를 받았을 수 있어요. 담당 매니저에게 확인해 주세요."
             actions={
-              <Button variant="ghost" nativeButton={false} render={<a href="mailto:support@iz-get.com" />}>
+              <Button
+                variant="ghost"
+                nativeButton={false}
+                render={<a href="mailto:support@iz-get.com" />}
+              >
                 문의하기
               </Button>
             }

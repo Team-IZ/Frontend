@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-// 초대 가입·활성화 API 격리 모듈 (SC-A02 §5)
+// 초대 가입·활성화 API 격리 모듈 (signup-activation.html#cases · mockup c6911c0)
 // 백엔드 준비 시 각 함수의 Mock 블록만 지우고 아래 fetch를 켜면 됩니다.
 // ─────────────────────────────────────────────────────────────
 import type { ActivateRequest, InviteApiError, InviteInfo, SignupRequest } from './inviteTypes'
@@ -17,19 +17,19 @@ const MOCK_INVITES: Record<string, InviteInfo> = {
 
 /** 토큰 검증 단계에서 바로 실패하는 시연용 토큰 */
 const MOCK_INVITE_ERRORS: Record<string, InviteApiError> = {
-  'mgr-expired': { code: 'A1_TOKEN_EXPIRED' },
-  'mgr-used': { code: 'A2_TOKEN_USED' },
-  'mgr-invalid': { code: 'A3_TOKEN_INVALID' },
-  'stu-expired': { code: 'B2_TOKEN_EXPIRED' },
-  'stu-noroster': { code: 'B1_NOT_IN_ROSTER' },
-  'stu-dup': { code: 'B5_EMAIL_DUPLICATE' },
-  'stu-badorg': { code: 'B8_INVALID_ORG_TOKEN' },
+  'mgr-expired': { code: 'INVITE_EXPIRED', email: 'kim@green.com' },
+  'mgr-used': { code: 'INVITE_USED', email: 'kim@green.com' },
+  'mgr-invalid': { code: 'INVITE_INVALID' },
+  'stu-expired': { code: 'INVITE_EXPIRED', email: 'lee@student.com' },
+  'stu-noroster': { code: 'NOT_IN_ROSTER' },
+  'stu-existing': { code: 'ACCOUNT_EXISTS', email: 'lee@student.com' }, // 재수강생 — 그림은 INVITE_USED와 동일
+  'stu-badorg': { code: 'INVITE_INVALID' },
 }
 
 /** 제출 단계에서 강제로 실패시킬 토큰 */
 const MOCK_SUBMIT_ERRORS: Record<string, InviteApiError> = {
-  'mgr-rollback': { code: 'A7_SIGNUP_ROLLBACK' },
-  'stu-consent': { code: 'CS3_CONSENT_SAVE_FAILED' },
+  'mgr-rollback': { code: 'SIGNUP_FAILED' },
+  'stu-consent': { code: 'SIGNUP_FAILED' },
 }
 
 function delay<T>(value: T, ms = 500): Promise<T> {
@@ -49,7 +49,7 @@ export function getInvite(token: string): Promise<InviteInfo> {
       }
       const invite = MOCK_INVITES[token]
       if (!invite) {
-        reject({ code: 'A3_TOKEN_INVALID' } satisfies InviteApiError)
+        reject({ code: 'INVITE_INVALID' } satisfies InviteApiError)
         return
       }
       resolve(invite)
@@ -62,7 +62,7 @@ export function getInvite(token: string): Promise<InviteInfo> {
   // return res.json() // { inviteType, email }
 }
 
-/** POST /auth/signup — 매니저 회원가입 (변형 A) */
+/** POST /auth/signup — 오퍼레이터·매니저 회원가입 (변형 A) */
 export function signup(req: SignupRequest): Promise<void> {
   // ===== Mock 버전 =====
   return new Promise((resolve, reject) => {
@@ -74,12 +74,12 @@ export function signup(req: SignupRequest): Promise<void> {
       }
       const invite = MOCK_INVITES[req.token]
       if (!invite) {
-        reject({ code: 'A3_TOKEN_INVALID' } satisfies InviteApiError)
+        reject({ code: 'INVITE_INVALID' } satisfies InviteApiError)
         return
       }
-      // A5 · 이미 가입된 이메일 (같은 토큰으로 두 번 가입 시 재현됨)
+      // 이미 가입된 이메일 (같은 토큰으로 두 번 가입 시 재현됨)
       if (accounts[invite.email]) {
-        reject({ code: 'A5_EMAIL_DUPLICATE' } satisfies InviteApiError)
+        reject({ code: 'INVITE_USED' } satisfies InviteApiError)
         return
       }
       createManagerAccount(invite.email, req.name, req.password)
@@ -108,18 +108,18 @@ export function activate(req: ActivateRequest): Promise<void> {
       }
       const invite = MOCK_INVITES[req.token]
       if (!invite) {
-        reject({ code: 'B8_INVALID_ORG_TOKEN' } satisfies InviteApiError)
+        reject({ code: 'INVITE_INVALID' } satisfies InviteApiError)
         return
       }
       const account = accounts[invite.email]
-      // B1 · 명단에 없는 계정
+      // 명단에 없는 계정
       if (!account) {
-        reject({ code: 'B1_NOT_IN_ROSTER' } satisfies InviteApiError)
+        reject({ code: 'NOT_IN_ROSTER' } satisfies InviteApiError)
         return
       }
-      // B4 · 이미 활성화된 계정 (두 번째 활성화 시 재현됨)
+      // 이미 활성화된 계정 (두 번째 활성화 시 재현됨)
       if (account.active) {
-        reject({ code: 'B4_ALREADY_ACTIVE' } satisfies InviteApiError)
+        reject({ code: 'INVITE_USED' } satisfies InviteApiError)
         return
       }
       activateTraineeAccount(invite.email, req.password)

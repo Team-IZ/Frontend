@@ -1,7 +1,8 @@
 # v2 화면 정의 — 목록과 규칙
 
 > **v1은 `docs/plan/v1/`에 그대로 뒀다.** 참고는 하되 구조는 물려받지 않는다.
-> **그리기 전에 [01 화면 그릴 때 점검표](01-design-checklist.md)를 본다.**
+> **그리기 전에 [01 화면 그릴 때 점검표](01-design-checklist.md)를 본다** — *무엇을 그리나*.
+> **[02 레이아웃 시스템](02-layout-system.md)** 은 *어떻게 생겼나* — 폭·층·빈 상태 3종·격자.
 > 근거 문서는 상위 폴더에 있다 — [14 검증 설계](../14-verification-design.md) · [16 면담](../16-intervention-design.md) · [17 메뉴 트리](../17-ia-menu-tree.md) · [18 화면 구성](../18-screen-composition.md).
 
 ---

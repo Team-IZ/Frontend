@@ -17,7 +17,7 @@ export default function BrandPanel({
       검증합니다
     </>
   ),
-  description = '제출한 코드를 근거로 한 소크라틱 검증 세션과 5축 채점으로, 교육생의 실제 이해도를 측정하고 위험을 조기에 감지합니다.',
+  description = '제출한 코드의 특정 지점을 두고 왜 그렇게 했는지 묻습니다. 그 자리에서 설명할 수 있는지가 이해도입니다.',
   meta = '교육 운영기관 전용 · 초대 기반 계정',
 }: Props) {
   return (

@@ -83,6 +83,17 @@
   --color-info-border: #c5daf0;
   --color-neutral-soft: #e0e3ea;
 
+  /* ── 개념 도달 단계(0~4) — MG-05·MG-02 공유 색 스케일(MG-02 §3 "색 스케일 — 여기서
+     확정하고 MG-06이 물려받는다"). danger/warning/success 5색 의미 팔레트와 별개다 —
+     여긴 위험도 그라디언트 5단이라 의미 색 이름 하나에 대응시킬 수 없다. */
+  --color-reach-0: #df6150;
+  --color-reach-1: #ec9a5c;
+  --color-reach-2: #ecc95e;
+  --color-reach-3: #a9cf8e;
+  --color-reach-4: #57b083;
+  --color-reach-fg: #241108; /* 1~3단 위 어두운 글자. 0·4단은 배경이 진해 흰 글자를 쓴다 */
+  --color-reach-na-bg: #eceef1; /* 문항없음 해치 무늬 밝은 줄. 어두운 줄은 --color-border와 같다 */
+
   /* ── 좌측 네비게이션 (어두운 면) ──────────────
      매니저·슈퍼어드민 셸의 사이드바 전용. 와이어 12개 파일에서 값이 일치한다. */
   --color-nav: #1e2436;

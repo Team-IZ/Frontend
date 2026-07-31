@@ -21,6 +21,9 @@
     --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
     --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
     /* 목업은 1920x1080 화면을 그대로 그리고, 보이는 폭에 맞춰 축소만 한다 */
+    /* 본문 기본 상한 — 1920에서 표·목록이 늘어지는 것을 막는다.
+       1512에서는 가용폭 1264px이라 걸리지 않고, 넓은 화면만 잡힌다(=Tailwind max-w-7xl) */
+    --w-app:1280px;
     --screen-w:1920px; --screen-h:1080px; --k:.6625;
     --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
     --mono:ui-monospace,Menlo,monospace;
@@ -49,14 +52,16 @@
   .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
   .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
 
-  .body{display:flex;flex:1}
+  .body{display:flex;flex:1;min-height:0}
   .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
   .nav .grp{padding-top:var(--sp-2);margin-top:var(--sp-2);border-top:1px solid var(--c-nav-2)}
   .nav .grp:first-child{padding-top:0;margin-top:0;border-top:0}
   .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
   .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
   .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
-  .content{flex:1;background:var(--c-bg);padding:var(--sp-6);min-width:0}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-6);min-width:0;min-height:0;overflow:hidden}
+  /* 상한은 .content 자신이 아니라 자식에 건다 — .content가 배경을 계속 꽉 채워야 이음선이 안 생긴다 */
+  .content > *{max-width:var(--w-app);margin-left:auto;margin-right:auto}
   .phead{margin-bottom:var(--sp-4)}
   .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
   .phead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}

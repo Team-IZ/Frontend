@@ -7,6 +7,10 @@
 <style>
 
   :root{
+    /* 본문 기본 상한 — 1920에서 표·목록이 늘어지는 것을 막는다.
+       1512에서는 가용폭 1264px이라 걸리지 않고, 넓은 화면만 잡힌다(=Tailwind max-w-7xl) */
+    --w-app:1280px;
+    --screen-w:1920px; --screen-h:1080px; --k:.6625;
     --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
     --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
     --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
@@ -32,12 +36,12 @@
   .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
   .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
 
-  .viewport{border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .viewport{width:var(--screen-w);zoom:var(--k);border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
   .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
   .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
   .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
 
-  .app{display:flex;flex-direction:column;min-height:620px}
+  .app{display:flex;flex-direction:column;height:var(--screen-h)}
   .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
   .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
   .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700}
@@ -47,7 +51,7 @@
   .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
   .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
 
-  .body{display:flex;flex:1}
+  .body{display:flex;flex:1;min-height:0}
   .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
   .nav .grp{padding-top:var(--sp-2);margin-top:var(--sp-2);border-top:1px solid var(--c-nav-2)}
   .nav .grp:first-child{padding-top:0;margin-top:0;border-top:0}
@@ -55,7 +59,9 @@
   .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
   .nav .item .bg{margin-left:auto;background:var(--c-primary);color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:1px 6px}
   .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
-  .content{flex:1;background:var(--c-bg);padding:var(--sp-6);min-width:0}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-6);min-width:0;min-height:0;overflow:hidden}
+  /* 상한은 .content 자신이 아니라 자식에 건다 — .content가 배경을 계속 꽉 채워야 이음선이 안 생긴다 */
+  .content > *{max-width:var(--w-app);margin-left:auto;margin-right:auto}
   .phead{margin-bottom:var(--sp-4)}
   .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
   .phead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
@@ -214,7 +220,7 @@
   .qrow{display:flex;align-items:center;gap:var(--sp-3);margin-bottom:var(--sp-3)}
 
   /* 좌 섹션 → 우 가르친 항목. 오퍼레이터 화면과 같은 구조 */
-  .relsplit{display:flex;gap:0;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden;min-height:420px}
+  .relsplit{display:flex;gap:0;background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden;max-height:800px}
   .seclist{flex:0 0 268px;border-right:1px solid var(--c-border);background:var(--c-surface-2);overflow:auto;padding:var(--sp-2) 0}
   .secitem{display:block;width:100%;text-align:left;border:0;background:none;padding:9px var(--sp-4);cursor:pointer;font-family:inherit}
   .secitem b{display:block;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);line-height:1.4}
@@ -601,6 +607,18 @@
   if(window.self !== window.top) document.body.classList.add("embedded");
   window.addEventListener("hashchange", route);
   route();
+
+  // 목업 = 1920x1080 실화면. 보이는 폭에 맞춰 배율만 조절해 비율을 지킨다
+  function fitScreen(){
+    var p = document.querySelector(".page");
+    if(!p) return;
+    var cs = getComputedStyle(p);
+    var w = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if(w > 0) document.documentElement.style.setProperty("--k", w / 1920);
+  }
+  window.addEventListener("resize", fitScreen);
+  window.addEventListener("load", fitScreen);
+  fitScreen();
 </script>
 </body>
 </html>

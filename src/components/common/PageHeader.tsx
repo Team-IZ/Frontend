@@ -15,18 +15,23 @@ type Props = {
   count?: string
   /** 상위 경로. 예: "교육생 › 7기" */
   breadcrumb?: string
+  /** count 옆에 붙는 세부 내역. 예: "활성 23 · 초대 대기 1 · 비활성 1"(MG-05 lhead .cnts2) */
+  breakdown?: ReactNode
   /** 주 액션 하나. 없으면 생략한다 */
   action?: ReactNode
 }
 
-export default function PageHeader({ title, count, breadcrumb, action }: Props) {
+export default function PageHeader({ title, count, breadcrumb, breakdown, action }: Props) {
   return (
     <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
       <div>
         {breadcrumb && <p className="text-fg-subtle mb-0.5 text-xs">{breadcrumb}</p>}
-        <h1 className="text-xl font-bold tracking-[-0.01em]">
-          {title}
-          {count && <span className="text-fg-subtle ml-2 text-sm font-normal">{count}</span>}
+        <h1 className="flex items-baseline gap-3 text-xl font-bold tracking-[-0.01em]">
+          <span>
+            {title}
+            {count && <span className="text-fg-subtle ml-2 text-sm font-normal">{count}</span>}
+          </span>
+          {breakdown && <span className="text-fg-muted text-xs font-normal">{breakdown}</span>}
         </h1>
       </div>
       {action}

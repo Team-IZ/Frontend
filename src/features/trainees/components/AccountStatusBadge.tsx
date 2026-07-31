@@ -3,7 +3,7 @@ import type { AccountStatus } from '../mockData'
 
 const LABEL: Record<AccountStatus, string> = {
   ACTIVE: '활성',
-  INVITED: '초대됨',
+  INVITED: '초대 대기',
   INACTIVE: '비활성',
 }
 

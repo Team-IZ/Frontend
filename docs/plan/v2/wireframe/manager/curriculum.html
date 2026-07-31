@@ -252,12 +252,14 @@
   .usedtbl .kchip{display:inline-block;font-size:11px;font-weight:600;color:var(--c-text-2);background:var(--c-surface-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:2px 9px;margin:1px 2px 1px 0}
 
 
-  .empty{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8);text-align:center}
+  .empty{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8) var(--sp-5);text-align:center}
+  /* 빈 상태 3종 — 자리의 성격이 다르다
+     .wait 점선 = 아직 안 들어온 자리 · .empty 실선 = 확정된 0건 · .fail = 사고 */
+  .empty.wait{background:var(--c-surface-2);border:1px dashed var(--c-border-strong)}
+  .empty.fail{background:var(--c-danger-soft);border:1px solid #efc9c4}
+  .empty.fail .t{color:var(--c-danger)}
   .empty .t{font-size:var(--fs-base);font-weight:600;margin-bottom:6px}
   .empty .s{font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7}
-
-  .note2{max-width:1180px;margin:14px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
-  .note2 b{color:var(--c-text-2)}
 
   /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
   .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
@@ -365,8 +367,6 @@
       </div>
     </div>
   </div>
-  <div class="note2">&#183; <b>OP-06 &#8250; 교안에서 생성&#183;편집만 뺀 화면</b>이다 &#8212; 목록&#183;섹션&#183;쓰인 회차 구조가 같다. <b>같은 것을 두 번 설계하지 않는다.</b> &#183; 진입은 <b>메뉴</b>와 <b>브리프&#183;히트맵의 <code>&#8599;</code> 새 탭</b> 둘이다 &#8212; 모달&#183;오버레이를 만들지 않는다.</div>
-  <div class="note2">&#183; <b>목적은 어휘와 맥락</b>이다 &#8212; 히트맵&#183;대시보드가 쓰는 개념 이름이 <b>커리큘럼 어디쯤인지</b> 여기서 확인한다. &#183; <b>등록&#183;재분석&#183;연결 변경이 없다.</b> 교안은 기관 자산이고 오퍼레이터가 관리한다(OP-06). &#183; <b>기관 전체가 아니라 이 기수 것만</b> 보인다 &#8212; 다른 기수 교안은 담당 범위가 아니다.</div>
   </div>
     <div class="rpage" id="page-failed">
   <div class="sec-label">&#9318; 상태 · 분석 실패한 교안 (열 수는 있지만 섹션이 없다)</div>
@@ -402,8 +402,6 @@
       </div>
     </div>
   </div>
-  <div class="note2">&#183; <b>OP-06 &#8250; 교안에서 생성&#183;편집만 뺀 화면</b>이다 &#8212; 목록&#183;섹션&#183;쓰인 회차 구조가 같다. <b>같은 것을 두 번 설계하지 않는다.</b> &#183; 진입은 <b>메뉴</b>와 <b>브리프&#183;히트맵의 <code>&#8599;</code> 새 탭</b> 둘이다 &#8212; 모달&#183;오버레이를 만들지 않는다.</div>
-  <div class="note2">&#183; <b>목적은 어휘와 맥락</b>이다 &#8212; 히트맵&#183;대시보드가 쓰는 개념 이름이 <b>커리큘럼 어디쯤인지</b> 여기서 확인한다. &#183; <b>등록&#183;재분석&#183;연결 변경이 없다.</b> 교안은 기관 자산이고 오퍼레이터가 관리한다(OP-06). &#183; <b>기관 전체가 아니라 이 기수 것만</b> 보인다 &#8212; 다른 기수 교안은 담당 범위가 아니다.</div>
   </div>
     <div class="rpage" id="page-sec">
   <div class="sec-label">&#9313; 교안 상세 › 섹션 — ★가 검증 개념으로 쓰인 항목</div>
@@ -444,7 +442,6 @@
       </div>
     </div>
   </div>
-  <div class="note2">&#183; <b>&#9733;는 검증 개념으로 쓰인 항목</b>이다 &#8212; 이 섹션이 가르친 것이 9개인데 <b>그중 하나만 문항이 됐다.</b> 나머지는 교안에 있지만 <b>묻지 않았다.</b> &#183; <b>정의문은 교안 분석이 뽑은 것</b>이고 없는 경우도 있다 &#8212; 지어내지 않는다.</div>
   </div>
 
   <div class="rpage" id="page-nodef">
@@ -486,7 +483,6 @@
       </div>
     </div>
   </div>
-  <div class="note2">&#183; <b>&#9733;는 검증 개념으로 쓰인 항목</b>이다 &#8212; 이 섹션이 가르친 것이 9개인데 <b>그중 하나만 문항이 됐다.</b> 나머지는 교안에 있지만 <b>묻지 않았다.</b> &#183; <b>정의문은 교안 분석이 뽑은 것</b>이고 없는 경우도 있다 &#8212; 지어내지 않는다.</div>
   </div>
   <div class="rpage" id="page-sec2">
   <div class="sec-label">&#9314; 다른 섹션 — 검증 개념이 없는 섹션</div>
@@ -527,7 +523,6 @@
       </div>
     </div>
   </div>
-  <div class="note2">&#183; <b>&#9733;는 검증 개념으로 쓰인 항목</b>이다 &#8212; 이 섹션이 가르친 것이 5개인데 <b>그중 하나만 문항이 됐다.</b> 나머지는 교안에 있지만 <b>묻지 않았다.</b> &#183; <b>정의문은 교안 분석이 뽑은 것</b>이고 없는 경우도 있다 &#8212; 지어내지 않는다.</div>
   </div>
   <div class="rpage" id="page-used">
   <div class="sec-label">&#9315; 교안 상세 › 쓰인 회차 — 오퍼레이터의 `연결된 프로젝트`</div>
@@ -564,7 +559,6 @@
       </div>
     </div>
   </div>
-  <div class="note2">&#183; <b>히트맵에서 본 이름이 어느 회차 것인지</b>가 여기서 연결된다 &#8212; 오퍼레이터의 <code>연결된 프로젝트</code>와 같은 데이터이지만, 매니저에게는 <b>회차&#8594;개념</b> 방향이 쓸모 있다. &#183; <b>이 교안은 미프 3차와 4차에 걸쳐 있다</b> &#8212; 한 교안이 여러 회차에 쓰이고, 한 회차가 여러 교안을 쓴다(14번 4-3). &#183; <b>연결을 바꾸지 않는다</b> &#8212; 교안&#8594;회차 연결은 오퍼레이터가 프로젝트를 만들 때 정한다.</div>
   </div>
   <div class="rpage" id="page-empty">
   <div class="sec-label">&#9316; 상태 · 연결된 교안 없음</div>
@@ -584,14 +578,13 @@
         <div class="content">
           <div class="phead"><div class="crumb">교안 &#8250; 7기</div><h2>교안</h2></div>
           <div class="lhead2"><span class="t5">교안</span><span class="tot2">0개</span></div>
-          <div class="empty"><div class="t">이 기수 회차에 연결된 교안이 없습니다</div>
+          <div class="empty wait"><div class="t">이 기수 회차에 연결된 교안이 없습니다</div>
             <div class="s">프로젝트가 만들어지고 교안이 연결되면 여기에 나타납니다.<br>
               <b>등록은 오퍼레이터가 합니다.</b></div></div>
                   </div>
       </div>
     </div>
   </div>
-  <div class="note2">&#183; <b>등록 유도 문구를 넣지 않는다</b> &#8212; 매니저에게 등록 권한이 없다.</div>
   </div>
 
 </div>

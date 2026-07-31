@@ -160,15 +160,14 @@
   .scope{font-size:var(--fs-xs);color:var(--c-text-3);margin-left:var(--sp-3)}
   .scope b{color:var(--c-text-2)}
 
-  .hint3{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.7;margin-top:var(--sp-3)}
-  .hint3 b{color:var(--c-text-2)}
-
-  .empty{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8);text-align:center}
+  .empty{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8) var(--sp-5);text-align:center}
+  /* 빈 상태 3종 — 자리의 성격이 다르다
+     .wait 점선 = 아직 안 들어온 자리 · .empty 실선 = 확정된 0건 · .fail = 사고 */
+  .empty.wait{background:var(--c-surface-2);border:1px dashed var(--c-border-strong)}
+  .empty.fail{background:var(--c-danger-soft);border:1px solid #efc9c4}
+  .empty.fail .t{color:var(--c-danger)}
   .empty .t{font-size:var(--fs-base);font-weight:600;margin-bottom:6px}
   .empty .s{font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7}
-
-  .note2{max-width:1180px;margin:14px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
-  .note2 b{color:var(--c-text-2)}
 
   /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
   .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
@@ -283,12 +282,10 @@
             </table>
           </div>
           <div class="tablefoot"><span class="range">1&#8211;5 / 5개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-          <div class="hint3">&#183; <b>교안과 검증 개념을 한 열에 2줄로</b> 쓴다 &#8212; 개념이 <b>어느 교안에서 왔는지</b>가 같이 읽히는 정보다(14번 4-3). 칩을 쓰면 교안이 여럿일 때 행이 무한정 높아진다.<br>&#183; <b>담당 반이 여럿이면 합계만으로는 부족하다</b> &#8212; 진행에 <b>뒤처진 반</b>을, 조치에 <b>반 이름</b>을 함께 쓴다. 반별 상세는 <b>MG-08 제출 현황</b>.<br>&#183; <b>미프&#183;빅프는 순차다</b>(10-2) &#8212; 미프가 앞에서 몇 개월, 빅프가 마지막 8주.<br>&#183; 빅프의 앵커는 <b>본인 커밋 영역</b>이라 사람마다 다르다(6-2) &#8212; 교안도 <b>쓰지 않는다.</b> 시작 전에는 <b>회차 번호가 없다</b>(첫 회차 시점이 <b>첫 동작하는 코드가 나온 시점</b>이라 학생마다 다르다 &#183; 10-2).</div>
         </div>
       </div>
     </div>
   </div>
-  <div class="note2">&#183; <b>OP-03과 같은 표, 다른 질문</b> &#8212; 오퍼레이터는 <i>"무엇으로 잴 것인가"</i>를 정하고 매니저는 <i>"내 반이 어디까지 왔나"</i>를 본다. 그래서 <b>같은 열이 읽기/쓰기로 갈리고</b>(검증 개념), <b>진행의 모집단이 다르다</b>(기수 231명 &#8596; 담당 반 75명). &#183; <b>행 클릭 &#8594; MG-08 프로젝트 상세.</b></div>
   </div>
     <div class="rpage" id="page-class">
   <div class="sec-label">&#9313; 반 필터 — C반만 (조치에서 반 이름이 빠진다)</div>
@@ -330,7 +327,6 @@
             </table>
           </div>
           <div class="tablefoot"><span class="range">1&#8211;5 / 5개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-          <div class="hint3">&#183; <b>한 반만 보면 조치에서 반 이름이 빠진다</b> &#8212; 스코프가 이미 <code>C반</code>이라 반복이다.<br>&#183; <b>진행도 그 반 값</b>이다(<code>12/23</code>) &#8212; 전체에서는 <code>58/71</code>이었고 <b>C반이 뒤처진 것</b>이 여기서 드러난다.</div>
         </div>
       </div>
     </div>
@@ -418,7 +414,6 @@
             </table>
           </div>
           <div class="tablefoot"><span class="range">1&#8211;3 / 3개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-          <div class="hint3">&#183; <b>조치 열이 비면 아무것도 하지 않아도 된다</b>는 뜻이다 &#8212; <code>&#8212;</code>가 <b>정상</b>이고, 축하 문구를 넣지 않는다.</div>
         </div>
       </div>
     </div>
@@ -451,8 +446,7 @@
             <div class="fil"><span class="k">상태</span> 전체 &#9662;</div>
             <div class="fil"><span class="k">정렬</span> 최신순 &#9662;</div>
           </div>
-          <div class="empty"><div class="t">이 기수에 등록된 프로젝트가 없습니다</div><div class="s">회차가 만들어지면 여기에 나타납니다.</div></div>
-          <div class="hint3">&#183; <b>생성 유도 문구를 넣지 않는다</b> &#8212; 매니저에게 <b>만들 권한이 없다.</b> 할 수 없는 일을 권하면 화면이 거짓말을 한다.</div>
+          <div class="empty wait"><div class="t">이 기수에 등록된 프로젝트가 없습니다</div><div class="s">회차가 만들어지면 여기에 나타납니다.</div></div>
         </div>
       </div>
     </div>
@@ -496,7 +490,6 @@
             </table>
           </div>
           <div class="tablefoot"><span class="range">1&#8211;3 / 3개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-          <div class="hint3">&#183; OP-03은 같은 자리에 <code>&#9888; 항목 미확정</code>을 띄운다 &#8212; <b>오퍼레이터는 확정할 수 있기 때문</b>이다. 여기서는 <b>회색 글자</b>로만 쓴다.<br>&#183; <b>제출 마감이 비어 있는 것도 사실 그대로</b> 둔다 &#8212; 일정은 오퍼레이터가 정한다.<br>&#183; <b>빅프는 교안을 쓰지 않는다</b>(6-2) &#8212; <code>&#8212;</code>가 아니라 <b>해당 없음</b>이다.</div>
         </div>
       </div>
     </div>

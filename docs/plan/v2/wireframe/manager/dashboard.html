@@ -159,15 +159,18 @@
   .fold{padding:11px var(--sp-5);border-top:1px solid var(--c-border);font-size:var(--fs-sm);color:var(--c-text-3);cursor:pointer;display:flex;align-items:center;gap:6px}
   .fold b{color:var(--c-text-2)}
 
-  .failrow{display:flex;align-items:center;gap:var(--sp-3);padding:13px var(--sp-5);border-top:1px solid var(--c-border);font-size:var(--fs-sm);color:var(--c-text-3)}
+  .failrow{display:flex;align-items:center;gap:var(--sp-3);padding:13px var(--sp-5);border-top:1px solid var(--c-border);font-size:var(--fs-sm);color:var(--c-danger);background:var(--c-danger-soft)}
+  .failrow .rtry{margin-left:auto;color:var(--c-danger);font-weight:700;cursor:pointer;text-decoration:underline}
   .failrow .rtry{margin-left:auto;font-size:var(--fs-xs);color:var(--c-primary);cursor:pointer}
 
-  .empty{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8);text-align:center}
+  .empty{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8) var(--sp-5);text-align:center}
+  /* 빈 상태 3종 — 자리의 성격이 다르다
+     .wait 점선 = 아직 안 들어온 자리 · .empty 실선 = 확정된 0건 · .fail = 사고 */
+  .empty.wait{background:var(--c-surface-2);border:1px dashed var(--c-border-strong)}
+  .empty.fail{background:var(--c-danger-soft);border:1px solid #efc9c4}
+  .empty.fail .t{color:var(--c-danger)}
   .empty .t{font-size:var(--fs-base);font-weight:600;margin-bottom:6px}
   .empty .s{font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7}
-
-  .note2{max-width:1180px;margin:14px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
-  .note2 b{color:var(--c-text-2)}
 
   /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
   .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
@@ -281,7 +284,6 @@
       </div>
     </div>
   </div>
-  <div class="note2">&#183; <b>정렬 근거</b> &#8212; &#9312; 지나면 복구가 안 되는 것 &#8594; &#9313; 확인해야 판정이 확정되는 것 &#8594; &#9314; 면담 대기 &#8594; &#9315; 미제출. <b>화면에는 분류만 쓴다.</b> &#183; <b>시점 정합</b> &#8212; 미프 3차 제출 마감(내일 18:00)이 곧 <b>미프 2차 다시 보기 창 마감</b>이다(11절 &#8212; 3일 또는 다음 제출일 중 빠른 쪽). 리포트 발행 전이므로 <b>미프 3차 면담&#183;다시 보기는 아직 없다.</b> &#183; <b>이름을 누르면 교육생 상세.</b></div>
   </div>
     <div class="rpage" id="page-done">
   <div class="sec-label">&#9313; 처리됨 펼침 — 같은 기간 기준</div>
@@ -444,7 +446,7 @@
           <div class="phead"><div class="crumb">대시보드 &#8250; 7기 &#8250; 담당 반</div><h2>대시보드</h2></div>
           <div class="runline"><span class="kv">진행 중인 프로젝트가 없습니다</span><span class="st2">미프 4차 제출 시작 07-29</span></div>
           <div class="inhead"><span class="t3">할 일</span><span class="n3">0</span><span class="rt3"><span class="fil2 on">지난 방문 이후<span class="since">7/26 14:20 이후</span></span><span class="fil2">전체</span></span></div>
-          <div class="empty"><div class="t">진행 중인 프로젝트가 없습니다</div><div class="s">미프 4차가 <b>07-29</b>에 시작합니다.<br>제출이 들어오면 여기에 할 일이 쌓입니다.</div></div>
+          <div class="empty wait"><div class="t">진행 중인 프로젝트가 없습니다</div><div class="s">미프 4차가 <b>07-29</b>에 시작합니다.<br>제출이 들어오면 여기에 할 일이 쌓입니다.</div></div>
         </div>
       </div>
     </div>

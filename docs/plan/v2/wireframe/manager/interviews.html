@@ -163,8 +163,8 @@
   .grpline td{background:var(--c-surface-2);font-size:11px;font-weight:700;color:var(--c-text-3);letter-spacing:.03em;padding:7px var(--sp-4)}
 
   /* 제외 확인 — 되돌릴 수 있는 것은 크게 묻지 않는다 */
-  .toast{display:flex;align-items:center;gap:var(--sp-3);background:var(--c-nav);color:#fff;border-radius:var(--r-md);padding:11px var(--sp-4);font-size:var(--fs-sm);margin-bottom:var(--sp-3)}
-  .toast .un{margin-left:auto;color:#a9b6ea;font-weight:600;cursor:pointer}
+  .toast{display:flex;align-items:center;gap:var(--sp-3);background:var(--c-primary-soft);color:var(--c-text-2);border:1px solid #cdd4f2;border-radius:var(--r-md);padding:10px var(--sp-4);font-size:var(--fs-sm);margin-bottom:var(--sp-3)}
+  .toast .un{margin-left:auto;color:var(--c-primary);font-weight:700;cursor:pointer;text-decoration:underline}
 
   .rbadge.obs{background:#eef0f3;color:var(--c-text-2)}
   .st.ex{background:#eef0f3;color:var(--c-text-3)} .st.ex .dot{background:var(--c-border-strong)}
@@ -182,12 +182,14 @@
   .modal .cau b{color:var(--c-warning)}
   .modal .mf{padding:var(--sp-3) var(--sp-5);border-top:1px solid var(--c-border);display:flex;gap:var(--sp-2);justify-content:flex-end;background:var(--c-surface-2)}
   .viewport{position:relative}
-  .empty{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8);text-align:center}
+  .empty{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8) var(--sp-5);text-align:center}
+  /* 빈 상태 3종 — 자리의 성격이 다르다
+     .wait 점선 = 아직 안 들어온 자리 · .empty 실선 = 확정된 0건 · .fail = 사고 */
+  .empty.wait{background:var(--c-surface-2);border:1px dashed var(--c-border-strong)}
+  .empty.fail{background:var(--c-danger-soft);border:1px solid #efc9c4}
+  .empty.fail .t{color:var(--c-danger)}
   .empty .t{font-size:var(--fs-base);font-weight:600;margin-bottom:6px}
   .empty .s{font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7}
-
-  .note2{max-width:1180px;margin:14px auto 30px;padding:0 var(--sp-2);font-size:12px;color:var(--c-text-3);line-height:1.7}
-  .note2 b{color:var(--c-text-2)}
 
   /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
   .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
@@ -314,7 +316,6 @@
       </div>
     </div>
   </div>
-  <div class="note2">&#183; <b>등재는 자동, 제외는 수동</b>이다 &#8212; 판정(9-2)이 대상을 정하고 매니저는 <b>빼는 것</b>만 한다. 넣는 것을 수동으로 하면 <b>반마다 기준이 달라진다.</b> <b>종결 행에는 효과 판정이 없다</b> &#8212; 다음 회차에 다시 등재됐는지는 <b>그 회차 목록에 이미 드러난다.</b></div>
   </div>
     <div class="rpage" id="page-done">
   <div class="sec-label">&#9313; 종결만 — 이 회차에 무엇을 약속했나</div>
@@ -577,7 +578,7 @@
             <div class="fil"><span class="k">상태</span> 전체 &#9662;</div>
             <div class="fil"><span class="k">정렬</span> 위험 유형 순 &#9662;</div>
           </div>
-          <div class="empty"><div class="t">이 회차는 아직 결과가 없어요</div><div class="s">이해도 확인이 끝나면 위험 판정이 켜진 사람이 <b>자동으로 등재</b>됩니다.<br>지난 회차를 보려면 위에서 <b>회차를 바꾸세요</b>.</div></div>
+          <div class="empty wait"><div class="t">이 회차는 아직 결과가 없어요</div><div class="s">이해도 확인이 끝나면 위험 판정이 켜진 사람이 <b>자동으로 등재</b>됩니다.<br>지난 회차를 보려면 위에서 <b>회차를 바꾸세요</b>.</div></div>
         </div>
       </div>
     </div>

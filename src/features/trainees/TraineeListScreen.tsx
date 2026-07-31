@@ -138,7 +138,13 @@ function ConceptReachCell({ round, record }: { round: RoundId; record: RoundReco
 }
 
 /** 우수 누적 칸 — 그 회차 응시상태 3종이면 특이 문구가 우선한다(와이어프레임 prof) */
-function AceOrNoteCell({ trainee, record }: { trainee: TraineeRow; record: RoundRecord | undefined }) {
+function AceOrNoteCell({
+  trainee,
+  record,
+}: {
+  trainee: TraineeRow
+  record: RoundRecord | undefined
+}) {
   if (record?.status === 'INVALID') {
     return <span className="text-fg-subtle">이번 회차 채점하지 않음</span>
   }

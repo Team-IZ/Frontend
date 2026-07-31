@@ -11,7 +11,7 @@ export interface MockAccount {
   role: Role
   /** null = 아직 비밀번호 미설정 (명단만 등록된 상태) */
   password: string | null
-  /** false = 활성화 전 → 로그인 차단 (AUTH-03 case5) */
+  /** false = 활성화 전 → 로그인 차단 (AUTH-03 case4 AUTH_UNVERIFIED) */
   active: boolean
 }
 
@@ -60,4 +60,11 @@ export function activateTraineeAccount(email: string, password: string) {
   if (!account) return
   account.password = password
   account.active = true
+}
+
+/** 비밀번호 재설정 → 비밀번호만 교체 (AU-03) */
+export function resetAccountPassword(email: string, password: string) {
+  const account = accounts[email]
+  if (!account) return
+  account.password = password
 }

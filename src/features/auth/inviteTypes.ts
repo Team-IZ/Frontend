@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────
-// 초대 가입·활성화 API 계약 · 출처: docs/plan/screen/definition/SC-A02-signup-activation.md §5
+// 초대 가입·활성화 API 계약 · 출처: docs/plan/v2/wireframe/shared/signup-activation.html#cases (mockup c6911c0)
 // ─────────────────────────────────────────────────────────────
 
 /** 초대 토큰 유형 — 서버가 판정하며 사용자가 선택하지 않음 */
@@ -11,7 +11,7 @@ export interface InviteInfo {
   email: string // 초대값 · 화면에서 읽기전용 (D13)
 }
 
-/** POST /auth/signup (변형 A · 매니저) */
+/** POST /auth/signup (변형 A · 오퍼레이터·매니저) */
 export interface SignupRequest {
   token: string
   name: string
@@ -27,27 +27,19 @@ export interface ActivateRequest {
 }
 
 /**
- * SC-A02 §6 예외 case
- * 코드명을 명세의 case 번호와 1:1로 맞춰 추적이 쉽도록 함
+ * 케이스 계약 · AUTH-01 + AUTH-06 전량 (구현 근거, 두 변형 공통)
+ * v1의 A/B 번호 체계를 버리고 서버 응답 코드 이름으로 통일했다.
  */
 export type InviteErrorCode =
-  // 변형 A — 매니저 회원가입 (AUTH-01)
-  | 'A1_TOKEN_EXPIRED' // 초대 토큰 만료
-  | 'A2_TOKEN_USED' // 토큰 재사용
-  | 'A3_TOKEN_INVALID' // 토큰 위변조
-  | 'A5_EMAIL_DUPLICATE' // 이메일 중복
-  | 'A7_SIGNUP_ROLLBACK' // 계정 생성 실패(롤백)
-  // 변형 B — 교육생 계정 활성화 (AUTH-06)
-  | 'B1_NOT_IN_ROSTER' // 명단 외 이메일
-  | 'B2_TOKEN_EXPIRED' // 초대 토큰 만료
-  | 'B3_MAIL_NOT_RECEIVED' // 초대 메일 미수신
-  | 'B4_ALREADY_ACTIVE' // 이미 활성화
-  | 'B5_EMAIL_DUPLICATE' // 이메일 중복 등록
-  | 'B7_ACTIVATE_ROLLBACK' // 상태 저장 실패(롤백)
-  | 'B8_INVALID_ORG_TOKEN' // 잘못된 기관·기수 토큰
-  // 동의 (D14)
-  | 'CS3_CONSENT_SAVE_FAILED' // 동의 저장 실패
+  | 'INVITE_EXPIRED' // A1·B2 — 초대 토큰 만료
+  | 'INVITE_USED' // A2·B4 — 이미 가입·활성화됨
+  | 'ACCOUNT_EXISTS' // B5(신규) — 재수강생, 화면은 INVITE_USED와 동일
+  | 'INVITE_INVALID' // A3·B8 — 위변조·다른 기수 토큰
+  | 'NOT_IN_ROSTER' // B1 — 명단 외 이메일(변형 B만)
+  | 'SIGNUP_FAILED' // A7·B7·CS3 — 저장 실패·롤백
 
 export interface InviteApiError {
   code: InviteErrorCode
+  /** 만료·이미 활성화됨 등 상태 카드가 이메일을 보여줘야 하는 코드에서만 내려옴 */
+  email?: string
 }

@@ -2,71 +2,45 @@ import type { InviteErrorCode } from './inviteTypes'
 import type { AlertVariant } from './authTypes'
 
 /**
- * SC-A02 §6 · 상태별 UI (AUTH-01 6 활성 + AUTH-06 8 + 동의 3)
- * 문구는 명세 계약값 그대로.
+ * signup-activation.html#cases (mockup c6911c0) · 상태별 UI
+ * 문구는 계약값 그대로.
  */
 export interface InviteState {
   variant: AlertVariant
   message: string
   /** 알림 안에 노출할 후속 행동 */
-  action?: 'RESEND' | 'LOGIN'
-  /** 토큰 자체가 무효 → 폼을 렌더하지 않음 */
-  blocksForm?: boolean
+  action?: 'RESEND' | 'LOGIN' | 'CONTACT'
 }
 
-const SYSTEM_MESSAGE = '일시적 오류입니다. 다시 시도하세요.'
+const SYSTEM_MESSAGE =
+  '잠시 문제가 있었어요. 다시 시도해 주세요. 계정은 아직 만들어지지 않았고 입력한 내용은 그대로 있습니다.'
 
 export function resolveInviteState(code: InviteErrorCode): InviteState {
   switch (code) {
-    // ── 변형 A · 매니저 회원가입 ──
-    case 'A1_TOKEN_EXPIRED':
-      return {
-        variant: 'danger',
-        message: '초대 링크가 만료되었습니다.',
-        action: 'RESEND',
-        blocksForm: true,
-      }
-    case 'A2_TOKEN_USED':
-      return { variant: 'danger', message: '이미 사용된 초대 링크입니다.', blocksForm: true }
-    case 'A3_TOKEN_INVALID':
-      return { variant: 'danger', message: '유효하지 않은 링크입니다.', blocksForm: true }
-    case 'A5_EMAIL_DUPLICATE':
-      return { variant: 'warning', message: '이미 가입된 이메일입니다.', action: 'LOGIN' }
-    case 'A7_SIGNUP_ROLLBACK':
-      return { variant: 'danger', message: SYSTEM_MESSAGE }
+    // A1·B2 — 초대 토큰 만료 (같은 주소로만 재발송)
+    case 'INVITE_EXPIRED':
+      return { variant: 'danger', message: '초대 링크가 만료되었습니다', action: 'RESEND' }
 
-    // ── 변형 B · 교육생 계정 활성화 ──
-    case 'B1_NOT_IN_ROSTER':
-      return { variant: 'danger', message: '명단에 등록되지 않은 계정입니다.', blocksForm: true }
-    case 'B2_TOKEN_EXPIRED':
-      return {
-        variant: 'warning',
-        message: '링크가 만료되었습니다.',
-        action: 'RESEND',
-        blocksForm: true,
-      }
-    case 'B3_MAIL_NOT_RECEIVED':
-      return { variant: 'info', message: '메일을 받지 못하셨나요?', action: 'RESEND' }
-    case 'B4_ALREADY_ACTIVE':
-      return { variant: 'warning', message: '이미 활성화된 계정입니다.', action: 'LOGIN' }
-    case 'B5_EMAIL_DUPLICATE':
-      return {
-        variant: 'danger',
-        message: '이미 등록된 이메일입니다. 기존 계정과 기수 소속을 관리자에게 확인해주세요.',
-        blocksForm: true,
-      }
-    case 'B7_ACTIVATE_ROLLBACK':
-      return { variant: 'danger', message: SYSTEM_MESSAGE }
-    case 'B8_INVALID_ORG_TOKEN':
-      return { variant: 'danger', message: '유효하지 않은 링크입니다.', blocksForm: true }
+    // A2·B4 — 이미 가입·활성화됨 · B5(신규) 재수강생 — 화면은 이 상태와 동일(백엔드만 다름)
+    case 'INVITE_USED':
+    case 'ACCOUNT_EXISTS':
+      return { variant: 'warning', message: '이미 활성화된 계정입니다', action: 'LOGIN' }
 
-    // ── 동의 (D14) ──
-    case 'CS3_CONSENT_SAVE_FAILED':
-      return { variant: 'danger', message: '잠시 후 다시 시도하세요.' }
+    // A3·B8 — 위변조·다른 기수 토큰 (보안 로그)
+    case 'INVITE_INVALID':
+      return { variant: 'danger', message: '유효하지 않은 링크입니다', action: 'CONTACT' }
+
+    // B1 — 명단 외 이메일 (변형 B만)
+    case 'NOT_IN_ROSTER':
+      return { variant: 'danger', message: '명단에 등록되지 않은 계정입니다', action: 'CONTACT' }
+
+    // A7·B7·CS3 — 저장 실패·롤백. 계정 생성 전 차단, 폼은 유지(재시도)
+    case 'SIGNUP_FAILED':
+      return { variant: 'danger', message: SYSTEM_MESSAGE }
   }
 }
 
-/** 비밀번호 정책 (AUTH-01·06 case6) — 미충족 기준 목록을 돌려줌 */
+/** 비밀번호 정책 (AUTH-01·06 case A6·B6) — 미충족 기준 목록을 돌려줌 */
 export function checkPasswordPolicy(password: string): string[] {
   const unmet: string[] = []
   if (password.length < 8) unmet.push('8자 이상')

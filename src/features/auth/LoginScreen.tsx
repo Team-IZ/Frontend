@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form'
 import { useNavigate, Navigate, Link } from 'react-router'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { useAuth } from './AuthContext'
-import { login, resendVerification } from './authApi'
+import { login, resendInviteMail } from './authApi'
 import { resolveAuthState } from './authStates'
 import type { AuthState } from './authStates'
 import type { ApiError } from './authTypes'
@@ -70,13 +70,13 @@ export default function Login() {
       // 서버가 지정한 초기 화면으로 이동 (클라이언트가 역할→화면 매핑을 하지 않음)
       navigate(res.initialScreen)
     } catch (err) {
-      const { code, lockedUntil } = err as ApiError
-      setAlert(resolveAuthState(code, lockedUntil))
+      const { code, retryAfter } = err as ApiError
+      setAlert(resolveAuthState(code, retryAfter))
     }
   }
 
   async function handleResend() {
-    await resendVerification(email)
+    await resendInviteMail(email)
     setResendDone(true)
   }
 
@@ -90,25 +90,10 @@ export default function Login() {
       <div className="flex w-full bg-surface">
         <BrandPanel />
 
-        <AuthForm title="로그인" subtitle="계정 정보를 입력하세요.">
+        {/* stableHeight: 알림이 뜨고 사라져도 제목·입력 필드 위치가 흔들리지 않게 (§6) */}
+        <AuthForm title="로그인" subtitle="계정 정보를 입력하세요." stableHeight>
           {/* noValidate: 브라우저 기본 검증 대신 RHF/Alert로 상태를 일원화 (§3) */}
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-            {/* Alert 슬롯 — 서버발 상태 발생 시에만 노출 (§3) */}
-            {alert && (
-              <Alert variant={alert.variant}>
-                {alert.message}
-                {alert.showResend && (
-                  <span className="ml-2">
-                    {resendDone ? (
-                      <span className="text-fg-subtle">인증 메일을 다시 보냈습니다.</span>
-                    ) : (
-                      <TextLink onClick={handleResend}>인증 메일 재발송</TextLink>
-                    )}
-                  </span>
-                )}
-              </Alert>
-            )}
-
             <Field data-invalid={!!errors.email}>
               <FieldLabel htmlFor="login-email">이메일</FieldLabel>
               <Input
@@ -165,6 +150,22 @@ export default function Login() {
               <FieldError>{errors.password?.message}</FieldError>
             </Field>
 
+            {/* 알림은 비밀번호 아래 · 버튼 위 — 폼 위쪽에 두면 뜰 때마다 입력 필드가 밀린다 */}
+            {alert && (
+              <Alert variant={alert.variant}>
+                {alert.message}
+                {alert.showResend && (
+                  <span className="ml-2">
+                    {resendDone ? (
+                      <span className="text-fg-subtle">초대 메일을 다시 보냈습니다.</span>
+                    ) : (
+                      <TextLink onClick={handleResend}>초대 메일 다시 받기</TextLink>
+                    )}
+                  </span>
+                )}
+              </Alert>
+            )}
+
             <div className="pt-1">
               <Button type="submit" size="lg" disabled={isSubmitting || alert?.blockSubmit}>
                 {isSubmitting ? '로그인 중…' : '로그인'}
@@ -182,10 +183,10 @@ export default function Login() {
             <br />
             manager@org.com · trainee@org.com · admin@iz-get.com
             <br />
-            <b className="text-fg-muted">상태 시연</b> · locked@ · unverified@ · error@ ·
-            noctx@org.com
+            <b className="text-fg-muted">상태 시연</b> · newtrainee@(미활성) · suspended@(정지) ·
+            error@ · rollback@ · cookie@ · noctx@org.com
             <br />
-            newtrainee@org.com = 활성화 전(비활성) · 3회 실패 시 잠금
+            같은 계정 3회 연속 실패 → 지연(잠금 아님, 30초 후 재시도)
             <br />
             <b className="text-fg-muted">초대 링크(SC-A02)</b> ·{' '}
             <Link to="/invite/mgr-8f3a" className="text-primary hover:underline">
@@ -198,6 +199,52 @@ export default function Login() {
             <br />
             가입/활성화 후 <b className="text-fg-muted">newmanager@org.com</b> ·{' '}
             <b className="text-fg-muted">newtrainee@org.com</b> + 직접 설정한 비밀번호로 로그인
+            <br />
+            <b className="text-fg-muted">비밀번호 재설정(AU-03)</b> ·{' '}
+            <Link
+              to="/shared/password-reset?token=reset-valid"
+              className="text-primary hover:underline"
+            >
+              정상
+            </Link>{' '}
+            ·{' '}
+            <Link
+              to="/shared/password-reset?token=reset-expired"
+              className="text-primary hover:underline"
+            >
+              만료
+            </Link>{' '}
+            ·{' '}
+            <Link
+              to="/shared/password-reset?token=reset-used"
+              className="text-primary hover:underline"
+            >
+              사용됨
+            </Link>{' '}
+            ·{' '}
+            <Link
+              to="/shared/password-reset?token=reset-tampered"
+              className="text-primary hover:underline"
+            >
+              위변조
+            </Link>{' '}
+            ·{' '}
+            <Link
+              to="/shared/password-reset?token=reset-revokefail"
+              className="text-primary hover:underline"
+            >
+              세션폐기실패
+            </Link>{' '}
+            ·{' '}
+            <Link
+              to="/shared/password-reset?token=reset-failing"
+              className="text-primary hover:underline"
+            >
+              저장실패
+            </Link>
+            <br />
+            reset-valid로 제출 시 비밀번호를 <code>pass1234</code>(현재값)로 넣으면 same-as-current
+            시연
           </div>
         </AuthForm>
       </div>

@@ -6,31 +6,31 @@
 import type { ApiError, LoginRequest, LoginResponse, Role } from './authTypes'
 import { accounts } from './mockDb'
 
-/** 서버가 내려주는 역할별 초기 화면 (SC-A01 §5 · initialScreen) */
+/** 서버가 내려주는 역할별 초기 화면 (initialScreen) */
 const INITIAL_SCREEN: Record<Role, string> = {
-  MANAGER: '/manager/dashboard', // SC-M01
-  TRAINEE: '/trainee/home', // SC-T01
-  SUPERADMIN: '/superadmin/console', // SC-S01
+  SUPERADMIN: '/superadmin/console', // SA-01
+  OPERATOR: '/operator/dashboard', // OP-01
+  MANAGER: '/manager/dashboard', // MG-01
+  TRAINEE: '/trainee/home', // TR-01
 }
 
 // ───────── Mock 전용 (백엔드 연동 시 이 블록 삭제) ─────────
 /** 상태 시연용 계정 — 9 case를 화면에서 직접 확인할 수 있게 함 */
 const MOCK_ERROR_ACCOUNTS: Record<string, ApiError> = {
-  'locked@org.com': { code: 'AUTH_LOCKED', lockedUntil: '오후 3:20' },
-  'unverified@org.com': { code: 'AUTH_UNVERIFIED' },
+  'suspended@org.com': { code: 'AUTH_INACTIVE' },
   'error@org.com': { code: 'AUTH_TOKEN_ISSUE' },
   'rollback@org.com': { code: 'AUTH_ROLLBACK' },
   'cookie@org.com': { code: 'AUTH_COOKIE' },
   'noctx@org.com': { code: 'AUTH_NO_CONTEXT' },
 }
 
-const LOCK_THRESHOLD = 3
-/** 데모라 30초. 실제 서버는 10분 등 정책값을 씁니다. */
-const LOCK_DURATION_MS = 30_000
+const THROTTLE_THRESHOLD = 3
+/** 데모라 30초. 실제 서버는 정책값을 씁니다. */
+const THROTTLE_DURATION_MS = 30_000
 
 interface FailState {
   count: number
-  lockedUntil?: number // timestamp
+  throttledUntil?: number // timestamp
 }
 const failState: Record<string, FailState> = {}
 
@@ -39,12 +39,8 @@ function stateOf(email: string): FailState {
   return failState[email]
 }
 
-function formatTime(timestamp: number): string {
-  return new Date(timestamp).toLocaleTimeString('ko-KR', {
-    hour: 'numeric',
-    minute: '2-digit',
-    second: '2-digit',
-  })
+function retryAfterSeconds(until: number): number {
+  return Math.max(1, Math.ceil((until - Date.now()) / 1000))
 }
 // ──────────────────────────────────────────────────────────
 
@@ -62,26 +58,26 @@ export function login(req: LoginRequest): Promise<LoginResponse> {
       const state = stateOf(req.email)
       const now = Date.now()
 
-      // 잠금이 만료됐으면 카운터 초기화
-      if (state.lockedUntil && now >= state.lockedUntil) {
+      // 지연이 끝났으면 카운터 초기화
+      if (state.throttledUntil && now >= state.throttledUntil) {
         state.count = 0
-        state.lockedUntil = undefined
+        state.throttledUntil = undefined
       }
 
-      // case3 · 잠금 상태에서 로그인 시도 (제출 버튼 비활성)
-      if (state.lockedUntil) {
+      // case2·3 · 지연 창 안에서 재시도 (제출 버튼 비활성. 계정을 잠그지 않는다)
+      if (state.throttledUntil) {
         reject({
-          code: 'AUTH_LOCKED',
-          lockedUntil: formatTime(state.lockedUntil),
+          code: 'AUTH_THROTTLED',
+          retryAfter: retryAfterSeconds(state.throttledUntil),
         } satisfies ApiError)
         return
       }
 
       const account = accounts[req.email]
 
-      // case5 · 비활성 계정 (명단 등록만 되고 아직 활성화 안 함)
+      // case4 · 미활성 계정 (명단 등록만 되고 아직 초대 활성화 안 함)
       if (account && !account.active) {
-        reject({ code: 'AUTH_INACTIVE' } satisfies ApiError)
+        reject({ code: 'AUTH_UNVERIFIED' } satisfies ApiError)
         return
       }
 
@@ -95,13 +91,13 @@ export function login(req: LoginRequest): Promise<LoginResponse> {
         return
       }
 
-      // 실패 누적 → 임계 도달 시 잠금 발생 (case2)
+      // 실패 누적 → 임계 도달 시 지연 시작 (case2·3, 잠금 아님)
       state.count += 1
-      if (state.count >= LOCK_THRESHOLD) {
-        state.lockedUntil = now + LOCK_DURATION_MS
+      if (state.count >= THROTTLE_THRESHOLD) {
+        state.throttledUntil = now + THROTTLE_DURATION_MS
         reject({
-          code: 'AUTH_LOCKED_NEW',
-          lockedUntil: formatTime(state.lockedUntil),
+          code: 'AUTH_THROTTLED',
+          retryAfter: retryAfterSeconds(state.throttledUntil),
         } satisfies ApiError)
         return
       }
@@ -116,17 +112,17 @@ export function login(req: LoginRequest): Promise<LoginResponse> {
   //   credentials: 'include', // refreshToken(HttpOnly Cookie) 수신
   //   body: JSON.stringify(req),
   // })
-  // if (!res.ok) return Promise.reject(await res.json()) // { code, lockedUntil? }
+  // if (!res.ok) return Promise.reject(await res.json()) // { code, retryAfter? }
   // return res.json() // { accessToken, role, initialScreen }
 }
 
-/** POST /auth/resend-verification — 계정 존재 여부 비노출(항상 동일 응답) */
-export function resendVerification(_email: string): Promise<void> {
+/** POST /auth/resend-invite — 초대 메일 재발송(email 기준). 계정 존재 여부 비노출(항상 동일 응답) */
+export function resendInviteMail(_email: string): Promise<void> {
   // ===== Mock 버전 =====
   return new Promise((resolve) => setTimeout(() => resolve(), 500))
 
   // ===== 실제 백엔드 버전 =====
-  // await fetch('/auth/resend-verification', {
+  // await fetch('/auth/resend-invite', {
   //   method: 'POST',
   //   headers: { 'Content-Type': 'application/json' },
   //   body: JSON.stringify({ email }),

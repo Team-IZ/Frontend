@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AU-02 · 회원가입 · 계정 활성화 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-brand-1:#31429e; --c-brand-2:#232a4d;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px; --fs-3xl:32px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px; --sp-10:64px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    /* 목업은 1920x1080 화면을 그대로 그리고, 보이는 폭에 맞춰 축소만 한다 */
+    --screen-w:1920px; --screen-h:1080px; --k:.6625;
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:880px}
+  .doc-head ul{margin:var(--sp-3) 0 0 18px;color:var(--c-text-2);font-size:var(--fs-sm);max-width:880px}
+  .doc-head li{margin-bottom:3px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{width:var(--screen-w);zoom:var(--k);border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff}
+  .chrome{height:38px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:460px}
+
+  /* 배경은 꽉 채우고 내용만 이음선 쪽으로 — 폭이 커져도 두 덩어리 간격이 고정된다 */
+  .split{display:flex;height:var(--screen-h)}
+  .brand{flex:0 0 50%;background:linear-gradient(150deg,var(--c-brand-1),var(--c-brand-2));color:#fff;padding:var(--sp-10) var(--sp-10) var(--sp-10) var(--sp-8);display:flex;flex-direction:column;justify-content:center;align-items:flex-end}
+  .brand > *{width:100%;max-width:448px}
+  .brand .wordmark{display:flex;margin-bottom:40px;align-items:center;gap:var(--sp-2);font-weight:700;font-size:var(--fs-lg)}
+  .brand .wordmark .mk{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.16);display:inline-flex;align-items:center;justify-content:center;font-size:15px}
+  .brand .lede h2{font-size:var(--fs-2xl);line-height:1.3;letter-spacing:-.01em;margin-bottom:var(--sp-3);font-weight:700}
+  .brand .lede p{color:rgba(255,255,255,.72);font-size:var(--fs-sm);max-width:320px;line-height:1.6}
+  .brand .meta{margin-top:40px;font-size:var(--fs-xs);color:rgba(255,255,255,.5)}
+  .formside{flex:1;display:flex;align-items:center;justify-content:flex-start;padding:var(--sp-10);background:var(--c-surface)}
+  .form{width:100%;max-width:384px}
+  .form h2{font-size:var(--fs-xl);margin-bottom:var(--sp-1);letter-spacing:-.01em}
+  .form .sub{font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-5)}
+  .field{margin-bottom:var(--sp-4)}
+  .field label{display:block;font-size:var(--fs-xs);font-weight:600;color:var(--c-text-2);margin-bottom:var(--sp-2)}
+  .field .cap{color:var(--c-text-3);font-weight:400}
+  .input{width:100%;height:42px;border:1px solid var(--c-border-strong);border-radius:var(--r-md);padding:0 var(--sp-3);font-size:var(--fs-sm);color:var(--c-text);background:#fff;display:flex;align-items:center;justify-content:space-between}
+  .input.ph{color:var(--c-text-3);background:var(--c-surface-2)}
+  .input.ro{background:#f0f1f4;color:var(--c-text-2);border-style:dashed}
+  .input.bad{border-color:var(--c-danger);background:var(--c-danger-soft)}
+  .input .eye,.input .lock{font-size:var(--fs-xs);color:var(--c-text-3)}
+  .hint{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:var(--sp-2)}.hint b{color:var(--c-text-2)}
+  .hint .no{color:var(--c-danger);font-weight:700}
+  .btn{width:100%;height:44px;border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-sm);cursor:pointer;margin-top:var(--sp-5)}
+  .btn.off{background:#c7cbd6;cursor:not-allowed}
+
+  .alert{border-radius:var(--r-md);padding:11px var(--sp-3);font-size:var(--fs-sm);margin-bottom:var(--sp-5);line-height:1.55}
+  .alert.danger{background:var(--c-danger-soft);color:var(--c-danger)}
+
+  .consent{margin-top:var(--sp-5);border-top:1px solid var(--c-border);padding-top:var(--sp-3)}
+  .consent.miss{border-top-color:var(--c-danger)}
+  .consent .all{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-2) 0 var(--sp-3);border-bottom:1px solid var(--c-border);font-weight:600;font-size:var(--fs-sm)}
+  .crow{display:flex;align-items:center;gap:var(--sp-3);padding:var(--sp-3) 0}
+  .crow.miss{background:var(--c-danger-soft);margin:0 -8px;padding-left:8px;padding-right:8px;border-radius:var(--r-sm)}
+  .cbox{width:18px;height:18px;border:1.5px solid var(--c-border-strong);border-radius:5px;flex:0 0 auto}
+  .crow.miss .cbox{border-color:var(--c-danger)}
+  .cbox.on{background:var(--c-primary);border-color:var(--c-primary);position:relative}
+  .cbox.on::after{content:"✓";color:#fff;font-size:14px;font-weight:800;line-height:1;position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .ctext{flex:1;font-size:var(--fs-sm);display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+  .tag{font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px}
+  .tag.req{background:var(--c-primary-soft);color:var(--c-primary)}
+  .tag.opt{background:#eef0f3;color:var(--c-text-2)}
+  .ctext .conseq{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .ctext .view{margin-left:auto;color:var(--c-text-3);font-size:var(--fs-xs);text-decoration:underline;cursor:pointer;white-space:nowrap}
+
+  /* 상태 메시지 — 460px 고정 · 아이콘/제목/설명/보조/액션 (점검표 H+) */
+  .scard{width:460px;max-width:100%;text-align:center}
+  .scard .ic{width:48px;height:48px;border-radius:15px;margin:0 auto var(--sp-4);display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--c-info-soft);color:var(--c-info)}
+  .scard.warn .ic{background:var(--c-warning-soft);color:var(--c-warning)}
+  .scard.bad .ic{background:var(--c-danger-soft);color:var(--c-danger)}
+  .scard.ok .ic{background:var(--c-success-soft);color:var(--c-success)}
+  .scard h3{font-size:var(--fs-lg);margin-bottom:6px}
+  .scard p{font-size:var(--fs-sm);color:var(--c-text-2);line-height:1.6}
+  .scard .aux{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:var(--sp-3);line-height:1.6}
+  .scard .act{margin-top:var(--sp-5);display:flex;gap:var(--sp-2);justify-content:center}
+  .scard .act .b{border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:700;font-size:var(--fs-sm);padding:10px 20px;cursor:pointer}
+  .scard .act .b.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong);font-weight:600}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  body.embedded .sec-label{margin-top:0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">AU-02 · 공통 · 비로그인 · 변형 2</span>
+    <h1>회원가입 · 계정 활성화</h1>
+    <p><b>v1 구조를 유지한다.</b> 변형 A(오퍼레이터·매니저)와 변형 B(교육생), 교육생 이름 읽기전용, 동의 항목 차등이 전부 그대로다. 바뀐 것은 하나 — 초대 모달의 <b>권한(담당/총괄) 선택이 사라졌다</b>. 매니저가 한 종류뿐이라 초대하는 화면이 곧 역할이다.</p>
+    <ul>
+      <li><b>초대 링크 클릭이 이메일 소유 증명이다.</b> 별도 인증 메일 단계가 없고 이메일 필드는 초대값 읽기전용이다.</li>
+      <li><b>토큰이 변형을 결정한다.</b> 사용자가 고르지 않고, 직접 URL로는 들어올 수 없다.</li>
+      <li><b>교육생에게 이름을 다시 받지 않는다.</b> 명단(OP-06)에 이름+이메일이 이미 있다 — 활성화 전에도 반 편성·미제출 관리가 돌아야 해서 그때 이름이 필요하다.</li>
+      <li><b>동의 항목 수가 다른 이유:</b> 교육생은 코드·문답·이탈 기록까지 처리 대상이다.</li>
+    </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · AUTH-01 + AUTH-06 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">공통 — 변형 A · B</td></tr>
+        <tr><td class="no">—</td><td class="st">토큰 검증 · 변형 결정</td><td class="code">GET /auth/invite/{token}</td><td class="msg">응답의 <code>inviteType</code>이 변형을 정한다 — <b>사용자가 고르지 않는다</b><span class="nx">→ A=회원가입 · B=계정 활성화</span></td><td><a class="mk2" href="#signup">#signup</a></td></tr>
+        <tr><td class="no">—</td><td class="st">제출 중</td><td class="code">—</td><td class="msg">버튼 <b>계정을 만들고 있어요…</b> · 입력 잠금<span class="nx">→ 대기</span></td><td><a class="mk2" href="#loading">#loading</a></td></tr>
+        <tr><td class="no">—</td><td class="st">성공</td><td class="code">—</td><td class="msg">화면을 벗어난다<span class="nx">→ AU-01 로그인</span></td><td class="no">—</td></tr>
+        <tr class="grp"><td colspan="5">토큰 — 두 변형 공통</td></tr>
+        <tr><td class="no">A1·B2</td><td class="st">초대 토큰 만료</td><td class="code">INVITE_EXPIRED</td><td class="msg"><b>초대 링크가 만료되었습니다</b> + [초대 메일 다시 받기]<span class="nx">→ 재발송 — <b>같은 주소로만</b> 보낸다</span></td><td><a class="mk2" href="#expired">#expired</a></td></tr>
+        <tr><td class="no">A2·B4</td><td class="st">이미 가입 · 활성화됨</td><td class="code">INVITE_USED</td><td class="msg"><b>이미 활성화된 계정입니다</b> + [로그인]<span class="nx">→ AU-01 · 재수강생도 이 행</span></td><td><a class="mk2" href="#already">#already</a></td></tr>
+        <tr><td class="no">B5</td><td class="st">재수강생 — 계정이 이미 있음</td><td class="code">ACCOUNT_EXISTS</td><td class="msg">화면 동일(<code>#already</code>) · 문구가 이전 기수 계정을 덮는다<span class="nx">→ <b>백엔드는 다르다</b> — 새 계정을 만들지 않고 <b>기존 계정을 새 기수 명단에 잇는다</b></span></td><td><a class="mk2" href="#already">#already</a></td></tr>
+        <tr><td class="no">A3·B8</td><td class="st">위변조 · 다른 기수 토큰</td><td class="code">INVITE_INVALID</td><td class="msg"><b>유효하지 않은 링크입니다</b> + [문의하기]<span class="nx">→ 문의 · <b>보안 로그 기록</b></span></td><td><a class="mk2" href="#invalid">#invalid</a></td></tr>
+        <tr class="grp"><td colspan="5">변형 B — 교육생만</td></tr>
+        <tr><td class="no">B1</td><td class="st">명단 외 이메일</td><td class="code">NOT_IN_ROSTER</td><td class="msg"><b>명단에 등록되지 않은 계정입니다</b> + [문의하기]<span class="nx">→ 담당 매니저 확인</span></td><td><a class="mk2" href="#notlisted">#notlisted</a></td></tr>
+        <tr class="grp"><td colspan="5">입력 · 동의</td></tr>
+        <tr><td class="no">A6·B6</td><td class="st">비밀번호 정책 미충족</td><td class="code">—</td><td class="msg">필드 하단에 <b>못 채운 기준만</b><span class="nx">→ 재입력</span></td><td><a class="mk2" href="#policy">#policy</a></td></tr>
+        <tr><td class="no">CS1</td><td class="st">필수 미동의</td><td class="code">—</td><td class="msg">제출 비활성 + 미체크 항목 강조<span class="nx">→ 필수 동의 — 변형 A는 <code>#signup</code></span></td><td><a class="mk2" href="#consent">#consent</a></td></tr>
+        <tr><td class="no">CS2</td><td class="st">선택 미동의</td><td class="code">—</td><td class="msg"><b>정상 진행</b> — 막지 않는다<span class="nx">→ 진행 · <b>그림 없음</b></span></td><td class="no">—</td></tr>
+        <tr class="grp"><td colspan="5">저장 실패</td></tr>
+        <tr><td class="no">A7·B7·CS3</td><td class="st">저장 실패 · 롤백</td><td class="code">SIGNUP_FAILED</td><td class="msg"><b>잠시 문제가 있었어요</b> · 입력값 유지<span class="nx">→ 재시도 — <b>계정 생성 전 차단</b>. 동의만 남는 상태를 만들지 않는다</span></td><td><a class="mk2" href="#failed">#failed</a></td></tr>
+        <tr class="grp"><td colspan="5">v1에서 버린 것 — 이 화면에 없다</td></tr>
+        <tr><td class="no">A4</td><td class="st">이메일 불일치</td><td class="code">—</td><td class="msg"><b>구조적으로 불가</b> — 이메일이 초대값 읽기전용이다<span class="nx">→ —</span></td><td class="no">—</td></tr>
+        <tr><td class="no">A8</td><td class="st">인증 메일 트리거 실패</td><td class="code">—</td><td class="msg"><b>단계가 없다</b> — 초대 링크 클릭이 이메일 소유 증명<span class="nx">→ —</span></td><td class="no">—</td></tr>
+        <tr><td class="no">B3</td><td class="st">초대 메일 미수신</td><td class="code">—</td><td class="msg"><b>이 화면에 도달할 수 없다</b> — 링크를 받아야 여기 온다<span class="nx">→ AU-01 <code>#inactive</code>의 [초대 메일 다시 받기]</span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>#은 v1 케이스 번호</b>(A=AUTH-01 매니저 가입 · B=AUTH-06 교육생 활성화 · CS=동의). v1 17행을 전량 대조해 <b>합칠 것은 합치고 버릴 것은 이유를 남겼다.</b><br>
+    · <b>토큰 오류 4종은 두 변형이 같다.</b> 만료 · 사용됨 · 위변조 · 명단 외 — 화면이 폼 대신 <b>상태 카드</b>로 바뀐다.<br>
+    · <b>B5(재수강생)는 그림이 <code>#already</code>와 같지만 백엔드가 다르다.</b> 새 계정을 만들지 않고 기존 계정을 새 기수 명단에 잇는다 — <b>표 행을 나눈 이유가 이것</b>이다.<br>
+    · <b>A2와 A3을 가른 기준:</b> 서버가 <b>쓰인 토큰임을 알 수 있으면</b> <code>#already</code>(로그인으로 보낸다), <b>서명이 깨졌거나 모르는 토큰이면</b> <code>#invalid</code>(문의). 한 화면에서 둘을 섞으면 로그인하면 되는 사람에게 문의하라고 말하게 된다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
+  </div>
+
+  <div class="rpage" id="page-signup">
+  <div class="sec-label">변형 A · 회원가입 (오퍼레이터 · 매니저) — 필수 미동의로 제출 비활성</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/invite/op-8f3a…</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede"><h2>운영 계정을<br>설정하세요</h2><p>초대받은 계정으로 이름과 비밀번호를 정하면 바로 시작할 수 있습니다.</p></div>
+        <div class="meta">초대 링크로 이메일이 확인되었습니다</div>
+      </div>
+      <div class="formside"><div class="form">
+        <h2>회원가입</h2><div class="sub">초대받은 계정으로 가입을 완료하세요.</div>
+        <div class="field"><label>이메일 <span class="cap">· 초대받은 주소 (확인됨)</span></label><div class="input ro">kim@green.com<span class="lock">고정</span></div></div>
+        <div class="field"><label>이름</label><div class="input ph">이름을 입력하세요</div></div>
+        <div class="field"><label>비밀번호</label><div class="input ph">비밀번호 설정<span class="eye">표시</span></div><div class="hint"><b>8자 이상</b>, 영문·숫자·특수문자 포함</div></div>
+        <div class="field"><label>비밀번호 확인</label><div class="input ph">다시 입력<span class="eye">표시</span></div></div>
+        <div class="consent">
+          <div class="all"><span class="cbox"></span>전체 동의</div>
+          <div class="crow"><span class="cbox"></span><div class="ctext"><span class="tag req">필수</span>서비스 이용약관<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox"></span><div class="ctext"><span class="tag req">필수</span>개인정보 수집·이용 (이름·이메일·소속)<span class="view">전문 보기</span></div></div>
+        </div>
+        <button class="btn off">가입하기</button>
+      </div></div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-activate">
+  <div class="sec-label">변형 B · 계정 활성화 (교육생) — 필수 4 + 선택 1</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/invite/stu-4c19…</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede"><h2>이해도 확인을<br>시작하세요</h2><p>비밀번호를 정하고 데이터 처리에 동의하면 계정이 열립니다.</p></div>
+        <div class="meta">초대 링크로 이메일이 확인되었습니다</div>
+      </div>
+      <div class="formside"><div class="form">
+        <h2>계정 활성화</h2><div class="sub">비밀번호 설정과 동의로 활성화됩니다.</div>
+        <div class="field"><label>이메일 <span class="cap">· 명단 등록 (확인됨)</span></label><div class="input ro">lee@student.com<span class="lock">고정</span></div></div>
+        <div class="field"><label>비밀번호</label><div class="input">••••••••<span class="eye">표시</span></div><div class="hint"><b>8자 이상</b>, 영문·숫자·특수문자 포함</div></div>
+        <div class="field"><label>비밀번호 확인</label><div class="input">••••••••<span class="eye">표시</span></div></div>
+        <div class="consent">
+          <div class="all"><span class="cbox on"></span>전체 동의</div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>서비스 이용약관<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>개인정보 수집·이용 (이름·이메일·소속)<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>코드·문답의 AI 분석 <span class="conseq">· 미동의 시 이해도 확인 불가</span><span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>결과의 소속 기관 공유<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox"></span><div class="ctext"><span class="tag opt">선택</span>익명 데이터의 서비스 개선 활용<span class="view">전문 보기</span></div></div>
+        </div>
+        <button class="btn">활성화하기</button>
+      </div></div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-loading">
+  <div class="sec-label">상태 · 제출 중 (입력 잠금 · 중복 제출 방지)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/invite/stu-4c19…</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede"><h2>이해도 확인을<br>시작하세요</h2><p>비밀번호를 정하고 데이터 처리에 동의하면 계정이 열립니다.</p></div>
+        <div class="meta">초대 링크로 이메일이 확인되었습니다</div>
+      </div>
+      <div class="formside"><div class="form">
+        <h2>계정 활성화</h2><div class="sub">비밀번호 설정과 동의로 활성화됩니다.</div>
+        <div class="field"><label>이메일 <span class="cap">· 명단 등록 (확인됨)</span></label><div class="input ro">lee@student.com<span class="lock">고정</span></div></div>
+        <div class="field"><label>비밀번호</label><div class="input">••••••••<span class="eye">표시</span></div><div class="hint"><b>8자 이상</b>, 영문·숫자·특수문자 포함</div></div>
+        <div class="field"><label>비밀번호 확인</label><div class="input">••••••••<span class="eye">표시</span></div></div>
+        <div class="consent">
+          <div class="all"><span class="cbox on"></span>전체 동의</div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>서비스 이용약관<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>개인정보 수집·이용 (이름·이메일·소속)<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>코드·문답의 AI 분석 <span class="conseq">· 미동의 시 이해도 확인 불가</span><span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>결과의 소속 기관 공유<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox"></span><div class="ctext"><span class="tag opt">선택</span>익명 데이터의 서비스 개선 활용<span class="view">전문 보기</span></div></div>
+        </div>
+        <button class="btn off">계정을 만들고 있어요…</button>
+      </div></div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-consent">
+  <div class="sec-label">상태 · 필수 미동의 (제출 비활성 + 미체크 항목 강조)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/invite/stu-4c19…</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede"><h2>이해도 확인을<br>시작하세요</h2><p>비밀번호를 정하고 데이터 처리에 동의하면 계정이 열립니다.</p></div>
+        <div class="meta">초대 링크로 이메일이 확인되었습니다</div>
+      </div>
+      <div class="formside"><div class="form">
+        <h2>계정 활성화</h2><div class="sub">비밀번호 설정과 동의로 활성화됩니다.</div>
+        <div class="field"><label>이메일 <span class="cap">· 명단 등록 (확인됨)</span></label><div class="input ro">lee@student.com<span class="lock">고정</span></div></div>
+        <div class="field"><label>비밀번호</label><div class="input">••••••••<span class="eye">표시</span></div></div>
+        <div class="field"><label>비밀번호 확인</label><div class="input">••••••••<span class="eye">표시</span></div></div>
+        <div class="consent miss">
+          <div class="all"><span class="cbox"></span>전체 동의</div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>서비스 이용약관<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>개인정보 수집·이용 (이름·이메일·소속)<span class="view">전문 보기</span></div></div>
+          <div class="crow miss"><span class="cbox"></span><div class="ctext"><span class="tag req">필수</span>코드·문답의 AI 분석 <span class="conseq">· 미동의 시 이해도 확인 불가</span><span class="view">전문 보기</span></div></div>
+          <div class="crow miss"><span class="cbox"></span><div class="ctext"><span class="tag req">필수</span>결과의 소속 기관 공유<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox"></span><div class="ctext"><span class="tag opt">선택</span>익명 데이터의 서비스 개선 활용<span class="view">전문 보기</span></div></div>
+        </div>
+        <div class="hint"><span class="no">필수 항목 2개</span>에 아직 동의하지 않았어요.</div>
+        <button class="btn off">활성화하기</button>
+      </div></div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-policy">
+  <div class="sec-label">상태 · 비밀번호 정책 미충족 (못 채운 기준만)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/invite/stu-4c19…</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede"><h2>이해도 확인을<br>시작하세요</h2><p>비밀번호를 정하고 데이터 처리에 동의하면 계정이 열립니다.</p></div>
+        <div class="meta">초대 링크로 이메일이 확인되었습니다</div>
+      </div>
+      <div class="formside"><div class="form">
+        <h2>계정 활성화</h2><div class="sub">비밀번호 설정과 동의로 활성화됩니다.</div>
+        <div class="field"><label>이메일 <span class="cap">· 명단 등록 (확인됨)</span></label><div class="input ro">lee@student.com<span class="lock">고정</span></div></div>
+        <div class="field"><label>비밀번호</label><div class="input bad">••••••<span class="eye">표시</span></div><div class="hint"><span class="no">8자 이상</span> · <span class="no">특수문자 포함</span></div></div>
+        <div class="field"><label>비밀번호 확인</label><div class="input">••••••<span class="eye">표시</span></div></div>
+        <div class="consent">
+          <div class="all"><span class="cbox on"></span>전체 동의</div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>서비스 이용약관<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>개인정보 수집·이용 (이름·이메일·소속)<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>코드·문답의 AI 분석 <span class="conseq">· 미동의 시 이해도 확인 불가</span><span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>결과의 소속 기관 공유<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox"></span><div class="ctext"><span class="tag opt">선택</span>익명 데이터의 서비스 개선 활용<span class="view">전문 보기</span></div></div>
+        </div>
+        <button class="btn off">활성화하기</button>
+      </div></div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-expired">
+  <div class="sec-label">상태 · 초대 토큰 만료 (재발송)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/invite/stu-4c19…</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede"><h2>이해도 확인을<br>시작하세요</h2><p>비밀번호를 정하고 데이터 처리에 동의하면 계정이 열립니다.</p></div>
+        <div class="meta">초대 링크로 이메일이 확인되었습니다</div>
+      </div>
+      <div class="formside">
+        <div class="scard warn">
+          <div class="ic">◷</div>
+          <h3>초대 링크가 만료되었습니다</h3>
+          <p>보안을 위해 초대 링크는 일정 시간이 지나면 쓸 수 없어요.</p>
+          <div class="aux">새 링크를 같은 주소(lee@student.com)로 보내드립니다.</div>
+          <div class="act"><span class="b">초대 메일 다시 받기</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-invalid">
+  <div class="sec-label">상태 · 위변조 · 다른 기수 토큰 (서명 실패 · 보안 로그)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/invite/stu-9b02…</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede"><h2>이해도 확인을<br>시작하세요</h2><p>비밀번호를 정하고 데이터 처리에 동의하면 계정이 열립니다.</p></div>
+        <div class="meta">초대 링크로 이메일이 확인되었습니다</div>
+      </div>
+      <div class="formside">
+        <div class="scard bad">
+          <div class="ic">!</div>
+          <h3>유효하지 않은 링크입니다</h3>
+          <p>링크가 잘못되었거나 이 기수의 링크가 아니에요.</p>
+          <div class="aux">메일에 있는 링크를 다시 눌러 보세요. 계속 같으면 담당자에게 문의해 주세요.</div>
+          <div class="act"><span class="b">문의하기</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-already">
+  <div class="sec-label">상태 · 이미 가입 · 활성화됨 (재수강생 포함)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/invite/stu-4c19…</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede"><h2>이해도 확인을<br>시작하세요</h2><p>비밀번호를 정하고 데이터 처리에 동의하면 계정이 열립니다.</p></div>
+        <div class="meta">초대 링크로 이메일이 확인되었습니다</div>
+      </div>
+      <div class="formside">
+        <div class="scard ok">
+          <div class="ic">✓</div>
+          <h3>이미 활성화된 계정입니다</h3>
+          <p>lee@student.com으로 바로 로그인하면 돼요.</p>
+          <div class="aux">이전 기수에서 쓰던 계정이면 그대로 로그인하면 새 기수가 보입니다. 비밀번호가 기억나지 않으면 로그인 화면에서 재설정할 수 있어요.</div>
+          <div class="act"><span class="b">로그인</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-notlisted">
+  <div class="sec-label">상태 · 명단 외 이메일 (변형 B)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/invite/stu-4c19…</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede"><h2>이해도 확인을<br>시작하세요</h2><p>비밀번호를 정하고 데이터 처리에 동의하면 계정이 열립니다.</p></div>
+        <div class="meta">초대 링크로 이메일이 확인되었습니다</div>
+      </div>
+      <div class="formside">
+        <div class="scard bad">
+          <div class="ic">!</div>
+          <h3>명단에 등록되지 않은 계정입니다</h3>
+          <p>이 주소는 이번 기수 명단에서 찾지 못했어요.</p>
+          <div class="aux">다른 주소로 초대를 받았을 수 있어요. 담당 매니저에게 확인해 주세요.</div>
+          <div class="act"><span class="b ghost">문의하기</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-failed">
+  <div class="sec-label">상태 · 저장 실패 (계정 생성 전 차단 · 동의만 남는 상태를 만들지 않는다)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/invite/stu-4c19…</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede"><h2>이해도 확인을<br>시작하세요</h2><p>비밀번호를 정하고 데이터 처리에 동의하면 계정이 열립니다.</p></div>
+        <div class="meta">초대 링크로 이메일이 확인되었습니다</div>
+      </div>
+      <div class="formside"><div class="form">
+        <h2>계정 활성화</h2><div class="sub">비밀번호 설정과 동의로 활성화됩니다.</div>
+        <div class="alert danger">잠시 문제가 있었어요. 다시 시도해 주세요.<br>계정은 아직 만들어지지 않았고 입력한 내용은 그대로 있습니다.</div>
+        <div class="field"><label>이메일 <span class="cap">· 명단 등록 (확인됨)</span></label><div class="input ro">lee@student.com<span class="lock">고정</span></div></div>
+        <div class="field"><label>비밀번호</label><div class="input">••••••••<span class="eye">표시</span></div></div>
+        <div class="field"><label>비밀번호 확인</label><div class="input">••••••••<span class="eye">표시</span></div></div>
+        <div class="consent">
+          <div class="all"><span class="cbox on"></span>전체 동의</div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>서비스 이용약관<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>개인정보 수집·이용 (이름·이메일·소속)<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>코드·문답의 AI 분석 <span class="conseq">· 미동의 시 이해도 확인 불가</span><span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox on"></span><div class="ctext"><span class="tag req">필수</span>결과의 소속 기관 공유<span class="view">전문 보기</span></div></div>
+          <div class="crow"><span class="cbox"></span><div class="ctext"><span class="tag opt">선택</span>익명 데이터의 서비스 개선 활용<span class="view">전문 보기</span></div></div>
+        </div>
+        <button class="btn">다시 시도</button>
+      </div></div>
+    </div>
+  </div>
+  </div>
+
+</div>
+<script>
+  var PAGE = { cases:"page-cases", loading:"page-loading", signup:"page-signup", activate:"page-activate", consent:"page-consent", policy:"page-policy",
+               expired:"page-expired", invalid:"page-invalid", already:"page-already",
+               notlisted:"page-notlisted", failed:"page-failed" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "signup";
+    var id = PAGE[h] || "page-signup";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+
+  // 목업 = 1920x1080 실화면. 보이는 폭에 맞춰 배율만 조절해 비율을 지킨다
+  function fitScreen(){
+    var p = document.querySelector(".page");
+    if(!p) return;
+    var cs = getComputedStyle(p);
+    var w = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if(w > 0) document.documentElement.style.setProperty("--k", w / 1920);
+  }
+  window.addEventListener("resize", fitScreen);
+  window.addEventListener("load", fitScreen);
+  fitScreen();
+</script>
+</body>
+</html>

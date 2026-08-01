@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AU-01 · 로그인 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-brand-1:#31429e; --c-brand-2:#232a4d;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px; --fs-3xl:32px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px; --sp-10:64px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    /* 목업은 1920x1080 화면을 그대로 그리고 1272px 칼럼에 맞춰 축소한다(1272/1920) */
+    --screen-w:1920px; --screen-h:1080px; --k:.6625;
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:860px}
+  .doc-head ul{margin:var(--sp-3) 0 0 18px;color:var(--c-text-2);font-size:var(--fs-sm);max-width:860px}
+  .doc-head li{margin-bottom:3px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{width:var(--screen-w);zoom:var(--k);border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff}
+  .chrome{height:38px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:420px}
+
+  /* 배경은 꽉 채우고 내용만 이음선 쪽으로 — 폭이 커져도 두 덩어리 간격이 고정된다 */
+  .split{display:flex;height:var(--screen-h)}
+  .brand{flex:0 0 50%;background:linear-gradient(150deg,var(--c-brand-1),var(--c-brand-2));color:#fff;padding:var(--sp-10) var(--sp-10) var(--sp-10) var(--sp-8);display:flex;flex-direction:column;justify-content:center;align-items:flex-end}
+  .brand > *{width:100%;max-width:448px}
+  .brand .wordmark{display:flex;margin-bottom:40px;align-items:center;gap:var(--sp-2);font-weight:700;font-size:var(--fs-lg)}
+  .brand .wordmark .mk{width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.16);display:inline-flex;align-items:center;justify-content:center;font-size:15px}
+  .brand .lede h2{font-size:var(--fs-3xl);line-height:1.25;letter-spacing:-.02em;margin-bottom:var(--sp-4);font-weight:700}
+  .brand .lede p{color:rgba(255,255,255,.72);font-size:var(--fs-base);max-width:360px;line-height:1.6}
+  .brand .meta{margin-top:40px;font-size:var(--fs-xs);color:rgba(255,255,255,.5)}
+  .formside{flex:1;display:flex;align-items:center;justify-content:flex-start;padding:var(--sp-10);background:var(--c-surface)}
+  /* 폼 박스 높이를 고정한다 — 알림이 뜰 때 박스가 커지면 세로 중앙 정렬이 다시 계산돼
+     제목·입력 필드가 위로 올라간다. 높이를 박아 두면 뷰포트 높이와 무관하게 시작 위치가 같다.
+     440px = 가장 긴 상태(알림 2줄 + 재발송 링크) 기준. 더 긴 알림을 넣으면 이 값을 올려야 한다 */
+  .form{width:100%;max-width:384px;min-height:440px}
+  .form h2{font-size:var(--fs-2xl);margin-bottom:var(--sp-1);letter-spacing:-.01em}
+  .form .sub{font-size:var(--fs-sm);color:var(--c-text-2);margin-bottom:var(--sp-6)}
+  .field{margin-bottom:var(--sp-4)}
+  .field label{display:block;font-size:var(--fs-xs);font-weight:600;color:var(--c-text-2);margin-bottom:var(--sp-2)}
+  .input{width:100%;height:44px;border:1px solid var(--c-border-strong);border-radius:var(--r-md);padding:0 var(--sp-3);font-size:var(--fs-sm);color:var(--c-text);background:#fff;display:flex;align-items:center;justify-content:space-between}
+  .input.ph{color:var(--c-text-3);background:var(--c-surface-2)}
+  .input.bad{border-color:var(--c-danger);background:var(--c-danger-soft)}
+  .input .eye{font-size:var(--fs-xs);color:var(--c-text-3)}
+  .btn{width:100%;height:46px;border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-base);cursor:pointer;margin-top:var(--sp-3)}
+  .btn.off{background:#c7cbd6;cursor:not-allowed}
+  .link{display:block;text-align:center;font-size:var(--fs-sm);color:var(--c-primary);margin-top:var(--sp-5);text-decoration:none;cursor:pointer}
+
+  /* 알림은 비밀번호 아래·버튼 위 — 상단에 두면 알림이 뜰 때 입력 필드가 밀린다 */
+  .alert{border-radius:var(--r-md);padding:11px var(--sp-3);font-size:var(--fs-sm);line-height:1.55}
+  .alert.info{background:var(--c-info-soft);color:var(--c-info)}
+  .alert.warning{background:var(--c-warning-soft);color:var(--c-warning)}
+  .alert.danger{background:var(--c-danger-soft);color:var(--c-danger)}
+  .alert .act{display:inline-block;margin-top:6px;font-weight:700;text-decoration:underline;cursor:pointer}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  body.embedded .sec-label{margin-top:0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">AU-01 · 공통 · 비로그인</span>
+    <h1>로그인</h1>
+    <p><b>v1 구조 그대로다.</b> 레이아웃(좌 브랜드 · 우 폼)과 문구 규칙이 바뀌지 않았고, 브랜드 카피에서 죽은 개념(5축 채점 · 소크라틱)만 지금 명제로 갈아 끼웠다. <b>바뀐 것은 하나</b> — <code>미인증(이메일 인증)</code>이 <code>미활성(초대 활성화)</code>로 대체됐다.</p>
+    <ul>
+      <li><b>하나의 로그인이다.</b> 역할별로 나누면 사용자가 자기 역할을 알아야 로그인할 수 있는데, 역할은 내부 개념이다. 서버가 판정해 초기 화면으로 보낸다.</li>
+      <li><b>회원가입 링크가 없다.</b> 계정은 전부 초대로 생긴다(AU-02).</li>
+      <li><b>어느 쪽이 틀렸는지 말하지 않는다.</b> 이메일만 맞다고 알려주면 어떤 주소가 가입돼 있는지 알려주는 셈이다. 연속 실패 시 남은 시도 횟수도 노출하지 않는다.</li>
+      <li><b>계정을 잠그지 않는다 — 지연만 준다.</b> 명단에 전원 이메일이 있으니 잠금을 두면 <b>아무나 남을 못 들어오게 만들 수 있고</b>(3번 틀리면 끝), 풀어 줄 화면도 사람도 없다. 비밀번호를 잊은 사람의 정상 경로는 재설정(AU-03)이다. 무차별 대입은 <b>재시도 간격을 늘리는 것</b>으로 막는다.</li>
+      <li><b>이메일 인증 단계가 없다.</b> 초대 링크 클릭이 곧 이메일 소유 증명이라(AU-02) 미활성 계정에는 <b>초대 메일</b>을 다시 보낸다 — 인증 메일이 아니다.</li>
+      <li><b>알림은 비밀번호 아래 · 버튼 위</b>다. 폼 위쪽에 두면 알림이 뜰 때 <b>그 아래 전부가 밀려난다</b> — 재시도할 때마다 입력 필드가 커서 밑에서 움직인다. 지금 자리는 방금 누른 버튼과 다시 칠 비밀번호 사이라 <b>시선을 옮길 필요가 없다.</b> 빈 값·형식 오류처럼 <b>필드에 귀속되는 것만</b> 필드 아래에 붙인다.</li>
+      <li><b>폼 박스 높이를 고정했다</b>(440px). 위치만 옮기면 절반만 해결된다 — 폼이 세로 중앙 정렬이라 <b>알림이 뜨면 박스가 커져 중앙이 다시 계산되고 제목까지 위로 올라간다.</b> 높이를 박아 두니 아래 8개 상태의 <b>시작 위치가 전부 같다.</b> 값의 근거는 가장 긴 상태(알림 2줄 + 재발송 링크)다.</li>
+      <li><b>AUTH-03 예외를 아래에 전량 그렸다.</b> 단 둘은 묶었다 — <code>토큰 발급 실패 · 롤백 · 쿠키 실패</code>는 <b>사용자에게 같은 문구</b>고(할 수 있는 일이 재시도 하나뿐인데 원인을 나누면 내부 사정을 알려주는 것 말고 하는 일이 없다), <code>잠금 발생 · 잠금 재진입</code>은 <b>잠금을 안 쓰기로 해서</b> 지연 하나로 합쳤다. <b>계약(에러코드 · API · 부수효과)은 정의 문서 §6</b>에 있다.</li>
+    </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · AUTH-03 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">공통</td></tr>
+        <tr><td class="no">—</td><td class="st">입력 전</td><td class="code">—</td><td class="msg">빈 폼 · 알림 없음<span class="nx">→ 입력</span></td><td><a class="mk2" href="#default">#default</a></td></tr>
+        <tr><td class="no">—</td><td class="st">제출 중</td><td class="code">—</td><td class="msg">버튼 <b>로그인 중…</b> · 입력 잠금(중복 제출 방지)<span class="nx">→ 대기</span></td><td><a class="mk2" href="#loading">#loading</a></td></tr>
+        <tr><td class="no">—</td><td class="st">성공</td><td class="code">—</td><td class="msg">즉시 라우팅 — 화면을 벗어난다<span class="nx">→ 응답의 <code>initialScreen</code></span></td><td class="no">—</td></tr>
+        <tr class="grp"><td colspan="5">AUTH-03 예외</td></tr>
+        <tr><td class="no">1</td><td class="st">자격 불일치</td><td class="code">AUTH_INVALID</td><td class="msg"><b>이메일 또는 비밀번호가 올바르지 않습니다</b><span class="nx">→ 재입력 · 어느 쪽이 틀렸는지 말하지 않는다</span></td><td><a class="mk2" href="#bad">#bad</a></td></tr>
+        <tr><td class="no">2·3</td><td class="st">연속 실패 지연</td><td class="code">AUTH_THROTTLED<br>+ retryAfter</td><td class="msg"><b>시도가 너무 잦습니다. {n}초 후 다시 시도해 주세요</b> · 대기 창 동안 제출 비활성<span class="nx">→ 대기 · 남은 시도 횟수는 노출하지 않는다</span></td><td><a class="mk2" href="#throttled">#throttled</a></td></tr>
+        <tr><td class="no">4</td><td class="st">미활성 계정</td><td class="code">AUTH_UNVERIFIED</td><td class="msg"><b>초대 링크로 먼저 계정을 활성화해 주세요</b> + [초대 메일 다시 받기]<span class="nx">→ 재발송 · 인증 메일이 아니다</span></td><td><a class="mk2" href="#inactive">#inactive</a></td></tr>
+        <tr><td class="no">5</td><td class="st">정지된 계정</td><td class="code">AUTH_INACTIVE</td><td class="msg"><b>사용이 중지된 계정입니다</b> + 문의<span class="nx">→ 문의</span></td><td><a class="mk2" href="#suspended">#suspended</a></td></tr>
+        <tr><td class="no">6</td><td class="st">토큰 발급 실패</td><td class="code">AUTH_TOKEN_ISSUE</td><td class="msg"><b>일시적 오류입니다. 잠시 후 다시 시도하세요</b><span class="nx">→ 재시도</span></td><td><a class="mk2" href="#sysfail">#sysfail</a></td></tr>
+        <tr><td class="no">7</td><td class="st">롤백</td><td class="code">AUTH_ROLLBACK</td><td class="msg">상동 — 로그인 미완료 처리<span class="nx">→ 재시도</span></td><td><a class="mk2" href="#sysfail">#sysfail</a></td></tr>
+        <tr><td class="no">8</td><td class="st">쿠키 설정 실패</td><td class="code">AUTH_COOKIE</td><td class="msg">상동 — 서버가 DB 토큰 폐기 후 실패 처리<span class="nx">→ 재시도</span></td><td><a class="mk2" href="#sysfail">#sysfail</a></td></tr>
+        <tr><td class="no">9</td><td class="st">권한 컨텍스트 결여</td><td class="code">AUTH_NO_CONTEXT</td><td class="msg"><b>계정 권한 설정에 문제가 있습니다</b> + 문의<span class="nx">→ 문의 · role·org_id 부재로 로그인 차단</span></td><td><a class="mk2" href="#noctx">#noctx</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>문구는 계약값이다.</b> 그대로 쓴다 — 요약하면 구현할 때 각자 달라지고, <b>계정 열거 방지</b> 같은 보안 규칙이 문구에 실려 있어 바꾸면 규칙이 깨진다.<br>
+    · <b>에러코드는 프론트 타입과 같은 값</b>(<code>src/features/auth/authTypes.ts</code>). 문서와 코드가 다른 이름을 쓰면 매핑표가 하나 더 생긴다.<br>
+    · <b>6·7·8은 목업이 한 장이다</b>(<code>#sysfail</code>). 서버는 셋을 구분해 처리·기록하지만 사용자가 할 수 있는 일은 재시도 하나뿐이라 <b>화면은 하나</b> — 그림 3장은 같은 그림이다.<br>
+    · <b>2·3은 한 행으로 합쳤다.</b> v1은 <code>잠금 발생</code>·<code>잠금 재진입</code> 2행이었는데 <b>v2는 계정을 잠그지 않는다</b> — 명단에 전원 이메일이 있어 잠금이 <b>남을 못 들어오게 만드는 수단</b>이 되고, 풀어 줄 화면도 사람도 없다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다 — 잠금을 안 쓰는 이유 · 감추는 것 · 알림 위치 근거.
+  </div>
+  </div>
+
+  <div class="rpage" id="page-default">
+  <div class="sec-label">화면 · 기본</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/login</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede">
+          <h2>코드 이해도를<br>검증합니다</h2>
+          <p>제출한 코드의 특정 지점을 두고 왜 그렇게 했는지 묻습니다. 그 자리에서 설명할 수 있는지가 이해도입니다.</p>
+        </div>
+        <div class="meta">교육 운영기관 전용 · 초대 기반 계정</div>
+      </div>
+      <div class="formside">
+        <div class="form">
+          <h2>로그인</h2>
+          <div class="sub">계정 정보를 입력하세요.</div>
+          <div class="field"><label>이메일</label><div class="input ph">name@org.com</div></div>
+          <div class="field"><label>비밀번호</label><div class="input ph">비밀번호<span class="eye">표시</span></div></div>
+          <button class="btn">로그인</button>
+          <a class="link">밀번호를 잊으셨나요?</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-loading">
+  <div class="sec-label">상태 · 제출 중 (입력 잠금 · 중복 제출 방지)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/login</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede">
+          <h2>코드 이해도를<br>검증합니다</h2>
+          <p>제출한 코드의 특정 지점을 두고 왜 그렇게 했는지 묻습니다. 그 자리에서 설명할 수 있는지가 이해도입니다.</p>
+        </div>
+        <div class="meta">교육 운영기관 전용 · 초대 기반 계정</div>
+      </div>
+      <div class="formside">
+        <div class="form">
+          <h2>로그인</h2>
+          <div class="sub">계정 정보를 입력하세요.</div>
+          <div class="field"><label>이메일</label><div class="input">lee@student.com</div></div>
+          <div class="field"><label>비밀번호</label><div class="input">••••••••<span class="eye">표시</span></div></div>
+          <button class="btn off">로그인 중…</button>
+          <a class="link">밀번호를 잊으셨나요?</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-bad">
+  <div class="sec-label">상태 · 자격 불일치 (계정 열거 방지 · 단일 문구)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/login</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede">
+          <h2>코드 이해도를<br>검증합니다</h2>
+          <p>제출한 코드의 특정 지점을 두고 왜 그렇게 했는지 묻습니다. 그 자리에서 설명할 수 있는지가 이해도입니다.</p>
+        </div>
+        <div class="meta">교육 운영기관 전용 · 초대 기반 계정</div>
+      </div>
+      <div class="formside">
+        <div class="form">
+          <h2>로그인</h2>
+          <div class="sub">계정 정보를 입력하세요.</div>
+          <div class="field"><label>이메일</label><div class="input">lee@student.com</div></div>
+          <div class="field"><label>비밀번호</label><div class="input bad">••••••••<span class="eye">표시</span></div></div>
+          <div class="alert danger">이메일 또는 비밀번호가 올바르지 않습니다.</div>
+          <button class="btn">로그인</button>
+          <a class="link">밀번호를 잊으셨나요?</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-throttled">
+  <div class="sec-label">상태 · 연속 실패 지연 (재시도까지 대기 · 잠금 아님)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/login</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede">
+          <h2>코드 이해도를<br>검증합니다</h2>
+          <p>제출한 코드의 특정 지점을 두고 왜 그렇게 했는지 묻습니다. 그 자리에서 설명할 수 있는지가 이해도입니다.</p>
+        </div>
+        <div class="meta">교육 운영기관 전용 · 초대 기반 계정</div>
+      </div>
+      <div class="formside">
+        <div class="form">
+          <h2>로그인</h2>
+          <div class="sub">계정 정보를 입력하세요.</div>
+          <div class="field"><label>이메일</label><div class="input">lee@student.com</div></div>
+          <div class="field"><label>비밀번호</label><div class="input">••••••••<span class="eye">표시</span></div></div>
+          <div class="alert warning">시도가 너무 잦습니다.<br>30초 후 다시 시도해 주세요.</div>
+          <button class="btn off">로그인</button>
+          <a class="link">밀번호를 잊으셨나요?</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-inactive">
+  <div class="sec-label">상태 · 미활성 계정 (초대 링크 재발송)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/login</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede">
+          <h2>코드 이해도를<br>검증합니다</h2>
+          <p>제출한 코드의 특정 지점을 두고 왜 그렇게 했는지 묻습니다. 그 자리에서 설명할 수 있는지가 이해도입니다.</p>
+        </div>
+        <div class="meta">교육 운영기관 전용 · 초대 기반 계정</div>
+      </div>
+      <div class="formside">
+        <div class="form">
+          <h2>로그인</h2>
+          <div class="sub">계정 정보를 입력하세요.</div>
+          <div class="field"><label>이메일</label><div class="input">lee@student.com</div></div>
+          <div class="field"><label>비밀번호</label><div class="input">••••••••<span class="eye">표시</span></div></div>
+          <div class="alert info">초대 링크로 먼저 계정을 활성화해 주세요.<span class="act">초대 메일 다시 받기</span></div>
+          <button class="btn">로그인</button>
+          <a class="link">밀번호를 잊으셨나요?</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-suspended">
+  <div class="sec-label">상태 · 정지된 계정</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/login</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede">
+          <h2>코드 이해도를<br>검증합니다</h2>
+          <p>제출한 코드의 특정 지점을 두고 왜 그렇게 했는지 묻습니다. 그 자리에서 설명할 수 있는지가 이해도입니다.</p>
+        </div>
+        <div class="meta">교육 운영기관 전용 · 초대 기반 계정</div>
+      </div>
+      <div class="formside">
+        <div class="form">
+          <h2>로그인</h2>
+          <div class="sub">계정 정보를 입력하세요.</div>
+          <div class="field"><label>이메일</label><div class="input">kim@green.com</div></div>
+          <div class="field"><label>비밀번호</label><div class="input">••••••••<span class="eye">표시</span></div></div>
+          <div class="alert danger">사용이 중지된 계정입니다.<br>담당자에게 문의해 주세요.</div>
+          <button class="btn">로그인</button>
+          <a class="link">밀번호를 잊으셨나요?</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-sysfail">
+  <div class="sec-label">상태 · 일시적 오류 (AUTH-03 case6·7·8 · 문구 1종)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/login</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede">
+          <h2>코드 이해도를<br>검증합니다</h2>
+          <p>제출한 코드의 특정 지점을 두고 왜 그렇게 했는지 묻습니다. 그 자리에서 설명할 수 있는지가 이해도입니다.</p>
+        </div>
+        <div class="meta">교육 운영기관 전용 · 초대 기반 계정</div>
+      </div>
+      <div class="formside">
+        <div class="form">
+          <h2>로그인</h2>
+          <div class="sub">계정 정보를 입력하세요.</div>
+          <div class="field"><label>이메일</label><div class="input">lee@student.com</div></div>
+          <div class="field"><label>비밀번호</label><div class="input">••••••••<span class="eye">표시</span></div></div>
+          <div class="alert danger">일시적 오류입니다. 잠시 후 다시 시도하세요.</div>
+          <button class="btn">로그인</button>
+          <a class="link">밀번호를 잊으셨나요?</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-noctx">
+  <div class="sec-label">상태 · 권한 컨텍스트 결여 (AUTH-03 case9 · role·org_id 부재)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/login</span></div>
+    <div class="split">
+      <div class="brand">
+        <div class="wordmark"><span class="mk">◆</span>IZ-Get</div>
+        <div class="lede">
+          <h2>코드 이해도를<br>검증합니다</h2>
+          <p>제출한 코드의 특정 지점을 두고 왜 그렇게 했는지 묻습니다. 그 자리에서 설명할 수 있는지가 이해도입니다.</p>
+        </div>
+        <div class="meta">교육 운영기관 전용 · 초대 기반 계정</div>
+      </div>
+      <div class="formside">
+        <div class="form">
+          <h2>로그인</h2>
+          <div class="sub">계정 정보를 입력하세요.</div>
+          <div class="field"><label>이메일</label><div class="input">lee@student.com</div></div>
+          <div class="field"><label>비밀번호</label><div class="input">••••••••<span class="eye">표시</span></div></div>
+          <div class="alert danger">계정 권한 설정에 문제가 있습니다.<br>담당자에게 문의해 주세요.</div>
+          <button class="btn">로그인</button>
+          <a class="link">밀번호를 잊으셨나요?</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+</div>
+<script>
+  var PAGE = { cases:"page-cases", "default":"page-default", loading:"page-loading", bad:"page-bad",
+               throttled:"page-throttled", inactive:"page-inactive",
+               suspended:"page-suspended", sysfail:"page-sysfail", noctx:"page-noctx" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "default";
+    var id = PAGE[h] || "page-default";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+
+  // 목업 = 1920x1080 실화면. 보이는 폭에 맞춰 배율만 조절해 비율을 지킨다
+  function fitScreen(){
+    var p = document.querySelector(".page");
+    if(!p) return;
+    var cs = getComputedStyle(p);
+    var w = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if(w > 0) document.documentElement.style.setProperty("--k", w / 1920);
+  }
+  window.addEventListener("resize", fitScreen);
+  window.addEventListener("load", fitScreen);
+  fitScreen();
+</script>
+</body>
+</html>

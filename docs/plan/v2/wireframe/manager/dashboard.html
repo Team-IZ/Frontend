@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MG-01 · 매니저 대시보드 — 와이어프레임</title>
+<style>
+
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-nav:#1e2436; --c-nav-2:#2a3147; --c-nav-text:#aeb4c6;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    /* 목업은 1920x1080 화면을 그대로 그리고, 보이는 폭에 맞춰 축소만 한다 */
+    /* 본문 기본 상한 — 1920에서 표·목록이 늘어지는 것을 막는다.
+       1512에서는 가용폭 1264px이라 걸리지 않고, 넓은 화면만 잡힌다(=Tailwind max-w-7xl) */
+    --w-app:1280px;
+    --screen-w:1920px; --screen-h:1080px; --k:.6625;
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{width:var(--screen-w);zoom:var(--k);border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  .app{display:flex;flex-direction:column;height:var(--screen-h)}
+  .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
+  .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700}
+  .topbar .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .cohortsel{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:5px var(--sp-3);font-size:var(--fs-sm);background:var(--c-surface-2)}
+  .cohortsel .k{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+
+  .body{display:flex;flex:1;min-height:0}
+  .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
+  .nav .grp{padding-top:var(--sp-2);margin-top:var(--sp-2);border-top:1px solid var(--c-nav-2)}
+  .nav .grp:first-child{padding-top:0;margin-top:0;border-top:0}
+  .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
+  .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
+  .nav .item .bg{margin-left:auto;background:var(--c-primary);color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:1px 6px}
+  .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-6);min-width:0;min-height:0;overflow:hidden}
+  /* 상한은 .content 자신이 아니라 자식에 건다 — .content가 배경을 계속 꽉 채워야 이음선이 안 생긴다 */
+  .content > *{max-width:var(--w-app);margin-left:auto;margin-right:auto}
+  .phead{margin-bottom:var(--sp-4)}
+  .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
+
+  .lhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-4)}
+  .lhead .ttl{font-size:var(--fs-lg);font-weight:700;display:flex;align-items:baseline;gap:var(--sp-2)}
+  .lhead .ttl .cnt{font-size:var(--fs-xs);font-weight:600;color:var(--c-text-3)}
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-xs);cursor:pointer;padding:8px 13px}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong)}
+  .btn.off{background:#e8eaee;color:var(--c-text-3);cursor:not-allowed}
+
+  .ltool{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3);flex-wrap:wrap}
+  .ltool .search{flex:0 0 240px;border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-3);background:var(--c-surface-2)}
+  .ltool .fil{border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);cursor:pointer}
+  .ltool .fil .k{color:var(--c-text-3)}
+
+  .card{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .dtbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .dtbl th{text-align:left;padding:11px var(--sp-4);font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-weight:600;white-space:nowrap}
+  .dtbl td{padding:12px var(--sp-4);border-bottom:1px solid var(--c-border);vertical-align:middle}
+  .dtbl tr:last-child td{border-bottom:0}
+  .dtbl tr.click{cursor:pointer}
+  .dtbl tr.click:hover{background:var(--c-surface-2)}
+  .dtbl .name b{font-weight:700}
+  .dtbl .sub{font-size:11px;color:var(--c-text-3);margin-top:2px}
+  .dtbl .date{color:var(--c-text-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .dtbl .num{font-variant-numeric:tabular-nums}
+
+  .st{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .st .dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+  .st.run{background:var(--c-info-soft);color:var(--c-info)} .st.run .dot{background:var(--c-info)}
+  .st.plan{background:#eef0f3;color:var(--c-text-2)} .st.plan .dot{background:var(--c-text-3)}
+  .st.done{background:var(--c-success-soft);color:var(--c-success)} .st.done .dot{background:var(--c-success)}
+  .st.warn{background:var(--c-warning-soft);color:var(--c-warning)} .st.warn .dot{background:var(--c-warning)}
+
+  .kchip{display:inline-block;font-size:11px;font-weight:600;color:var(--c-text-2);background:var(--c-surface-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:2px 9px;margin:1px 2px 1px 0}
+  .kmiss{font-size:11px;font-weight:600;color:var(--c-warning)}
+  .na{color:var(--c-text-3)}
+
+  /* 표 푸터 표준 — 범위개수(좌) + 페이저(중앙). 페이지가 하나면 화살표를 넣지 않는다 */
+  .tablefoot{display:flex;align-items:center;margin-top:var(--sp-4)}
+  .tablefoot .range{flex:1;font-size:var(--fs-xs);color:var(--c-text-3);white-space:nowrap}
+  .tablefoot .rspace{flex:1}
+  .pages{display:flex;gap:4px;justify-content:center}
+  .pg{min-width:32px;height:32px;padding:0 6px;border:1px solid var(--c-border);border-radius:var(--r-sm);display:inline-flex;align-items:center;justify-content:center;background:#fff;font-size:var(--fs-sm);color:var(--c-text-2);cursor:pointer}
+  .pg.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary);font-weight:600}
+
+
+  /* ===== MG-01 · 인박스 ===== */
+  /* 회차 진행은 한 줄. KPI 카드 그리드를 만들지 않는다 */
+  .runline{display:flex;align-items:center;gap:var(--sp-3);background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:11px var(--sp-4);font-size:var(--fs-sm);margin-bottom:var(--sp-5);flex-wrap:wrap}
+  .runline .pn2{font-weight:700}
+  .runline .kv{color:var(--c-text-2)}
+  .runline .kv b{color:var(--c-text);font-variant-numeric:tabular-nums}
+  .runline .sep2{color:var(--c-border-strong)}
+  .runline .st2{margin-left:auto;font-size:var(--fs-xs);color:var(--c-text-3)}
+  .runline .st2 b{color:var(--c-text-2)}
+  .runline .st2 b{color:var(--c-text-2)}
+
+  .inhead{display:flex;align-items:baseline;gap:var(--sp-2);margin-bottom:var(--sp-3)}
+  .inhead .t3{font-size:var(--fs-lg);font-weight:700}
+  .inhead .n3{font-size:var(--fs-lg);font-weight:700;color:var(--c-primary);font-variant-numeric:tabular-nums}
+  .inhead .rt3{margin-left:auto;display:flex;align-items:center;gap:var(--sp-2)}
+  .fil2{border:1px solid var(--c-border-strong);border-radius:20px;padding:6px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);cursor:pointer}
+  .fil2.on{background:var(--c-primary-soft);border-color:#cdd4f2;color:var(--c-primary);font-weight:600}
+  .fil2 .since{color:var(--c-text-3);font-weight:400;margin-left:4px}
+
+  /* 한 줄 = 한 사람 · 한 처리. 정렬은 마감이 있는 것부터 */
+  .inbox{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .it{display:flex;align-items:center;gap:var(--sp-3);padding:13px var(--sp-4) 13px var(--sp-5);border-top:1px solid var(--c-border)}
+  .it:first-child{border-top:0}
+  .it .ic2{width:24px;flex:0 0 24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;background:var(--c-surface-2);border:1px solid var(--c-border);color:var(--c-text-3)}
+  .it.due .ic2{background:var(--c-danger-soft);border-color:#f0cfcb;color:var(--c-danger)}
+  .it.chk2 .ic2{background:var(--c-warning-soft);border-color:#e6d3a8;color:var(--c-warning)}
+  .it.talk2 .ic2{background:var(--c-primary-soft);border-color:#cdd4f2;color:var(--c-primary)}
+  .it .kind{flex:0 0 104px;font-size:var(--fs-sm);font-weight:700}
+  .it .who3{flex:0 0 130px;font-size:var(--fs-sm)}
+  .it .who3 .lk3{font-weight:700;cursor:pointer}
+  .it .who3 .lk3:hover{color:var(--c-primary)}
+  .it .who3 .cl3{color:var(--c-text-3);font-size:11px;margin-left:5px}
+  .it .why3{flex:1;min-width:0;font-size:var(--fs-sm);color:var(--c-text-2)}
+  .it .why3 b{color:var(--c-text)}
+  .it .why3 .hot2{color:var(--c-danger);font-weight:700}
+  .it .act2{flex:0 0 auto;display:flex;gap:6px}
+  .it .doneflag{font-size:var(--fs-xs);color:var(--c-success);font-weight:600;white-space:nowrap}
+  .it.did{background:var(--c-surface-2)}
+  .it.did .kind,.it.did .who3,.it.did .why3{opacity:.55}
+
+  /* 띠는 분류만. 순서가 이미 우선순위를 말한다 */
+  .band{padding:7px var(--sp-5);background:var(--c-surface-2);border-top:1px solid var(--c-border);font-size:11px;font-weight:700;color:var(--c-text-3);letter-spacing:.02em;display:flex;align-items:center;gap:6px}
+  .band:first-child{border-top:0}
+  .band .bw{font-weight:400;letter-spacing:0}
+
+  .fold{padding:11px var(--sp-5);border-top:1px solid var(--c-border);font-size:var(--fs-sm);color:var(--c-text-3);cursor:pointer;display:flex;align-items:center;gap:6px}
+  .fold b{color:var(--c-text-2)}
+
+  .failrow{display:flex;align-items:center;gap:var(--sp-3);padding:13px var(--sp-5);border-top:1px solid var(--c-border);font-size:var(--fs-sm);color:var(--c-danger);background:var(--c-danger-soft)}
+  .failrow .rtry{margin-left:auto;color:var(--c-danger);font-weight:700;cursor:pointer;text-decoration:underline}
+  .failrow .rtry{margin-left:auto;font-size:var(--fs-xs);color:var(--c-primary);cursor:pointer}
+
+  .empty{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8) var(--sp-5);text-align:center}
+  /* 빈 상태 3종 — 자리의 성격이 다르다
+     .wait 점선 = 아직 안 들어온 자리 · .empty 실선 = 확정된 0건 · .fail = 사고 */
+  .empty.wait{background:var(--c-surface-2);border:1px dashed var(--c-border-strong)}
+  .empty.fail{background:var(--c-danger-soft);border:1px solid #efc9c4}
+  .empty.fail .t{color:var(--c-danger)}
+  .empty .t{font-size:var(--fs-base);font-weight:600;margin-bottom:6px}
+  .empty .s{font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  body.embedded .sec-label{margin-top:0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">MG-01 · 매니저 · 웹</span>
+    <h1>대시보드 &#8212; 오늘 누구부터인가</h1>
+    <p>지표판이 아니라 <b>할 일 목록</b>이다. 매니저 스코프는 25명이라 <b>평균&#183;추이가 정보를 거의 주지 않는다</b> &#8212; 그럴 바에 명단을 본다.</p>
+    <ul>
+      <li><b>카드 그리드를 쓰지 않는다.</b> 매니저의 질문은 <i>"무엇이 얼마인가"</i>가 아니라 <b>"누구부터인가"</b>다. 카드는 여러 상자를 훑어 <b>사용자가 직접 순서를 합성</b>하게 만들지만, 단일 정렬 목록은 <b>순서를 그냥 준다.</b></li>
+      <li><b>정렬은 마감이 있는 것부터</b>다 &#8212; &#9312; 창이 닫히기 직전 &#8594; &#9313; 확인해야 판정이 확정되는 것 &#8594; &#9314; 면담 대기 &#8594; &#9315; 미제출. <b>띠는 분류만 하고 이유는 쓰지 않는다.</b></li>
+      <li><b>행마다 회차를 적는다.</b> 대시보드는 회차 필터가 없어 <b>미프 2차 것과 3차 것이 섞인다</b> &#8212; 다시 보기와 면담은 <b>직전 회차 리포트</b>에서 나오고, 미응시&#183;미제출은 <b>이번 회차</b>다. 회차가 없으면 전부 이번 것으로 읽힌다.</li>
+      <li><b>응시 창은 개인별 24시간</b>(10-1 &#8212; 기산점이 제출이 아니라 <b>코드 분석 완료</b>)이라 <b>회차 공통 마감 시각이 없다.</b> 한 줄에는 <b>제출 마감</b>만 시각으로 쓴다.</li>
+      <li><b><code>지난 방문 이후</code>가 기본 필터</b>다. 매일 열면 대부분 같은 화면인데 <b>델타가 없으면 훑지 않게 된다.</b> 기준은 <b>이 화면을 마지막으로 연 시각</b>이고 필터 옆에 그대로 적는다.</li>
+      <li><b>행에서 바로 처리한다.</b> 대시보드를 거쳐 다른 화면에 가서 <b>그 사람을 다시 찾는 동선</b>을 만들지 않는다.</li>
+      <li><b>독촉은 MG-08 규약 그대로</b>다 &#8212; 상태별 <b>고정 문구</b>, <b>미제출은 팀 전원 / 미응시는 개인</b>. 대시보드는 <b>단건</b>이라 모달이 없고, 여러 명은 MG-08의 벌크 모달이 한다. <b>한 규약 &#183; 두 진입점.</b></li>
+      <li><b>무효 응시는 알리기만 한다.</b> 확정은 <b>MG-03에서</b>(9-4 &#8212; 결과를 지우는 일이라 오탐 비용이 크다). 같은 처리를 두 화면에 두지 않는다.</li>
+      <li><b>면담 행에 위험 유형 배지를 달지 않는다.</b> 달면 <b>MG-03 목록의 축소판</b>이 된다 &#8212; 여기는 <i>"오늘 그중 급한 것"</i>만, 전체는 면담 메뉴가 답한다.</li>
+      <li><b>이의제기 행을 만들지 않는다.</b> 접수 화면도 검토 화면도 정의된 적이 없다 &#8212; <b>갈 곳 없는 큐</b>를 대시보드에만 두지 않는다.</li>
+      <li><b>평균 도달 단계&#183;응시율 추이가 없다.</b> 25명에서 무의미하다. 집계가 값을 하는 것은 개인을 못 보는 <b>오퍼레이터</b> 쪽이다.</li>
+    </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 인박스 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">목록 · 필터</td></tr>
+        <tr><td class="no">—</td><td class="st">기본 — 지난 방문 이후</td><td class="code">GET /manager/inbox</td><td class="msg">마감 · 확인 · 면담 대기 · 미제출 <b>4개 밴드</b><span class="nx">→ 행에서 바로 처리</span></td><td><a class="mk2" href="#inbox">#inbox</a></td></tr>
+        <tr><td class="no">—</td><td class="st">전체</td><td class="code">—</td><td class="msg">필터를 끄면 남은 일이 전부 보인다<span class="nx">→ 처리</span></td><td><a class="mk2" href="#all">#all</a></td></tr>
+        <tr><td class="no">—</td><td class="st">처리됨 펼침</td><td class="code">—</td><td class="msg">같은 기간에 이미 처리한 것<span class="nx">→ 확인</span></td><td><a class="mk2" href="#done">#done</a></td></tr>
+        <tr><td class="no">—</td><td class="st">할 일 0</td><td class="code">—</td><td class="msg"><b>지난 방문 이후 새로 생긴 일이 없습니다</b> + <b>전체로 바꾸면 남은 일을 볼 수 있다</b>고 밝힌다<span class="nx">→ 필터 해제 — <b>필터가 켜진 0을 '일이 없다'로 읽히게 두지 않는다</b></span></td><td><a class="mk2" href="#clear">#clear</a></td></tr>
+        <tr><td class="no">—</td><td class="st">진행 중인 프로젝트 없음</td><td class="code">—</td><td class="msg"><b>진행 중인 프로젝트가 없습니다</b><span class="nx">→ 대기 — 생성 유도를 넣지 않는다(오퍼레이터 소관)</span></td><td><a class="mk2" href="#noproject">#noproject</a></td></tr>
+        <tr class="grp"><td colspan="5">행 액션</td></tr>
+        <tr><td class="no">—</td><td class="st">독촉 발송</td><td class="code">POST /manager/nudge</td><td class="msg">버튼이 <b>보냄 · 방금</b>으로 바뀐다 · 단건이라 모달 없음<span class="nx">→ 같은 행에서 재발송 가능</span></td><td><a class="mk2" href="#sent">#sent</a></td></tr>
+        <tr><td class="no">—</td><td class="st">팀 전원 독촉</td><td class="code">POST /manager/nudge/team</td><td class="msg">미제출 팀 단위로 한 번에<span class="nx">→ —</span></td><td><a class="mk2" href="#inbox">#inbox</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>독촉 대상이 이미 처리됨</b></td><td class="code">ALREADY_RESOLVED</td><td class="msg"><b>이미 제출했습니다</b> · 그 행을 목록에서 뺀다<span class="nx">→ <b>그림 없음</b> — 토스트 + 행 갱신. 마감 직전에 실제로 일어난다</span></td><td class="no">—</td></tr>
+        <tr><td class="no">—</td><td class="st">독촉 발송 실패</td><td class="code">NUDGE_FAILED</td><td class="msg"><b>보내지 못했습니다 · 다시</b> — 그 행만<span class="nx">→ 재시도 — <b>그림 없음</b>(버튼 상태만 바뀐다)</span></td><td class="no">—</td></tr>
+        <tr class="grp"><td colspan="5">실패</td></tr>
+        <tr><td class="no">—</td><td class="st">부분 실패</td><td class="code">—</td><td class="msg">실패한 <b>줄만</b> <code>불러오지 못함 · 다시</code><span class="nx">→ 재시도 — <b>화면 전체를 비우지 않는다</b></span></td><td><a class="mk2" href="#partial">#partial</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>필터가 켜진 0과 진짜 0을 구분한다.</b> <code>지난 방문 이후</code>로 걸러서 0인 것을 "할 일이 없다"로 읽히게 두면 남은 일을 놓친다.<br>
+    · <b>N1·N2는 그림이 없다.</b> 행 하나의 버튼·문구만 바뀌므로 화면을 따로 그리지 않는다 — 다만 <b>구현에는 반드시 있어야 하는 분기</b>다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
+  </div>
+
+  <div class="rpage" id="page-inbox">
+  <div class="sec-label">&#9312; 기본 — 마감이 있는 것부터</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item on"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">대시보드 &#8250; 7기 &#8250; 담당 반</div><h2>대시보드</h2></div>
+          <div class="runline"><span class="pn2">미프 3차</span><span class="sep2">|</span><span class="kv">제출 <b>23</b>/25</span><span class="sep2">&#183;</span><span class="kv">응시 <b>19</b>/23</span><span class="sep2">&#183;</span><span class="kv">리포트 <b>발행 전</b></span><span class="st2">제출 마감 07-16 18:00 &#183; 응시 창은 <b>개인별 24시간</b>(분석 완료부터)</span></div>
+          <div class="inhead"><span class="t3">할 일</span><span class="n3">6</span><span class="rt3"><span class="fil2 on">지난 방문 이후<span class="since">7/26 14:20 이후</span></span><span class="fil2">전체</span></span></div>
+          <div class="inbox">
+            <div class="band">&#9312; 마감이 있는 것</div>
+            <div class="it due"><span class="ic2">&#9203;</span><span class="kind">미응시</span><span class="who3"><span class="lk3">최유나</span><span class="cl3">C반</span></span><span class="why3"><b>미프 3차</b> &#183; 응시 창 <span class="hot2">3시간</span> 남음</span><span class="act2"><button class="btn">독촉</button></span></div>
+            <div class="it due"><span class="ic2">&#9203;</span><span class="kind">다시 보기</span><span class="who3"><span class="lk3">정하늘</span><span class="cl3">A반</span></span><span class="why3"><b>미프 2차</b> &#183; 창 마감 <span class="hot2">내일 18:00</span> &#183; 1건 미응시</span><span class="act2"><button class="btn">독촉</button></span></div>
+            <div class="band">&#9313; 확인이 필요한 것</div>
+            <div class="it chk2"><span class="ic2">&#9888;</span><span class="kind">무효 응시</span><span class="who3"><span class="lk3">오세림</span><span class="cl3">C반</span></span><span class="why3"><b>미프 3차</b> &#183; 3문항 중 2문항 무응답 &#183; 응답 시간 4분</span><span class="act2"><button class="btn ghost">면담 목록에서 확인</button></span></div>
+            <div class="band">&#9314; 면담 대기</div>
+            <div class="it talk2"><span class="ic2">&#9998;</span><span class="kind">면담</span><span class="who3"><span class="lk3">최유나</span><span class="cl3">C반</span></span><span class="why3"><b>미프 2차</b> &#183; 대기 6일</span><span class="act2"><button class="btn">브리프 열기</button></span></div>
+            <div class="it talk2"><span class="ic2">&#9998;</span><span class="kind">면담</span><span class="who3"><span class="lk3">김민준</span><span class="cl3">A반</span></span><span class="why3"><b>미프 2차</b> &#183; 대기 6일</span><span class="act2"><button class="btn">브리프 열기</button></span></div>
+            <div class="band">&#9315; 미제출</div>
+            <div class="it "><span class="ic2">&#9636;</span><span class="kind">미제출</span><span class="who3"><span class="lk3">3팀</span><span class="cl3">4명</span></span><span class="why3"><b>미프 3차</b> &#183; 마감 <span class="hot2">내일 18:00</span></span><span class="act2"><button class="btn">팀 전원에게 독촉</button></span></div>
+            <div class="fold">&#9662; 처리됨 <b>3</b> <span>&#183; 지난 방문 이후</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+    <div class="rpage" id="page-done">
+  <div class="sec-label">&#9313; 처리됨 펼침 — 같은 기간 기준</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item on"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">대시보드 &#8250; 7기 &#8250; 담당 반</div><h2>대시보드</h2></div>
+          <div class="runline"><span class="pn2">미프 3차</span><span class="sep2">|</span><span class="kv">제출 <b>23</b>/25</span><span class="sep2">&#183;</span><span class="kv">응시 <b>19</b>/23</span><span class="sep2">&#183;</span><span class="kv">리포트 <b>발행 전</b></span><span class="st2">제출 마감 07-16 18:00 &#183; 응시 창은 <b>개인별 24시간</b>(분석 완료부터)</span></div>
+          <div class="inhead"><span class="t3">할 일</span><span class="n3">6</span><span class="rt3"><span class="fil2 on">지난 방문 이후<span class="since">7/26 14:20 이후</span></span><span class="fil2">전체</span></span></div>
+          <div class="inbox">
+            <div class="band">&#9312; 마감이 있는 것</div>
+            <div class="it due"><span class="ic2">&#9203;</span><span class="kind">미응시</span><span class="who3"><span class="lk3">최유나</span><span class="cl3">C반</span></span><span class="why3"><b>미프 3차</b> &#183; 응시 창 <span class="hot2">3시간</span> 남음</span><span class="act2"><button class="btn">독촉</button></span></div>
+            <div class="it due"><span class="ic2">&#9203;</span><span class="kind">다시 보기</span><span class="who3"><span class="lk3">정하늘</span><span class="cl3">A반</span></span><span class="why3"><b>미프 2차</b> &#183; 창 마감 <span class="hot2">내일 18:00</span> &#183; 1건 미응시</span><span class="act2"><button class="btn">독촉</button></span></div>
+            <div class="band">&#9313; 확인이 필요한 것</div>
+            <div class="it chk2"><span class="ic2">&#9888;</span><span class="kind">무효 응시</span><span class="who3"><span class="lk3">오세림</span><span class="cl3">C반</span></span><span class="why3"><b>미프 3차</b> &#183; 3문항 중 2문항 무응답 &#183; 응답 시간 4분</span><span class="act2"><button class="btn ghost">면담 목록에서 확인</button></span></div>
+            <div class="band">&#9314; 면담 대기</div>
+            <div class="it talk2"><span class="ic2">&#9998;</span><span class="kind">면담</span><span class="who3"><span class="lk3">최유나</span><span class="cl3">C반</span></span><span class="why3"><b>미프 2차</b> &#183; 대기 6일</span><span class="act2"><button class="btn">브리프 열기</button></span></div>
+            <div class="it talk2"><span class="ic2">&#9998;</span><span class="kind">면담</span><span class="who3"><span class="lk3">김민준</span><span class="cl3">A반</span></span><span class="why3"><b>미프 2차</b> &#183; 대기 6일</span><span class="act2"><button class="btn">브리프 열기</button></span></div>
+            <div class="band">&#9315; 미제출</div>
+            <div class="it "><span class="ic2">&#9636;</span><span class="kind">미제출</span><span class="who3"><span class="lk3">3팀</span><span class="cl3">4명</span></span><span class="why3"><b>미프 3차</b> &#183; 마감 <span class="hot2">내일 18:00</span></span><span class="act2"><button class="btn">팀 전원에게 독촉</button></span></div>
+            <div class="fold">&#9652; 처리됨 <b>3</b> <span>&#183; 지난 방문 이후</span></div>
+            <div class="it talk2 did"><span class="ic2">&#9998;</span><span class="kind">면담</span><span class="who3"><span class="lk3">박도현</span><span class="cl3">B반</span></span><span class="why3"><b>미프 2차</b> &#183; 다음에 할 것 &#8212; "흐름 그려오기"</span><span class="doneflag">종결함 &#183; 어제</span></div>
+            <div class="it due did"><span class="ic2">&#9203;</span><span class="kind">미응시</span><span class="who3"><span class="lk3">한지우</span><span class="cl3">B반</span></span><span class="why3"><b>미프 3차</b></span><span class="doneflag">응시함 &#183; 어제</span></div>
+            <div class="it chk2 did"><span class="ic2">&#9888;</span><span class="kind">무효 응시</span><span class="who3"><span class="lk3">서지훈</span><span class="cl3">C반</span></span><span class="why3"><b>미프 3차</b> &#183; 무효 아님</span><span class="doneflag">확인함 &#183; 2일 전</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-sent">
+  <div class="sec-label">&#9314; 독촉 발송 직후 — MG-08 규약 그대로 · 단건이라 모달이 없다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item on"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">대시보드 &#8250; 7기 &#8250; 담당 반</div><h2>대시보드</h2></div>
+          <div class="runline"><span class="pn2">미프 3차</span><span class="sep2">|</span><span class="kv">제출 <b>23</b>/25</span><span class="sep2">&#183;</span><span class="kv">응시 <b>19</b>/23</span><span class="sep2">&#183;</span><span class="kv">리포트 <b>발행 전</b></span><span class="st2">제출 마감 07-16 18:00 &#183; 응시 창은 <b>개인별 24시간</b>(분석 완료부터)</span></div>
+          <div class="inhead"><span class="t3">할 일</span><span class="n3">6</span><span class="rt3"><span class="fil2 on">지난 방문 이후<span class="since">7/26 14:20 이후</span></span><span class="fil2">전체</span></span></div>
+          <div class="inbox">
+            <div class="band">&#9312; 마감이 있는 것</div>
+            <div class="it due did"><span class="ic2">&#9203;</span><span class="kind">미응시</span><span class="who3"><span class="lk3">최유나</span><span class="cl3">C반</span></span><span class="why3"><b>미프 3차</b> &#183; 응시 창 <span class="hot2">3시간</span> 남음</span><span class="doneflag">독촉함 &#183; 방금</span></div>
+            <div class="it due"><span class="ic2">&#9203;</span><span class="kind">다시 보기</span><span class="who3"><span class="lk3">정하늘</span><span class="cl3">A반</span></span><span class="why3"><b>미프 2차</b> &#183; 창 마감 <span class="hot2">내일 18:00</span> &#183; 1건 미응시</span><span class="act2"><button class="btn">독촉</button></span></div>
+            <div class="band">&#9313; 확인이 필요한 것</div>
+            <div class="it chk2"><span class="ic2">&#9888;</span><span class="kind">무효 응시</span><span class="who3"><span class="lk3">오세림</span><span class="cl3">C반</span></span><span class="why3"><b>미프 3차</b> &#183; 3문항 중 2문항 무응답 &#183; 응답 시간 4분</span><span class="act2"><button class="btn ghost">면담 목록에서 확인</button></span></div>
+            <div class="band">&#9314; 면담 대기</div>
+            <div class="it talk2"><span class="ic2">&#9998;</span><span class="kind">면담</span><span class="who3"><span class="lk3">최유나</span><span class="cl3">C반</span></span><span class="why3"><b>미프 2차</b> &#183; 대기 6일</span><span class="act2"><button class="btn">브리프 열기</button></span></div>
+            <div class="it talk2"><span class="ic2">&#9998;</span><span class="kind">면담</span><span class="who3"><span class="lk3">김민준</span><span class="cl3">A반</span></span><span class="why3"><b>미프 2차</b> &#183; 대기 6일</span><span class="act2"><button class="btn">브리프 열기</button></span></div>
+            <div class="band">&#9315; 미제출</div>
+            <div class="it "><span class="ic2">&#9636;</span><span class="kind">미제출</span><span class="who3"><span class="lk3">3팀</span><span class="cl3">4명</span></span><span class="why3"><b>미프 3차</b> &#183; 마감 <span class="hot2">내일 18:00</span></span><span class="act2"><button class="btn">팀 전원에게 독촉</button></span></div>
+            <div class="fold">&#9662; 처리됨 <b>3</b> <span>&#183; 지난 방문 이후</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-all">
+  <div class="sec-label">&#9315; 전체 — 필터를 끄면</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item on"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">대시보드 &#8250; 7기 &#8250; 담당 반</div><h2>대시보드</h2></div>
+          <div class="runline"><span class="pn2">미프 3차</span><span class="sep2">|</span><span class="kv">제출 <b>23</b>/25</span><span class="sep2">&#183;</span><span class="kv">응시 <b>19</b>/23</span><span class="sep2">&#183;</span><span class="kv">리포트 <b>발행 전</b></span><span class="st2">제출 마감 07-16 18:00 &#183; 응시 창은 <b>개인별 24시간</b>(분석 완료부터)</span></div>
+          <div class="inhead"><span class="t3">할 일</span><span class="n3">9</span><span class="rt3"><span class="fil2">지난 방문 이후<span class="since">7/26 14:20 이후</span></span><span class="fil2 on">전체</span></span></div>
+          <div class="inbox">
+            <div class="band">&#9312; 마감이 있는 것</div>
+            <div class="it due"><span class="ic2">&#9203;</span><span class="kind">미응시</span><span class="who3"><span class="lk3">최유나</span><span class="cl3">C반</span></span><span class="why3"><b>미프 3차</b> &#183; 응시 창 <span class="hot2">3시간</span> 남음</span><span class="act2"><button class="btn">독촉</button></span></div>
+            <div class="it due"><span class="ic2">&#9203;</span><span class="kind">다시 보기</span><span class="who3"><span class="lk3">정하늘</span><span class="cl3">A반</span></span><span class="why3"><b>미프 2차</b> &#183; 창 마감 <span class="hot2">내일 18:00</span> &#183; 1건 미응시</span><span class="act2"><button class="btn">독촉</button></span></div>
+            <div class="band">&#9313; 확인이 필요한 것</div>
+            <div class="it chk2"><span class="ic2">&#9888;</span><span class="kind">무효 응시</span><span class="who3"><span class="lk3">오세림</span><span class="cl3">C반</span></span><span class="why3"><b>미프 3차</b> &#183; 3문항 중 2문항 무응답 &#183; 응답 시간 4분</span><span class="act2"><button class="btn ghost">면담 목록에서 확인</button></span></div>
+            <div class="band">&#9314; 면담 대기</div>
+            <div class="it talk2"><span class="ic2">&#9998;</span><span class="kind">면담</span><span class="who3"><span class="lk3">최유나</span><span class="cl3">C반</span></span><span class="why3"><b>미프 2차</b> &#183; 대기 6일</span><span class="act2"><button class="btn">브리프 열기</button></span></div>
+            <div class="it talk2"><span class="ic2">&#9998;</span><span class="kind">면담</span><span class="who3"><span class="lk3">김민준</span><span class="cl3">A반</span></span><span class="why3"><b>미프 2차</b> &#183; 대기 6일</span><span class="act2"><button class="btn">브리프 열기</button></span></div>
+            <div class="it talk2"><span class="ic2">&#9998;</span><span class="kind">면담</span><span class="who3"><span class="lk3">이서준</span><span class="cl3">A반</span></span><span class="why3"><b>미프 2차</b> &#183; 대기 6일</span><span class="act2"><button class="btn">브리프 열기</button></span></div>
+            <div class="it talk2"><span class="ic2">&#9998;</span><span class="kind">면담</span><span class="who3"><span class="lk3">한지우</span><span class="cl3">B반</span></span><span class="why3"><b>미프 2차</b> &#183; 대기 6일</span><span class="act2"><button class="btn">브리프 열기</button></span></div>
+            <div class="band">&#9315; 미제출</div>
+            <div class="it "><span class="ic2">&#9636;</span><span class="kind">미제출</span><span class="who3"><span class="lk3">3팀</span><span class="cl3">4명</span></span><span class="why3"><b>미프 3차</b> &#183; 마감 <span class="hot2">내일 18:00</span></span><span class="act2"><button class="btn">팀 전원에게 독촉</button></span></div>
+            <div class="it "><span class="ic2">&#9636;</span><span class="kind">분석 실패</span><span class="who3"><span class="lk3">5팀</span><span class="cl3">3명</span></span><span class="why3"><b>미프 3차</b> &#183; 저장소를 확인하고 다시 제출해야 합니다</span><span class="act2"><button class="btn">팀 전원에게 독촉</button></span></div>
+            <div class="fold">&#9662; 처리됨 <b>3</b> <span>&#183; 지난 방문 이후</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-clear">
+  <div class="sec-label">&#9316; 상태 · 할 일 없음</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item on"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">대시보드 &#8250; 7기 &#8250; 담당 반</div><h2>대시보드</h2></div>
+          <div class="runline"><span class="pn2">미프 3차</span><span class="sep2">|</span><span class="kv">제출 <b>23</b>/25</span><span class="sep2">&#183;</span><span class="kv">응시 <b>19</b>/23</span><span class="sep2">&#183;</span><span class="kv">리포트 <b>발행 전</b></span><span class="st2">제출 마감 07-16 18:00 &#183; 응시 창은 <b>개인별 24시간</b>(분석 완료부터)</span></div>
+          <div class="inhead"><span class="t3">할 일</span><span class="n3">0</span><span class="rt3"><span class="fil2 on">지난 방문 이후<span class="since">7/26 14:20 이후</span></span><span class="fil2">전체</span></span></div>
+          <div class="empty"><div class="t">지난 방문 이후 새로 생긴 일이 없습니다</div><div class="s">마감이 임박한 건도, 확인할 판정도 없어요.<br><b>전체</b>로 바꾸면 남아 있는 일을 볼 수 있습니다.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-noproject">
+  <div class="sec-label">&#9317; 상태 · 진행 중인 프로젝트 없음</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item on"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">대시보드 &#8250; 7기 &#8250; 담당 반</div><h2>대시보드</h2></div>
+          <div class="runline"><span class="kv">진행 중인 프로젝트가 없습니다</span><span class="st2">미프 4차 제출 시작 07-29</span></div>
+          <div class="inhead"><span class="t3">할 일</span><span class="n3">0</span><span class="rt3"><span class="fil2 on">지난 방문 이후<span class="since">7/26 14:20 이후</span></span><span class="fil2">전체</span></span></div>
+          <div class="empty wait"><div class="t">진행 중인 프로젝트가 없습니다</div><div class="s">미프 4차가 <b>07-29</b>에 시작합니다.<br>제출이 들어오면 여기에 할 일이 쌓입니다.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-partial">
+  <div class="sec-label">&#9318; 상태 · 부분 실패 — 화면 전체를 비우지 않는다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item on"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">대시보드 &#8250; 7기 &#8250; 담당 반</div><h2>대시보드</h2></div>
+          <div class="runline"><span class="pn2">미프 3차</span><span class="sep2">|</span><span class="kv">제출 <b>23</b>/25</span><span class="sep2">&#183;</span><span class="kv">응시 <b>19</b>/23</span><span class="sep2">&#183;</span><span class="kv">리포트 <b>발행 전</b></span><span class="st2">제출 마감 07-16 18:00 &#183; 응시 창은 <b>개인별 24시간</b>(분석 완료부터)</span></div>
+          <div class="inhead"><span class="t3">할 일</span><span class="n3">6</span><span class="rt3"><span class="fil2 on">지난 방문 이후<span class="since">7/26 14:20 이후</span></span><span class="fil2">전체</span></span></div>
+          <div class="inbox">
+            <div class="band">&#9312; 마감이 있는 것</div>
+            <div class="it due"><span class="ic2">&#9203;</span><span class="kind">미응시</span><span class="who3"><span class="lk3">최유나</span><span class="cl3">C반</span></span><span class="why3"><b>미프 3차</b> &#183; 응시 창 <span class="hot2">3시간</span> 남음</span><span class="act2"><button class="btn">독촉</button></span></div>
+            <div class="it due"><span class="ic2">&#9203;</span><span class="kind">다시 보기</span><span class="who3"><span class="lk3">정하늘</span><span class="cl3">A반</span></span><span class="why3"><b>미프 2차</b> &#183; 창 마감 <span class="hot2">내일 18:00</span> &#183; 1건 미응시</span><span class="act2"><button class="btn">독촉</button></span></div>
+            <div class="band">&#9313; 확인이 필요한 것</div>
+            <div class="failrow"><span>&#9888;</span><span>무효 응시 확인 목록을 불러오지 못했습니다</span><span class="rtry">다시 시도</span></div>
+            <div class="band">&#9314; 면담 대기</div>
+            <div class="it talk2"><span class="ic2">&#9998;</span><span class="kind">면담</span><span class="who3"><span class="lk3">최유나</span><span class="cl3">C반</span></span><span class="why3"><b>미프 2차</b> &#183; 대기 6일</span><span class="act2"><button class="btn">브리프 열기</button></span></div>
+            <div class="it talk2"><span class="ic2">&#9998;</span><span class="kind">면담</span><span class="who3"><span class="lk3">김민준</span><span class="cl3">A반</span></span><span class="why3"><b>미프 2차</b> &#183; 대기 6일</span><span class="act2"><button class="btn">브리프 열기</button></span></div>
+            <div class="band">&#9315; 미제출</div>
+            <div class="it "><span class="ic2">&#9636;</span><span class="kind">미제출</span><span class="who3"><span class="lk3">3팀</span><span class="cl3">4명</span></span><span class="why3"><b>미프 3차</b> &#183; 마감 <span class="hot2">내일 18:00</span></span><span class="act2"><button class="btn">팀 전원에게 독촉</button></span></div>
+            <div class="fold">&#9662; 처리됨 <b>3</b> <span>&#183; 지난 방문 이후</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+</div>
+<script>
+  var PAGE = { cases:"page-cases", inbox:"page-inbox", done:"page-done", sent:"page-sent",
+               all:"page-all", clear:"page-clear", noproject:"page-noproject",
+               partial:"page-partial" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "inbox";
+    var id = PAGE[h] || "page-inbox";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+
+  // 목업 = 1920x1080 실화면. 보이는 폭에 맞춰 배율만 조절해 비율을 지킨다
+  function fitScreen(){
+    var p = document.querySelector(".page");
+    if(!p) return;
+    var cs = getComputedStyle(p);
+    var w = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if(w > 0) document.documentElement.style.setProperty("--k", w / 1920);
+  }
+  window.addEventListener("resize", fitScreen);
+  window.addEventListener("load", fitScreen);
+  fitScreen();
+</script>
+</body>
+</html>

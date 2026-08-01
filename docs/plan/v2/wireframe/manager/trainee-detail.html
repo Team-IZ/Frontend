@@ -1,0 +1,868 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MG-06 · 교육생 상세 — 와이어프레임</title>
+<style>
+
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-nav:#1e2436; --c-nav-2:#2a3147; --c-nav-text:#aeb4c6;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    /* 도달 단계 스케일 — MG-06이 그대로 물려받는다 */
+    --h0:#e8a87c; --h1:#f0c9a0; --h2:#f7e4c8; --h3:#cfe6d5; --h4:#8fce b0;
+    --h4c:#8fceb0; --hn:#eef0f3;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    /* 목업은 1920x1080 화면을 그대로 그리고, 보이는 폭에 맞춰 축소만 한다 */
+    /* 본문 기본 상한 — 1920에서 표·목록이 늘어지는 것을 막는다.
+       1512에서는 가용폭 1264px이라 걸리지 않고, 넓은 화면만 잡힌다(=Tailwind max-w-7xl) */
+    --w-app:1280px;
+    --screen-w:1920px; --screen-h:1080px; --k:.6625;
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .doc-head ul{margin:var(--sp-3) 0 0 18px;color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .doc-head li{margin-bottom:3px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{width:var(--screen-w);zoom:var(--k);border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  .app{display:flex;flex-direction:column;height:var(--screen-h)}
+  .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
+  .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700}
+  .topbar .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .cohortsel{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:5px var(--sp-3);font-size:var(--fs-sm);background:var(--c-surface-2)}
+  .cohortsel .k{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+
+  .body{display:flex;flex:1;min-height:0}
+  .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
+  .nav .grp{padding-top:var(--sp-2);margin-top:var(--sp-2);border-top:1px solid var(--c-nav-2)}
+  .nav .grp:first-child{padding-top:0;margin-top:0;border-top:0}
+  .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
+  .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
+  .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
+  .nav .item .bg{margin-left:auto;background:var(--c-primary);color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:1px 6px}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-5) var(--sp-6);min-width:0;min-height:0;overflow:hidden}
+  /* 상한은 .content 자신이 아니라 자식에 건다 — .content가 배경을 계속 꽉 채워야 이음선이 안 생긴다 */
+  .content > *{max-width:var(--w-app);margin-left:auto;margin-right:auto}
+
+  /* 표준 배치 */
+  .phead{margin-bottom:var(--sp-4)}
+  .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
+
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-xs);cursor:pointer;padding:7px 12px;font-family:inherit}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong)}
+
+  .alert{display:flex;gap:var(--sp-3);align-items:flex-start;border-radius:var(--r-md);padding:11px var(--sp-4);font-size:var(--fs-sm);margin-bottom:var(--sp-3)}
+  .alert.warn{background:var(--c-warning-soft);color:var(--c-warning);border:1px solid #e6d3a8}
+  .alert .tx{flex:1;color:var(--c-text-2)}
+  .alert .tx b{color:var(--c-text)}
+  .alert .tx .sub{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:2px}
+
+  /* ── 히트맵 — 셀을 띄워 타일로 만든다. 붙이면 그냥 표가 된다 */
+  .hmwrap{overflow-x:auto;padding-bottom:4px}
+  .hmtbl{border-collapse:separate;border-spacing:5px;font-size:var(--fs-sm)}
+  .hmtbl th{font-size:var(--fs-sm);color:var(--c-text);font-weight:700;padding:2px 4px;text-align:center;vertical-align:bottom}
+  .hmtbl th .lv{display:block;font-size:11px;color:var(--c-text-3);font-weight:600;margin-bottom:1px}
+  /* 좌상단 — x축·y축이 무엇인지. 비워 두면 개념 1·2·3의 정체를 알 수 없다 */
+  .hmtbl th.axis{text-align:left;vertical-align:bottom;padding:0 var(--sp-3) 4px 0;width:150px}
+  .hmtbl th.axis .ax{display:block;font-size:11px;font-weight:700;color:var(--c-text-2);line-height:1.45}
+  .hmtbl th.axis .ax i{font-style:normal;color:var(--c-text-3);font-weight:600;margin-right:4px}
+  .hmtbl th.rowh,.hmtbl td.rowh{text-align:left}
+  .hmtbl td.rowh{width:150px;font-weight:600;color:var(--c-text);white-space:nowrap;padding-right:var(--sp-3);font-size:var(--fs-sm)}
+  .hmtbl td.rowh small{color:var(--c-text-3);font-weight:400;font-size:12px;margin-left:4px}
+  .grouprow td{padding:var(--sp-4) 4px 3px;font-size:12px;color:var(--c-text-2);font-weight:700;letter-spacing:0}
+  .grouprow span{color:var(--c-text-3)}
+
+  /* 셀 — 값 + 튀는 셀에만 라벨 */
+  .hc{width:92px;height:44px;border-radius:6px;text-align:center;vertical-align:middle;font-variant-numeric:tabular-nums;font-weight:700;color:#241108;cursor:pointer;border:1px solid transparent;position:relative}
+  .hc:hover{border-color:rgba(0,0,0,.28)}
+  .hc small{display:block;font-size:10px;font-weight:600;opacity:.76;margin-top:1px}
+  .hc .up2{font-size:11px;font-weight:800;opacity:.55;margin-left:2px}
+  .hc.l0{background:#df6150;color:#fff}
+  .hc.l1{background:#ec9a5c}
+  .hc.l2{background:#ecc95e}
+  .hc.l3{background:#a9cf8e}
+  .hc.l4{background:#57b083;color:#fff}
+  .hc.na{background:repeating-linear-gradient(45deg,#eceef1,#eceef1 5px,#e2e5ea 5px,#e2e5ea 10px);color:var(--c-text-3);font-weight:400;cursor:default}
+  .hc.na:hover{border-color:transparent}
+  .hc.grp2{outline:2px solid var(--c-warning);outline-offset:-2px}
+  .avgrow td.rowh{font-weight:700}
+  .avgrow .hc{outline:2px solid rgba(58,77,184,.28);outline-offset:-1px}
+  .avgrow .hc.grp2{outline:2px solid var(--c-warning)}
+  .perrow td.rowh{padding-left:var(--sp-4);font-weight:500;color:var(--c-text-2);cursor:pointer}
+  .perrow:hover td.rowh{color:var(--c-primary)}
+  .rk2{padding-left:var(--sp-3);white-space:nowrap}
+  .rbadge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+  .rbadge.down{background:var(--c-warning-soft);color:var(--c-warning)}
+  .rbadge.low{background:var(--c-danger-soft);color:var(--c-danger)}
+
+  /* 드릴다운 위치 — 지금 어느 계층인지 */
+  .drill{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);margin-bottom:var(--sp-3)}
+  .drill .lv2{color:var(--c-primary);cursor:pointer}
+  .drill .sep2{color:var(--c-text-3);font-size:11px}
+  .drill .cur{font-weight:700}
+  .drill .cnt2{color:var(--c-text-3);font-size:var(--fs-xs);margin-left:2px}
+  .backlink{font-size:var(--fs-xs);color:var(--c-primary);cursor:pointer;display:inline-block;margin-bottom:var(--sp-2)}
+  .fil.on{background:var(--c-primary-soft);border-color:#cdd4f2;color:var(--c-primary);font-weight:600}
+
+
+
+  .hc{width:92px;height:44px;border-radius:6px;text-align:center;vertical-align:middle;font-variant-numeric:tabular-nums;font-weight:700;color:#241108;cursor:pointer;border:1px solid transparent;position:relative}
+  .hc:hover{border-color:rgba(0,0,0,.28)}
+  .hc small{display:block;font-size:10px;font-weight:600;opacity:.76;margin-top:1px}
+  .hc .up2{font-size:11px;font-weight:800;opacity:.55;margin-left:2px}
+  .hc.l0{background:#df6150;color:#fff}
+  .hc.l1{background:#ec9a5c}
+  .hc.l2{background:#ecc95e}
+  .hc.l3{background:#a9cf8e}
+  .hc.l4{background:#57b083;color:#fff}
+  .hc.na{background:repeating-linear-gradient(45deg,#eceef1,#eceef1 5px,#e2e5ea 5px,#e2e5ea 10px);color:var(--c-text-3);font-weight:400;cursor:default}
+  .hc.na:hover{border-color:transparent}
+  .hc.grp2{outline:2px solid var(--c-warning);outline-offset:-2px}
+  .avgrow td.rowh{font-weight:700}
+  .avgrow .hc{outline:2px solid rgba(58,77,184,.28);outline-offset:-1px}
+  .avgrow .hc.grp2{outline:2px solid var(--c-warning)}
+  .perrow td.rowh{padding-left:var(--sp-4);font-weight:500;color:var(--c-text-2);cursor:pointer}
+  .perrow:hover td.rowh{color:var(--c-primary)}
+
+  /* ===== MG-06 ===== */
+  /* 헤더 — 행동에 가장 가까운 것(미확인 약속)이 맨 위 */
+  .thead{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5);margin-bottom:var(--sp-4)}
+  .thead .l1{display:flex;align-items:center;gap:var(--sp-3);flex-wrap:wrap}
+  .thead .nm{font-size:var(--fs-xl);font-weight:700;letter-spacing:-.01em}
+  .thead .meta{font-size:var(--fs-sm);color:var(--c-text-2)}
+  .thead .why{font-size:var(--fs-xs);color:var(--c-text-3);margin-left:auto}
+  .thead .why b{color:var(--c-text-2);font-variant-numeric:tabular-nums}
+  .rbadge.down{background:var(--c-warning-soft);color:var(--c-warning)}
+  .rbadge.low{background:var(--c-danger-soft);color:var(--c-danger)}
+  .rbadge.ok{background:var(--c-success-soft);color:var(--c-success)}
+
+  /* 격자 — MG-02 그 행을 잘라 쓴다. 여기서 새로 그리지 않는다 */
+  .gridwrap{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5) var(--sp-4);margin-bottom:var(--sp-4)}
+  .gridwrap .gh{display:flex;align-items:baseline;gap:var(--sp-2);margin-bottom:var(--sp-3)}
+  .gridwrap .gh .t{font-size:var(--fs-sm);font-weight:700}
+  .gridwrap .gh .s{font-size:var(--fs-xs);color:var(--c-text-3)}
+  .gridwrap .gh .lg{margin-left:auto;display:flex;align-items:center;gap:4px;font-size:var(--fs-xs);color:var(--c-text-3)}
+  .gridwrap .gh .lg i{width:17px;height:11px;border-radius:2px;display:inline-block}
+  .gridwrap .gh .lg i.nn{background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px)}
+  .gridwrap .gh .lk{margin-left:var(--sp-4);font-size:var(--fs-xs);color:var(--c-primary);cursor:pointer}
+  .grid{display:flex;align-items:flex-start;gap:0}
+  .prj{padding:0 var(--sp-5)}
+  .prj:first-child{padding-left:0}
+  .prj:last-child{padding-right:0}
+  /* 프로젝트 경계 — 회차마다 과제가 다르므로 경계를 넘는 등락은 퇴보가 아닐 수 있다 */
+  .prj+.prj{border-left:1px dashed var(--c-border-strong)}
+  .prj .pn{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:6px;text-align:center}
+  .prj.cur .pn{color:var(--c-text);font-weight:700}
+  .prj .cells{display:flex;gap:5px}
+  .gcell{width:78px;height:40px;border-radius:6px;text-align:center;line-height:40px;font-size:var(--fs-sm);font-weight:700;color:#241108;font-variant-numeric:tabular-nums}
+  .gcell.l0{background:#df6150;color:#fff}
+  .gcell.l1{background:#ec9a5c}
+  .gcell.l2{background:#ecc95e}
+  .gcell.l3{background:#a9cf8e}
+  .gcell.l4{background:#57b083;color:#fff}
+  .gcell.na{background:repeating-linear-gradient(45deg,#eceef1,#eceef1 5px,#e2e5ea 5px,#e2e5ea 10px);color:var(--c-text-3);font-weight:400}
+  .cnames{display:flex;gap:5px;margin-top:5px}
+  .cnames span{width:78px;text-align:center;font-size:10px;color:var(--c-text-3);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .gnote{margin-top:var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-3)}
+
+  /* 타임라인 — 탭이 아니라 시간축 하나. 유형은 필터로만 */
+  .tlbar{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3)}
+  .tlbar .tn{font-size:var(--fs-xs);color:var(--c-text-3);margin-left:2px}
+  .tlbar .tt{font-size:var(--fs-sm);font-weight:700}
+  .tlbar .fil{margin-left:0}
+  .tlbar .fils{margin-left:auto;display:flex;gap:6px}
+  .fil{border:1px solid var(--c-border-strong);border-radius:20px;padding:6px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);cursor:pointer}
+  .fil.on{background:var(--c-primary-soft);border-color:#cdd4f2;color:var(--c-primary);font-weight:600}
+
+  .tl{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);overflow-y:auto;max-height:590px}
+  .rnd{border-top:1px solid var(--c-border)}
+  .rnd:first-child{border-top:0}
+  .rnd .rh{display:flex;align-items:center;gap:var(--sp-2);padding:11px var(--sp-5);background:var(--c-surface-2);font-size:var(--fs-sm);font-weight:700;cursor:pointer}
+  .rnd .rh .cv{color:var(--c-text-3);font-size:11px;width:11px}
+  .rnd .rh .rs{font-weight:400;color:var(--c-text-3);font-size:var(--fs-xs)}
+  .rnd .rh .rr{margin-left:auto}
+  .ev{display:flex;gap:var(--sp-4);padding:12px var(--sp-5);border-top:1px solid var(--c-border);position:relative}
+  .ev .dt{width:44px;flex:0 0 44px;font-size:var(--fs-xs);color:var(--c-text-3);font-variant-numeric:tabular-nums;padding-top:2px}
+  .ev .ic{width:22px;flex:0 0 22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;background:var(--c-surface-2);border:1px solid var(--c-border);color:var(--c-text-3)}
+  .ev.session .ic{background:var(--c-primary-soft);border-color:#cdd4f2;color:var(--c-primary)}
+  .ev.retry .ic{background:var(--c-success-soft);border-color:#bfe0cd;color:var(--c-success)}
+  .ev.report .ic{background:var(--c-info-soft);border-color:#c9dcef;color:var(--c-info)}
+  .ev.talk .ic{background:var(--c-warning-soft);border-color:#e6d3a8;color:var(--c-warning)}
+  .ev .bd{flex:1;min-width:0;font-size:var(--fs-sm)}
+  .ev .ti{display:flex;align-items:baseline;gap:var(--sp-2);flex-wrap:wrap}
+  .ev .ti b{font-weight:700}
+  .ev .ti .sub{color:var(--c-text-2)}
+  .ev .ti .tg{font-size:11px;color:var(--c-text-3);border:1px solid var(--c-border);border-radius:20px;padding:1px 7px}
+  .ev .more{margin-left:auto;font-size:var(--fs-xs);color:var(--c-primary);cursor:pointer;white-space:nowrap}
+  .ev .dtl{margin-top:var(--sp-3);border-left:2px solid var(--c-border);padding-left:var(--sp-4)}
+  .ev .dtl .cpt{font-size:var(--fs-sm);font-weight:700;margin-bottom:3px}
+  .ev .dtl .cpt .lvb{font-size:11px;font-weight:700;border-radius:5px;padding:1px 7px;margin-right:6px;color:#241108}
+  .ev .dtl .ax{display:flex;gap:var(--sp-3);flex-wrap:wrap;font-size:var(--fs-xs);color:var(--c-text-2);margin-bottom:2px}
+  .ev .dtl .ax i{font-style:normal;color:var(--c-text-3)}
+  .ev .dtl .ax .no{color:var(--c-danger)}
+  .ev .dtl .cpt .hint{font-size:11px;font-weight:600;color:var(--c-text-3);border:1px solid var(--c-border);border-radius:20px;padding:1px 8px;margin-left:7px}
+  .ev .dtl .cnote{font-size:var(--fs-xs);color:var(--c-warning);background:var(--c-warning-soft);border-radius:var(--r-sm);padding:6px 10px;margin-top:5px}
+  .ev .dtl .cnote b{color:var(--c-warning)}
+  .gnone{font-size:var(--fs-sm);color:var(--c-text-3);padding:var(--sp-5) 0;text-align:center}
+  .ev .dtl .rs2{font-size:var(--fs-xs);color:var(--c-text-2);line-height:1.65;margin-bottom:var(--sp-3)}
+  .ev .dtl .grp3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-3);margin-top:var(--sp-2)}
+  .ev .dtl .g1{background:var(--c-surface-2);border:1px solid var(--c-border);border-radius:var(--r-sm);padding:9px 11px}
+  .ev .dtl .g1 .k{font-size:11px;color:var(--c-text-3);margin-bottom:3px}
+  .ev .dtl .g1 .v{font-size:var(--fs-xs);color:var(--c-text);line-height:1.55}
+  .ev .dtl .g1.miss .v{color:var(--c-warning);font-weight:600}
+  .ev .flag{font-size:var(--fs-xs);color:var(--c-warning);font-weight:600;white-space:nowrap;align-self:center}
+  .ev.dim{opacity:.42}
+  .norec{font-size:var(--fs-xs);color:var(--c-text-3);font-style:normal}
+
+  .empty{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8) var(--sp-5);text-align:center}
+  /* 빈 상태 3종 — 자리의 성격이 다르다
+     .wait 점선 = 아직 안 들어온 자리 · .empty 실선 = 확정된 0건 · .fail = 사고 */
+  .empty.wait{background:var(--c-surface-2);border:1px dashed var(--c-border-strong)}
+  .empty.fail{background:var(--c-danger-soft);border:1px solid #efc9c4}
+  .empty.fail .t{color:var(--c-danger)}
+  .empty .t{font-size:var(--fs-base);font-weight:600;margin-bottom:6px}
+  .empty .s{font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  body.embedded .sec-label{margin-top:0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">MG-06 · 매니저 · 웹</span>
+    <h1>교육생 상세 &#8212; 회차 사이에 무슨 일이 있었나</h1>
+    <p>히트맵이 <b>이번 회차 어디서 막혔나</b>를 주면 이 화면은 <b>그 사이에 무슨 일이 있었나</b>를 준다 &#8212; 다시 봤는지, 면담에서 뭐라고 했는지, 약속한 것을 했는지.</p>
+    <ul>
+      <li><b>탭을 쓰지 않는다</b>(18번 3-4). 세션&#183;면담&#183;다시 보기는 같은 시간축의 <b>이벤트 유형</b>일 뿐이라 탭으로 가르면 <code>7/18 다시 보기가 7/21 면담보다 먼저</code>라는 <b>순서가 사라진다.</b> 유형은 필터로만 거른다.</li>
+      <li><b>필터는 걸러내기만 한다.</b> 이벤트는 한 번만 정의하고 유형으로 뽑는다 &#8212; <code>면담</code>만 켰더니 <code>전체</code>에 없던 이벤트가 나오면 <b>필터의 정의가 깨진다.</b> 옆의 건수가 그 계약을 보이게 한다.</li>
+      <li><b>팀을 사람 옆에 박지 않는다.</b> 팀은 <b>프로젝트마다 재편성되는 유동값</b>이라 <code>A반 1팀</code>이라고 쓰면 아래 격자 3회차와 어긋난다. 헤더는 <b>기수 &#183; 반</b>까지, 팀은 <b>그 회차 헤더에</b> 붙인다.</li>
+      <li><b>격자는 히트맵 행을 잘라 쓴다</b>(17번 4-3). <b>회차마다 검증 개념도 과제도 다르므로 가로로 이어 읽지 않는다</b> &#8212; 세로선은 그 경계다.</li>
+      <li><b>미확인 약속을 헤더에 올리지 않는다.</b> 여기는 <b>조회 화면이라 확인 처리도 브리프 진입도 없다</b> &#8212; 그 알림의 자리는 <b>MG-04 브리프 &#9312;칸 위</b>(16번 4-3)와 <b>MG-03 면담 목록의 <code>후속 필요</code></b>다.</li>
+      <li><b>면담 일정을 잡는 기능은 없다</b>(16번 4-1 &#8212; 상태는 <code>예정/후속 필요/종결</code>, 지표는 <code>대기 최장 N일</code>). 없는 필드를 화면이 만들지 않는다.</li>
+      <li><b>축별 도달/미달을 쓰지 않는다.</b> 계단이 <code>1단=코드이해 &#183; 2단=설계논리 &#183; 3단=대안비교 &#183; 4단=반례대응</code>이라(3-1) <b>도달 단계에서 100% 파생</b>된다.</li>
+      <li><b>원문 문답은 없다</b>(14번 10-3). <b>반 문제(9-6) 판정은 근거문에 섞지 않는다</b> &#8212; 근거는 이 사람 답변, 반 판정은 집계다.</li>
+    </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 교육생 상세 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">타임라인 — 유형을 섞어야 순서가 보인다</td></tr>
+        <tr><td class="no">—</td><td class="st">전체</td><td class="code">GET /trainees/{id}</td><td class="msg">회차 격자 + <b>이력 타임라인</b>(세션·다시 보기·리포트·면담)<span class="nx">→ 유형 필터로 좁힌다</span></td><td><a class="mk2" href="#main">#main</a></td></tr>
+        <tr><td class="no">—</td><td class="st">유형 필터</td><td class="code">—</td><td class="msg">세션만 / 다시 보기만 / 리포트만 / 면담만<span class="nx">→ <b>탭이 아니라 필터</b> — 탭으로 가르면 시간 순서가 사라진다</span></td><td><a class="mk2" href="#session">#session</a></td></tr>
+        <tr class="grp"><td colspan="5">판정</td></tr>
+        <tr><td class="no">—</td><td class="st">지속 저점</td><td class="code">—</td><td class="msg">배지 + 근거 줄<span class="nx">→ 면담 대상</span></td><td><a class="mk2" href="#low">#low</a></td></tr>
+        <tr><td class="no">—</td><td class="st">위험 없음</td><td class="code">—</td><td class="msg"><b>배지도 약속 줄도 없다</b><span class="nx">→ 축하 문구를 넣지 않는다</span></td><td><a class="mk2" href="#ok">#ok</a></td></tr>
+        <tr class="grp"><td colspan="5">비어 있을 때 — 뜻이 다르다</td></tr>
+        <tr><td class="no">—</td><td class="st"><b>이벤트 0</b></td><td class="code">—</td><td class="msg">격자 자리에 <b>아직 응시한 회차가 없습니다</b><span class="nx">→ <b>셀을 <code>문항 없음</code>으로 채우지 않는다</b> — 코드에 개념이 없어 못 물은 것과 아직 안 본 것은 다르다</span></td><td><a class="mk2" href="#empty">#empty</a></td></tr>
+        <tr><td class="no">—</td><td class="st">면담 기록 미작성</td><td class="code">—</td><td class="msg">이벤트에 <code>기록 없음</code><span class="nx">→ 브리프에서 저장 안 한 경우</span></td><td><a class="mk2" href="#talk">#talk</a></td></tr>
+        <tr><td class="no">—</td><td class="st">셀이 <code>―</code></td><td class="code">—</td><td class="msg">그 회차에 <b>그 개념 문항이 없었다</b><span class="nx">→ 0단과 다르다</span></td><td><a class="mk2" href="#main">#main</a></td></tr>
+        <tr class="grp"><td colspan="5">실패</td></tr>
+        <tr><td class="no">—</td><td class="st">이력 불러오기 실패</td><td class="code">TIMELINE_UNAVAILABLE</td><td class="msg"><b>그 구간만</b> 실패 표시<span class="nx">→ 재시도 — 격자는 그대로 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>탭이 아니라 필터다.</b> 세션·다시 보기·리포트·면담은 <b>같은 시간축의 이벤트</b>라 탭으로 가르면 <i>"7/18 다시 보기가 7/21 면담보다 먼저"</i>라는 순서가 사라진다.<br>
+    · <b>빈 칸 셋을 구분한다.</b> <code>―</code>(코드에 개념이 없어 못 물음) · <code>0단</code>(물었는데 못 함) · <b>아직 응시 안 함</b>은 처방이 다르다.<br>
+    · <b>위험이 없으면 아무것도 붙이지 않는다.</b> 축하 배지를 넣으면 다음에 배지가 없을 때 그것이 나쁜 신호로 읽힌다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
+  </div>
+
+  <div class="rpage" id="page-main">
+  <div class="sec-label">&#9312; 전체 — 유형을 섞어야 순서가 보인다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trainees/1042</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교육생 &#8250; 7기 &#8250; A반 &#8250; <b style="color:var(--c-primary)">김민준</b></div><h2>교육생</h2></div>
+          <div class="thead">
+            <div class="l1"><span class="nm">김민준</span><span class="rbadge down">단계 하락</span><span class="meta">7기 &#183; A반</span><span class="why">2단 이하 <b>1개 &#8594; 2개</b></span></div>
+          </div>
+          <div class="gridwrap">
+            <div class="gh"><span class="t">회차별 도달 단계</span><span class="s">&#183; 최근 3회차</span><span class="lg">취약 <i style="background:#df6150"></i><i style="background:#ec9a5c"></i><i style="background:#ecc95e"></i><i style="background:#a9cf8e"></i><i style="background:#57b083"></i> 양호 <i class="nn"></i> 문항 없음</span><span class="lk">이 회차 반에서 보기 &#8599;</span></div>
+            <div class="grid"><div class="prj"><div class="pn">미프 1차</div><div class="cells"><span class="gcell l3">3단</span><span class="gcell l3">3단</span><span class="gcell l2">2단</span></div><div class="cnames"><span>REST 설계</span><span>예외 처리</span><span>DTO 분리</span></div></div><div class="prj"><div class="pn">미프 2차</div><div class="cells"><span class="gcell l3">3단</span><span class="gcell l2">2단</span><span class="gcell l4">4단</span></div><div class="cnames"><span>인증 흐름</span><span>트랜잭션</span><span>캐시 전략</span></div></div><div class="prj cur"><div class="pn">미프 3차</div><div class="cells"><span class="gcell l1">1단</span><span class="gcell l2">2단</span><span class="gcell l4">4단</span></div><div class="cnames"><span>HITL Trigger</span><span>Graph 구성</span><span>State 관리</span></div></div></div>
+            <div class="gnote">&#183; <b>회차마다 검증 개념도 과제도 다릅니다.</b> <code>3단 &#8594; 1단</code>은 같은 것이 나빠진 게 아니라 <b>다른 것을 물은 결과</b>일 수 있습니다.</div>
+          </div>
+          <div class="tlbar">
+            <span class="tt">이력</span><span class="tn">이벤트 9건</span>
+            <span class="fils"><span class="fil on">전체</span><span class="fil">세션</span><span class="fil">다시 보기</span><span class="fil">리포트</span><span class="fil">면담</span></span>
+          </div>
+          <div class="tl">
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9662;</span>미프 3차 <span class="rs">&#183; 1팀 &#183; 7/12 &#8211; 7/21</span><span class="rr"><span class="rbadge down">단계 하락</span></span></div>
+            <div class="ev session">
+              <span class="dt">7/12</span><span class="ic">&#9635;</span>
+              <div class="bd">
+                <div class="ti"><b>이해도 확인</b><span class="sub">1단 &#183; 2단 &#183; 4단</span><span class="tg">재진술 2회</span><span class="more">&#9662; 자세히</span></div>
+                <div class="dtl"><div style="margin-bottom:var(--sp-3)"><div class="cpt"><span class="lvb l1">1단</span>HITL Trigger<span class="hint">재진술 2회</span></div><div class="rs2">무엇을 하는 코드인지는 말했지만 <b>왜 사람 확인을 그 자리에 뒀는지</b>는 설명하지 못했습니다. 재진술 2회 후에도 같았어요.</div></div><div style="margin-bottom:var(--sp-3)"><div class="cpt"><span class="lvb l2">2단</span>Graph 구성<span class="hint">자력</span></div><div class="rs2">노드 순서의 이유까지 말했습니다. <b>다른 구성과 비교</b>에서 멈췄어요.</div><div class="cnote">&#9888; 이 개념은 <b>반 절반 이상이 2단 이하</b>라 개인 위험 사유에서 빠집니다(9-6).</div></div><div style="margin-bottom:var(--sp-3)"><div class="cpt"><span class="lvb l4">4단</span>State 관리<span class="hint">자력</span></div><div class="rs2">동시 요청이 들어오면 어디가 깨지는지까지 스스로 말했습니다.</div></div></div>
+              </div>
+            </div>
+            <div class="ev report">
+              <span class="dt">7/15</span><span class="ic">&#9636;</span>
+              <div class="bd">
+                <div class="ti"><b>리포트 발행</b><span class="sub">다시 보기 2건 지정</span></div>
+              </div>
+            </div>
+            <div class="ev retry">
+              <span class="dt">7/18</span><span class="ic">&#8593;</span>
+              <div class="bd">
+                <div class="ti"><b>다시 보기</b><span class="sub">HITL Trigger 1단 &#8594; 2단</span></div>
+              </div>
+            </div>
+            <div class="ev retry dim">
+              <span class="dt">7/18</span><span class="ic">&#8213;</span>
+              <div class="bd">
+                <div class="ti"><b>다시 보기 창 마감</b><span class="sub">Graph 구성 미응시</span><span class="tg">1건</span></div>
+              </div>
+            </div>
+            <div class="ev talk">
+              <span class="dt">7/21</span><span class="ic">&#9998;</span>
+              <div class="bd">
+                <div class="ti"><b>면담</b><span class="sub">구현 시간 부족 &#8594; 다시 보기 창 안내</span><span class="more">&#9662; 기록</span></div>
+                <div class="dtl"><div class="grp3">
+                  <div class="g1"><div class="k">무엇 때문이라고 했나</div><div class="v">과제 3개가 겹쳐 미프에 쓸 시간이 부족했다고 함</div></div>
+                  <div class="g1"><div class="k">어디로 보냈나</div><div class="v">다시 보기 창 안내 &#183; 다음 회차 일정 확인</div></div>
+                  <div class="g1 miss"><div class="k">다음에 할 것</div><div class="v">HITL Trigger 흐름 그려오기 &#8212; 아직 확인 안 됨</div></div>
+                </div></div>
+              </div>
+              <span class="flag">&#9888; 약속 미확인</span>
+            </div>
+          </div>
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9662;</span>미프 2차 <span class="rs">&#183; 3팀 &#183; 6/14 &#8211; 6/22</span><span class="rr"></span></div>
+            <div class="ev session">
+              <span class="dt">6/14</span><span class="ic">&#9635;</span>
+              <div class="bd">
+                <div class="ti"><b>이해도 확인</b><span class="sub">3단 &#183; 2단 &#183; 4단</span><span class="tg">자력</span><span class="more">&#9662; 자세히</span></div>
+              </div>
+            </div>
+            <div class="ev report">
+              <span class="dt">6/17</span><span class="ic">&#9636;</span>
+              <div class="bd">
+                <div class="ti"><b>리포트 발행</b><span class="sub">다시 보기 1건 지정</span></div>
+              </div>
+            </div>
+            <div class="ev retry">
+              <span class="dt">6/20</span><span class="ic">&#8593;</span>
+              <div class="bd">
+                <div class="ti"><b>다시 보기</b><span class="sub">Graph 구성 2단 &#8594; 3단</span></div>
+              </div>
+            </div>
+            <div class="ev talk">
+              <span class="dt">6/22</span><span class="ic">&#9998;</span>
+              <div class="bd">
+                <div class="ti"><b>면담</b><span class="sub">설명&#183;표현 어려움 &#8594; 리포트 다시 읽기</span><span class="more">&#9662; 기록</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9656;</span>미프 1차 <span class="rs">&#183; 2팀 &#183; 5/16 &#8211; 5/22</span><span class="rr"></span></div>
+          </div>          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+    <div class="rpage" id="page-session">
+  <div class="sec-label">&#9313; 세션만 — 회차마다 어디서 멈췄나</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trainees/1042</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교육생 &#8250; 7기 &#8250; A반 &#8250; <b style="color:var(--c-primary)">김민준</b></div><h2>교육생</h2></div>
+          <div class="thead">
+            <div class="l1"><span class="nm">김민준</span><span class="rbadge down">단계 하락</span><span class="meta">7기 &#183; A반</span><span class="why">2단 이하 <b>1개 &#8594; 2개</b></span></div>
+          </div>
+          <div class="gridwrap">
+            <div class="gh"><span class="t">회차별 도달 단계</span><span class="s">&#183; 최근 3회차</span><span class="lg">취약 <i style="background:#df6150"></i><i style="background:#ec9a5c"></i><i style="background:#ecc95e"></i><i style="background:#a9cf8e"></i><i style="background:#57b083"></i> 양호 <i class="nn"></i> 문항 없음</span><span class="lk">이 회차 반에서 보기 &#8599;</span></div>
+            <div class="grid"><div class="prj"><div class="pn">미프 1차</div><div class="cells"><span class="gcell l3">3단</span><span class="gcell l3">3단</span><span class="gcell l2">2단</span></div><div class="cnames"><span>REST 설계</span><span>예외 처리</span><span>DTO 분리</span></div></div><div class="prj"><div class="pn">미프 2차</div><div class="cells"><span class="gcell l3">3단</span><span class="gcell l2">2단</span><span class="gcell l4">4단</span></div><div class="cnames"><span>인증 흐름</span><span>트랜잭션</span><span>캐시 전략</span></div></div><div class="prj cur"><div class="pn">미프 3차</div><div class="cells"><span class="gcell l1">1단</span><span class="gcell l2">2단</span><span class="gcell l4">4단</span></div><div class="cnames"><span>HITL Trigger</span><span>Graph 구성</span><span>State 관리</span></div></div></div>
+            <div class="gnote">&#183; <b>회차마다 검증 개념도 과제도 다릅니다.</b> <code>3단 &#8594; 1단</code>은 같은 것이 나빠진 게 아니라 <b>다른 것을 물은 결과</b>일 수 있습니다.</div>
+          </div>
+          <div class="tlbar">
+            <span class="tt">이력</span><span class="tn">세션 2건</span>
+            <span class="fils"><span class="fil">전체</span><span class="fil on">세션</span><span class="fil">다시 보기</span><span class="fil">리포트</span><span class="fil">면담</span></span>
+          </div>
+          <div class="tl">
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9662;</span>미프 3차 <span class="rs">&#183; 1팀 &#183; 7/12 &#8211; 7/21</span><span class="rr"><span class="rbadge down">단계 하락</span></span></div>
+            <div class="ev session">
+              <span class="dt">7/12</span><span class="ic">&#9635;</span>
+              <div class="bd">
+                <div class="ti"><b>이해도 확인</b><span class="sub">1단 &#183; 2단 &#183; 4단</span><span class="tg">재진술 2회</span><span class="more">&#9662; 자세히</span></div>
+                <div class="dtl"><div style="margin-bottom:var(--sp-3)"><div class="cpt"><span class="lvb l1">1단</span>HITL Trigger<span class="hint">재진술 2회</span></div><div class="rs2">무엇을 하는 코드인지는 말했지만 <b>왜 사람 확인을 그 자리에 뒀는지</b>는 설명하지 못했습니다. 재진술 2회 후에도 같았어요.</div></div><div style="margin-bottom:var(--sp-3)"><div class="cpt"><span class="lvb l2">2단</span>Graph 구성<span class="hint">자력</span></div><div class="rs2">노드 순서의 이유까지 말했습니다. <b>다른 구성과 비교</b>에서 멈췄어요.</div><div class="cnote">&#9888; 이 개념은 <b>반 절반 이상이 2단 이하</b>라 개인 위험 사유에서 빠집니다(9-6).</div></div><div style="margin-bottom:var(--sp-3)"><div class="cpt"><span class="lvb l4">4단</span>State 관리<span class="hint">자력</span></div><div class="rs2">동시 요청이 들어오면 어디가 깨지는지까지 스스로 말했습니다.</div></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9662;</span>미프 2차 <span class="rs">&#183; 3팀 &#183; 6/14 &#8211; 6/22</span><span class="rr"></span></div>
+            <div class="ev session">
+              <span class="dt">6/14</span><span class="ic">&#9635;</span>
+              <div class="bd">
+                <div class="ti"><b>이해도 확인</b><span class="sub">3단 &#183; 2단 &#183; 4단</span><span class="tg">자력</span><span class="more">&#9662; 자세히</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9656;</span>미프 1차 <span class="rs">&#183; 2팀 &#183; 5/16 &#8211; 5/22</span><span class="rr"></span></div>
+          </div>          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-retry">
+  <div class="sec-label">&#9314; 다시 보기만 — 회복인가 미응시인가</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trainees/1042</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교육생 &#8250; 7기 &#8250; A반 &#8250; <b style="color:var(--c-primary)">김민준</b></div><h2>교육생</h2></div>
+          <div class="thead">
+            <div class="l1"><span class="nm">김민준</span><span class="rbadge down">단계 하락</span><span class="meta">7기 &#183; A반</span><span class="why">2단 이하 <b>1개 &#8594; 2개</b></span></div>
+          </div>
+          <div class="gridwrap">
+            <div class="gh"><span class="t">회차별 도달 단계</span><span class="s">&#183; 최근 3회차</span><span class="lg">취약 <i style="background:#df6150"></i><i style="background:#ec9a5c"></i><i style="background:#ecc95e"></i><i style="background:#a9cf8e"></i><i style="background:#57b083"></i> 양호 <i class="nn"></i> 문항 없음</span><span class="lk">이 회차 반에서 보기 &#8599;</span></div>
+            <div class="grid"><div class="prj"><div class="pn">미프 1차</div><div class="cells"><span class="gcell l3">3단</span><span class="gcell l3">3단</span><span class="gcell l2">2단</span></div><div class="cnames"><span>REST 설계</span><span>예외 처리</span><span>DTO 분리</span></div></div><div class="prj"><div class="pn">미프 2차</div><div class="cells"><span class="gcell l3">3단</span><span class="gcell l2">2단</span><span class="gcell l4">4단</span></div><div class="cnames"><span>인증 흐름</span><span>트랜잭션</span><span>캐시 전략</span></div></div><div class="prj cur"><div class="pn">미프 3차</div><div class="cells"><span class="gcell l1">1단</span><span class="gcell l2">2단</span><span class="gcell l4">4단</span></div><div class="cnames"><span>HITL Trigger</span><span>Graph 구성</span><span>State 관리</span></div></div></div>
+            <div class="gnote">&#183; <b>회차마다 검증 개념도 과제도 다릅니다.</b> <code>3단 &#8594; 1단</code>은 같은 것이 나빠진 게 아니라 <b>다른 것을 물은 결과</b>일 수 있습니다.</div>
+          </div>
+          <div class="tlbar">
+            <span class="tt">이력</span><span class="tn">다시 보기 3건</span>
+            <span class="fils"><span class="fil">전체</span><span class="fil">세션</span><span class="fil on">다시 보기</span><span class="fil">리포트</span><span class="fil">면담</span></span>
+          </div>
+          <div class="tl">
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9662;</span>미프 3차 <span class="rs">&#183; 1팀 &#183; 7/12 &#8211; 7/21</span><span class="rr"><span class="rbadge down">단계 하락</span></span></div>
+            <div class="ev retry">
+              <span class="dt">7/18</span><span class="ic">&#8593;</span>
+              <div class="bd">
+                <div class="ti"><b>다시 보기</b><span class="sub">HITL Trigger 1단 &#8594; 2단</span></div>
+              </div>
+            </div>
+            <div class="ev retry dim">
+              <span class="dt">7/18</span><span class="ic">&#8213;</span>
+              <div class="bd">
+                <div class="ti"><b>다시 보기 창 마감</b><span class="sub">Graph 구성 미응시</span><span class="tg">1건</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9662;</span>미프 2차 <span class="rs">&#183; 3팀 &#183; 6/14 &#8211; 6/22</span><span class="rr"></span></div>
+            <div class="ev retry">
+              <span class="dt">6/20</span><span class="ic">&#8593;</span>
+              <div class="bd">
+                <div class="ti"><b>다시 보기</b><span class="sub">Graph 구성 2단 &#8594; 3단</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9656;</span>미프 1차 <span class="rs">&#183; 2팀 &#183; 5/16 &#8211; 5/22</span><span class="rr"></span></div>
+          </div>          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-report">
+  <div class="sec-label">&#9315; 리포트만 — 언제 발행됐고 몇 건 지정됐나</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trainees/1042</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교육생 &#8250; 7기 &#8250; A반 &#8250; <b style="color:var(--c-primary)">김민준</b></div><h2>교육생</h2></div>
+          <div class="thead">
+            <div class="l1"><span class="nm">김민준</span><span class="rbadge down">단계 하락</span><span class="meta">7기 &#183; A반</span><span class="why">2단 이하 <b>1개 &#8594; 2개</b></span></div>
+          </div>
+          <div class="gridwrap">
+            <div class="gh"><span class="t">회차별 도달 단계</span><span class="s">&#183; 최근 3회차</span><span class="lg">취약 <i style="background:#df6150"></i><i style="background:#ec9a5c"></i><i style="background:#ecc95e"></i><i style="background:#a9cf8e"></i><i style="background:#57b083"></i> 양호 <i class="nn"></i> 문항 없음</span><span class="lk">이 회차 반에서 보기 &#8599;</span></div>
+            <div class="grid"><div class="prj"><div class="pn">미프 1차</div><div class="cells"><span class="gcell l3">3단</span><span class="gcell l3">3단</span><span class="gcell l2">2단</span></div><div class="cnames"><span>REST 설계</span><span>예외 처리</span><span>DTO 분리</span></div></div><div class="prj"><div class="pn">미프 2차</div><div class="cells"><span class="gcell l3">3단</span><span class="gcell l2">2단</span><span class="gcell l4">4단</span></div><div class="cnames"><span>인증 흐름</span><span>트랜잭션</span><span>캐시 전략</span></div></div><div class="prj cur"><div class="pn">미프 3차</div><div class="cells"><span class="gcell l1">1단</span><span class="gcell l2">2단</span><span class="gcell l4">4단</span></div><div class="cnames"><span>HITL Trigger</span><span>Graph 구성</span><span>State 관리</span></div></div></div>
+            <div class="gnote">&#183; <b>회차마다 검증 개념도 과제도 다릅니다.</b> <code>3단 &#8594; 1단</code>은 같은 것이 나빠진 게 아니라 <b>다른 것을 물은 결과</b>일 수 있습니다.</div>
+          </div>
+          <div class="tlbar">
+            <span class="tt">이력</span><span class="tn">리포트 2건</span>
+            <span class="fils"><span class="fil">전체</span><span class="fil">세션</span><span class="fil">다시 보기</span><span class="fil on">리포트</span><span class="fil">면담</span></span>
+          </div>
+          <div class="tl">
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9662;</span>미프 3차 <span class="rs">&#183; 1팀 &#183; 7/12 &#8211; 7/21</span><span class="rr"><span class="rbadge down">단계 하락</span></span></div>
+            <div class="ev report">
+              <span class="dt">7/15</span><span class="ic">&#9636;</span>
+              <div class="bd">
+                <div class="ti"><b>리포트 발행</b><span class="sub">다시 보기 2건 지정</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9662;</span>미프 2차 <span class="rs">&#183; 3팀 &#183; 6/14 &#8211; 6/22</span><span class="rr"></span></div>
+            <div class="ev report">
+              <span class="dt">6/17</span><span class="ic">&#9636;</span>
+              <div class="bd">
+                <div class="ti"><b>리포트 발행</b><span class="sub">다시 보기 1건 지정</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9656;</span>미프 1차 <span class="rs">&#183; 2팀 &#183; 5/16 &#8211; 5/22</span><span class="rr"></span></div>
+          </div>          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-talk">
+  <div class="sec-label">&#9316; 면담만 — 지난번에 뭐라고 했나</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trainees/1042</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교육생 &#8250; 7기 &#8250; A반 &#8250; <b style="color:var(--c-primary)">김민준</b></div><h2>교육생</h2></div>
+          <div class="thead">
+            <div class="l1"><span class="nm">김민준</span><span class="rbadge down">단계 하락</span><span class="meta">7기 &#183; A반</span><span class="why">2단 이하 <b>1개 &#8594; 2개</b></span></div>
+          </div>
+          <div class="gridwrap">
+            <div class="gh"><span class="t">회차별 도달 단계</span><span class="s">&#183; 최근 3회차</span><span class="lg">취약 <i style="background:#df6150"></i><i style="background:#ec9a5c"></i><i style="background:#ecc95e"></i><i style="background:#a9cf8e"></i><i style="background:#57b083"></i> 양호 <i class="nn"></i> 문항 없음</span><span class="lk">이 회차 반에서 보기 &#8599;</span></div>
+            <div class="grid"><div class="prj"><div class="pn">미프 1차</div><div class="cells"><span class="gcell l3">3단</span><span class="gcell l3">3단</span><span class="gcell l2">2단</span></div><div class="cnames"><span>REST 설계</span><span>예외 처리</span><span>DTO 분리</span></div></div><div class="prj"><div class="pn">미프 2차</div><div class="cells"><span class="gcell l3">3단</span><span class="gcell l2">2단</span><span class="gcell l4">4단</span></div><div class="cnames"><span>인증 흐름</span><span>트랜잭션</span><span>캐시 전략</span></div></div><div class="prj cur"><div class="pn">미프 3차</div><div class="cells"><span class="gcell l1">1단</span><span class="gcell l2">2단</span><span class="gcell l4">4단</span></div><div class="cnames"><span>HITL Trigger</span><span>Graph 구성</span><span>State 관리</span></div></div></div>
+            <div class="gnote">&#183; <b>회차마다 검증 개념도 과제도 다릅니다.</b> <code>3단 &#8594; 1단</code>은 같은 것이 나빠진 게 아니라 <b>다른 것을 물은 결과</b>일 수 있습니다.</div>
+          </div>
+          <div class="tlbar">
+            <span class="tt">이력</span><span class="tn">면담 2건</span>
+            <span class="fils"><span class="fil">전체</span><span class="fil">세션</span><span class="fil">다시 보기</span><span class="fil">리포트</span><span class="fil on">면담</span></span>
+          </div>
+          <div class="tl">
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9662;</span>미프 3차 <span class="rs">&#183; 1팀 &#183; 7/12 &#8211; 7/21</span><span class="rr"><span class="rbadge down">단계 하락</span></span></div>
+            <div class="ev talk">
+              <span class="dt">7/21</span><span class="ic">&#9998;</span>
+              <div class="bd">
+                <div class="ti"><b>면담</b><span class="sub">구현 시간 부족 &#8594; 다시 보기 창 안내</span><span class="more">&#9662; 기록</span></div>
+                <div class="dtl"><div class="grp3">
+                  <div class="g1"><div class="k">무엇 때문이라고 했나</div><div class="v">과제 3개가 겹쳐 미프에 쓸 시간이 부족했다고 함</div></div>
+                  <div class="g1"><div class="k">어디로 보냈나</div><div class="v">다시 보기 창 안내 &#183; 다음 회차 일정 확인</div></div>
+                  <div class="g1 miss"><div class="k">다음에 할 것</div><div class="v">HITL Trigger 흐름 그려오기 &#8212; 아직 확인 안 됨</div></div>
+                </div></div>
+              </div>
+              <span class="flag">&#9888; 약속 미확인</span>
+            </div>
+          </div>
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9662;</span>미프 2차 <span class="rs">&#183; 3팀 &#183; 6/14 &#8211; 6/22</span><span class="rr"></span></div>
+            <div class="ev talk">
+              <span class="dt">6/22</span><span class="ic">&#9998;</span>
+              <div class="bd">
+                <div class="ti"><b>면담</b><span class="sub">설명&#183;표현 어려움 &#8594; 리포트 다시 읽기</span><span class="more">&#9662; 기록</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9656;</span>미프 1차 <span class="rs">&#183; 2팀 &#183; 5/16 &#8211; 5/22</span><span class="rr"></span></div>
+          </div>          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-low">
+  <div class="sec-label">&#9317; 지속 저점</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trainees/1042</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교육생 &#8250; 7기 &#8250; A반 &#8250; <b style="color:var(--c-primary)">이서준</b></div><h2>교육생</h2></div>
+          <div class="thead">
+            <div class="l1"><span class="nm">이서준</span><span class="rbadge low">지속 저점</span><span class="meta">7기 &#183; A반</span><span class="why">2회 연속 2단 이하 <b>2개 이상</b></span></div>
+          </div>
+          <div class="gridwrap">
+            <div class="gh"><span class="t">회차별 도달 단계</span><span class="s">&#183; 최근 3회차</span><span class="lg">취약 <i style="background:#df6150"></i><i style="background:#ec9a5c"></i><i style="background:#ecc95e"></i><i style="background:#a9cf8e"></i><i style="background:#57b083"></i> 양호 <i class="nn"></i> 문항 없음</span><span class="lk">이 회차 반에서 보기 &#8599;</span></div>
+            <div class="grid"><div class="prj"><div class="pn">미프 1차</div><div class="cells"><span class="gcell l2">2단</span><span class="gcell l2">2단</span><span class="gcell l1">1단</span></div><div class="cnames"><span>REST 설계</span><span>예외 처리</span><span>DTO 분리</span></div></div><div class="prj"><div class="pn">미프 2차</div><div class="cells"><span class="gcell l2">2단</span><span class="gcell l1">1단</span><span class="gcell l2">2단</span></div><div class="cnames"><span>인증 흐름</span><span>트랜잭션</span><span>캐시 전략</span></div></div><div class="prj cur"><div class="pn">미프 3차</div><div class="cells"><span class="gcell l2">2단</span><span class="gcell l2">2단</span><span class="gcell na">&#8213;</span></div><div class="cnames"><span>HITL Trigger</span><span>Graph 구성</span><span>State 관리</span></div></div></div>
+            <div class="gnote">&#183; <b>State 관리는 코드에 그 개념이 없어 묻지 못했습니다</b> &#8212; 못한 것과 다릅니다.</div>
+          </div>
+          <div class="tlbar">
+            <span class="tt">이력</span><span class="tn">이벤트 6건</span>
+            <span class="fils"><span class="fil on">전체</span><span class="fil">세션</span><span class="fil">다시 보기</span><span class="fil">리포트</span><span class="fil">면담</span></span>
+          </div>
+          <div class="tl">
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9662;</span>미프 3차 <span class="rs">&#183; 1팀 &#183; 7/12 &#8211; 7/26</span><span class="rr"><span class="rbadge low">지속 저점</span></span></div>
+            <div class="ev session">
+              <span class="dt">7/12</span><span class="ic">&#9635;</span>
+              <div class="bd">
+                <div class="ti"><b>이해도 확인</b><span class="sub">2단 &#183; 2단 &#183; &#8213;</span><span class="tg">재진술 2회</span><span class="more">&#9662; 자세히</span></div>
+              </div>
+            </div>
+            <div class="ev report">
+              <span class="dt">7/15</span><span class="ic">&#9636;</span>
+              <div class="bd">
+                <div class="ti"><b>리포트 발행</b><span class="sub">다시 보기 2건 지정</span></div>
+              </div>
+            </div>
+            <div class="ev retry">
+              <span class="dt">7/19</span><span class="ic">&#8213;</span>
+              <div class="bd">
+                <div class="ti"><b>다시 보기</b><span class="sub">두 건 모두 2단 유지</span><span class="tg">변화 없음</span></div>
+              </div>
+            </div>
+            <div class="ev talk">
+              <span class="dt">7/26</span><span class="ic">&#9998;</span>
+              <div class="bd">
+                <div class="ti"><b>면담</b><span class="sub">설명&#183;표현 어려움 &#8594; 리포트 다시 읽기</span><span class="more">&#9662; 기록</span></div>
+                <div class="dtl"><div class="grp3">
+                  <div class="g1"><div class="k">무엇 때문이라고 했나</div><div class="v">과제 3개가 겹쳐 미프에 쓸 시간이 부족했다고 함</div></div>
+                  <div class="g1"><div class="k">어디로 보냈나</div><div class="v">다시 보기 창 안내 &#183; 다음 회차 일정 확인</div></div>
+                  <div class="g1"><div class="k">다음에 할 것</div><div class="v">HITL Trigger 흐름 그려오기 &#8212; 7/26 확인</div></div>
+                </div></div>
+              </div>
+            </div>
+          </div>
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9662;</span>미프 2차 <span class="rs">&#183; 4팀 &#183; 6/14 &#8211; 6/22</span><span class="rr"><span class="rbadge low">지속 저점</span></span></div>
+            <div class="ev session">
+              <span class="dt">6/14</span><span class="ic">&#9635;</span>
+              <div class="bd">
+                <div class="ti"><b>이해도 확인</b><span class="sub">2단 &#183; 1단 &#183; 2단</span></div>
+              </div>
+            </div>
+            <div class="ev talk">
+              <span class="dt">6/22</span><span class="ic">&#9998;</span>
+              <div class="bd">
+                <div class="ti"><b>면담</b><span class="sub">팀 의존 &#8594; 다음 팀 편성 시 고려</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9656;</span>미프 1차 <span class="rs">&#183; 2팀 &#183; 5/16 &#8211; 5/22</span><span class="rr"></span></div>
+          </div>          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-ok">
+  <div class="sec-label">&#9318; 위험 없음 — 배지도 약속 줄도 없다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trainees/1042</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교육생 &#8250; 7기 &#8250; A반 &#8250; <b style="color:var(--c-primary)">정하늘</b></div><h2>교육생</h2></div>
+          <div class="thead">
+            <div class="l1"><span class="nm">정하늘</span><span class="meta">7기 &#183; A반</span><span class="why">2단 이하 <b>1개</b> &#8212; 위험 유형 없음</span></div>
+          </div>
+          <div class="gridwrap">
+            <div class="gh"><span class="t">회차별 도달 단계</span><span class="s">&#183; 최근 3회차</span><span class="lg">취약 <i style="background:#df6150"></i><i style="background:#ec9a5c"></i><i style="background:#ecc95e"></i><i style="background:#a9cf8e"></i><i style="background:#57b083"></i> 양호 <i class="nn"></i> 문항 없음</span><span class="lk">이 회차 반에서 보기 &#8599;</span></div>
+            <div class="grid"><div class="prj"><div class="pn">미프 1차</div><div class="cells"><span class="gcell l4">4단</span><span class="gcell l3">3단</span><span class="gcell l4">4단</span></div><div class="cnames"><span>REST 설계</span><span>예외 처리</span><span>DTO 분리</span></div></div><div class="prj"><div class="pn">미프 2차</div><div class="cells"><span class="gcell l4">4단</span><span class="gcell l4">4단</span><span class="gcell l3">3단</span></div><div class="cnames"><span>인증 흐름</span><span>트랜잭션</span><span>캐시 전략</span></div></div><div class="prj cur"><div class="pn">미프 3차</div><div class="cells"><span class="gcell l4">4단</span><span class="gcell l2">2단</span><span class="gcell na">&#8213;</span></div><div class="cnames"><span>HITL Trigger</span><span>Graph 구성</span><span>State 관리</span></div></div></div>
+            <div class="gnote">&#183; <b>2단 이하가 1개면 그 개념만 다시 보기</b>이고 위험 유형은 붙지 않습니다(9-2).</div>
+          </div>
+          <div class="tlbar">
+            <span class="tt">이력</span><span class="tn">이벤트 2건</span>
+            <span class="fils"><span class="fil on">전체</span><span class="fil">세션</span><span class="fil">다시 보기</span><span class="fil">리포트</span><span class="fil">면담</span></span>
+          </div>
+          <div class="tl">
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9662;</span>미프 3차 <span class="rs">&#183; 1팀 &#183; 7/12 &#8211; 7/15</span><span class="rr"></span></div>
+            <div class="ev session">
+              <span class="dt">7/12</span><span class="ic">&#9635;</span>
+              <div class="bd">
+                <div class="ti"><b>이해도 확인</b><span class="sub">4단 &#183; 2단 &#183; &#8213;</span><span class="tg">자력</span><span class="more">&#9662; 자세히</span></div>
+              </div>
+            </div>
+            <div class="ev report">
+              <span class="dt">7/15</span><span class="ic">&#9636;</span>
+              <div class="bd">
+                <div class="ti"><b>리포트 발행</b><span class="sub">Graph 구성 다시 보기 1건 지정</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="rnd">
+            <div class="rh"><span class="cv">&#9656;</span>미프 2차 <span class="rs">&#183; 2팀 &#183; 6/14 &#8211; 6/17</span><span class="rr"></span></div>
+          </div>          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-empty">
+  <div class="sec-label">&#9319; 상태 · 아직 기록이 없는 사람</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/trainees/1042</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9678;</span>교육생</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">교육생 &#8250; 7기 &#8250; B반 &#8250; <b style="color:var(--c-primary)">한지우</b></div><h2>교육생</h2></div>
+          <div class="thead">
+            <div class="l1"><span class="nm">한지우</span><span class="meta">7기 &#183; B반</span></div>
+          </div>
+          <div class="gridwrap">
+            <div class="gh"><span class="t">회차별 도달 단계</span><span class="s">&#183; 최근 3회차</span></div>
+            <div class="gnone">아직 응시한 회차가 없습니다 &#8212; 이해도 확인이 끝나면 여기에 쌓입니다.</div>
+          </div>
+          <div class="tlbar">
+            <span class="tt">이력</span><span class="tn">이벤트 0건</span>
+            <span class="fils"><span class="fil on">전체</span><span class="fil">세션</span><span class="fil">다시 보기</span><span class="fil">리포트</span><span class="fil">면담</span></span>
+          </div>
+          <div class="empty wait"><div class="t">아직 기록이 없어요</div><div class="s">이해도 확인&#183;다시 보기&#183;면담이 생기면 여기에 시간 순으로 쌓입니다.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+</div>
+<script>
+  var PAGE = { cases:"page-cases", main:"page-main", session:"page-session", retry:"page-retry",
+               report:"page-report", talk:"page-talk",
+               low:"page-low", ok:"page-ok", empty:"page-empty" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "main";
+    var id = PAGE[h] || "page-main";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+
+  // 목업 = 1920x1080 실화면. 보이는 폭에 맞춰 배율만 조절해 비율을 지킨다
+  function fitScreen(){
+    var p = document.querySelector(".page");
+    if(!p) return;
+    var cs = getComputedStyle(p);
+    var w = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if(w > 0) document.documentElement.style.setProperty("--k", w / 1920);
+  }
+  window.addEventListener("resize", fitScreen);
+  window.addEventListener("load", fitScreen);
+  fitScreen();
+</script>
+</body>
+</html>

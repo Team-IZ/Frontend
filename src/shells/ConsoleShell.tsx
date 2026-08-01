@@ -15,6 +15,10 @@ import { SIDEBAR_BY_ROLE, type Role } from './sidebarConfig'
   값을 넘겨도 무시한다 — role이 스코프 유무를 결정하지, prop이 있고 없고로
   화면마다 다르게 조립하지 않는다.
 
+  user·cohort 기본값 — 인증이 없는 지금은 화면 25개 전부 같은 자리값을 쓴다.
+  기본값이 없으면 화면 파일마다 똑같은 자리값을 반복해서 넘겨야 하고,
+  인증이 붙을 때 25곳을 고쳐야 한다. 여기 한 곳만 실제 세션으로 바꾸면 된다.
+
   높이 — 목업은 `.app{height:var(--screen-h)}` + `.content{overflow:hidden}`이다.
   헤더·사이드바가 뷰포트 밖으로 스크롤되지 않고, 내용이 길면 콘텐츠 영역
   **안에서만** 스크롤된다. `min-h-svh`(최소 높이)를 쓰면 내용이 길어질 때 문서
@@ -28,15 +32,22 @@ import { SIDEBAR_BY_ROLE, type Role } from './sidebarConfig'
   — 실제 모바일 IA를 정하는 별도 설계가 필요하다.
 */
 const COHORT_SCOPED_ROLES: Role[] = ['operator', 'manager']
+const PLACEHOLDER_USER = { name: '김도현', role: '역할' }
+const PLACEHOLDER_COHORT = '7기'
 
 type Props = {
   role: Role
-  user: { name: string; role: string }
+  user?: { name: string; role: string }
   cohort?: string
   children: ReactNode
 }
 
-export default function ConsoleShell({ role, user, cohort, children }: Props) {
+export default function ConsoleShell({
+  role,
+  user = PLACEHOLDER_USER,
+  cohort = PLACEHOLDER_COHORT,
+  children,
+}: Props) {
   const sidebar = SIDEBAR_BY_ROLE[role]
   const scope =
     COHORT_SCOPED_ROLES.includes(role) && cohort ? { label: '기수', value: cohort } : undefined

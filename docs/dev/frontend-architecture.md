@@ -45,23 +45,24 @@ src/
 │                        (전역 프로바이더가 둘 이상 되면 providers.tsx를 만든다.
 │                         지금은 RouterProvider 하나뿐이라 main.tsx에 있다)
 │
-├─ shells/               레이아웃 셸 — 화면의 뼈대  (아래 파일은 설계, 아직 없음)
-│  ├─ ManagerShell.tsx   topbar + 좌측 nav + 기수 선택기 + content
-│  ├─ AuthShell.tsx      좌 브랜드 패널 + 우 폼 (2단 분할)
-│  ├─ TraineeShell.tsx   상단 링크 + 중앙 컬럼
-│  ├─ SuperadminShell.tsx
-│  └─ SessionShell.tsx   크롬 최소화 집중 셸
+├─ shells/               레이아웃 셸 — 4역할 공용, ConsoleShell 하나뿐이다
+│  ├─ ConsoleShell.tsx   Header + Sidebar + content, role prop으로 조립
+│  ├─ Header.tsx         브랜드 + 스코프 선택기 + 사용자
+│  ├─ Sidebar.tsx        좌측 메뉴 — role별 항목은 sidebarConfig.ts가 갖는다
+│  └─ sidebarConfig.ts   역할별 사이드바 항목 · Role 타입
+│                        (역할별 래퍼 파일을 따로 두지 않는다 — 넷 다 "어떤
+│                         사이드바를 넣을까"만 다른 얇은 래퍼였다. AU 화면은
+│                         로그인 전이라 셸이 없다)
 │
 ├─ components/
 │  ├─ ui/                shadcn 프리미티브 — CLI가 쓰는 고정 경로
-│  └─ common/            팀 공용 조합 (도메인을 모른다)
+│  └─ common/             팀 공용 조합 (도메인을 모른다, 예: Wordmark)
 │
 ├─ features/             도메인별 — ★ 작업 분할선
-│  └─ {도메인}/          ← 이 형태로 만든다
-│     ├─ {X}Screen.tsx   화면
-│     ├─ components/     그 도메인에서만 쓰는 조각
-│     ├─ api.ts          그 도메인의 API 호출
-│     └─ routes.tsx      그 도메인의 라우트 정의
+│  └─ {역할}/{화면}/     docs/plan/v2/wireframe/{역할}/{화면}.html과 1:1
+│     ├─ {X}Screen.tsx   화면 컴포넌트만
+│     ├─ {X}Screen.route.tsx  그 화면의 `route` export(§4) — 도메인 routes.tsx는 없다
+│     └─ components/     그 도메인에서만 쓰는 조각
 │
 ├─ api/                  HTTP 클라이언트 · 공통 응답 타입
 ├─ mocks/                MSW 핸들러
@@ -112,19 +113,45 @@ src/components/**, lib/  →  @/features/*, @/stores/*  import 금지
 
 ## 4. 라우팅 — 충돌 지점을 없앤다
 
-지금은 화면을 추가하려면 `App.tsx`를 고쳐야 한다. **두 사람의 유일한 충돌 파일**이다.
-
-각 도메인이 자기 라우트를 내보내고, `app/routes.tsx`는 합치기만 한다.
+각 화면이 자기 라우트를 **옆 파일**(`{X}Screen.route.tsx`)에 `route` export로
+갖는다. 도메인 단위 `routes.tsx`도, 화면 파일 안에 같이 두는 것도 아니다.
 
 ```tsx
-// features/curriculum/routes.tsx
-export const curriculumRoutes = [{ path: 'curriculum', element: <CurriculumScreen /> }]
+// features/manager/curriculum/CurriculumScreen.tsx — 컴포넌트만
+export default function CurriculumScreen() { ... }
 
-// app/routes.tsx — 도메인 추가 시 여기서 두 줄만 바뀐다
-import { curriculumRoutes } from '@/features/curriculum/routes'
+// features/manager/curriculum/CurriculumScreen.route.tsx — 그 옆에
+import CurriculumScreen from './CurriculumScreen'
+export const route: RouteObject = { path: '/manager/curriculum', element: <CurriculumScreen /> }
 ```
 
-충돌이 완전히 사라지지는 않지만 **한 줄로 줄어들어** 자동 병합된다.
+두 가지를 다 시도했다가 이 형태로 왔다.
+
+- **도메인당 `routes.tsx` 하나** — 화면 폴더에 화면이 2개면(면담 목록+브리프,
+  프로젝트 목록+상세 등) 그 파일을 나눠 가져야 했다. 애초에 화면마다 폴더를
+  쪼갠 이유(작업이 겹치지 않게)가 여기서 다시 깨진다.
+- **화면 파일 안에 `route`를 같이 export** — 컴포넌트 export와 값 export가
+  한 파일에 있으면 React Fast Refresh가 그 파일에 상태 보존 핫리로드를 못
+  한다(`react/only-export-components`). 화면이 폼·타이머처럼 실제 상태를
+  갖기 시작하면, 저장할 때마다 그 상태가 날아가는 게 반복적으로 걸린다.
+
+옆 파일로 쪼개면 둘 다 안 생긴다 — 화면마다 파일이 여전히 독립적이고
+(공유하는 파일이 없다), `{X}Screen.tsx`는 컴포넌트만 export해서 Fast
+Refresh가 정상 동작한다.
+
+`app/routes.tsx`는 이 파일들을 손으로 import하지 않는다.
+`import.meta.glob('/src/features/**/*.route.tsx', { eager: true })`로 폴더를
+훑어 `route`만 모은다 — Vite 빌드타임에 정적으로 분석되는 네이티브 기능이라
+런타임 매직이 아니다. **새 화면을 추가해도 `app/routes.tsx`는 한 글자도 안
+바뀐다.**
+
+> **한 단계 더 모으지 않는다.** "역할 폴더마다 routes.ts로 한 번 더 모아서
+> 루트는 그것만 5개 import하면 어떤가"는 성능상 이득이 없다(어차피
+> `eager: true`라 전부 같은 번들에 정적으로 들어간다 — 모으는 단계가 하나
+> 늘어도 앱 부팅 시 배열 20여 개를 도는 마이크로초 단위 차이일 뿐이다).
+> 오히려 그 역할 폴더 `routes.ts` 하나를 여러 화면 담당자가 같이 고쳐야 해서
+> **원래 없애려던 충돌이 다시 생긴다.** 파일 수가 늘어나는 게 이 구조의
+> 목적이다 — 루트에서 한 단계로 바로 모은다.
 
 **미등록 경로는 로그인으로 조용히 보내지 않는다.** 그러면 "라우트를 등록하지 않은 것"과 "코드가 틀린 것"을 구분할 수 없다. 등록되지 않은 경로는 URL을 유지한 채 원인을 알려준다. 인증이 붙으면 미로그인 사용자용 리다이렉트로 바뀐다.
 

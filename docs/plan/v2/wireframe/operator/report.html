@@ -1,0 +1,884 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OP-05 · 리포트 — 와이어프레임</title>
+<style>
+
+
+  :root{
+    /* 본문 기본 상한 — 1920에서 표·목록이 늘어지는 것을 막는다.
+       1512에서는 가용폭 1264px이라 걸리지 않고, 넓은 화면만 잡힌다(=Tailwind max-w-7xl) */
+    --w-app:1280px;
+    --screen-w:1920px; --screen-h:1080px; --k:.6625;
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-nav:#1e2436; --c-nav-2:#2a3147; --c-nav-text:#aeb4c6;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{width:var(--screen-w);zoom:var(--k);border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  .app{display:flex;flex-direction:column;height:var(--screen-h)}
+  .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
+  .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700}
+  .topbar .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .cohortsel{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:5px var(--sp-3);font-size:var(--fs-sm);background:var(--c-surface-2)}
+  .cohortsel .k{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+
+  .body{display:flex;flex:1;min-height:0}
+  .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
+  .nav .grp{padding-top:var(--sp-2);margin-top:var(--sp-2);border-top:1px solid var(--c-nav-2)}
+  .nav .grp:first-child{padding-top:0;margin-top:0;border-top:0}
+  .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
+  .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
+  .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-6);min-width:0;min-height:0;overflow:hidden}
+  /* 상한은 .content 자신이 아니라 자식에 건다 — .content가 배경을 계속 꽉 채워야 이음선이 안 생긴다 */
+  .content > *{max-width:var(--w-app);margin-left:auto;margin-right:auto}
+  .phead{margin-bottom:var(--sp-4)}
+  .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
+
+  .lhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--sp-4)}
+  .lhead .ttl{font-size:var(--fs-lg);font-weight:700;display:flex;align-items:baseline;gap:var(--sp-2)}
+  .lhead .ttl .cnt{font-size:var(--fs-xs);font-weight:600;color:var(--c-text-3)}
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-xs);cursor:pointer;padding:8px 13px}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong)}
+  .btn.off{background:#e8eaee;color:var(--c-text-3);cursor:not-allowed}
+
+  .ltool{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3);flex-wrap:wrap}
+  .ltool .search{flex:0 0 240px;border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-3);background:var(--c-surface-2)}
+  .ltool .fil{border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);cursor:pointer}
+  .ltool .fil .k{color:var(--c-text-3)}
+
+  .card{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .dtbl{width:100%;border-collapse:collapse;font-size:var(--fs-sm)}
+  .dtbl th{text-align:left;padding:11px var(--sp-4);font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-weight:600;white-space:nowrap}
+  .dtbl td{padding:12px var(--sp-4);border-bottom:1px solid var(--c-border);vertical-align:middle}
+  .dtbl tr:last-child td{border-bottom:0}
+  .dtbl tr.click{cursor:pointer}
+  .dtbl tr.click:hover{background:var(--c-surface-2)}
+  .dtbl .name b{font-weight:700}
+  .dtbl .sub{font-size:11px;color:var(--c-text-3);margin-top:2px}
+  .dtbl .date{color:var(--c-text-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .dtbl .num{font-variant-numeric:tabular-nums}
+
+  .st{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .st .dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+  .st.run{background:var(--c-info-soft);color:var(--c-info)} .st.run .dot{background:var(--c-info)}
+  .st.plan{background:#eef0f3;color:var(--c-text-2)} .st.plan .dot{background:var(--c-text-3)}
+  .st.done{background:var(--c-success-soft);color:var(--c-success)} .st.done .dot{background:var(--c-success)}
+  .st.warn{background:var(--c-warning-soft);color:var(--c-warning)} .st.warn .dot{background:var(--c-warning)}
+
+  .kchip{display:inline-block;font-size:11px;font-weight:600;color:var(--c-text-2);background:var(--c-surface-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:2px 9px;margin:1px 2px 1px 0}
+  .kmiss{font-size:11px;font-weight:600;color:var(--c-warning)}
+  .na{color:var(--c-text-3)}
+
+  /* 표 푸터 표준 — 범위개수(좌) + 페이저(중앙). 페이지가 하나면 화살표를 넣지 않는다 */
+  .tablefoot{display:flex;align-items:center;margin-top:var(--sp-4)}
+  .tablefoot .range{flex:1;font-size:var(--fs-xs);color:var(--c-text-3);white-space:nowrap}
+  .tablefoot .rspace{flex:1}
+  .pages{display:flex;gap:4px;justify-content:center}
+  .pg{min-width:32px;height:32px;padding:0 6px;border:1px solid var(--c-border);border-radius:var(--r-sm);display:inline-flex;align-items:center;justify-content:center;background:#fff;font-size:var(--fs-sm);color:var(--c-text-2);cursor:pointer}
+  .pg.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary);font-weight:600}
+
+
+    /* ===== OP-05 · 리포트 — 문서 2종 =====
+     수업 진단(미프 후) · 기수 결산(빅프 후). 재는 대상도 발행 시점도 다르다.
+     화면 안에는 값·라벨·범례·분모만 둔다. 설계 설명은 전부 크롬 밖. */
+
+  .tabs{display:flex;gap:var(--sp-5);border-bottom:1px solid var(--c-border);margin-bottom:var(--sp-4)}
+  .tabs .t{padding:var(--sp-2) 0;font-size:var(--fs-sm);color:var(--c-text-2);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;white-space:nowrap}
+  .tabs .t.on{color:var(--c-primary);font-weight:700;border-bottom-color:var(--c-primary)}
+  .tabs .t small{color:var(--c-text-3);font-weight:400;margin-left:5px;font-size:11px}
+  .tabs .t.on small{color:var(--c-primary);opacity:.75}
+
+  /* 문서 머리 — 얼린 시점이 제목만큼 중요하다 */
+  .rhead{display:flex;align-items:flex-start;gap:var(--sp-4);padding-bottom:var(--sp-4);border-bottom:1px solid var(--c-border);margin-bottom:var(--sp-5)}
+  .rhead .rt{flex:1;min-width:0}
+  .rhead h3{font-size:var(--fs-lg);font-weight:700;margin:0 0 5px}
+  .rhead .frz{display:flex;align-items:center;gap:6px;font-size:var(--fs-xs);color:var(--c-text-3)}
+  .rhead .frz b{color:var(--c-text-2);font-weight:700}
+  .rhead .frz .lk{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--c-text-3)}
+  .rhead .ract{display:flex;gap:6px;flex-shrink:0}
+
+  /* 마스터-디테일 — 섹션 전환이지 앵커 스크롤이 아니다 */
+  .rsplit{display:flex;gap:var(--sp-6);align-items:flex-start}
+  .rtoc{flex:0 0 196px}
+  .rtoc .ti{display:block;width:100%;text-align:left;padding:9px var(--sp-3);border-radius:var(--r-md);font-size:var(--fs-sm);color:var(--c-text-2);cursor:pointer;border:0;background:transparent;font-family:inherit;line-height:1.4}
+  .rtoc .ti small{display:block;font-size:10px;color:var(--c-text-3);margin-top:2px}
+  .rtoc .ti.on{background:var(--c-primary-soft);color:var(--c-primary);font-weight:700}
+  .rtoc .ti.on small{color:var(--c-primary);opacity:.8}
+  .rbody{flex:1;min-width:0}
+  .rbody .sh{display:flex;align-items:baseline;gap:10px;margin:0 0 var(--sp-4);flex-wrap:wrap}
+  .rbody .sh b{font-size:var(--fs-base);font-weight:700}
+  .rbody .sh span{font-size:var(--fs-xs);color:var(--c-text-3)}
+  .rbody .sh .sa{margin-left:auto}
+  /* 같은 섹션 안의 두 번째 소제목 — 구분선 + 여백으로 앞 표와 뗀다 */
+  .rbody .sh.sh2{margin-top:var(--sp-6);padding-top:var(--sp-4);border-top:2px solid var(--c-border-strong)}
+
+  /* 요약 4칸 */
+  .rsum{display:grid;grid-template-columns:repeat(4,1fr);gap:var(--sp-3);margin-bottom:var(--sp-4)}
+  .rsum .c{background:var(--c-surface-2);border-radius:var(--r-md);padding:var(--sp-4)}
+  .rsum .c .k{display:block;font-size:11px;color:var(--c-text-3);margin-bottom:5px}
+  .rsum .c .v{display:block;font-size:20px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+  .rsum .c .v small{font-size:12px;font-weight:600;color:var(--c-text-3);margin-left:3px}
+  .rsum .c .d{display:block;font-size:11px;color:var(--c-text-3);margin-top:4px;line-height:1.5}
+  /* 분모 한 줄 — 외부 독자가 알아야 하는 값이라 크롬 안에 남는다 */
+  .denom{font-size:var(--fs-xs);color:var(--c-text-2);line-height:1.7;background:var(--c-surface-2);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4)}
+  .denom b{color:var(--c-text)}
+  .denom .sep{color:var(--c-text-3);margin:0 7px}
+
+  /* 카드 — 행 구분선으로 읽는 표에만. 자체 색을 가진 격자는 카드가 필요 없다(H7) */
+  .rcard{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-2) var(--sp-5) var(--sp-3)}
+
+  /* 표 — 개념별 · 회차별 공용 */
+  .rtbl{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--fs-sm);table-layout:fixed}
+  .rtbl th{font-size:10px;font-weight:700;color:var(--c-text-3);text-align:left;padding:0 0 var(--sp-2);white-space:nowrap;letter-spacing:.03em}
+  .rtbl th.c-nm{width:264px}
+  .rtbl th.c-dist{width:auto}
+  .rtbl th.c-n{width:116px;text-align:right;padding-right:0;vertical-align:bottom}
+  .rtbl th small{display:block;font-size:9px;font-weight:400;color:var(--c-text-3);margin-top:2px;letter-spacing:0}
+  .rtbl td{padding:var(--sp-3) 0;border-top:1px solid var(--c-border);vertical-align:middle}
+  .rtbl tr.gh td{border-top:0;padding:var(--sp-4) 0 4px;font-size:11px;font-weight:700;color:var(--c-text-2)}
+  .rtbl tr.gh td span{font-weight:400;color:var(--c-text-3);margin-left:5px}
+  .rtbl td.nm{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:var(--sp-5)}
+  .rtbl td.nm small{display:block;font-size:11px;color:var(--c-text-3);font-weight:400;margin-top:2px}
+  .rtbl td.num{text-align:right;padding-right:0;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .rtbl td.num b{font-size:var(--fs-base);font-weight:700}
+  .rtbl td.num.hot b{color:var(--c-danger)}
+  .rtbl td.num small{display:block;font-size:10px;color:var(--c-text-3);font-weight:400;margin-top:2px}
+  .rtbl td.num .z{color:var(--c-text-3);font-weight:400}
+
+  /* 분포 막대 — 도달 단계 4단. MG-02 램프 그대로(기획에 정의된 눈금) */
+  .dist{display:flex;height:26px;border-radius:5px;overflow:hidden;width:100%;min-width:240px}
+  .dist i{display:block;height:26px;font-size:10px;font-weight:700;color:#241108;text-align:center;line-height:26px;font-style:normal}
+  .dist .d1{background:#df6150;color:#fff}
+  .dist .d2{background:#ec9a5c}
+  .dist .d3{background:#a9cf8e}
+  .dist .d4{background:#57b083;color:#fff}
+  .dist .dn{background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);color:var(--c-text-3);font-weight:400}
+  .distkey{display:flex;align-items:center;gap:12px;font-size:10px;color:var(--c-text-3);margin-top:var(--sp-4);flex-wrap:wrap}
+  .distkey span{display:flex;align-items:center;gap:4px}
+  .distkey i{width:11px;height:9px;border-radius:2px;display:inline-block}
+
+  /* 미프 → 빅프 이동 */
+  .flow{display:flex;gap:var(--sp-4);align-items:stretch;margin-bottom:var(--sp-4)}
+  .flow .fc{flex:1;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4)}
+  .flow .fc .fh{font-size:11px;color:var(--c-text-3);margin-bottom:var(--sp-3)}
+  .flow .fc .fh b{color:var(--c-text-2);font-weight:700}
+  .flow .fr{display:flex;align-items:center;gap:10px;padding:7px 0}
+  .flow .fr + .fr{border-top:1px solid var(--c-border)}
+  .flow .fr .fl{flex:0 0 84px;font-size:var(--fs-xs);color:var(--c-text-2)}
+  .flow .fr .fn{font-size:var(--fs-base);font-weight:700;font-variant-numeric:tabular-nums;width:52px;text-align:right}
+  .flow .fr .fa{color:var(--c-text-3);font-size:13px}
+  .flow .fr .fv{flex:1;font-size:var(--fs-xs);color:var(--c-text-3)}
+  .flow .fr .fv b{font-weight:700;font-variant-numeric:tabular-nums}
+  .flow .fr.up .fn,.flow .fr.up .fv b{color:var(--c-success)}
+  .flow .fr.dn .fn,.flow .fr.dn .fv b{color:var(--c-danger)}
+
+  /* 우수 명단 */
+  .extbl{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--fs-sm);table-layout:fixed}
+  .extbl th{font-size:10px;font-weight:700;color:var(--c-text-3);text-align:left;padding:0 0 var(--sp-2);white-space:nowrap}
+  .extbl th.c-who{width:220px}
+  .extbl th.c-r{text-align:right;padding-right:0}
+  .extbl td{padding:9px 0;border-top:1px solid var(--c-border);vertical-align:middle;white-space:nowrap}
+  .extbl td.who{font-weight:700}
+  .extbl td.who small{color:var(--c-text-3);font-weight:400;font-size:11px;margin-left:5px}
+  .extbl td.rnd{font-size:var(--fs-xs);color:var(--c-text-2)}
+  .extbl td.rnd b{font-weight:700;color:var(--c-text)}
+  .extbl td.rnd em{font-style:normal;color:var(--c-text-3);margin-left:5px}
+  .extbl td.r{text-align:right;padding-right:0}
+  .lv4{display:inline-block;min-width:52px;text-align:center;padding:4px 9px;border-radius:5px;font-size:var(--fs-xs);font-weight:700}
+  .lv4.g4{background:#57b083;color:#fff}
+  .lv4.g3{background:#a9cf8e;color:#241108}
+  .lv4.na{background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);color:var(--c-text-3);font-weight:400}
+
+  /* 반 비교 — 순위 숫자를 붙이지 않는다 */
+  .clbar{display:flex;align-items:center;gap:var(--sp-3);padding:4px 0;border-top:1px solid var(--c-border)}
+  .clbar .nm{flex:0 0 112px;font-size:var(--fs-sm);font-weight:600;white-space:nowrap}
+  .clbar .nm small{color:var(--c-text-3);font-weight:400;font-size:11px;margin-left:4px}
+  .clbar .tr{flex:1;height:20px;background:var(--c-surface-2);border-radius:4px;overflow:hidden}
+  .clbar .tr i{display:block;height:20px;background:#ec9a5c;border-radius:4px}
+  .clbar.hi .tr i{background:#df6150}
+  .clbar.lo .tr i{background:#a9cf8e}
+  .clbar.base .tr i{background:var(--c-text-3);opacity:.4}
+  .clbar.base{border-top:0;border-bottom:1px dashed var(--c-border-strong);padding-bottom:var(--sp-3);margin-bottom:var(--sp-2)}
+  .clbar.base .nm{font-weight:700}
+  .clbar .vv{flex:0 0 118px;text-align:right;font-size:var(--fs-sm);font-weight:700;font-variant-numeric:tabular-nums}
+  .clbar .vv small{color:var(--c-text-3);font-weight:400;font-size:11px;margin-left:5px}
+
+  /* 집단 미달 — 발생 사실만 */
+  .gtbl{width:100%;border-collapse:separate;border-spacing:0;font-size:var(--fs-sm);table-layout:fixed}
+  .gtbl th{font-size:10px;font-weight:700;color:var(--c-text-3);text-align:left;padding:0 0 var(--sp-2);white-space:nowrap}
+  .gtbl th.c-cp{width:300px}
+  .gtbl th.c-r{text-align:right;padding-right:0}
+  .gtbl td{padding:8px 0;border-top:1px solid var(--c-border);vertical-align:middle}
+  .gtbl td.cpt{font-weight:700;white-space:nowrap}
+  .gtbl td.cpt small{display:block;font-size:11px;color:var(--c-text-3);font-weight:400;margin-top:2px}
+  .gtbl td.wh{font-size:var(--fs-xs);color:var(--c-text-2);white-space:nowrap}
+  .gtbl td.r{text-align:right;padding-right:0;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .gtbl td.r b{font-weight:700;color:var(--c-danger)}
+  .gtbl td.r small{display:block;font-size:10px;color:var(--c-text-3);font-weight:400;margin-top:2px}
+
+  /* 명단 펼치기 — 화면에서만. PDF 본문에는 집계만 나간다 */
+  .rtbl td.num .expand{display:block;font-size:10px;color:var(--c-primary);font-weight:600;margin-top:3px;cursor:pointer}
+  .names{background:var(--c-surface-2);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin:2px 0 var(--sp-2)}
+  .names .nh{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--c-text-3);margin-bottom:8px}
+  .names .nh b{color:var(--c-text-2);font-weight:700}
+  .names .nh .na2{margin-left:auto}
+  .names .nl{display:flex;flex-wrap:wrap;gap:5px}
+  .names .nl span{background:#fff;border:1px solid var(--c-border);border-radius:20px;padding:3px 10px;font-size:var(--fs-xs);white-space:nowrap}
+  .names .nl span small{color:var(--c-text-3);margin-left:4px;font-size:10px}
+  .names .pdfx{font-size:10px;color:var(--c-text-3);margin-top:8px;padding-top:7px;border-top:1px solid var(--c-border)}
+
+  .rempty{border:1px dashed var(--c-border-strong);border-radius:var(--r-md);padding:var(--sp-6);text-align:center;font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7}
+  .rempty b{color:var(--c-text-2)}
+  .rbanner{display:flex;align-items:center;gap:10px;background:var(--c-primary-soft);border-radius:var(--r-md);padding:var(--sp-3) var(--sp-4);margin-bottom:var(--sp-5);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .rbanner .bi{color:var(--c-primary);font-weight:700}
+  .rbanner b{color:var(--c-text)}
+  .rbanner .ba{margin-left:auto;flex-shrink:0}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  body.embedded .sec-label{margin-top:0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">OP-05 &#183; 오퍼레이터 &#183; 웹</span>
+    <h1>리포트 &#8212; 문서 2종</h1>
+    <p><b>재는 대상도 발행 시점도 다르다.</b> 미프는 <b>커리큘럼</b>을, 빅프는 <b>사람</b>을 잰다 &#8212; 한 문서에 섞으면 <i>"교안을 고칠까 사람을 볼까"</i>가 뭉갠다.</p>
+    <ul>
+      <li><b>수업 진단 &#8212; 미프 마지막 회차 후 발행.</b> 앵커가 <b>교안 개념</b>이라 <i>"커리큘럼이 전달됐나"</i>를 잰다. 10-2가 <b>빅프를 마지막 8주</b>로 뒀으므로, 빅프를 기다렸다 한 문서로 내면 <b>다음 기수 준비 시간 8주를 버린다</b> &#8212; 그 8주가 교안 개정 기간이다.</li>
+      <li><b>기수 결산 &#8212; 빅프 종료 후 발행.</b> 빅프 앵커는 <b>본인 커밋 영역</b>이라 <i>"자기 코드를 아는가"</i>를 잰다. 6-2 &#8212; <i>"계단은 양쪽 동일하다 &#8230; 그래서 미프와 빅프의 도달 단계를 비교할 수 있고, <b>그게 성장 지표의 근거다</b>"</i>. <b>성적 미반영은 리포트 미표시가 아니다.</b></li>
+      <li><b>우수 명단은 오퍼레이터 것이다.</b> 12-3 &#183; 17번 283줄 &#8212; <i>"오퍼레이터: 250명이라 개인을 못 본다. 정렬&#183;비교가 진짜 필요 &#8594; <b>테이블 유지</b>"</i>. 17번이 지운 것은 <b>매니저 쪽</b>뿐인데 OP-02 재설계에서 오퍼레이터 것까지 지웠던 것을 되돌린다.</li>
+      <li><b>위험과 우수는 대칭이 아니다.</b> 위험 44명은 <b>집계로 충분</b>하다(처리는 매니저, 오퍼레이터가 알 것은 어느 반에 몰렸나뿐). 우수는 <b>누구인지가 정보 그 자체</b>라 <code>우수 41명</code>은 아무 말도 안 한다.</li>
+      <li><b>9-3의 프로필이 여기서 완성된다</b> &#8212; <i>"미프 6~8회 × 반당 1~2명이면 <b>프로젝트별 프로필</b>이 쌓인다"</i>. <code>7회 중 5회 우수</code>는 진행 중에는 안 나오는 값이다.</li>
+      <li><b>위험자 명단은 넣지 않는다.</b> 기수 끝에 받아도 조치를 못 하고, <i>"수료했지만 이해도 낮음"</i> 명단은 <b>낙인</b>이다(A3).</li>
+      <li><b>수료 판정을 하지 않는다.</b> 14번 1163줄이 <code>최종 성적 산출식</code>을 범위 밖으로, <code>수료생 리포트 열람</code>을 <i>"중요하지 않음"</i>으로 뒀다 &#8212; 이 문서는 <b>이해도 측정 결과</b>이지 종합 평가서가 아니다.</li>
+      <li><b>집단 미달은 발생 사실만</b> 쓴다. 9-6이 <i>"시스템은 표시까지만 한다"</i>고 했고 처리는 기관 판단이라, <b>사람이 쓴 처리 기록을 화면이 요구하지 않는다.</b></li>
+      <li><b>재시험은 어디에도 안 들어간다</b>(11장 &#8212; 조직 단위 수치는 1차만). <b>탐색 도구가 아니라 문서</b>라 필터&#183;드릴다운도 없다 &#8212; 있으면 <b>읽는 사람마다 다른 문서</b>가 된다.</li>
+    </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 리포트 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">수업 진단 — 미프가 끝나면 확정</td></tr>
+        <tr><td class="no">—</td><td class="st">개념별 도달 분포</td><td class="code">GET /reports/{cohort}/diagnosis</td><td class="msg"><b>본체</b> · 발행 시점으로 고정<span class="nx">→ 섹션 전환</span></td><td><a class="mk2" href="#concept">#concept</a></td></tr>
+        <tr><td class="no">—</td><td class="st">요약</td><td class="code">—</td><td class="msg">규모 · <b>무엇을 빼고 세었나</b>(분모)<span class="nx">→ —</span></td><td><a class="mk2" href="#sum">#sum</a></td></tr>
+        <tr><td class="no">—</td><td class="st">회차별</td><td class="code">—</td><td class="msg">어느 회차가 어려웠나<span class="nx">→ —</span></td><td><a class="mk2" href="#round">#round</a></td></tr>
+        <tr class="grp"><td colspan="5">기수 결산 — 빅프가 끝나면 확정</td></tr>
+        <tr><td class="no">—</td><td class="st">미프 → 빅프</td><td class="code">GET /reports/{cohort}/outcome</td><td class="msg">성장 지표<span class="nx">→ —</span></td><td><a class="mk2" href="#growth">#growth</a></td></tr>
+        <tr><td class="no">—</td><td class="st">우수 교육생</td><td class="code">—</td><td class="msg">명단 + <b>CSV 내보내기</b><span class="nx">→ <b>명단은 이름 + 한 줄</b> — 리포트가 아니다</span></td><td><a class="mk2" href="#top">#top</a></td></tr>
+        <tr><td class="no">—</td><td class="st">반 · 집단 미달</td><td class="code">—</td><td class="msg">운영 관점<span class="nx">→ —</span></td><td><a class="mk2" href="#ops">#ops</a></td></tr>
+        <tr class="grp"><td colspan="5">확정 전 — 내보내기를 잠근다</td></tr>
+        <tr><td class="no">—</td><td class="st"><b>미프 진행 중</b></td><td class="code">—</td><td class="msg"><b>수업 진단이 아직 확정 전</b> · 배너 + <b>PDF 잠김</b><span class="nx">→ OP-02에서 진행 중 값 확인</span></td><td><a class="mk2" href="#mifrun">#mifrun</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>빅프 진행 중</b></td><td class="code">—</td><td class="msg">기수 결산만 확정 전 · <b>수업 진단은 이미 확정</b>임을 밝힌다<span class="nx">→ <b>두 문서의 발행 시점이 다르다</b></span></td><td><a class="mk2" href="#live">#live</a></td></tr>
+        <tr class="grp"><td colspan="5">빈 상태 — 0이 무엇을 뜻하는지 쓴다</td></tr>
+        <tr><td class="no">—</td><td class="st"><b>집단 미달 0건</b></td><td class="code">—</td><td class="msg"><b>위험 판정이 모두 개인 사유로 남았다</b>는 뜻을 같이 쓴다<span class="nx">→ <b>섹션을 숨기지 않는다</b> — 목차에서 사라지면 안 봤는지 없었는지 모른다</span></td><td><a class="mk2" href="#nogroup">#nogroup</a></td></tr>
+        <tr class="grp"><td colspan="5">실패</td></tr>
+        <tr><td class="no">—</td><td class="st">집계 실패</td><td class="code">REPORT_UNAVAILABLE</td><td class="msg"><b>불러오지 못했습니다</b> · <b>0으로 그리지 않는다</b><span class="nx">→ 재조회 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+        <tr><td class="no">—</td><td class="st">PDF 생성 실패</td><td class="code">EXPORT_FAILED</td><td class="msg"><b>내보내지 못했습니다 · 다시</b><span class="nx">→ 재시도 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>이것은 탐색 도구가 아니라 문서다.</b> 발행 시점으로 값이 고정되고, 실시간 드릴다운·필터는 <b>OP-02</b>가 한다.<br>
+    · <b>확정 전에는 내보낼 수 없다.</b> 확정 전 값을 PDF로 빼면 <b>나중 값과 다른 문서</b>가 밖에서 돌아다닌다 — 외부에 나가는 문서라 되돌릴 수 없다.<br>
+    · <b>두 탭의 발행 시점이 다르다.</b> 수업 진단은 <b>미프가 끝나면</b>, 기수 결산은 <b>빅프가 끝나면</b> 확정된다 — 한쪽이 확정돼도 다른 쪽은 진행 중일 수 있다.<br>
+    · <b>빈 상태에 "없음"만 쓰지 않는다.</b> 외부 문서라 <b>0건이 무엇을 뜻하는지</b>를 같이 쓰고, <b>섹션을 숨기지 않는다</b>.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
+  </div>
+
+  <div class="rpage" id="page-concept">
+  <div class="sec-label">&#9312; 수업 진단 · 개념별 도달 분포 — 본체</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/report</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9651;</span>분석</div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">리포트 &#8250; 7기</div><h2>리포트</h2></div>
+          <div class="tabs"><span class="t on">수업 진단<small>미프 7회</small></span><span class="t">기수 결산<small>빅프 3회 · 사람</small></span></div>
+          <div class="rhead">
+            <div class="rt"><h3>수업 진단 &#183; 7기</h3>
+              <div class="frz"><span class="lk"></span><b>2026-07-04 미프 7차 발행</b> 시점으로 고정</div>
+            </div>
+            <div class="ract"><button class="btn">PDF 내보내기</button></div>
+          </div>
+          <div class="rsplit">
+          <div class="rtoc">
+            <button class="ti">요약<small>규모 · 분모</small></button>
+            <button class="ti on">개념별 도달 분포<small>교안을 고칠 곳</small></button>
+            <button class="ti">회차별<small>어느 회차가 어려웠나</small></button>
+          </div>
+            <div class="rbody">
+              <div class="sh"><b>개념별 도달 분포</b><span>검증 개념 21건 &#183; 교안 2종</span></div>
+              <div class="rcard">
+              <table class="rtbl">
+                <tr><th class="c-nm">검증 개념</th><th class="c-dist">도달 단계 분포</th><th class="c-n">2단 이하</th><th class="c-n">묻지 못함<small>코드에 없어서</small></th></tr>
+                <tr class="gh"><td colspan="4">교안 AI_LLMOps v2 <span>&#183; 11건</span></td></tr>
+                <tr><td class="nm">Graph 구성<small>4장 p.62 &#183; 미프 3차 &#183; 5차</small></td><td><div class="dist"><i class="d1" style="width:25.8%">62</i><i class="d2" style="width:29.6%">71</i><i class="d3" style="width:24.2%">58</i><i class="d4" style="width:17.9%">43</i><i class="dn" style="width:2.5%"></i></div></td><td class="num hot"><b>57%</b><small>133 / 234명</small></td><td class="num"><b>6</b><small>명</small></td></tr>
+                <tr><td class="nm">HITL Trigger 조건<small>3장 p.55 &#183; 미프 3차 &#183; 6차</small></td><td><div class="dist"><i class="d1" style="width:12.2%">29</i><i class="d2" style="width:22.7%">54</i><i class="d3" style="width:37.0%">88</i><i class="d4" style="width:26.5%">63</i><i class="dn" style="width:1.7%"></i></div></td><td class="num"><b>35%</b><small>83 / 234명</small></td><td class="num"><b>4</b><small>명</small></td></tr>
+                <tr><td class="nm">State 관리<small>5장 p.88 &#183; 미프 3차</small></td><td><div class="dist"><i class="d1" style="width:7.7%">18</i><i class="d2" style="width:15.8%">37</i><i class="d3" style="width:39.3%">92</i><i class="d4" style="width:35.9%">84</i><i class="dn" style="width:1.3%"></i></div></td><td class="num"><b>24%</b><small>55 / 231명</small></td><td class="num"><b>3</b><small>명</small></td></tr>
+                <tr class="gh"><td colspan="4">교안 Kubernetes 기초 v3 <span>&#183; 10건</span></td></tr>
+                <tr><td class="nm">트랜잭션 경계<small>3장 p.44 &#183; 미프 2차 &#183; 4차</small></td><td><div class="dist"><i class="d1" style="width:17.1%">41</i><i class="d2" style="width:27.5%">66</i><i class="d3" style="width:30.8%">74</i><i class="d4" style="width:21.2%">51</i><i class="dn" style="width:3.3%"></i></div></td><td class="num"><b>46%</b><small>107 / 232명</small></td><td class="num"><b>8</b><small>명</small></td></tr>
+                <tr><td class="nm">캐시 전략<small>5장 p.71 &#183; 미프 2차</small></td><td><div class="dist"><i class="d1" style="width:9.0%">21</i><i class="d2" style="width:14.2%">33</i><i class="d3" style="width:41.2%">96</i><i class="d4" style="width:34.8%">81</i><i class="dn" style="width:0.9%"></i></div></td><td class="num"><b>23%</b><small>54 / 231명</small></td><td class="num"><b>2</b><small>명</small></td></tr>
+                <tr><td class="nm">REST 설계<small>1장 p.12 &#183; 미프 1차</small></td><td><div class="dist"><i class="d1" style="width:6.0%"></i><i class="d2" style="width:11.9%">28</i><i class="d3" style="width:37.0%">87</i><i class="d4" style="width:44.7%">105</i><i class="dn" style="width:0.4%"></i></div></td><td class="num"><b>18%</b><small>42 / 234명</small></td><td class="num"><b>1</b><small>명</small></td></tr>
+              </table>
+              </div>
+              <div class="distkey">
+                <span><i style="background:#df6150"></i>1단 무엇을 하는지</span>
+                <span><i style="background:#ec9a5c"></i>2단 왜 그렇게 했는지</span>
+                <span><i style="background:#a9cf8e"></i>3단 다른 방법과 비교</span>
+                <span><i style="background:#57b083"></i>4단 언제 깨지는지</span>
+                <span style="margin-left:auto"><i style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px)"></i><b>묻지 못함</b> &#8212; 그 학생 코드에 이 개념이 나오는 곳이 없어 문항이 만들어지지 않음</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-mifrun">
+  <div class="sec-label">&#9320; 미프 진행 중 &#8212; 수업 진단이 아직 확정 전 (PDF 잠김)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/report</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9651;</span>분석</div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">리포트 &#8250; 7기</div><h2>리포트</h2></div>
+          <div class="tabs"><span class="t on">수업 진단<small>미프 5 / 7회</small></span><span class="t">기수 결산<small>빅프 3회 · 사람</small></span></div>
+          <div class="rhead">
+            <div class="rt"><h3>수업 진단 &#183; 7기</h3>
+              <div class="frz"><span class="lk"></span>미프 진행 중 &#183; <b>아직 확정 전</b></div>
+            </div>
+            <div class="ract"><button class="btn off">PDF 내보내기</button></div>
+          </div>
+          <div class="rbanner">
+            <span class="bi">&#9432;</span>
+            <span><b>미프 5 / 7회 진행 중입니다.</b> 남은 회차가 이 값을 바꿉니다. 확정되기 전에는 내보낼 수 없습니다.</span>
+            <span class="ba"><button class="btn ghost">분석에서 보기 &#8599;</button></span>
+          </div>
+          <div class="rsplit">
+          <div class="rtoc">
+            <button class="ti">요약<small>규모 · 분모</small></button>
+            <button class="ti on">개념별 도달 분포<small>교안을 고칠 곳</small></button>
+            <button class="ti">회차별<small>어느 회차가 어려웠나</small></button>
+          </div>
+            <div class="rbody">
+              <div class="sh"><b>개념별 도달 분포</b><span>검증 개념 21건 &#183; 교안 2종</span></div>
+              <div class="rcard">
+              <table class="rtbl">
+                <tr><th class="c-nm">검증 개념</th><th class="c-dist">도달 단계 분포</th><th class="c-n">2단 이하</th><th class="c-n">묻지 못함<small>코드에 없어서</small></th></tr>
+                <tr class="gh"><td colspan="4">교안 AI_LLMOps v2 <span>&#183; 11건</span></td></tr>
+                <tr><td class="nm">Graph 구성<small>4장 p.62 &#183; 미프 3차 &#183; 5차</small></td><td><div class="dist"><i class="d1" style="width:25.8%">62</i><i class="d2" style="width:29.6%">71</i><i class="d3" style="width:24.2%">58</i><i class="d4" style="width:17.9%">43</i><i class="dn" style="width:2.5%"></i></div></td><td class="num hot"><b>57%</b><small>133 / 234명</small></td><td class="num"><b>6</b><small>명</small></td></tr>
+                <tr><td class="nm">HITL Trigger 조건<small>3장 p.55 &#183; 미프 3차 &#183; 6차</small></td><td><div class="dist"><i class="d1" style="width:12.2%">29</i><i class="d2" style="width:22.7%">54</i><i class="d3" style="width:37.0%">88</i><i class="d4" style="width:26.5%">63</i><i class="dn" style="width:1.7%"></i></div></td><td class="num"><b>35%</b><small>83 / 234명</small></td><td class="num"><b>4</b><small>명</small></td></tr>
+                <tr><td class="nm">State 관리<small>5장 p.88 &#183; 미프 3차</small></td><td><div class="dist"><i class="d1" style="width:7.7%">18</i><i class="d2" style="width:15.8%">37</i><i class="d3" style="width:39.3%">92</i><i class="d4" style="width:35.9%">84</i><i class="dn" style="width:1.3%"></i></div></td><td class="num"><b>24%</b><small>55 / 231명</small></td><td class="num"><b>3</b><small>명</small></td></tr>
+                <tr class="gh"><td colspan="4">교안 Kubernetes 기초 v3 <span>&#183; 10건</span></td></tr>
+                <tr><td class="nm">트랜잭션 경계<small>3장 p.44 &#183; 미프 2차 &#183; 4차</small></td><td><div class="dist"><i class="d1" style="width:17.1%">41</i><i class="d2" style="width:27.5%">66</i><i class="d3" style="width:30.8%">74</i><i class="d4" style="width:21.2%">51</i><i class="dn" style="width:3.3%"></i></div></td><td class="num"><b>46%</b><small>107 / 232명</small></td><td class="num"><b>8</b><small>명</small></td></tr>
+                <tr><td class="nm">캐시 전략<small>5장 p.71 &#183; 미프 2차</small></td><td><div class="dist"><i class="d1" style="width:9.0%">21</i><i class="d2" style="width:14.2%">33</i><i class="d3" style="width:41.2%">96</i><i class="d4" style="width:34.8%">81</i><i class="dn" style="width:0.9%"></i></div></td><td class="num"><b>23%</b><small>54 / 231명</small></td><td class="num"><b>2</b><small>명</small></td></tr>
+                <tr><td class="nm">REST 설계<small>1장 p.12 &#183; 미프 1차</small></td><td><div class="dist"><i class="d1" style="width:6.0%"></i><i class="d2" style="width:11.9%">28</i><i class="d3" style="width:37.0%">87</i><i class="d4" style="width:44.7%">105</i><i class="dn" style="width:0.4%"></i></div></td><td class="num"><b>18%</b><small>42 / 234명</small></td><td class="num"><b>1</b><small>명</small></td></tr>
+              </table>
+              </div>
+              <div class="distkey">
+                <span><i style="background:#df6150"></i>1단 무엇을 하는지</span>
+                <span><i style="background:#ec9a5c"></i>2단 왜 그렇게 했는지</span>
+                <span><i style="background:#a9cf8e"></i>3단 다른 방법과 비교</span>
+                <span><i style="background:#57b083"></i>4단 언제 깨지는지</span>
+                <span style="margin-left:auto"><i style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px)"></i><b>묻지 못함</b> &#8212; 그 학생 코드에 이 개념이 나오는 곳이 없어 문항이 만들어지지 않음</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-sum">
+  <div class="sec-label">&#9313; 수업 진단 · 요약 — 무엇을 빼고 세었나</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/report</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9651;</span>분석</div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">리포트 &#8250; 7기</div><h2>리포트</h2></div>
+          <div class="tabs"><span class="t on">수업 진단<small>미프 7회</small></span><span class="t">기수 결산<small>빅프 3회 · 사람</small></span></div>
+          <div class="rhead">
+            <div class="rt"><h3>수업 진단 &#183; 7기</h3>
+              <div class="frz"><span class="lk"></span><b>2026-07-04 미프 7차 발행</b> 시점으로 고정</div>
+            </div>
+            <div class="ract"><button class="btn">PDF 내보내기</button></div>
+          </div>
+          <div class="rsplit">
+          <div class="rtoc">
+            <button class="ti on">요약<small>규모 · 분모</small></button>
+            <button class="ti">개념별 도달 분포<small>교안을 고칠 곳</small></button>
+            <button class="ti">회차별<small>어느 회차가 어려웠나</small></button>
+          </div>
+            <div class="rbody">
+              <div class="sh"><b>요약</b><span>2026-02-03 &#8211; 07-04</span></div>
+              <div class="rsum">
+                <div class="c"><span class="k">교육생</span><span class="v">250<small>명</small></span><span class="d">10개 반 &#183; 반당 25명</span></div>
+                <div class="c"><span class="k">미프</span><span class="v">7<small>회</small></span><span class="d">02-10 &#8211; 07-04</span></div>
+                <div class="c"><span class="k">검증 개념</span><span class="v">21<small>건</small></span><span class="d">교안 2종 &#183; 회차당 3건</span></div>
+                <div class="c"><span class="k">채점된 응시</span><span class="v">1,631<small>건</small></span><span class="d">전체 1,750건</span></div>
+              </div>
+              <div class="denom">
+                <b>채점 1,631건 / 전체 1,750건</b><span class="sep">&#183;</span>미집계 119건 &#8212;
+                미응시 71 &#183; 무효 응시 33 &#183; 중단 15<span class="sep">&#183;</span>
+                <b>재시험 결과 제외</b><span class="sep">&#183;</span><b>빅프는 기수 결산에서</b>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-round">
+  <div class="sec-label">&#9314; 수업 진단 · 회차별 — 어느 회차가 어려웠나</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/report</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9651;</span>분석</div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">리포트 &#8250; 7기</div><h2>리포트</h2></div>
+          <div class="tabs"><span class="t on">수업 진단<small>미프 7회</small></span><span class="t">기수 결산<small>빅프 3회 · 사람</small></span></div>
+          <div class="rhead">
+            <div class="rt"><h3>수업 진단 &#183; 7기</h3>
+              <div class="frz"><span class="lk"></span><b>2026-07-04 미프 7차 발행</b> 시점으로 고정</div>
+            </div>
+            <div class="ract"><button class="btn">PDF 내보내기</button></div>
+          </div>
+          <div class="rsplit">
+          <div class="rtoc">
+            <button class="ti">요약<small>규모 · 분모</small></button>
+            <button class="ti">개념별 도달 분포<small>교안을 고칠 곳</small></button>
+            <button class="ti on">회차별<small>어느 회차가 어려웠나</small></button>
+          </div>
+            <div class="rbody">
+              <div class="sh"><b>회차별</b><span>미프 7회 &#183; 회차당 검증 개념 3건</span></div>
+              <div class="rcard">
+              <table class="rtbl">
+                <tr><th class="c-nm">회차</th><th class="c-dist">도달 단계 분포</th><th class="c-n">2단 이하</th></tr>
+                <tr><td class="nm">미프 1차<small>REST 설계 &#183; 캐시 전략 &#183; 트랜잭션 경계</small></td><td><div class="dist"><i class="d1" style="width:6.0%"></i><i class="d2" style="width:11.9%">28</i><i class="d3" style="width:37.0%">87</i><i class="d4" style="width:44.7%">105</i><i class="dn" style="width:0.4%"></i></div></td><td class="num"><b>18%</b><small>42 / 234명</small></td></tr>
+                <tr><td class="nm">미프 2차<small>캐시 전략 &#183; 트랜잭션 경계 &#183; State 관리</small></td><td><div class="dist"><i class="d1" style="width:8.9%">21</i><i class="d2" style="width:16.9%">40</i><i class="d3" style="width:38.8%">92</i><i class="d4" style="width:34.2%">81</i><i class="dn" style="width:1.3%"></i></div></td><td class="num"><b>26%</b><small>61 / 234명</small></td></tr>
+                <tr><td class="nm">미프 3차<small>Graph 구성 &#183; HITL Trigger &#183; State 관리</small></td><td><div class="dist"><i class="d1" style="width:25.8%">62</i><i class="d2" style="width:29.6%">71</i><i class="d3" style="width:24.2%">58</i><i class="d4" style="width:17.9%">43</i><i class="dn" style="width:2.5%"></i></div></td><td class="num hot"><b>57%</b><small>133 / 234명</small></td></tr>
+                <tr><td class="nm">미프 4차<small>트랜잭션 경계 &#183; REST 설계 &#183; 캐시 전략</small></td><td><div class="dist"><i class="d1" style="width:11.9%">28</i><i class="d2" style="width:18.6%">44</i><i class="d3" style="width:36.4%">86</i><i class="d4" style="width:32.2%">76</i><i class="dn" style="width:0.8%"></i></div></td><td class="num"><b>31%</b><small>72 / 234명</small></td></tr>
+                <tr><td class="nm">미프 5차<small>Graph 구성 &#183; State 관리 &#183; HITL Trigger</small></td><td><div class="dist"><i class="d1" style="width:18.6%">44</i><i class="d2" style="width:24.6%">58</i><i class="d3" style="width:31.4%">74</i><i class="d4" style="width:23.7%">56</i><i class="dn" style="width:1.7%"></i></div></td><td class="num hot"><b>44%</b><small>102 / 232명</small></td></tr>
+                <tr><td class="nm">미프 6차<small>HITL Trigger &#183; 캐시 전략 &#183; Graph 구성</small></td><td><div class="dist"><i class="d1" style="width:13.2%">31</i><i class="d2" style="width:20.0%">47</i><i class="d3" style="width:37.4%">88</i><i class="d4" style="width:28.1%">66</i><i class="dn" style="width:1.3%"></i></div></td><td class="num"><b>34%</b><small>78 / 232명</small></td></tr>
+                <tr><td class="nm">미프 7차<small>State 관리 &#183; REST 설계 &#183; 트랜잭션 경계</small></td><td><div class="dist"><i class="d1" style="width:9.4%">22</i><i class="d2" style="width:15.0%">35</i><i class="d3" style="width:40.2%">94</i><i class="d4" style="width:34.6%">81</i><i class="dn" style="width:0.9%"></i></div></td><td class="num"><b>25%</b><small>57 / 232명</small></td></tr>
+              </table>
+              </div>
+              <div class="distkey">
+                <span><i style="background:#df6150"></i>1단 무엇을 하는지</span>
+                <span><i style="background:#ec9a5c"></i>2단 왜 그렇게 했는지</span>
+                <span><i style="background:#a9cf8e"></i>3단 다른 방법과 비교</span>
+                <span><i style="background:#57b083"></i>4단 언제 깨지는지</span>
+                <span style="margin-left:auto"><i style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px)"></i><b>묻지 못함</b> &#8212; 그 학생 코드에 이 개념이 나오는 곳이 없어 문항이 만들어지지 않음</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-growth">
+  <div class="sec-label">&#9315; 기수 결산 · 미프 → 빅프 — 성장 지표</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/report</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9651;</span>분석</div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">리포트 &#8250; 7기</div><h2>리포트</h2></div>
+          <div class="tabs"><span class="t">수업 진단<small>미프 7회</small></span><span class="t on">기수 결산<small>빅프 3회 · 사람</small></span></div>
+          <div class="rhead">
+            <div class="rt"><h3>기수 결산 &#183; 7기</h3>
+              <div class="frz"><span class="lk"></span><b>2026-08-29 기수 종료</b> 시점으로 고정</div>
+            </div>
+            <div class="ract"><button class="btn">PDF 내보내기</button></div>
+          </div>
+          <div class="rsplit">
+          <div class="rtoc">
+            <button class="ti on">미프 → 빅프<small>성장</small></button>
+            <button class="ti">우수 교육생<small>41명 · 내보내기</small></button>
+            <button class="ti">반 · 집단 미달<small>운영</small></button>
+          </div>
+            <div class="rbody">
+              <div class="sh"><b>미프 &#8594; 빅프</b><span>미프 7차 234명 &#183; 빅프 229명</span></div>
+              <div class="flow">
+                <div class="fc">
+                  <div class="fh"><b>미프 7차</b> &#183; 채점 234명</div>
+                  <div class="dist"><i class="d1" style="width:9.4%">22</i><i class="d2" style="width:15.0%">35</i><i class="d3" style="width:40.2%">94</i><i class="d4" style="width:34.6%">81</i><i class="dn" style="width:0.9%"></i></div>
+                  <div class="distkey" style="margin-top:var(--sp-3)"><span>2단 이하 <b style="color:var(--c-text)">57명</b></span><span style="margin-left:auto">3단 이상 <b style="color:var(--c-text)">177명</b></span></div>
+                </div>
+                <div class="fc">
+                  <div class="fh"><b>빅프</b> &#183; 채점 229명</div>
+                  <div class="dist"><i class="d1" style="width:6.1%"></i><i class="d2" style="width:10.5%">24</i><i class="d3" style="width:38.9%">89</i><i class="d4" style="width:43.7%">100</i><i class="dn" style="width:0.9%"></i></div>
+                  <div class="distkey" style="margin-top:var(--sp-3)"><span>2단 이하 <b style="color:var(--c-text)">38명</b></span><span style="margin-left:auto">3단 이상 <b style="color:var(--c-text)">191명</b></span></div>
+                </div>
+              </div>
+              <div class="rcard">
+              <table class="rtbl">
+                <tr><th class="c-nm">미프 7차에서</th><th>빅프에서</th><th class="c-n">인원</th></tr>
+                <tr><td class="nm">2단 이하 <small>57명</small></td><td><b style="color:var(--c-success)">3단 이상으로 올라감</b></td><td class="num"><b style="color:var(--c-success)">26</b><small>명</small><span class="expand">접기 &#9652;</span></td></tr>
+                <tr><td colspan="3" style="padding:0">
+              <div class="names"><div class="nh"><b>미프에서 막혔다가 빅프에서 올라간 사람</b> 26명<span class="na2"><button class="btn ghost" style="padding:4px 10px">CSV 내보내기</button></span></div><div class="nl"><span>김민준<small>A반</small></span><span>이서준<small>B반</small></span><span>정하늘<small>C반</small></span><span>박도윤<small>D반</small></span><span>최유나<small>E반</small></span><span>오세림<small>F반</small></span><span>윤가온<small>G반</small></span><span>남시우<small>H반</small></span><span>한지우<small>I반</small></span><span>강태희<small>J반</small></span><span>임채원<small>A반</small></span><span>조은채<small>B반</small></span><span>배시현<small>C반</small></span><span>신하람<small>D반</small></span><span>류지호<small>E반</small></span><span>권나윤<small>F반</small></span><span>문태준<small>G반</small></span><span>백승우<small>H반</small></span><span>서예린<small>I반</small></span><span>손민재<small>J반</small></span><span>양지훈<small>A반</small></span><span>우다인<small>B반</small></span><span>전서율<small>C반</small></span><span>차하은<small>D반</small></span><span>표정우<small>E반</small></span><span>홍시아<small>F반</small></span></div><div class="pdfx">화면에서만 펼칩니다 &#183; PDF 본문에는 인원 수만 들어갑니다</div></div>
+                </td></tr>
+                <tr><td class="nm"></td><td>그대로 2단 이하</td><td class="num"><b style="">29</b><small>명</small><span class="expand">명단 &#9662;</span></td></tr>
+                <tr><td class="nm">3단 이상 <small>177명</small></td><td>그대로 3단 이상</td><td class="num"><b style="">165</b><small>명</small><span class="expand">명단 &#9662;</span></td></tr>
+                <tr><td class="nm"></td><td><b style="color:var(--c-danger)">2단 이하로 내려감</b></td><td class="num"><b style="color:var(--c-danger)">9</b><small>명</small><span class="expand">명단 &#9662;</span></td></tr>
+              </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-top">
+  <div class="sec-label">&#9316; 기수 결산 · 우수 교육생 — 명단 + 내보내기</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/report</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9651;</span>분석</div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">리포트 &#8250; 7기</div><h2>리포트</h2></div>
+          <div class="tabs"><span class="t">수업 진단<small>미프 7회</small></span><span class="t on">기수 결산<small>빅프 3회 · 사람</small></span></div>
+          <div class="rhead">
+            <div class="rt"><h3>기수 결산 &#183; 7기</h3>
+              <div class="frz"><span class="lk"></span><b>2026-08-29 기수 종료</b> 시점으로 고정</div>
+            </div>
+            <div class="ract"><button class="btn">PDF 내보내기</button></div>
+          </div>
+          <div class="rsplit">
+          <div class="rtoc">
+            <button class="ti">미프 → 빅프<small>성장</small></button>
+            <button class="ti on">우수 교육생<small>41명 · 내보내기</small></button>
+            <button class="ti">반 · 집단 미달<small>운영</small></button>
+          </div>
+            <div class="rbody">
+              <div class="sh"><b>우수 교육생</b><span>41명 &#183; 미프 7회 중 1회 이상 반 상위 &#183; 우수 횟수 순</span><span class="sa"><button class="btn ghost">CSV 내보내기</button></span></div>
+              <div class="rcard">
+              <table class="extbl">
+                <tr><th class="c-who">교육생</th><th>미프 우수</th><th class="c-r">빅프 최저 도달</th></tr>
+                <tr><td class="who">정하늘<small>A반</small></td><td class="rnd"><b>5회</b><em>1 · 2 · 3 · 5 · 7차</em></td><td class="r"><span class="lv4 g4">4단</span></td></tr>
+                <tr><td class="who">김서윤<small>C반</small></td><td class="rnd"><b>5회</b><em>1 · 3 · 4 · 6 · 7차</em></td><td class="r"><span class="lv4 g4">4단</span></td></tr>
+                <tr><td class="who">이준서<small>D반</small></td><td class="rnd"><b>4회</b><em>2 · 4 · 5 · 7차</em></td><td class="r"><span class="lv4 g4">4단</span></td></tr>
+                <tr><td class="who">박도윤<small>B반</small></td><td class="rnd"><b>4회</b><em>1 · 2 · 6 · 7차</em></td><td class="r"><span class="lv4 g3">3단</span></td></tr>
+                <tr><td class="who">최유나<small>I반</small></td><td class="rnd"><b>4회</b><em>3 · 5 · 6 · 7차</em></td><td class="r"><span class="lv4 g4">4단</span></td></tr>
+                <tr><td class="who">오세림<small>E반</small></td><td class="rnd"><b>3회</b><em>1 · 4 · 7차</em></td><td class="r"><span class="lv4 g3">3단</span></td></tr>
+                <tr><td class="who">윤가온<small>G반</small></td><td class="rnd"><b>3회</b><em>2 · 3 · 6차</em></td><td class="r"><span class="lv4 g3">3단</span></td></tr>
+                <tr><td class="who">권나윤<small>F반</small></td><td class="rnd"><b>3회</b><em>1 · 5 · 6차</em></td><td class="r"><span class="lv4 g4">4단</span></td></tr>
+                <tr><td class="who">문태준<small>H반</small></td><td class="rnd"><b>3회</b><em>2 · 4 · 7차</em></td><td class="r"><span class="lv4 g3">3단</span></td></tr>
+                <tr><td class="who">백승우<small>J반</small></td><td class="rnd"><b>3회</b><em>3 · 5 · 7차</em></td><td class="r"><span class="lv4 g4">4단</span></td></tr>
+                <tr><td class="who">남시우<small>J반</small></td><td class="rnd"><b>2회</b><em>4 · 7차</em></td><td class="r"><span class="lv4 g4">4단</span></td></tr>
+                <tr><td class="who">한지우<small>F반</small></td><td class="rnd"><b>2회</b><em>5 · 6차</em></td><td class="r"><span class="lv4 g3">3단</span></td></tr>
+                <tr><td class="who">강태희<small>H반</small></td><td class="rnd"><b>2회</b><em>1 · 3차</em></td><td class="r"><span class="lv4 g3">3단</span></td></tr>
+              </table>
+              <div class="tablefoot"><span class="range">1&#8211;13 / 41명</span><div class="pages"><span class="pg">&#8249;</span><span class="pg on">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">4</span><span class="pg">&#8250;</span></div><span class="rspace"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-ops">
+  <div class="sec-label">&#9317; 기수 결산 · 반 · 집단 미달 — 운영</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/report</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9651;</span>분석</div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">리포트 &#8250; 7기</div><h2>리포트</h2></div>
+          <div class="tabs"><span class="t">수업 진단<small>미프 7회</small></span><span class="t on">기수 결산<small>빅프 3회 · 사람</small></span></div>
+          <div class="rhead">
+            <div class="rt"><h3>기수 결산 &#183; 7기</h3>
+              <div class="frz"><span class="lk"></span><b>2026-08-29 기수 종료</b> 시점으로 고정</div>
+            </div>
+            <div class="ract"><button class="btn">PDF 내보내기</button></div>
+          </div>
+          <div class="rsplit">
+          <div class="rtoc">
+            <button class="ti">미프 → 빅프<small>성장</small></button>
+            <button class="ti">우수 교육생<small>41명 · 내보내기</small></button>
+            <button class="ti on">반 · 집단 미달<small>운영</small></button>
+          </div>
+            <div class="rbody">
+              <div class="sh"><b>반별 위험자 비율</b><span>2단 이하 개념이 2개 이상인 학생 &#183; 미프 7차 기준</span></div>
+              <div class="rcard">
+              <div class="clbar base"><span class="nm">기수 전체<small>250명</small></span><span class="tr"><i style="width:47.5%"></i></span><span class="vv">19%<small>44 / 234명</small></span></div>
+              <div class="clbar hi"><span class="nm">C반<small>25명</small></span><span class="tr"><i style="width:80.0%"></i></span><span class="vv">32%<small>8 / 25명</small></span></div>
+              <div class="clbar hi"><span class="nm">D반<small>25명</small></span><span class="tr"><i style="width:70.0%"></i></span><span class="vv">28%<small>7 / 25명</small></span></div>
+              <div class="clbar hi"><span class="nm">I반<small>25명</small></span><span class="tr"><i style="width:70.0%"></i></span><span class="vv">28%<small>7 / 25명</small></span></div>
+              <div class="clbar"><span class="nm">A반<small>25명</small></span><span class="tr"><i style="width:62.5%"></i></span><span class="vv">25%<small>6 / 24명</small></span></div>
+              <div class="clbar"><span class="nm">F반<small>25명</small></span><span class="tr"><i style="width:60.0%"></i></span><span class="vv">24%<small>6 / 25명</small></span></div>
+              <div class="clbar"><span class="nm">B반<small>25명</small></span><span class="tr"><i style="width:50.0%"></i></span><span class="vv">20%<small>5 / 25명</small></span></div>
+              <div class="clbar"><span class="nm">H반<small>25명</small></span><span class="tr"><i style="width:50.0%"></i></span><span class="vv">20%<small>5 / 25명</small></span></div>
+              <div class="clbar lo"><span class="nm">J반<small>25명</small></span><span class="tr"><i style="width:40.0%"></i></span><span class="vv">16%<small>4 / 25명</small></span></div>
+              <div class="clbar lo"><span class="nm">E반<small>25명</small></span><span class="tr"><i style="width:40.0%"></i></span><span class="vv">16%<small>4 / 25명</small></span></div>
+              <div class="clbar lo"><span class="nm">G반<small>25명</small></span><span class="tr"><i style="width:30.0%"></i></span><span class="vv">12%<small>3 / 25명</small></span></div>
+              </div>
+              <div class="sh sh2"><b>집단 미달</b><span>한 개념에서 반 절반 이상 미달 &#183; 4건</span></div>
+              <div class="rcard">
+              <table class="gtbl">
+                <tr><th class="c-cp">검증 개념</th><th>회차 &#183; 반</th><th class="c-r">미달</th></tr>
+                <tr><td class="cpt">Graph 구성<small>교안 AI_LLMOps v2 &#183; 4장 p.62</small></td><td class="wh">미프 3차 &#183; A반</td><td class="r"><b>12 / 23명</b><small>52%</small></td></tr>
+                <tr><td class="cpt">Graph 구성<small>교안 AI_LLMOps v2 &#183; 4장 p.62</small></td><td class="wh">미프 3차 &#183; C반</td><td class="r"><b>14 / 25명</b><small>56%</small></td></tr>
+                <tr><td class="cpt">Graph 구성<small>교안 AI_LLMOps v2 &#183; 4장 p.62</small></td><td class="wh">미프 5차 &#183; C반</td><td class="r"><b>13 / 25명</b><small>52%</small></td></tr>
+                <tr><td class="cpt">트랜잭션 경계<small>교안 Kubernetes 기초 v3 &#183; 3장 p.44</small></td><td class="wh">미프 4차 &#183; F반</td><td class="r"><b>13 / 25명</b><small>52%</small></td></tr>
+              </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-nogroup">
+  <div class="sec-label">&#9318; 집단 미달 0건 — 빈 상태</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/report</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9651;</span>분석</div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">리포트 &#8250; 7기</div><h2>리포트</h2></div>
+          <div class="tabs"><span class="t">수업 진단<small>미프 7회</small></span><span class="t on">기수 결산<small>빅프 3회 · 사람</small></span></div>
+          <div class="rhead">
+            <div class="rt"><h3>기수 결산 &#183; 7기</h3>
+              <div class="frz"><span class="lk"></span><b>2026-08-29 기수 종료</b> 시점으로 고정</div>
+            </div>
+            <div class="ract"><button class="btn">PDF 내보내기</button></div>
+          </div>
+          <div class="rsplit">
+          <div class="rtoc">
+            <button class="ti">미프 → 빅프<small>성장</small></button>
+            <button class="ti">우수 교육생<small>41명 · 내보내기</small></button>
+            <button class="ti on">반 · 집단 미달<small>운영</small></button>
+          </div>
+            <div class="rbody">
+              <div class="sh"><b>반별 위험자 비율</b><span>2단 이하 개념이 2개 이상인 학생 &#183; 미프 7차 기준</span></div>
+              <div class="rcard">
+              <div class="clbar base"><span class="nm">기수 전체<small>250명</small></span><span class="tr"><i style="width:47.5%"></i></span><span class="vv">19%<small>44 / 234명</small></span></div>
+              <div class="clbar hi"><span class="nm">C반<small>25명</small></span><span class="tr"><i style="width:80.0%"></i></span><span class="vv">32%<small>8 / 25명</small></span></div>
+              <div class="clbar hi"><span class="nm">D반<small>25명</small></span><span class="tr"><i style="width:70.0%"></i></span><span class="vv">28%<small>7 / 25명</small></span></div>
+              <div class="clbar hi"><span class="nm">I반<small>25명</small></span><span class="tr"><i style="width:70.0%"></i></span><span class="vv">28%<small>7 / 25명</small></span></div>
+              <div class="clbar"><span class="nm">A반<small>25명</small></span><span class="tr"><i style="width:62.5%"></i></span><span class="vv">25%<small>6 / 24명</small></span></div>
+              </div>
+              <div class="sh sh2"><b>집단 미달</b><span>0건</span></div>
+              <div class="rempty">한 개념에서 <b>반 절반 이상이 미달한 회차가 없습니다.</b><br>위험 판정이 모두 <b>개인 사유</b>로 남았습니다.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-live">
+  <div class="sec-label">&#9319; 기수 결산 발행 전 — 빅프 진행 중</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/report</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
+        <div class="me">이도현 &#183; 오퍼레이터 <span class="av">이</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9651;</span>분석</div></div>
+          <div class="grp"><div class="item on"><span class="ic">&#9645;</span>리포트</div><div class="item"><span class="ic">&#9636;</span>프로젝트</div></div>
+          <div class="grp"><div class="item"><span class="ic">&#9881;</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><div class="crumb">리포트 &#8250; 7기</div><h2>리포트</h2></div>
+          <div class="tabs"><span class="t">수업 진단<small>미프 7회</small></span><span class="t on">기수 결산<small>빅프 3회 · 사람</small></span></div>
+          <div class="rhead">
+            <div class="rt"><h3>기수 결산 &#183; 7기</h3>
+              <div class="frz"><span class="lk"></span>빅프 진행 중 &#183; <b>아직 확정 전</b></div>
+            </div>
+            <div class="ract"><button class="btn off">PDF 내보내기</button></div>
+          </div>
+          <div class="rbanner">
+            <span class="bi">&#9432;</span>
+            <span><b>빅프 2 / 3회 진행 중입니다.</b> 남은 회차가 이 값을 바꿉니다.</span>
+            <span class="ba"><button class="btn ghost">분석에서 보기 &#8599;</button></span>
+          </div>
+          <div class="rsplit">
+          <div class="rtoc">
+            <button class="ti on">미프 → 빅프<small>성장</small></button>
+            <button class="ti">우수 교육생<small>41명 · 내보내기</small></button>
+            <button class="ti">반 · 집단 미달<small>운영</small></button>
+          </div>
+            <div class="rbody">
+              <div class="sh"><b>미프 &#8594; 빅프</b><span>빅프 2 / 3회 &#183; 채점 152명</span></div>
+              <div class="rempty"><b>빅프가 끝나면 집계합니다.</b><br>3회를 다 마쳐야 도달 단계가 확정됩니다.<br><b>수업 진단 탭은 이미 확정</b>돼 있습니다 &#8212; 미프 7차가 끝났습니다.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+</div>
+<script>
+  var PAGE = { cases:"page-cases", mifrun:"page-mifrun", concept:"page-concept", sum:"page-sum", round:"page-round",
+               growth:"page-growth", top:"page-top", ops:"page-ops",
+               nogroup:"page-nogroup", live:"page-live" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "concept";
+    var id = PAGE[h] || "page-concept";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+
+  // 목업 = 1920x1080 실화면. 보이는 폭에 맞춰 배율만 조절해 비율을 지킨다
+  function fitScreen(){
+    var p = document.querySelector(".page");
+    if(!p) return;
+    var cs = getComputedStyle(p);
+    var w = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if(w > 0) document.documentElement.style.setProperty("--k", w / 1920);
+  }
+  window.addEventListener("resize", fitScreen);
+  window.addEventListener("load", fitScreen);
+  fitScreen();
+</script>
+</body>
+</html>

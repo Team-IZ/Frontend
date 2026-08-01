@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TR-02 · 코드 제출 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    /* 목업은 1920x1080 화면을 그대로 그리고, 보이는 폭에 맞춰 축소만 한다 */
+    --screen-w:1920px; --screen-h:1080px; --k:.6625;
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .doc-head ul{margin:var(--sp-3) 0 0 18px;color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .doc-head li{margin-bottom:3px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{width:var(--screen-w);zoom:var(--k);border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  .app{display:flex;flex-direction:column;height:var(--screen-h);background:var(--c-bg)}
+  .ttop{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .ttop .l{display:flex;align-items:center;gap:var(--sp-6)}
+  .ttop .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700}
+  .ttop .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .ttop .tnav{display:flex;gap:var(--sp-4);font-size:var(--fs-sm)}
+  .ttop .tnav a{color:var(--c-text-2);cursor:pointer}
+  .ttop .tnav a.on{color:var(--c-text);font-weight:600}
+  .ttop .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .ttop .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+
+  /* 폼은 좁게 — 한 줄이 길면 입력이 어려워진다 */
+  .tmain{max-width:620px;width:100%;margin:0 auto;padding:var(--sp-6) var(--sp-5) var(--sp-8)}
+  .back{font-size:var(--fs-xs);color:var(--c-primary);cursor:pointer;display:inline-block;margin-bottom:var(--sp-4)}
+  .ph{margin-bottom:var(--sp-5)}
+  .ph h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .ph .due{font-size:var(--fs-sm);color:var(--c-text-2);margin-top:3px;font-variant-numeric:tabular-nums}
+  .ph .due b{color:var(--c-warning)}
+
+  .card{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-lg);padding:var(--sp-5);box-shadow:0 1px 2px rgba(20,24,31,.04);margin-bottom:var(--sp-4)}
+  .card:last-of-type{margin-bottom:0}
+  .card h3{font-size:var(--fs-sm);font-weight:700;margin-bottom:var(--sp-3)}
+
+  .seg{display:flex;border:1px solid var(--c-border-strong);border-radius:var(--r-md);overflow:hidden;margin-bottom:var(--sp-4)}
+  .seg .tg{flex:1;padding:9px 0;text-align:center;font-size:var(--fs-sm);cursor:pointer;background:#fff;color:var(--c-text-2);border-right:1px solid var(--c-border)}
+  .seg .tg:last-child{border-right:0}
+  .seg .tg.on{background:var(--c-primary);color:#fff;font-weight:600}
+
+  .fld{margin-bottom:var(--sp-4)}
+  .fld:last-child{margin-bottom:0}
+  .fld .fl{font-size:var(--fs-sm);font-weight:600;margin-bottom:5px;display:flex;align-items:baseline;gap:6px}
+  .fld .fl .opt{font-weight:400;color:var(--c-text-3);font-size:var(--fs-xs)}
+  .inp{width:100%;min-height:42px;border:1px solid var(--c-border-strong);border-radius:var(--r-md);padding:10px var(--sp-3);font-size:var(--fs-sm);background:#fff;display:flex;align-items:center;font-family:var(--mono);color:var(--c-text)}
+  .inp.empty{color:var(--c-text-3)}
+  .inp.bad{border-color:var(--c-danger);background:var(--c-danger-soft)}
+  .fh{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:6px;line-height:1.6}
+  .fe{font-size:var(--fs-xs);color:var(--c-danger);margin-top:6px;font-weight:600}
+  .drop{border:2px dashed var(--c-border-strong);border-radius:var(--r-md);background:var(--c-surface-2);padding:var(--sp-6) var(--sp-4);text-align:center;color:var(--c-text-3);font-size:var(--fs-sm)}
+  .drop .ic{font-size:24px;display:block;margin-bottom:6px}
+
+  .cta{display:flex;align-items:center;justify-content:flex-end;gap:var(--sp-2);margin-top:var(--sp-5)}
+  .cta .aside{margin-right:auto;font-size:var(--fs-xs);color:var(--c-text-3)}
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:700;font-size:var(--fs-sm);cursor:pointer;padding:11px 22px}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong);font-weight:600}
+  .btn.off{background:#e8eaee;color:var(--c-text-3);cursor:not-allowed}
+
+  .state{display:flex;gap:var(--sp-4);align-items:flex-start;padding:var(--sp-5);border-radius:var(--r-lg);border:1px solid var(--c-border);background:#fff;margin-bottom:var(--sp-4)}
+  .state .ic{flex:0 0 40px;height:40px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;font-size:18px;background:var(--c-info-soft);color:var(--c-info)}
+  .state.ok .ic{background:var(--c-success-soft);color:var(--c-success)}
+  .state.warn .ic{background:var(--c-warning-soft);color:var(--c-warning)}
+  .state.bad .ic{background:var(--c-danger-soft);color:var(--c-danger)}
+  .state .tx h3{font-size:var(--fs-lg);margin-bottom:4px}
+  .state .tx p{font-size:var(--fs-sm);color:var(--c-text-2)}
+  .state .tx .sub{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:6px}
+
+  .kv{display:flex;font-size:var(--fs-sm);padding:8px 0;border-top:1px solid var(--c-border)}
+  .kv:first-of-type{border-top:0}
+  .kv .k{flex:0 0 84px;color:var(--c-text-3);font-size:var(--fs-xs)}
+  .kv .v{flex:1;font-family:var(--mono);font-size:var(--fs-xs);word-break:break-all}
+  .kv .v .n{font-family:var(--font);font-size:var(--fs-sm)}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  body.embedded .sec-label{margin-top:0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">TR-02 · 교육생 · 웹</span>
+    <h1>코드 제출</h1>
+    <p>제출은 한 번에 끝나는 일이라 <b>폼 폭을 620px로 좁혔다</b> — 한 줄이 길면 입력이 어려워진다.</p>
+    <ul>
+      <li><b>요구사항 충족(P/F)이 여기 없다.</b> <code>?</code> 판정은 매니저가 확인해야 확정되는데, 확정 전 판정을 학생에게 먼저 보여주면 잘못된 정보를 주게 된다 — 매니저의 제출 현황(MG-08) 소관이다.</li>
+      <li><b>진행률 막대를 두지 않는다.</b> 실제로 알 수 없는 값을 퍼센트로 보여주는 것은 거짓말이다. 분석 중에는 상태와 알림 약속만 준다.</li>
+      <li><b>제출 후에는 홈으로 보낸다.</b> 세션 시작 버튼은 홈 한 곳에만 둬서 진입점을 하나로 유지한다.</li>
+    </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 코드 제출 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">제출 — 두 경로</td></tr>
+        <tr><td class="no">—</td><td class="st">GitHub 저장소</td><td class="code">POST /submissions</td><td class="msg">주소 + 브랜치 · <b>기관 조직 안이면 권한이 따로 필요 없다</b><span class="nx">→ 제출</span></td><td><a class="mk2" href="#form">#form</a></td></tr>
+        <tr><td class="no">—</td><td class="st">ZIP 업로드</td><td class="code">—</td><td class="msg"><b>최대 50MB</b> · <code>node_modules</code> 제외 안내<span class="nx">→ 조직 밖·비공개 저장소의 경로</span></td><td><a class="mk2" href="#zip">#zip</a></td></tr>
+        <tr class="grp"><td colspan="5">제출 전 차단 — 눌러 보고 실패하게 두지 않는다</td></tr>
+        <tr><td class="no">—</td><td class="st">저장소 확인 실패</td><td class="code">REPO_NOT_FOUND</td><td class="msg"><b>저장소를 찾지 못했어요</b> · [ZIP으로 올리기] 같이 준다<span class="nx">→ 비공개·조직 밖이면 ZIP이 정답</span></td><td><a class="mk2" href="#invalid">#invalid</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>ZIP 용량 초과</b></td><td class="code">FILE_TOO_LARGE</td><td class="msg"><b>50MB를 넘어 제출할 수 없어요</b> · 빼야 할 폴더를 알려준다<span class="nx">→ 다시 압축</span></td><td><a class="mk2" href="#toobig">#toobig</a></td></tr>
+        <tr class="grp"><td colspan="5">제출 후 — 되돌릴 수 있는 구간이 정해져 있다</td></tr>
+        <tr><td class="no">—</td><td class="st">분석 중</td><td class="code">—</td><td class="msg"><b>남은 시간을 알려주지 않는다</b><span class="nx">→ 대기</span></td><td><a class="mk2" href="#submitted">#submitted</a></td></tr>
+        <tr><td class="no">—</td><td class="st">분석 완료 · 재제출 가능</td><td class="code">—</td><td class="msg"><b>시작 전까지는 다시 제출할 수 있어요</b><span class="nx">→ 수정 후 재제출</span></td><td><a class="mk2" href="#resubmit">#resubmit</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>세션 시작 후 잠김</b></td><td class="code">SUBMISSION_LOCKED</td><td class="msg"><b>질문이 지금 제출된 코드로 만들어졌어요</b> · 코드가 바뀌면 질문과 답이 어긋난다<span class="nx">→ <b>되돌릴 수 없다</b></span></td><td><a class="mk2" href="#locked">#locked</a></td></tr>
+        <tr><td class="no">—</td><td class="st">분석 실패</td><td class="code">ANALYSIS_FAILED</td><td class="msg"><b>분석할 코드를 찾지 못했습니다</b> · 브랜치·소스 폴더 확인<span class="nx">→ 마감 전이면 재제출 · 지났으면 매니저</span></td><td><a class="mk2" href="#failed">#failed</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>제출 마감 후</b></td><td class="code">DEADLINE_PASSED</td><td class="msg"><b>제출 기한이 지났어요</b> · <code>미제출</code>로 기록<span class="nx">→ 매니저 문의 — <b>폼을 열지 않는다</b></span></td><td><a class="mk2" href="#closed">#closed</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>재제출은 세션 시작 전까지만.</b> 문항이 <b>제출된 그 코드</b>로 만들어지므로 코드가 바뀌면 질문과 답이 어긋난다 — 경계를 <b>잠금 화면</b>으로 분명히 보여준다.<br>
+    · <b>막을 것은 누르기 전에 막는다.</b> 저장소를 못 찾거나 용량이 넘으면 제출 버튼을 누르기 전에 알리고, <b>대안(ZIP · 재압축)을 같이 준다</b>.<br>
+    · <b>실패 문구는 학생이 고칠 수 있는 말로.</b> 내부 오류가 아니라 <b>브랜치가 비었는지 · 소스 폴더가 있는지</b>를 짚는다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
+  </div>
+
+  <div class="rpage" id="page-form">
+  <div class="sec-label">화면 · 제출 (GitHub 저장소)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/submit/mif-3</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <span class="back">← 홈</span>
+        <div class="ph"><h2>미프 3차 코드 제출</h2><div class="due">제출 마감 07-14 18:00 · <b>1일 4시간 남음</b></div></div>
+
+        <div class="card">
+          <div class="seg"><span class="tg on">GitHub 저장소</span><span class="tg">ZIP 업로드</span></div>
+          <div class="fld">
+            <div class="fl">저장소 주소</div>
+            <div class="inp empty">https://github.com/팀이름/저장소</div>
+            <div class="fh">우리 기관 GitHub 조직 안의 저장소는 따로 권한을 주지 않아도 돼요.<br>조직 밖이거나 비공개라면 ZIP으로 올려 주세요.</div>
+          </div>
+          <div class="fld">
+            <div class="fl">브랜치 <span class="opt">비우면 기본 브랜치</span></div>
+            <div class="inp empty">main</div>
+          </div>
+          <div class="cta"><span class="aside">제출하면 코드 분석이 시작돼요</span><button class="btn off">제출</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-zip">
+  <div class="sec-label">상태 · ZIP 업로드로 전환</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/submit/mif-3</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <span class="back">← 홈</span>
+        <div class="ph"><h2>미프 3차 코드 제출</h2><div class="due">제출 마감 07-14 18:00 · <b>1일 4시간 남음</b></div></div>
+
+        <div class="card">
+          <div class="seg"><span class="tg">GitHub 저장소</span><span class="tg on">ZIP 업로드</span></div>
+          <div class="drop"><span class="ic">⤒</span>ZIP 파일을 끌어다 놓거나 눌러서 고르세요</div>
+          <div class="fh">최대 50MB · <code>node_modules</code>, <code>.venv</code> 같은 폴더는 빼고 압축해 주세요.</div>
+          <div class="cta"><span class="aside">파일을 고르면 제출할 수 있어요</span><button class="btn off">제출</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-toobig">
+  <div class="sec-label">상태 · ZIP 용량 초과 (제출 전 차단)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/submit/mif-3</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <span class="back">← 홈</span>
+        <div class="ph"><h2>미프 3차 코드 제출</h2><div class="due">제출 마감 07-14 18:00 · <b>1일 4시간 남음</b></div></div>
+
+        <div class="card">
+          <div class="seg"><span class="tg">GitHub 저장소</span><span class="tg on">ZIP 업로드</span></div>
+          <div class="drop"><span class="ic">⤒</span>ZIP 파일을 끌어다 놓거나 눌러서 고르세요</div>
+          <div class="fh"><b style="color:var(--c-danger)">node_modules · .venv 같은 폴더를 빼고 다시 압축해 주세요.</b> 최대 50MB.</div>
+          <div class="cta"><span class="aside">project.zip · 128MB — 50MB를 넘어 제출할 수 없어요</span><button class="btn off">제출</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-invalid">
+  <div class="sec-label">상태 · 저장소 주소 확인 실패 (제출 전)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/submit/mif-3</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <span class="back">← 홈</span>
+        <div class="ph"><h2>미프 3차 코드 제출</h2><div class="due">제출 마감 07-14 18:00 · <b>1일 4시간 남음</b></div></div>
+
+        <div class="card">
+          <div class="seg"><span class="tg on">GitHub 저장소</span><span class="tg">ZIP 업로드</span></div>
+          <div class="fld">
+            <div class="fl">저장소 주소</div>
+            <div class="inp bad">https://github.com/team-a/miniproj-3</div>
+            <div class="fe">저장소를 찾지 못했어요. 주소를 다시 확인해 주세요.</div>
+            <div class="fh">비공개 저장소이거나 우리 기관 조직 밖에 있으면 열 수 없어요 — 그럴 땐 ZIP으로 올리면 됩니다.</div>
+          </div>
+          <div class="cta"><button class="btn ghost">ZIP으로 올리기</button><button class="btn">다시 확인</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-submitted">
+  <div class="sec-label">상태 · 제출 완료 · 분석 중 (진행률 없음)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/submit/mif-3</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <span class="back">← 홈</span>
+        <div class="ph"><h2>미프 3차 코드 제출</h2><div class="due">제출 완료 07-13 22:41</div></div>
+
+        <div class="state">
+          <span class="ic">◴</span>
+          <div class="tx">
+            <h3>제출됐어요. 코드를 분석하고 있습니다</h3>
+            <p>끝나면 알려드릴게요. 이 화면을 켜 두지 않아도 됩니다.</p>
+            <div class="sub">남은 시간은 알려드리지 않아요 — 정확하지 않은 예상을 드리지 않으려고요.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>제출한 내용</h3>
+          <div class="kv"><span class="k">저장소</span><span class="v">github.com/team-a/miniproject-3</span></div>
+          <div class="kv"><span class="k">브랜치</span><span class="v">main</span></div>
+          <div class="kv"><span class="k">최근 커밋</span><span class="v">a3f9c21 · feat: HITL 재시도 상한 추가 <span class="n">(07-13 22:12)</span></span></div>
+          <div class="cta"><button class="btn ghost">홈으로</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-resubmit">
+  <div class="sec-label">상태 · 분석 완료 · 다시 제출 가능 (마감 전 · 세션 전)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/submit/mif-3</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <span class="back">← 홈</span>
+        <div class="ph"><h2>미프 3차 코드 제출</h2><div class="due">분석 완료 07-14 14:20</div></div>
+
+        <div class="state ok">
+          <span class="ic">✓</span>
+          <div class="tx">
+            <h3>분석이 끝났어요</h3>
+            <p>이해도 확인을 시작할 수 있습니다. <b>홈에서 시작</b>하면 돼요.</p>
+            <div class="sub">07-15 14:20까지 · 시작 전까지는 다시 제출할 수 있어요</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>제출한 내용</h3>
+          <div class="kv"><span class="k">저장소</span><span class="v">github.com/team-a/miniproject-3</span></div>
+          <div class="kv"><span class="k">브랜치</span><span class="v">main</span></div>
+          <div class="kv"><span class="k">최근 커밋</span><span class="v">a3f9c21 · feat: HITL 재시도 상한 추가 <span class="n">(07-13 22:12)</span></span></div>
+          <div class="cta"><span class="aside">다시 제출하면 분석도 다시 돌아가요</span><button class="btn ghost">다시 제출</button><button class="btn">홈으로</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-locked">
+  <div class="sec-label">상태 · 세션 시작 후 재제출 잠김</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/submit/mif-3</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <span class="back">← 홈</span>
+        <div class="ph"><h2>미프 3차 코드 제출</h2><div class="due">분석 완료 07-14 14:20</div></div>
+
+        <div class="state warn">
+          <span class="ic">🔒</span>
+          <div class="tx">
+            <h3>이제 다시 제출할 수 없어요</h3>
+            <p>이해도 확인을 시작해서 잠겼습니다.</p>
+            <div class="sub">질문이 지금 제출된 코드로 만들어졌어요. 코드가 바뀌면 질문과 답이 어긋납니다.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>제출한 내용</h3>
+          <div class="kv"><span class="k">저장소</span><span class="v">github.com/team-a/miniproject-3</span></div>
+          <div class="kv"><span class="k">브랜치</span><span class="v">main</span></div>
+          <div class="kv"><span class="k">최근 커밋</span><span class="v">a3f9c21 · feat: HITL 재시도 상한 추가 <span class="n">(07-13 22:12)</span></span></div>
+          <div class="cta"><button class="btn">홈으로</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-closed">
+  <div class="sec-label">상태 · 제출 마감 후 (제출할 수 없다)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/submit/mif-3</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <span class="back">← 홈</span>
+        <div class="ph"><h2>미프 3차 코드 제출</h2><div class="due">제출 마감 07-14 18:00 · 지남</div></div>
+
+        <div class="state warn">
+          <span class="ic">🔒</span>
+          <div class="tx">
+            <h3>이제 다시 제출할 수 없어요</h3>
+            <p>이해도 확인을 시작해서 잠겼습니다.</p>
+            <div class="sub">질문이 지금 제출된 코드로 만들어졌어요. 코드가 바뀌면 질문과 답이 어긋납니다.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>제출한 내용</h3>
+          <div class="kv"><span class="k">저장소</span><span class="v">github.com/team-a/miniproject-3</span></div>
+          <div class="kv"><span class="k">브랜치</span><span class="v">main</span></div>
+          <div class="kv"><span class="k">최근 커밋</span><span class="v">a3f9c21 · feat: HITL 재시도 상한 추가 <span class="n">(07-13 22:12)</span></span></div>
+          <div class="cta"><button class="btn">홈으로</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-failed">
+  <div class="sec-label">상태 · 분석 실패 + 커밋 이메일 미확인</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/submit/mif-3</span></div>
+    <div class="app">
+      <div class="ttop">
+        <div class="l"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="tnav"><a class="on">홈</a><a>내 리포트</a></div></div>
+        <div class="me">이서준 <span class="av">이</span></div>
+      </div>
+      <div class="tmain">
+        <span class="back">← 홈</span>
+        <div class="ph"><h2>미프 3차 코드 제출</h2><div class="due">제출 마감 07-14 18:00 · <b>4시간 남음</b></div></div>
+
+        <div class="state bad">
+          <span class="ic">!</span>
+          <div class="tx">
+            <h3>코드를 분석하지 못했어요</h3>
+            <p>저장소는 열렸지만 분석할 코드를 찾지 못했습니다.</p>
+            <div class="sub">브랜치가 비어 있거나 소스 폴더가 없는지 확인해 주세요. 계속 안 되면 매니저에게 알려 주세요.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="seg"><span class="tg on">GitHub 저장소</span><span class="tg">ZIP 업로드</span></div>
+          <div class="fld">
+            <div class="fl">저장소 주소</div>
+            <div class="inp">https://github.com/team-a/miniproject-3</div>
+          </div>
+          <div class="fld">
+            <div class="fl">브랜치</div>
+            <div class="inp">main</div>
+            <div class="fh">커밋 이메일이 계정과 달라요. 이대로 제출해도 되지만, 빅프에서 내 기여가 정확히 잡히지 않을 수 있어요.</div>
+          </div>
+          <div class="cta"><button class="btn ghost">ZIP으로 올리기</button><button class="btn">다시 제출</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+</div>
+<script>
+  var PAGE = { cases:"page-cases", "closed":"page-closed", toobig:"page-toobig", form:"page-form", zip:"page-zip", invalid:"page-invalid", submitted:"page-submitted",
+               resubmit:"page-resubmit", locked:"page-locked", failed:"page-failed" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "form";
+    var id = PAGE[h] || "page-form";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+
+  // 목업 = 1920x1080 실화면. 보이는 폭에 맞춰 배율만 조절해 비율을 지킨다
+  function fitScreen(){
+    var p = document.querySelector(".page");
+    if(!p) return;
+    var cs = getComputedStyle(p);
+    var w = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if(w > 0) document.documentElement.style.setProperty("--k", w / 1920);
+  }
+  window.addEventListener("resize", fitScreen);
+  window.addEventListener("load", fitScreen);
+  fitScreen();
+</script>
+</body>
+</html>

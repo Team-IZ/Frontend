@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MG-02 · 히트맵 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-nav:#1e2436; --c-nav-2:#2a3147; --c-nav-text:#aeb4c6;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    /* 도달 단계 스케일 — MG-06이 그대로 물려받는다 */
+    --h0:#e8a87c; --h1:#f0c9a0; --h2:#f7e4c8; --h3:#cfe6d5; --h4:#8fce b0;
+    --h4c:#8fceb0; --hn:#eef0f3;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    /* 목업은 1920x1080 화면을 그대로 그리고, 보이는 폭에 맞춰 축소만 한다 */
+    /* 본문 기본 상한 — 1920에서 표·목록이 늘어지는 것을 막는다.
+       1512에서는 가용폭 1264px이라 걸리지 않고, 넓은 화면만 잡힌다(=Tailwind max-w-7xl) */
+    --w-app:1280px;--w-min:920px;
+    /* 히트맵 폭 = 컨테이너 최소 너비(--w-min). 열이 3개뿐이라도 다른 화면과 같은 틀 안에 든다 —
+       남는 폭은 셀이 나눠 갖는다. 범례·판정도 같은 값이라 오른쪽 끝이 표와 맞는다 */
+    --hm-w:var(--w-min);
+    --screen-w:1920px; --screen-h:1080px; --k:.6625;
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .doc-head ul{margin:var(--sp-3) 0 0 18px;color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .doc-head li{margin-bottom:3px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{width:var(--screen-w);zoom:var(--k);border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  .app{display:flex;flex-direction:column;height:var(--screen-h)}
+  .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
+  .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700}
+  .topbar .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .cohortsel{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:5px var(--sp-3);font-size:var(--fs-sm);background:var(--c-surface-2)}
+  .cohortsel .k{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+
+  .body{display:flex;flex:1;min-height:0}
+  .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
+  .nav .grp{padding-top:var(--sp-2);margin-top:var(--sp-2);border-top:1px solid var(--c-nav-2)}
+  .nav .grp:first-child{padding-top:0;margin-top:0;border-top:0}
+  .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
+  .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
+  .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
+  .nav .item .bg{margin-left:auto;background:var(--c-primary);color:#fff;font-size:10px;font-weight:700;border-radius:20px;padding:1px 6px}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-6);min-width:0;min-height:0;overflow:hidden}
+  /* 상한은 .content 자신이 아니라 자식에 건다 — .content가 배경을 계속 꽉 채워야 이음선이 안 생긴다 */
+  .content > *{max-width:var(--w-app);margin-left:auto;margin-right:auto}
+  /* .hmcol에 상한·마진을 따로 걸지 않는다 — .content > * 규약(max-width 1280 + 가운데)을 그대로 받아야
+     프로젝트 목록과 좌우 기준선이 같아진다 */
+
+  /* 표준 배치 */
+  .phead{margin-bottom:var(--sp-4)}
+  .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead .crumb{font-size:var(--fs-xs);color:var(--c-text-3);margin-bottom:2px}
+
+  /* 툴바 — 프로젝트 목록과 같은 규약. 변수(프로젝트)가 맨 왼쪽·크게 */
+  .ltool{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3);flex-wrap:wrap}
+  .prjsel{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--c-border-strong);border-radius:20px;padding:7px 15px;font-size:var(--fs-sm);font-weight:700;color:var(--c-text);background:#fff;cursor:pointer}
+  .prjsel .k{color:var(--c-text-3);font-size:var(--fs-xs);font-weight:400}
+  .prjsel .cv2{color:var(--c-text-3);font-size:11px}
+  .fil{border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);cursor:pointer}
+  .fil .k{color:var(--c-text-3)}
+  .fil.on{background:var(--c-primary-soft);border-color:#cdd4f2;color:var(--c-primary);font-weight:600}
+  .seg2{display:inline-flex;border:1px solid var(--c-border-strong);border-radius:20px;overflow:hidden}
+  .seg2 span{padding:7px 14px;font-size:var(--fs-xs);cursor:pointer;color:var(--c-text-2);background:#fff;border-right:1px solid var(--c-border)}
+  .seg2 span:last-child{border-right:0}
+  .seg2 span.on{background:var(--c-primary);color:#fff;font-weight:600}
+  /* 읽는 법 — 색 범례(+있으면 단계 뜻)를 표 위 오른쪽 구석 한 자리에 모은다. 표를 다 본 뒤가 아니라 보기 전에 읽힌다 */
+  .hmkey{display:flex;flex-direction:column;align-items:flex-end;gap:6px;margin-bottom:var(--sp-3);max-width:var(--hm-w)}
+  .hmkey .scale{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--c-text-2)}
+  .hmkey .scale .sw{width:18px;height:12px;border-radius:3px;display:inline-block}
+  /* 판정은 표 아래 한 줄 — 위면 표보다 먼저 읽히고, 옆이면 세로로 꺾여 빽빽해진다 */
+  .verdict{display:flex;align-items:flex-start;gap:var(--sp-3);flex-wrap:wrap;margin-top:var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--c-border);font-size:var(--fs-sm);max-width:var(--hm-w)}
+  .verdict .vt{display:flex;align-items:flex-start;gap:8px;flex:1;min-width:340px}
+  .verdict .vm{font-weight:700;font-size:15px;line-height:1.5}
+  .verdict .vx{display:block}
+  .verdict b{display:block;color:var(--c-text);font-weight:700;margin-bottom:3px}
+  .verdict .vs{display:block;color:var(--c-text-2);line-height:1.65;max-width:62ch}
+  .verdict .vs b{display:inline;margin:0}
+  .verdict .vact{display:flex;gap:6px;margin-left:auto;flex-shrink:0;align-self:center}
+  /* 단계 뜻 — 개인 뷰에서만, 색 범례와 같은 자리(hmkey)에 붙여 "읽는 법"을 한 군데로 모은다 */
+  .hmkey .lvline{font-size:12px;color:var(--c-text-3);display:flex;gap:14px;flex-wrap:wrap;justify-content:flex-end}
+  .hmkey .lvline b{color:var(--c-text-2);font-weight:700;margin-right:3px}
+  .b6{font-size:11px;color:var(--c-text-3);margin-top:12px;line-height:1.7}
+  .b6 b{color:var(--c-text-2)}
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-xs);cursor:pointer;padding:7px 12px;font-family:inherit}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong)}
+
+  .alert{display:flex;gap:var(--sp-3);align-items:flex-start;border-radius:var(--r-md);padding:11px var(--sp-4);font-size:var(--fs-sm);margin-bottom:var(--sp-3)}
+  .alert.warn{background:var(--c-warning-soft);color:var(--c-warning);border:1px solid #e6d3a8}
+  .alert .tx{flex:1;color:var(--c-text-2)}
+  .alert .tx b{color:var(--c-text)}
+  .alert .tx .sub{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:2px}
+
+  /* ── 히트맵 — 셀을 띄워 타일로 만든다. 붙이면 그냥 표가 된다 */
+  /* 표는 자기 폭을 갖는다 — width:100%로 늘리면 열이 3개뿐이라 칸이 376px까지 벌어진다 */
+  .hmwrap{overflow-x:auto;padding-bottom:4px;margin-left:-3px;max-width:var(--hm-w)}
+  .hmtbl{border-collapse:separate;border-spacing:3px;font-size:var(--fs-sm);width:100%;table-layout:fixed}
+  .hmtbl th{font-size:var(--fs-sm);color:var(--c-text);font-weight:700;padding:2px 4px;text-align:center;vertical-align:bottom}
+  .hmtbl th .lv{display:block;font-size:11px;color:var(--c-text-3);font-weight:600;margin-bottom:1px}
+  /* 좌상단 — x축·y축이 무엇인지. 비워 두면 개념 1·2·3의 정체를 알 수 없다 */
+  .hmtbl th.axis{text-align:left;vertical-align:bottom;padding:0 var(--sp-3) 2px 0;width:150px}
+  .hmtbl th.axis .ax{display:block;font-size:11px;font-weight:700;color:var(--c-text-2);line-height:1.45}
+  .hmtbl th.axis .ax i{font-style:normal;color:var(--c-text-3);font-weight:600;margin-right:4px}
+  .hmtbl th.rowh,.hmtbl td.rowh{text-align:left}
+  .hmtbl td.rowh{width:150px;font-weight:600;color:var(--c-text);white-space:nowrap;padding-right:var(--sp-3);font-size:var(--fs-sm)}
+  .hmtbl td.rowh small{color:var(--c-text-3);font-weight:400;font-size:12px;margin-left:4px}
+  .grouprow td{padding:var(--sp-4) 4px 3px;font-size:12px;color:var(--c-text-2);font-weight:700;letter-spacing:0}
+  .grouprow span{color:var(--c-text-3)}
+
+  /* 셀 — 값 + 튀는 셀에만 라벨 */
+  .hc{height:44px;border-radius:4px;text-align:center;vertical-align:middle;font-variant-numeric:tabular-nums;font-weight:700;color:#241108;cursor:pointer;border:1px solid transparent;position:relative}
+  .hc:hover{border-color:rgba(0,0,0,.28)}
+  .hc small{display:block;font-size:10px;font-weight:600;opacity:.76;margin-top:1px}
+  .hc .up2{font-size:11px;font-weight:800;opacity:.55;margin-left:2px}
+  .hc.l0{background:#df6150;color:#fff}
+  .hc.l1{background:#ec9a5c}
+  .hc.l2{background:#ecc95e}
+  .hc.l3{background:#a9cf8e}
+  .hc.l4{background:#57b083;color:#fff}
+  .hc.na{background:repeating-linear-gradient(45deg,#eceef1,#eceef1 5px,#e2e5ea 5px,#e2e5ea 10px);color:var(--c-text-3);font-weight:400;cursor:default}
+  .hc.na:hover{border-color:transparent}
+  .hc.grp2{outline:2px solid var(--c-warning);outline-offset:-2px}
+  .avgrow td.rowh{font-weight:700}
+  .avgrow .hc{outline:2px solid rgba(58,77,184,.28);outline-offset:-1px}
+  .avgrow .hc.grp2{outline:2px solid var(--c-warning)}
+  .perrow td.rowh{padding-left:var(--sp-4);font-weight:500;color:var(--c-text-2);cursor:pointer}
+  .perrow:hover td.rowh{color:var(--c-primary)}
+  .rk2{width:104px;padding-left:var(--sp-3);white-space:nowrap}
+  .rbadge{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+  .rbadge.down{background:var(--c-warning-soft);color:var(--c-warning)}
+  .rbadge.low{background:var(--c-danger-soft);color:var(--c-danger)}
+
+  /* 드릴다운 위치 — 지금 어느 계층인지 */
+  .drill{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);margin-bottom:var(--sp-3)}
+  .drill .lv2{color:var(--c-primary);cursor:pointer}
+  .drill .sep2{color:var(--c-text-3);font-size:11px}
+  .drill .cur{font-weight:700}
+  .drill .cnt2{color:var(--c-text-3);font-size:var(--fs-xs);margin-left:2px}
+  .backlink{font-size:var(--fs-xs);color:var(--c-primary);cursor:pointer;display:inline-block;margin-bottom:var(--sp-2)}
+  .fil.on{background:var(--c-primary-soft);border-color:#cdd4f2;color:var(--c-primary);font-weight:600}
+
+
+
+  .empty{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8) var(--sp-5);text-align:center;width:100%;min-height:280px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  /* 빈 상태 3종 — 자리의 성격이 다르다
+     .wait 점선 = 아직 안 들어온 자리 · .empty 실선 = 확정된 0건 · .fail = 사고 */
+  .empty.wait{background:var(--c-surface-2);border:1px dashed var(--c-border-strong)}
+  .empty.fail{background:var(--c-danger-soft);border:1px solid #efc9c4}
+  .empty.fail .t{color:var(--c-danger)}
+  .empty .t{font-size:var(--fs-base);font-weight:600;margin-bottom:6px}
+  .empty .s{font-size:var(--fs-sm);color:var(--c-text-3);line-height:1.7}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
+
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  body.embedded .sec-label{margin-top:0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">MG-02 · 매니저 · 웹</span>
+    <h1>히트맵 — 반이 어디서 무너졌나</h1>
+    <p>이 화면이 답하는 질문은 하나 — <b>개인 문제인가, 반 문제인가.</b> 만날 사람은 면담 목록이 이미 주므로, 여기서만 알 수 있는 것은 <b>무너진 게 한 사람인지 반 전체인지</b>다.</p>
+    <ul>
+      <li><b>절반 이상이 2단 이하면 화면이 "반 문제"라고 판정한다</b>(9-6) — 셀 테두리 + 표 아래 한 줄. 매니저가 숫자를 세게 하면 반마다 기준이 달라진다.</li>
+      <li><b>프로젝트 select가 이 화면의 변수</b>다. 회차마다 열(검증 개념)이 통째로 바뀌므로 툴바 맨 왼쪽에 둔다.</li>
+      <li><b>계층은 담당 반 → 팀 → 개인 3단</b>(14번 12-3). 각 단계마다 <b>선택 필터와 정렬</b>을 둬서 바로 좁힐 수 있게 한다.</li>
+      <li><b>셀에는 값만, 라벨은 튀는 셀에만</b>(v1 방식). 전부 달면 라벨이 배경이 되어 아무것도 강조되지 않고, 셀마다 문장을 반복하면 표가 가로로 늘어나 <b>비교가 안 된다.</b></li>
+      <li><b>판정은 표 아래 한 줄.</b> 위에 두면 표보다 먼저 읽혀 표를 볼 이유를 뺏고, 옆에 두면 268px 안에서 문장이 꺾여 빽빽해진다 — <b>아래면 읽는 순서가 곧 시선 순서</b>다.</li>
+      <li><b>판정은 세어지는 것 + 그래서 뭘 하라는 것</b>까지. <code>23명 중 12명</code>에서 멈추면 매니저가 다시 해석해야 한다 — <b>개인 사유에서 빠진다 · 반 전체 안내 대상이다</b>까지 말한다. 원인 추정(<b>왜 막혔나</b>)은 데이터가 없으므로 쓰지 않는다.</li>
+      <li><b>표 좌상단에 세로·가로가 무엇인지</b> 쓴다. <code>개념 1·2·3</code>만으로는 그 열의 정체를 알 수 없다.</li>
+      <li><b>y축 칸 폭 150px 고정.</b> 안 그러면 <code>담당 반</code>과 <code>김민준</code>의 길이 차이로 <b>화면마다 히트맵 위치가 달라진다.</b> 범례·단계 안내도 같은 들여쓰기.</li>
+    </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 히트맵 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">드릴다운 3단 — 열은 그 회차의 검증 개념 3건</td></tr>
+        <tr><td class="no">—</td><td class="st">반별</td><td class="code">GET /heatmap?scope=class</td><td class="msg">담당 반 평균 + 반별 행<span class="nx">→ 행 클릭 → 팀</span></td><td><a class="mk2" href="#class">#class</a></td></tr>
+        <tr><td class="no">—</td><td class="st">팀</td><td class="code">—</td><td class="msg">그 반의 팀별 행<span class="nx">→ 행 클릭 → 개인</span></td><td><a class="mk2" href="#team">#team</a></td></tr>
+        <tr><td class="no">—</td><td class="st">개인</td><td class="code">—</td><td class="msg"><b>평균이 아니라 도달 단계 그대로</b><span class="nx">→ 이름 클릭 → 교육생 상세</span></td><td><a class="mk2" href="#person">#person</a></td></tr>
+        <tr><td class="no">—</td><td class="st">다시 보기 반영</td><td class="code">—</td><td class="msg"><b>↑</b>로 오른 것을 표시 · <b>위 평균은 1차 기준</b><span class="nx">→ 섞으면 평균이 위로 밀린다</span></td><td><a class="mk2" href="#retried">#retried</a></td></tr>
+        <tr class="grp"><td colspan="5">데이터가 없을 때 — 없음과 0을 구분한다</td></tr>
+        <tr><td class="no">—</td><td class="st"><b>문항 없음</b>(코드에 개념이 없어 못 물음)</td><td class="code">—</td><td class="msg">셀에 <code>―</code> · 열 전체면 열 머리에 <b>문항 없음</b><span class="nx">→ <b>학생 문제가 아니라 개념 선택 문제</b></span></td><td><a class="mk2" href="#person">#person</a></td></tr>
+        <tr><td class="no">—</td><td class="st">미응시</td><td class="code">—</td><td class="msg">셀을 비우고 행 끝에 <b>미응시</b><span class="nx">→ <b>0단과 다르다</b> · 평균 모집단에서 뺀다</span></td><td class="no">—</td></tr>
+        <tr><td class="no">—</td><td class="st">회차 결과 없음</td><td class="code">—</td><td class="msg"><b>이 회차는 아직 결과가 없어요</b> + 프로젝트를 바꾸라는 안내<span class="nx">→ 다른 회차 선택</span></td><td><a class="mk2" href="#empty">#empty</a></td></tr>
+        <tr class="grp"><td colspan="5">판정할 수 없을 때</td></tr>
+        <tr><td class="no">—</td><td class="st"><b>1회차 — 비교할 지난 회차가 없다</b></td><td class="code">—</td><td class="msg"><b>단계 하락 배지를 달지 않는다</b> · <b>이번이 첫 회차입니다</b><span class="nx">→ 다음 회차부터 판정 — <b>없는 비교를 지어내지 않는다</b></span></td><td><a class="mk2" href="#first">#first</a></td></tr>
+        <tr><td class="no">—</td><td class="st">응시 인원이 적은 팀</td><td class="code">—</td><td class="msg">평균은 내되 <b>인원 수를 같이 쓴다</b>(<code>3명</code>)<span class="nx">→ <b>순위를 매기지 않는다</b> — 3명 평균으로 팀을 줄세우지 않는다</span></td><td><a class="mk2" href="#team">#team</a></td></tr>
+        <tr><td class="no">—</td><td class="st">집계 실패</td><td class="code">HEATMAP_UNAVAILABLE</td><td class="msg"><b>불러오지 못했습니다</b> · <b>0으로 그리지 않는다</b><span class="nx">→ 재조회 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>1회차에는 단계 하락을 판정하지 않는다.</b> 배지가 <b>지난 회차 대비</b>인데 비교 대상이 없다 — 없는 비교를 지어내면 첫 회차 학생이 전부 하락으로 보인다.<br>
+    · <b>없음(<code>―</code>)과 0단과 미응시는 서로 다르다.</b> 코드에 개념이 없어 못 물은 것 · 물었는데 못 한 것 · 아예 안 본 것을 같은 칸으로 그리면 처방이 달라진다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
+  </div>
+
+  <div class="rpage" id="page-class">
+  <div class="sec-label">① 반별 — 담당 반 전체</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/heatmap</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item on"><span class="ic">▩</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">✎</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">☰</span>교안</div></div>
+        </div>
+        <div class="content">
+        <div class="hmcol">
+          <div class="phead"><div class="crumb">히트맵 &#8250; 7기 &#8250; 담당 반</div><h2>히트맵</h2></div>
+          <div class="ltool">
+            <span class="prjsel"><span class="k">프로젝트</span> 미프 3차 <span class="cv2">&#9662;</span></span>
+            <span class="seg2"><span class="on">반별</span><span>팀</span><span>개인</span></span>
+            <div class="fil"><span class="k">정렬</span> 낮은 순 &#9662;</div>
+            <div class="fil on">&#9888; 반 문제만</div>
+          </div>
+          <div class="hmkey"><div class="scale">취약 <span class="sw" style="background:#df6150"></span><span class="sw" style="background:#ec9a5c"></span><span class="sw" style="background:#ecc95e"></span><span class="sw" style="background:#a9cf8e"></span><span class="sw" style="background:#57b083"></span> 양호<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 문항 없음</div></div>
+          <div class="hmwrap"><table class="hmtbl"><tr><th class="axis"><span class="ax"><i>세로</i>반</span><span class="ax"><i>가로</i>이 회차의 검증 개념 3건</span></th><th><span class="lv">개념 1</span>HITL Trigger</th><th><span class="lv">개념 2</span>Graph 구성</th><th><span class="lv">개념 3</span>State 관리</th></tr><tr class="avgrow"><td class="rowh">담당 반 <small>75명</small></td><td class="hc l3">2.8</td><td class="hc l2">2.5<small>주의</small></td><td class="hc l3">3.3</td></tr><tr class="grouprow"><td colspan="4">반별 <span>· 행 클릭 → 그 반 팀</span></td></tr><tr class=""><td class="rowh" style="cursor:pointer">A반 <small>23명 &#9656;</small></td><td class="hc l3">2.6<small>주의</small></td><td class="hc l2 grp2">1.9<small>취약</small></td><td class="hc l3">3.4</td></tr><tr class=""><td class="rowh" style="cursor:pointer">C반 <small>25명 &#9656;</small></td><td class="hc l3">2.8</td><td class="hc l2">2.4<small>취약</small></td><td class="hc l3">3.2</td></tr><tr class=""><td class="rowh" style="cursor:pointer">B반 <small>27명 &#9656;</small></td><td class="hc l3">3.0</td><td class="hc l3">2.6<small>주의</small></td><td class="hc l3">3.3</td></tr></table></div>          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+  <div class="rpage" id="page-team">
+  <div class="sec-label">② 팀 — 어디에 몰렸나</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/heatmap</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item on"><span class="ic">▩</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">✎</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">☰</span>교안</div></div>
+        </div>
+        <div class="content">
+        <div class="hmcol">
+          <div class="phead"><div class="crumb">히트맵 &#8250; 7기 &#8250; 담당 반 &#8250; <b style="color:var(--c-primary)">A반</b></div><h2>히트맵</h2></div>
+          <div class="ltool">
+            <span class="prjsel"><span class="k">프로젝트</span> 미프 3차 <span class="cv2">&#9662;</span></span>
+            <span class="seg2"><span>반별</span><span class="on">팀</span><span>개인</span></span>
+            <div class="fil on"><span class="k">반</span> A반 &#9662;</div>
+            <div class="fil"><span class="k">정렬</span> 낮은 순 &#9662;</div>
+          </div>
+          <div class="hmkey"><div class="scale">취약 <span class="sw" style="background:#df6150"></span><span class="sw" style="background:#ec9a5c"></span><span class="sw" style="background:#ecc95e"></span><span class="sw" style="background:#a9cf8e"></span><span class="sw" style="background:#57b083"></span> 양호<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 문항 없음</div></div>
+          <div class="hmwrap"><table class="hmtbl"><tr><th class="axis"><span class="ax"><i>세로</i>반 &#8250; 팀</span><span class="ax"><i>가로</i>이 회차의 검증 개념 3건</span></th><th><span class="lv">개념 1</span>HITL Trigger</th><th style="color:var(--c-warning)"><span class="lv">개념 2</span>Graph 구성 &#9888;</th><th><span class="lv">개념 3</span>State 관리</th></tr><tr class="avgrow"><td class="rowh">A반 <small>23명 응시</small></td><td class="hc l3">2.6<small>주의</small></td><td class="hc l2 grp2">1.9<small>취약</small></td><td class="hc l3">3.4</td></tr><tr class="grouprow"><td colspan="4">팀별 <span>· 행 클릭 → 그 팀 팀원</span></td></tr><tr class=""><td class="rowh" style="cursor:pointer">2팀 <small>3명 &#9656;</small></td><td class="hc l2">1.7<small>취약</small></td><td class="hc l2 grp2">1.7<small>취약</small></td><td class="hc l3">3.0</td></tr><tr class=""><td class="rowh" style="cursor:pointer">3팀 <small>3명 &#9656;</small></td><td class="hc l2">2.3<small>취약</small></td><td class="hc l2 grp2">1.7<small>취약</small></td><td class="hc l3">3.3</td></tr><tr class=""><td class="rowh" style="cursor:pointer">1팀 <small>3명 &#9656;</small></td><td class="hc l2">2.3<small>취약</small></td><td class="hc l2 grp2">2.0<small>취약</small></td><td class="hc l4">3.5</td></tr><tr class=""><td class="rowh" style="cursor:pointer">4팀 <small>4명 &#9656;</small></td><td class="hc l2">2.5<small>주의</small></td><td class="hc l2 grp2">2.0<small>취약</small></td><td class="hc l4">3.5</td></tr></table></div>          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-person">
+  <div class="sec-label">③ 개인</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/heatmap</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item on"><span class="ic">▩</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">✎</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">☰</span>교안</div></div>
+        </div>
+        <div class="content">
+        <div class="hmcol">
+          <div class="phead"><div class="crumb">히트맵 &#8250; 7기 &#8250; 담당 반 &#8250; A반 &#8250; <b style="color:var(--c-primary)">1팀</b></div><h2>히트맵</h2></div>
+          <div class="ltool">
+            <span class="prjsel"><span class="k">프로젝트</span> 미프 3차 <span class="cv2">&#9662;</span></span>
+            <span class="seg2"><span>반별</span><span>팀</span><span class="on">개인</span></span>
+            <div class="fil on"><span class="k">반</span> A반 &#9662;</div>
+            <div class="fil on"><span class="k">팀</span> 1팀 &#9662;</div>
+            <div class="fil"><span class="k">정렬</span> 낮은 순 &#9662;</div>
+            <div class="fil">위험만</div>
+          </div>
+          <div class="hmkey"><div class="scale">취약 <span class="sw" style="background:#df6150"></span><span class="sw" style="background:#ec9a5c"></span><span class="sw" style="background:#ecc95e"></span><span class="sw" style="background:#a9cf8e"></span><span class="sw" style="background:#57b083"></span> 양호<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 문항 없음</div><div class="lvline"><span><b>1단</b>무엇을 하는지</span><span><b>2단</b>왜 그렇게 했는지</span><span><b>3단</b>다른 방법과 비교</span><span><b>4단</b>언제 깨지는지</span></div></div>
+          <div class="hmwrap"><table class="hmtbl"><tr><th class="axis"><span class="ax"><i>세로</i>팀 &#8250; 팀원</span><span class="ax"><i>가로</i>이 회차의 검증 개념 3건</span></th><th><span class="lv">개념 1</span>HITL Trigger</th><th><span class="lv">개념 2</span>Graph 구성</th><th><span class="lv">개념 3</span>State 관리</th><th></th></tr><tr class="avgrow"><td class="rowh">1팀 <small>3명</small></td><td class="hc l2">2.3<small>취약</small></td><td class="hc l2 grp2">2.0<small>취약</small></td><td class="hc l4">3.5</td><td class="rk2"></td></tr><tr class="grouprow"><td colspan="5">팀원 <span>· 이름 클릭 → 그 사람 이력</span></td></tr><tr class="perrow"><td class="rowh">김민준 </td><td class="hc l1">1단</td><td class="hc l2">2단</td><td class="hc l4">4단</td><td class="rk2"><span class="rbadge down">단계 하락</span></td></tr><tr class="perrow"><td class="rowh">이서준 </td><td class="hc l2">2단</td><td class="hc l2">2단</td><td class="hc l3">3단</td><td class="rk2"><span class="rbadge down">단계 하락</span></td></tr><tr class="perrow"><td class="rowh">정하늘 </td><td class="hc l4">4단</td><td class="hc l2">2단</td><td class="hc na">&#8213;</td><td class="rk2"></td></tr></table></div>                    </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-first">
+  <div class="sec-label">상태 · 미프 1차 — 비교할 지난 회차가 없다</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/heatmap</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item on"><span class="ic">▩</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">✎</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">☰</span>교안</div></div>
+        </div>
+        <div class="content">
+        <div class="hmcol">
+          <div class="phead"><div class="crumb">히트맵 &#8250; 7기 &#8250; 담당 반 &#8250; A반 &#8250; <b style="color:var(--c-primary)">1팀</b></div><h2>히트맵</h2></div>
+          <div class="ltool">
+            <span class="prjsel"><span class="k">프로젝트</span> 미프 1차 <span class="cv2">&#9662;</span></span>
+            <span class="seg2"><span>반별</span><span>팀</span><span class="on">개인</span></span>
+            <div class="fil on"><span class="k">반</span> A반 &#9662;</div>
+            <div class="fil on"><span class="k">팀</span> 1팀 &#9662;</div>
+            <div class="fil"><span class="k">정렬</span> 낮은 순 &#9662;</div>
+            <div class="fil">위험만</div>
+          </div>
+          <div class="hmkey"><div class="scale">취약 <span class="sw" style="background:#df6150"></span><span class="sw" style="background:#ec9a5c"></span><span class="sw" style="background:#ecc95e"></span><span class="sw" style="background:#a9cf8e"></span><span class="sw" style="background:#57b083"></span> 양호<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 문항 없음</div><div class="lvline"><span><b>1단</b>무엇을 하는지</span><span><b>2단</b>왜 그렇게 했는지</span><span><b>3단</b>다른 방법과 비교</span><span><b>4단</b>언제 깨지는지</span></div></div>
+          <div class="hmwrap"><table class="hmtbl"><tr><th class="axis"><span class="ax"><i>세로</i>팀 &#8250; 팀원</span><span class="ax"><i>가로</i>이 회차의 검증 개념 3건</span></th><th><span class="lv">개념 1</span>HITL Trigger</th><th><span class="lv">개념 2</span>Graph 구성</th><th><span class="lv">개념 3</span>State 관리</th><th></th></tr><tr class="avgrow"><td class="rowh">1팀 <small>3명</small></td><td class="hc l2">2.3<small>취약</small></td><td class="hc l2 grp2">2.0<small>취약</small></td><td class="hc l4">3.5</td><td class="rk2"></td></tr><tr class="grouprow"><td colspan="5">팀원 <span>· 이름 클릭 → 그 사람 이력</span></td></tr><tr class="perrow"><td class="rowh">김민준 </td><td class="hc l1">1단</td><td class="hc l2">2단</td><td class="hc l4">4단</td><td class="rk2"></td></tr><tr class="perrow"><td class="rowh">이서준 </td><td class="hc l2">2단</td><td class="hc l2">2단</td><td class="hc l3">3단</td><td class="rk2"></td></tr><tr class="perrow"><td class="rowh">정하늘 </td><td class="hc l4">4단</td><td class="hc l2">2단</td><td class="hc na">&#8213;</td><td class="rk2"></td></tr></table></div>                    <div class="verdict"><span class="vt"><span class="vm">·</span><span class="vx"><b>이번이 첫 회차입니다</b><span class="vs">비교할 지난 회차가 없어 <b>단계 하락은 판정하지 않습니다.</b> 지금 낮은 개념은 있지만 떨어진 것인지 원래 그런 것인지는 <b>다음 회차부터 알 수 있습니다.</b></span></span></span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-retried">
+  <div class="sec-label">④ 다시 보기 결과</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/heatmap</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item on"><span class="ic">▩</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">✎</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">☰</span>교안</div></div>
+        </div>
+        <div class="content">
+        <div class="hmcol">
+          <div class="phead"><div class="crumb">히트맵 &#8250; 7기 &#8250; 담당 반 &#8250; A반 &#8250; <b style="color:var(--c-primary)">1팀</b></div><h2>히트맵</h2></div>
+          <div class="ltool">
+            <span class="prjsel"><span class="k">프로젝트</span> 미프 3차 <span class="cv2">&#9662;</span></span>
+            <span class="seg2"><span>반별</span><span>팀</span><span class="on">개인</span></span>
+            <div class="fil on"><span class="k">반</span> A반 &#9662;</div>
+            <div class="fil on"><span class="k">팀</span> 1팀 &#9662;</div>
+            <div class="fil on">다시 본 사람만</div>
+          </div>
+          <div class="hmkey"><div class="scale">취약 <span class="sw" style="background:#df6150"></span><span class="sw" style="background:#ec9a5c"></span><span class="sw" style="background:#ecc95e"></span><span class="sw" style="background:#a9cf8e"></span><span class="sw" style="background:#57b083"></span> 양호<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 문항 없음</div><div class="lvline"><span><b>1단</b>무엇을 하는지</span><span><b>2단</b>왜 그렇게 했는지</span><span><b>3단</b>다른 방법과 비교</span><span><b>4단</b>언제 깨지는지</span></div></div>
+          <div class="hmwrap"><table class="hmtbl"><tr><th class="axis"><span class="ax"><i>세로</i>팀 &#8250; 팀원</span><span class="ax"><i>가로</i>이 회차의 검증 개념 3건</span></th><th><span class="lv">개념 1</span>HITL Trigger</th><th><span class="lv">개념 2</span>Graph 구성</th><th><span class="lv">개념 3</span>State 관리</th><th></th></tr><tr class="avgrow"><td class="rowh">1팀 <small>3명 · 1차 기준</small></td><td class="hc l2">2.3<small>취약</small></td><td class="hc l2 grp2">2.0<small>취약</small></td><td class="hc l4">3.5</td><td class="rk2"></td></tr><tr class="grouprow"><td colspan="5">팀원 <span>· &#8593;는 다시 보기로 오른 것</span></td></tr><tr class="perrow"><td class="rowh">김민준 </td><td class="hc l2">2단<span class="up2">&#8593;</span></td><td class="hc l2">2단</td><td class="hc l4">4단</td><td class="rk2"><span class="rbadge down">단계 하락</span></td></tr><tr class="perrow"><td class="rowh">이서준 </td><td class="hc l3">3단<span class="up2">&#8593;</span></td><td class="hc l2">2단</td><td class="hc l3">3단</td><td class="rk2"><span class="rbadge down">단계 하락</span></td></tr><tr class="perrow"><td class="rowh">정하늘 </td><td class="hc l4">4단</td><td class="hc l2">2단</td><td class="hc na">&#8213;</td><td class="rk2"></td></tr></table></div>                    </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+  <div class="rpage" id="page-empty">
+  <div class="sec-label">상태 · 아직 측정되지 않은 회차</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/heatmap</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 매니저 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item on"><span class="ic">▩</span>히트맵</div></div>
+          <div class="grp"><div class="item"><span class="ic">✎</span>면담<span class="bg">4</span></div></div>
+          <div class="grp"><div class="item"><span class="ic">◎</span>교육생</div><div class="item"><span class="ic">▤</span>프로젝트</div><div class="item"><span class="ic">☰</span>교안</div></div>
+        </div>
+        <div class="content">
+        <div class="hmcol">
+          <div class="phead"><div class="crumb">히트맵 &#8250; 7기 &#8250; 담당 반</div><h2>히트맵</h2></div>
+          <div class="ltool">
+            <span class="prjsel"><span class="k">프로젝트</span> 미프 4차 <span class="cv2">&#9662;</span></span>
+            <span class="seg2"><span class="on">반별</span><span>팀</span><span>개인</span></span>
+          </div>
+          <div class="hmkey"><div class="scale">취약 <span class="sw" style="background:#df6150"></span><span class="sw" style="background:#ec9a5c"></span><span class="sw" style="background:#ecc95e"></span><span class="sw" style="background:#a9cf8e"></span><span class="sw" style="background:#57b083"></span> 양호<span class="sw" style="background:repeating-linear-gradient(45deg,#eceef1,#eceef1 4px,#e2e5ea 4px,#e2e5ea 8px);margin-left:6px"></span> 문항 없음</div></div>
+          <div class="hmwrap"><table class="hmtbl"><tr><td colspan="5"><div class="empty wait"><div class="t">이 회차는 아직 결과가 없어요</div><div class="s">이해도 확인이 끝나면 여기에 표시됩니다.<br>지난 회차를 보려면 위에서 <b>프로젝트를 바꾸세요</b>.</div></div></td></tr></table></div>
+          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+  var PAGE = { cases:"page-cases", first:"page-first", "class":"page-class", team:"page-team", person:"page-person",
+               retried:"page-retried", empty:"page-empty" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "class";
+    var id = PAGE[h] || "page-class";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+
+  // 목업 = 1920x1080 실화면. 보이는 폭에 맞춰 배율만 조절해 비율을 지킨다
+  function fitScreen(){
+    var p = document.querySelector(".page");
+    if(!p) return;
+    var cs = getComputedStyle(p);
+    var w = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if(w > 0) document.documentElement.style.setProperty("--k", w / 1920);
+  }
+  window.addEventListener("resize", fitScreen);
+  window.addEventListener("load", fitScreen);
+  fitScreen();
+</script>
+</body>
+</html>

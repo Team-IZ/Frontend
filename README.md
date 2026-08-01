@@ -28,11 +28,11 @@ npm run dev      # http://localhost:5173
 | --- | --- |
 | [`docs/handbook/git-convention.md`](docs/handbook/git-convention.md) | **작업 전 필독.** 브랜치·커밋·PR 규약 |
 | [`docs/handbook/issue-and-branch-online.md`](docs/handbook/issue-and-branch-online.md) | 이슈 사용법, 커밋·PR 연결 원리 |
-| [`docs/plan/screen/definition/`](docs/plan/screen/definition/) | 화면정의서 (무엇을 만드는가) |
-| [`docs/plan/screen/wireframe/`](docs/plan/screen/wireframe/) | 와이어프레임 목업 (`index.html`로 열람) |
-| [`docs/plan/screen/definition/07-frontend-setup-plan.md`](docs/plan/screen/definition/07-frontend-setup-plan.md) | 프론트엔드 구축 단계 계획 |
+| [`docs/plan/v2/definition/00-index.md`](docs/plan/v2/definition/00-index.md) | **현재 화면정의서(25화면).** 개발은 이 기준 |
+| [`docs/plan/v2/wireframe/`](docs/plan/v2/wireframe/) | v2 와이어프레임 목업 (`index.html`로 열람, [배포본](https://team-iz.github.io/Frontend/wireframe/)) |
+| [`docs/plan/v1/`](docs/plan/v1/) | 이전 화면정의서·와이어프레임 — **참고용, 구조는 물려받지 않는다** |
 | [`docs/dev/decision-log.md`](docs/dev/decision-log.md) | **개발** 결정 기록 (왜 이렇게 했는가) |
-| [`docs/plan/screen/definition/01-decision-log.md`](docs/plan/screen/definition/01-decision-log.md) | 화면 설계 결정 기록 (기획 단계) |
+| [`docs/plan/v1/definition/01-decision-log.md`](docs/plan/v1/definition/01-decision-log.md) | v1 화면 설계 결정 기록 (기획 단계, 참고용) |
 
 ## 기술 스택
 

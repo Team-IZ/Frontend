@@ -1,0 +1,1398 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OP-06 · 운영 관리 — 와이어프레임</title>
+<style>
+  :root{
+    --c-bg:#f4f5f7; --c-surface:#ffffff; --c-surface-2:#fafbfc;
+    --c-border:#e2e5ea; --c-border-strong:#cfd4dc;
+    --c-text:#181b20; --c-text-2:#5a616b; --c-text-3:#8b929c;
+    --c-primary:#3a4db8; --c-primary-soft:#eef0fb;
+    --c-nav:#1e2436; --c-nav-2:#2a3147; --c-nav-text:#aeb4c6;
+    --c-danger:#c0392b; --c-danger-soft:#fbeceb;
+    --c-warning:#b3771a; --c-warning-soft:#fbf3e6;
+    --c-success:#1f8a5b; --c-success-soft:#e8f5ee;
+    --c-info:#2f6bb0; --c-info-soft:#eaf2fa;
+    --r-sm:6px; --r-md:10px; --r-lg:14px;
+    --fs-xs:12px; --fs-sm:13px; --fs-base:14px; --fs-lg:16px; --fs-xl:20px; --fs-2xl:26px;
+    --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px; --sp-8:48px;
+    --shadow-card:0 1px 2px rgba(20,24,31,.05),0 10px 34px rgba(20,24,31,.09);
+    /* 목업은 1920x1080 화면을 그대로 그리고, 보이는 폭에 맞춰 축소만 한다 */
+    /* 본문 기본 상한 — 1920에서 표·목록이 늘어지는 것을 막는다.
+       1512에서는 가용폭 1264px이라 걸리지 않고, 넓은 화면만 잡힌다(=Tailwind max-w-7xl) */
+    --w-app:1280px;--w-min:920px;
+    /* 표 컬럼 폭 — 유형별 고정값 1벌. 남는 폭은 텍스트 컬럼이 흡수한다.
+       고정하지 않으면 auto 레이아웃이 남는 폭을 전 컬럼에 뿌려 화면마다 폭이 달라진다 */
+    --col-name:200px; --col-chk:40px; --col-num:92px; --col-money:116px; --col-badge:108px;
+    --col-date:124px; --col-period:168px; --col-email:196px; --col-person:132px;
+    --col-cls:110px; --col-act:96px;
+    --screen-w:1920px; --screen-h:1080px; --k:.6625;
+    --font:-apple-system,'Apple SD Gothic Neo',system-ui,'Segoe UI',sans-serif;
+    --mono:ui-monospace,Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);color:var(--c-text);background:var(--c-bg);font-size:var(--fs-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .page{max-width:1320px;margin:0 auto;padding:var(--sp-8) var(--sp-5)}
+  .doc-head{margin-bottom:var(--sp-6)}
+  .doc-head .id{display:inline-block;font-size:var(--fs-xs);font-weight:700;letter-spacing:.04em;color:var(--c-primary);background:var(--c-primary-soft);padding:3px 8px;border-radius:var(--r-sm)}
+  .doc-head h1{font-size:var(--fs-2xl);margin:var(--sp-3) 0 var(--sp-2);letter-spacing:-.01em}
+  .doc-head p{color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .doc-head ul{margin:var(--sp-3) 0 0 18px;color:var(--c-text-2);font-size:var(--fs-sm);max-width:920px}
+  .doc-head li{margin-bottom:3px}
+  .sec-label{font-size:var(--fs-xs);font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--c-text-3);margin:var(--sp-8) 0 var(--sp-3)}
+
+  .viewport{width:var(--screen-w);zoom:var(--k);border:1px solid var(--c-border-strong);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-card);background:#fff;position:relative}
+  .chrome{height:36px;background:#eceef1;border-bottom:1px solid var(--c-border);display:flex;align-items:center;gap:var(--sp-2);padding:0 var(--sp-4)}
+  .chrome .tl{display:flex;gap:6px}.chrome .tl i{width:11px;height:11px;border-radius:50%;background:#cfd4dc;display:block}
+  .chrome .url{flex:1;height:22px;background:#fff;border:1px solid var(--c-border);border-radius:20px;font-size:var(--fs-xs);color:var(--c-text-3);display:flex;align-items:center;padding:0 var(--sp-3);margin-left:var(--sp-3);max-width:440px}
+
+  .app{display:flex;flex-direction:column;height:var(--screen-h)}
+  .topbar{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .topbar .left{display:flex;align-items:center;gap:var(--sp-4)}
+  .topbar .brand{display:flex;align-items:center;gap:var(--sp-2);font-weight:700}
+  .topbar .brand .mk{width:26px;height:26px;border-radius:7px;background:var(--c-primary);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+  .cohortsel{display:flex;align-items:center;gap:var(--sp-2);border:1px solid var(--c-border-strong);border-radius:20px;padding:5px var(--sp-3);font-size:var(--fs-sm);background:var(--c-surface-2)}
+  .cohortsel .k{color:var(--c-text-3);font-size:var(--fs-xs)}
+  .topbar .me{display:flex;align-items:center;gap:var(--sp-2);font-size:var(--fs-sm);color:var(--c-text-2)}
+  .topbar .me .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:600}
+
+  .body{display:flex;flex:1;min-height:0}
+  .nav{width:184px;background:var(--c-nav);padding:var(--sp-4) var(--sp-3);flex:0 0 184px}
+  .nav .grp{padding-top:var(--sp-2);margin-top:var(--sp-2);border-top:1px solid var(--c-nav-2)}
+  .nav .grp:first-child{padding-top:0;margin-top:0;border-top:0}
+  .nav .item{display:flex;align-items:center;gap:var(--sp-2);padding:9px var(--sp-3);border-radius:var(--r-md);color:var(--c-nav-text);font-size:var(--fs-sm);margin-bottom:2px}
+  .nav .item.on{background:var(--c-nav-2);color:#fff;font-weight:600}
+  .nav .item .ic{width:15px;text-align:center;opacity:.85;font-size:12px}
+  .content{flex:1;background:var(--c-bg);padding:var(--sp-6);min-width:0;min-height:0;overflow:hidden}
+  /* 상한은 .content 자신이 아니라 자식에 건다 — .content가 배경을 계속 꽉 채워야 이음선이 안 생긴다 */
+  .content > *{max-width:var(--w-app);margin-left:auto;margin-right:auto}
+  .phead{margin-bottom:var(--sp-4);display:flex;align-items:baseline;gap:var(--sp-3)}
+  .phead h2{font-size:var(--fs-xl);letter-spacing:-.01em}
+  .phead .back{margin-left:auto;font-size:var(--fs-xs);color:var(--c-primary);cursor:pointer}
+
+  .tabs{display:flex;gap:var(--sp-5);border-bottom:1px solid var(--c-border);margin-bottom:var(--sp-5)}
+  .tabs .t{padding:var(--sp-2) 0;font-size:var(--fs-sm);color:var(--c-text-2);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer;display:flex;align-items:baseline;gap:5px}
+  .tabs .t.on{color:var(--c-primary);border-color:var(--c-primary);font-weight:600}
+  .tabs .t .cnt{font-size:11px;color:var(--c-text-3)}
+  .tabs .t.on .cnt{color:var(--c-primary)}
+
+  .block{margin-bottom:var(--sp-6)}
+  .block:last-child{margin-bottom:0}
+  .bhead{display:flex;align-items:center;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-3)}
+  .bhead h3{font-size:var(--fs-lg);font-weight:700;display:flex;align-items:baseline;gap:var(--sp-2)}
+  .bhead h3 .tot{font-size:var(--fs-xs);font-weight:600;color:var(--c-text-3)}
+  .bhead h3 .meta{font-size:11px;font-weight:400;color:var(--c-text-3)}
+  .btn{border:0;border-radius:var(--r-md);background:var(--c-primary);color:#fff;font-weight:600;font-size:var(--fs-xs);cursor:pointer;padding:8px 13px}
+  .btn.ghost{background:#fff;color:var(--c-text-2);border:1px solid var(--c-border-strong)}
+  .btn.off{background:#e8eaee;color:var(--c-text-3);cursor:not-allowed}
+
+  .toolbar{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-3);flex-wrap:wrap}
+  .toolbar .search{flex:0 0 240px;border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-3);background:var(--c-surface-2)}
+  .toolbar .sel{border:1px solid var(--c-border-strong);border-radius:20px;padding:7px var(--sp-3);font-size:var(--fs-xs);color:var(--c-text-2);background:var(--c-surface-2);cursor:pointer}
+  .toolbar .sel .k{color:var(--c-text-3)}
+
+  /* 벌크바는 표 위에 끼워 넣지 않고 헤더 행을 갈아끼운다 — 삽입하면 체크하는 순간 표가 밀려
+     방금 누른 행이 움직인다. 높이가 같아서 점프가 0이고, 이 표에 대한 액션이라는 소속도 분명하다 */
+  .tbl thead tr.bulk th{background:var(--c-primary-soft);border-bottom-color:#cfd8ee;padding-top:8px;padding-bottom:8px;text-transform:none;letter-spacing:0}
+  .bulkin{display:flex;align-items:center;gap:var(--sp-3);font-size:var(--fs-sm)}
+  .bulkin .n{color:var(--c-primary);font-weight:700;white-space:nowrap}
+  .bulkin .hint2{color:var(--c-text-2);font-size:var(--fs-xs)}
+  .bulkin .ba{border:1px solid var(--c-border-strong);background:#fff;border-radius:var(--r-sm);font-size:var(--fs-xs);font-weight:600;color:var(--c-text-2);padding:5px 11px;cursor:pointer;white-space:nowrap}
+  .bulkin .ba.primary{background:var(--c-primary);color:#fff;border-color:var(--c-primary)}
+  .bulkin .clear{margin-left:auto;font-size:var(--fs-xs);color:var(--c-text-3);cursor:pointer;white-space:nowrap}
+  .card.scrollable{max-height:330px;overflow-y:auto}
+  .card.scrollable thead th{position:sticky;top:0;z-index:5}
+
+  .card{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .tbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  /* 유형별 컬럼 폭 — thead가 폭을 정하므로 th에 건다 */
+  .tbl th.k-chk,.tbl td.chk{width:var(--col-chk)}
+  .tbl th.k-name{width:var(--col-name)}
+  .tbl th.k-num{width:var(--col-num)}
+  .tbl th.k-money{width:var(--col-money)}
+  .tbl th.k-badge{width:var(--col-badge)}
+  .tbl th.k-date{width:var(--col-date)}
+  .tbl th.k-period{width:var(--col-period)}
+  .tbl th.k-email{width:var(--col-email)}
+  .tbl th.k-person{width:var(--col-person)}
+  .tbl th.k-cls{width:var(--col-cls)}
+  .tbl th.k-act{width:var(--col-act)}
+  .tbl th{text-align:left;padding:11px var(--sp-4);font-size:11px;text-transform:uppercase;letter-spacing:.03em;color:var(--c-text-3);background:var(--c-surface-2);border-bottom:1px solid var(--c-border);font-weight:600;white-space:nowrap}
+  .tbl td{padding:11px var(--sp-4);border-bottom:1px solid var(--c-border);vertical-align:middle}
+  .tbl tr:last-child td{border-bottom:0}
+  .tbl tr.click{cursor:pointer}
+  .tbl tr.click:hover{background:var(--c-surface-2)}
+  .tbl tr.sel{background:var(--c-primary-soft)}
+  .tbl td.num{text-align:right;font-variant-numeric:tabular-nums}
+  .tbl th.num{text-align:right}
+  .tbl .nm{font-weight:600}
+  .tbl .date{color:var(--c-text-3);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .tbl td.act{text-align:right;white-space:nowrap}
+  .tbl .link{font-size:var(--fs-xs);font-weight:600;color:var(--c-primary);cursor:pointer;margin-left:var(--sp-3)}
+  .tbl .link.warn{color:var(--c-danger)}
+  .tbl th.chk,.tbl td.chk{width:38px;padding-right:0}
+  .cbx{width:16px;height:16px;border:1.5px solid var(--c-border-strong);border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:#fff}
+  .cbx.on{background:var(--c-primary);border-color:var(--c-primary)}
+  .who{display:flex;align-items:center;gap:var(--sp-3)}
+  .who .av{width:28px;height:28px;border-radius:50%;background:var(--c-primary-soft);color:var(--c-primary);display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex:0 0 auto}
+  .who .av.none{background:#eef0f3;color:var(--c-text-3)}
+  .who .nm{font-weight:600;font-size:var(--fs-sm)}
+  .who .em{font-size:11px;color:var(--c-text-3);font-family:var(--mono)}
+
+  .badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+  .badge.ok{background:var(--c-success-soft);color:var(--c-success)}
+  .badge.off{background:#eef0f3;color:var(--c-text-3)}
+  .badge.warn{background:var(--c-warning-soft);color:var(--c-warning)}
+  .badge.info{background:var(--c-info-soft);color:var(--c-info)}
+  .na{color:var(--c-text-3)}
+  .mono{font-family:var(--mono);font-size:var(--fs-xs)}
+
+  .tablefoot{display:flex;align-items:center;margin-top:var(--sp-4)}
+  .tablefoot .range{flex:1;font-size:var(--fs-xs);color:var(--c-text-3);white-space:nowrap}
+  .tablefoot .rspace{flex:1}
+  .pages{display:flex;gap:4px;justify-content:center}
+  .pg{min-width:32px;height:32px;padding:0 6px;border:1px solid var(--c-border);border-radius:var(--r-sm);display:inline-flex;align-items:center;justify-content:center;background:#fff;font-size:var(--fs-sm);color:var(--c-text-2);cursor:pointer}
+  .pg.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary);font-weight:600}
+
+  .alert{display:flex;gap:var(--sp-2);align-items:flex-start;border-radius:var(--r-md);padding:10px var(--sp-4);font-size:var(--fs-sm);margin-bottom:var(--sp-4)}
+  .alert.warn{background:var(--c-warning-soft);color:var(--c-warning);border:1px solid #e6d3a8}
+  .alert.info{background:var(--c-info-soft);color:var(--c-info);border:1px solid #cfe0f0}
+  .alert.bad{background:var(--c-danger-soft);color:var(--c-danger);border:1px solid #e6c3bd}
+  .alert .sub{display:block;color:var(--c-text-2);font-size:var(--fs-xs);margin-top:3px;line-height:1.6}
+
+  .empty{background:var(--c-surface);border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-8) var(--sp-5);text-align:center}
+  /* 빈 상태 3종 — 자리의 성격이 다르다
+     .wait 점선 = 아직 안 들어온 자리 · .empty 실선 = 확정된 0건 · .fail = 사고 */
+  .empty.wait{background:var(--c-surface-2);border:1px dashed var(--c-border-strong)}
+  .empty.fail{background:var(--c-danger-soft);border:1px solid #efc9c4}
+  .empty.fail .t{color:var(--c-danger)}
+  .empty .ic{width:48px;height:48px;border-radius:15px;margin:0 auto var(--sp-4);display:flex;align-items:center;justify-content:center;font-size:20px;background:var(--c-primary-soft);color:var(--c-primary)}
+  .empty h3{font-size:var(--fs-lg);margin-bottom:5px}
+  .empty p{font-size:var(--fs-sm);color:var(--c-text-2)}
+  .empty .cta{margin-top:var(--sp-5)}
+
+  /* 배정 — 모드 (전체화면 · 나브 가림) */
+  .modehead{height:54px;background:var(--c-surface);border-bottom:1px solid var(--c-border);display:flex;align-items:center;justify-content:space-between;padding:0 var(--sp-5)}
+  .modehead .mt{font-weight:700;display:flex;align-items:baseline;gap:var(--sp-2)}
+  .modehead .mt .s{font-size:11px;font-weight:400;color:var(--c-text-3)}
+  .modebody{flex:1;background:var(--c-bg);padding:var(--sp-5)}
+  .split{display:flex;gap:var(--sp-4);align-items:flex-start}
+  .classrail{flex:0 0 260px;background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-3);position:sticky;top:0}
+  .classrail .rh{font-size:var(--fs-sm);font-weight:700;padding:0 var(--sp-2) var(--sp-3);border-bottom:1px solid var(--c-border);margin-bottom:var(--sp-2)}
+  .railitem{width:100%;text-align:left;background:none;border:1px solid transparent;border-radius:var(--r-md);padding:9px var(--sp-3);cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:var(--sp-2);margin-bottom:2px}
+  .railitem:hover{background:var(--c-primary-soft);border-color:#cfd8ee}
+  .railitem .rl{flex:1;min-width:0}
+  .railitem .rl b{font-size:var(--fs-sm)}
+  .railitem .rl .mgr{display:block;font-size:11px;color:var(--c-text-3)}
+  .railitem .rl .mgr.none{color:var(--c-warning);font-weight:600}
+  .railitem .c{font-size:var(--fs-xs);color:var(--c-text-2);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+  .railitem .c .cap{display:block;font-size:10px;color:var(--c-text-3)}
+  .railitem .c.full{color:var(--c-warning);font-weight:700}
+  /* 고른 사람이 없으면 누를 데가 아니다 — 눌러도 아무 일이 없는 버튼을 살려 두지 않는다 */
+  .classrail.off .railitem{opacity:.4;cursor:default}
+  .classrail.off .railitem:hover{background:none;border-color:transparent}
+  .rosterpane{flex:1;min-width:0}
+
+  /* 되돌리기 — 배정은 즉시 실행이라 확인 모달을 세우면 반복 배정이 안 된다 */
+  .toast{display:flex;align-items:center;gap:var(--sp-3);background:var(--c-primary-soft);color:var(--c-text-2);border:1px solid #cdd4f2;border-radius:var(--r-md);padding:10px var(--sp-4);font-size:var(--fs-sm);margin-bottom:var(--sp-3)}
+  .toast .u{margin-left:auto;font-weight:700;color:#9fb2ff;cursor:pointer;white-space:nowrap}
+  .toast .x2{color:rgba(255,255,255,.5);cursor:pointer}
+
+  /* 모달 */
+  .overlay{position:absolute;top:36px;left:0;right:0;bottom:0;background:rgba(20,24,31,.4);display:flex;align-items:flex-start;justify-content:center;padding:44px 16px;z-index:20;overflow:auto}
+  .modal2{width:540px;max-width:100%;background:#fff;border-radius:var(--r-lg);box-shadow:0 24px 64px rgba(20,24,31,.32);overflow:hidden}
+  .modal2 .mh{display:flex;align-items:center;justify-content:space-between;padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--c-border)}
+  .modal2 .mh h4{font-size:var(--fs-lg)}
+  .modal2 .mh .x{color:var(--c-text-3);cursor:pointer;font-size:16px}
+  .modal2 .mb{padding:var(--sp-5)}
+  .modal2 .mf{display:flex;gap:var(--sp-2);justify-content:flex-end;padding:var(--sp-4) var(--sp-5);border-top:1px solid var(--c-border);background:var(--c-surface-2)}
+  .field{margin-bottom:var(--sp-4)}
+  .field:last-child{margin-bottom:0}
+  .field label{display:block;font-size:var(--fs-xs);font-weight:600;color:var(--c-text-2);margin-bottom:var(--sp-2)}
+  .field label .opt{font-weight:400;color:var(--c-text-3)}
+  .inp{width:100%;min-height:40px;border:1px solid var(--c-border-strong);border-radius:var(--r-md);background:#fff;color:var(--c-text);font-size:var(--fs-sm);display:flex;align-items:center;padding:9px var(--sp-3)}
+  .inp.ph{background:var(--c-surface-2);color:var(--c-text-3)}
+  .fhint{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:6px;line-height:1.6}
+
+  .mtabs{display:flex;gap:var(--sp-2);margin-bottom:var(--sp-4)}
+  .mtab{flex:1;border:1px solid var(--c-border-strong);background:#fff;border-radius:var(--r-md);padding:8px 0;font-size:var(--fs-sm);color:var(--c-text-2);cursor:pointer;font-family:inherit}
+  .mtab.on{background:var(--c-primary);color:#fff;border-color:var(--c-primary);font-weight:600}
+  .drop{border:2px dashed var(--c-border-strong);border-radius:var(--r-md);background:var(--c-surface-2);padding:var(--sp-5) var(--sp-4);text-align:center;color:var(--c-text-2);font-size:var(--fs-sm)}
+  .drop .sub{font-size:11px;color:var(--c-text-3);margin-top:5px}
+  .drop .tmpl{color:var(--c-primary);text-decoration:underline;cursor:pointer}
+  .valid{margin-top:var(--sp-3);border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .vrow{padding:8px var(--sp-3);font-size:var(--fs-xs);border-bottom:1px solid var(--c-border)}
+  .vrow:last-child{border-bottom:0}
+  .vrow.ok{background:var(--c-success-soft);color:var(--c-success)}
+  .vrow.warn{background:var(--c-warning-soft);color:var(--c-warning)}
+  .vrow.err{background:var(--c-danger-soft);color:var(--c-danger)}
+  /* 이름은 3~4자, 이메일은 20자가 넘는다 — 1:1로 두면 이메일만 잘린다 */
+  .mrow{display:flex;gap:var(--sp-2);align-items:center;margin-bottom:var(--sp-2)}
+  .mrow .inp.nm2{flex:0 0 96px}
+  .mrow .inp.em2{flex:1;font-family:var(--mono);font-size:var(--fs-xs)}
+  .mrow .del{color:var(--c-text-3);cursor:pointer;font-size:var(--fs-sm)}
+  .mhead2{display:flex;gap:var(--sp-2);font-size:11px;color:var(--c-text-3);font-weight:600;margin-bottom:5px}
+  .mhead2 .a{flex:0 0 96px}
+  .mhead2 .b{flex:1}
+  .mhead2 .c{width:14px}
+  .addrow{border:1px dashed var(--c-border-strong);background:none;border-radius:var(--r-md);padding:8px 0;width:100%;font-size:var(--fs-xs);color:var(--c-text-2);cursor:pointer;font-family:inherit}
+
+  /* 교안 섹션 — 좌 목록 / 우 그 섹션이 가르친 것 */
+  .qrow{display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-4)}
+  .qrow .qact{margin-left:auto;display:flex;gap:var(--sp-2)}
+
+  .relsplit{display:flex;gap:var(--sp-4);align-items:flex-start}
+  .seclist{flex:0 0 244px;display:flex;flex-direction:column;gap:5px}
+  .secitem{width:100%;text-align:left;background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:10px var(--sp-3);cursor:pointer;font-family:inherit}
+  .secitem:hover{border-color:var(--c-border-strong)}
+  .secitem.on{border-color:var(--c-primary);background:var(--c-primary-soft)}
+  .secitem b{display:block;font-size:var(--fs-sm);line-height:1.4}
+  .secitem .m{display:block;font-size:10px;color:var(--c-text-3);margin-top:3px}
+
+  .relpane{flex:1;min-width:0;background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5) var(--sp-5)}
+  .sech{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--sp-3);padding-bottom:var(--sp-3);border-bottom:1px solid var(--c-border);margin-bottom:var(--sp-4)}
+  .sech h3{font-size:var(--fs-lg)}
+  .sech .sm{font-size:11px;color:var(--c-text-3);margin-top:3px}
+  .sech .sm b{color:var(--c-text-2);font-family:var(--mono)}
+
+  /* 이 섹션으로 어디까지 물을 수 있나 — 고르기 전에 알아야 하는 유일한 값 */
+
+  .grph{display:flex;align-items:baseline;gap:var(--sp-2);font-size:var(--fs-sm);font-weight:700;margin:var(--sp-5) 0 var(--sp-2)}
+  .grph:first-of-type{margin-top:0}
+  .grph b{color:var(--c-primary)}
+  .grph .gd{font-weight:400;font-size:11px;color:var(--c-text-3)}
+
+  .itm{border:1px solid var(--c-border);border-radius:var(--r-md);padding:10px var(--sp-4);margin-bottom:5px}
+  .itm .it{display:flex;align-items:baseline;gap:var(--sp-3)}
+  .itm .it b{font-size:var(--fs-sm);flex:1}
+  .itm .it .p{font-family:var(--mono);font-size:11px;color:var(--c-text-3);white-space:nowrap}
+  .itm .idf{font-size:var(--fs-xs);color:var(--c-text-2);line-height:1.7;margin-top:4px}
+  .more{font-size:11px;color:var(--c-primary);font-weight:600;cursor:pointer;padding:6px 2px}
+
+
+  /* 교안 상세 */
+  .kv{display:flex;font-size:var(--fs-sm);padding:8px 0;border-top:1px solid var(--c-border)}
+  .kv:first-of-type{border-top:0}
+  .kv .k{flex:0 0 170px;color:var(--c-text-3);font-size:var(--fs-xs)}
+  .kv .v{flex:1}
+  .kv .v .hint{display:block;font-size:11px;color:var(--c-text-3);margin-top:2px}
+  .blk{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4) var(--sp-5);margin-bottom:var(--sp-4)}
+  .blk .bh{display:flex;align-items:baseline;justify-content:space-between;gap:var(--sp-3);margin-bottom:var(--sp-3)}
+  .blk .bh h3{font-size:var(--fs-sm);font-weight:700;display:flex;align-items:baseline;gap:var(--sp-2)}
+  .blk .bh h3 .meta{font-weight:400;font-size:11px;color:var(--c-text-3)}
+  .blk .bh .act{font-size:11px;font-weight:600;color:var(--c-primary);cursor:pointer;border:1px solid #cfd8ee;border-radius:20px;background:var(--c-primary-soft);padding:3px 10px}
+  .subtabs{display:flex;gap:var(--sp-4);border-bottom:1px solid var(--c-border);margin-bottom:var(--sp-4)}
+  .subtabs .st2{padding:6px 0;font-size:var(--fs-xs);color:var(--c-text-2);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer}
+  .subtabs .st2.on{color:var(--c-primary);border-color:var(--c-primary);font-weight:700}
+
+  /* 비용 */
+  .costgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--sp-4);margin-bottom:var(--sp-5)}
+  .mcard{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);padding:var(--sp-4)}
+  .mcard .lbl{font-size:var(--fs-xs);color:var(--c-text-3);font-weight:600;margin-bottom:var(--sp-2)}
+  .mcard .val{font-size:var(--fs-2xl);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .mcard .sub{font-size:var(--fs-xs);color:var(--c-text-3);margin-top:var(--sp-1)}
+  .mcard .sub .up{color:var(--c-danger);font-weight:700}
+  .costbar{height:6px;background:#eef0f3;border-radius:20px;margin-top:var(--sp-2);overflow:hidden}
+  .costbar > i{display:block;height:100%;background:var(--c-warning);border-radius:20px}
+
+  /* 케이스 계약 표 — 정의서에만 두면 아무도 안 본다. 목업이 사람들이 여는 곳이라 여기 둔다 */
+  .cwrap{background:#fff;border:1px solid var(--c-border);border-radius:var(--r-md);overflow:hidden}
+  .ctbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:var(--fs-sm)}
+  .ctbl th{background:var(--c-surface-2);border-bottom:1px solid var(--c-border);padding:10px var(--sp-4);text-align:left;font-size:var(--fs-xs);font-weight:700;color:var(--c-text-2);white-space:nowrap}
+  .ctbl td{border-bottom:1px solid var(--c-border);padding:11px var(--sp-4);vertical-align:top;line-height:1.55}
+  .ctbl tr:last-child td{border-bottom:0}
+  .ctbl th.k-no,.ctbl td.no{width:52px;color:var(--c-text-3);font-variant-numeric:tabular-nums}
+  .ctbl th.k-st{width:150px}
+  .ctbl th.k-code{width:190px}
+  .ctbl th.k-mk{width:120px}
+  .ctbl td.st{font-weight:600}
+  .ctbl td.code{font-family:var(--mono);font-size:var(--fs-xs);color:var(--c-text-2)}
+  .ctbl td.msg b{color:var(--c-text)}
+  .ctbl td.msg .nx{display:block;font-size:var(--fs-xs);color:var(--c-text-3);margin-top:3px}
+  .ctbl a.mk2{font-size:var(--fs-xs);color:var(--c-primary);text-decoration:none;font-weight:600;font-family:var(--mono)}
+  .ctbl a.mk2:hover{text-decoration:underline}
+  .ctbl tr.grp td{background:var(--c-surface-2);font-size:var(--fs-xs);font-weight:700;color:var(--c-text-3);padding:7px var(--sp-4)}
+  .cnote{font-size:var(--fs-xs);color:var(--c-text-3);line-height:1.75;margin-top:var(--sp-4)}
+  .cnote b{color:var(--c-text-2)}
+  .cnote code{font-family:var(--mono);font-size:11px}
+
+  body.embedded .rpage{display:none}
+  body.embedded .rpage.on{display:block}
+  body.embedded .sec-label{margin-top:0}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="doc-head">
+    <span class="id">OP-06 · 오퍼레이터 · 웹</span>
+    <h1>운영 관리 — 탭 5 + 배정 모드</h1>
+    <p><b>v1 운영 관리 셸을 그대로 쓴다.</b> 탭 구조·표·벌크바·CSV 검증·좌측 반 레일 배정이 전부 유지되고, 바뀐 것은 <b>탭 구성과 권한 모델</b>이다.</p>
+    <ul>
+      <li><b>`반`과 `명단`을 한 탭으로 합쳤다.</b> 반을 만드는 것과 명단을 넣는 것은 한 흐름인데 탭이 갈리면 계속 오간다.</li>
+      <li><b>`교안`과 `비용`이 새로 들어왔다.</b> 교안은 v1에서 매니저 나브에 있었는데 <b>하루에 안 여는 화면이라 한 층 아래로</b> 내렸다. 매니저 쪽에는 목록 없이 <b>개념 한 장 뷰어</b>(MG-09)만 남는다.</li>
+      <li><b>매니저 초대에 권한 선택이 없다.</b> 총괄/담당이 폐기되어 매니저가 한 종류뿐이다 — 대신 <b>반 배정</b>만 고른다.</li>
+      <li><b>배정은 표가 아니라 작업이라 모드로 연다.</b> 여러 번 반복 배정하는 동안 좌우가 동시에 보여야 한다.</li>
+    </ul>
+  </div>
+
+  <div class="rpage" id="page-cases">
+  <div class="sec-label">케이스 계약 · 운영 관리 전량 (구현 근거)</div>
+  <div class="cwrap">
+    <table class="ctbl">
+      <thead><tr><th class="k-no">#</th><th class="k-st">상태</th><th class="k-code">에러코드 · API</th><th>문구 · 다음 행동</th><th class="k-mk">목업</th></tr></thead>
+      <tbody>
+        <tr class="grp"><td colspan="5">① 기수 — 반·명단이 여기 담긴다</td></tr>
+        <tr><td class="no">—</td><td class="st">기수 목록</td><td class="code">GET /admin/cohorts</td><td class="msg">진행 중 · 종료 · 반·교육생 수<span class="nx">→ 행 클릭 → 반·명단</span></td><td><a class="mk2" href="#cohort">#cohort</a></td></tr>
+        <tr><td class="no">—</td><td class="st">기수 생성</td><td class="code">POST /admin/cohorts</td><td class="msg">이름 · 기간<span class="nx">→ 생성</span></td><td><a class="mk2" href="#cohort-create">#cohort-create</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>기수 0</b></td><td class="code">—</td><td class="msg"><b>첫 기수를 만드세요</b> + 생성 유도<span class="nx">→ 생성 — <b>여기가 시작점</b></span></td><td><a class="mk2" href="#empty">#empty</a></td></tr>
+        <tr class="grp"><td colspan="5">② 반 · 명단 — 한 탭에 둘을 같이</td></tr>
+        <tr><td class="no">—</td><td class="st">반 · 명단</td><td class="code">GET /admin/classes</td><td class="msg">반별 인원 · <b>담당 매니저</b> · 명단<span class="nx">→ —</span></td><td><a class="mk2" href="#classes">#classes</a></td></tr>
+        <tr><td class="no">—</td><td class="st">반 추가</td><td class="code">POST /admin/classes</td><td class="msg">이름 · 정원<span class="nx">→ 추가</span></td><td><a class="mk2" href="#class-add">#class-add</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>명단 추가 · CSV</b></td><td class="code">POST /admin/roster</td><td class="msg"><b>유효 n · 이미 등록 n(건너뜀) · 형식 오류 n(행 번호)</b><span class="nx">→ <b>유효 행은 등록</b> — 한 줄 때문에 전체를 막지 않는다</span></td><td><a class="mk2" href="#roster-add">#roster-add</a></td></tr>
+        <tr><td class="no">—</td><td class="st">명단 추가 · 직접 입력</td><td class="code">—</td><td class="msg">지각 등록 1~2명<span class="nx">→ 형식·중복을 그 자리에서</span></td><td><a class="mk2" href="#roster-manual">#roster-manual</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>도메인 밖 이메일</b></td><td class="code">DOMAIN_NOT_ALLOWED</td><td class="msg"><b>등록 차단</b><span class="nx">→ 기관 도메인 주소만</span></td><td><a class="mk2" href="#roster-add">#roster-add</a></td></tr>
+        <tr><td class="no">—</td><td class="st">벌크 선택</td><td class="code">—</td><td class="msg">여러 명 선택 → 벌크바<span class="nx">→ 반 배정 · 초대 재발송</span></td><td><a class="mk2" href="#bulk">#bulk</a></td></tr>
+        <tr class="grp"><td colspan="5">반 배정 모드 — 좌우가 동시에 보여야 한다</td></tr>
+        <tr><td class="no">—</td><td class="st">① 진입</td><td class="code">—</td><td class="msg">반·교육생 모두 미선택 · 실행 비활성<span class="nx">→ 둘 다 고른다</span></td><td><a class="mk2" href="#assign-idle">#assign-idle</a></td></tr>
+        <tr><td class="no">—</td><td class="st">② 선택</td><td class="code">PATCH /admin/roster/assign</td><td class="msg">반 + 교육생 선택 → 실행 활성<span class="nx">→ 배정</span></td><td><a class="mk2" href="#assign">#assign</a></td></tr>
+        <tr><td class="no">—</td><td class="st">③ 배정 직후</td><td class="code">—</td><td class="msg"><b>되돌리기</b>가 남는다<span class="nx">→ 잘못 넣으면 되돌린다</span></td><td><a class="mk2" href="#assign-done">#assign-done</a></td></tr>
+        <tr><td class="no">—</td><td class="st">④ 미배정 0</td><td class="code">—</td><td class="msg"><b>더 배정할 사람이 없습니다</b><span class="nx">→ 모드 종료</span></td><td><a class="mk2" href="#assign-empty">#assign-empty</a></td></tr>
+        <tr class="grp"><td colspan="5">③ 매니저 — 계정이 아니라 담당 배정</td></tr>
+        <tr><td class="no">—</td><td class="st">매니저 목록</td><td class="code">GET /admin/managers</td><td class="msg">담당 반 · 담당 인원 · 상태<span class="nx">→ 반 배정 · 정지</span></td><td><a class="mk2" href="#managers">#managers</a></td></tr>
+        <tr><td class="no">—</td><td class="st">매니저 초대</td><td class="code">POST /admin/managers/invite</td><td class="msg"><b>권한 선택이 없다</b> — 매니저는 한 종류<span class="nx">→ <b>반 배정만</b> 고른다</span></td><td><a class="mk2" href="#mgr-invite">#mgr-invite</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>담당 없는 반</b></td><td class="code">—</td><td class="msg"><code>담당 없음</code> 배지 + 배정 유도<span class="nx">→ <b>OP-01 조치 필요와 같은 신호</b></span></td><td><a class="mk2" href="#managers">#managers</a></td></tr>
+        <tr class="grp"><td colspan="5">④ 교안 — 검증 개념의 원천</td></tr>
+        <tr><td class="no">—</td><td class="st">교안 목록</td><td class="code">GET /admin/curricula</td><td class="msg">섹션 · 항목 · <b>연결된 프로젝트</b> · 상태<span class="nx">→ 행 클릭 → 상세</span></td><td><a class="mk2" href="#curriculum">#curriculum</a></td></tr>
+        <tr><td class="no">—</td><td class="st">섹션 상세</td><td class="code">—</td><td class="msg">가르친 항목 · 페이지<span class="nx">→ —</span></td><td><a class="mk2" href="#cur-detail">#cur-detail</a></td></tr>
+        <tr><td class="no">—</td><td class="st">연결된 프로젝트</td><td class="code">—</td><td class="msg">어느 회차가 이 교안을 쓰는가<span class="nx">→ <b>재분석 전 안전장치</b></span></td><td><a class="mk2" href="#cur-used">#cur-used</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>재분석 — 쓰는 회차가 있음</b></td><td class="code">—</td><td class="msg">확인 모달 — <b>이미 응시한 문항·리포트는 유지</b><span class="nx">→ 새 결과는 <b>다음 회차부터</b></span></td><td><a class="mk2" href="#cur-reanalyze">#cur-reanalyze</a></td></tr>
+        <tr><td class="no">—</td><td class="st"><b>분석 실패</b></td><td class="code">—</td><td class="msg">사유 + 재분석 · 파일 교체<span class="nx">→ <b>그 교안은 프로젝트에 연결할 수 없다</b></span></td><td><a class="mk2" href="#cur-fail">#cur-fail</a></td></tr>
+        <tr class="grp"><td colspan="5">⑤ 비용</td></tr>
+        <tr><td class="no">—</td><td class="st">비용</td><td class="code">GET /admin/cost</td><td class="msg">기수·반별 AI 비용<span class="nx">→ —</span></td><td><a class="mk2" href="#cost">#cost</a></td></tr>
+        <tr class="grp"><td colspan="5">실패</td></tr>
+        <tr><td class="no">—</td><td class="st">저장 실패</td><td class="code">ADMIN_SAVE_FAILED</td><td class="msg"><b>저장하지 못했습니다</b> · 입력값 유지<span class="nx">→ 재시도 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="cnote">
+    · <b>CSV는 한 줄 때문에 전체를 막지 않는다.</b> 유효 행은 등록하고 오류 행만 <b>행 번호</b>로 알린다 — 수백 명을 다시 올리게 하면 아무도 안 쓴다.<br>
+    · <b>배정은 표가 아니라 작업이라 모드로 연다.</b> 여러 번 반복하는 동안 <b>좌우가 동시에</b> 보여야 하고, 배정 직후에는 <b>되돌리기</b>를 남긴다.<br>
+    · <b>매니저 초대에 권한 선택이 없다.</b> 총괄/담당이 폐기되어 매니저가 한 종류뿐이다 — 고를 것은 <b>반 배정</b>뿐이다.<br>
+    · <b>교안 재분석은 쓰는 회차를 먼저 보여준다.</b> 이미 응시한 문항과 리포트는 그대로 두고 <b>새 결과는 다음 회차부터</b> — 지난 회차 결과가 바뀌면 비교가 깨진다.<br>
+    · <b>오퍼레이터 계정은 여기서 다루지 않는다.</b> 초대·정지는 <b>슈퍼어드민</b>(SA-02) 소관이다.<br>
+    · <b>왜 그렇게 정했는지</b>는 <b>정의 문서</b>에 있다.
+  </div>
+  </div>
+
+  <div class="rpage" id="page-cohort">
+  <div class="sec-label">화면 · 운영 관리 › ① 기수</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/cohorts</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>운영 관리</h2></div>
+          <div class="tabs">
+            <span class="t on">기수 <span class="cnt">3</span></span>
+            <span class="t">반 · 명단 <span class="cnt">10 · 250</span></span>
+            <span class="t">매니저 <span class="cnt">9</span></span>
+            <span class="t">교안 <span class="cnt">4</span></span>
+            <span class="t">비용</span>
+          </div>
+
+          <div class="block">
+            <div class="bhead">
+              <h3>기수 <span class="tot">3개</span><span class="meta">· 기관 전체 · 진행 2 · 종료 1</span></h3>
+              <button class="btn">+ 기수 생성</button>
+            </div>
+            <div class="toolbar">
+              <span class="search">🔍 기수명 검색</span>
+              <span class="sel"><span class="k">상태</span> 전체 ▾</span>
+              <span class="sel"><span class="k">정렬</span> 최신순 ▾</span>
+            </div>
+            <div class="card">
+              <table class="tbl">
+                <thead><tr><th class="k-name">기수</th><th class="k-badge">상태</th><th class="num k-num">반</th><th class="num k-num">교육생</th><th class="k-period">기간</th><th></th></tr></thead>
+                <tbody>
+                  <tr><td class="nm">8기</td><td><span class="badge ok">진행 중</span></td><td class="num">10</td><td class="num">252</td><td class="date">2026-06 ~ 09</td><td class="act"><span class="link">종료</span></td></tr>
+                  <tr><td class="nm">7기 <span class="badge info" style="font-size:10px">현재</span></td><td><span class="badge ok">진행 중</span></td><td class="num">10</td><td class="num">250</td><td class="date">2026-03 ~ 09</td><td class="act"><span class="link">종료</span></td></tr>
+                  <tr><td class="nm">6기</td><td><span class="badge off">종료</span></td><td class="num">9</td><td class="num">230</td><td class="date">2025-08 ~ 2026-02</td><td class="na">—</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tablefoot"><span class="range">1–3 / 3개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+                      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-cohort-create">
+  <div class="sec-label">상태 · [+ 기수 생성] 클릭 → 모달</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/cohorts</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>운영 관리</h2></div>
+          <div class="tabs"><span class="t on">기수 <span class="cnt">3</span></span><span class="t">반 · 명단</span><span class="t">매니저</span><span class="t">교안</span><span class="t">비용</span></div>
+          <div class="card" style="height:170px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay">
+      <div class="modal2" style="width:480px">
+        <div class="mh"><h4>기수 생성 · 그린컴퍼니 부트캠프</h4><span class="x">✕</span></div>
+        <div class="mb">
+          <div class="field"><label>기수명</label><div class="inp">9기</div><div class="fhint">같은 기관 안에서 중복될 수 없습니다.</div></div>
+          <div class="field"><label>기간</label><div class="inp">2026-10-05 ~ 2027-04-17</div><div class="fhint">시작일이 종료일보다 뒤면 저장되지 않습니다.</div></div>
+          <div class="field">
+            <label>초기 명단 <span class="opt">· 이름 + 이메일 · 선택</span></label>
+            <div class="inp ph">CSV로 올리거나 나중에 추가</div>
+            <div class="fhint">지금 넣으면 등록과 동시에 <b>활성화 초대</b>가 나갑니다. 반 배정은 생성 뒤 <b>반 · 명단</b> 탭에서 합니다.</div>
+          </div>
+        </div>
+        <div class="mf"><button class="btn ghost">취소</button><button class="btn">기수 생성</button></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-empty">
+  <div class="sec-label">상태 · 기수 0 (신규 기관)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/cohorts</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> <span class="na">없음</span></div></div>
+        <div class="me">서민아 · 오퍼레이터 <span class="av">서</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>운영 관리</h2></div>
+          <div class="tabs"><span class="t on">기수 <span class="cnt">0</span></span><span class="t">반 · 명단</span><span class="t">매니저</span><span class="t">교안</span><span class="t">비용</span></div>
+          <div class="empty">
+            <div class="ic">◷</div>
+            <h3>첫 기수를 만드세요</h3>
+            <p>기수가 있어야 반을 나누고 명단을 넣을 수 있습니다.</p>
+            <div class="cta"><button class="btn">+ 기수 생성</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-classes">
+  <div class="sec-label">화면 · 운영 관리 › ② 반 · 명단 (한 탭)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/cohorts/7/classes</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>운영 관리</h2></div>
+          <div class="tabs">
+            <span class="t">기수 <span class="cnt">3</span></span>
+            <span class="t on">반 · 명단 <span class="cnt">10 · 250</span></span>
+            <span class="t">매니저 <span class="cnt">9</span></span>
+            <span class="t">교안 <span class="cnt">4</span></span>
+            <span class="t">비용</span>
+          </div>
+
+          <div class="block">
+            <div class="bhead">
+              <h3>반 <span class="tot">10개</span><span class="meta">· 7기 · 담당 없음 1</span></h3>
+              <button class="btn">+ 반 추가</button>
+            </div>
+            <div class="card">
+              <table class="tbl">
+                <thead><tr><th class="k-name">반</th><th class="k-person">담당 매니저</th><th class="num k-num">인원</th><th class="k-badge">상태</th><th></th></tr></thead>
+                <tbody>
+                  <tr class="click"><td class="nm">A반</td><td>박지현</td><td class="num">25</td><td><span class="badge ok">편성 완료</span></td><td class="act"><span class="link">담당 변경</span></td></tr>
+                  <tr class="click"><td class="nm">B반</td><td>이도윤</td><td class="num">25</td><td><span class="badge ok">편성 완료</span></td><td class="act"><span class="link">담당 변경</span></td></tr>
+                  <tr class="click"><td class="nm">C반</td><td>최유진</td><td class="num">25</td><td><span class="badge ok">편성 완료</span></td><td class="act"><span class="link">담당 변경</span></td></tr>
+                  <tr class="click"><td class="nm">F반</td><td><span class="badge warn">담당 없음</span></td><td class="num">22</td><td><span class="badge warn">담당 필요</span></td><td class="act"><span class="link">담당 배정</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tablefoot"><span class="range">1–10 / 10개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+          </div>
+
+          <div class="block">
+            <div class="bhead">
+              <h3>명단 <span class="tot">250명</span><span class="meta">· 7기 · <b style="color:var(--c-warning)">미배정 3</b></span></h3>
+              <div style="display:flex;gap:8px"><button class="btn ghost">미배정 배정하기 →</button><button class="btn">+ 명단 추가</button></div>
+            </div>
+            <div class="toolbar">
+              <span class="search">🔍 이름 · 이메일 검색</span>
+              <span class="sel"><span class="k">반</span> 전체 ▾</span>
+              <span class="sel"><span class="k">계정</span> 전체 ▾</span>
+              <span class="sel"><span class="k">정렬</span> 이름순 ▾</span>
+            </div>
+            <div class="card">
+              <table class="tbl">
+                <thead><tr><th class="chk k-chk"><span class="cbx"></span></th><th class="k-name">교육생</th><th class="k-cls">소속 반</th><th class="k-badge">계정</th><th></th></tr></thead>
+                <tbody>
+                  <tr><td class="chk"><span class="cbx"></span></td><td><div class="who"><span class="av">한</span><div><div class="nm">한도현</div><div class="em">dohyun@green.com</div></div></div></td><td><span class="badge warn">미배정</span></td><td><span class="badge ok">활성</span></td><td class="act"><span class="link">반 배정</span></td></tr>
+                  <tr><td class="chk"><span class="cbx"></span></td><td><div class="who"><span class="av">정</span><div><div class="nm">정하늘</div><div class="em">haneul@green.com</div></div></div></td><td><span class="badge warn">미배정</span></td><td><span class="badge info">초대됨</span></td><td class="act"><span class="link">반 배정</span></td></tr>
+                  <tr><td class="chk"><span class="cbx"></span></td><td><div class="who"><span class="av">김</span><div><div class="nm">김민준</div><div class="em">minjun@green.com</div></div></div></td><td>A반 · 3팀</td><td><span class="badge ok">활성</span></td><td class="act"><span class="link">반 변경</span></td></tr>
+                  <tr><td class="chk"><span class="cbx"></span></td><td><div class="who"><span class="av none">?</span><div><div class="nm">오지훈</div><div class="em">jihoon@green.com</div></div></div></td><td>B반</td><td><span class="badge info">초대됨</span></td><td class="act"><span class="link">초대 재발송</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tablefoot"><span class="range">1–25 / 250명</span><div class="pages"><span class="pg">‹</span><span class="pg on">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">›</span></div><span class="rspace"></span></div>
+                      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-bulk">
+  <div class="sec-label">상태 · 명단에서 여러 명 선택 → 벌크바</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/cohorts/7/classes</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>운영 관리</h2></div>
+          <div class="tabs"><span class="t">기수</span><span class="t on">반 · 명단 <span class="cnt">10 · 250</span></span><span class="t">매니저</span><span class="t">교안</span><span class="t">비용</span></div>
+
+          <div class="block">
+            <div class="bhead"><h3>명단 <span class="tot">250명</span><span class="meta">· 7기</span></h3><button class="btn">+ 명단 추가</button></div>
+            <div class="card scrollable">
+              <table class="tbl">
+                <thead><tr class="bulk"><th class="chk k-chk"><span class="cbx on">✓</span></th><th colspan="4">
+                  <div class="bulkin">
+                    <span class="n">2명 선택</span>
+                    <button class="ba primary">반 배정 →</button>
+                    <button class="ba">초대 재발송</button>
+                    <span class="clear">✕ 선택 해제</span>
+                  </div>
+                </th></tr></thead>
+                <tbody>
+                  <tr class="sel"><td class="chk"><span class="cbx on">✓</span></td><td><div class="who"><span class="av">한</span><div><div class="nm">한도현</div><div class="em">dohyun@green.com</div></div></div></td><td><span class="badge warn">미배정</span></td><td><span class="badge ok">활성</span></td><td class="act"><span class="link">반 배정</span></td></tr>
+                  <tr class="sel"><td class="chk"><span class="cbx on">✓</span></td><td><div class="who"><span class="av">정</span><div><div class="nm">정하늘</div><div class="em">haneul@green.com</div></div></div></td><td><span class="badge warn">미배정</span></td><td><span class="badge info">초대됨</span></td><td class="act"><span class="link">반 배정</span></td></tr>
+                  <tr><td class="chk"><span class="cbx"></span></td><td><div class="who"><span class="av">김</span><div><div class="nm">김민준</div><div class="em">minjun@green.com</div></div></div></td><td>A반 · 3팀</td><td><span class="badge ok">활성</span></td><td class="act"><span class="link">반 변경</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tablefoot"><span class="range">1–25 / 250명 · 2명 선택</span><div class="pages"><span class="pg">‹</span><span class="pg on">1</span><span class="pg">2</span><span class="pg">3</span><span class="pg">›</span></div><span class="rspace"></span></div>
+                      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-class-add">
+  <div class="sec-label">상태 · [+ 반 추가] 클릭 → 모달</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/cohorts/7/classes</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>운영 관리</h2></div>
+          <div class="tabs"><span class="t">기수</span><span class="t on">반 · 명단</span><span class="t">매니저</span><span class="t">교안</span><span class="t">비용</span></div>
+          <div class="card" style="height:180px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay">
+      <div class="modal2" style="width:460px">
+        <div class="mh"><h4>반 추가 · 7기</h4><span class="x">✕</span></div>
+        <div class="mb">
+          <div class="field"><label>반 이름</label><div class="inp">K반</div><div class="fhint">같은 기수 안에서 중복될 수 없습니다.</div></div>
+          <div class="field">
+            <label>담당 매니저 <span class="opt">· 선택 · 나중에 배정 가능</span></label>
+            <div class="inp ph">매니저 선택 ▾</div>
+            <div class="fhint">비우면 <b>담당 없음</b>으로 만들어지고 목록에 경고가 붙습니다. 배정은 <b>기간형 이력</b>이라 나중에 바꿔도 지난 기수의 담당 기록은 남습니다.</div>
+          </div>
+        </div>
+        <div class="mf"><button class="btn ghost">취소</button><button class="btn">반 추가</button></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-roster-add">
+  <div class="sec-label">상태 · [+ 명단 추가] 클릭 → 모달 (CSV 일괄 · 직접 입력)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/cohorts/7/classes</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>운영 관리</h2></div>
+          <div class="tabs"><span class="t">기수</span><span class="t on">반 · 명단</span><span class="t">매니저</span><span class="t">교안</span><span class="t">비용</span></div>
+          <div class="card" style="height:180px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay">
+      <div class="modal2">
+        <div class="mh"><h4>명단 추가 · 7기</h4><span class="x">✕</span></div>
+        <div class="mb">
+          <div class="mtabs"><button class="mtab on">CSV 일괄 업로드</button><button class="mtab">직접 입력</button></div>
+          <div class="drop">
+            CSV 파일을 끌어다 놓거나 <b>눌러서 고르세요</b>
+            <div class="sub">열 = 이름, 이메일 (2열) · <span class="tmpl">양식 내려받기</span></div>
+          </div>
+          <div class="valid">
+            <div class="vrow ok">✓ 유효 45명 — 등록하면 활성화 초대가 나갑니다</div>
+            <div class="vrow warn">⚠ 이미 등록된 이메일 2명 — 건너뜁니다</div>
+            <div class="vrow err">✗ 이메일 형식 오류 1명 — 3행을 고쳐 주세요</div>
+          </div>
+          <div class="fhint">수십~수백 명을 한 번에 넣을 때 씁니다. <b>기관 도메인 밖 주소는 등록되지 않습니다.</b> 반 배정은 등록한 뒤 배정 모드에서 합니다.</div>
+        </div>
+        <div class="mf"><button class="btn ghost">취소</button><button class="btn">등록 · 초대 발송</button></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-roster-manual">
+  <div class="sec-label">상태 · 명단 추가 › 직접 입력 (지각 등록 1~2명)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/cohorts/7/classes</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>운영 관리</h2></div>
+          <div class="tabs"><span class="t">기수</span><span class="t on">반 · 명단</span><span class="t">매니저</span><span class="t">교안</span><span class="t">비용</span></div>
+          <div class="card" style="height:180px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay">
+      <div class="modal2">
+        <div class="mh"><h4>명단 추가 · 7기</h4><span class="x">✕</span></div>
+        <div class="mb">
+          <div class="mtabs"><button class="mtab">CSV 일괄 업로드</button><button class="mtab on">직접 입력</button></div>
+          <div class="mhead2"><span class="a">이름</span><span class="b">이메일</span><span class="c"></span></div>
+          <div class="mrow"><div class="inp nm2">서지우</div><div class="inp em2">jiwoo@green.com</div><span class="del">✕</span></div>
+          <div class="mrow"><div class="inp nm2">배현우</div><div class="inp em2">hyunwoo@green.com</div><span class="del">✕</span></div>
+          <div class="mrow"><div class="inp nm2 ph">이름</div><div class="inp em2 ph">name@green.com</div><span class="del">✕</span></div>
+          <button class="addrow">+ 행 추가</button>
+          <div class="fhint">이메일 형식과 중복을 그 자리에서 확인합니다. 등록하면 <b>활성화 초대</b>가 나갑니다.</div>
+        </div>
+        <div class="mf"><button class="btn ghost">취소</button><button class="btn">등록 · 초대 발송</button></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-assign-idle">
+  <div class="sec-label">모드 · 반 배정 — ① 진입 (반·교육생 모두 미선택)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/cohorts/7/assign</span></div>
+    <div class="app">
+      <div class="modehead">
+        <div class="mt">반 배정 <span class="s">· 7기 · 미배정 3명</span></div>
+        <button class="btn ghost">닫기</button>
+      </div>
+      <div class="modebody">
+        <div class="split">
+          <div class="classrail">
+            <div class="rh">채울 반을 고르세요</div>
+            <button class="railitem"><span class="rl"><b>A반</b><span class="mgr">박지현</span></span><span class="c full">25<span class="cap">/ 25 정원</span></span></button>
+            <button class="railitem"><span class="rl"><b>B반</b><span class="mgr">이도윤</span></span><span class="c full">25<span class="cap">/ 25 정원</span></span></button>
+            <button class="railitem"><span class="rl"><b>C반</b><span class="mgr">최유진</span></span><span class="c full">25<span class="cap">/ 25 정원</span></span></button>
+            <button class="railitem"><span class="rl"><b>F반</b><span class="mgr none">담당 없음</span></span><span class="c">22<span class="cap">/ 25 정원</span></span></button>
+          </div>
+          <div class="rosterpane">
+            <div class="bhead"><h3>배정 대상 <span class="tot">3명</span><span class="meta">· 미배정만</span></h3></div>
+            <div class="toolbar">
+              <span class="search">🔍 이름 · 이메일 검색</span>
+              <span class="sel"><span class="k">범위</span> 미배정만 ▾</span>
+            </div>
+            <div class="card">
+              <table class="tbl">
+                <thead><tr><th class="chk k-chk"><span class="cbx"></span></th><th class="k-name">교육생</th><th class="k-badge">계정</th><th>직전 기수</th></tr></thead>
+                <tbody>
+                  <tr><td class="chk"><span class="cbx"></span></td><td><div class="who"><span class="av">한</span><div><div class="nm">한도현</div><div class="em">dohyun@green.com</div></div></div></td><td><span class="badge ok">활성</span></td><td><span class="na">—</span></td></tr>
+                  <tr><td class="chk"><span class="cbx"></span></td><td><div class="who"><span class="av">정</span><div><div class="nm">정하늘</div><div class="em">haneul@green.com</div></div></div></td><td><span class="badge info">초대됨</span></td><td><span class="na">—</span></td></tr>
+                  <tr><td class="chk"><span class="cbx"></span></td><td><div class="who"><span class="av">오</span><div><div class="nm">오지훈</div><div class="em">jihoon@green.com</div></div></div></td><td><span class="badge ok">활성</span></td><td>6기 · C반</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tablefoot"><span class="range">1–3 / 3명</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+                      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-assign">
+  <div class="sec-label">모드 · 반 배정 — ② 반 + 교육생 선택 (실행 버튼 활성)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/cohorts/7/assign</span></div>
+    <div class="app">
+      <div class="modehead">
+        <div class="mt">반 배정 <span class="s">· 7기 · 미배정 3명 · F반 채우는 중</span></div>
+        <button class="btn ghost">닫기</button>
+      </div>
+      <div class="modebody">
+        <div class="split">
+          <div class="classrail">
+            <div class="rh">채울 반을 고르세요</div>
+            <button class="railitem"><span class="rl"><b>A반</b><span class="mgr">박지현</span></span><span class="c full">25<span class="cap">/ 25 정원</span></span></button>
+            <button class="railitem"><span class="rl"><b>B반</b><span class="mgr">이도윤</span></span><span class="c full">25<span class="cap">/ 25 정원</span></span></button>
+            <button class="railitem"><span class="rl"><b>C반</b><span class="mgr">최유진</span></span><span class="c full">25<span class="cap">/ 25 정원</span></span></button>
+            <button class="railitem on"><span class="rl"><b>F반</b><span class="mgr none">담당 없음</span></span><span class="c">22<span class="cap">→ 24 / 25</span></span></button>
+          </div>
+          <div class="rosterpane">
+            <div class="bhead"><h3>배정 대상 <span class="tot">3명</span><span class="meta">· 미배정만</span></h3></div>
+            <div class="toolbar">
+              <span class="search">🔍 이름 · 이메일 검색</span>
+              <span class="sel"><span class="k">범위</span> 미배정만 ▾</span>
+            </div>
+            <div class="card">
+              <table class="tbl">
+                <thead><tr class="bulk"><th class="chk k-chk"><span class="cbx on">✓</span></th><th colspan="3"><div class="bulkin">
+                    <span class="n">2명 선택</span>
+                    <button class="ba primary">F반에 넣기</button>
+                    <span class="hint2">22 → 24 / 25 · 1자리 남음</span>
+                    <span class="clear">✕ 선택 해제</span>
+                  </div></th></tr></thead>
+                <tbody>
+                  <tr class="sel"><td class="chk"><span class="cbx on">✓</span></td><td><div class="who"><span class="av">한</span><div><div class="nm">한도현</div><div class="em">dohyun@green.com</div></div></div></td><td><span class="badge ok">활성</span></td><td><span class="na">—</span></td></tr>
+                  <tr class="sel"><td class="chk"><span class="cbx on">✓</span></td><td><div class="who"><span class="av">정</span><div><div class="nm">정하늘</div><div class="em">haneul@green.com</div></div></div></td><td><span class="badge info">초대됨</span></td><td><span class="na">—</span></td></tr>
+                  <tr><td class="chk"><span class="cbx"></span></td><td><div class="who"><span class="av">오</span><div><div class="nm">오지훈</div><div class="em">jihoon@green.com</div></div></div></td><td><span class="badge ok">활성</span></td><td>6기 · C반</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tablefoot"><span class="range">1–3 / 3명</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+                      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-assign-done">
+  <div class="sec-label">모드 · 반 배정 — ③ 배정 직후 (되돌리기)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/cohorts/7/assign</span></div>
+    <div class="app">
+      <div class="modehead">
+        <div class="mt">반 배정 <span class="s">· 7기 · 미배정 1명</span></div>
+        <button class="btn ghost">닫기</button>
+      </div>
+      <div class="modebody">
+        <div class="split">
+          <div class="classrail">
+            <div class="rh">채울 반을 고르세요</div>
+            <button class="railitem"><span class="rl"><b>A반</b><span class="mgr">박지현</span></span><span class="c full">25<span class="cap">/ 25 정원</span></span></button>
+            <button class="railitem"><span class="rl"><b>B반</b><span class="mgr">이도윤</span></span><span class="c full">25<span class="cap">/ 25 정원</span></span></button>
+            <button class="railitem"><span class="rl"><b>C반</b><span class="mgr">최유진</span></span><span class="c full">25<span class="cap">/ 25 정원</span></span></button>
+            <button class="railitem"><span class="rl"><b>F반</b><span class="mgr none">담당 없음</span></span><span class="c">22<span class="cap">/ 25 정원 · 방금 +2</span></span></button>
+          </div>
+          <div class="rosterpane">
+            <div class="toast">
+              <span>✓</span>
+              <span><b>2명</b>을 F반에 넣었어요 — 한도현 · 정하늘</span>
+              <span class="u">되돌리기</span>
+              <span class="x2">✕</span>
+            </div>
+            <div class="bhead"><h3>배정 대상 <span class="tot">1명</span><span class="meta">· 미배정만</span></h3></div>
+            <div class="toolbar">
+              <span class="search">🔍 이름 · 이메일 검색</span>
+              <span class="sel"><span class="k">범위</span> 미배정만 ▾</span>
+            </div>
+            <div class="card">
+              <table class="tbl">
+                <thead><tr><th class="chk k-chk"><span class="cbx"></span></th><th class="k-name">교육생</th><th class="k-badge">계정</th><th>직전 기수</th></tr></thead>
+                <tbody>
+                  <tr><td class="chk"><span class="cbx"></span></td><td><div class="who"><span class="av">오</span><div><div class="nm">오지훈</div><div class="em">jihoon@green.com</div></div></div></td><td><span class="badge ok">활성</span></td><td>6기 · C반</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tablefoot"><span class="range">1–1 / 1명</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+                      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-assign-empty">
+  <div class="sec-label">모드 · 반 배정 — ④ 미배정 0 (끝)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/cohorts/7/assign</span></div>
+    <div class="app">
+      <div class="modehead">
+        <div class="mt">반 배정 <span class="s">· 7기</span></div>
+        <button class="btn">완료</button>
+      </div>
+      <div class="modebody">
+        <div class="split">
+          <div class="classrail">
+            <div class="rh">채울 반을 고르세요</div>
+            <button class="railitem"><span class="rl"><b>A반</b><span class="mgr">박지현</span></span><span class="c full">25<span class="cap">/ 25 정원</span></span></button>
+            <button class="railitem"><span class="rl"><b>B반</b><span class="mgr">이도윤</span></span><span class="c full">25<span class="cap">/ 25 정원</span></span></button>
+            <button class="railitem"><span class="rl"><b>C반</b><span class="mgr">최유진</span></span><span class="c full">25<span class="cap">/ 25 정원</span></span></button>
+            <button class="railitem"><span class="rl"><b>F반</b><span class="mgr none">담당 없음</span></span><span class="c">22<span class="cap">/ 25 정원</span></span></button>
+          </div>
+          <div class="rosterpane">
+            <div class="empty">
+              <div class="ic">✓</div>
+              <h3>모두 반에 들어갔습니다</h3>
+              <p>7기 250명 · 미배정 없음</p>
+              <div class="cta"><button class="btn ghost">전체 명단 보기</button><button class="btn">완료</button></div>
+            </div>
+                      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-managers">
+  <div class="sec-label">화면 · 운영 관리 › ③ 매니저</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/managers</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>운영 관리</h2></div>
+          <div class="tabs">
+            <span class="t">기수 <span class="cnt">3</span></span>
+            <span class="t">반 · 명단 <span class="cnt">10 · 250</span></span>
+            <span class="t on">매니저 <span class="cnt">9</span></span>
+            <span class="t">교안 <span class="cnt">4</span></span>
+            <span class="t">비용</span>
+          </div>
+
+          <div class="alert warn">
+            <span>⚠</span>
+            <div><b>F반에 담당 매니저가 없습니다</b>
+              <span class="sub">담당이 없으면 그 반 학생의 면담·독촉을 아무도 처리하지 않습니다. 대시보드의 조치 필요에도 같은 신호가 올라옵니다.</span>
+            </div>
+          </div>
+
+          <div class="block">
+            <div class="bhead">
+              <h3>매니저 <span class="tot">9명</span><span class="meta">· 기관 전체 · 활성 8 · 초대됨 1</span></h3>
+              <button class="btn">+ 매니저 초대</button>
+            </div>
+            <div class="toolbar">
+              <span class="search">🔍 이름 · 이메일 검색</span>
+              <span class="sel"><span class="k">기수</span> 7기 ▾</span>
+              <span class="sel"><span class="k">상태</span> 전체 ▾</span>
+            </div>
+            <div class="card">
+              <table class="tbl">
+                <thead><tr><th class="k-name">매니저</th><th class="k-cls">담당 반</th><th class="num k-num">담당 인원</th><th class="k-badge">상태</th><th class="k-date">최근 접속</th><th></th></tr></thead>
+                <tbody>
+                  <tr><td><div class="who"><span class="av">박</span><div><div class="nm">박지현</div><div class="em">jihyun@green.com</div></div></div></td><td>7기 · A반</td><td class="num">25</td><td><span class="badge ok">활성</span></td><td class="date">오늘 09:41</td><td class="act"><span class="link">반 배정</span><span class="link warn">정지</span></td></tr>
+                  <tr><td><div class="who"><span class="av">이</span><div><div class="nm">이도윤</div><div class="em">doyun@green.com</div></div></div></td><td>7기 · B반, D반</td><td class="num">50</td><td><span class="badge ok">활성</span></td><td class="date">어제 18:02</td><td class="act"><span class="link">반 배정</span><span class="link warn">정지</span></td></tr>
+                  <tr><td><div class="who"><span class="av none">?</span><div><div class="nm">— <span class="na" style="font-weight:400;font-size:11px">가입 대기</span></div><div class="em">newmgr@green.com</div></div></div></td><td><span class="badge warn">미배정</span></td><td class="na">—</td><td><span class="badge info">초대됨</span></td><td class="na">—</td><td class="act"><span class="link">재발송</span><span class="link warn">취소</span></td></tr>
+                  <tr style="opacity:.62"><td><div class="who"><span class="av none">최</span><div><div class="nm">최상현</div><div class="em">sanghyun@green.com</div></div></div></td><td>6기 · A반, B반</td><td class="na">—</td><td><span class="badge off">정지 · 퇴사</span></td><td class="date">2026-05-02</td><td class="act"><span class="link">재활성</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tablefoot"><span class="range">1–9 / 9명</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+                      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-mgr-invite">
+  <div class="sec-label">상태 · [+ 매니저 초대] 클릭 → 모달 (권한 선택 없음)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/managers</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>운영 관리</h2></div>
+          <div class="tabs"><span class="t">기수</span><span class="t">반 · 명단</span><span class="t on">매니저 <span class="cnt">9</span></span><span class="t">교안</span><span class="t">비용</span></div>
+          <div class="card" style="height:180px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay">
+      <div class="modal2" style="width:460px">
+        <div class="mh"><h4>매니저 초대 · 그린컴퍼니 부트캠프</h4><span class="x">✕</span></div>
+        <div class="mb">
+          <div class="field">
+            <label>이메일</label>
+            <div class="inp">yoon@green.com</div>
+            <div class="fhint">이 주소로 초대가 나가고, 받는 사람은 이름과 비밀번호만 정하면 됩니다. <b>기관 도메인 밖 주소로는 보낼 수 없습니다.</b></div>
+          </div>
+          <div class="field">
+            <label>담당 반 <span class="opt">· 선택 · 나중에 배정 가능</span></label>
+            <div class="inp">7기 › F반 ▾</div>
+            <div class="fhint"><b>권한을 고르는 칸이 없습니다</b> — 매니저는 한 종류뿐이고, 무엇을 볼 수 있는지는 <b>담당 반</b>이 정합니다.</div>
+          </div>
+        </div>
+        <div class="mf"><button class="btn ghost">취소</button><button class="btn">초대 발송</button></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-curriculum">
+  <div class="sec-label">화면 · 운영 관리 › ④ 교안 (목록)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/curricula</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>운영 관리</h2></div>
+          <div class="tabs">
+            <span class="t">기수 <span class="cnt">3</span></span>
+            <span class="t">반 · 명단 <span class="cnt">10 · 250</span></span>
+            <span class="t">매니저 <span class="cnt">9</span></span>
+            <span class="t on">교안 <span class="cnt">4</span></span>
+            <span class="t">비용</span>
+          </div>
+
+          <div class="block">
+            <div class="bhead">
+              <h3>교안 <span class="tot">4개</span><span class="meta">· 기관 전체 · 여러 기수가 같이 씁니다</span></h3>
+              <button class="btn">+ 교안 등록</button>
+            </div>
+            <div class="toolbar">
+              <span class="search">🔍 교안명 검색</span>
+              <span class="sel"><span class="k">상태</span> 전체 ▾</span>
+            </div>
+            <div class="card">
+              <table class="tbl">
+                <thead><tr><th class="k-name">교안</th><th class="k-num">버전</th><th class="num k-num">섹션</th><th class="num k-num">가르친 항목</th><th class="k-num">연결된 프로젝트</th><th>분석</th></tr></thead>
+                <tbody>
+                  <tr class="click"><td class="nm">AI_LLMOps</td><td class="mono">v2</td><td class="num">12</td><td class="num">87</td><td>미프 3차 · 4차</td><td><span class="badge ok">완료</span></td></tr>
+                  <tr class="click"><td class="nm">Streamlit 실습</td><td class="mono">v1</td><td class="num">4</td><td class="num">22</td><td>미프 3차</td><td><span class="badge ok">완료</span></td></tr>
+                  <tr class="click"><td class="nm">Kubernetes 기초</td><td class="mono">v1</td><td class="num">6</td><td class="num">31</td><td>미프 2차</td><td><span class="badge ok">완료</span></td></tr>
+                  <tr class="click"><td class="nm">데이터 파이프라인</td><td class="mono">v1</td><td class="na">—</td><td class="na">—</td><td class="na">—</td><td><span class="badge warn">분석 실패</span></td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tablefoot"><span class="range">1–4 / 4개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+                      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-cur-detail">
+  <div class="sec-label">화면 · 교안 상세 › 섹션 (가르친 항목)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/curricula/ai-llmops</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>AI_LLMOps <span class="mono na">v2</span> <span class="badge ok">분석 완료</span></h2><span class="back">← 교안 목록</span></div>
+          <div class="subtabs"><span class="st2 on">섹션 12</span><span class="st2">연결된 프로젝트 2</span></div>
+
+          <div class="qrow">
+            <span class="badge off">12개 섹션 · 168쪽</span>
+            <span class="qact"><button class="btn ghost">↻ 다시 분석</button><button class="btn ghost">새 버전 올리기</button></span>
+          </div>
+          <div class="relsplit">
+            <div class="seclist">
+            <button class="secitem on"><b>HITL (Human In The Loop)</b><span class="m">p.48–60 · 항목 9</span></button>
+            <button class="secitem"><b>역할 기반 설계</b><span class="m">p.37–46 · 항목 9</span></button>
+            <button class="secitem"><b>시점 관리 (Snapshot)</b><span class="m">p.62–75 · 항목 7</span></button>
+            <button class="secitem"><b>Agent 시스템 구축 필요 기술</b><span class="m">p.128–150 · 항목 11</span></button>
+            <button class="secitem"><b>Agent 시스템 평가</b><span class="m">p.95–156 · 항목 15</span></button>
+            <button class="secitem"><b>AI Agent 설계 — 면접관 예제</b><span class="m">p.21–35 · 항목 16</span></button>
+            <button class="secitem"><b>Trace 실행 관측</b><span class="m">p.77–154 · 항목 12</span></button>
+            <button class="secitem"><b>LLMOps 개념 이해</b><span class="m">p.7–10 · 항목 3</span></button>
+            </div>
+            <div class="relpane">
+              <div class="sech">
+                <div>
+                  <h3>HITL (Human In The Loop)</h3>
+                  <div class="sm">AI_LLMOps v2 · <b>p.48–60</b> — 리포트와 면담이 이 위치를 가리킵니다</div>
+                </div>
+              </div>
+
+              <div class="grph">이 섹션이 가르친 것 <b>9</b><span class="gd">프로젝트에서 이 중 3개를 골라 문항을 만듭니다</span></div>
+              <div class="itm"><div class="it"><b>HITL 개념 정의</b><span class="p">p.48</span></div><div class="idf">HITL은 LLM 시스템의 의사결정을 통제하기 위한 Control Layer로, 실행 결과를 검증·차단·수정하며 사람을 시스템의 구성요소로 설계한다.</div></div>
+              <div class="itm"><div class="it"><b>HITL이 필요한 이유</b><span class="p">p.49</span></div><div class="idf">무한 재시도로 인한 비용 증가, Tool/API 호출 비용 리스크, 정책 위반으로 인한 법적·보안 사고를 통제하기 위해 HITL이 필요하다.</div></div>
+              <div class="itm"><div class="it"><b>HITL 적용 사례 비교</b><span class="p">p.50</span></div><div class="idf">콘텐츠 생성·고객 응대 사례에서 Trigger 조건에 따라 사람이 승인/수정/차단/직접 응답으로 개입하는 패턴을 보여준다.</div></div>
+              <div class="itm"><div class="it"><b>HITL의 위치와 역할</b><span class="p">p.51</span></div><div class="idf">HITL은 특정 단계가 아니라 Design–Run–Trace–Evaluate–Improve 전체 운영 사이클을 관통하는 정책이다.</div></div>
+              <div class="itm"><div class="it"><b>Supervisor 패턴에서 HITL 구현 원칙</b><span class="p">p.52</span></div><div class="idf">HITL은 중앙에서 통제되어야 하므로 Supervisor가 흐름과 개입을 모두 통제하며, Worker는 HITL을 호출하지 않고 사람도 하나의 Node로 취급한다.</div></div>
+              <div class="itm"><div class="it"><b>Supervisor 패턴의 HITL 실행 흐름</b><span class="p">p.53</span></div><div class="idf">Supervisor가 HITL Trigger 함수로 개입 조건을 판정하고, Human은 APPROVE/REVISE/ABORT로 최종 의사결정을 수행한다.</div></div>
+              <div class="itm"><div class="it"><b>HITL Design Checklist과 사용자 부담 Trade-off</b><span class="p">p.58</span></div><div class="idf">개입 조건(정량+정책), 개입 방식, 개입 이후 흐름을 정의해야 하며, 안전성 vs 사용성 Trade-off를 위해 3가지 방안을 고려한다.</div></div>
+              <div class="more">2개 더 보기 ▾</div>
+                          </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-cur-nocode">
+  <div class="sec-label">화면 · 다른 섹션 (AI Agent 설계)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/curricula/ai-llmops</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>AI_LLMOps <span class="mono na">v2</span> <span class="badge ok">분석 완료</span></h2><span class="back">← 교안 목록</span></div>
+          <div class="subtabs"><span class="st2 on">섹션 12</span><span class="st2">연결된 프로젝트 2</span></div>
+
+          <div class="qrow">
+            <span class="badge off">12개 섹션 · 168쪽</span>
+            <span class="qact"><button class="btn ghost">↻ 다시 분석</button><button class="btn ghost">새 버전 올리기</button></span>
+          </div>
+          <div class="relsplit">
+            <div class="seclist">
+            <button class="secitem"><b>HITL (Human In The Loop)</b><span class="m">p.48–60 · 항목 9</span></button>
+            <button class="secitem"><b>역할 기반 설계</b><span class="m">p.37–46 · 항목 9</span></button>
+            <button class="secitem"><b>시점 관리 (Snapshot)</b><span class="m">p.62–75 · 항목 7</span></button>
+            <button class="secitem"><b>Agent 시스템 구축 필요 기술</b><span class="m">p.128–150 · 항목 11</span></button>
+            <button class="secitem"><b>Agent 시스템 평가</b><span class="m">p.95–156 · 항목 15</span></button>
+            <button class="secitem on"><b>AI Agent 설계 — 면접관 예제</b><span class="m">p.21–35 · 항목 16</span></button>
+            <button class="secitem"><b>Trace 실행 관측</b><span class="m">p.77–154 · 항목 12</span></button>
+            <button class="secitem"><b>LLMOps 개념 이해</b><span class="m">p.7–10 · 항목 3</span></button>
+            </div>
+            <div class="relpane">
+              <div class="sech">
+                <div>
+                  <h3>AI Agent 설계 — 면접관 예제</h3>
+                  <div class="sm">AI_LLMOps v2 · <b>p.21–35</b> — 리포트와 면담이 이 위치를 가리킵니다</div>
+                </div>
+              </div>
+
+              <div class="grph">이 섹션이 가르친 것 <b>16</b><span class="gd">프로젝트에서 이 중 3개를 골라 문항을 만듭니다</span></div>
+              <div class="itm"><div class="it"><b>AI 면접관 Agent 문제 제기</b><span class="p">p.21</span></div><div class="idf">채용 절차에서 면접이 가장 어려운 영역(46.4%)이며, 본인의 강점을 설명하는 질문의 답변이 가장 어렵다는 조사 결과로 필요성을 제기한다.</div></div>
+              <div class="itm"><div class="it"><b>Agent 역할 정의서</b><span class="p">p.26</span></div><div class="idf">각 Agent의 책임과 역할을 명확히 분리하여, Agent 이름/역할/입출력/사용 모델·도구/제약 조건/실패 시 리스크 항목을 정의한다.</div></div>
+              <div class="itm"><div class="it"><b>Workflow Spec</b><span class="p">p.27</span></div><div class="idf">Agent들의 실행 순서, 상태 흐름, 분기 조건, 반복 구조, 종료 조건을 정의하여 시스템의 흐름과 의사결정 구조를 명시하는 명세서이다.</div></div>
+              <div class="itm"><div class="it"><b>State 정의서</b><span class="p">p.28</span></div><div class="idf">Agent 간에 전달되는 데이터 구조를 정의하여 시스템이 무엇을 기억하고 무엇을 전달하는지 명확히 한다.</div></div>
+              <div class="itm"><div class="it"><b>Decision Policy</b><span class="p">p.29</span></div><div class="idf">Workflow의 분기와 반복을 일관되고 통제 가능하게 만들기 위해 판단 기준 State와 선택지·조건·결과·구현 방식을 규칙으로 정의한다.</div></div>
+              <div class="more">9개 더 보기 ▾</div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-cur-used">
+  <div class="sec-label">화면 · 교안 상세 › 연결된 프로젝트 (안전장치)</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/curricula/ai-llmops/projects</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>AI_LLMOps <span class="mono na">v2</span> <span class="badge ok">분석 완료</span></h2><span class="back">← 교안 목록</span></div>
+          <div class="subtabs"><span class="st2">섹션 12</span><span class="st2 on">연결된 프로젝트 2</span></div>
+
+          <div class="card">
+            <table class="tbl">
+              <thead><tr><th class="k-name">회차</th><th class="k-num">기수</th><th>이 교안에서 고른 항목</th><th>상태</th></tr></thead>
+              <tbody>
+                <tr class="click"><td class="nm">미프 3차</td><td>7기</td><td>HITL Trigger 조건 · Supervisor 역할 분리 · Snapshot 구성 요소</td><td><span class="badge ok">응시 진행 중 198/231</span></td></tr>
+                <tr class="click"><td class="nm">미프 4차</td><td>7기</td><td><span class="badge warn">항목 미확정</span></td><td><span class="badge off">예정</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="tablefoot"><span class="range">1–2 / 2개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+                  </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-cur-reanalyze">
+  <div class="sec-label">상태 · [다시 분석] 클릭 → 쓰는 회차가 있어 확인 모달</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/curricula/ai-llmops</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>AI_LLMOps <span class="mono na">v2</span></h2><span class="back">← 교안 목록</span></div>
+          <div class="subtabs"><span class="st2 on">섹션 12</span><span class="st2">연결된 프로젝트 2</span></div>
+          <div class="blk" style="height:120px"></div>
+          <div class="blk" style="height:150px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="overlay">
+      <div class="modal2" style="width:500px">
+        <div class="mh"><h4>다시 분석하기 전에</h4><span class="x">✕</span></div>
+        <div class="mb">
+          <div class="alert warn" style="margin-bottom:16px">
+            <span>⚠</span>
+            <div><b>미프 3차가 이 교안으로 응시 중입니다</b>
+              <span class="sub">198명이 이미 응시했고, 그 문항은 <b>지금 버전의 쪽 번호와 개념</b>으로 만들어졌습니다.</span>
+            </div>
+          </div>
+          <div class="fhint">
+            다시 분석하면 섹션이 합쳐지거나 쪽 번호가 달라질 수 있습니다. 그러면 <b>이미 발행된 리포트의 교안 위치가 실제와 어긋납니다.</b><br><br>
+            <b>이미 응시한 학생의 문항과 리포트는 그대로 둡니다</b> — 분석 결과는 <b>다음에 만드는 회차부터</b> 적용됩니다.
+          </div>
+        </div>
+        <div class="mf"><button class="btn ghost">취소</button><button class="btn">그래도 다시 분석</button></div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-cur-fail">
+  <div class="sec-label">상태 · 교안 분석 실패</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/curricula/data-pipeline</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>데이터 파이프라인 <span class="mono na">v1</span></h2><span class="back">← 교안 목록</span></div>
+
+          <div class="alert bad">
+            <span>!</span>
+            <div><b>교안을 분석하지 못했습니다</b>
+              <span class="sub">파일에 암호가 걸려 있어 본문을 읽을 수 없습니다. 암호를 푼 파일로 다시 올려 주세요.</span>
+            </div>
+          </div>
+
+          <div class="blk">
+            <div class="bh"><h3>교안</h3><div style="display:flex;gap:8px"><span class="act">다시 분석</span><span class="act">파일 교체</span></div></div>
+            <div class="kv"><span class="k">파일</span><span class="v mono">data_pipeline_v1.pdf · 92쪽</span></div>
+            <div class="kv"><span class="k">등록</span><span class="v">07-26 14:02</span></div>
+            <div class="kv"><span class="k">가르친 항목</span><span class="v na">— <span class="hint">분석이 끝나야 나옵니다. 이 교안은 아직 프로젝트에 연결할 수 없습니다.</span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+  <div class="rpage" id="page-cost">
+  <div class="sec-label">화면 · 운영 관리 › ⑤ 비용</div>
+  <div class="viewport">
+    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/admin/cost</span></div>
+    <div class="app">
+      <div class="topbar">
+        <div class="left"><div class="brand"><span class="mk">◆</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 ▾</div></div>
+        <div class="me">박지현 · 오퍼레이터 <span class="av">박</span></div>
+      </div>
+      <div class="body">
+        <div class="nav">
+          <div class="grp"><div class="item"><span class="ic">▦</span>대시보드</div><div class="item"><span class="ic">△</span>분석</div></div>
+          <div class="grp"><div class="item"><span class="ic">▥</span>리포트</div><div class="item"><span class="ic">▤</span>프로젝트</div></div>
+          <div class="grp"><div class="item on"><span class="ic">⚙</span>운영 관리</div></div>
+        </div>
+        <div class="content">
+          <div class="phead"><h2>운영 관리</h2></div>
+          <div class="tabs">
+            <span class="t">기수 <span class="cnt">3</span></span>
+            <span class="t">반 · 명단 <span class="cnt">10 · 250</span></span>
+            <span class="t">매니저 <span class="cnt">9</span></span>
+            <span class="t">교안 <span class="cnt">4</span></span>
+            <span class="t on">비용</span>
+          </div>
+
+          <div class="costgrid">
+            <div class="mcard"><div class="lbl">이번 달 · 기관 전체</div><div class="val">$412</div><div class="sub">예산 $600 대비 69% · <span class="up">전월 +12%</span></div><div class="costbar"><i style="width:69%"></i></div></div>
+            <div class="mcard"><div class="lbl">7기</div><div class="val">$268</div><div class="sub">250명 · 1인당 $1.07</div></div>
+            <div class="mcard"><div class="lbl">8기</div><div class="val">$144</div><div class="sub">252명 · 1인당 $0.57</div></div>
+          </div>
+
+          <div class="block">
+            <div class="bhead"><h3>반별 <span class="tot">7기</span><span class="meta">· 이번 달</span></h3></div>
+            <div class="card">
+              <table class="tbl">
+                <thead><tr><th class="k-name">반</th><th class="k-person">담당</th><th class="num k-num">교육생</th><th class="num k-num">세션</th><th class="num">비용</th></tr></thead>
+                <tbody>
+                  <tr><td class="nm">A반</td><td>박지현</td><td class="num">25</td><td class="num">69</td><td class="num">$29</td></tr>
+                  <tr><td class="nm">B반</td><td>이도윤</td><td class="num">25</td><td class="num">66</td><td class="num">$27</td></tr>
+                  <tr><td class="nm">C반</td><td>최유진</td><td class="num">25</td><td class="num">71</td><td class="num">$30</td></tr>
+                  <tr><td class="nm">F반</td><td><span class="badge warn">담당 없음</span></td><td class="num">22</td><td class="num">54</td><td class="num">$23</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tablefoot"><span class="range">1–10 / 10개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+                      </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  </div>
+
+</div>
+<script>
+  var PAGE = { cases:"page-cases", cohort:"page-cohort", "cohort-create":"page-cohort-create", empty:"page-empty",
+               classes:"page-classes", bulk:"page-bulk", "class-add":"page-class-add",
+               "roster-add":"page-roster-add", "roster-manual":"page-roster-manual",
+               "assign-idle":"page-assign-idle", assign:"page-assign",
+               "assign-done":"page-assign-done", "assign-empty":"page-assign-empty",
+               managers:"page-managers", "mgr-invite":"page-mgr-invite",
+               curriculum:"page-curriculum", "cur-detail":"page-cur-detail", "cur-nocode":"page-cur-nocode", "cur-used":"page-cur-used",
+               "cur-reanalyze":"page-cur-reanalyze",
+               "cur-fail":"page-cur-fail", cost:"page-cost" };
+  function route(){
+    var h = (location.hash || "").slice(1) || "cohort";
+    var id = PAGE[h] || "page-cohort";
+    document.querySelectorAll(".rpage").forEach(function(p){ p.classList.toggle("on", p.id === id); });
+    window.scrollTo(0,0);
+  }
+  if(window.self !== window.top) document.body.classList.add("embedded");
+  window.addEventListener("hashchange", route);
+  route();
+
+  // 목업 = 1920x1080 실화면. 보이는 폭에 맞춰 배율만 조절해 비율을 지킨다
+  function fitScreen(){
+    var p = document.querySelector(".page");
+    if(!p) return;
+    var cs = getComputedStyle(p);
+    var w = p.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    if(w > 0) document.documentElement.style.setProperty("--k", w / 1920);
+  }
+  window.addEventListener("resize", fitScreen);
+  window.addEventListener("load", fitScreen);
+  fitScreen();
+</script>
+</body>
+</html>

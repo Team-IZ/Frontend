@@ -10,8 +10,6 @@ import './index.css'
   app/providers.tsx로 뺀다 — 지금 빼면 wrapper 두 줄짜리 파일이 하나 늘 뿐이다.
 
   AuthProvider가 바깥이다. 라우트 화면이 useAuth()를 쓰므로 라우터보다 위에 있어야 한다.
-  AU-01 이식(#52)으로 features/auth/AuthContext가 v2 자리에 생겨서 다시 연결했다
-  — features-v1/auth가 아니라 v2 쪽을 가리킨다.
 
   HashRouter가 아니라 createBrowserRouter를 쓴다(app/routes.tsx). 주소에 #이 없어야
   링크·SEO·초대 링크(/invite/:token)가 자연스럽다. 정적 호스팅에 올릴 때는 서버에서

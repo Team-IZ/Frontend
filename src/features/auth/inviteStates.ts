@@ -39,13 +39,3 @@ export function resolveInviteState(code: InviteErrorCode): InviteState {
       return { variant: 'danger', message: SYSTEM_MESSAGE }
   }
 }
-
-/** 비밀번호 정책 (AUTH-01·06 case A6·B6) — 미충족 기준 목록을 돌려줌 */
-export function checkPasswordPolicy(password: string): string[] {
-  const unmet: string[] = []
-  if (password.length < 8) unmet.push('8자 이상')
-  if (!/[A-Za-z]/.test(password)) unmet.push('영문 포함')
-  if (!/[0-9]/.test(password)) unmet.push('숫자 포함')
-  if (!/[^A-Za-z0-9]/.test(password)) unmet.push('특수문자 포함')
-  return unmet
-}

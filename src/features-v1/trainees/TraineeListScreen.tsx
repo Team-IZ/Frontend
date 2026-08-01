@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { SearchIcon, XIcon } from 'lucide-react'
-import ManagerShell from '@/shells/ManagerShell'
+import ManagerShell from '@/shells-v1/ManagerShell'
 import PageHeader from '@/components/common/PageHeader'
 import { TableFrame } from '@/components/common/TableFrame'
 import {

@@ -1,4 +1,4 @@
-import ManagerShell from '@/shells/ManagerShell'
+import ManagerShell from '@/shells-v1/ManagerShell'
 
 /*
   대시보드 — 아직 셸만 붙인 자리다. 본문은 명세·와이어를 보고 채운다.

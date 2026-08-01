@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link, useParams } from 'react-router'
 import { ArrowLeft, RotateCwIcon } from 'lucide-react'
-import ManagerShell from '@/shells/ManagerShell'
+import ManagerShell from '@/shells-v1/ManagerShell'
 import PageHeader from '@/components/common/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'

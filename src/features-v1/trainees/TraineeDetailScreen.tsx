@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useParams } from 'react-router'
-import ManagerShell from '@/shells/ManagerShell'
+import ManagerShell from '@/shells-v1/ManagerShell'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import { DetailHeader } from './components/DetailHeader'

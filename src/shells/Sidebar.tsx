@@ -11,8 +11,8 @@ import type { SidebarGroup } from './sidebarConfig'
   시맨틱 토큰을 쓰고, 팔레트 값은 그 토큰 하나가 대표하게 둔다.
 
   선택 항목 글자만 예외로 `text-white`를 그대로 쓴다 — `--sidebar-accent-foreground`
-  가 `--color-nav-fg`(흐린 회색)로 매핑돼 있어서, 목업 `.nav .item.on{color:#fff}`
-  와 안 맞는다(대비도 떨어진다). 토큰이 이 상태엔 틀린 값이라 확인하고 뺐다.
+  가 `--color-nav-fg`(흐린 회색)로 매핑돼 있어서, 목업의 흰 글자 값과 안 맞는다
+  (대비도 떨어진다). 토큰이 이 상태엔 틀린 값이라 확인하고 뺐다.
 */
 type Props = {
   sidebar: SidebarGroup[]

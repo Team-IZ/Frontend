@@ -3,7 +3,7 @@ import type { InviteType } from './inviteTypes'
 /**
  * 개인정보 동의 항목 (D14 · 개인정보보호법 §15·17·22·26)
  * 대상 차등: 매니저 2개(전부 필수) / 교육생 5개(필수 4 + 선택 1)
- * 문구는 와이어프레임(manager/signup.html · trainee/activation.html) 기준.
+ * 문구는 와이어프레임(shared/signup-activation.html) 기준.
  */
 export interface ConsentItem {
   code: string

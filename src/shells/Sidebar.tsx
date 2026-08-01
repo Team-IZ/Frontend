@@ -24,8 +24,9 @@ export default function Sidebar({ sidebar }: Props) {
       aria-label="주요 메뉴"
       className="bg-sidebar hidden w-[184px] shrink-0 overflow-y-auto px-3 py-4 md:block"
     >
+      {/* 그룹 구분선 간격은 목업 `.nav .grp{padding-top:--sp-2;margin-top:--sp-2}` = 8px */}
       {sidebar.map((group, i) => (
-        <div key={i} className={i > 0 ? 'border-sidebar-border mt-3 border-t pt-3' : undefined}>
+        <div key={i} className={i > 0 ? 'border-sidebar-border mt-2 border-t pt-2' : undefined}>
           {group.map((item) => (
             <NavLink
               key={item.to}

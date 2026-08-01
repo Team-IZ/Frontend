@@ -25,6 +25,20 @@ import { SIDEBAR_BY_ROLE, type Role } from './sidebarConfig'
   전체가 늘어나 헤더·사이드바까지 같이 밀려 올라간다 — `h-svh` + `overflow-hidden`
   으로 막는다.
 
+  본문 여백·상한 — 목업 `.content{padding:var(--sp-6)}`가 **32px**이고(`p-8`),
+  콘텐츠는 1280px에서 멈추고 가운데 정렬된다(01-design-checklist H8).
+  1512(맥북 14)에서 본문 가용폭이 `1512 − 184(나브) − 64(좌우 32씩) = 1264px`라 팀이
+  실제로 쓰는 화면에서는 이 상한에 닿지 않고 1920 이상에서만 걸린다 — 임의의 숫자가
+  아니라 그 경계값이다. 상한을 여기서 한 번 걸어 두면 화면 25개가 각자 다시 걸 필요가 없다.
+
+  `p-6`(24px)을 쓰면 가용폭이 1280이 되어 **1512에서 상한에 정확히 닿는다** — 여백이
+  좁아지는 것뿐 아니라 문서가 근거로 든 경계값 자체가 무너진다.
+
+  상한을 `<main>` 자신이 아니라 안쪽 div에 거는 이유 — `<main>`이 배경(`bg-canvas`)을
+  칠하므로 그것을 좁히면 캔버스가 같이 좁아져 좌우에 이음선이 생긴다. 그리고 `<main>`은
+  블록으로 둔다: flex로 바꾸면 안쪽 `mx-auto`가 진짜 중앙 정렬로 동작해 본문이 통째로
+  가운데로 밀린다(02-layout-system 2절에서 실제로 겪은 것).
+
   너비 — 헤더·사이드바 둘 다 `w-full`/`flex-1` 계열이라 뷰포트 폭을 그대로
   따라간다(고정 리터럴은 사이드바의 184px 하나뿐이고, 그 값 자체가 v2 레이아웃
   문서 §1의 상수다). `md:` 미만에서 사이드바를 접는 것은 기존 관례(AuthForm·
@@ -66,8 +80,8 @@ export default function ConsoleShell({
       <div className="flex min-h-0 min-w-0 flex-1">
         <Sidebar sidebar={sidebar} />
 
-        <main id="main" tabIndex={-1} className="bg-canvas min-w-0 flex-1 overflow-auto p-6">
-          {children}
+        <main id="main" tabIndex={-1} className="bg-canvas min-w-0 flex-1 overflow-auto p-8">
+          <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>
     </div>

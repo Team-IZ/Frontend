@@ -251,6 +251,7 @@ export default function ProjectListScreen() {
         onOpenChange={setCreateOpen}
         cohortId={COHORT_ID}
         curricula={curriculumList}
+        cohort={scope.data}
         onCreated={page.reload}
       />
     </ConsoleShell>

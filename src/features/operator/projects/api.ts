@@ -128,7 +128,7 @@ export function createProject(req: CreateProjectRequest): Promise<Project> {
   // ===== Mock 버전 (현재 활성) =====
   return new Promise((resolve, reject) => {
     setTimeout(() => {
-      if (!req.name.trim() || !canCreate(req.curriculumIds, req.conceptIds)) {
+      if (!req.name.trim() || !canCreate(req.curriculumIds, req.conceptIds) || !req.dueAt) {
         reject({ code: 'PROJECT_CREATE_FAILED' })
         return
       }
@@ -136,7 +136,8 @@ export function createProject(req: CreateProjectRequest): Promise<Project> {
         id: `p-${req.name.replace(/\s+/g, '-')}`,
         name: req.name.trim(),
         kind: req.kind,
-        status: 'PREP',
+        // 생성 시 교안·개념·일정이 다 찼으므로 준비됨이다 — 상태는 서버가 판정한다
+        status: 'READY',
         curriculumIds: req.curriculumIds,
         // 생성 직후에는 개념이 확정된 상태다 — 이름은 교안에서 찾아 붙인다
         concepts: req.conceptIds.slice(0, CONCEPT_COUNT).map((id) => {
@@ -151,7 +152,8 @@ export function createProject(req: CreateProjectRequest): Promise<Project> {
           (n, id) => n + (CURRICULA.find((c) => c.id === id)?.teaches.length ?? 0),
           0,
         ),
-        dueAt: null,
+        startAt: req.startAt,
+        dueAt: req.dueAt,
       }
       // 목 저장소에 넣어야 목록으로 돌아갔을 때 보인다
       PROJECTS.unshift(created)

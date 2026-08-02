@@ -16,9 +16,10 @@ import { Textarea } from '@/components/ui/Textarea'
 import { Spinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils/cn'
 import { createProject } from '../../api'
-import { CONCEPT_COUNT, canCreate } from '../../rules'
+import { CONCEPT_COUNT, DUE_TIME, canCreate, toSchedule } from '../../rules'
 import { KIND_LABEL } from '../../labels'
-import type { Curriculum, ProjectKind } from '../../types'
+import type { CohortScope, Curriculum, ProjectKind } from '../../types'
+import SchedulePicker from './SchedulePicker'
 
 /*
   프로젝트 생성 모달.
@@ -49,6 +50,8 @@ type Props = {
   onOpenChange: (open: boolean) => void
   cohortId: string
   curricula: Curriculum[]
+  /** 기수 기간 — 달력이 이 밖을 못 고르게 막는다 */
+  cohort?: CohortScope
   /** 생성 성공 시 — 목록을 다시 부르게 한다(서버가 정렬·집계를 다시 해야 한다) */
   onCreated: () => void
 }
@@ -67,6 +70,7 @@ export default function CreateProjectDialog({
   onOpenChange,
   cohortId,
   curricula,
+  cohort,
   onCreated,
 }: Props) {
   const [name, setName] = useState('')
@@ -74,6 +78,8 @@ export default function CreateProjectDialog({
   const [curriculumIds, setCurriculumIds] = useState<string[]>([])
   const [conceptIds, setConceptIds] = useState<string[]>([])
   const [requirements, setRequirements] = useState('')
+  const [startAt, setStartAt] = useState<Date>()
+  const [dueAt, setDueAt] = useState<Date>()
   const [submitting, setSubmitting] = useState(false)
   const [failed, setFailed] = useState(false)
 
@@ -109,13 +115,23 @@ export default function CreateProjectDialog({
     })
   }
 
-  const submittable = name.trim().length > 0 && canCreate(curriculumIds, conceptIds) && !submitting
+  const schedule = toSchedule(startAt, dueAt)
+  const submittable =
+    name.trim().length > 0 && canCreate(curriculumIds, conceptIds) && !!schedule && !submitting
 
   const submit = async () => {
     setSubmitting(true)
     setFailed(false)
     try {
-      await createProject({ cohortId, name, kind, curriculumIds, conceptIds, requirements })
+      await createProject({
+        cohortId,
+        name,
+        kind,
+        curriculumIds,
+        conceptIds,
+        requirements,
+        ...schedule!,
+      })
       onCreated()
       onOpenChange(false)
       reset()
@@ -133,6 +149,8 @@ export default function CreateProjectDialog({
     setCurriculumIds([])
     setConceptIds([])
     setRequirements('')
+    setStartAt(undefined)
+    setDueAt(undefined)
     setFailed(false)
   }
 
@@ -190,6 +208,23 @@ export default function CreateProjectDialog({
                 </Button>
               ))}
             </ButtonGroup>
+          </Field>
+
+          <Field>
+            <FieldLabel>
+              회차 기간 <RequiredMark>필수</RequiredMark>{' '}
+              <span className="text-fg-subtle text-xs font-normal">· 마감일 {DUE_TIME}까지</span>
+            </FieldLabel>
+            <SchedulePicker
+              startAt={startAt}
+              dueAt={dueAt}
+              onChange={(patch) => {
+                if ('startAt' in patch) setStartAt(patch.startAt)
+                if ('dueAt' in patch) setDueAt(patch.dueAt)
+              }}
+              min={cohort?.startAt}
+              max={cohort?.endAt}
+            />
           </Field>
 
           <Field>

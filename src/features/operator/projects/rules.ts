@@ -34,6 +34,30 @@ export const DUE_SOON_DAYS = 7
 
 const DAY_MS = 86_400_000
 
+/**
+ * 제출 마감 시각 — **마감일 그날 자정까지**다. 회차마다 다른 값이 아니라서 입력으로
+ * 받지 않는다(운영자가 매번 같은 값을 치게 하면 잘못 칠 여지만 생긴다).
+ *
+ * `24:00`이 아니라 `23:59`인 이유 — 자정은 **다음 날 00:00**이라 "9월 26일 마감"이
+ * 실제로는 27일에 끝나는 것처럼 읽힌다. 그날 안에 끝난다는 뜻을 그대로 쓴다.
+ *
+ * 목업은 `18:00`으로 그렸지만 실제 운영 기준이 자정이라 이 값을 쓴다. 기획이 바꾸면
+ * 여기만 고친다.
+ */
+export const DUE_TIME = '23:59'
+
+/** 로컬 날짜를 `YYYY-MM-DD`로. `toISOString()`은 UTC로 밀려 하루가 어긋난다 */
+export function toIsoDate(d: Date): string {
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+}
+
+/** 날짜 + 고정 시각을 `YYYY-MM-DDTHH:mm`으로 */
+export function toIsoDateTime(d: Date, time: string): string {
+  return `${toIsoDate(d)}T${time}`
+}
+
+const pad = (n: number) => String(n).padStart(2, '0')
+
 export type DueLabel = {
   text: string
   /** 마감이 지났다 */
@@ -65,6 +89,15 @@ export function dueLabel(dueAt: string | null, now: string): DueLabel | null {
 /** 날짜 부분만 남긴 밀리초. 시각·타임존이 섞이면 하루 차이가 들쭉날쭉해진다 */
 function dateOnly(iso: string): number {
   return new Date(iso.slice(0, 10)).getTime()
+}
+
+/**
+ * 고른 두 날짜를 저장 형식으로. 시작은 날짜만, 마감은 고정 시각(자정)이 붙는다.
+ * 둘 중 하나라도 없으면 `null` — 저장 가능 여부 판정이 이 반환값 하나로 끝난다.
+ */
+export function toSchedule(startAt: Date | undefined, dueAt: Date | undefined) {
+  if (!startAt || !dueAt) return null
+  return { startAt: toIsoDate(startAt), dueAt: toIsoDateTime(dueAt, DUE_TIME) }
 }
 
 /** 표시용 `07-21 18:00`. 저장·전송은 ISO로 두고 화면에서만 자른다 */

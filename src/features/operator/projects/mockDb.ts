@@ -18,7 +18,18 @@ import type { CohortScope, Curriculum, Project } from './types'
  */
 export const MOCK_TODAY = '2026-07-16'
 
-export const COHORT: CohortScope = { id: '7', name: '7기', classes: 10, trainees: 250 }
+/*
+  기수 기간 — 프로젝트 마감이 이 밖으로 나가지 않게 달력이 막는다(#64 ②).
+  목업 기수 탭의 `7기 · 2026-03 ~ 09`를 날짜로 편 값이다.
+*/
+export const COHORT: CohortScope = {
+  id: '7',
+  name: '7기',
+  classes: 10,
+  trainees: 250,
+  startAt: '2026-03-02',
+  endAt: '2026-09-30',
+}
 
 export const CURRICULA: Curriculum[] = [
   {
@@ -103,6 +114,7 @@ export const PROJECTS: Project[] = [
     curriculumIds: [],
     concepts: [],
     conceptCandidateCount: candidates([]),
+    startAt: null,
     dueAt: null,
   },
   {
@@ -113,7 +125,8 @@ export const PROJECTS: Project[] = [
     curriculumIds: ['ai-llmops'],
     concepts: [],
     conceptCandidateCount: candidates(['ai-llmops']),
-    dueAt: '2026-07-21T18:00',
+    startAt: '2026-07-07',
+    dueAt: '2026-07-21T23:59',
   },
   {
     id: 'bigp',
@@ -123,7 +136,8 @@ export const PROJECTS: Project[] = [
     curriculumIds: [],
     concepts: [],
     conceptCandidateCount: 0,
-    dueAt: '2026-09-26T18:00',
+    startAt: '2026-08-01',
+    dueAt: '2026-09-26T23:59',
     note: '총 3회 · 첫 동작 · +2주 · 마감',
   },
   {
@@ -138,7 +152,8 @@ export const PROJECTS: Project[] = [
       { id: 'state', name: 'State 관리', curriculumId: 'ai-llmops' },
     ],
     conceptCandidateCount: candidates(['ai-llmops', 'streamlit']),
-    dueAt: '2026-07-14T18:00',
+    startAt: '2026-06-30',
+    dueAt: '2026-07-14T23:59',
   },
   {
     id: 'mif-2',
@@ -152,6 +167,7 @@ export const PROJECTS: Project[] = [
       { id: 'configmap', name: 'ConfigMap', curriculumId: 'k8s' },
     ],
     conceptCandidateCount: candidates(['k8s']),
-    dueAt: '2026-07-04T18:00',
+    startAt: '2026-06-20',
+    dueAt: '2026-07-04T23:59',
   },
 ]

@@ -72,7 +72,15 @@ export type Project = {
    * 화면이 교안 목록에서 합산하면 교안 전량을 받아야만 셀 수 있다(api-boundary §1-②).
    */
   conceptCandidateCount: number
-  /** 제출 마감(ISO). 미설정이면 null — 일정 탭에서 정한다 */
+  /**
+   * 회차 시작일(`YYYY-MM-DD`). 생성 시 마감과 함께 범위로 받는다.
+   *
+   * ⚠ 기획 문서에 없던 개념이라 **무엇을 여는 날인지 정의가 필요하다**(#64).
+   * 응시 창은 개인별(코드 분석 완료 + 24h)이라 이 날짜와 무관하다 — 지금은
+   * "이 회차가 시작되는 날"로만 쓰고 학생 화면에 영향을 주지 않는다.
+   */
+  startAt: string | null
+  /** 제출 마감(ISO, 시각 포함). 미설정이면 null */
   dueAt: string | null
   /** 빅프 전용 안내. 시작 전에는 회차 번호가 없다(첫 동작 시점이 사람마다 다르다) */
   note?: string
@@ -84,6 +92,9 @@ export type CohortScope = {
   name: string
   classes: number
   trainees: number
+  /** 기수 기간. 회차 마감이 이 밖으로 나가지 않게 달력이 막는다(#64) */
+  startAt: string
+  endAt: string
 }
 
 // ── 목록 조회 ────────────────────────────────────────────────
@@ -127,6 +138,10 @@ export type CreateProjectRequest = {
   conceptIds: string[]
   /** 한 줄에 하나. 교안과 별개이고 **구현 P/F에만** 쓴다(14번 6-3) */
   requirements: string
+  /** 회차 시작일 — 생성 시 마감과 범위로 함께 받는다 */
+  startAt: string
+  /** 제출 마감 — 날짜는 고르고 시각은 고정(18:00)이다 */
+  dueAt: string
 }
 
 // ── 실패 ────────────────────────────────────────────────────

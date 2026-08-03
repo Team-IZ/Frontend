@@ -72,7 +72,7 @@ export default function OrgMetrics({ orgs }: { orgs: Org[] }) {
         */}
         <Progress
           value={budgetPct}
-          className="mt-2 gap-0 [&_[data-slot=progress-track]]:h-1.5 [&_[data-slot=progress-indicator]]:bg-warning"
+          className="mt-2 gap-0 [&_[data-slot=progress-track]]:h-1.5 [&_[data-slot=progress-track]]:bg-warning-soft [&_[data-slot=progress-indicator]]:bg-warning"
         />
       </MetricCard>
       <MetricCard

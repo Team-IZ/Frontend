@@ -35,7 +35,7 @@ import {
   PaginationItem,
   PaginationLink,
 } from '@/components/ui/Pagination'
-import { ORGS, type Org, type OrgStatus } from './mockData'
+import { ORGS, orgStatusBadge, type Org, type OrgStatus } from './mockData'
 import OrgMetrics from './components/OrgMetrics'
 import OrgCreateDialog from './components/OrgCreateDialog'
 import { cn } from '@/lib/utils/cn'
@@ -98,16 +98,11 @@ function compareOrgs(a: Org, b: Org, key: SortKey): number {
   }
 }
 
+// 배지 우선순위(삭제 대기 > 오퍼레이터 미배정 > 활성/정지)는 mockData.orgStatusBadge에
+// 있다 — SA-02 상세 헤더와 같은 판정을 공유해야 한다(mockData.ts SA-02 섹션 주석).
 function OrgStatusBadge({ org }: { org: Org }) {
-  // 오퍼레이터 미배정이 상태 배지를 덮는다 — 이 목록의 핵심 신호라 활성/정지보다 우선한다.
-  if (org.operators.length === 0) {
-    return <Badge variant="warning">오퍼레이터 미배정</Badge>
-  }
-  return org.status === 'ACTIVE' ? (
-    <Badge variant="success">활성</Badge>
-  ) : (
-    <Badge variant="neutral">정지</Badge>
-  )
+  const { variant, label } = orgStatusBadge(org)
+  return <Badge variant={variant}>{label}</Badge>
 }
 
 export default function OrgListScreen() {

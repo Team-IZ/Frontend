@@ -12,14 +12,23 @@ import { ButtonGroup } from '@/components/ui/ButtonGroup'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Field, FieldLabel } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
-import { Textarea } from '@/components/ui/Textarea'
 import { Spinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils/cn'
 import { createProject } from '../../api'
-import { CONCEPT_COUNT, DUE_TIME, canCreate, toSchedule } from '../../rules'
+import {
+  CONCEPT_COUNT,
+  DEFAULT_DUE_TIME,
+  DEFAULT_START_TIME,
+  canCreate,
+  dropOrphanConcepts,
+  toSchedule,
+  toggleConcept,
+} from '../../rules'
+import ConceptPicker from '../../components/ConceptPicker'
+import RequirementsField from '../../components/RequirementsField'
 import { KIND_LABEL } from '../../labels'
 import type { CohortScope, Curriculum, ProjectKind } from '../../types'
-import SchedulePicker from './SchedulePicker'
+import SchedulePicker, { type ScheduleValue } from '../../components/SchedulePicker'
 
 /*
   프로젝트 생성 모달.
@@ -77,9 +86,13 @@ export default function CreateProjectDialog({
   const [kind, setKind] = useState<ProjectKind>(DEFAULT_KIND)
   const [curriculumIds, setCurriculumIds] = useState<string[]>([])
   const [conceptIds, setConceptIds] = useState<string[]>([])
-  const [requirements, setRequirements] = useState('')
-  const [startAt, setStartAt] = useState<Date>()
-  const [dueAt, setDueAt] = useState<Date>()
+  const [requirements, setRequirements] = useState<string[]>([])
+  const [schedule, setSchedule] = useState<ScheduleValue>({
+    startAt: undefined,
+    startTime: DEFAULT_START_TIME,
+    dueAt: undefined,
+    dueTime: DEFAULT_DUE_TIME,
+  })
   const [submitting, setSubmitting] = useState(false)
   const [failed, setFailed] = useState(false)
 
@@ -96,28 +109,16 @@ export default function CreateProjectDialog({
   const toggleCurriculum = (id: string) => {
     setCurriculumIds((prev) => {
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-      // 교안을 빼면 그 교안에서 고른 개념도 같이 빠진다 — 출처가 끊긴 개념은
-      // 교안 위치를 가리킬 수 없다(OP-04 §5와 같은 규칙)
-      const stillValid = curricula
-        .filter((c) => next.includes(c.id))
-        .flatMap((c) => c.teaches.map((t) => t.id))
-      setConceptIds((ids) => ids.filter((i) => stillValid.includes(i)))
+      setConceptIds((ids) => dropOrphanConcepts(ids, curricula, next))
       return next
     })
   }
 
-  const toggleConcept = (id: string) => {
-    setConceptIds((prev) => {
-      if (prev.includes(id)) return prev.filter((x) => x !== id)
-      // 3건 고정이라 초과 선택은 애초에 막는다 — 저장 시점에 알리면 무엇을 빼야 할지 모른다
-      if (prev.length >= CONCEPT_COUNT) return prev
-      return [...prev, id]
-    })
-  }
+  const pickConcept = (id: string) => setConceptIds((prev) => toggleConcept(prev, id))
 
-  const schedule = toSchedule(startAt, dueAt)
+  const period = toSchedule(schedule.startAt, schedule.startTime, schedule.dueAt, schedule.dueTime)
   const submittable =
-    name.trim().length > 0 && canCreate(curriculumIds, conceptIds) && !!schedule && !submitting
+    name.trim().length > 0 && canCreate(curriculumIds, conceptIds) && !!period && !submitting
 
   const submit = async () => {
     setSubmitting(true)
@@ -130,7 +131,7 @@ export default function CreateProjectDialog({
         curriculumIds,
         conceptIds,
         requirements,
-        ...schedule!,
+        ...period!,
       })
       onCreated()
       onOpenChange(false)
@@ -148,9 +149,13 @@ export default function CreateProjectDialog({
     setKind(DEFAULT_KIND)
     setCurriculumIds([])
     setConceptIds([])
-    setRequirements('')
-    setStartAt(undefined)
-    setDueAt(undefined)
+    setRequirements([])
+    setSchedule({
+      startAt: undefined,
+      startTime: DEFAULT_START_TIME,
+      dueAt: undefined,
+      dueTime: DEFAULT_DUE_TIME,
+    })
     setFailed(false)
   }
 
@@ -164,7 +169,8 @@ export default function CreateProjectDialog({
       <DialogContent className="flex max-h-[85svh] flex-col sm:max-w-[560px]">
         <DialogHeader>
           <DialogTitle>
-            프로젝트 생성 <span className="text-fg-subtle text-xs font-normal">· 7기</span>
+            프로젝트 생성 {/* 기수 이름을 하드코딩했었다 — 기수를 바꾸면 제목만 거짓말을 한다 */}
+            {cohort && <span className="text-fg-subtle text-xs font-normal">· {cohort.name}</span>}
           </DialogTitle>
         </DialogHeader>
 
@@ -212,19 +218,18 @@ export default function CreateProjectDialog({
 
           <Field>
             <FieldLabel>
-              회차 기간 <RequiredMark>필수</RequiredMark>{' '}
-              <span className="text-fg-subtle text-xs font-normal">· 마감일 {DUE_TIME}까지</span>
+              회차 기간 <RequiredMark>필수</RequiredMark>
             </FieldLabel>
             <SchedulePicker
-              startAt={startAt}
-              dueAt={dueAt}
-              onChange={(patch) => {
-                if ('startAt' in patch) setStartAt(patch.startAt)
-                if ('dueAt' in patch) setDueAt(patch.dueAt)
-              }}
+              value={schedule}
+              onChange={(patch) => setSchedule((prev) => ({ ...prev, ...patch }))}
               min={cohort?.startAt}
               max={cohort?.endAt}
             />
+            {/* 왜 저장이 안 되는지를 그 자리에서 — 같은 날이면 날짜만 봐서는 안 갈린다 */}
+            {schedule.startAt && schedule.dueAt && !period && (
+              <p className="text-danger text-2xs">제출 마감이 시작보다 뒤여야 합니다</p>
+            )}
           </Field>
 
           <Field>
@@ -292,45 +297,7 @@ export default function CreateProjectDialog({
                 </div>
               ) : (
                 <div className="max-h-64 overflow-y-auto">
-                  {selected.map((c) =>
-                    groupBySection(c.teaches).map(([section, items]) => (
-                      <div key={`${c.id}-${section}`}>
-                        <p className="bg-surface-2 text-fg-subtle px-3 py-1.5 text-2xs font-semibold">
-                          {c.name} {c.version} · {section}
-                        </p>
-                        {items.map((t) => {
-                          const checked = conceptIds.includes(t.id)
-                          // 3건을 채우면 나머지는 못 고른다 — 무엇을 빼야 하는지 그 자리에서 보인다
-                          const full = !checked && conceptIds.length >= CONCEPT_COUNT
-                          return (
-                            <label
-                              key={t.id}
-                              className={cn(
-                                'flex gap-2 px-3 py-2',
-                                checked && 'bg-primary-soft',
-                                full ? 'cursor-not-allowed opacity-45' : 'cursor-pointer',
-                              )}
-                            >
-                              <Checkbox
-                                className="mt-0.5"
-                                checked={checked}
-                                disabled={full}
-                                onCheckedChange={() => toggleConcept(t.id)}
-                              />
-                              <span className="min-w-0">
-                                <span className="flex items-baseline gap-2">
-                                  <b className="text-sm font-semibold">{t.name}</b>
-                                  <span className="text-fg-subtle text-2xs">{t.page}</span>
-                                </span>
-                                {/* 정의문 — 고르는 순간 그 회차 모든 학생의 문항이 된다 */}
-                                <span className="text-fg-muted block text-xs">{t.definition}</span>
-                              </span>
-                            </label>
-                          )
-                        })}
-                      </div>
-                    )),
-                  )}
+                  <ConceptPicker curricula={selected} picked={conceptIds} onToggle={pickConcept} />
                 </div>
               )}
             </div>
@@ -340,20 +307,14 @@ export default function CreateProjectDialog({
             <FieldLabel htmlFor="project-req">
               요구사항{' '}
               <span className="text-fg-subtle text-xs font-normal">
-                · 선택 · 교안과 별개 · 한 줄에 하나
+                · 선택 · 교안과 별개 · 항목마다 Enter
               </span>
             </FieldLabel>
             {/*
               요구사항은 교안에서 나오지 않는다 — 과제 문서에서 나와 **구현 P/F에만**
               쓴다(14번 6-3). 검증 개념과 시각적으로 갈라 놓는다.
             */}
-            <Textarea
-              id="project-req"
-              rows={3}
-              value={requirements}
-              onChange={(e) => setRequirements(e.target.value)}
-              placeholder={'좋아요 버튼\n댓글 작성\n정렬 기능'}
-            />
+            <RequirementsField id="project-req" value={requirements} onChange={setRequirements} />
           </Field>
         </div>
 
@@ -378,15 +339,4 @@ export default function CreateProjectDialog({
 
 function RequiredMark({ children }: { children: React.ReactNode }) {
   return <span className="text-danger text-2xs font-semibold">{children}</span>
-}
-
-/** 후보를 섹션별로 묶는다 — 합쳐 늘어놓으면 `p.55`가 어느 교안 어느 장인지 알 수 없다 */
-function groupBySection<T extends { section: string }>(items: T[]): [string, T[]][] {
-  const map = new Map<string, T[]>()
-  for (const item of items) {
-    const list = map.get(item.section)
-    if (list) list.push(item)
-    else map.set(item.section, [item])
-  }
-  return [...map]
 }

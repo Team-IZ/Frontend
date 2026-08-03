@@ -10,11 +10,22 @@
  */
 import assert from 'node:assert'
 import {
+  addRequirements,
   canCreate,
+  canDelete,
+  canEditConfig,
+  canEditSchedule,
+  canOnlyExtendDue,
+  canUnlinkCurriculum,
   CONCEPT_COUNT,
+  dropOrphanConcepts,
   dueLabel,
   formatDue,
+  lockedReason,
+  toSchedule,
+  toggleConcept,
 } from '../src/features/operator/projects/rules.ts'
+import { withParticle } from '../src/features/operator/projects/labels.ts'
 
 const ok = (actual: boolean, expected: boolean, msg: string) =>
   assert.strictEqual(actual, expected, `${msg}\n  실제: ${actual} / 기대: ${expected}`)
@@ -53,4 +64,154 @@ assert.strictEqual(dueLabel('2027-01-01T00:00', '2026-12-25')!.text, '7일 남�
 
 assert.strictEqual(formatDue('2026-07-21T23:59'), '07-21 23:59')
 
-console.warn('✓ 검증 개념 3건 · 마감 라벨 규칙 통과')
+// ── 개념 토글 — 생성·변경 모달이 같은 규칙을 쓴다 ──────────────
+const eq = (a: unknown, b: unknown, msg: string) =>
+  assert.deepStrictEqual(a, b, `${msg}\n  실제: ${JSON.stringify(a)}`)
+
+eq(toggleConcept([], 'a'), ['a'], '빈 상태에서 켜기')
+eq(toggleConcept(['a'], 'a'), [], '켜진 것 끄기')
+eq(toggleConcept(['a', 'b'], 'c'), ['a', 'b', 'c'], '3건까지는 켜진다')
+
+// 3건을 넘기면 **아무 일도 일어나지 않는다** — 저장 시점에 막으면 무엇을 뺄지 모른다
+eq(toggleConcept(['a', 'b', 'c'], 'd'), ['a', 'b', 'c'], '4번째는 안 켜진다')
+// 다만 이미 켜진 것은 3건이어도 꺼져야 한다(바꾸려면 먼저 빼야 하므로)
+eq(toggleConcept(['a', 'b', 'c'], 'b'), ['a', 'c'], '3건일 때도 끄기는 된다')
+
+// ── 교안 해제 — 생성은 드롭, 확정된 회차는 차단 ─────────────────
+/*
+  같은 상황에 규칙이 둘인 것이 의도다. 생성(OP-03)은 저장 전이라 개념이 빠지는 것이
+  고르는 화면에 바로 보이고, 확정된 회차(OP-04 §5)는 조용히 3건이 2건이 되면 **학생에게
+  낼 문항이 사라진다.** **한쪽 규칙을 다른 쪽에 쓰면 안 된다.**
+*/
+const CUR = [
+  { id: 'x', teaches: [{ id: 'x1' }, { id: 'x2' }] },
+  { id: 'y', teaches: [{ id: 'y1' }] },
+]
+eq(dropOrphanConcepts(['x1', 'y1'], CUR, ['x', 'y']), ['x1', 'y1'], '교안 둘 다 유지')
+eq(dropOrphanConcepts(['x1', 'y1'], CUR, ['x']), ['x1'], 'y를 빼면 y1도 빠진다')
+eq(dropOrphanConcepts(['x1', 'y1'], CUR, []), [], '교안을 다 빼면 개념도 없다')
+
+const FIXED = [{ curriculumId: 'x' }, { curriculumId: 'x' }, { curriculumId: 'y' }]
+ok(canUnlinkCurriculum(FIXED, 'x'), false, '개념 2건이 쓰는 교안은 못 뺀다')
+ok(canUnlinkCurriculum(FIXED, 'y'), false, '개념 1건이라도 쓰면 못 뺀다')
+ok(canUnlinkCurriculum(FIXED, 'z'), true, '아무 개념도 안 쓰는 교안은 뺄 수 있다')
+// 미확정(0건) 회차는 아직 끊길 출처가 없다 — 이때는 자유롭게 바꾼다
+ok(canUnlinkCurriculum([], 'x'), true, '개념 미확정이면 제약이 없다')
+
+// ── 요구사항 — 항목 하나가 판정 단위다 ──────────────────────────
+/*
+  MG-08이 항목마다 `✓`/`✗`를 붙이므로(`✓ 2 · ✗ 1`) **중복이 곧 분모 부풀리기**다.
+  같은 것을 두 번 판정하면 매니저가 서로 다른 두 항목이라고 읽는다. 정리를 저장이 아니라
+  **입력 시점에** 하는 이유도 그것이다 — 저장된 것과 화면에 보이는 것이 갈리면 안 된다.
+*/
+eq(addRequirements([], '좋아요 버튼'), ['좋아요 버튼'], '빈 목록에 하나')
+eq(addRequirements(['a'], 'b'), ['a', 'b'], '뒤에 붙는다')
+eq(addRequirements(['a'], 'a'), ['a'], '중복은 안 들어간다')
+eq(addRequirements([], '  a  '), ['a'], '앞뒤 공백을 버린다')
+eq(addRequirements([], '   '), [], '공백뿐이면 안 들어간다')
+eq(addRequirements([], ''), [], '빈 문자열')
+
+// 과제 문서에서 통째로 붙여 넣는 것이 실제 동선이다 — 그때 한 덩어리가 되면 항목이 아니다
+eq(addRequirements([], 'a\n\nb\n'), ['a', 'b'], '여러 줄 붙여넣기 · 빈 줄 무시')
+eq(addRequirements(['a'], 'a\nb'), ['a', 'b'], '붙여넣기 안의 중복도 걸러진다')
+eq(addRequirements([], 'a\na'), ['a'], '붙여넣기 안에서 서로 중복')
+
+// ── 상태별 편집 정책 ───────────────────────────────────────
+/*
+  가르는 축은 **학생 데이터가 이미 붙었나** 하나다. 화면마다 `status === 'RUNNING'`을
+  쓰면 상태가 늘 때 갈리므로 `rules.ts` 한 곳에 모았고, 여기서 그 표를 고정한다.
+
+  일정만 예외로 진행 중에 열린다 — 장애·공지 지연으로 **미루는 것**은 실무에 있다.
+  대신 **당기는 것**은 막는다: 학생은 이미 "언제까지"를 알고 있다.
+*/
+for (const st of ['PREP', 'READY'] as const) {
+  ok(canEditConfig(st), true, `${st}: 교안·개념·요구사항 편집 가능`)
+  ok(canEditSchedule(st), true, `${st}: 일정 편집 가능`)
+  ok(canOnlyExtendDue(st), false, `${st}: 마감을 자유롭게 잡는다`)
+  ok(canDelete(st), true, `${st}: 학생 데이터가 없으니 삭제 가능`)
+}
+
+ok(canEditConfig('RUNNING'), false, 'RUNNING: 측정 기준을 바꾸면 학생마다 다른 시험이 된다')
+ok(canEditSchedule('RUNNING'), true, 'RUNNING: 마감 연장은 열어 둔다')
+ok(canOnlyExtendDue('RUNNING'), true, 'RUNNING: 미루는 것만')
+ok(canDelete('RUNNING'), false, 'RUNNING: 제출·응시가 매달려 있다')
+
+ok(canEditConfig('DONE'), false, 'DONE: 리포트가 나간 뒤다')
+ok(canEditSchedule('DONE'), false, 'DONE: 미룰 대상이 없다')
+ok(canDelete('DONE'), false, 'DONE: 끝난 회차는 기록이다')
+
+// 흐린 버튼만 두지 않는다 — 막힌 상태에는 **사유**가 있어야 한다(C1)
+ok(lockedReason('PREP') === null, true, 'PREP: 막힌 게 없으니 사유도 없다')
+ok(lockedReason('READY') === null, true, 'READY: 〃')
+ok(typeof lockedReason('RUNNING') === 'string', true, 'RUNNING: 사유가 있다')
+ok(typeof lockedReason('DONE') === 'string', true, 'DONE: 사유가 있다')
+
+// ── 일정 — 날짜 + 시각 ─────────────────────────────────────
+/*
+  **시각을 사용자에게 받는다.** 한때 마감을 `23:59`로 고정했는데, 목업의 `18:00`도 그 값도
+  예시였을 뿐인데 상수로 두니 *"자정 마감이 규칙"* 인 것처럼 굳었다(E8).
+
+  **같은 날이면 달력이 못 막는다** — 마감 달력은 시작일 이전을 비활성으로 막지만 같은
+  날은 고를 수 있다. 그때 `09:00 시작 · 08:00 마감`이 통과하던 자리라 여기서 막는다.
+*/
+const d = (iso: string) => new Date(iso)
+
+eq(
+  toSchedule(d('2026-07-07'), '09:00', d('2026-07-21'), '18:00'),
+  { startAt: '2026-07-07T09:00', dueAt: '2026-07-21T18:00' },
+  '날짜·시각을 그대로 싣는다',
+)
+// 시각이 고정이 아니다 — 같은 날짜라도 다른 값이 나와야 한다
+eq(
+  toSchedule(d('2026-07-07'), '10:30', d('2026-07-21'), '23:59'),
+  { startAt: '2026-07-07T10:30', dueAt: '2026-07-21T23:59' },
+  '임의 시각',
+)
+
+assert.strictEqual(toSchedule(undefined, '09:00', d('2026-07-21'), '18:00'), null, '시작 날짜 없음')
+assert.strictEqual(toSchedule(d('2026-07-07'), '09:00', undefined, '18:00'), null, '마감 날짜 없음')
+assert.strictEqual(
+  toSchedule(d('2026-07-07'), '', d('2026-07-21'), '18:00'),
+  null,
+  '시작 시각 없음',
+)
+assert.strictEqual(
+  toSchedule(d('2026-07-07'), '09:00', d('2026-07-21'), ''),
+  null,
+  '마감 시각 없음',
+)
+
+// 같은 날 — 시각으로만 갈린다
+assert.strictEqual(
+  toSchedule(d('2026-07-07'), '09:00', d('2026-07-07'), '08:00'),
+  null,
+  '같은 날 · 마감이 시작보다 앞',
+)
+assert.strictEqual(
+  toSchedule(d('2026-07-07'), '09:00', d('2026-07-07'), '09:00'),
+  null,
+  '같은 날 · 같은 시각(기간이 0이다)',
+)
+assert.notStrictEqual(
+  toSchedule(d('2026-07-07'), '09:00', d('2026-07-07'), '18:00'),
+  null,
+  '같은 날 · 마감이 뒤면 통과(당일 회차)',
+)
+
+// ── 한글 조사 ──────────────────────────────────────────────
+// `을(를)` 표기는 괄호를 건너뛰며 읽어야 한다. 회차 이름이 데이터라 미리 고를 수도 없다
+assert.strictEqual(withParticle('미프 4차', '을', '를'), '미프 4차를', '받침 없음')
+assert.strictEqual(withParticle('빅프', '을', '를'), '빅프를', '받침 없음(프)')
+assert.strictEqual(withParticle('1반', '을', '를'), '1반을', '받침 있음(반)')
+assert.strictEqual(
+  withParticle('미프 3차 v2', '을', '를'),
+  '미프 3차 v2를',
+  '영문 끝 — 받침 없음으로',
+)
+assert.strictEqual(
+  withParticle('  미프 4차  ', '을', '를'),
+  '  미프 4차  를',
+  '앞뒤 공백 무시하고 판정',
+)
+
+console.warn('✓ 검증 개념 3건 · 토글 · 마감 라벨 · 교안 해제 · 요구사항 · 일정 · 편집 정책 통과')

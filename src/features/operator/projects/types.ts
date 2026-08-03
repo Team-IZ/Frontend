@@ -47,6 +47,8 @@ export type Curriculum = {
   id: string
   name: string
   version: string
+  /** 등록일. 구성 탭에서만 쓴다 — 어느 버전을 언제 올린 것인지가 개념 출처의 근거다 */
+  registeredAt: string
   /** 분석이 안 끝났거나 실패하면 비어 있다 — 그때는 프로젝트를 만들 수 없다 */
   teaches: TeachItem[]
 }
@@ -73,15 +75,26 @@ export type Project = {
    */
   conceptCandidateCount: number
   /**
-   * 회차 시작일(`YYYY-MM-DD`). 생성 시 마감과 함께 범위로 받는다.
+   * 회차 시작(`YYYY-MM-DDTHH:mm`). 생성 시 마감과 함께 범위로 받는다.
    *
    * ⚠ 기획 문서에 없던 개념이라 **무엇을 여는 날인지 정의가 필요하다**(#64).
    * 응시 창은 개인별(코드 분석 완료 + 24h)이라 이 날짜와 무관하다 — 지금은
    * "이 회차가 시작되는 날"로만 쓰고 학생 화면에 영향을 주지 않는다.
    */
   startAt: string | null
-  /** 제출 마감(ISO, 시각 포함). 미설정이면 null */
+  /** 제출 마감(`YYYY-MM-DDTHH:mm`). 미설정이면 null. **시각은 회차마다 다르다** */
   dueAt: string | null
+  /**
+   * 요구사항 — 교안과 별개이고 **구현 P/F에만** 쓴다(14번 6-3).
+   *
+   * **배열인 이유는 판정 단위다.** MG-08이 항목마다 `✓`/`✗`와 이유를 붙이고
+   * (`✓ 2 · ✗ 1` · *"자리는 만들었지만 쓰이지 않았어요"*) 팀 행을 펼쳐 항목별로 본다 —
+   * 문장 덩어리로 두면 그 판정을 어디에 걸지가 없다.
+   *
+   * **id는 주지 않는다.** 판정이 이름 매칭으로 나가므로(MG-08 충족 조건) 문자열이
+   * 곧 키다. 필요해지면 그때 서버 계약에서 준다 — 지금 만들면 아무도 안 쓴다.
+   */
+  requirements: string[]
   /** 빅프 전용 안내. 시작 전에는 회차 번호가 없다(첫 동작 시점이 사람마다 다르다) */
   note?: string
 }
@@ -108,7 +121,17 @@ export type CohortScope = {
   필드가 계약에 남는다.
 */
 
-export type ProjectSort = 'PREP_FIRST' | 'DUE'
+/**
+ * 정렬 축 — **이 화면에서 실제로 던지는 질문마다 하나씩**이다.
+ *
+ *   `PREP_FIRST`  뭐부터 손대야 하나 — 상태 → 마감 미설정 → 마감
+ *   `DUE`         뭐가 급한가       — 제출 마감 이른 순
+ *   `START`       뭐가 곧 열리나    — 시작 이른 순. **시작일이 곧 준비 시한이다**
+ *
+ * ⚠ `최근 생성 순`이 없다 — 계약에 `createdAt`이 없어서 만들 수 없다. 지금은 새 회차가
+ * `PREP_FIRST`에서 위로 오지만 그건 우연이고, 목록이 길어지면 방금 만든 것을 못 찾는다.
+ */
+export type ProjectSort = 'PREP_FIRST' | 'DUE' | 'START'
 
 export type ProjectQuery = {
   cohortId: string
@@ -136,22 +159,99 @@ export type CreateProjectRequest = {
   kind: ProjectKind
   curriculumIds: string[]
   conceptIds: string[]
-  /** 한 줄에 하나. 교안과 별개이고 **구현 P/F에만** 쓴다(14번 6-3) */
-  requirements: string
-  /** 회차 시작일 — 생성 시 마감과 범위로 함께 받는다 */
+  /** 항목 하나가 판정 단위다 — `Project.requirements` 주석 참고 */
+  requirements: string[]
+  /** 회차 시작 — 생성 시 마감과 범위로 함께 받는다(`YYYY-MM-DDTHH:mm`) */
   startAt: string
-  /** 제출 마감 — 날짜는 고르고 시각은 고정(18:00)이다 */
+  /** 제출 마감 — 날짜와 시각을 둘 다 받는다(`YYYY-MM-DDTHH:mm`) */
   dueAt: string
+}
+
+// ── 상세(OP-04) ──────────────────────────────────────────────
+/*
+  탭 셋. 순서가 **읽는 것 → 굴러가는 것 → 고치는 것**이다.
+
+    개요  이 회차가 무엇인가          — 검증 개념·교안·기간·일정·측정 규칙
+    현황  잘 굴러가고 있나            — 반별 진행·개념 공백
+    구성  무엇을 바꿀 것인가          — 교안·개념·요구사항 편집
+
+  **잠그지 않는다.** 정의서 §6은 개념 3건 전까지 일정·현황을 잠그라고 했지만,
+  잠긴 탭은 **왜 잠겼는지도 어떻게 열리는지도 말하지 못한다** — 체크리스트 C1이
+  금지한 게이팅과 같은 문제다. 대신 각 탭이 **자기가 왜 비었는지**를 쓴다
+  (02-layout §4의 `아직`/`없음` 구분).
+*/
+export type ProjectTab = 'overview' | 'status' | 'config'
+
+/** 반별 파이프라인 한 줄 — 제출 → 분석 → 응시 */
+export type ClassProgress = {
+  className: string
+  submitted: number
+  total: number
+  analyzed: number
+  /** 분석 실패 팀 수. 0이면 화면에 `—`로 쓴다(없음과 0을 다르게 — F3) */
+  analysisFailed: number
+  attended: number
+  /** 응시 모집단은 제출이 아니라 **분석 완료** 수다(응시 창이 분석 후 열린다) */
+  attendable: number
+  /** 담당 매니저. 없으면 null — 미배정은 OP-01 `조치 필요`가 잡는다 */
+  manager: string | null
+}
+
+/**
+ * 개념별 코드 매칭 — **문항이 만들어졌는가**.
+ *
+ * 고른 개념이 학생 코드에 없으면 그 개념은 물을 수 없다. 학생 문제가 아니라
+ * **개념 선택이 프로젝트와 안 맞은 것**이다(OP-04 §6).
+ */
+export type ConceptMatch = {
+  conceptId: string
+  conceptName: string
+  matched: number
+  total: number
+  /** 팀 전원이 미매칭인 팀 수. 팀 전반이면 개념을 교체해야 한다 */
+  unmatchedTeams: number
+}
+
+export type ProjectStatusReport = {
+  classes: ClassProgress[]
+  matches: ConceptMatch[]
+  /** 팀 수 — `8개 팀 중 6개` 문구의 분모 */
+  totalTeams: number
+}
+
+/**
+ * 검증 개념 후보에 붙는 지난 회차 이력.
+ *
+ * **같은 교안이 붙었을 때만 나타난다** — 검증 개념은 그 회차 교안이 가르친 것에서만
+ * 나오므로(14번 4-3) 조건이 자연히 충족된다. **이력은 판단을 대신하지 않는다**(OP-04 §3):
+ * `집단 미달`은 *"피해야 한다"* 도 *"다시 물어야 한다"* 도 아니고, `코드 매칭 0`은
+ * 학생이 못한 것이 아니라 **묻지 못했다**는 뜻이다.
+ */
+export type ConceptHistory = {
+  teachId: string
+  kind: 'GROUP_MISS' | 'NO_MATCH' | 'USED'
+  /** 화면에 그대로 쓰는 문구. 판정이 아니라 사실만 적는다 */
+  note: string
 }
 
 // ── 실패 ────────────────────────────────────────────────────
 /**
- * 목업 케이스 표의 에러코드 — 문서와 코드가 같은 이름을 쓴다(00-index).
+ * 실패 코드 — **`api.ts`가 reject하는 모든 지점이 여기 있는 값을 쓴다.**
  *
- * **표에 있는 것만 둔다.** `NETWORK` 같은 일반 실패를 미리 넣어 뒀다가 지웠다 —
- * 케이스 표에 없는 코드는 문구도 다음 행동도 정해진 게 없어서, 화면이 그걸 받아도
- * 무엇을 보여줄지 결정할 수 없다. 실패를 구분해야 할 이유가 생기면 그때 표부터 고친다.
+ * 기준은 *"케이스 표에 있나"* 가 아니라 **"실제로 던지는 지점이 있나"** 다. 예전에
+ * `NETWORK`를 지운 이유는 표에 없어서가 아니라 **아무도 던지지 않는 코드**였기
+ * 때문이다 — 쓰지 않는 것을 계약에 넣으면 백엔드가 그것을 만든다(mock-first §5).
  *
- * `CONCEPT_SAVE_FAILED`는 OP-04(상세)가 쓴다 — 같은 도메인 계약이라 여기 둔다.
+ * ⚠ **아래 둘은 목업 케이스 표에 아직 없다.** 정의서 OP-04 §6이 `#cases-op04`를
+ * 가리키는데 그 앵커가 `operator/projects.html`에 없다. 그래도 코드를 두는 이유:
+ * 실패 지점이 실재하고, 식별자가 없으면 표가 생겼을 때 `api.ts`를 다시 만져야 한다.
+ * **지금 정해지지 않은 것은 문구와 다음 행동**이고 그건 화면이 표를 보고 붙인다 —
+ * 그때까지 화면은 코드로 분기하지 않고 실패 하나만 그린다. (PR 질문 · 표부터 고친다)
  */
-export type ProjectErrorCode = 'PROJECT_CREATE_FAILED' | 'CONCEPT_SAVE_FAILED'
+export type ProjectErrorCode =
+  | 'PROJECT_CREATE_FAILED'
+  | 'CONCEPT_SAVE_FAILED'
+  | 'CURRICULA_SAVE_FAILED'
+  | 'REQUIREMENTS_SAVE_FAILED'
+  | 'SCHEDULE_SAVE_FAILED'
+  | 'PROJECT_DELETE_FAILED'

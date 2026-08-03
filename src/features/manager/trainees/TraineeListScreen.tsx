@@ -364,16 +364,16 @@ export default function TraineeListScreen() {
       ) : (
         <>
           <TableFrame>
-            <Table className="border-0 bg-transparent rounded-none">
+            <Table className="table-fixed border-0 bg-transparent rounded-none">
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead>교육생</TableHead>
-                  <TableHead>개념 3건 도달</TableHead>
-                  <TableHead>2단 이하</TableHead>
-                  <TableHead>이번 회차</TableHead>
-                  <TableHead>우수 누적</TableHead>
-                  <TableHead>계정</TableHead>
-                  <TableHead />
+                  <TableHead className="w-64">교육생</TableHead>
+                  <TableHead className="w-36">개념 3건 도달</TableHead>
+                  <TableHead className="w-24">2단 이하</TableHead>
+                  <TableHead className="w-28 text-center">이번 회차</TableHead>
+                  <TableHead className="w-64 pl-8">우수 누적</TableHead>
+                  <TableHead className="w-28">계정</TableHead>
+                  <TableHead className="w-8" />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -387,7 +387,7 @@ export default function TraineeListScreen() {
                       className="hover:bg-surface-2 cursor-pointer"
                       onClick={() => navigate(`/manager/trainees/${t.id}`)}
                     >
-                      <TableCell>
+                      <TableCell className="w-64">
                         <div className="flex items-center gap-3">
                           <Avatar aria-hidden="true">
                             <AvatarFallback className="bg-primary-soft text-primary font-semibold">
@@ -410,10 +410,10 @@ export default function TraineeListScreen() {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-xs">
+                      <TableCell className="w-36 text-xs">
                         <ConceptReachCell round={round} record={record} />
                       </TableCell>
-                      <TableCell className="text-xs tabular-nums">
+                      <TableCell className="w-24 text-xs tabular-nums">
                         {low === null ? (
                           <span className="text-fg-subtle">—</span>
                         ) : (
@@ -425,13 +425,13 @@ export default function TraineeListScreen() {
                           </span>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="w-28 text-center">
                         <RoundBadge kind={roundBadgeKind(record)} />
                       </TableCell>
-                      <TableCell className="text-xs">
+                      <TableCell className="w-64 pl-8 text-xs">
                         <AceOrNoteCell trainee={t} record={record} />
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="w-28">
                         <AccountStatusBadge status={t.accountStatus} />
                         {t.accountStatus === 'INACTIVE' && t.inactiveReason && (
                           <p className="text-fg-subtle mt-0.5 text-2xs">
@@ -439,7 +439,7 @@ export default function TraineeListScreen() {
                           </p>
                         )}
                       </TableCell>
-                      <TableCell aria-hidden="true" className="text-fg-subtle text-right">
+                      <TableCell aria-hidden="true" className="w-8 text-fg-subtle text-right">
                         ›
                       </TableCell>
                     </TableRow>

@@ -2,9 +2,9 @@
   MG-05 교육생 명부 목업. API 연동 전까지 화면을 검증하기 위한 고정 배열이다.
   실 데이터가 붙으면 이 파일은 지운다.
 
-  MG-06(교육생 상세)이 쓰던 축 점수·세션·개입 카드 데이터는 여기 없다 — v2 상세는
-  타임라인 하나로 재설계되어(구조가 다름) 이 목록 전용 목업과 같이 두지 않는다.
-  features-v1/trainees/mockData.ts에는 아직 남아있다(MG-06 이식 전까지).
+  MG-06(교육생 상세, 이슈 #47) 타임라인 데이터가 아래 이어붙었다 — 회차 격자는 위
+  TraineeRow.rounds가 유일한 정보원이고, 그 사이에 있었던 사건(세션·다시 보기·
+  리포트 발행·면담)만 TraineeDetailOverlay로 따로 둔다(같은 값을 두 번 두지 않는다).
 */
 export type AccountStatus = 'ACTIVE' | 'INVITED' | 'INACTIVE'
 
@@ -189,4 +189,310 @@ export function aceSummary(trainee: TraineeRow): { count: number; rounds: RoundI
     .map(([id]) => id)
     .sort((a, b) => Number(a) - Number(b))
   return { count: rounds.length, rounds }
+}
+
+/*
+  이슈 #47(MG-06 v2)로 SC-M06의 3탭(종합·세션·면담) + 5축 점수 모델을 전면 폐기하고
+  단일 타임라인으로 바꾼다. 점수·축·세션 질답 전문은 없다(정의서 §7 "v1에서 버린
+  것") — 회차 격자는 위 TraineeRow.rounds를 그대로 재사용하고(같은 값을 두 번 두지
+  않는다), 아래는 그 사이에 있었던 사건(세션·다시 보기·리포트 발행·면담)만 다룬다.
+*/
+
+export type TimelineEventBase = { id: string; sortAt: string; dateLabel: string }
+
+/**
+ * 세션 이벤트 — 개념별 근거 한 줄. 축별 도달/미달은 만들지 않는다(§4 "1단이면
+ * 나머지가 자동으로 결정된다"). 도달 단계 자체는 그 회차 TraineeRow.rounds[roundId]
+ * .levels에서 그대로 가져온다 — 세션이 그 값을 만든 사건이니 중복 저장하지 않는다.
+ */
+export type SessionEvent = TimelineEventBase & {
+  kind: 'SESSION'
+  roundId: RoundId
+  /** ROUND_CONCEPTS[roundId]와 같은 순서(3개). null = 그 개념은 이 세션이 다루지 않음(레벨도 ―) */
+  evidences: ({ hint?: string; note: string } | null)[]
+}
+
+/** 다시 보기 — 도달이 바뀐 사건(changed)이거나 창이 미응시로 닫힌 사건(closed) */
+export type RetryEvent = TimelineEventBase & {
+  kind: 'RETRY'
+  label: string
+  changed: boolean
+  closed: boolean
+  tag?: string
+}
+
+/** 리포트 발행 — 다시 보기 창의 기산점(발행 +3일). 몇 건 지정됐는지만 본다 */
+export type ReportEvent = TimelineEventBase & { kind: 'REPORT'; detail: string }
+
+/**
+ * 면담 — 기록 3칸(무엇 때문/어디로/다음에 할 것), 읽기 전용(§8 "면담 기록 작성은
+ * MG-04"). recorded:false는 브리프에서 저장하지 않은 경우 — "기록 없음"(§6).
+ * nextAction.confirmedAt 없음 = ⚠ 약속 미확인. 확인 처리 액션은 없다 — 다음 면담이
+ * 열리면 해소된다(§3).
+ */
+export type InterviewEvent = TimelineEventBase &
+  (
+    | {
+        kind: 'INTERVIEW'
+        recorded: true
+        summary: string
+        whatHappened: string
+        whereSent: string
+        nextAction: { text: string; confirmedAt?: string }
+      }
+    | { kind: 'INTERVIEW'; recorded: false }
+  )
+
+export type TimelineEvent = SessionEvent | RetryEvent | ReportEvent | InterviewEvent
+
+export type TimelineRoundGroup = {
+  roundId: RoundId
+  /** 팀은 프로젝트(=회차)마다 재편성되는 유동값이라 사람이 아니라 회차 줄에 붙인다(§3) */
+  team: string
+  dateRange: string
+  events: TimelineEvent[]
+}
+
+export type TraineeDetailOverlay = {
+  /** 헤더 판정식 — 위험 배지가 있을 때만(§3 "헤더에 남는 것: 이름·위험 배지·판정식") */
+  signalWhy?: string
+  /** 최신 회차가 배열 앞. 회차가 늘면 오래된 쪽부터 접는다(§4) */
+  timeline: TimelineRoundGroup[]
+}
+
+const PARK_JIMIN_OVERLAY: TraineeDetailOverlay = {
+  signalWhy: '2단 이하 0개 → 2개',
+  timeline: [
+    {
+      roundId: '3',
+      team: '1팀',
+      dateRange: '07.12 – 07.21',
+      events: [
+        {
+          kind: 'SESSION',
+          id: 'pjm-3-s1',
+          sortAt: '2026-07-12',
+          dateLabel: '07.12',
+          roundId: '3',
+          evidences: [
+            {
+              hint: '재진술 2회',
+              note: '무엇을 하는 코드인지는 말했지만 왜 사람 확인을 그 자리에 뒀는지는 설명하지 못했습니다. 재진술 2회 후에도 같았어요.',
+            },
+            {
+              hint: '재진술 1회',
+              note: '노드가 있다는 것은 알았지만 순서를 정하는 이유는 말하지 못했습니다.',
+            },
+            {
+              hint: '자력',
+              note: '동시 요청이 들어오면 상태가 꼬일 수 있는 지점까지 스스로 짚었습니다.',
+            },
+          ],
+        },
+        {
+          kind: 'REPORT',
+          id: 'pjm-3-r1',
+          sortAt: '2026-07-15',
+          dateLabel: '07.15',
+          detail: '다시 보기 2건 지정',
+        },
+        {
+          kind: 'RETRY',
+          id: 'pjm-3-t1',
+          sortAt: '2026-07-18',
+          dateLabel: '07.18',
+          label: 'HITL Trigger 0단 → 1단',
+          changed: true,
+          closed: false,
+        },
+        {
+          kind: 'RETRY',
+          id: 'pjm-3-t2',
+          sortAt: '2026-07-19',
+          dateLabel: '07.19',
+          label: 'Graph 구성 미응시',
+          changed: false,
+          closed: true,
+          tag: '1건',
+        },
+        {
+          kind: 'INTERVIEW',
+          id: 'pjm-3-i1',
+          sortAt: '2026-07-21',
+          dateLabel: '07.21',
+          recorded: true,
+          summary: '구현 시간 부족 → 다시 보기 창 안내',
+          whatHappened: '과제 3개가 겹쳐 미프에 쓸 시간이 부족했다고 함',
+          whereSent: '다시 보기 창 안내 · 다음 회차 일정 확인',
+          nextAction: { text: 'HITL Trigger 흐름 그려오기' },
+        },
+      ],
+    },
+    {
+      roundId: '2',
+      team: '3팀',
+      dateRange: '06.14 – 06.22',
+      events: [
+        {
+          kind: 'SESSION',
+          id: 'pjm-2-s1',
+          sortAt: '2026-06-14',
+          dateLabel: '06.14',
+          roundId: '2',
+          evidences: [
+            { hint: '자력', note: '기존 방식과 새 방식을 견주며 왜 바꿨는지까지 말했습니다.' },
+            { hint: '자력', note: '엔드포인트 분리 기준을 스스로 설명했습니다.' },
+            { hint: '자력', note: '실패 케이스 3개를 스스로 나열했습니다.' },
+          ],
+        },
+        {
+          kind: 'REPORT',
+          id: 'pjm-2-r1',
+          sortAt: '2026-06-17',
+          dateLabel: '06.17',
+          detail: '다시 보기 1건 지정',
+        },
+        {
+          kind: 'RETRY',
+          id: 'pjm-2-t1',
+          sortAt: '2026-06-20',
+          dateLabel: '06.20',
+          label: 'Graph 구성 2단 → 3단',
+          changed: true,
+          closed: false,
+        },
+      ],
+    },
+    { roundId: '1', team: '2팀', dateRange: '05.16 – 05.22', events: [] },
+  ],
+}
+
+const LEE_HAEUN_OVERLAY: TraineeDetailOverlay = {
+  signalWhy: '2단 이하 3개 · 회복 없이 지속',
+  timeline: [
+    {
+      roundId: '3',
+      team: '1팀',
+      dateRange: '07.12 – 07.26',
+      events: [
+        {
+          kind: 'SESSION',
+          id: 'lhe-3-s1',
+          sortAt: '2026-07-12',
+          dateLabel: '07.12',
+          roundId: '3',
+          evidences: [
+            {
+              hint: '재진술 2회',
+              note: '토큰이 있다는 것은 알았지만 왜 검증 로직을 그 위치에 뒀는지 설명하지 못했습니다.',
+            },
+            { hint: '재진술 2회', note: '노드가 여러 개인 이유를 끝내 말하지 못했습니다.' },
+            { hint: '재진술 1회', note: '동시 요청 상황은 알았지만 어디가 깨지는지는 몰랐습니다.' },
+          ],
+        },
+        {
+          kind: 'REPORT',
+          id: 'lhe-3-r1',
+          sortAt: '2026-07-15',
+          dateLabel: '07.15',
+          detail: '다시 보기 2건 지정',
+        },
+        {
+          kind: 'RETRY',
+          id: 'lhe-3-t1',
+          sortAt: '2026-07-19',
+          dateLabel: '07.19',
+          label: '두 건 모두 2단 유지',
+          changed: false,
+          closed: false,
+          tag: '변화 없음',
+        },
+        {
+          kind: 'INTERVIEW',
+          id: 'lhe-3-i1',
+          sortAt: '2026-07-26',
+          dateLabel: '07.26',
+          recorded: true,
+          summary: '설명·표현 어려움 → 리포트 다시 읽기',
+          whatHappened: '아는 것 같은데 말로 설명하는 게 어렵다고 함',
+          whereSent: '리포트 다시 읽기 · 다음 세션 전 재확인',
+          nextAction: { text: 'HITL Trigger 흐름 그려오기', confirmedAt: '07.26' },
+        },
+      ],
+    },
+    {
+      roundId: '2',
+      team: '4팀',
+      dateRange: '06.14 – 06.22',
+      events: [
+        {
+          kind: 'SESSION',
+          id: 'lhe-2-s1',
+          sortAt: '2026-06-14',
+          dateLabel: '06.14',
+          roundId: '2',
+          evidences: [
+            { hint: '자력', note: '기본 흐름은 스스로 설명했습니다.' },
+            { hint: '재진술 1회', note: '트랜잭션 경계를 정하는 기준은 반쯤 말했습니다.' },
+            { hint: '자력', note: '캐시 무효화 시점을 스스로 짚었습니다.' },
+          ],
+        },
+        {
+          kind: 'INTERVIEW',
+          id: 'lhe-2-i1',
+          sortAt: '2026-06-22',
+          dateLabel: '06.22',
+          recorded: false,
+        },
+      ],
+    },
+    { roundId: '1', team: '2팀', dateRange: '05.16 – 05.22', events: [] },
+  ],
+}
+
+const KANG_MINJUN_OVERLAY: TraineeDetailOverlay = {
+  timeline: [
+    {
+      roundId: '3',
+      team: '1팀',
+      dateRange: '07.12 – 07.15',
+      events: [
+        {
+          kind: 'SESSION',
+          id: 'kmj-3-s1',
+          sortAt: '2026-07-12',
+          dateLabel: '07.12',
+          roundId: '3',
+          evidences: [
+            { hint: '자력', note: '트리거 조건을 스스로 설명했습니다.' },
+            { hint: '재진술 1회', note: '노드 순서를 정한 이유는 반쯤 말했습니다.' },
+            { hint: '자력', note: '상태 충돌 시나리오를 스스로 짚었습니다.' },
+          ],
+        },
+        {
+          kind: 'REPORT',
+          id: 'kmj-3-r1',
+          sortAt: '2026-07-15',
+          dateLabel: '07.15',
+          detail: 'Graph 구성 다시 보기 1건 지정',
+        },
+      ],
+    },
+    { roundId: '2', team: '2팀', dateRange: '06.14 – 06.17', events: [] },
+  ],
+}
+
+const TRAINEE_DETAIL_OVERLAY: Record<string, TraineeDetailOverlay> = {
+  't-7': PARK_JIMIN_OVERLAY,
+  't-6': LEE_HAEUN_OVERLAY,
+  't-1': KANG_MINJUN_OVERLAY,
+}
+
+/**
+ * 오버레이가 없는 교육생(초대 대기 등 회차 데이터 자체가 없는 경우)은 빈 타임라인 —
+ * "아직 응시한 회차가 없습니다"(§6)로 표현된다. 회차 격자는 여기가 아니라 위
+ * TraineeRow.rounds가 진원이다.
+ */
+export function getTraineeDetailOverlay(id: string): TraineeDetailOverlay {
+  return TRAINEE_DETAIL_OVERLAY[id] ?? { timeline: [] }
 }

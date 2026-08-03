@@ -8,7 +8,7 @@ import { accounts } from './mockDb'
 
 /** 서버가 내려주는 역할별 초기 화면 (initialScreen) */
 const INITIAL_SCREEN: Record<Role, string> = {
-  SUPERADMIN: '/superadmin/console', // SA-01
+  SUPERADMIN: '/superadmin/orgs', // SA-01
   OPERATOR: '/operator/dashboard', // OP-01
   MANAGER: '/manager/dashboard', // MG-01
   TRAINEE: '/trainee/home', // TR-01

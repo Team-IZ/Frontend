@@ -1,7 +1,16 @@
-import Badge from '@/components/ui/Badge'
 import { cn } from '@/lib/utils/cn'
 import { dueLabel, formatDue } from '../../rules'
-import type { Curriculum, Project } from '../../types'
+import type { Project } from '../../types'
+
+/*
+  교안·검증 개념 셀. 한때 상세 헤더와 공유해서 `projects/components/`에 있었는데,
+  **개요 탭이 자체 요약 카드를 그리면서 소비자가 목록 하나만 남았다** — 공유물이
+  아니게 되면 내려온다(mock-first §3-1의 반대 방향).
+*/
+export {
+  CurriculumSummary as CurriculumCell,
+  ConceptSummary as ConceptCell,
+} from './ProjectSummaryCells'
 
 /*
   목록 표의 셀 셋. 화면 파일에서 뺀 이유 —
@@ -15,80 +24,30 @@ import type { Curriculum, Project } from '../../types'
   아래에 두고 공유 위치로 올리지 않는다.
 */
 
-/** 교안 — 오퍼레이터에게 교안은 핵심 입력이라 무엇이 붙었는지 다 보인다(세로 나열) */
-export function CurriculumCell({
-  project,
-  curricula,
-}: {
-  project: Project
-  curricula: Curriculum[]
-}) {
-  if (project.kind === 'BIG') {
-    return <span className="text-fg-subtle">해당 없음</span>
-  }
-  if (project.curriculumIds.length === 0) {
-    return <span className="text-warning font-semibold">교안 연결 안 됨</span>
-  }
-  return (
-    <div className="flex flex-col gap-0.5">
-      {project.curriculumIds.map((id) => {
-        const c = curricula.find((x) => x.id === id)
-        return c ? (
-          <span key={id}>
-            {c.name} {c.version}
-          </span>
-        ) : null
-      })}
-    </div>
-  )
-}
-
-/*
-  검증 개념 — 흡수 열이다. 넷 중 하나가 온다.
-    확정    칩 3개
-    미확정   ⚠ + 후보가 몇 건인지 — **3건이 없으면 문항을 만들 수 없다**(이 목록의 핵심 신호)
-    교안 없음 후보 자체가 안 나온다
-    빅프    본인 커밋 영역이라 개념이 없다
-*/
-export function ConceptCell({ project }: { project: Project }) {
-  if (project.kind === 'BIG') {
-    return <span className="text-fg-subtle text-xs">본인 커밋 영역 — 사람마다 다름</span>
-  }
-  if (project.curriculumIds.length === 0) {
-    return <span className="text-fg-subtle text-xs">교안을 먼저 연결해야 후보가 나옵니다</span>
-  }
-  if (project.concepts.length === 0) {
-    return (
-      <span className="text-warning text-xs font-semibold">
-        ⚠ 미확정 · 후보 {project.conceptCandidateCount}건에서 3건
-      </span>
-    )
-  }
-  return (
-    <div className="flex flex-wrap gap-1">
-      {project.concepts.map((c) => (
-        /*
-          목업 `.kchip`은 테두리 있는 회색 칩인데, 이는 Badge에 테두리만 더한 것이다
-          (radius-full · 11px · 600 · px-2 py-0.5가 이미 같다). 인라인 클래스로 다시
-          만들지 않고 Badge를 쓴다.
-        */
-        <Badge key={c.id} className="border-border-strong bg-surface-2 text-fg-muted border">
-          {c.name}
-        </Badge>
-      ))}
-    </div>
-  )
-}
-
-/** 제출 마감 — 날짜 + 남은 일수. `now`는 화면이 넘긴다(목 단계에서는 목업 기준일) */
-export function DueCell({ project, now }: { project: Project; now: string }) {
-  if (!project.dueAt) {
+/**
+ * 회차 기간 — **시작 ~ 마감**과 남은 일수.
+ *
+ * **마감만 보여주던 자리다.** 회차는 기간인데 한쪽 끝만 그리면 *"언제 시작하지"* 를 상세를
+ * 열어야 안다. 오퍼레이터에게는 **시작일이 더 급한 날짜다** — 준비를 그 전에 끝내야 하므로
+ * 준비 마감 시한이 곧 시작일이다.
+ *
+ * 날짜가 하나뿐인 상태도 그린다(마감만 있고 시작이 없는 옛 데이터 등) — 없는 쪽을 비워
+ * 두면 무엇이 빠졌는지가 그 자리에서 보인다.
+ *
+ * `now`는 화면이 넘긴다(목 단계에서는 목업 기준일).
+ */
+export function PeriodCell({ project, now }: { project: Project; now: string }) {
+  if (!project.dueAt && !project.startAt) {
     return <span className="text-warning font-semibold">미설정</span>
   }
-  const due = dueLabel(project.dueAt, now)
+  const due = project.dueAt ? dueLabel(project.dueAt, now) : null
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="tabular-nums">{formatDue(project.dueAt)}</span>
+      <span className="tabular-nums">
+        {project.startAt ? formatDue(project.startAt).slice(0, 5) : '—'}
+        <span className="text-fg-subtle"> ~ </span>
+        {project.dueAt ? formatDue(project.dueAt) : '—'}
+      </span>
       {due && (
         // 색만으로 상태를 구분하지 않는다 — 남은 시간 텍스트가 같이 있다(F4)
         <span className={cn('text-2xs', due.urgent ? 'text-danger font-bold' : 'text-fg-subtle')}>

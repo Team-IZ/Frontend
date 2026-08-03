@@ -15,14 +15,15 @@ import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/u
 import { Spinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils/cn'
 import { getCohortScope, getToday, listCurricula, listProjects } from '../api'
-import { dueLabel } from '../rules'
+import { CONCEPT_COUNT, dueLabel } from '../rules'
 import { KIND_LABEL } from '../labels'
 import { useAsync } from '../useAsync'
+import { COHORT_ID } from '../cohortScope'
 import type { ProjectKind, ProjectSort, ProjectStatus } from '../types'
 import ProjectStatusBadge from '../components/ProjectStatusBadge'
 import ProjectFilters from './components/ProjectFilters'
 import { ALL, INITIAL_FILTERS, isNarrowed, type FilterValues } from './filterState'
-import { ConceptCell, CurriculumCell, DueCell } from './components/ProjectRowCells'
+import { ConceptCell, CurriculumCell, PeriodCell } from './components/ProjectRowCells'
 import CreateProjectDialog from './components/CreateProjectDialog'
 
 /*
@@ -50,7 +51,6 @@ import CreateProjectDialog from './components/CreateProjectDialog'
   기수는 아직 스위처가 하나뿐이라 상수다. 실제 세션이 붙으면 헤더 스코프에서 받는다 —
   그때 이 한 줄만 바뀐다.
 */
-const COHORT_ID = '7'
 
 /** 상세 경로. 행 클릭과 링크가 같은 곳을 가리켜야 한다 — 문자열을 두 번 적지 않는다 */
 const detailPath = (id: string) => `/operator/projects/${id}`
@@ -90,33 +90,27 @@ export default function ProjectListScreen() {
   return (
     <ConsoleShell role="operator">
       <PageHeader
-        breadcrumb="프로젝트 › 7기"
+        // 기수 이름을 하드코딩했었다 — 기수를 바꾸면 빵부스러기만 옛 기수를 가리킨다
+        breadcrumb={scope.data ? `프로젝트 › ${scope.data.name}` : '프로젝트'}
         title="프로젝트"
         count={counts ? `총 ${totalAll}개` : undefined}
+        /*
+          **스코프 한 줄만 남긴다.** 프로젝트가 기수 단위라 반을 지정하지 않는데, 이
+          문구가 없으면 *"반이 왜 없지"* 라는 질문이 남는다(OP-03 3-1).
+
+          한때 여기에 상태 내역(`준비 중 2 · 준비됨 2 · 진행 중 1 · 종료 2`)을 같이
+          늘어놨다. 한 줄에 **총계 · 스코프 · 4상태**가 들어가 정신없었고, 무엇보다
+          **거기서는 누를 수 없었다** — 개수를 보는 목적이 *"고르기 전에 분포를 아는 것"*
+          이라 개수는 **고르는 자리**(상태 필터)에 있어야 한다. 옮겼다.
+        */
         breakdown={
-          counts && (
-            <>
-              {/*
-                스코프를 화면이 먼저 밝힌다 — 프로젝트가 기수 단위라 반을 지정하지 않는데,
-                이 문구가 없으면 "반이 왜 없지"라는 질문이 남는다(OP-03 3-1).
-              */}
-              {scope.data && (
-                <span className="text-fg-subtle">
-                  {scope.data.name} 전체 ·{' '}
-                  <b className="text-fg-muted font-bold">
-                    {scope.data.classes}반 {scope.data.trainees}명
-                  </b>
-                  이 같은 회차를 한다
-                </span>
-              )}
-              <span className="ml-3">
-                준비 중 <b className="text-fg font-bold">{counts.PREP}</b>
-                <span className="text-fg-subtle">
-                  {' '}
-                  · 진행 중 {counts.RUNNING} · 종료 {counts.DONE}
-                </span>
-              </span>
-            </>
+          scope.data && (
+            <span className="text-fg-subtle">
+              {scope.data.name} 전체 ·{' '}
+              <b className="text-fg-muted font-bold">
+                {scope.data.classes}반 {scope.data.trainees}명
+              </b>
+            </span>
           )
         }
         action={<Button onClick={() => setCreateOpen(true)}>+ 프로젝트 생성</Button>}
@@ -125,6 +119,7 @@ export default function ProjectListScreen() {
       <ProjectFilters
         {...filters}
         curricula={curriculumList}
+        counts={counts}
         onChange={(patch) => setFilters((f) => ({ ...f, ...patch }))}
       />
 
@@ -174,13 +169,26 @@ export default function ProjectListScreen() {
             <Table className="table-fixed">
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  {/* 폭은 실측 근거(D22). 흡수 열(검증 개념)에만 폭을 주지 않는다 */}
-                  <TableHead className="w-40">프로젝트</TableHead>
-                  <TableHead className="w-14">유형</TableHead>
-                  <TableHead className="w-40">교안</TableHead>
-                  <TableHead>검증 개념 3건</TableHead>
-                  <TableHead className="w-32">제출 마감</TableHead>
-                  <TableHead className="w-24">상태</TableHead>
+                  {/*
+                    **열 순서 = 판단하는 순서다.** 이 화면이 하는 일은 *"손댈 것이 남은
+                    회차 찾기"* 이고 기본 정렬이 `준비 필요 순`(상태 → 마감)이다.
+                    한때 `상태`가 **맨 오른쪽**에 있었는데, 그러면 정렬 1차 키를 눈으로
+                    끝까지 끌고 가야 읽힌다 — E2가 *"정렬이 곧 표기"* 라고 한 자리다.
+
+                    **폭 토큰은 표 열 폭 표준을 따른다**(01-design-checklist):
+                    주 식별자 200 · 배지 108 · 기간 168. 지어내지 않는다.
+                    **흡수 열(검증 개념)에만 폭을 주지 않는다** — 서술 열이 남는 폭을
+                    가져가야 데이터가 왼쪽에 붙어 스캔된다(D22).
+
+                    `유형` 열은 지웠다 — 이름 옆 라벨로 옮겼다. 64px 열 하나가 사라지고
+                    정보는 남는다.
+                  */}
+                  <TableHead className="w-[200px]">프로젝트</TableHead>
+                  <TableHead className="w-24">유형</TableHead>
+                  <TableHead className="w-[108px]">상태</TableHead>
+                  <TableHead className="w-[168px]">기간</TableHead>
+                  <TableHead className="w-[200px]">교안</TableHead>
+                  <TableHead>검증 개념 {CONCEPT_COUNT}건</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -212,18 +220,23 @@ export default function ProjectListScreen() {
                         </Link>
                         {p.note && <p className="text-fg-subtle text-2xs">{p.note}</p>}
                       </TableCell>
-                      <TableCell>{KIND_LABEL[p.kind]}</TableCell>
+                      {/*
+                        유형은 **텍스트다.** 옆 칸이 이미 배지(상태)라 여기도 배지면 둘이
+                        시각적으로 경쟁한다 — 배지는 *"처리하면 줄어드는"* 상태에 쓴다(E1).
+                        유형은 회차가 만들어질 때 정해지고 안 바뀐다.
+                      */}
+                      <TableCell className="text-fg-muted text-xs">{KIND_LABEL[p.kind]}</TableCell>
+                      <TableCell>
+                        <ProjectStatusBadge status={p.status} />
+                      </TableCell>
+                      <TableCell className="text-xs">
+                        <PeriodCell project={p} now={today} />
+                      </TableCell>
                       <TableCell className="text-xs">
                         <CurriculumCell project={p} curricula={curriculumList} />
                       </TableCell>
                       <TableCell>
                         <ConceptCell project={p} />
-                      </TableCell>
-                      <TableCell className="text-xs">
-                        <DueCell project={p} now={today} />
-                      </TableCell>
-                      <TableCell>
-                        <ProjectStatusBadge status={p.status} />
                       </TableCell>
                     </TableRow>
                   )

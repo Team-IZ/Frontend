@@ -81,6 +81,32 @@ for old in $(git diff --cached --name-only --diff-filter=ACMR -- 'src/components
   echo "ℹ src/components/ui 파일명 규칙: $base → $new_stem.$ext (자동 수정, import 경로도 갱신됨)" >&2
 done
 
+# 포맷 — 파일명 교정과 같은 이유로 "차단" 대신 "자동 수정"한다.
+# prettier 결과는 기계가 정하는 것이라 사람이 판단할 여지가 없고, 되돌리기 비용도 0이다.
+#
+# 왜 붙였나: 포맷 한 줄 때문에 CI가 빨개지고 `style: apply prettier ...` 커밋이 하나 더
+# 붙는 일이 실제로 있었다. CI(`npm run format:check`)와 **같은 도구·같은 설정**을 쓴다.
+#
+# ⚠ 대상 파일에 unstaged 변경이 있으면 그것도 함께 올라간다 — 위 import 경로 갱신과
+#   같은 판단(포맷이 깨진 채 커밋되는 것보다 낫다).
+# 타입 검사(tsc)는 여기 없다: 4초가 걸리고, 편집기와 CI가 이미 잡는다.
+fmt=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E '\.(ts|tsx|js|jsx|mjs|mts|css|json|md|ya?ml)$' || true)
+
+if [ -n "$fmt" ]; then
+  # 지워진 파일은 건너뛴다(--diff-filter로 걸러지지만 rename 직후를 대비)
+  exists=$(printf '%s\n' "$fmt" | while IFS= read -r f; do [ -f "$f" ] && printf '%s\n' "$f"; done)
+  if [ -n "$exists" ]; then
+    before=$(printf '%s\n' "$exists" | xargs npx prettier --list-different 2>/dev/null || true)
+    if [ -n "$before" ]; then
+      printf '%s\n' "$before" | xargs npx prettier --write >/dev/null 2>&1
+      printf '%s\n' "$before" | xargs git add --
+      echo "ℹ 포맷을 자동으로 고쳐 다시 스테이징했습니다:" >&2
+      printf '%s\n' "$before" | sed 's/^/    /' >&2
+    fi
+  fi
+fi
+
 # 이슈 연결 안내(차단 아님 — 오타·포맷팅은 이슈 없이 커밋하는 게 규약 §3)
 if [ -z "$(git config --get "branch.$branch.issue" 2>/dev/null)" ]; then
   echo "ℹ 이 브랜치에 이슈 번호가 없습니다. 연결하면 (#N)이 자동으로 붙습니다:" >&2

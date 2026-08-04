@@ -12,11 +12,9 @@ import { Field, FieldLabel, FieldDescription } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
 import { useAsync } from '@/lib/useAsync'
-import { getOrg, inviteManager, listClasses } from '../../_/api/api'
+import { getOrg, inviteManager } from '../../_/api/api'
 import { checkEmail } from '../../_/rules'
 import { COHORT_ID } from '../../_/cohortScope'
-import { FilterSelect } from '../../_/components/AdminFilters'
-import { ALL } from '../../_/filterState'
 import RequiredMark from '../../_/components/RequiredMark'
 
 /*
@@ -39,14 +37,11 @@ type Props = {
 
 export default function InviteManagerDialog({ open, onOpenChange, onInvited }: Props) {
   const [email, setEmail] = useState('')
-  const [classId, setClassId] = useState(ALL)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const loadOrg = useCallback(() => getOrg(), [])
-  const loadClasses = useCallback(() => listClasses(COHORT_ID), [])
   const org = useAsync(loadOrg, open)
-  const classes = useAsync(loadClasses, open)
 
   const domain = org.data?.domain
   /** `@`를 치기 전에는 판정하지 않는다 — 다 치기 전에 붉어지면 타이핑을 방해한다 */
@@ -55,23 +50,26 @@ export default function InviteManagerDialog({ open, onOpenChange, onInvited }: P
     email.includes('@') &&
     checkEmail(email.trim(), domain) === 'DOMAIN_NOT_ALLOWED'
 
-  const options = [
-    { value: ALL, label: '나중에 배정' },
-    ...(classes.data ?? []).map((c) => ({
-      value: c.id,
-      label: `${c.name}${c.managerName ? ` · ${c.managerName} 교체` : ''}`,
-    })),
-  ]
+  /*
+    **닫으면 비운다.** 성공했을 때만 비우고 있어서, 주소를 치다 취소하고 다시 열면
+    그 값이 그대로 떠 있었다 — 오타를 고치려고 닫은 사람이 같은 오타를 다시 보낸다.
+    초대는 이어 하는 작업이 아니다(명단 추가 모달과 같은 판단).
+  */
+  const close = (next: boolean) => {
+    onOpenChange(next)
+    if (!next) {
+      setEmail('')
+      setError(null)
+    }
+  }
 
   const submit = async () => {
     setSubmitting(true)
     setError(null)
     try {
-      await inviteManager({ email: email.trim(), classId: classId === ALL ? null : classId })
+      await inviteManager({ email: email.trim(), cohortId: COHORT_ID })
       onInvited()
-      onOpenChange(false)
-      setEmail('')
-      setClassId(ALL)
+      close(false) // 닫기가 비우는 일까지 한다 — 성공·취소가 같은 길로 나간다
     } catch (e) {
       const code = (e as { code?: string })?.code
       setError(
@@ -85,7 +83,7 @@ export default function InviteManagerDialog({ open, onOpenChange, onInvited }: P
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={close}>
       <DialogContent className="sm:max-w-[460px]">
         <DialogHeader>
           <DialogTitle>
@@ -124,30 +122,25 @@ export default function InviteManagerDialog({ open, onOpenChange, onInvited }: P
             </FieldDescription>
           </Field>
 
-          <Field>
-            <FieldLabel>
-              담당 반 <span className="text-fg-subtle text-xs font-normal">· 선택</span>
-            </FieldLabel>
-            <FilterSelect
-              label="7기"
-              value={classId}
-              options={options}
-              onChange={setClassId}
-              className="w-full"
-            />
-            {/*
-              권한 칸이 없는 이유를 **폼 안에서 밝힌다.** 없는 것은 눈에 안 띄어서,
-              쓰는 사람이 "권한은 어디서 주지?"를 계속 찾게 된다.
-            */}
-            <FieldDescription>
-              권한을 고르는 칸이 없습니다 — 매니저는 한 종류뿐이고, 무엇을 볼 수 있는지는 담당 반이
-              정합니다.
-            </FieldDescription>
-          </Field>
+          {/*
+            **담당 반 칸이 없다**(기획 확인 · decision-log D34).
+
+            가입 전에는 로그인을 못 하므로 **그 반의 면담·독촉을 처리할 수 없다.** 그런데
+            반에 담당 id는 박혀 있어서 `담당 없음` 경고에 안 잡혔다 — 경고가 막으려던
+            상황(아무도 안 보는 반)을 초대 기능이 만들고 있었다.
+
+            **없는 칸은 눈에 안 띄므로 왜 없는지를 폼 안에서 밝힌다** — 권한 칸을 설명한
+            것과 같은 이유다. 안 그러면 "반은 어디서 정하지?"를 계속 찾는다.
+          */}
+          <FieldDescription>
+            담당 반과 권한을 고르는 칸이 없습니다. 매니저는 한 종류뿐이고, 담당 반은 받는 사람이
+            가입을 마친 뒤 매니저 목록에서 맡깁니다 — 가입 전에는 로그인을 못 해 그 반 학생의
+            면담·독촉을 처리할 수 없기 때문입니다.
+          </FieldDescription>
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting}>
+          <Button variant="ghost" onClick={() => close(false)} disabled={submitting}>
             취소
           </Button>
           <Button

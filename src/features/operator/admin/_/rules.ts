@@ -7,7 +7,13 @@
 
   전부 순수 함수다 — `npm run check:admin`이 이 파일만 보고 규칙을 검사한다.
 */
-import type { ClassRoom, RosterEntry, RosterIssue, RosterIssueReason } from './api/types'
+import type {
+  ClassRoom,
+  CohortStatus,
+  RosterEntry,
+  RosterIssue,
+  RosterIssueReason,
+} from './api/types'
 
 /**
  * 명단 한 쪽에 몇 명.
@@ -51,6 +57,26 @@ export const DEFAULT_CLASS_CAPACITY = 25
  */
 export function canEditClasses(cohortStartAt: string, today: string): boolean {
   return today < cohortStartAt
+}
+
+/**
+ * 담당 배정을 바꿀 수 있나 — **기수가 어디쯤 왔는지가 정한다**(decision-log D38).
+ *
+ * 반 편집(`canEditClasses`)은 개강 전에만 열리지만, **담당 변경은 운영 중에도 일어난다**
+ * (매니저 퇴사·교체). 대신 그때는 학생이 이미 그 사람을 보고 있으므로 확인을 받는다.
+ *
+ *   · `FREE`   시작 전 — 아직 아무 일도 안 일어났다
+ *   · `CONFIRM` 진행 중 — 되돌릴 수 있지만 학생이 보는 담당자가 바뀐다
+ *   · `LOCKED` 종료 — 이미 끝난 기수다. 이력 조회만 한다
+ *
+ * @param today `YYYY-MM-DD`. 서버 시각을 넣는다 — 사용자 시계로 판정하면 우회된다
+ */
+export function assignPolicy(
+  cohort: { status: CohortStatus; startAt: string },
+  today: string,
+): 'FREE' | 'CONFIRM' | 'LOCKED' {
+  if (cohort.status === 'CLOSED') return 'LOCKED'
+  return today < cohort.startAt ? 'FREE' : 'CONFIRM'
 }
 
 // ── 이메일 ──────────────────────────────────────────────────

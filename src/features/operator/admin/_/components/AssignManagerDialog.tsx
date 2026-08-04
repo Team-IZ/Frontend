@@ -8,54 +8,46 @@ import {
 } from '@/components/ui/Dialog'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
+import { Checkbox } from '@/components/ui/Checkbox'
 import { Spinner } from '@/components/ui/Spinner'
 import { useAsync } from '@/lib/useAsync'
 import { cn } from '@/lib/utils/cn'
-import { listClasses, listManagers, setClassManager } from '../api/api'
-import type { ClassRoom } from '../api/types'
+import { listClasses, listManagers, setClassManager, setManagerClasses } from '../api/api'
+import type { ClassRoom, Manager } from '../api/types'
 import { COHORT_ID } from '../cohortScope'
 import { needsManager } from '../rules'
 
 /*
-  반 담당 배정 — **한 곳에서만 바꾼다**(`setClassManager`).
+  담당 배정 — **문이 둘이고, 두 문의 관계가 다르다**(decision-log D34).
 
-  들어오는 문이 둘이다. 반 쪽에서는 *"이 반을 누가 맡나"*, 매니저 쪽에서는 *"이 사람이
-  어느 반을 맡나"* 를 묻는데 **바뀌는 것은 같은 값**이라 저장 경로를 나누지 않았다 —
-  나누면 같은 규칙이 두 곳에 생기고 한쪽만 고쳐진다.
+    · 반 쪽에서 열면   `이 반을 누가 맡나`   → 매니저 **하나**를 고른다(라디오)
+    · 매니저 쪽에서 열면 `이 사람이 어느 반을` → 반 **여럿**을 고른다(체크박스)
 
-  **한 번에 한 건이다.** 여러 반을 한꺼번에 맡기는 화면은 만들지 않았다 — 목업에 없고,
-  실제로 그 일이 필요한 자리는 반이 늘어날 때이지 매니저를 고를 때가 아니다(YAGNI).
+  **한때 둘 다 라디오였고, 저장도 `setClassManager` 하나로 처리했다.** 그래서 매니저
+  쪽에서 반 하나를 고르면 기존 담당은 그대로 둔 채 **하나가 더 붙었다** — 라디오로
+  골랐는데 결과가 추가였다(실측: `B반, D반` → F반 선택 → `B반, D반, F반`).
+  **컨트롤 모양이 관계를 말해야 한다**(E10) — 그래서 모양도 저장 경로도 갈랐다.
 
-  **확인 모달을 세우지 않는다.** 배정은 언제든 다시 바꿀 수 있고, 되돌릴 수 없는 것에만
-  확인을 세운다(`ConfirmDialog` 주석).
+  **가입 전 매니저는 후보에 없다**(기획 확인 · D34). 로그인을 못 해 그 반의 면담·독촉을
+  처리할 수 없는데, 반에 id가 박히면 `담당 없음` 경고에 안 잡힌다.
 
   배정이 **기간형 이력**이라 지난 기수의 담당 기록은 이 조작으로 지워지지 않는다 —
-  서버가 구간을 닫고 새로 연다(api.ts). 지금 열려 있는 구간이 **언제·누구 손으로**
-  열렸는지를 제목 아래에 적는다 — 바꾸려는 사람이 먼저 묻는 것이 그것이다.
-
-  **현재 담당을 미리 골라 둔다.** 안 그러면 `담당 변경`으로 열고 아무것도 안 만진 채
-  저장했을 때 담당이 **해제된다** — 바꾸러 들어온 사람이 지우게 되는 자리였다.
+  서버가 구간을 닫고 새로 연다(api.ts).
 */
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   /**
-   * 반이 정해져 있으면 매니저를 고른다. 매니저가 정해져 있으면 반을 고른다.
+   * 반이 정해져 있으면 매니저를 고르고, 매니저가 정해져 있으면 반을 고른다.
    *
-   * 반 쪽은 **행 하나를 통째로 받는다** — 이름·현재 담당·구간 시작을 다 읽어야 해서
-   * 필드를 하나씩 옮겨 적으면 `ClassRoom`이 늘 때마다 여기도 늘어난다.
+   * 양쪽 다 **행 하나를 통째로 받는다** — 지금 상태(담당·구간 시작·담당 반)를 다 읽어야
+   * 해서, 필드를 하나씩 옮겨 적으면 타입이 늘 때마다 여기도 늘어난다.
    */
-  fixed: { kind: 'class'; room: ClassRoom } | { kind: 'manager'; id: string; name: string }
+  fixed: { kind: 'class'; room: ClassRoom } | { kind: 'manager'; manager: Manager }
   onSaved: () => void
 }
 
 export default function AssignManagerDialog({ open, onOpenChange, fixed, onSaved }: Props) {
-  /*
-    반 쪽에서 열면 지금 담당이 처음 선택이다. 매니저 쪽에서는 **비워 둔다** — 한 사람이
-    여러 반을 맡을 수 있어(`classNames: string[]`) "지금 고른 것"이 하나로 정해지지 않는다.
-  */
-  const current = fixed.kind === 'class' ? fixed.room.managerId : null
-  const [picked, setPicked] = useState<string | null>(current)
   const [saving, setSaving] = useState(false)
   const [failed, setFailed] = useState(false)
 
@@ -65,20 +57,48 @@ export default function AssignManagerDialog({ open, onOpenChange, fixed, onSaved
   const managers = useAsync(loadManagers, open)
 
   const pickingManager = fixed.kind === 'class'
-  /** 제목에 붙는 이름 — 반 이름이거나 매니저 이름이다 */
-  const fixedName = fixed.kind === 'class' ? fixed.room.name : fixed.name
+  const fixedName =
+    fixed.kind === 'class' ? fixed.room.name : (fixed.manager.name ?? fixed.manager.email)
+
+  /*
+    ── 반 쪽 ── 매니저 하나. 지금 담당이 처음 선택이다. 안 그러면 `담당 변경`으로 열고
+    아무것도 안 만진 채 저장했을 때 담당이 **해제된다**.
+  */
+  const currentManager = fixed.kind === 'class' ? fixed.room.managerId : null
+  const [pickedManager, setPickedManager] = useState<string | null>(currentManager)
+
+  /*
+    ── 매니저 쪽 ── 반 여럿. **지금 맡은 반이 미리 체크돼 있다** — 그래야 체크를 풀어
+    담당을 뺄 수 있다(예전에는 매니저 쪽에서 반을 빼는 길이 아예 없었다).
+  */
+  const currentRooms = (classes.data ?? [])
+    .filter((c) => fixed.kind === 'manager' && c.managerId === fixed.manager.id)
+    .map((c) => c.id)
+  const [pickedRooms, setPickedRooms] = useState<ReadonlySet<string> | null>(null)
+  /** 목록이 아직 안 왔으면 지금 담당을 초기값으로 쓴다 */
+  const rooms = pickedRooms ?? new Set(currentRooms)
+
+  const toggleRoom = (id: string) =>
+    setPickedRooms(() => {
+      const next = new Set(rooms)
+      if (!next.delete(id)) next.add(id)
+      return next
+    })
+
+  /** 안 바꾼 것은 저장할 것이 없다 */
+  const changed = pickingManager
+    ? pickedManager !== currentManager
+    : pickedRooms !== null &&
+      (rooms.size !== currentRooms.length || currentRooms.some((id) => !rooms.has(id)))
 
   const save = async () => {
     setSaving(true)
     setFailed(false)
     try {
-      // 어느 문으로 들어왔든 저장은 `반 하나에 매니저 하나`다
-      const classId = fixed.kind === 'class' ? fixed.room.id : (picked as string)
-      const managerId = fixed.kind === 'class' ? picked : fixed.id
-      await setClassManager(classId, managerId)
+      if (fixed.kind === 'class') await setClassManager(fixed.room.id, pickedManager)
+      else await setManagerClasses(fixed.manager.id, [...rooms])
       onSaved()
-      onOpenChange(false)
-      setPicked(null)
+      close(false)
     } catch {
       setFailed(true)
     } finally {
@@ -86,8 +106,18 @@ export default function AssignManagerDialog({ open, onOpenChange, fixed, onSaved
     }
   }
 
+  const close = (next: boolean) => {
+    onOpenChange(next)
+    // 닫으면 비운다 — 다음에 다른 대상으로 열었을 때 지난 선택이 남으면 그대로 저장된다
+    if (!next) {
+      setPickedManager(currentManager)
+      setPickedRooms(null)
+      setFailed(false)
+    }
+  }
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={close}>
       <DialogContent className="flex max-h-[80svh] flex-col sm:max-w-[440px]">
         <DialogHeader>
           <DialogTitle>
@@ -96,28 +126,31 @@ export default function AssignManagerDialog({ open, onOpenChange, fixed, onSaved
           </DialogTitle>
         </DialogHeader>
 
-        {/*
-          **지금 값을 먼저 적는다.** 무엇을 바꾸는지 모르는 채로 고르게 두지 않는다.
-          `assignedAt`이 있으면 언제부터 누구 손으로 열린 구간인지도 같이 — 담당을
-          바꾸기 전에 실제로 묻는 것이 *"언제부터 이 사람이었지"* 다.
-        */}
-        {fixed.kind === 'class' && (
-          <p className="text-fg-muted -mt-1 mb-2 text-xs">
-            현재{' '}
-            {fixed.room.managerName ? (
-              <b className="text-fg font-semibold">{fixed.room.managerName}</b>
-            ) : (
-              <b className="text-warning font-semibold">담당 없음</b>
-            )}
-            {fixed.room.assignedAt && (
-              <span className="text-fg-subtle">
-                {' · '}
-                {fixed.room.assignedAt}부터
-                {fixed.room.assignedBy && ` · ${fixed.room.assignedBy} 배정`}
-              </span>
-            )}
-          </p>
-        )}
+        {/* **지금 값을 먼저 적는다** — 무엇을 바꾸는지 모르는 채로 고르게 두지 않는다 */}
+        <p className="text-fg-muted -mt-1 mb-2 text-xs">
+          {fixed.kind === 'class' ? (
+            <>
+              현재{' '}
+              {fixed.room.managerName ? (
+                <b className="text-fg font-semibold">{fixed.room.managerName}</b>
+              ) : (
+                <b className="text-warning font-semibold">담당 없음</b>
+              )}
+              {fixed.room.assignedAt && (
+                <span className="text-fg-subtle">
+                  {' · '}
+                  {fixed.room.assignedAt}부터
+                  {fixed.room.assignedBy && ` · ${fixed.room.assignedBy} 배정`}
+                </span>
+              )}
+            </>
+          ) : (
+            <>
+              현재 <b className="text-fg font-semibold">{currentRooms.length}개 반</b> 담당 · 체크를
+              풀면 그 반은 담당 없음이 됩니다
+            </>
+          )}
+        </p>
 
         <div className="-mx-1 min-h-0 flex-1 overflow-y-auto px-1">
           {failed && (
@@ -131,46 +164,56 @@ export default function AssignManagerDialog({ open, onOpenChange, fixed, onSaved
               ? (managers.data?.items ?? []).map((m) => (
                   <Choice
                     key={m.id}
-                    checked={picked === m.id}
-                    onPick={() => setPicked(m.id)}
+                    kind="radio"
+                    checked={pickedManager === m.id}
+                    onPick={() => setPickedManager(m.id)}
                     title={m.name ?? m.email}
                     // 무엇을 이미 맡고 있는지가 판단 근거다 — 한 사람에게 몰리는 것이 보인다
                     note={
-                      m.assignment
-                        ? `${m.assignment.cohortName} · ${m.assignment.classNames.join(', ')}`
+                      m.assignments.length > 0
+                        ? m.assignments
+                            .map((a) => `${a.cohortName} · ${a.classNames.join(', ')}`)
+                            .join(' / ')
                         : '담당 반 없음'
                     }
                   />
                 ))
-              : (classes.data ?? []).map((room) => (
-                  <Choice
-                    key={room.id}
-                    checked={picked === room.id}
-                    onPick={() => setPicked(room.id)}
-                    title={room.name}
-                    note={
-                      needsManager(room)
-                        ? `담당 없음 · ${room.size}명`
-                        : `${room.managerName} · ${room.size}명`
-                    }
-                    /* 담당이 이미 있는 반을 고르면 그 사람이 교체된다 — 고르기 전에 알린다 */
-                    warn={!needsManager(room)}
-                  />
-                ))}
+              : (classes.data ?? []).map((room) => {
+                  /*
+                    **본인이 맡은 반에는 경고를 붙이지 않는다.** 담당 유무만 보고 있어서
+                    이미 자기가 맡은 반에도 `교체됩니다`가 떴다 — 자기를 자기로 교체한다는 말이다.
+                  */
+                  const mine = fixed.kind === 'manager' && room.managerId === fixed.manager.id
+                  return (
+                    <Choice
+                      key={room.id}
+                      kind="checkbox"
+                      checked={rooms.has(room.id)}
+                      onPick={() => toggleRoom(room.id)}
+                      title={room.name}
+                      note={
+                        needsManager(room)
+                          ? `담당 없음 · ${room.size}명`
+                          : `${room.managerName} · ${room.size}명`
+                      }
+                      warn={!needsManager(room) && !mine}
+                    />
+                  )
+                })}
           </div>
 
           {/*
             **해제도 배정의 일부다.** 매니저가 그만두면 반은 남으므로 비우는 길이 있어야
-            하고, 비우면 `담당 필요` 경고가 다시 켜진다. 현재 담당이 미리 골라져 있으므로
-            이 버튼을 눌러야만 해제가 된다 — 예전에는 아무것도 안 만지고 저장해도 풀렸다.
+            하고, 비우면 `담당 필요` 경고가 다시 켜진다. 매니저 쪽은 체크를 푸는 것이
+            같은 일을 하므로 이 버튼이 없다.
           */}
-          {pickingManager && fixed.kind === 'class' && fixed.room.managerId !== null && (
+          {pickingManager && currentManager !== null && (
             <Button
               variant="ghost"
               size="sm"
               className="mt-2"
-              onClick={() => setPicked(null)}
-              aria-pressed={picked === null}
+              onClick={() => setPickedManager(null)}
+              aria-pressed={pickedManager === null}
             >
               담당 비우기
             </Button>
@@ -178,11 +221,10 @@ export default function AssignManagerDialog({ open, onOpenChange, fixed, onSaved
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={saving}>
+          <Button variant="ghost" onClick={() => close(false)} disabled={saving}>
             취소
           </Button>
-          {/* 안 고른 것도, **안 바꾼 것도** 저장할 것이 없다 — 누르면 같은 값을 다시 쓴다 */}
-          <Button disabled={saving || picked === current} onClick={save}>
+          <Button disabled={saving || !changed} onClick={save}>
             {saving && <Spinner className="size-3.5" />}
             저장
           </Button>
@@ -192,14 +234,21 @@ export default function AssignManagerDialog({ open, onOpenChange, fixed, onSaved
   )
 }
 
-/** 라디오 한 줄. 단일 선택이라 체크박스가 아니다 — 컨트롤 모양이 곧 규칙이다(E10) */
+/**
+ * 선택지 한 줄.
+ *
+ * **모양이 관계를 말한다**(E10) — 반 하나에 매니저 하나라 라디오, 매니저 하나에 반
+ * 여럿이라 체크박스다. 같은 컴포넌트를 쓰되 컨트롤만 갈린다.
+ */
 function Choice({
+  kind,
   checked,
   onPick,
   title,
   note,
   warn,
 }: {
+  kind: 'radio' | 'checkbox'
   checked: boolean
   onPick: () => void
   title: string
@@ -213,13 +262,17 @@ function Choice({
         checked && 'bg-primary-soft',
       )}
     >
-      <input
-        type="radio"
-        className="accent-primary"
-        checked={checked}
-        onChange={onPick}
-        name="assign-target"
-      />
+      {kind === 'radio' ? (
+        <input
+          type="radio"
+          className="accent-primary"
+          checked={checked}
+          onChange={onPick}
+          name="assign-target"
+        />
+      ) : (
+        <Checkbox checked={checked} onCheckedChange={onPick} />
+      )}
       <span className="font-medium">{title}</span>
       <span className={cn('ml-auto text-xs', warn ? 'text-warning' : 'text-fg-subtle')}>
         {note}

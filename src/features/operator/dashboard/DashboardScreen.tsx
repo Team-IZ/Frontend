@@ -1,11 +1,144 @@
+import { useCallback } from 'react'
 import ConsoleShell from '@/shells/ConsoleShell'
-import PlaceholderScreen from '@/app/PlaceholderScreen'
+import PageHeader from '@/components/common/PageHeader'
+import { Spinner } from '@/components/ui/Spinner'
+import { Button } from '@/components/ui/Button'
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import { useAsync } from '@/lib/useAsync'
+import { getDashboard, getToday } from './_/api/api'
+import { ANALYSIS, GO_ANALYSIS, GO_PROJECT, projectPath } from './_/labels'
+import { Section, BlockBody } from './_/components/Section'
+import PipelineBlock from './_/components/PipelineBlock'
+import ClassCompareBlock from './_/components/ClassCompareBlock'
+import TodoBlock from './_/components/TodoBlock'
 
-/** OP-01 대시보드 — 화면 이식 전 자리표시. 실제 화면이 들어오면 이 파일 내용만 바뀐다. */
+/*
+  OP-01 오퍼레이터 대시보드 — **운영이 정상으로 돌고 있나.**
+
+  학생 위험이 아니라 **운영 이상**이 대상이다. 스코프가 250명·10반이라 개인은 볼 수 없고,
+  개별 학생 위험은 매니저가 처리한다(MG-01·MG-03) — 여기에는 **반 단위 이상에서만 보이고
+  오퍼레이터만 조치할 수 있는 것**만 올린다.
+
+  ▸ **`조치 필요` 네 줄이 이 화면의 존재 이유다.** 나머지 세 블록은 그 네 줄을 읽기 위한
+    배경이다. **그래서 목업·정의서 §3의 순서를 바꿨다** — 거기서는 조치 필요가 세 번째라
+    반 비교 10줄을 지나야 닿았고, 네 블록의 시각 무게가 완전히 같았다. 주인공이 배경보다
+    아래에 있고 면적도 작으면 위계가 내용과 반대가 된다.
+
+    지금 순서 — **이번 회차(1줄짜리 컨텍스트) → 조치 필요(주인공) → 반 비교(근거) → 비용.**
+    읽는 순서가 *"지금 어느 회차인가 → 무엇을 해야 하나 → 왜"* 가 된다.
+  ▸ **여기서 처리하지 않는다** — 요약과 링크만(OP-01 §5). 그래서 이 화면에는 액션 버튼이
+    하나도 없고 나가는 길은 전부 데이터에 붙어 있다. **지표판이 작업대를 겸하면 둘 다
+    못 한다.**
+  ▸ **블록마다 실패가 갈린다**(F2). 반 비교 하나가 실패해도 화면을 비우지 않는다 —
+    `Block<T>`가 그 분기를 담고 `BlockBody`가 한 번만 조립한다.
+
+  **이 파일은 조립만 한다.** 조회는 `_/api`가(서버 자리), 각 블록의 표현은 그 블록
+  컴포넌트가, 문구는 `_/labels`가 갖는다.
+
+  세로 4블록이라 탭·마스터-디테일로 담지 않는다 — H1이 금지한 것은 **5~6블록**이고
+  네 블록은 한 뷰포트에 들어간다(02-layout §6).
+*/
+
+/** 기수는 아직 스위처가 하나뿐이라 상수다. 실제 세션이 붙으면 헤더 스코프에서 받는다 */
+const COHORT_ID = '7'
+
 export default function DashboardScreen() {
+  const load = useCallback(() => getDashboard(COHORT_ID), [])
+  const page = useAsync(load)
+  const d = page.data
+
   return (
     <ConsoleShell role="operator">
-      <PlaceholderScreen code="OP-01" title="대시보드" />
+      {d && (
+        <PageHeader
+          breadcrumb={`대시보드 › ${d.cohortLabel} › ${d.trainees}명 · ${d.classes}반`}
+          title="대시보드"
+        />
+      )}
+
+      {page.loading ? (
+        <div className="flex justify-center py-16">
+          <Spinner className="size-6" aria-label="대시보드를 불러오는 중" />
+        </div>
+      ) : page.failed || !d ? (
+        /*
+          전체 조회 실패(`DASHBOARD_UNAVAILABLE`). **0으로 그리지 않는다** — 케이스 표가
+          *"그림 없음"* 으로 정했다. 여기는 카드가 없는 자리라 박스를 쓴다
+          (02-layout §4 — 유형 3 `실패`: 실선 + danger).
+        */
+        <Empty className="bg-danger-soft border-danger-border border-solid">
+          <EmptyHeader>
+            <EmptyTitle>대시보드를 불러오지 못했습니다</EmptyTitle>
+            <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
+          </EmptyHeader>
+          <Button variant="ghost" onClick={page.reload}>
+            다시 시도
+          </Button>
+        </Empty>
+      ) : (
+        <>
+          <Section
+            title="이번 회차"
+            note={d.pipeline.ok && `· ${d.pipeline.value.roundLabel}`}
+            link={
+              d.pipeline.ok
+                ? { to: projectPath(d.pipeline.value.projectId), label: GO_PROJECT }
+                : undefined
+            }
+          >
+            <BlockBody
+              block={d.pipeline}
+              failedLabel="이번 회차 진행 상황을 불러오지 못했습니다"
+              onRetry={page.reload}
+            >
+              {(p) => <PipelineBlock p={p} today={getToday()} />}
+            </BlockBody>
+          </Section>
+
+          {/* 이 화면의 주인공 — 나머지 셋은 이 네 줄을 읽기 위한 배경이다 */}
+          <Section title="조치 필요" note={d.todos.ok && `· ${d.todos.value.length}건`} lead>
+            <BlockBody
+              block={d.todos}
+              failedLabel="조치 항목을 불러오지 못했습니다"
+              onRetry={page.reload}
+            >
+              {(todos) => (
+                <TodoBlock
+                  todos={todos}
+                  upcomingRoundLabel={
+                    d.pipeline.ok && d.pipeline.value.notStarted
+                      ? d.pipeline.value.roundLabel
+                      : null
+                  }
+                />
+              )}
+            </BlockBody>
+          </Section>
+
+          <Section
+            title="반 비교"
+            /*
+              **기준 회차를 밝힌다.** 강조하지 않으면 지금 회차 결과로 읽는다(OP-01 §6) —
+              파이프라인이 `0/250`인데 여기 숫자가 차 있으면 특히 그렇다.
+            */
+            note={
+              d.compare.ok &&
+              `· ${d.compare.value.basisRoundLabel} 기준 — ${d.compare.value.currentRoundLabel}는 ${
+                d.compare.value.currentNotStarted ? '아직 결과 없음' : '미발행'
+              }`
+            }
+            link={{ to: ANALYSIS, label: GO_ANALYSIS }}
+          >
+            <BlockBody
+              block={d.compare}
+              failedLabel="반별 위험 비율을 불러오지 못했습니다"
+              onRetry={page.reload}
+            >
+              {(c) => <ClassCompareBlock c={c} />}
+            </BlockBody>
+          </Section>
+        </>
+      )}
     </ConsoleShell>
   )
 }

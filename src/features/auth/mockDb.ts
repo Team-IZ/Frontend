@@ -38,6 +38,13 @@ export const accounts: Record<string, MockAccount> = {
     password: 'pass1234',
     active: true,
   },
+  'operator@iz-get.com': {
+    email: 'operator@iz-get.com',
+    name: '오퍼레이터',
+    role: 'OPERATOR',
+    password: 'pass1234',
+    active: true,
+  },
 
   // 매니저가 명단(ORG-01)에 등록만 해둔 교육생 — 활성화 전이라 로그인 불가
   'newtrainee@org.com': {

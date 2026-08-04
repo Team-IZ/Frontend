@@ -81,6 +81,29 @@ export default function LoginScreen() {
     setResendDone(true)
   }
 
+  // 발표용 임시 — 실제 배포 시 이 함수와 아래 버튼 블록을 통째로 제거
+  // 역할 선택 UI는 정책상 없음(§34 주석) — 이건 폼을 우회하는 데모 지름길일 뿐,
+  // 서버가 역할을 판정하는 로그인 흐름 자체는 그대로 재사용한다
+  const QUICK_LOGIN_ACCOUNTS: { label: string; email: string }[] = [
+    { label: '교육생', email: 'trainee@org.com' },
+    { label: '매니저', email: 'manager@org.com' },
+    { label: '오퍼레이터', email: 'operator@iz-get.com' },
+    { label: '슈퍼 어드민', email: 'admin@iz-get.com' },
+  ]
+
+  async function handleQuickLogin(quickEmail: string) {
+    setAlert(null)
+    setResendDone(false)
+    try {
+      const res = await login({ email: quickEmail, password: 'pass1234' })
+      signIn(res)
+      navigate(res.initialScreen)
+    } catch (err) {
+      const { code, retryAfter } = err as ApiError
+      setAlert(resolveAuthState(code, retryAfter))
+    }
+  }
+
   // 이미 로그인한 사용자가 로그인 화면에 오면 자기 초기 화면으로 되돌림
   if (session) {
     return <Navigate to={session.initialScreen} replace />
@@ -93,6 +116,25 @@ export default function LoginScreen() {
 
         {/* stableHeight: 알림이 뜨고 사라져도 제목·입력 필드 위치가 흔들리지 않게 (AU-01 §6) */}
         <AuthForm title="로그인" subtitle="계정 정보를 입력하세요." stableHeight>
+          {/* 발표용 임시 버튼 — 실제 배포 시 이 블록 통째로 제거 */}
+          <div className="mb-6 rounded-md bg-canvas px-3 py-2.5">
+            <p className="mb-2 text-[11px] font-medium text-fg-muted">발표용 · 역할별 바로 입장</p>
+            <div className="grid grid-cols-2 gap-2">
+              {QUICK_LOGIN_ACCOUNTS.map(({ label, email: quickEmail }) => (
+                <Button
+                  key={quickEmail}
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={isSubmitting}
+                  onClick={() => handleQuickLogin(quickEmail)}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
           {/* noValidate: 브라우저 기본 검증 대신 RHF/Alert로 상태를 일원화 */}
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
             <Field data-invalid={!!errors.email}>

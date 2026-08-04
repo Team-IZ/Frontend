@@ -1,5 +1,19 @@
 {
   "permissions": {
     "allow": ["mcp__plugin_playwright_playwright__browser_console_messages"]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command // empty' | sh \"$CLAUDE_PROJECT_DIR/.claude/guard-worktree.sh\"",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
   }
 }

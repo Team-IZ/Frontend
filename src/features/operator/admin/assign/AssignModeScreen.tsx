@@ -353,7 +353,6 @@ export default function AssignModeScreen() {
           )}
         </div>
       </main>
-
     </div>
   )
 }

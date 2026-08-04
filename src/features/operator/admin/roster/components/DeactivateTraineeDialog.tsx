@@ -88,8 +88,8 @@ export default function DeactivateTraineeDialog({ target, onOpenChange, onDone }
 
         {/* **무엇이 일어나는지 쓴다**(G4) — `정말 하시겠습니까?`는 판단 근거를 안 준다 */}
         <p className="text-fg-muted text-xs">
-          계정이 막혀 더는 로그인할 수 없습니다. 명단과 소속 반에는 그대로 남고, 이미 응시한
-          기록과 리포트도 남습니다.{' '}
+          계정이 막혀 더는 로그인할 수 없습니다. 명단과 소속 반에는 그대로 남고, 이미 응시한 기록과
+          리포트도 남습니다.{' '}
           <b className="text-danger font-semibold">다시 활성으로 되돌릴 수 없습니다.</b>
         </p>
 

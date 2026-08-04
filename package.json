@@ -19,7 +19,8 @@
     "doc:design": "node scripts/design-doc.mjs",
     "doc:components": "node scripts/component-doc.mjs",
     "check:pagination": "node --experimental-strip-types scripts/check-pagination-range.mts",
-    "check:project": "node --experimental-strip-types scripts/check-project-rules.mts"
+    "check:project": "node --experimental-strip-types scripts/check-project-rules.mts",
+    "check:admin": "node --experimental-strip-types scripts/check-admin-rules.mts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

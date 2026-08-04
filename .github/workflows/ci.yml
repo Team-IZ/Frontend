@@ -35,6 +35,16 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # 아래 셋은 typecheck·lint·build가 **전부 통과하는 버그**를 잡는다.
+      # 문법도 타입도 맞는데 규칙이 틀린 것들이라, 여기 없으면 사람이 눈으로 찾게 된다.
+      # (실제로 IME 가드는 사용자가 칩 두 개 생기는 걸 보고 알려줘서 발견했다)
+      #
+      - name: Domain rules
+        run: |
+          npm run check:project
+          npm run check:pagination
+          npm run check:admin
+
       # build = tsc -b && vite build 이므로 타입 검사를 포함한다
       - name: Build
         run: npm run build

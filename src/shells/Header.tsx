@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { Link, useLocation } from 'react-router'
+import { SettingsIcon } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/Avatar'
 import {
   Select,
@@ -8,6 +10,8 @@ import {
   SelectValue,
 } from '@/components/ui/Select'
 import Wordmark from '@/components/common/Wordmark'
+import { cn } from '@/lib/utils/cn'
+import type { Role } from './sidebarConfig'
 
 /*
   상단바 — 브랜드 + 스코프 선택기 + 사용자. 54px 고정 높이(목업 `.topbar{height:54px}`
@@ -22,14 +26,23 @@ import Wordmark from '@/components/common/Wordmark'
   scope — 역할마다 스코프가 다르므로(슈퍼어드민은 없음 · 오퍼레이터/매니저는
   기수 · 교육생은 자기 자신) 없으면 자리 자체를 렌더하지 않는다. 지금은 옵션이
   현재 값 하나뿐이다 — 실제 기수 목록은 화면 이식 때 API에서 받는다.
+
+  우상단 톱니(⚙) — SA-03(플랫폼 설정) 진입점. 정의서 "네비 자리를 주지 않는다 —
+  화면이라기보다 설정 항목이다"(SA-03-platform-settings.md §2)를 그대로 따라 네비가
+  아니라 여기 둔다. superadmin 역할일 때만 렌더하고(다른 역할엔 이 설정 자체가
+  없다), 현재 경로가 /superadmin/settings 아래면 활성 색(primary)을 준다 — 와이어
+  `.gear.on`과 같은 신호다.
 */
 type Props = {
   user: { name: string; role: string }
   scope?: { label: string; value: string }
+  role: Role
 }
 
-export default function Header({ user, scope }: Props) {
+export default function Header({ user, scope, role }: Props) {
   const [value, setValue] = useState(scope?.value)
+  const location = useLocation()
+  const isSettingsActive = location.pathname.startsWith('/superadmin/settings')
 
   return (
     <header className="bg-surface border-border flex h-[54px] w-full shrink-0 items-center justify-between overflow-x-auto border-b px-6">
@@ -52,7 +65,19 @@ export default function Header({ user, scope }: Props) {
         )}
       </div>
 
-      <div className="text-fg-muted flex shrink-0 items-center gap-2 text-sm">
+      <div className="text-fg-muted flex shrink-0 items-center gap-3 text-sm">
+        {role === 'superadmin' && (
+          <Link
+            to="/superadmin/settings"
+            aria-label="플랫폼 설정"
+            className={cn(
+              'rounded-md p-1.5 text-fg-subtle transition-colors hover:bg-surface-2 hover:text-fg',
+              isSettingsActive && 'text-primary hover:text-primary',
+            )}
+          >
+            <SettingsIcon className="size-4" aria-hidden="true" />
+          </Link>
+        )}
         <span className="hidden sm:inline">
           {user.name} · {user.role}
         </span>

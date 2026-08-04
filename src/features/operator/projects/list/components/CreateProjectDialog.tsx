@@ -306,9 +306,7 @@ export default function CreateProjectDialog({
           <Field>
             <FieldLabel htmlFor="project-req">
               요구사항{' '}
-              <span className="text-fg-subtle text-xs font-normal">
-                · 선택 · 교안과 별개 · 항목마다 Enter
-              </span>
+              <span className="text-fg-subtle text-xs font-normal">· 선택 · 교안과 별개</span>
             </FieldLabel>
             {/*
               요구사항은 교안에서 나오지 않는다 — 과제 문서에서 나와 **구현 P/F에만**

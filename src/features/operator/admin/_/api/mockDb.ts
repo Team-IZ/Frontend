@@ -12,7 +12,6 @@
 //
 // ▸ 목업끼리 어긋난 자리 셋은 아래 해당 위치에 `⚠ 목업 불일치`로 적어 뒀습니다.
 import type {
-  ClassCost,
   ClassRoom,
   Cohort,
   CostSummary,
@@ -39,14 +38,20 @@ export const ORG: Org = {
 
 // ── ① 기수 ──────────────────────────────────────────────────
 export const COHORTS: Cohort[] = [
+  /*
+    **8기는 7기가 끝나갈 때 시작한다.** 부트캠프는 한 번에 한 기수를 돌리므로 두 기수가
+    통째로 겹치면 안 된다 — 목이 `2026-06-01 ~ 09-30`으로 7기와 완전히 겹쳐 있어서
+    비용 화면에 두 기수가 나란히 떴다(D39). 겹치는 것은 **전환기 한두 달**뿐이고,
+    그 달의 청구서에는 실제로 두 기수가 같이 찍힌다.
+  */
   {
     id: '8',
     name: '8기',
     status: 'RUNNING',
     classes: 10,
     trainees: 252,
-    startAt: '2026-06-01',
-    endAt: '2026-09-30',
+    startAt: '2026-09-01',
+    endAt: '2027-02-27',
     current: false,
   },
   {
@@ -69,6 +74,16 @@ export const COHORTS: Cohort[] = [
     endAt: '2026-02-27',
     current: false,
   },
+  {
+    id: '5',
+    name: '5기',
+    status: 'CLOSED',
+    classes: 8,
+    trainees: 200,
+    startAt: '2025-02-03',
+    endAt: '2025-07-25',
+    current: false,
+  },
 ]
 
 // ── ③ 매니저 ────────────────────────────────────────────────
@@ -78,87 +93,128 @@ export const COHORTS: Cohort[] = [
   → 데이터를 원천으로 두고 화면이 **세 상태를 다 세어 보여줍니다**(활성 7 · 초대 대기
   1 · 정지 1 = 9). 숫자를 손으로 적으면 목을 고칠 때 헤더가 안 따라옵니다.
 */
+/*
+  ⚠ **`assignments` · `headcount` · `pastCohorts`를 손으로 적지 않는다.**
+
+  셋 다 **반(CLASSES)에서 나오는 값**이라 손으로 적으면 반을 고칠 때 어긋난다.
+  아래 목록에는 빈 값으로 두고, `api.ts`가 첫 조회 전에 한 번 파생시킨다
+  (`syncManagerAssignments`) — 이 파일의 규칙(*"반 정의에서 채운다"*)을 매니저에도 적용한 것이다.
+*/
 export const MANAGERS: Manager[] = [
   {
     id: 'm-jihyun',
     name: '박지현',
     email: 'jihyun@green.com',
-    assignment: { cohortName: '7기', classNames: ['A반'] },
-    headcount: 25,
+    cohortIds: [],
+    assignments: [],
+    pastCohorts: 0,
+    headcount: null,
     status: 'ACTIVE',
     statusNote: null,
     lastSeenAt: '2026-07-16T09:41',
+    invitedAt: '2026-02-20',
+    invitedBy: '김오퍼레이터',
   },
   {
     id: 'm-doyun',
     name: '이도윤',
     email: 'doyun@green.com',
-    assignment: { cohortName: '7기', classNames: ['B반', 'D반'] },
-    headcount: 50,
+    cohortIds: [],
+    assignments: [],
+    pastCohorts: 0,
+    headcount: null,
     status: 'ACTIVE',
     statusNote: null,
     lastSeenAt: '2026-07-15T18:02',
+    invitedAt: '2026-02-20',
+    invitedBy: '김오퍼레이터',
   },
   {
     id: 'm-yujin',
     name: '최유진',
     email: 'yujin@green.com',
-    assignment: { cohortName: '7기', classNames: ['C반'] },
-    headcount: 25,
+    cohortIds: [],
+    assignments: [],
+    pastCohorts: 0,
+    headcount: null,
     status: 'ACTIVE',
     statusNote: null,
     lastSeenAt: '2026-07-16T08:12',
+    invitedAt: '2026-02-20',
+    invitedBy: '김오퍼레이터',
   },
   {
     id: 'm-minseo',
     name: '강민서',
     email: 'minseo@green.com',
-    assignment: { cohortName: '7기', classNames: ['E반', 'G반'] },
-    headcount: 50,
+    cohortIds: [],
+    assignments: [],
+    pastCohorts: 0,
+    headcount: null,
     status: 'ACTIVE',
     statusNote: null,
     lastSeenAt: '2026-07-14T11:30',
+    invitedAt: '2026-02-20',
+    invitedBy: '김오퍼레이터',
   },
   {
     id: 'm-seojun',
     name: '윤서준',
     email: 'seojun@green.com',
-    assignment: { cohortName: '7기', classNames: ['H반'] },
-    headcount: 25,
+    cohortIds: [],
+    assignments: [],
+    pastCohorts: 0,
+    headcount: null,
     status: 'ACTIVE',
     statusNote: null,
     lastSeenAt: '2026-07-16T10:05',
+    invitedAt: '2026-02-20',
+    invitedBy: '김오퍼레이터',
   },
   {
     id: 'm-haneul',
     name: '임하늘',
     email: 'haneul.lim@green.com',
-    assignment: { cohortName: '7기', classNames: ['I반'] },
-    headcount: 25,
+    cohortIds: [],
+    assignments: [],
+    pastCohorts: 0,
+    headcount: null,
     status: 'ACTIVE',
     statusNote: null,
     lastSeenAt: '2026-07-13T16:44',
+    invitedAt: '2026-02-20',
+    invitedBy: '김오퍼레이터',
   },
   {
     id: 'm-eunbi',
     name: '조은비',
     email: 'eunbi@green.com',
-    assignment: { cohortName: '7기', classNames: ['J반'] },
-    headcount: 25,
+    cohortIds: [],
+    assignments: [],
+    pastCohorts: 0,
+    headcount: null,
     status: 'ACTIVE',
     statusNote: null,
     lastSeenAt: '2026-07-16T09:02',
+    invitedAt: '2026-02-20',
+    invitedBy: '김오퍼레이터',
   },
   {
     // 초대만 나가고 아직 가입 전 — 이름은 받는 사람이 정한다
     id: 'm-invited',
     name: null,
     email: 'newmgr@green.com',
-    assignment: null,
+    // **7기 매니저로 초대받았다** — 반은 아직 없어도 소속은 있다(D38)
+    cohortIds: ['7'],
+    assignments: [],
+    pastCohorts: 0,
     headcount: null,
     status: 'INVITED',
     statusNote: null,
     lastSeenAt: null,
+    // 3주 전 초대라 아직 안 들어왔다 — `재발송`을 눌러야 할지가 이 날짜로 갈린다
+    invitedAt: '2026-07-24',
+    invitedBy: '김오퍼레이터',
   },
   {
     /*
@@ -169,11 +225,20 @@ export const MANAGERS: Manager[] = [
     id: 'm-sanghyun',
     name: '최상현',
     email: 'sanghyun@green.com',
-    assignment: { cohortName: '6기', classNames: ['A반', 'B반'] },
+    /*
+      **6기 소속이라 7기 목록에는 안 나온다**(D38). 6기 때 퇴사한 사람을 7기 운영 화면에서
+      볼 이유가 없고, 기수를 6기로 바꾸면 그때 담당과 함께 보인다.
+      `cohortIds`는 아래 6기 반에서도 파생되지만, 담당이 풀려도 소속은 남아야 한다.
+    */
+    cohortIds: ['6'],
+    assignments: [],
+    pastCohorts: 0,
     headcount: null,
     status: 'SUSPENDED',
     statusNote: '퇴사 2026-05-02',
     lastSeenAt: null,
+    invitedAt: '2025-07-28',
+    invitedBy: '김오퍼레이터',
   },
 ]
 
@@ -196,6 +261,23 @@ export const CLASSES: ClassRoom[] = [
   cls('H', 25, 'm-seojun', '윤서준', '2026-03-02'),
   cls('I', 25, 'm-haneul', '임하늘', '2026-03-02'),
   cls('J', 25, 'm-eunbi', '조은비', '2026-03-02'),
+
+  /*
+    **끝난 기수의 반들.** 담당은 기간형 이력이라(OP-06 §3) 지난 기수 반도 남아 있고,
+    **기수 필터가 실제로 볼 것이 여기 있다** — 6기로 걸러 보면 그때 누가 무엇을 맡았는지가
+    나와야 한다. 손으로 `MANAGERS`에 적지 않고 반에서 파생시킨다(이 파일의 규칙).
+
+    5·6·7기를 연달아 맡은 사람(이도윤)을 일부러 뒀다 — 담당·인원이 역대 누적되면
+    화면에서 바로 드러나는 자리다(D36).
+
+    끝난 기수는 `CLOSED`라 반 탭(선택 기수=7기)·담당 없음 경고 어디에도 안 나온다.
+  */
+  { ...cls('A', 23, 'm-sanghyun', '최상현', '2025-08-04'), id: 'c6-a', cohortId: '6' },
+  { ...cls('B', 24, 'm-sanghyun', '최상현', '2025-08-04'), id: 'c6-b', cohortId: '6' },
+  { ...cls('C', 25, 'm-doyun', '이도윤', '2025-08-04'), id: 'c6-c', cohortId: '6' },
+  { ...cls('D', 24, 'm-jihyun', '박지현', '2025-08-04'), id: 'c6-d', cohortId: '6' },
+  { ...cls('A', 25, 'm-doyun', '이도윤', '2025-02-03'), id: 'c5-a', cohortId: '5' },
+  { ...cls('B', 22, 'm-yujin', '최유진', '2025-02-03'), id: 'c5-b', cohortId: '5' },
 ]
 
 function cls(
@@ -687,42 +769,71 @@ export const CURRICULA: CurriculumDetail[] = [AI_LLMOPS, STREAMLIT, K8S, DATA_PI
 )
 
 // ── ⑤ 비용 ──────────────────────────────────────────────────
+/*
+  ⚠ 이번 달(2026-07)에는 **7기만 돌고 있다.** 8기는 9월 시작이라 아직 비용이 없다 —
+  기수 카드가 하나만 뜨는 것이 정상이고, 전환기(9월)에 둘이 된다.
+
+  `previousTotal`은 증감의 근거다 — `+12%`만 있으면 얼마에서 얼마로 늘었는지 모른다(D39).
+*/
 export const COST: CostSummary = {
   month: '2026-07',
-  total: 412,
-  budget: 600,
+  total: 268,
+  previousTotal: 239,
+  /*
+    기수 누적 — 아래 `monthly` 합과 같아야 한다. 화면이 둘을 같이 보여주므로 어긋나면
+    바로 드러난다(D39에서 반 합계가 기수 총액과 안 맞던 것과 같은 자리).
+  */
+  cohortTotal: 1147,
+  // 계약 예산은 **기수 전체** 기준이다 — 월 예산으로 두면 7개월치 판단을 못 한다
+  budget: 2400,
+  monthsLeft: 2,
   changePct: 12,
-  cohorts: [
-    { id: '7', name: '7기', amount: 268, trainees: 250 },
-    { id: '8', name: '8기', amount: 144, trainees: 252 },
+  /*
+    **최근이 앞으로.** 3월 개강이라 다섯 달치가 쌓였다.
+
+    `projectNames`가 금액을 설명한다 — 회차가 둘인 6·7월이 비싸고, 5월은 회차 없이
+    재시험만 있던 달이라 싸다. 이것이 없으면 `$268`이 많은지 적은지 판단할 수 없다(D40).
+  */
+  monthly: [
+    { month: '2026-07', amount: 268, sessions: 668, projectNames: ['미프 4차', '빅프 1차'] },
+    { month: '2026-06', amount: 239, sessions: 601, projectNames: ['미프 3차'] },
+    { month: '2026-05', amount: 168, sessions: 422, projectNames: [] },
+    { month: '2026-04', amount: 251, sessions: 631, projectNames: ['미프 1차', '미프 2차'] },
+    { month: '2026-03', amount: 221, sessions: 555, projectNames: ['오리엔테이션 진단'] },
   ],
+  cohorts: [{ id: '7', name: '7기', amount: 268, trainees: 250, period: '2026-03 ~ 09' }],
 }
 
 /*
-  반별 비용 — 목업은 A·B·C·F 넷만 그렸고 푸터는 `1–10 / 10개`다. 반 정의(CLASSES)에서
-  채워 **인원·담당이 반 표와 같은 값**이 되게 한다. 세션 수·금액만 반마다 다르게 둔다.
-*/
-const SESSIONS: Record<string, [number, number]> = {
-  'c-a': [69, 29],
-  'c-b': [66, 27],
-  'c-c': [71, 30],
-  'c-d': [68, 28],
-  'c-e': [64, 26],
-  'c-f': [54, 23],
-  'c-g': [70, 29],
-  'c-h': [67, 28],
-  'c-i': [65, 27],
-  'c-j': [69, 29],
-}
+  반별 [이번 달 세션, 이번 달 비용, 누적 세션, 누적 비용].
 
-export const CLASS_COST: ClassCost[] = CLASSES.map((room) => {
-  const [sessions, amount] = SESSIONS[room.id] ?? [0, 0]
-  return {
-    classId: room.id,
-    className: room.name,
-    managerName: room.managerName,
-    trainees: room.size,
-    sessions,
-    amount,
-  }
-})
+  **합이 위 총계와 맞아야 한다** — 이번 달 비용 합 = `COST.total`(268), 누적 비용 합 =
+  `COST.cohortTotal`(1147), 이번 달 세션 합 = `monthly[0].sessions`(668). 화면이 이 수들을
+  같이 보여주므로 어긋나면 바로 드러난다.
+
+  **F반이 이번 달은 중간인데 누적 1위다.** 이번 달만 보면 안 보이는 반을 일부러 뒀다 —
+  그래야 누적 열이 왜 필요한지가 화면에서 보인다(D41). 22명인데 재시험이 계속 많았던 반이다.
+*/
+/*
+  반별 **기수 누적** [세션, 비용].
+
+  이 값이 **월별 배분의 가중치이자 누적 합계**다 — 반 10개 × 월 5개 = 50칸을 손으로 적으면
+  월 총액과 어긋나는 순간을 아무도 못 잡는다. `api.ts`가 이 가중치로 각 달을 나눈다(D42).
+
+  합계가 위 총계와 맞는다 — 세션 2877 = `monthly` 세션 합, 비용 1147 = `cohortTotal`.
+
+  **F반이 누적 1위다.** 22명인데 재시험이 계속 많았던 반이라, *이번 달만 보면 중간인데
+  누적으로는 가장 비싼* 자리를 만든다(D41).
+*/
+export const CLASS_TOTAL: Record<string, [number, number]> = {
+  'c-a': [296, 118],
+  'c-b': [281, 112],
+  'c-c': [321, 128],
+  'c-d': [288, 115],
+  'c-e': [256, 102],
+  'c-f': [346, 138],
+  'c-g': [296, 118],
+  'c-h': [286, 114],
+  'c-i': [263, 105],
+  'c-j': [244, 97],
+}

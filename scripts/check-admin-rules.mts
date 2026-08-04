@@ -12,6 +12,7 @@
  */
 import assert from 'node:assert'
 import {
+  assignPolicy,
   canEditClasses,
   capacityPreview,
   checkEmail,
@@ -119,6 +120,18 @@ assert.deepStrictEqual(checkRosterRows([{ name: '', email: '  ' }], DOMAIN), [])
 assert.strictEqual(canEditClasses('2026-03-02', '2026-03-01'), true, '개강 전날 — 열림')
 assert.strictEqual(canEditClasses('2026-03-02', '2026-03-02'), false, '개강 당일 — 잠김')
 assert.strictEqual(canEditClasses('2026-03-02', '2026-07-16'), false, '개강 후 — 잠김')
+
+// ── 담당 변경 정책(D38) ────────────────────────────────────
+// 반 편집과 달리 **진행 중에도 바꿀 수 있다** — 대신 확인을 받는다(매니저 퇴사·교체)
+const running = (startAt: string) => ({ status: 'RUNNING' as const, startAt })
+assert.strictEqual(assignPolicy(running('2026-03-02'), '2026-03-01'), 'FREE', '개강 전')
+assert.strictEqual(assignPolicy(running('2026-03-02'), '2026-03-02'), 'CONFIRM', '개강 당일')
+assert.strictEqual(assignPolicy(running('2026-03-02'), '2026-07-16'), 'CONFIRM', '운영 중')
+// 끝난 기수는 시작일과 무관하게 잠긴다 — 이력이다
+assert.strictEqual(
+  assignPolicy({ status: 'CLOSED', startAt: '2025-08-04' }, '2026-07-16'),
+  'LOCKED',
+)
 
 // ── 정원 ────────────────────────────────────────────────────
 const room = (size: number, capacity = 25): ClassRoom => ({

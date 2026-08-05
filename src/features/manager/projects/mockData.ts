@@ -102,23 +102,20 @@ export type Project = {
   status: ProjectStatus
   /**
    * 연결 교안 — "이름 버전" 문자열 목록(OP-03 CurriculumSummary와 같은 세로 나열).
-   * 빈 배열 = 교안 없음. 개념 자체가 구조적으로 없는 회차(빅프 등)는 `concepts`가
-   * 항상 빈 배열이다, 아직 안 붙은 것뿐이면 다른 문구가 붙는다(§notready 케이스).
+   * 빈 배열 = "아직 안 붙었다"는 뜻이라 다른 문구가 붙는다(§notready 케이스).
    */
   curricula: string[]
-  /** 검증 개념 3건. null = 미확정(구조적으로 개념이 없는 회차는 빈 배열) */
+  /** 검증 개념 3건. null = 미확정 */
   concepts: string[] | null
   /**
    * 연결한 교안이 가르치는 항목 수(OP-03 `conceptCandidateCount`와 같은 자리) —
-   * 미확정일 때 "후보 N건에서 3건"에 쓴다. 교안이 없거나 개념 자체가 없으면 0.
+   * 미확정일 때 "후보 N건에서 3건"에 쓴다. 교안이 없으면 0.
    */
   conceptCandidateCount: number
   /** 시작 ISO. 미설정이면 null(§notready 케이스 · 미프 5차) */
   startAt: string | null
   /** 제출 마감 ISO. 미설정이면 null */
   dueAt: string | null
-  /** 부가문구(빅프처럼 회차 번호 대신 붙는 설명) */
-  note?: string
   /** 담당 반 스코프의 반별 데이터. 예정 회차는 빈 배열(아직 아무 일도 없다) */
   classes: ClassProgress[]
 }
@@ -140,18 +137,6 @@ export const SCOPE_TOTAL = MANAGED_CLASSES.reduce((n, c) => n + c.total, 0)
 export const COHORT_NAME = '7기'
 
 export const PROJECTS: Project[] = [
-  {
-    id: 'bigp',
-    name: '빅프',
-    status: 'PLANNED',
-    curricula: [],
-    concepts: [],
-    conceptCandidateCount: 0,
-    startAt: '2026-08-01T09:00',
-    dueAt: '2026-09-26T23:59',
-    note: '총 3회 · 첫 동작 · +2주 · 마감',
-    classes: [],
-  },
   {
     // 다음 회차 미준비 케이스 전용 — 교안조차 안 붙었다(§notready)
     id: 'mif-5',
@@ -303,16 +288,6 @@ export const CURRICULUM_OPTIONS: string[] = [...new Set(PROJECTS.flatMap((p) => 
 /** 표시용 "07-16 18:00". 저장은 ISO, 화면에서만 자른다(OP-03 formatDue와 같은 방식) */
 export function formatDue(iso: string): string {
   return `${iso.slice(5, 10)} ${iso.slice(11, 16)}`
-}
-
-/**
- * 교안·검증 개념이 구조적으로 없는 회차(예: 빅프)인지 — 예전엔 `kind === 'BIG'`으로
- * 갈랐지만, 미니/빅 프로젝트 구분을 없애면서(사용자 지시) `concepts`가 **미확정(null)이
- * 아니라 빈 배열**이라는 데이터 모양 자체로 판정한다. 미확정은 아직 안 정한 것이고,
- * 빈 배열은 애초에 정할 개념이 없다는 뜻이라 값이 다르다.
- */
-export function hasNoCurriculum(p: Project): boolean {
-  return p.concepts !== null && p.concepts.length === 0
 }
 
 /**
@@ -547,14 +522,20 @@ export function listManagerProjects(q: ProjectQuery): Promise<ProjectListResult>
   직접 지어 넣었다(⚠ 실제 값 아님, OP-04 데이터와 연동되면 이 배열은 지운다).
 
   ⚠ 판단 기록
-  · **6개 프로젝트에 팀 편성 5국면을 하나씩 나눠 배정했다** — 정의서가 정한
+  · **5개 프로젝트에 팀 편성 국면을 하나씩 나눠 배정했다** — 정의서가 정한
     국면 전환은 실제로는 한 회차가 시간에 따라 지나가는 것이지만, 목업은
-    스냅샷이라 한 회차로 5국면을 다 보여줄 수 없다. bigp=편성 전 ·
-    mif-5=전원 배정 · mif-4=편성 중 · mif-3=제출 시작됨 · mif-1·2=종료(잠김)로
-    나눠서, MG-07 목록에서 아무 행이나 눌러도 서로 다른 국면을 볼 수 있게 했다.
-    확정됨(④)은 mif-5에서 `팀 편성 완료`를 누르면 실제로 전이한다(국면들이
-    전부 상호 배타적인 저장 상태가 아니라 액션으로 연결된 하나의 흐름이라는
-    걸 보여주려는 의도).
+    스냅샷이라 한 회차로 다 보여줄 수 없다. mif-5=전원 배정 · mif-4=편성 중 ·
+    mif-3=제출 시작됨 · mif-1·2=종료(잠김)로 나눠서, MG-07 목록에서 아무 행이나
+    눌러도 서로 다른 국면을 볼 수 있게 했다. 확정됨(④)은 mif-5에서
+    `팀 편성 완료`를 누르면 실제로 전이한다(국면들이 전부 상호 배타적인 저장
+    상태가 아니라 액션으로 연결된 하나의 흐름이라는 걸 보여주려는 의도).
+    **편성 전(①)은 정적으로 seed하지 않았다** — 예전엔 `bigp`(빅프)라는 별도
+    프로젝트가 그 자리를 맡았는데, 팀장님이 "회차 유형이 미프 하나만 남는다"고
+    제품 결정하며 빅프 자체를 지웠다(develop PR #93). 그 자리를 채우려고 새
+    미프를 지어내는 대신, `recomputeTeamPhase`가 `teams.length === 0`이면
+    자동으로 `BEFORE`로 되돌리는 로직을 그대로 살렸다 — mif-4·mif-5에서 팀을
+    전부 삭제하면(팀 삭제 기능) 편성 전 화면이 그 즉시 재현된다. 정적 데이터를
+    하나 늘리는 것보다 팀장님의 제품 결정을 그대로 존중하는 쪽이다.
   · **인원 75명(A·B·C반) 전체를 손으로 채우지 않았다.** MG-07 `PROJECTS`의
     반별 합계와 이 파일의 팀 편성 인원은 **독립된 값**이다(MG-07 자체 주석의
     "실제 서버라면 서로 다른 집계 쿼리라 산수가 딱 맞물릴 필요가 없다"와 같은
@@ -1214,7 +1195,7 @@ const MIF3_RESULT = buildProjectResult(
   MIF3_ATTENDANCE,
 )
 
-// ── mif-4(편성 중) · mif-5(전원 배정) · bigp(편성 전) ────────────
+// ── mif-4(편성 중) · mif-5(전원 배정) ─────────────────────────
 
 const MIF4_TEAMS: Team[] = [
   pickTeam('mif4-1', '1팀', ['t1', 't2', 't3']),
@@ -1323,17 +1304,6 @@ const MIF1_RESULT = buildProjectResult(
 // ── 프로젝트별 상세 저장소(mock DB) ──────────────────────────
 
 const PROJECT_DETAILS: Record<string, ProjectDetail> = {
-  bigp: {
-    projectId: 'bigp',
-    teamPhase: 'BEFORE',
-    locked: false,
-    requirementNames: [],
-    teams: [],
-    unassigned: ROSTER,
-    submissions: {},
-    attendance: {},
-    result: null,
-  },
   'mif-5': {
     projectId: 'mif-5',
     teamPhase: 'READY',

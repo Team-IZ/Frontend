@@ -80,8 +80,10 @@ export const TRAINEE_SIDEBAR: SidebarGroup[] = [
   ],
   // dev 전용 — /trainee/__cases(TraineeCaseIndex)는 상태 9종·케이스별 확인용이라
   // 같이 개발하는 사람이 매번 주소를 외워 치지 않아도 되게 여기 붙인다.
-  // import.meta.env.DEV라 프로덕션 빌드에는 이 그룹 자체가 안 들어간다.
-  ...(import.meta.env.DEV
+  // import.meta.env.DEV만 보면 프로덕션 빌드(vite build)는 항상 false라 develop
+  // Vercel 프리뷰 배포도 걸러진다 — __GIT_BRANCH__(vite.config.ts define)로
+  // "로컬이거나 develop 배포"일 때만 보이게 하고, main 배포에서는 숨긴다.
+  ...(import.meta.env.DEV || __GIT_BRANCH__ === 'develop'
     ? [[{ icon: FlaskConicalIcon, label: '케이스 보기', to: '/trainee/__cases' }]]
     : []),
 ]

@@ -70,14 +70,8 @@ export function ConceptCell({ project }: { project: Project }) {
   )
 }
 
-/** 빅프는 회차 번호가 없다 — 이름 아래 "총 3회 · 첫 동작 · +2주 · 마감"을 함께 쓴다 */
 export function ProjectNameCell({ project }: { project: Project }) {
-  return (
-    <div>
-      <span className="text-fg font-semibold">{project.name}</span>
-      {project.note && <p className="text-fg-subtle mt-0.5 text-2xs">{project.note}</p>}
-    </div>
-  )
+  return <span className="text-fg font-semibold">{project.name}</span>
 }
 
 /**

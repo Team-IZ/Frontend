@@ -14,6 +14,7 @@ import type {
   AssignClassRequest,
   AssignResult,
   ClassCost,
+  ClassCostSort,
   ClassQuery,
   ClassRoom,
   Cohort,
@@ -43,7 +44,7 @@ import { ROSTER_PAGE_SIZE, canEditClasses, checkEmail, needsManager } from '../r
 // ───────── Mock 전용 (백엔드 연동 시 이 블록 삭제) ─────────
 import {
   CLASSES,
-  CLASS_COST,
+  CLASS_TOTAL,
   COHORTS,
   COST,
   CURRICULA,
@@ -52,6 +53,13 @@ import {
   ORG,
   TRAINEES,
 } from './mockDb'
+
+/*
+  **매니저의 담당·인원은 반에서 파생시킨다.** 목 파일에 손으로 적어 두면 반을 고칠 때
+  어긋나므로, 모듈이 처음 읽힐 때 한 번 계산해 둔다(아래 `syncManagerAssignments`).
+  실제 서버에서는 DB 조인이 그 자리를 대신하므로 이 줄은 목과 함께 사라진다.
+*/
+let derived = false
 
 /** 목 지연. 로딩 상태가 실제로 보이는지 개발 중 확인하려면 필요합니다 */
 const LATENCY_MS = 250
@@ -316,6 +324,47 @@ export function deleteClass(classId: string): Promise<void> {
 }
 
 /**
+ * `PUT /admin/managers/{id}/classes` — 이 매니저가 맡을 반 **전체를 정한다**(D34).
+ *
+ * **`setClassManager`와 방향이 반대다.** 저쪽은 `반 하나 = 매니저 하나`를 쓰고, 이쪽은
+ * `매니저 하나 = 반 여럿`을 쓴다. 한 함수로 둘을 처리하고 있었는데, 매니저 쪽에서
+ * 부르면 반이 **하나씩 더해지기만** 했다 — 라디오로 골랐는데 결과는 추가였다.
+ *
+ * **넘긴 목록이 곧 결과다**(PUT). 빠진 반은 담당이 풀리고 더해진 반은 이 사람이 맡는다 —
+ * 그래야 모달에서 체크를 풀어 담당을 뺄 수 있다. 여러 번 나눠 부르면 중간에 실패했을 때
+ * 절반만 반영된다.
+ */
+export function setManagerClasses(managerId: string, classIds: string[]): Promise<Manager> {
+  // ===== Mock 버전 (현재 활성) =====
+  const manager = MANAGERS.find((m) => m.id === managerId)
+  if (!manager) return fail('ADMIN_SAVE_FAILED')
+  // 가입 전에는 반을 못 맡는다 — 로그인을 못 해 면담·독촉을 처리할 수 없다(D34)
+  if (manager.status !== 'ACTIVE') return fail('ADMIN_SAVE_FAILED')
+
+  for (const room of CLASSES) {
+    const wanted = classIds.includes(room.id)
+    if (wanted && room.managerId !== managerId) {
+      room.managerId = managerId
+      room.managerName = manager.name
+      room.assignedAt = getNow().slice(0, 10)
+      room.assignedBy = '김오퍼레이터'
+    } else if (!wanted && room.managerId === managerId) {
+      // 체크가 풀린 반은 담당이 빈다 — `담당 없음` 경고가 다시 켜진다
+      room.managerId = null
+      room.managerName = null
+      room.assignedAt = null
+      room.assignedBy = null
+    }
+  }
+  syncManagerAssignments()
+  return delay(manager)
+
+  // return http<Manager>(`/admin/managers/${managerId}/classes`, {
+  //   method: 'PUT', body: { classIds },
+  // })
+}
+
+/**
  * `PATCH /admin/classes/{id}/manager` — 담당 배정·변경·해제.
  *
  * **배정은 기간형 이력이다**(OP-06 §3) — 서버는 덮어쓰는 것이 아니라 구간을 닫고 새로
@@ -563,24 +612,103 @@ export function deactivateTrainee(id: string, reason: string): Promise<Trainee> 
  */
 export function listManagers(q: ManagerQuery = {}): Promise<ManagerPage> {
   // ===== Mock 버전 (현재 활성) =====
+  if (!derived) {
+    syncManagerAssignments()
+    derived = true
+  }
   const filtered = MANAGERS.filter((m) => {
     if (q.search && !hit(m.name ?? '', q.search) && !hit(m.email, q.search)) return false
     if (q.status && m.status !== q.status) return false
-    if (q.cohortId) {
-      const cohortName = COHORTS.find((c) => c.id === q.cohortId)?.name
-      if (m.assignment?.cohortName !== cohortName) return false
-    }
+    /*
+      **소속으로 거른다 — 담당 유무가 아니라**(D38). 담당 반으로만 걸렀더니 초대 대기·정지
+      계정이 어느 기수에도 안 잡혀 사라졌다(실측 9명 → 7명). 계정 업무(초대·재발송·정지)가
+      이 탭 일의 3분의 2라 그것들이 안 보이는 목록은 쓸 수 없다.
+
+      끝난 기수도 걸린다 — `6기에 누가 무엇을 맡았나`가 실제 질문이다.
+    */
+    if (q.cohortId && !m.cohortIds.includes(q.cohortId)) return false
     return true
   })
 
+  /*
+    **헤더 내역도 기수 범위 안에서 센다**(D38). 기관 전체를 세면 `9명`이라 해 놓고 목록에는
+    8명이 나온다 — 헤더가 필터와 무관해야 한다는 규칙은 *상태·검색*을 말하는 것이고,
+    **기수는 이 화면의 범위 자체**라 그 밖을 셀 이유가 없다.
+  */
+  const inScope = MANAGERS.filter((m) => !q.cohortId || m.cohortIds.includes(q.cohortId))
   const counts: Record<ManagerStatus, number> = { ACTIVE: 0, INVITED: 0, SUSPENDED: 0 }
-  for (const m of MANAGERS) counts[m.status]++
+  for (const m of inScope) counts[m.status]++
+
+  /*
+    **이름순 — 순서를 서버가 정한다.** 걸러낸 배열을 그대로 돌려주고 있었는데, 그러면
+    순서가 *목 배열에 적힌 차례*라는 뜻이라 실제 서버로 바꾸면 순서가 달라진다.
+    초대한 사람이 목록 맨 끝에 붙는 것도 그 탓이었다(`MANAGERS.push`).
+
+    정렬 옵션은 두지 않는다 — 사람을 찾는 목록이라 이름순이 유일하게 자연스럽다
+    (반 목록을 `A반 · B반 …`으로 고정한 것과 같은 이유). 가입 전이라 이름이 없으면
+    이메일로 줄 세운다.
+  */
+  /*
+    **조회 범위만큼 잘라서 준다**(D37). 저장소는 모든 기수를 갖고 있고, 화면에 나가는
+    행은 *지금 무엇을 보고 있나*에 맞춰야 한다.
+
+      · 기수 필터 있음 → 그 기수 묶음만. 끝난 기수여도 보여준다(그게 필터의 목적이다)
+      · 없음 → 진행 중인 기수 묶음 + 나머지는 수로
+
+    `headcount`도 같은 범위로 센다 — 담당과 인원이 다른 범위를 말하면 행이 거짓말을 한다.
+  */
+  const running = new Set(COHORTS.filter((c) => c.status === 'RUNNING').map((c) => c.id))
+  const scoped = filtered.map((m) => {
+    const shown = q.cohortId
+      ? m.assignments.filter((a) => a.cohortId === q.cohortId)
+      : m.assignments.filter((a) => running.has(a.cohortId))
+
+    const names = new Set(shown.flatMap((a) => a.classNames.map((n) => `${a.cohortId}:${n}`)))
+    const headcount = CLASSES.filter((c) => names.has(`${c.cohortId}:${c.name}`)).reduce(
+      (n, c) => n + c.size,
+      0,
+    )
+
+    return {
+      ...m,
+      assignments: shown,
+      headcount: shown.length > 0 ? headcount : null,
+      // 필터를 걸면 그 기수가 곧 답이라 나머지를 세지 않는다
+      pastCohorts: q.cohortId ? 0 : m.assignments.filter((a) => !running.has(a.cohortId)).length,
+    }
+  })
+
+  const byName = (a: Manager, b: Manager) =>
+    (a.name ?? a.email).localeCompare(b.name ?? b.email, 'ko')
+
+  const sorted = [...scoped].sort((a, b) =>
+    q.sort === 'HEADCOUNT'
+      ? /*
+          **담당 인원 많은 순** — 부하가 한 사람에게 몰리는 것이 이 탭의 조치 대상이다
+          (배정 모달도 같은 이유로 각 매니저의 담당을 보여준다). 담당이 없으면(null)
+          0으로 보고 뒤로 보낸다. 같으면 이름순 — 순서가 흔들리면 목록이 매번 달라진다.
+        */
+        (b.headcount ?? 0) - (a.headcount ?? 0) || byName(a, b)
+      : byName(a, b),
+  )
+
+  /*
+    **담당 없는 반은 `지금 기수` 것만 센다.** 기관 전체 반을 훑고 있었는데, 지난 기수의
+    반까지 섞이면 **이미 끝난 기수에 담당을 붙이라는 경고**가 뜬다 — 조치할 수 없는 신호다.
+    이 탭 자체는 기관 전체지만 이 경고는 `조치 필요`라서 진행 중인 기수의 것이어야 한다.
+
+    **매니저 필터(`q.cohortId`)를 쓰지 않는다.** 그것으로 세면 8기로 걸러 보는 동안
+    7기 경고가 사라진다 — 헤더 수가 필터와 무관해야 하는 것과 같은 이유다.
+  */
+  const current = COHORTS.find((c) => c.current)
 
   return delay({
-    items: filtered,
-    total: filtered.length,
+    items: sorted,
+    total: sorted.length,
     counts,
-    unstaffedClasses: CLASSES.filter(needsManager).map((c) => c.name),
+    unstaffedClasses: CLASSES.filter((c) => c.cohortId === current?.id && needsManager(c)).map(
+      (c) => c.name,
+    ),
   })
 
   // return http<ManagerPage>(`/admin/managers?${qs(q)}`)
@@ -601,32 +729,27 @@ export function inviteManager(req: InviteManagerRequest): Promise<Manager> {
   if (MANAGERS.some((m) => m.email.toLowerCase() === req.email.toLowerCase()))
     return fail('ADMIN_SAVE_FAILED')
 
+  /*
+    **담당 반을 같이 받지 않는다**(D34). 가입 전에는 로그인을 못 해 그 반의 면담·독촉을
+    처리할 수 없는데, 반에 id가 박히면 `담당 없음` 경고에 안 잡혔다 — 경고가 막으려던
+    상황을 초대가 만들고 있었다. 배정은 **가입이 끝난 뒤** 매니저 목록에서 한다.
+  */
   const created: Manager = {
     id: `m-${req.email}`,
     name: null,
     email: req.email,
-    assignment: null,
+    // 반은 못 맡아도 **기수 소속은 정해진다** — 그래야 그 기수 목록에 보인다(D38)
+    cohortIds: [req.cohortId],
+    assignments: [],
+    pastCohorts: 0,
     headcount: null,
     status: 'INVITED',
     statusNote: null,
     lastSeenAt: null,
+    invitedAt: getNow().slice(0, 10),
+    invitedBy: '김오퍼레이터',
   }
   MANAGERS.push(created)
-  if (req.classId) {
-    const room = CLASSES.find((c) => c.id === req.classId)
-    if (room) {
-      room.managerId = created.id
-      /*
-        **가입 전이라 이름이 없다.** `created.name`(null)을 그대로 넣으면 반 목록이
-        `담당 없음`을 빨갛게 띄우는데, `needsManager`는 id가 있어서 false다 —
-        한 행이 서로 다른 말을 한다(D1). 이름이 생길 때까지 주소가 그 자리를 대신한다.
-      */
-      room.managerName = created.name ?? created.email
-      room.assignedAt = getNow().slice(0, 10)
-      room.assignedBy = '김오퍼레이터'
-    }
-  }
-  syncManagerAssignments()
   return delay(created)
 
   // return http<Manager>('/admin/managers/invite', { method: 'POST', body: req })
@@ -691,14 +814,23 @@ export function cancelManagerInvite(id: string): Promise<void> {
   Mock 전용 — 반의 담당이 바뀌면 매니저 쪽 `담당 반`·`담당 인원`도 같이 바뀐다.
   실제로는 서버가 한 테이블에서 양쪽을 만들어 내려주므로 이런 동기화 함수가 없다.
 */
+/** 진행 중인 기수 id — 담당·인원·해제가 전부 이 범위에서만 움직인다 */
+const runningCohortIds = () =>
+  new Set(COHORTS.filter((c) => c.status === 'RUNNING').map((c) => c.id))
+
 /**
- * 이 사람이 맡고 있던 반을 전부 놓는다 — 정지·초대 취소가 같이 쓴다.
+ * 이 사람이 맡고 있던 반을 놓는다 — 정지·초대 취소가 같이 쓴다.
+ *
+ * **진행 중인 기수만 푼다**(D36). 전부 풀고 있었는데, 그러면 정지 한 번에 **지난 기수의
+ * 담당 기록이 지워졌다** — 퇴사자를 지우지 않고 정지로 남기는 이유가(OP-06 §3) 바로 그
+ * 기록인데 정지가 그것을 없애고 있었다.
  *
  * **지우는 것이 아니라 비우는 것이다.** 반은 남고 담당만 빠져 `담당 없음` 경고가 켜진다.
  */
 function releaseClasses(managerId: string): void {
+  const running = runningCohortIds()
   for (const c of CLASSES) {
-    if (c.managerId !== managerId) continue
+    if (c.managerId !== managerId || !running.has(c.cohortId)) continue
     c.managerId = null
     c.managerName = null
     c.assignedAt = null
@@ -706,17 +838,40 @@ function releaseClasses(managerId: string): void {
   }
 }
 
+/**
+ * 반 목록을 원천으로 매니저의 담당을 다시 계산한다 — **기수를 가리지 않고 전부** 담는다.
+ *
+ * 자르는 일은 `listManagers`가 조회 범위에 맞춰 한다(D37). 여기서 미리 잘랐더니
+ * **기수 필터가 끝난 기수를 못 찾아 목록이 비었다** — 저장소는 다 갖고 있고 조회가
+ * 좁히는 것이 맞다.
+ */
 function syncManagerAssignments(): void {
   for (const m of MANAGERS) {
-    const rooms = CLASSES.filter((c) => c.managerId === m.id)
-    if (rooms.length === 0) {
-      // 지난 기수 이력은 남긴다 — 지우면 `6기 A반 담당이 누구였나`가 사라진다
-      if (m.assignment?.cohortName === '7기') m.assignment = null
-      m.headcount = m.assignment ? m.headcount : null
-      continue
+    const mine = CLASSES.filter((c) => c.managerId === m.id)
+
+    const byCohort = new Map<string, string[]>()
+    for (const room of mine) {
+      byCohort.set(room.cohortId, [...(byCohort.get(room.cohortId) ?? []), room.name])
     }
-    m.assignment = { cohortName: '7기', classNames: rooms.map((c) => c.name) }
-    m.headcount = rooms.reduce((n, c) => n + c.size, 0)
+
+    m.assignments = [...byCohort]
+      .map(([cohortId, classNames]) => ({
+        cohortId,
+        cohortName: COHORTS.find((c) => c.id === cohortId)?.name ?? cohortId,
+        classNames,
+      }))
+      // 최근 기수가 앞으로 — 목록에서 먼저 읽히는 것이 지금 것이어야 한다
+      .sort((a, b) => b.cohortId.localeCompare(a.cohortId))
+
+    /*
+      **소속 기수 = 담당이 있는 기수 ∪ 초대받은 기수.** 초대로 붙은 소속은 담당이 없어도
+      지우지 않는다 — 지우면 초대 대기 계정이 어느 기수 목록에도 안 나온다(D38).
+    */
+    m.cohortIds = [...new Set([...m.cohortIds, ...byCohort.keys()])]
+
+    // 아래 둘은 조회 범위가 정하므로 `listManagers`가 다시 채운다
+    m.pastCohorts = 0
+    m.headcount = null
   }
 }
 
@@ -826,10 +981,75 @@ export function reanalyzeCurriculum(id: string): Promise<CurriculumDetail> {
  * 반별은 **선택 기수** 범위이고 요약은 기관 전체다 — 한 응답에 두 범위가 들어가는 것이
  * 이 탭의 모양이다(상단은 `기관 전체`, 아래 표는 `7기 · 이번 달`).
  */
-export function getCost(cohortId: string): Promise<{ summary: CostSummary; classes: ClassCost[] }> {
+/**
+ * 반별 한 달치를 만든다 — **누적 가중치로 월 총액을 나눈다**(D42).
+ *
+ * 목이 반 10개 × 월 5개를 손으로 갖고 있으면 월 총액과 어긋나는 순간을 못 잡는다.
+ * 가중치로 나누면 **합이 항상 맞고**, 반별 성향(F반이 계속 많이 쓴다)도 달마다 유지된다.
+ *
+ * 반올림 오차는 **가중치가 가장 큰 반이 흡수한다** — 작은 반에 몰면 그 반 숫자가 튄다.
+ */
+function splitByWeight(total: number, pick: (t: [number, number]) => number): Map<string, number> {
+  const ids = Object.keys(CLASS_TOTAL)
+  const sum = ids.reduce((n, id) => n + pick(CLASS_TOTAL[id]), 0)
+  const top = ids.reduce((a, b) => (pick(CLASS_TOTAL[a]) >= pick(CLASS_TOTAL[b]) ? a : b))
+
+  const out = new Map<string, number>()
+  let assigned = 0
+  for (const id of ids) {
+    if (id === top) continue
+    const v = Math.round((total * pick(CLASS_TOTAL[id])) / sum)
+    out.set(id, v)
+    assigned += v
+  }
+  out.set(top, total - assigned)
+  return out
+}
+
+export function getCost(
+  cohortId: string,
+  sort: ClassCostSort = 'NAME',
+): Promise<{ summary: CostSummary; classes: ClassCost[] }> {
   // ===== Mock 버전 (현재 활성) =====
-  void cohortId
-  return delay({ summary: COST, classes: CLASS_COST })
+  /*
+    **기수로 거른다.** 인자를 `void`로 버리고 전체 반을 돌려주고 있었다 — 제목은
+    `7기 · 이번 달`이라 써 놓고 5·6기 반까지 섞여 **10반이어야 할 표가 16행**이었다(D39).
+
+    **달마다 나눠서 준다**(D43). 한 달치만 주면 지난달 반별을 볼 방법이 없고, 달을 골라
+    가며 봐도 **두 달을 나란히 비교할 수 없다.**
+  */
+  const rooms = CLASSES.filter((c) => c.cohortId === cohortId && CLASS_TOTAL[c.id])
+
+  // 오래된 달이 앞 — 매트릭스는 왼쪽에서 오른쪽으로 시간이 흐른다
+  const months = [...COST.monthly].reverse()
+  const byMonth = months.map((m) => ({
+    month: m.month,
+    split: splitByWeight(m.amount, (t) => t[1]),
+  }))
+
+  const rows: ClassCost[] = rooms.map((room) => ({
+    classId: room.id,
+    cohortId: room.cohortId,
+    className: room.name,
+    managerName: room.managerName,
+    monthly: byMonth.map(({ month, split }) => ({ month, amount: split.get(room.id) ?? 0 })),
+    cohortSessions: CLASS_TOTAL[room.id][0],
+    cohortAmount: CLASS_TOTAL[room.id][1],
+  }))
+
+  /*
+    **정렬도 서버가 한다**(api-boundary §1-②). 목이 배열이라 화면에서 돌려도 되지만
+    그러면 연동할 때 재작성이 된다.
+
+    달마다 정렬 옵션을 만들지 않는다 — 월이 열로 펼쳐졌으므로 **눈으로 훑는 일**이고,
+    일곱 개짜리 드롭다운은 매트릭스가 이미 하는 일을 반복한다(D43).
+  */
+  const byName = (a: ClassCost, b: ClassCost) => a.className.localeCompare(b.className, 'ko')
+  const sorted = [...rows].sort((a, b) =>
+    sort === 'COHORT_AMOUNT' ? b.cohortAmount - a.cohortAmount || byName(a, b) : byName(a, b),
+  )
+
+  return delay({ summary: COST, classes: sorted })
 
   // return http<{ summary: CostSummary; classes: ClassCost[] }>(`/admin/cost?cohort=${cohortId}`)
 }

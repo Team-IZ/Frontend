@@ -73,8 +73,8 @@ export default function EditRequirementsDialog({ open, onOpenChange, project, on
 
         <DialogFooter className="items-center justify-between sm:justify-between">
           {/*
-            비운 것도 저장이다 — 요구사항이 없는 회차가 실제로 있다(빅프). 그래서
-            `0건`을 못 지나가는 조건으로 쓰지 않고 **센 결과만** 쓴다.
+            비운 것도 저장이다 — 요구사항은 회차를 만든 뒤에 채우는 값이라 `0건`은
+            "아직 안 적음"이지 결함이 아니다. 못 지나가는 조건으로 쓰지 않고 **센 결과만** 쓴다.
           */}
           <p className="text-fg-subtle text-xs">
             {items.length === 0 ? '비워 둘 수 있습니다' : `${items.length}건`}

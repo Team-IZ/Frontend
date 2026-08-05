@@ -16,10 +16,9 @@ import { Spinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils/cn'
 import { getCohortScope, getToday, listCurricula, listProjects } from '../api'
 import { CONCEPT_COUNT, dueLabel } from '../rules'
-import { KIND_LABEL } from '../labels'
 import { useAsync } from '../useAsync'
 import { COHORT_ID } from '../cohortScope'
-import type { ProjectKind, ProjectSort, ProjectStatus } from '../types'
+import type { ProjectSort, ProjectStatus } from '../types'
 import ProjectStatusBadge from '../components/ProjectStatusBadge'
 import ProjectFilters from './components/ProjectFilters'
 import { ALL, INITIAL_FILTERS, isNarrowed, type FilterValues } from './filterState'
@@ -66,7 +65,6 @@ export default function ProjectListScreen() {
         cohortId: COHORT_ID,
         search: filters.search || undefined,
         curriculumId: filters.curriculumId === ALL ? undefined : filters.curriculumId,
-        kind: filters.kind === ALL ? undefined : (filters.kind as ProjectKind),
         status: filters.status === ALL ? undefined : (filters.status as ProjectStatus),
         sort: filters.sort as ProjectSort,
       }),
@@ -180,11 +178,8 @@ export default function ProjectListScreen() {
                     **흡수 열(검증 개념)에만 폭을 주지 않는다** — 서술 열이 남는 폭을
                     가져가야 데이터가 왼쪽에 붙어 스캔된다(D22).
 
-                    `유형` 열은 지웠다 — 이름 옆 라벨로 옮겼다. 64px 열 하나가 사라지고
-                    정보는 남는다.
                   */}
                   <TableHead className="w-[200px]">프로젝트</TableHead>
-                  <TableHead className="w-24">유형</TableHead>
                   <TableHead className="w-[108px]">상태</TableHead>
                   <TableHead className="w-[168px]">기간</TableHead>
                   <TableHead className="w-[200px]">교안</TableHead>
@@ -218,14 +213,7 @@ export default function ProjectListScreen() {
                         >
                           {p.name}
                         </Link>
-                        {p.note && <p className="text-fg-subtle text-2xs">{p.note}</p>}
                       </TableCell>
-                      {/*
-                        유형은 **텍스트다.** 옆 칸이 이미 배지(상태)라 여기도 배지면 둘이
-                        시각적으로 경쟁한다 — 배지는 *"처리하면 줄어드는"* 상태에 쓴다(E1).
-                        유형은 회차가 만들어질 때 정해지고 안 바뀐다.
-                      */}
-                      <TableCell className="text-fg-muted text-xs">{KIND_LABEL[p.kind]}</TableCell>
                       <TableCell>
                         <ProjectStatusBadge status={p.status} />
                       </TableCell>

@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate } from 'react-router'
 import type { RouteObject } from 'react-router'
 import UiPreviewScreen from '@/app/UiPreviewScreen'
+import TraineeCaseIndex from '@/app/TraineeCaseIndex'
 import RouteNotFound from '@/app/RouteNotFound'
 
 /*
@@ -33,6 +34,7 @@ export const router = createBrowserRouter([
   // 클라이언트는 역할→화면 매핑을 갖지 않는다.
   { path: '/', element: <Navigate to="/shared/login" replace /> },
   { path: '/ui-preview', element: <UiPreviewScreen /> },
+  { path: '/trainee/__cases', element: <TraineeCaseIndex /> },
 
   // 없는 경로를 조용히 로그인으로 보내지 않는다. 그러면 "라우트를 등록 안 한 것"과
   // "코드가 틀린 것"을 구분할 수 없어 개발 중에 시간을 잃는다.

@@ -97,6 +97,9 @@ const PAIRS = [
   ['nav-fg', 'nav'],
   ['nav-fg', 'nav-active'],
   ['nav-accent', 'nav'],
+  // 코드 패널 — 코드 텍스트 블록만 어두운 면이다(TR-03).
+  ['code-fg', 'code'],
+  ['code-dim', 'code'],
 ]
 
 const AA = 4.5

@@ -67,7 +67,10 @@ export default function ConsoleShell({
     COHORT_SCOPED_ROLES.includes(role) && cohort ? { label: '기수', value: cohort } : undefined
 
   return (
-    <div className="flex h-svh flex-col overflow-hidden">
+    // print:h-auto print:overflow-visible — 화면에서는 뷰포트 안에 가두지만
+    // (위 주석) 인쇄에서 같은 높이 상한을 쓰면 한 페이지 분량만 찍히고 나머지가
+    // 잘린다. index.css가 Header·Sidebar를 지우는 것과 짝을 이루는 규칙이다.
+    <div className="flex h-svh flex-col overflow-hidden print:h-auto print:overflow-visible">
       <a
         href="#main"
         className="bg-primary sr-only rounded-md px-4 py-2 text-white focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50"
@@ -77,10 +80,14 @@ export default function ConsoleShell({
 
       <Header user={user} scope={scope} role={role} />
 
-      <div className="flex min-h-0 min-w-0 flex-1">
+      <div className="flex min-h-0 min-w-0 flex-1 print:block">
         <Sidebar sidebar={sidebar} />
 
-        <main id="main" tabIndex={-1} className="bg-canvas min-w-0 flex-1 overflow-auto p-8">
+        <main
+          id="main"
+          tabIndex={-1}
+          className="bg-canvas min-w-0 flex-1 overflow-auto p-8 print:overflow-visible print:p-0"
+        >
           <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>

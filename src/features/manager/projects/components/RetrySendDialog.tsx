@@ -117,8 +117,12 @@ const RETRY_STATUS_VARIANT = {
 const DISABLED_CHECKED_CLASS =
   'data-disabled:data-checked:border-border-strong data-disabled:data-checked:bg-neutral-soft data-disabled:data-checked:text-fg-subtle'
 
-/** 기본 기한 — "3일 뒤와 다음 프로젝트 제출일 중 빠른 쪽"(정의서·와이어)의 목업 근사값 */
-function defaultDeadline(): { date: Date; time: string } {
+/**
+ * 기본 기한 — "3일 뒤와 다음 프로젝트 제출일 중 빠른 쪽"(정의서·와이어)의 목업 근사값.
+ * `date`가 `Date | undefined`인 이유는 아래 `deadlineValid`·`handleSend` 주석 참고 —
+ * 달력에서 날짜를 지울 수 있고, 그때는 보내기를 막는다(타입만 넓혔다, 동작은 원래도 이랬다).
+ */
+function defaultDeadline(): { date: Date | undefined; time: string } {
   const d = new Date(TODAY)
   d.setDate(d.getDate() + 3)
   return { date: d, time: '18:00' }

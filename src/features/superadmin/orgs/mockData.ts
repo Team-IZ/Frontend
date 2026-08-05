@@ -388,7 +388,6 @@ export interface OrgSettings {
   defaultVisibility: VisibilityDefault
   githubOrgSync: boolean
   zipUpload: boolean
-  contributionAnalysis: boolean
 }
 
 export interface OrgDetail {
@@ -469,7 +468,6 @@ const ORG_DETAILS: Record<string, OrgDetail> = {
       defaultVisibility: '요약',
       githubOrgSync: true,
       zipUpload: true,
-      contributionAnalysis: false,
     },
   },
   'org-4': {
@@ -501,7 +499,6 @@ const ORG_DETAILS: Record<string, OrgDetail> = {
       defaultVisibility: '요약',
       githubOrgSync: false,
       zipUpload: true,
-      contributionAnalysis: false,
     },
   },
   'org-5': {
@@ -515,7 +512,6 @@ const ORG_DETAILS: Record<string, OrgDetail> = {
       defaultVisibility: '요약',
       githubOrgSync: false,
       zipUpload: true,
-      contributionAnalysis: false,
     },
   },
 }
@@ -527,7 +523,6 @@ const DEFAULT_SETTINGS: OrgSettings = {
   defaultVisibility: '요약',
   githubOrgSync: false,
   zipUpload: true,
-  contributionAnalysis: false,
 }
 
 /** 손으로 안 채운 기관의 최소 골격 — SA-01의 operators 이름만 살리고 나머지는

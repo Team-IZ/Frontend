@@ -87,7 +87,6 @@ export function listProjects(q: ProjectQuery): Promise<ProjectPage> {
   const filtered = PROJECTS.filter((p) => {
     if (search && !p.name.toLowerCase().includes(search)) return false
     if (q.curriculumId && !p.curriculumIds.includes(q.curriculumId)) return false
-    if (q.kind && p.kind !== q.kind) return false
     if (q.status && p.status !== q.status) return false
     return true
   })
@@ -164,7 +163,6 @@ export function createProject(req: CreateProjectRequest): Promise<Project> {
       const created: Project = {
         id: `p-${req.name.replace(/\s+/g, '-')}`,
         name: req.name.trim(),
-        kind: req.kind,
         // 생성 시 교안·개념·일정이 다 찼으므로 준비됨이다 — 상태는 서버가 판정한다
         status: 'READY',
         curriculumIds: req.curriculumIds,

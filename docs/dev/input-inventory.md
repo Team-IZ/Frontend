@@ -143,10 +143,9 @@ E2는 값 + 검증 배지 + 변경 링크가 한 줄이다. 입력칸이 아니�
 | J2 | 약관 동의 | `checkbox` | SC-A02 `{ consents[] }` |
 | J3 | 벌크 행 선택 | `checkbox` | D75 · SC-M02·M02b·M04·M11·M13 |
 | J4 | 공개 범위 | `select` | `{ range: 비공개\|요약\|전체 }` |
-| J5 | 추출 범위 | 2지 토글 | `{ scope: 전체코드\|본인커밋기여분 }` → `button-group` |
-| J6 | 제출 방식 | 2지 토글 | `.toggle>GitHub 저장소 / ZIP 업로드` → `button-group` |
-| J7 | 반 배정 전략 | 라디오 | `{ strategy: 균등\|랜덤 }` |
-| J8 | 담당 매니저 배정 | 다중 select | `{ memberIds[] }`, `.inp>이도윤 ▾` |
+| J5 | 제출 방식 | 2지 토글 | `.toggle>GitHub 저장소 / ZIP 업로드` → `button-group` |
+| J6 | 반 배정 전략 | 라디오 | `{ strategy: 균등\|랜덤 }` |
+| J7 | 담당 매니저 배정 | 다중 select | `{ memberIds[] }`, `.inp>이도윤 ▾` |
 
 ---
 

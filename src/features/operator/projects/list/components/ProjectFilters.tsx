@@ -12,8 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select'
-import { KIND_LABEL, STATUS_LABEL } from '../../labels'
-import type { Curriculum, ProjectKind, ProjectSort, ProjectStatus } from '../../types'
+import { STATUS_LABEL } from '../../labels'
+import type { Curriculum, ProjectSort, ProjectStatus } from '../../types'
 import { ALL, type FilterValues } from '../filterState'
 
 /*
@@ -22,10 +22,10 @@ import { ALL, type FilterValues } from '../filterState'
   두면 주 액션이 둘로 보인다.
 
   ─── 배치 ────────────────────────────────────────────────────────
-      [검색] [상태▾] [유형▾] [교안▾]  │  [정렬▾]
+      [검색] [상태▾] [교안▾]  │  [정렬▾]
 
   ▸ **상태가 검색 바로 옆이다.** 이 화면의 주 동선이 *"준비 중만 보기"* 라 가장 많이
-    쓰는 축이 가장 가깝다. 한때 교안·유형을 지나야 닿았다.
+    쓰는 축이 가장 가깝다. 한때 교안을 지나야 닿았다.
   ▸ **정렬은 구분선 뒤다.** 필터는 **줄이는 것**, 정렬은 **순서를 바꾸는 것**이라 성격이
     다르다. 섞으면 `교안 · 전체`와 `정렬 · 준비 필요 순`이 같은 종류로 보인다.
   ▸ **접지 않는다.** 한때 교안을 `조건 더보기`에 넣었는데, **접힌 조건은 결과가 왜
@@ -40,11 +40,6 @@ import { ALL, type FilterValues } from '../filterState'
   **값을 갖지 않는다.** 고른 값은 화면이 들고 서버 쿼리로 나간다 — 이 컴포넌트가
   상태를 가지면 화면이 무엇으로 조회 중인지 두 곳을 봐야 알 수 있다.
 */
-
-const KIND_OPTIONS = [
-  { value: ALL, label: '전체' },
-  ...(Object.keys(KIND_LABEL) as ProjectKind[]).map((k) => ({ value: k, label: KIND_LABEL[k] })),
-]
 
 /**
  * 정렬 — **기본은 `준비 필요 순`**(매니저 MG-07은 최신순). 예정 회차가 매니저에게는
@@ -76,7 +71,6 @@ const items = (prefix: string, options: { value: string; label: string }[]) =>
 export default function ProjectFilters({
   search,
   curriculumId,
-  kind,
   status,
   sort,
   curricula,
@@ -129,13 +123,6 @@ export default function ProjectFilters({
         onChange={(v) => onChange({ status: v })}
         className="min-w-36"
       />
-      <FilterSelect
-        label="유형"
-        value={kind}
-        options={KIND_OPTIONS}
-        onChange={(v) => onChange({ kind: v })}
-        className="min-w-36"
-      />
       {/*
         교안 필터 — 매니저에게는 없는 필요다. 교안을 **재분석하면 `teaches`가 바뀌므로**
         어느 회차가 영향받는지 좁혀 봐야 한다.
@@ -162,7 +149,7 @@ export default function ProjectFilters({
   )
 }
 
-/** 필터 드롭다운 하나. 넷이 같은 모양이라 여기서 한 번만 조립한다 */
+/** 필터 드롭다운 하나. 셋이 같은 모양이라 여기서 한 번만 조립한다 */
 function FilterSelect({
   label,
   value,

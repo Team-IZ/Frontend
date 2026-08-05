@@ -153,9 +153,8 @@ export default function AnalysisScreen() {
             <LoadFailed onRetry={grid.reload} />
           ) : g.needsClass ? (
             /*
-              **팀 계층인데 반을 안 골랐다.** 빅프(설계상 제외)와 이유가 달라 다르게
-              그린다 — 저건 *"여기 없다"* 이고 이건 **사용자가 할 일이 남은 것**이다.
-              「없는 것」 3종 중 유형 1 `아직`(점선)이다(02-layout §4).
+              **팀 계층인데 반을 안 골랐다.** 빈 표가 아니라 **사용자가 할 일이 남은
+              것**이다 — 「없는 것」 3종 중 유형 1 `아직`(점선)이다(02-layout §4).
             */
             <Empty>
               <EmptyHeader>
@@ -165,22 +164,6 @@ export default function AnalysisScreen() {
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
-          ) : g.rows.length === 0 ? (
-            /*
-              빅프는 **빈 상태가 아니라 안내 문단**이다 — 데이터가 있는데 일부러 안 넣은
-              것이라 빈 상태 컴포넌트를 쓰지 않는다(02-layout §4 — 「설계상 제외」).
-            */
-            <Card className="px-6 py-8">
-              <p className="text-fg text-sm font-semibold">빅프는 이 표에 넣지 않습니다</p>
-              <p className="text-fg-muted mt-2 text-sm leading-[1.7]">
-                위험 유형이 다릅니다 — 미프는{' '}
-                <b className="text-fg font-semibold">2단 이하 개념 개수</b>로 판정하지만, 빅프는{' '}
-                <b className="text-fg font-semibold">코드 대비 이해 부족</b>·
-                <b className="text-fg font-semibold">참여 저조</b>로 기여도 축이 들어갑니다.
-                <br />
-                판정식이 다른 값을 같은 비율로 쓰면 가로로 이어 읽을 수 있는 것처럼 보입니다.
-              </p>
-            </Card>
           ) : (
             <>
               <Card className="px-5 py-4">

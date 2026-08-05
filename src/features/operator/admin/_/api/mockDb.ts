@@ -795,7 +795,7 @@ export const COST: CostSummary = {
     재시험만 있던 달이라 싸다. 이것이 없으면 `$268`이 많은지 적은지 판단할 수 없다(D40).
   */
   monthly: [
-    { month: '2026-07', amount: 268, sessions: 668, projectNames: ['미프 4차', '빅프 1차'] },
+    { month: '2026-07', amount: 268, sessions: 668, projectNames: ['미프 4차', '미프 5차'] },
     { month: '2026-06', amount: 239, sessions: 601, projectNames: ['미프 3차'] },
     { month: '2026-05', amount: 168, sessions: 422, projectNames: [] },
     { month: '2026-04', amount: 251, sessions: 631, projectNames: ['미프 1차', '미프 2차'] },

@@ -13,8 +13,7 @@ import type { CohortScope, ConceptHistory, Curriculum, Project, ProjectStatusRep
  * 목업이 그려진 기준일. 실제 `new Date()`를 쓰면 값이 매일 달라져 목업과 대조할 때
  * 무엇이 맞는지 알 수 없습니다 — 그래서 **기준일만 고정하고 계산은 실제로** 합니다.
  *
- * 목업에서 역산해 나온 값입니다 — 미프 4차(07-21)가 `5일 남음`, 빅프(09-26)가
- * `72일 남음`이라 둘 다 07-16을 가리킵니다.
+ * 목업에서 역산해 나온 값입니다 — 미프 4차(07-21)가 `5일 남음`이라 07-16을 가리킵니다.
  */
 export const MOCK_TODAY = '2026-07-16'
 
@@ -150,7 +149,6 @@ const candidates = (ids: string[]) =>
     6차  PREP   교안 0 · 개념 0 · 일정 ✗   방금 만든 회차 — 아무것도 없다
     5차  PREP   교안 1 · 개념 0 · 일정 ✓   교안만 붙였다
     4차  READY  교안 1 · 개념 3 · 일정 ✓   **다 준비됐고 아직 아무도 안 냈다**
-    빅프  READY  개념 해당 없음             본인 커밋 영역
     3차  RUNNING 전부 참                    제출·분석·응시가 도는 중
     2차  DONE   전부 참                     끝남
 */
@@ -158,7 +156,6 @@ export const PROJECTS: Project[] = [
   {
     id: 'mif-6',
     name: '미프 6차',
-    kind: 'MINI',
     status: 'PREP',
     curriculumIds: [],
     concepts: [],
@@ -170,7 +167,6 @@ export const PROJECTS: Project[] = [
   {
     id: 'mif-5',
     name: '미프 5차',
-    kind: 'MINI',
     status: 'PREP',
     curriculumIds: ['ai-llmops'],
     concepts: [],
@@ -187,7 +183,6 @@ export const PROJECTS: Project[] = [
     */
     id: 'mif-4',
     name: '미프 4차',
-    kind: 'MINI',
     status: 'READY',
     curriculumIds: ['ai-llmops'],
     concepts: [
@@ -205,22 +200,8 @@ export const PROJECTS: Project[] = [
     dueAt: '2026-07-21T23:59',
   },
   {
-    id: 'bigp',
-    name: '빅프',
-    kind: 'BIG',
-    status: 'READY',
-    curriculumIds: [],
-    concepts: [],
-    conceptCandidateCount: 0,
-    requirements: [],
-    startAt: '2026-08-01T09:00',
-    dueAt: '2026-09-26T23:59',
-    note: '총 3회 · 첫 동작 · +2주 · 마감',
-  },
-  {
     id: 'mif-3',
     name: '미프 3차',
-    kind: 'MINI',
     status: 'RUNNING',
     curriculumIds: ['ai-llmops', 'streamlit'],
     // 정의서 §3 `구성` 스케치와 같은 셋 — 화면마다 다른 이름이 나오지 않게 교안 항목에서 그대로 온다
@@ -241,7 +222,6 @@ export const PROJECTS: Project[] = [
   {
     id: 'mif-1',
     name: '미프 1차',
-    kind: 'MINI',
     status: 'DONE',
     curriculumIds: ['k8s'],
     concepts: [
@@ -257,7 +237,6 @@ export const PROJECTS: Project[] = [
   {
     id: 'mif-2',
     name: '미프 2차',
-    kind: 'MINI',
     status: 'DONE',
     curriculumIds: ['k8s'],
     concepts: [

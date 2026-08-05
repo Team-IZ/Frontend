@@ -52,8 +52,6 @@ export default function OverviewTab({
   const due = project.dueAt ? dueLabel(project.dueAt, now) : null
   const fixed = project.concepts.length === CONCEPT_COUNT
   const linked = curricula.filter((c) => project.curriculumIds.includes(c.id))
-  /** 빅프는 본인 커밋 영역이라 개념도 교안도 없다 — 빈 것이 결함이 아니다 */
-  const isBig = project.kind === 'BIG'
 
   return (
     <div className="flex flex-col gap-4">
@@ -67,25 +65,19 @@ export default function OverviewTab({
         />
         <Stat
           label="검증 개념"
-          value={isBig ? '해당 없음' : `${project.concepts.length} / ${CONCEPT_COUNT}건`}
-          note={
-            isBig
-              ? '본인 커밋 영역'
-              : fixed
-                ? '학생 문항 3개'
-                : `후보 ${project.conceptCandidateCount}건에서 고릅니다`
-          }
-          tone={!isBig && !fixed ? 'warn' : undefined}
+          value={`${project.concepts.length} / ${CONCEPT_COUNT}건`}
+          note={fixed ? '학생 문항 3개' : `후보 ${project.conceptCandidateCount}건에서 고릅니다`}
+          tone={!fixed ? 'warn' : undefined}
         />
         <Stat
           label="교안"
-          value={isBig ? '해당 없음' : linked.length > 0 ? `${linked.length}개` : '없음'}
+          value={linked.length > 0 ? `${linked.length}개` : '없음'}
           note={
             linked.length > 0
               ? linked.map((c) => c.name).join(' · ')
               : '검증 개념이 여기서 나옵니다'
           }
-          tone={!isBig && linked.length === 0 ? 'warn' : undefined}
+          tone={linked.length === 0 ? 'warn' : undefined}
         />
       </div>
 
@@ -193,13 +185,6 @@ export default function OverviewTab({
           </Rule>
         </dl>
       </details>
-
-      {/*
-        **비고만 둔다.** 유형은 헤더가 이미 그리므로 여기 다시 쓰면 D1 중복이고, 비고가
-        없는 회차에서는 `미프` 한 단어만 덩그러니 남는다 — 렌더해 보고 알았다.
-        비고는 빅프에만 있는 값이라(`총 3회 · 첫 동작 · +2주 · 마감`) 없으면 줄이 사라진다.
-      */}
-      {project.note && <p className="text-fg-subtle text-xs">{project.note}</p>}
     </div>
   )
 }

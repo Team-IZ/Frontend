@@ -45,14 +45,12 @@ export type MockRound = {
  * 리포트 발행 여부와 1:1로 대응한다:
  *   `DONE` 끝난 회차 → 발행 · `RUNNING` 진행 중 → 집계 전 · `READY`·`PREP` → 시작 전
  *
- * **빅프는 빠진다** — 판정식이 달라 같은 표에 넣지 않는다(9-2 · OP-02 §4-2).
- *
  * ⚠ **총 회차 수를 `8`로 쓰지 않는다.** OP-01 정의서는 `미프 3차 / 8회`라고 적었지만
  * OP-02 §4-2가 *"`8`은 범위의 상한이지 상수가 아니다 · 회차를 만드는 것은 오퍼레이터고
  * 시스템이 개수를 미리 알 방법이 없다"* 고 못 박았다. **등록된 프로젝트 수**를 분모로 쓴다
  * — 기획에서 "계획 회차 수"가 나오면 그때 별도 필드가 된다.
  */
-export const ROUNDS: MockRound[] = PROJECTS.filter((p) => p.kind === 'MINI')
+export const ROUNDS: MockRound[] = PROJECTS
   // `미프 3차` → 3. 회차 번호의 원천은 이름이다 — 운영자가 붙인 데이터라 화면이 안 고친다
   .map((p) => ({ p, no: Number(/(\d+)\s*차/.exec(p.name)?.[1] ?? 0) }))
   .filter((x) => x.no > 0)

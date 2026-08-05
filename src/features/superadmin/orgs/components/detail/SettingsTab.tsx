@@ -25,8 +25,8 @@ import DeleteOrgDialog from './DeleteOrgDialog'
   단일 컨트롤이라(폼 제출 없음, 와이어프레임에 저장 버튼이 없다) 바꾸는 즉시
   updateOrgSettings/updateOrgStatus를 부르고 onChange()로 화면을 새로 읽어온다.
 
-  토글 3개의 기본 on/off는 와이어(`.tgl` vs `.tgl off`)를 그대로 읽었다 — GitHub
-  조직 연동·ZIP 업로드는 기본 on, 빅프 기여도 분석만 명시적으로 off였다.
+  토글 2개의 기본 on/off는 와이어(`.tgl` vs `.tgl off`)를 그대로 읽었다 — GitHub
+  조직 연동·ZIP 업로드 둘 다 기본 on이다.
 */
 
 const BUDGET_OPTIONS = [200, 300, 400, 600, 800, 1000] as const
@@ -221,14 +221,6 @@ export default function SettingsTab({
             checked={s.zipUpload}
             onCheckedChange={(checked) => patch('zipUpload', checked)}
             aria-label="ZIP 업로드"
-          />
-        </SettingRow>
-
-        <SettingRow title="빅프 기여도 분석" description="커밋 기준 기여도">
-          <Switch
-            checked={s.contributionAnalysis}
-            onCheckedChange={(checked) => patch('contributionAnalysis', checked)}
-            aria-label="빅프 기여도 분석"
           />
         </SettingRow>
 

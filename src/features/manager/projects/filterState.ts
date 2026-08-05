@@ -12,7 +12,6 @@ export type FilterValues = {
   search: string
   classFilter: string
   curriculum: string
-  kind: string
   status: string
   sort: ProjectSort
 }
@@ -22,18 +21,11 @@ export const INITIAL_FILTERS: FilterValues = {
   search: '',
   classFilter: ALL,
   curriculum: ALL,
-  kind: ALL,
   status: ALL,
   sort: 'DUE',
 }
 
 /** 빈 결과가 "아직 없음"인지 "필터에 안 걸림"인지 — 문구가 갈린다(OP-03 isNarrowed와 같은 이유) */
 export function isNarrowed(f: FilterValues): boolean {
-  return (
-    f.search !== '' ||
-    f.classFilter !== ALL ||
-    f.curriculum !== ALL ||
-    f.kind !== ALL ||
-    f.status !== ALL
-  )
+  return f.search !== '' || f.classFilter !== ALL || f.curriculum !== ALL || f.status !== ALL
 }

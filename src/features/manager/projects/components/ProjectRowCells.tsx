@@ -19,12 +19,11 @@ import {
 */
 
 /**
- * 교안 — OP-03 `CurriculumSummary`와 같은 세로 나열. 빅프는 구조적으로
- * "해당 없음"(회색), 미프인데 아직 교안이 안 붙었으면 "교안 연결 안 됨"(경고색) —
- * OP-03과 같은 톤이다(4차 반영, 정의서의 "경고 안 띄운다" 판단을 뒤집었다).
+ * 교안 — OP-03 `CurriculumSummary`와 같은 세로 나열. 아직 교안이 안 붙었으면
+ * "교안 연결 안 됨"(경고색) — OP-03과 같은 톤이다(4차 반영, 정의서의
+ * "경고 안 띄운다" 판단을 뒤집었다).
  */
 export function CurriculumCell({ project }: { project: Project }) {
-  if (project.kind === 'BIG') return <span className="text-fg-subtle text-xs">해당 없음</span>
   if (project.curricula.length === 0) {
     return <span className="text-warning text-xs font-semibold">교안 연결 안 됨</span>
   }
@@ -38,13 +37,10 @@ export function CurriculumCell({ project }: { project: Project }) {
 }
 
 /**
- * 검증 개념 3건 — 확정 칩 3개 · 미확정(⚠ + 후보 건수) · 교안 미연결 · 빅프의
- * 본인 커밋 영역. OP-03 `ConceptSummary`와 같은 4분기로 맞췄다(4차 반영).
+ * 검증 개념 3건 — 확정 칩 3개 · 미확정(⚠ + 후보 건수) · 교안 미연결.
+ * OP-03 `ConceptSummary`와 같은 3분기로 맞췄다(4차 반영).
  */
 export function ConceptCell({ project }: { project: Project }) {
-  if (project.kind === 'BIG') {
-    return <span className="text-fg-subtle text-xs">본인 커밋 영역 — 사람마다 다름</span>
-  }
   if (project.curricula.length === 0) {
     return <span className="text-fg-subtle text-xs">교안을 먼저 연결해야 후보가 나옵니다</span>
   }
@@ -68,14 +64,8 @@ export function ConceptCell({ project }: { project: Project }) {
   )
 }
 
-/** 빅프는 회차 번호가 없다 — 이름 아래 "총 3회 · 첫 동작 · +2주 · 마감"을 함께 쓴다 */
 export function ProjectNameCell({ project }: { project: Project }) {
-  return (
-    <div>
-      <span className="text-fg font-semibold">{project.name}</span>
-      {project.note && <p className="text-fg-subtle mt-0.5 text-2xs">{project.note}</p>}
-    </div>
-  )
+  return <span className="text-fg font-semibold">{project.name}</span>
 }
 
 /**

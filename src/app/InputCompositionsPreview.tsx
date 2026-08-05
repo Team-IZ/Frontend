@@ -444,7 +444,7 @@ export default function InputCompositionsPreview() {
         </div>
       </Case>
 
-      <Case id="J" title="2지 토글 — ButtonGroup (제출 방식 · 추출 범위)">
+      <Case id="J" title="2지 토글 — ButtonGroup (제출 방식)">
         <ButtonGroup>
           <Button variant="primary" size="sm">
             GitHub 저장소

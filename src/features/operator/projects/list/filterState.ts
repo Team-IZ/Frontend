@@ -15,7 +15,6 @@ export const ALL = 'ALL'
 export type FilterValues = {
   search: string
   curriculumId: string
-  kind: string
   status: string
   sort: ProjectSort
 }
@@ -24,7 +23,6 @@ export type FilterValues = {
 export const INITIAL_FILTERS: FilterValues = {
   search: '',
   curriculumId: ALL,
-  kind: ALL,
   status: ALL,
   sort: 'PREP_FIRST',
 }
@@ -36,5 +34,5 @@ export const INITIAL_FILTERS: FilterValues = {
  * 정렬(`sort`)은 제외한다 — 순서를 바꾸는 것이지 줄이는 것이 아니다.
  */
 export function isNarrowed(f: FilterValues): boolean {
-  return f.search !== '' || f.curriculumId !== ALL || f.kind !== ALL || f.status !== ALL
+  return f.search !== '' || f.curriculumId !== ALL || f.status !== ALL
 }

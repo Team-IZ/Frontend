@@ -14,15 +14,6 @@
 */
 
 /**
- * 회차 유형. **미프 = 미니프로젝트 · 빅프 = 빅프로젝트.**
- *
- * 기획 문서는 `미프`·`빅프` 약어만 쓰고 전체 이름이 한 번도 안 나온다 — 로마자
- * 약어를 지어내면 백엔드와 다른 이름을 쓰게 되므로 **전체 이름 기준**으로 짓는다.
- * 화면 라벨(`미프`)은 화면이 갖는다.
- */
-export type ProjectKind = 'MINI' | 'BIG'
-
-/**
  * 상태는 시간이 아니라 **설계 기준**이다(목업 doc-head).
  * `예정`은 제출 마감 열이 이미 말한다 — 오퍼레이터에게 필요한 것은 "손댈 게 남았나"다.
  *
@@ -63,9 +54,8 @@ export type VerificationConcept = {
 export type Project = {
   id: string
   name: string
-  kind: ProjectKind
   status: ProjectStatus
-  /** 연결된 교안. 1개 이상이어야 개념 후보가 나온다. 빅프는 빈 배열 */
+  /** 연결된 교안. 1개 이상이어야 개념 후보가 나온다. 아직 안 붙였으면 빈 배열 */
   curriculumIds: string[]
   /** 확정된 검증 개념. 3건이거나 0건(미확정)이다 — 그 사이는 저장되지 않는다 */
   concepts: VerificationConcept[]
@@ -95,8 +85,6 @@ export type Project = {
    * 곧 키다. 필요해지면 그때 서버 계약에서 준다 — 지금 만들면 아무도 안 쓴다.
    */
   requirements: string[]
-  /** 빅프 전용 안내. 시작 전에는 회차 번호가 없다(첫 동작 시점이 사람마다 다르다) */
-  note?: string
 }
 
 export type CohortScope = {
@@ -137,7 +125,6 @@ export type ProjectQuery = {
   cohortId: string
   search?: string
   curriculumId?: string
-  kind?: ProjectKind
   status?: ProjectStatus
   sort?: ProjectSort
 }
@@ -156,7 +143,6 @@ export type ProjectPage = {
 export type CreateProjectRequest = {
   cohortId: string
   name: string
-  kind: ProjectKind
   curriculumIds: string[]
   conceptIds: string[]
   /** 항목 하나가 판정 단위다 — `Project.requirements` 주석 참고 */

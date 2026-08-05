@@ -2,7 +2,6 @@ import { Link } from 'react-router'
 import { ChevronLeftIcon } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { dueLabel, formatDue } from '../../rules'
-import { KIND_LABEL } from '../../labels'
 import ProjectStatusBadge from '../../components/ProjectStatusBadge'
 import type { Project } from '../../types'
 
@@ -43,8 +42,6 @@ export default function DetailHeader({
           {project.name}
           <ProjectStatusBadge status={project.status} />
         </h1>
-        <span className="text-fg-subtle text-xs">{KIND_LABEL[project.kind]}</span>
-
         {/* 마감은 오른쪽 끝으로 — 제목과 같은 줄에 있되 읽는 순서는 나중이다 */}
         <span className="ml-auto text-sm">
           {project.dueAt ? (

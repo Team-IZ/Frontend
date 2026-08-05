@@ -15,14 +15,12 @@ import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { useAsync } from '@/lib/useAsync'
 import {
-  KIND_LABEL,
   MANAGED_CLASSES,
   COHORT_NAME,
   CURRICULUM_OPTIONS,
   listManagerProjects,
   scopeLabel,
   type ClassName,
-  type ProjectKind,
   type ProjectStatus,
 } from './mockData'
 import { ALL, INITIAL_FILTERS, isNarrowed, type FilterValues } from './filterState'
@@ -67,7 +65,6 @@ export default function ProjectListScreen() {
         search: filters.search || undefined,
         classFilter: filters.classFilter === ALL ? undefined : (filters.classFilter as ClassName),
         curriculum: filters.curriculum === ALL ? undefined : filters.curriculum,
-        kind: filters.kind === ALL ? undefined : (filters.kind as ProjectKind),
         status: filters.status === ALL ? undefined : (filters.status as ProjectStatus),
         sort: filters.sort,
       }),
@@ -142,13 +139,12 @@ export default function ProjectListScreen() {
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
                   {/*
-                    열 순서를 팀장님의 실제 OP-03 렌더 화면(프로젝트·유형·상태·기간·
+                    열 순서를 팀장님의 실제 OP-03 렌더 화면(프로젝트·상태·기간·
                     교안·검증개념3건)에 맞추되, OP-03에 없는 반 열을 상태·기간 사이에
                     넣었다(사용자 지시, 4차 반영). OP-03에 없는 이 화면만의 열(진행·
                     조치 — "무엇이 밀렸는지"에 답하는 핵심)은 뒤에 이어 붙인다.
                   */}
                   <TableHead className="w-28">프로젝트</TableHead>
-                  <TableHead className="w-16">유형</TableHead>
                   <TableHead className="w-24">상태</TableHead>
                   <TableHead className="w-28">반</TableHead>
                   <TableHead className="w-40">프로젝트 기간</TableHead>
@@ -174,9 +170,6 @@ export default function ProjectListScreen() {
                       >
                         <ProjectNameCell project={project} />
                       </Link>
-                    </TableCell>
-                    <TableCell className="text-fg-muted text-xs">
-                      {KIND_LABEL[project.kind]}
                     </TableCell>
                     <TableCell>
                       <ProjectStatusBadge status={project.status} />

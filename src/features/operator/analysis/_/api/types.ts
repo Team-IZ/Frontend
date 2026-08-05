@@ -149,8 +149,6 @@ export type RoundQuery = {
   fromRound?: number
   toRound?: number
   sort: RoundSort
-  /** 빅프를 고르면 표가 없다. 판정식이 달라 같은 표에 못 넣는다 */
-  kind?: 'MINI' | 'BIG'
 }
 
 export type RoundGrid = {
@@ -172,8 +170,8 @@ export type RoundGrid = {
   /** 축 라벨·범례가 이 이름을 쓴다. 안 바꾸면 **무엇과 비교한 색인지** 알 수 없다 */
   baselineName: string
   /**
-   * 팀 계층인데 **반을 아직 안 골랐다.** 표가 없는 이유가 빅프(설계상 제외)와 다르므로
-   * 화면이 갈라 그린다 — 이건 **사용자가 할 일이 남은 상태**다.
+   * 팀 계층인데 **반을 아직 안 골랐다.** 빈 표가 아니라 **사용자가 할 일이 남은
+   * 상태**라 화면이 따로 그린다.
    */
   needsClass?: boolean
   /** 선택 가능한 반 전체(칩·드롭다운) */

@@ -8,7 +8,6 @@ import {
 } from '@/components/ui/Dialog'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
-import { ButtonGroup } from '@/components/ui/ButtonGroup'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Field, FieldLabel } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
@@ -26,8 +25,7 @@ import {
 } from '../../rules'
 import ConceptPicker from '../../components/ConceptPicker'
 import RequirementsField from '../../components/RequirementsField'
-import { KIND_LABEL } from '../../labels'
-import type { CohortScope, Curriculum, ProjectKind } from '../../types'
+import type { CohortScope, Curriculum } from '../../types'
 import SchedulePicker, { type ScheduleValue } from '../../components/SchedulePicker'
 
 /*
@@ -65,15 +63,6 @@ type Props = {
   onCreated: () => void
 }
 
-/** 라벨은 labels.ts가 주인이다 — 여기 다시 적으면 이름을 바꿀 때 한 곳만 바뀐다 */
-const KIND_OPTIONS = (Object.keys(KIND_LABEL) as ProjectKind[]).map((k) => ({
-  value: k,
-  label: KIND_LABEL[k],
-}))
-
-/** 새 회차는 대부분 미프다(기수당 미프 6~8회 · 빅프 1회) */
-const DEFAULT_KIND: ProjectKind = 'MINI'
-
 export default function CreateProjectDialog({
   open,
   onOpenChange,
@@ -83,7 +72,6 @@ export default function CreateProjectDialog({
   onCreated,
 }: Props) {
   const [name, setName] = useState('')
-  const [kind, setKind] = useState<ProjectKind>(DEFAULT_KIND)
   const [curriculumIds, setCurriculumIds] = useState<string[]>([])
   const [conceptIds, setConceptIds] = useState<string[]>([])
   const [requirements, setRequirements] = useState<string[]>([])
@@ -127,7 +115,6 @@ export default function CreateProjectDialog({
       await createProject({
         cohortId,
         name,
-        kind,
         curriculumIds,
         conceptIds,
         requirements,
@@ -146,7 +133,6 @@ export default function CreateProjectDialog({
 
   const reset = () => {
     setName('')
-    setKind(DEFAULT_KIND)
     setCurriculumIds([])
     setConceptIds([])
     setRequirements([])
@@ -191,29 +177,6 @@ export default function CreateProjectDialog({
               onChange={(e) => setName(e.target.value)}
               placeholder="미프 5차"
             />
-          </Field>
-
-          <Field>
-            <FieldLabel>유형</FieldLabel>
-            {/*
-              2지 토글은 ButtonGroup이다 — InputCompositionsPreview가 이 조합을
-              "2지 토글"로 이미 확정해 뒀다(Button 두 개를 나란히 두는 것과 다르다:
-              모서리가 맞물리고 가운데 테두리가 겹치지 않는다).
-            */}
-            <ButtonGroup>
-              {KIND_OPTIONS.map((o) => (
-                <Button
-                  key={o.value}
-                  type="button"
-                  variant={kind === o.value ? 'primary' : 'ghost'}
-                  size="sm"
-                  aria-pressed={kind === o.value}
-                  onClick={() => setKind(o.value)}
-                >
-                  {o.label}
-                </Button>
-              ))}
-            </ButtonGroup>
           </Field>
 
           <Field>

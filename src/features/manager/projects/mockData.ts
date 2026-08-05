@@ -16,32 +16,29 @@
   · **미프 5차를 추가했다.** 목업 `#notready` 장면(다음 회차 미준비 · 6개)은 기본
     `#list` 장면(5개)과 항목 수가 다르다 — 손그림 와이어는 장면마다 따로 그려도
     되지만 실제 화면은 **하나의 데이터셋**이어야 필터 결과가 항상 맞는다. 미프 5차
-    (교안조차 안 붙은 예정 회차)를 데이터셋에 넣어 상태 필터 `예정`이 실제로 3건
-    (빅프·미프5차·미프4차)을 돌려주게 했다 — 기본 목록 개수는 6개가 된다(목업 5개
-    표기와 다름, 의도적 이탈).
+    (교안조차 안 붙은 예정 회차)를 데이터셋에 넣어 상태 필터 `예정`이 실제로 2건
+    (미프5차·미프4차)을 돌려주게 했다 — 기본 목록 개수는 5개가 된다.
   · 조치 열의 "팀" 단위(`A반 미제출 2팀`)는 목업 문구를 그대로 따랐다 — 미프가
     개인 제출인지 팀 제출인지는 정의서에 없다(OP-04 쪽 `totalTeams`도 같은 사정,
     "이 숫자는 기획에 없다"). 제출/분석/응시 실수와 조치 문구를 같은 필드로
     역산하지 않고 **독립된 값**으로 둔다 — 실제 서버라면 서로 다른 집계 쿼리라
     산수가 딱 맞물릴 필요가 없다.
 
-  ⚠ 2차 반영 — 팀장님이 새로 짠 OP-03 렌더 화면(컬럼: 프로젝트·유형·상태·기간·
-  교안·검증개념3건 / 필터: 검색·상태·유형·교안·|·정렬)에 맞춰 컬럼·필터 순서를
+  ⚠ 2차 반영 — 팀장님이 새로 짠 OP-03 렌더 화면(컬럼: 프로젝트·상태·기간·
+  교안·검증개념3건 / 필터: 검색·상태·교안·|·정렬)에 맞춰 컬럼·필터 순서를
   다시 맞췄다.
 
-  ⚠ 3차 반영 — 사용자 지시로 OP-03과 마저 맞췄다. 유형 라벨을 전체 이름(미니
-  프로젝트/빅 프로젝트)으로. 정렬·반 필터는 4차에서 다시 한 번 바뀐다(아래).
+  ⚠ 3차 반영 — 사용자 지시로 OP-03과 마저 맞췄다. 정렬·반 필터는 4차에서 다시
+  한 번 바뀐다(아래).
 
   ⚠ 4차 반영 — 사용자 피드백(렌더 확인 후).
   · **반 필터가 되돌아왔다.** "프로젝트에 포함된 반을 표시"하는 열(상태·기간 사이)
-    + 필터(상태·유형 사이)로. 3차에서 뺐던 걸 다시 넣은 것 — 이번엔 목록을 좁히는
+    + 필터(상태 옆)로. 3차에서 뺐던 걸 다시 넣은 것 — 이번엔 목록을 좁히는
     용도가 아니라 **그 회차에 실제로 반 데이터가 있는지**(예정 회차는 아직 없다)를
     보여주는 열이라 `project.classes`를 그대로 읽는다.
   · **"제출 마감" → "프로젝트 기간".** 시작~마감 전체 범위 + 남은 일수(OP-03
-    `PeriodCell`과 같은 모양 — `dueLabel`도 그대로 들여왔다). **빅프도 이제 날짜를
-    보여준다** — 전엔 "학생마다 진행이 다르다"는 이유로 이 셀만 "—"로 가렸는데,
-    사용자가 준 참고 화면이 빅프 행에도 실제 기간(72일 남음 등)을 그리고 있어 그
-    쪽을 따랐다. `startAt`은 이제 정렬만이 아니라 **화면에도 나온다.**
+    `PeriodCell`과 같은 모양 — `dueLabel`도 그대로 들여왔다). `startAt`은 이제
+    정렬만이 아니라 **화면에도 나온다.**
   · **응시 진행의 "뒤처진 반" 보조문구(`C반이 12/23`)를 없앴다** — 사용자가
     불필요하다고 판단. `progressCell`의 반환 모양도 그만큼 단순해졌다.
   · **응시 실수(`58/71`)의 분자에 5단 색을 입힌다** — 0/25/50/75/100% 경계로 색이
@@ -79,8 +76,6 @@
   줄도 위 날짜 범위보다 짧아 어긋나 보여 가운데 정렬했다(`ProjectRowCells.tsx`).
 */
 
-export type ProjectKind = 'MINI' | 'BIG'
-
 /** 매니저에게는 예정/진행 중/종료 3종만 있다 — 준비 상태(PREP·READY)는 OP-03 소관 */
 export type ProjectStatus = 'PLANNED' | 'RUNNING' | 'DONE'
 
@@ -104,36 +99,26 @@ export type ClassProgress = {
 export type Project = {
   id: string
   name: string
-  kind: ProjectKind
   status: ProjectStatus
   /**
    * 연결 교안 — "이름 버전" 문자열 목록(OP-03 CurriculumSummary와 같은 세로 나열).
-   * 빈 배열 = 교안 없음. 빅프는 구조적으로 항상 빈 배열(개념 자체가 없다), 미프가
-   * 빈 배열이면 "아직 안 붙었다"는 뜻이라 다른 문구가 붙는다(§notready 케이스).
+   * 빈 배열 = "아직 안 붙었다"는 뜻이라 다른 문구가 붙는다(§notready 케이스).
    */
   curricula: string[]
-  /** 검증 개념 3건. null = 미확정(빅프는 개념 자체가 없어 빈 배열) */
+  /** 검증 개념 3건. null = 미확정 */
   concepts: string[] | null
   /**
    * 연결한 교안이 가르치는 항목 수(OP-03 `conceptCandidateCount`와 같은 자리) —
-   * 미확정일 때 "후보 N건에서 3건"에 쓴다. 교안이 없거나 빅프면 0.
+   * 미확정일 때 "후보 N건에서 3건"에 쓴다. 교안이 없으면 0.
    */
   conceptCandidateCount: number
   /** 시작 ISO. 미설정이면 null(§notready 케이스 · 미프 5차) */
   startAt: string | null
   /** 제출 마감 ISO. 미설정이면 null */
   dueAt: string | null
-  /** 빅프 전용 부가문구 */
-  note?: string
   /** 담당 반 스코프의 반별 데이터. 예정 회차는 빈 배열(아직 아무 일도 없다) */
   classes: ClassProgress[]
 }
-
-/**
- * 유형 라벨 — OP-03 `KIND_LABEL`과 동일한 전체 이름(사용자 지시, 3차 반영). 원래는
- * 목업 표기(미프/빅프 약어)를 따랐으나 OP-03과 화면 어휘를 맞추는 쪽으로 바뀌었다.
- */
-export const KIND_LABEL: Record<ProjectKind, string> = { MINI: '미니 프로젝트', BIG: '빅 프로젝트' }
 
 /** 매니저는 3종만 본다 — 준비 중/준비됨 구분은 확정 권한이 있는 OP-03 쪽 개념이다 */
 export const STATUS_LABEL: Record<ProjectStatus, string> = {
@@ -153,23 +138,9 @@ export const COHORT_NAME = '7기'
 
 export const PROJECTS: Project[] = [
   {
-    id: 'bigp',
-    name: '빅프',
-    kind: 'BIG',
-    status: 'PLANNED',
-    curricula: [],
-    concepts: [],
-    conceptCandidateCount: 0,
-    startAt: '2026-08-01T09:00',
-    dueAt: '2026-09-26T23:59',
-    note: '총 3회 · 첫 동작 · +2주 · 마감',
-    classes: [],
-  },
-  {
     // 다음 회차 미준비 케이스 전용 — 교안조차 안 붙었다(§notready)
     id: 'mif-5',
     name: '미프 5차',
-    kind: 'MINI',
     status: 'PLANNED',
     curricula: [],
     concepts: null,
@@ -181,7 +152,6 @@ export const PROJECTS: Project[] = [
   {
     id: 'mif-4',
     name: '미프 4차',
-    kind: 'MINI',
     status: 'PLANNED',
     curricula: ['AI_LLMOps v2'],
     concepts: null,
@@ -194,7 +164,6 @@ export const PROJECTS: Project[] = [
   {
     id: 'mif-3',
     name: '미프 3차',
-    kind: 'MINI',
     status: 'RUNNING',
     curricula: ['AI_LLMOps v2', 'Streamlit 실습 v1'],
     concepts: ['HITL Trigger', 'Graph 구성', 'State 관리'],
@@ -234,7 +203,6 @@ export const PROJECTS: Project[] = [
   {
     id: 'mif-2',
     name: '미프 2차',
-    kind: 'MINI',
     status: 'DONE',
     curricula: ['AI_LLMOps v2'],
     concepts: ['인증 흐름', '트랜잭션', '캐시 전략'],
@@ -274,7 +242,6 @@ export const PROJECTS: Project[] = [
   {
     id: 'mif-1',
     name: '미프 1차',
-    kind: 'MINI',
     status: 'DONE',
     curricula: ['AI_LLMOps v2'],
     concepts: ['REST 설계', '예외 처리', 'DTO 분리'],
@@ -465,7 +432,6 @@ export type ProjectQuery = {
   search?: string
   classFilter?: ClassName
   curriculum?: string
-  kind?: ProjectKind
   status?: ProjectStatus
   sort?: ProjectSort
 }
@@ -503,7 +469,6 @@ export function listManagerProjects(q: ProjectQuery): Promise<ProjectListResult>
     if (search && !p.name.toLowerCase().includes(search)) return false
     if (q.classFilter && !p.classes.some((c) => c.className === q.classFilter)) return false
     if (q.curriculum && !p.curricula.includes(q.curriculum)) return false
-    if (q.kind && p.kind !== q.kind) return false
     if (q.status && p.status !== q.status) return false
     return true
   })

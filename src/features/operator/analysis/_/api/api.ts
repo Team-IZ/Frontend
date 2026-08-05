@@ -26,14 +26,14 @@ const ratio = (risky: number, graded: number) =>
   graded === 0 ? 0 : Math.round((risky / graded) * 100)
 
 /**
- * 목업 케이스를 실제로 열어보기 위한 스위치 — `?case=bigp|nocohort|fail`.
+ * 목업 케이스를 실제로 열어보기 위한 스위치 — `?case=nocohort|fail`.
  *
  * 케이스 표의 상태를 전부 그렸는지는 **눈으로 봐야** 판정된다(git-convention §7).
  * 목 데이터가 한 벌뿐이면 정상 케이스만 렌더되고 나머지는 코드에만 존재한다 —
  * 대시보드가 이미 같은 스위치를 쓴다. 이 함수는 mockDb와 함께 사라진다.
  */
-type MockCase = 'normal' | 'bigp' | 'nocohort' | 'fail'
-const CASES: MockCase[] = ['normal', 'bigp', 'nocohort', 'fail']
+type MockCase = 'normal' | 'nocohort' | 'fail'
+const CASES: MockCase[] = ['normal', 'nocohort', 'fail']
 function mockCase(): MockCase {
   const q = new URLSearchParams(window.location.search).get('case')
   return CASES.find((c) => c === q) ?? 'normal'
@@ -130,19 +130,6 @@ export function getRoundGrid(q: RoundQuery): Promise<RoundGrid> {
   // 범위 밖 회차는 **열이 없다** — 색도 그 구간에서만 읽힌다
   const columns = allRounds.filter((c) => c.no >= from && c.no <= to)
   const allClassNames = CLASSES.map((c) => c.className)
-
-  /* 빅프는 표가 없다 — 판정식이 달라 같은 비율로 쓰면 가로로 이어 읽히게 된다(9-2) */
-  if (q.kind === 'BIG' || view === 'bigp') {
-    return delay({
-      allRounds,
-      columns,
-      appliedFrom: from,
-      appliedTo: to,
-      rows: [],
-      baselineName: '',
-      allClassNames,
-    })
-  }
 
   if (q.level === 'team') {
     /*

@@ -266,3 +266,99 @@
   @theme static에 원시 토큰 층을 먼저 만들고(그 조건이 토큰 주석에 적혀 있다)
   여기에 다시 세운다.
 */
+
+/*
+  인쇄(PDF 내보내기 = 브라우저 내장 인쇄) — 앱 전체에 적용되는 전역 규칙이다.
+  콘솔 셸(Header·Sidebar)은 어느 화면에서 인쇄하든 종이에 나올 이유가 없다 —
+  OP-05만의 규칙이 아니라 셸을 쓰는 25개 화면 전부에 맞는 규칙이라 여기 둔다.
+
+  `Table`의 `maxHeight`(인라인 style)는 화면에서 긴 표를 스크롤 안에 가두는
+  용도다 — 인쇄에도 그대로 적용되면 지금 스크롤로 보이는 부분만 찍힌다.
+  인라인 style은 일반 클래스보다 우선하므로 `!important`로만 덮을 수 있다.
+*/
+@media print {
+  header,
+  nav[aria-label='주요 메뉴'] {
+    display: none !important;
+  }
+
+  [data-slot='table-container'] {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  /* 브라우저 기본값은 배경색을 인쇄에서 뺀다 — 도달 단계 막대·위험 막대·배지 색이 전부 무채색으로 찍힌다 */
+  * {
+    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact !important;
+  }
+
+  /*
+    **여백은 종이가 갖는다.** 화면 여백(패딩)으로 대신하면 쪽이 넘어갈 때 두 번째
+    쪽부터 위쪽 여백이 사라져 글자가 종이 끝에 붙는다. `@page`로 주면 모든 쪽에 똑같이
+    걸린다. 16mm는 A4에서 좌우 178mm 폭이 남아 표가 안 눌리는 값이다.
+  */
+  @page {
+    size: A4;
+    margin: 16mm 14mm;
+  }
+
+  /* 종이는 흰색이다 — 화면 배경(canvas 회색)을 그대로 찍으면 토너만 먹는다 */
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  /*
+    화면은 13~14px 기준이지만 종이에선 그게 작다(픽셀이 아니라 물리 크기라 눈에서
+    멀다). 본문을 pt로 다시 잡고, 표 안 보조 글자만 더 줄인다.
+  */
+  body {
+    font-size: 9.5pt;
+    line-height: 1.45;
+  }
+
+  /* 표는 쪽을 넘길 때 머리글을 다시 찍는다 — 2쪽부터 열 이름이 없으면 숫자만 남는다 */
+  thead {
+    display: table-header-group;
+  }
+
+  /* 한 행이 쪽 경계에 걸쳐 반으로 잘리지 않게 */
+  tr,
+  img {
+    break-inside: avoid;
+  }
+
+  /* 제목만 남고 내용이 다음 쪽으로 넘어가는 고아 제목을 막는다 */
+  h4,
+  h5 {
+    break-after: avoid;
+  }
+
+  /*
+    화면용 장식(그림자·둥근 모서리)은 종이에서 얻는 게 없다 — 잉크만 쓰고 경계가
+    흐려진다. 표 테두리는 살리되 카드 느낌은 걷어낸다.
+  */
+  [data-slot='table-container'],
+  [data-slot='table'] {
+    box-shadow: none !important;
+  }
+}
+
+/*
+  화면에선 탭 하나만 보여도 인쇄에는 전부 들어가야 하는 화면(OP-05 리포트)이 탭
+  루트에 `data-print-all-panels`를 단다. Base UI는 `keepMounted` 패널에 `hidden`을
+  붙이는데, preflight의 `[hidden] { display: none !important }`가 이를 잠근다.
+
+  **`@layer base` 안에 있어야 한다.** `!important`는 레이어 우선순위가 뒤집혀서
+  (앞 레이어가 이기고, 레이어 밖이 가장 약하다) 위 `@media print` 블록처럼 레이어
+  밖에 두면 preflight를 못 이긴다 — 조용히 활성 섹션 하나만 인쇄된다. 같은 레이어
+  안이면 더 구체적인 이 선택자가 이긴다.
+*/
+@layer base {
+  @media print {
+    [data-print-all-panels] > [data-slot='tabs-content'][hidden] {
+      display: block !important;
+    }
+  }
+}

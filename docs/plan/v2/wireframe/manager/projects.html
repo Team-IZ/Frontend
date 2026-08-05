@@ -116,7 +116,6 @@
   /* ===== MG-07 ===== */
   /* 열 폭 표준 — 같은 뜻의 열은 어느 표에서나 같은 폭 */
   .dtbl th.c-nm{width:112px}
-  .dtbl th.c-ty{width:64px}
   .dtbl th.c-ac{width:176px}
   .dtbl th.c-st2{width:var(--col-badge)}
   .dtbl td.src2{line-height:1.55}
@@ -208,8 +207,7 @@
       <li><b>담당 반이 여럿이면 합계만으로는 부족하다.</b> A반은 다 냈는데 C반이 밀린 상황을 못 본다 &#8212; 진행에 <b>뒤처진 반</b>을, 조치에 <b>반 이름</b>을 함께 쓰고 툴바에 <b>반 필터</b>를 둔다.</li>
       <li><b>진행은 실수</b>다(<code>58/71</code>). 오퍼레이터는 개인을 못 보니 <b>비율</b>(<code>86%</code>)을 쓰지만, 매니저는 <b>13명이 독촉 대상</b>이라 실수가 필요하다.</li>
       <li><b>상태 열이 필요하다.</b> 툴바에 <code>상태</code> 필터가 있는데 열이 없으면 <b>무엇을 필터하는지 알 수 없다.</b></li>
-      <li><b>빅프의 앵커는 본인 커밋 영역</b>이라 사람마다 다르고 <b>정적 스캐너가 고른다</b>(6-2). 교안도 쓰지 않으므로 <b>해당 없음</b>이고, 시작 전에는 <b>회차 번호가 없어 <code>총 3회</code></b>로 쓴다 &#8212; 첫 회차 시점이 <b>"첫 동작하는 코드가 나온 시점"</b>이라 학생마다 다르다(10-2).</li>
-      <li><b>미프&#183;빅프는 순차다</b>(10-2) &#8212; <b>둘이 동시에 진행 중일 수 없다.</b></li>
+      <li><b>회차는 순차다</b>(10-2) &#8212; <b>둘이 동시에 진행 중일 수 없다.</b></li>
       <li><b>확정 권한이 없으면 경고도 띄우지 않는다.</b> OP-03이 <code>&#9888; 검증 개념 미확정</code>을 띄우는 자리에 여기는 <b>회색 글자</b>로만 쓴다.</li>
     </ul>
   </div>
@@ -223,7 +221,6 @@
         <tr class="grp"><td colspan="5">목록 — 담당 반 합계</td></tr>
         <tr><td class="no">—</td><td class="st">기본</td><td class="code">GET /projects?cohort=</td><td class="msg">회차별 행 · <b>단계</b> · 제출/응시 · <b>조치</b><span class="nx">→ 행 클릭 → MG-08</span></td><td><a class="mk2" href="#list">#list</a></td></tr>
         <tr><td class="no">—</td><td class="st">반 필터</td><td class="code">—</td><td class="msg">한 반만 — <b>조치에서 반 이름이 빠진다</b><span class="nx">→ 이미 그 반만 보고 있다</span></td><td><a class="mk2" href="#class">#class</a></td></tr>
-        <tr><td class="no">—</td><td class="st">유형 필터</td><td class="code">—</td><td class="msg">미프만 / 빅프만<span class="nx">→ —</span></td><td><a class="mk2" href="#filter">#filter</a></td></tr>
         <tr class="grp"><td colspan="5">아무 일도 없을 때 — 그것이 정상이다</td></tr>
         <tr><td class="no">—</td><td class="st">조치 0</td><td class="code">—</td><td class="msg"><code>—</code>가 <b>정상</b>이다<span class="nx">→ <b>축하 문구를 넣지 않는다</b> — 다음에 없을 때 나쁜 신호로 읽힌다</span></td><td><a class="mk2" href="#clear">#clear</a></td></tr>
         <tr><td class="no">—</td><td class="st"><b>다음 회차 미준비</b></td><td class="code">—</td><td class="msg">개념·일정이 <code>—</code> · <b>경고를 띄우지 않는다</b><span class="nx">→ 대기 — <b>일정은 오퍼레이터가 정한다</b></span></td><td><a class="mk2" href="#notready">#notready</a></td></tr>
@@ -260,28 +257,26 @@
         <div class="content">
           <div class="phead"><div class="crumb">프로젝트 &#8250; 7기 &#8250; 담당 반</div><h2>프로젝트</h2></div>
           <div class="lhead">
-            <div class="ttl">프로젝트 <span class="cnt">5개</span><span class="scope">담당 <b>A&#183;B&#183;C반 &#183; 75명</b></span></div>
+            <div class="ttl">프로젝트 <span class="cnt">4개</span><span class="scope">담당 <b>A&#183;B&#183;C반 &#183; 75명</b></span></div>
           </div>
           <div class="ltool">
             <div class="search">&#128269; 회차 검색</div>
             <div class="fil"><span class="k">반</span> 담당 반 전체 &#9662;</div>
-            <div class="fil"><span class="k">유형</span> 전체 &#9662;</div>
             <div class="fil"><span class="k">상태</span> 전체 &#9662;</div>
             <div class="fil"><span class="k">정렬</span> 최신순 &#9662;</div>
           </div>
           <div class="card">
             <table class="dtbl">
-              <thead><tr><th class="c-nm">프로젝트</th><th class="c-ty">유형</th><th>교안 &#183; 검증 개념 3건</th><th class="c-dt">제출 마감</th><th class="c-pg">진행</th><th class="c-ac">조치</th><th class="c-st2">상태</th></tr></thead>
+              <thead><tr><th class="c-nm">프로젝트</th><th>교안 &#183; 검증 개념 3건</th><th class="c-dt">제출 마감</th><th class="c-pg">진행</th><th class="c-ac">조치</th><th class="c-st2">상태</th></tr></thead>
               <tbody>
-                <tr class="click"><td class="pn3"><b>빅프</b><span class="cur3">총 3회 &#183; 첫 동작 &#183; +2주 &#183; 마감</span></td><td>빅프</td><td class="src2"><span class="bk2 nouse">교안 해당 없음</span><span class="cp2 kwait">본인 커밋 영역 &#8212; 사람마다 다름</span></td><td class="date">&#8212;</td><td><span class="pg2 none2">&#8212;</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st plan"><span class="dot"></span>예정</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 4차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2 kwait">검증 개념 미확정</span></td><td class="date">07-23 18:00</td><td><span class="pg2 none2">&#8212;</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st plan"><span class="dot"></span>예정</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 3차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2 &#183; Streamlit 실습 v1</span><span class="cp2"><span class="kchip">HITL Trigger</span><span class="kchip">Graph 구성</span><span class="kchip">State 관리</span></span></td><td class="date">07-16 18:00</td><td><span class="pg2"><span class="stg2">응시</span><b>58</b>/71<span class="lag">C반이 12/23</span></span></td><td><span class="act3"><span class="w">A반 미제출 2팀</span><span class="d">C반 분석 실패 1팀</span></span></td><td><span class="st run"><span class="dot"></span>진행 중</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 2차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2"><span class="kchip">인증 흐름</span><span class="kchip">트랜잭션</span><span class="kchip">캐시 전략</span></span></td><td class="date">06-18 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3"><span class="t">A반 면담 2명</span><span class="t">C반 면담 2명</span></span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 1차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2"><span class="kchip">REST 설계</span><span class="kchip">예외 처리</span><span class="kchip">DTO 분리</span></span></td><td class="date">05-21 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
+                <tr class="click"><td class="pn3"><b>미프 4차</b></td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2 kwait">검증 개념 미확정</span></td><td class="date">07-23 18:00</td><td><span class="pg2 none2">&#8212;</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st plan"><span class="dot"></span>예정</span></td></tr>
+                <tr class="click"><td class="pn3"><b>미프 3차</b></td><td class="src2"><span class="bk2">AI_LLMOps v2 &#183; Streamlit 실습 v1</span><span class="cp2"><span class="kchip">HITL Trigger</span><span class="kchip">Graph 구성</span><span class="kchip">State 관리</span></span></td><td class="date">07-16 18:00</td><td><span class="pg2"><span class="stg2">응시</span><b>58</b>/71<span class="lag">C반이 12/23</span></span></td><td><span class="act3"><span class="w">A반 미제출 2팀</span><span class="d">C반 분석 실패 1팀</span></span></td><td><span class="st run"><span class="dot"></span>진행 중</span></td></tr>
+                <tr class="click"><td class="pn3"><b>미프 2차</b></td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2"><span class="kchip">인증 흐름</span><span class="kchip">트랜잭션</span><span class="kchip">캐시 전략</span></span></td><td class="date">06-18 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3"><span class="t">A반 면담 2명</span><span class="t">C반 면담 2명</span></span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
+                <tr class="click"><td class="pn3"><b>미프 1차</b></td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2"><span class="kchip">REST 설계</span><span class="kchip">예외 처리</span><span class="kchip">DTO 분리</span></span></td><td class="date">05-21 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
               </tbody>
             </table>
           </div>
-          <div class="tablefoot"><span class="range">1&#8211;5 / 5개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+          <div class="tablefoot"><span class="range">1&#8211;4 / 4개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
         </div>
       </div>
     </div>
@@ -305,68 +300,22 @@
         <div class="content">
           <div class="phead"><div class="crumb">프로젝트 &#8250; 7기 &#8250; 담당 반</div><h2>프로젝트</h2></div>
           <div class="lhead">
-            <div class="ttl">프로젝트 <span class="cnt">5개</span><span class="scope">담당 <b>C반 &#183; 23명</b></span></div>
+            <div class="ttl">프로젝트 <span class="cnt">4개</span><span class="scope">담당 <b>C반 &#183; 23명</b></span></div>
           </div>
           <div class="ltool">
             <div class="search">&#128269; 회차 검색</div>
             <div class="fil on"><span class="k">반</span> C반 &#9662;</div>
-            <div class="fil"><span class="k">유형</span> 전체 &#9662;</div>
             <div class="fil"><span class="k">상태</span> 전체 &#9662;</div>
             <div class="fil"><span class="k">정렬</span> 최신순 &#9662;</div>
           </div>
           <div class="card">
             <table class="dtbl">
-              <thead><tr><th class="c-nm">프로젝트</th><th class="c-ty">유형</th><th>교안 &#183; 검증 개념 3건</th><th class="c-dt">제출 마감</th><th class="c-pg">진행</th><th class="c-ac">조치</th><th class="c-st2">상태</th></tr></thead>
+              <thead><tr><th class="c-nm">프로젝트</th><th>교안 &#183; 검증 개념 3건</th><th class="c-dt">제출 마감</th><th class="c-pg">진행</th><th class="c-ac">조치</th><th class="c-st2">상태</th></tr></thead>
               <tbody>
-                <tr class="click"><td class="pn3"><b>빅프</b><span class="cur3">총 3회</span></td><td>빅프</td><td class="src2"><span class="bk2 nouse">교안 해당 없음</span><span class="cp2 kwait">본인 커밋 영역 &#8212; 사람마다 다름</span></td><td class="date">&#8212;</td><td><span class="pg2 none2">&#8212;</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st plan"><span class="dot"></span>예정</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 4차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2 kwait">검증 개념 미확정</span></td><td class="date">07-23 18:00</td><td><span class="pg2 none2">&#8212;</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st plan"><span class="dot"></span>예정</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 3차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2 &#183; Streamlit 실습 v1</span><span class="cp2"><span class="kchip">HITL Trigger</span><span class="kchip">Graph 구성</span><span class="kchip">State 관리</span></span></td><td class="date">07-16 18:00</td><td><span class="pg2"><span class="stg2">응시</span><b>12</b>/23</span></td><td><span class="act3"><span class="d">분석 실패 1팀</span></span></td><td><span class="st run"><span class="dot"></span>진행 중</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 2차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2"><span class="kchip">인증 흐름</span><span class="kchip">트랜잭션</span><span class="kchip">캐시 전략</span></span></td><td class="date">06-18 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3"><span class="t">면담 2명</span></span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 1차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2"><span class="kchip">REST 설계</span><span class="kchip">예외 처리</span><span class="kchip">DTO 분리</span></span></td><td class="date">05-21 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="tablefoot"><span class="range">1&#8211;5 / 5개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
-        </div>
-      </div>
-    </div>
-  </div>
-  </div>
-  <div class="rpage" id="page-filter">
-  <div class="sec-label">&#9315; 유형 필터 — 미프만</div>
-  <div class="viewport">
-    <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects</span></div>
-    <div class="app">
-      <div class="topbar">
-        <div class="left"><div class="brand"><span class="mk">&#9670;</span>IZ-Get</div><div class="cohortsel"><span class="k">기수</span> 7기 &#9662;</div></div>
-        <div class="me">박지현 &#183; 매니저 <span class="av">박</span></div>
-      </div>
-      <div class="body">
-        <div class="nav">
-          <div class="grp"><div class="item"><span class="ic">&#9638;</span>대시보드</div><div class="item"><span class="ic">&#9641;</span>히트맵</div></div>
-          <div class="grp"><div class="item"><span class="ic">&#9998;</span>면담<span class="bg">4</span></div></div>
-          <div class="grp"><div class="item"><span class="ic">&#9678;</span>교육생</div><div class="item on"><span class="ic">&#9636;</span>프로젝트</div><div class="item"><span class="ic">&#9776;</span>교안</div></div>
-        </div>
-        <div class="content">
-          <div class="phead"><div class="crumb">프로젝트 &#8250; 7기 &#8250; 담당 반</div><h2>프로젝트</h2></div>
-          <div class="lhead">
-            <div class="ttl">프로젝트 <span class="cnt">5개</span><span class="scope">담당 <b>A&#183;B&#183;C반 &#183; 75명</b></span></div>
-          </div>
-          <div class="ltool">
-            <div class="search">&#128269; 회차 검색</div>
-            <div class="fil"><span class="k">반</span> 담당 반 전체 &#9662;</div>
-            <div class="fil"><span class="k">유형</span> 미프 &#9662;</div>
-            <div class="fil"><span class="k">상태</span> 전체 &#9662;</div>
-            <div class="fil"><span class="k">정렬</span> 최신순 &#9662;</div>
-          </div>
-          <div class="card">
-            <table class="dtbl">
-              <thead><tr><th class="c-nm">프로젝트</th><th class="c-ty">유형</th><th>교안 &#183; 검증 개념 3건</th><th class="c-dt">제출 마감</th><th class="c-pg">진행</th><th class="c-ac">조치</th><th class="c-st2">상태</th></tr></thead>
-              <tbody>
-                <tr class="click"><td class="pn3"><b>미프 4차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2 kwait">검증 개념 미확정</span></td><td class="date">07-23 18:00</td><td><span class="pg2 none2">&#8212;</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st plan"><span class="dot"></span>예정</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 3차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2 &#183; Streamlit 실습 v1</span><span class="cp2"><span class="kchip">HITL Trigger</span><span class="kchip">Graph 구성</span><span class="kchip">State 관리</span></span></td><td class="date">07-16 18:00</td><td><span class="pg2"><span class="stg2">응시</span><b>58</b>/71<span class="lag">C반이 12/23</span></span></td><td><span class="act3"><span class="w">A반 미제출 2팀</span><span class="d">C반 분석 실패 1팀</span></span></td><td><span class="st run"><span class="dot"></span>진행 중</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 2차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2"><span class="kchip">인증 흐름</span><span class="kchip">트랜잭션</span><span class="kchip">캐시 전략</span></span></td><td class="date">06-18 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3"><span class="t">A반 면담 2명</span><span class="t">C반 면담 2명</span></span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 1차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2"><span class="kchip">REST 설계</span><span class="kchip">예외 처리</span><span class="kchip">DTO 분리</span></span></td><td class="date">05-21 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
+                <tr class="click"><td class="pn3"><b>미프 4차</b></td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2 kwait">검증 개념 미확정</span></td><td class="date">07-23 18:00</td><td><span class="pg2 none2">&#8212;</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st plan"><span class="dot"></span>예정</span></td></tr>
+                <tr class="click"><td class="pn3"><b>미프 3차</b></td><td class="src2"><span class="bk2">AI_LLMOps v2 &#183; Streamlit 실습 v1</span><span class="cp2"><span class="kchip">HITL Trigger</span><span class="kchip">Graph 구성</span><span class="kchip">State 관리</span></span></td><td class="date">07-16 18:00</td><td><span class="pg2"><span class="stg2">응시</span><b>12</b>/23</span></td><td><span class="act3"><span class="d">분석 실패 1팀</span></span></td><td><span class="st run"><span class="dot"></span>진행 중</span></td></tr>
+                <tr class="click"><td class="pn3"><b>미프 2차</b></td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2"><span class="kchip">인증 흐름</span><span class="kchip">트랜잭션</span><span class="kchip">캐시 전략</span></span></td><td class="date">06-18 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3"><span class="t">면담 2명</span></span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
+                <tr class="click"><td class="pn3"><b>미프 1차</b></td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2"><span class="kchip">REST 설계</span><span class="kchip">예외 처리</span><span class="kchip">DTO 분리</span></span></td><td class="date">05-21 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -377,7 +326,7 @@
   </div>
   </div>
   <div class="rpage" id="page-clear">
-  <div class="sec-label">&#9316; 조치 없음 — 전부 정상</div>
+  <div class="sec-label">&#9314; 조치 없음 — 전부 정상</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects</span></div>
     <div class="app">
@@ -399,17 +348,16 @@
           <div class="ltool">
             <div class="search">&#128269; 회차 검색</div>
             <div class="fil"><span class="k">반</span> 담당 반 전체 &#9662;</div>
-            <div class="fil"><span class="k">유형</span> 전체 &#9662;</div>
             <div class="fil"><span class="k">상태</span> 전체 &#9662;</div>
             <div class="fil"><span class="k">정렬</span> 최신순 &#9662;</div>
           </div>
           <div class="card">
             <table class="dtbl">
-              <thead><tr><th class="c-nm">프로젝트</th><th class="c-ty">유형</th><th>교안 &#183; 검증 개념 3건</th><th class="c-dt">제출 마감</th><th class="c-pg">진행</th><th class="c-ac">조치</th><th class="c-st2">상태</th></tr></thead>
+              <thead><tr><th class="c-nm">프로젝트</th><th>교안 &#183; 검증 개념 3건</th><th class="c-dt">제출 마감</th><th class="c-pg">진행</th><th class="c-ac">조치</th><th class="c-st2">상태</th></tr></thead>
               <tbody>
-                <tr class="click"><td class="pn3"><b>미프 3차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2 &#183; Streamlit 실습 v1</span><span class="cp2"><span class="kchip">HITL Trigger</span><span class="kchip">Graph 구성</span><span class="kchip">State 관리</span></span></td><td class="date">07-16 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 2차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2"><span class="kchip">인증 흐름</span><span class="kchip">트랜잭션</span><span class="kchip">캐시 전략</span></span></td><td class="date">06-18 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 1차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2"><span class="kchip">REST 설계</span><span class="kchip">예외 처리</span><span class="kchip">DTO 분리</span></span></td><td class="date">05-21 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
+                <tr class="click"><td class="pn3"><b>미프 3차</b></td><td class="src2"><span class="bk2">AI_LLMOps v2 &#183; Streamlit 실습 v1</span><span class="cp2"><span class="kchip">HITL Trigger</span><span class="kchip">Graph 구성</span><span class="kchip">State 관리</span></span></td><td class="date">07-16 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
+                <tr class="click"><td class="pn3"><b>미프 2차</b></td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2"><span class="kchip">인증 흐름</span><span class="kchip">트랜잭션</span><span class="kchip">캐시 전략</span></span></td><td class="date">06-18 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
+                <tr class="click"><td class="pn3"><b>미프 1차</b></td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2"><span class="kchip">REST 설계</span><span class="kchip">예외 처리</span><span class="kchip">DTO 분리</span></span></td><td class="date">05-21 18:00</td><td><span class="pg2 done2"><span class="stg2">리포트</span>발행 완료</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st done"><span class="dot"></span>종료</span></td></tr>
               </tbody>
             </table>
           </div>
@@ -420,7 +368,7 @@
   </div>
   </div>
   <div class="rpage" id="page-empty">
-  <div class="sec-label">&#9317; 상태 · 프로젝트 없음</div>
+  <div class="sec-label">&#9315; 상태 · 프로젝트 없음</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects</span></div>
     <div class="app">
@@ -442,7 +390,6 @@
           <div class="ltool">
             <div class="search">&#128269; 회차 검색</div>
             <div class="fil"><span class="k">반</span> 담당 반 전체 &#9662;</div>
-            <div class="fil"><span class="k">유형</span> 전체 &#9662;</div>
             <div class="fil"><span class="k">상태</span> 전체 &#9662;</div>
             <div class="fil"><span class="k">정렬</span> 최신순 &#9662;</div>
           </div>
@@ -453,7 +400,7 @@
   </div>
   </div>
   <div class="rpage" id="page-notready">
-  <div class="sec-label">&#9318; 다음 회차가 아직 준비 안 됨 — 경고는 띄우지 않는다</div>
+  <div class="sec-label">&#9316; 다음 회차가 아직 준비 안 됨 — 경고는 띄우지 않는다</div>
   <div class="viewport">
     <div class="chrome"><span class="tl"><i></i><i></i><i></i></span><span class="url">iz-get.com/cohorts/7/projects</span></div>
     <div class="app">
@@ -470,26 +417,24 @@
         <div class="content">
           <div class="phead"><div class="crumb">프로젝트 &#8250; 7기 &#8250; 담당 반</div><h2>프로젝트</h2></div>
           <div class="lhead">
-            <div class="ttl">프로젝트 <span class="cnt">6개</span><span class="scope">담당 <b>A&#183;B&#183;C반 &#183; 75명</b></span></div>
+            <div class="ttl">프로젝트 <span class="cnt">5개</span><span class="scope">담당 <b>A&#183;B&#183;C반 &#183; 75명</b></span></div>
           </div>
           <div class="ltool">
             <div class="search">&#128269; 회차 검색</div>
             <div class="fil"><span class="k">반</span> 담당 반 전체 &#9662;</div>
-            <div class="fil"><span class="k">유형</span> 전체 &#9662;</div>
             <div class="fil"><span class="k">상태</span> 예정 &#9662;</div>
             <div class="fil"><span class="k">정렬</span> 최신순 &#9662;</div>
           </div>
           <div class="card">
             <table class="dtbl">
-              <thead><tr><th class="c-nm">프로젝트</th><th class="c-ty">유형</th><th>교안 &#183; 검증 개념 3건</th><th class="c-dt">제출 마감</th><th class="c-pg">진행</th><th class="c-ac">조치</th><th class="c-st2">상태</th></tr></thead>
+              <thead><tr><th class="c-nm">프로젝트</th><th>교안 &#183; 검증 개념 3건</th><th class="c-dt">제출 마감</th><th class="c-pg">진행</th><th class="c-ac">조치</th><th class="c-st2">상태</th></tr></thead>
               <tbody>
-                <tr class="click"><td class="pn3"><b>빅프</b><span class="cur3">총 3회</span></td><td>빅프</td><td class="src2"><span class="bk2 nouse">교안 해당 없음</span><span class="cp2 kwait">본인 커밋 영역 &#8212; 사람마다 다름</span></td><td class="date">&#8212;</td><td><span class="pg2 none2">&#8212;</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st plan"><span class="dot"></span>예정</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 5차</b></td><td>미프</td><td class="src2"><span class="bk2 nouse">교안 해당 없음</span><span class="cp2 kwait">검증 개념 미확정</span></td><td class="date">&#8212;</td><td><span class="pg2 none2">&#8212;</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st plan"><span class="dot"></span>예정</span></td></tr>
-                <tr class="click"><td class="pn3"><b>미프 4차</b></td><td>미프</td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2 kwait">검증 개념 미확정</span></td><td class="date">07-23 18:00</td><td><span class="pg2 none2">&#8212;</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st plan"><span class="dot"></span>예정</span></td></tr>
+                <tr class="click"><td class="pn3"><b>미프 5차</b></td><td class="src2"><span class="bk2 nouse">교안 해당 없음</span><span class="cp2 kwait">검증 개념 미확정</span></td><td class="date">&#8212;</td><td><span class="pg2 none2">&#8212;</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st plan"><span class="dot"></span>예정</span></td></tr>
+                <tr class="click"><td class="pn3"><b>미프 4차</b></td><td class="src2"><span class="bk2">AI_LLMOps v2</span><span class="cp2 kwait">검증 개념 미확정</span></td><td class="date">07-23 18:00</td><td><span class="pg2 none2">&#8212;</span></td><td><span class="act3 ok3">&#8212;</span></td><td><span class="st plan"><span class="dot"></span>예정</span></td></tr>
               </tbody>
             </table>
           </div>
-          <div class="tablefoot"><span class="range">1&#8211;3 / 3개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+          <div class="tablefoot"><span class="range">1&#8211;2 / 2개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
         </div>
       </div>
     </div>
@@ -499,7 +444,7 @@
 </div>
 <script>
   var PAGE = { cases:"page-cases", list:"page-list", "class":"page-class",
-               filter:"page-filter", clear:"page-clear", empty:"page-empty",
+               clear:"page-clear", empty:"page-empty",
                notready:"page-notready" };
   function route(){
     var h = (location.hash || "").slice(1) || "list";

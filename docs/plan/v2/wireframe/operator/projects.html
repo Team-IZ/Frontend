@@ -103,7 +103,6 @@
   .st.warn{background:var(--c-warning-soft);color:var(--c-warning)} .st.warn .dot{background:var(--c-warning)}
 
   .dtbl th.c-nm{width:112px}
-  .dtbl th.c-ty{width:64px}
   .dtbl th.c-dt{width:var(--col-date)}
 
 
@@ -290,7 +289,7 @@
         <tr><td class="no">—</td><td class="st">기본</td><td class="code">GET /projects?cohort=</td><td class="msg"><b>준비 필요 순</b> 정렬 · 교안 · 검증 개념 3건 · 상태<span class="nx">→ 행 클릭 → 상세</span></td><td><a class="mk2" href="#list">#list</a></td></tr>
         <tr><td class="no">—</td><td class="st">프로젝트 0</td><td class="code">—</td><td class="msg">빈 상태 + <b>생성 유도</b><span class="nx">→ 생성 — <b>여기는 만들 권한이 있다</b>(매니저 쪽과 반대)</span></td><td><a class="mk2" href="#list">#list</a></td></tr>
         <tr class="grp"><td colspan="5">생성 — 교안이 있어야 개념이 나온다</td></tr>
-        <tr><td class="no">—</td><td class="st">생성 모달</td><td class="code">POST /projects</td><td class="msg">이름 · 유형 · <b>교안 연결(1개 이상)</b> · <b>검증 개념 3건 고정</b><span class="nx">→ 생성 → 상세</span></td><td><a class="mk2" href="#create">#create</a></td></tr>
+        <tr><td class="no">—</td><td class="st">생성 모달</td><td class="code">POST /projects</td><td class="msg">이름 · <b>교안 연결(1개 이상)</b> · <b>검증 개념 3건 고정</b><span class="nx">→ 생성 → 상세</span></td><td><a class="mk2" href="#create">#create</a></td></tr>
         <tr><td class="no">—</td><td class="st"><b>교안 미등록</b></td><td class="code">—</td><td class="msg"><b>등록된 교안이 없습니다</b> · 생성 버튼 비활성<span class="nx">→ 운영 관리 › 교안 — <b>기수 세팅 직후 실제로 겪는다</b></span></td><td><a class="mk2" href="#nocur">#nocur</a></td></tr>
         <tr><td class="no">—</td><td class="st"><b>연결한 교안에 항목 0</b></td><td class="code">—</td><td class="msg"><b>가르친 항목이 아직 없습니다</b> · 생성 버튼 비활성<span class="nx">→ 교안 상태 확인 — <b>분석 미완 또는 실패</b></span></td><td><a class="mk2" href="#noitem">#noitem</a></td></tr>
         <tr><td class="no">—</td><td class="st">교안 0개 선택</td><td class="code">—</td><td class="msg">항목 목록 비활성 + <b>저장 차단</b><span class="nx">→ 교안 선택 — <b>그림 없음</b></span></td><td class="no">—</td></tr>
@@ -354,24 +353,23 @@
           <div class="phead"><div class="crumb">프로젝트 › 7기</div><h2>프로젝트</h2></div>
 
           <div class="lhead">
-            <div class="ttl">프로젝트 <span class="cnt">총 5개</span><span class="scope3">7기 전체 · <b>10반 250명</b>이 같은 회차를 한다</span><span class="cnts3">준비 중 <b>2</b> · 진행 중 1 · 종료 1</span></div>
+            <div class="ttl">프로젝트 <span class="cnt">총 4개</span><span class="scope3">7기 전체 · <b>10반 250명</b>이 같은 회차를 한다</span><span class="cnts3">준비 중 <b>2</b> · 진행 중 1 · 종료 1</span></div>
             <button class="btn">+ 프로젝트 생성</button>
           </div>
           <div class="ltool">
             <div class="search">🔍 프로젝트명 검색</div>
             <div class="fil"><span class="k">교안</span> 전체 ▾</div>
-            <div class="fil"><span class="k">유형</span> 전체 ▾</div>
+            
             <div class="fil"><span class="k">상태</span> 전체 ▾</div>
             <div class="fil"><span class="k">정렬</span> 준비 필요 순 ▾</div>
           </div>
 
           <div class="card">
             <table class="dtbl">
-              <thead><tr><th class="c-nm">프로젝트</th><th class="c-ty">유형</th><th class="c-bk">교안</th><th class="c-cpt">검증 개념 3건</th><th class="c-dt">제출 마감</th><th class="c-st2">상태</th></tr></thead>
+              <thead><tr><th class="c-nm">프로젝트</th><th class="c-bk">교안</th><th class="c-cpt">검증 개념 3건</th><th class="c-dt">제출 마감</th><th class="c-st2">상태</th></tr></thead>
               <tbody>
                 <tr class="click">
                   <td class="pn3"><b>미프 5차</b></td>
-                  <td>미프</td>
                   <td class="bk3"><span class="miss">교안 연결 안 됨</span></td>
                   <td class="cpt3"><span class="nouse2">교안을 먼저 연결해야 후보가 나옵니다</span></td>
                   <td class="due3"><span class="miss">미설정</span></td>
@@ -379,23 +377,13 @@
                 </tr>
                 <tr class="click risk3">
                   <td class="pn3"><b>미프 4차</b></td>
-                  <td>미프</td>
                   <td class="bk3"><span class="b1">AI_LLMOps v2</span></td>
                   <td class="cpt3"><span class="miss">⚠ 미확정 · 후보 8건에서 3건</span></td>
                   <td class="due3">07-21 18:00<span class="left hot">5일 남음</span></td>
                   <td><span class="st prep"><span class="dot"></span>준비 중</span></td>
                 </tr>
                 <tr class="click">
-                  <td class="pn3"><b>빅프</b><div class="sub">총 3회 · 첫 동작 · +2주 · 마감</div></td>
-                  <td>빅프</td>
-                  <td class="bk3"><span class="none5">해당 없음</span></td>
-                  <td class="cpt3"><span class="nouse2">본인 커밋 영역 — 사람마다 다름</span></td>
-                  <td class="due3">09-26 18:00<span class="left">72일 남음</span></td>
-                  <td><span class="st ready"><span class="dot"></span>준비됨</span></td>
-                </tr>
-                <tr class="click">
                   <td class="pn3"><b>미프 3차</b></td>
-                  <td>미프</td>
                   <td class="bk3"><span class="b1">AI_LLMOps v2</span><span class="b1">Streamlit 실습 v1</span></td>
                   <td class="cpt3"><span class="kchip">HITL Trigger</span><span class="kchip">Graph 구성</span><span class="kchip">State 관리</span></td>
                   <td class="due3">07-14 18:00<span class="left">지남</span></td>
@@ -403,7 +391,6 @@
                 </tr>
                 <tr class="click">
                   <td class="pn3"><b>미프 2차</b></td>
-                  <td>미프</td>
                   <td class="bk3"><span class="b1">Kubernetes 기초 v1</span></td>
                   <td class="cpt3"><span class="kchip">Service</span><span class="kchip">Deployment</span><span class="kchip">ConfigMap</span></td>
                   <td class="due3">07-04 18:00<span class="left">지남</span></td>
@@ -412,7 +399,7 @@
               </tbody>
             </table>
           </div>
-          <div class="tablefoot"><span class="range">1–5 / 5개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
+          <div class="tablefoot"><span class="range">1–4 / 4개</span><div class="pages"><span class="pg on">1</span></div><span class="rspace"></span></div>
         </div>
       </div>
     </div>
@@ -437,8 +424,8 @@
         </div>
         <div class="content">
           <div class="phead"><div class="crumb">프로젝트 › 7기</div><h2>프로젝트</h2></div>
-          <div class="lhead"><div class="ttl">프로젝트 <span class="cnt">총 5개</span><span class="scope3">7기 전체 · <b>10반 250명</b>이 같은 회차를 한다</span><span class="cnts3">준비 중 <b>2</b> · 진행 중 1 · 종료 1</span></div><button class="btn">+ 프로젝트 생성</button></div>
-          <div class="ltool"><div class="search">🔍 프로젝트명 검색</div><div class="fil"><span class="k">유형</span> 전체 ▾</div><div class="fil"><span class="k">상태</span> 전체 ▾</div><div class="fil"><span class="k">정렬</span> 준비 필요 순 ▾</div></div>
+          <div class="lhead"><div class="ttl">프로젝트 <span class="cnt">총 4개</span><span class="scope3">7기 전체 · <b>10반 250명</b>이 같은 회차를 한다</span><span class="cnts3">준비 중 <b>2</b> · 진행 중 1 · 종료 1</span></div><button class="btn">+ 프로젝트 생성</button></div>
+          <div class="ltool"><div class="search">🔍 프로젝트명 검색</div><div class="fil"><span class="k">상태</span> 전체 ▾</div><div class="fil"><span class="k">정렬</span> 준비 필요 순 ▾</div></div>
           <div class="card" style="height:180px"></div>
         </div>
       </div>
@@ -450,10 +437,6 @@
           <div class="fld">
             <div class="fl">프로젝트명 <span class="req">필수</span></div>
             <div class="inp">미프 5차</div>
-          </div>
-          <div class="fld">
-            <div class="fl">유형</div>
-            <div class="toggle"><span class="tg on">미프</span><span class="tg">빅프</span></div>
           </div>
           <div class="fld">
             <div class="fl">교안 연결 <span class="req">1개 이상</span> <span class="hint">· 검증 개념이 여기서 나온다</span></div>
@@ -510,8 +493,8 @@
         </div>
         <div class="content">
           <div class="phead"><div class="crumb">프로젝트 › 7기</div><h2>프로젝트</h2></div>
-          <div class="lhead"><div class="ttl">프로젝트 <span class="cnt">총 5개</span><span class="scope3">7기 전체 · <b>10반 250명</b>이 같은 회차를 한다</span><span class="cnts3">준비 중 <b>2</b> · 진행 중 1 · 종료 1</span></div><button class="btn">+ 프로젝트 생성</button></div>
-          <div class="ltool"><div class="search">🔍 프로젝트명 검색</div><div class="fil"><span class="k">유형</span> 전체 ▾</div><div class="fil"><span class="k">상태</span> 전체 ▾</div><div class="fil"><span class="k">정렬</span> 준비 필요 순 ▾</div></div>
+          <div class="lhead"><div class="ttl">프로젝트 <span class="cnt">총 4개</span><span class="scope3">7기 전체 · <b>10반 250명</b>이 같은 회차를 한다</span><span class="cnts3">준비 중 <b>2</b> · 진행 중 1 · 종료 1</span></div><button class="btn">+ 프로젝트 생성</button></div>
+          <div class="ltool"><div class="search">🔍 프로젝트명 검색</div><div class="fil"><span class="k">상태</span> 전체 ▾</div><div class="fil"><span class="k">정렬</span> 준비 필요 순 ▾</div></div>
           <div class="card" style="height:180px"></div>
         </div>
       </div>
@@ -523,10 +506,6 @@
           <div class="fld">
             <div class="fl">프로젝트명 <span class="req">필수</span></div>
             <div class="inp">미프 5차</div>
-          </div>
-          <div class="fld">
-            <div class="fl">유형</div>
-            <div class="toggle"><span class="tg on">미프</span><span class="tg">빅프</span></div>
           </div>
           <div class="fld">
             <div class="fl">교안 연결 <span class="req">1개 이상</span> <span class="hint">· 검증 개념이 여기서 나온다</span></div>
@@ -565,8 +544,8 @@
         </div>
         <div class="content">
           <div class="phead"><div class="crumb">프로젝트 › 7기</div><h2>프로젝트</h2></div>
-          <div class="lhead"><div class="ttl">프로젝트 <span class="cnt">총 5개</span><span class="scope3">7기 전체 · <b>10반 250명</b>이 같은 회차를 한다</span><span class="cnts3">준비 중 <b>2</b> · 진행 중 1 · 종료 1</span></div><button class="btn">+ 프로젝트 생성</button></div>
-          <div class="ltool"><div class="search">🔍 프로젝트명 검색</div><div class="fil"><span class="k">유형</span> 전체 ▾</div><div class="fil"><span class="k">상태</span> 전체 ▾</div><div class="fil"><span class="k">정렬</span> 준비 필요 순 ▾</div></div>
+          <div class="lhead"><div class="ttl">프로젝트 <span class="cnt">총 4개</span><span class="scope3">7기 전체 · <b>10반 250명</b>이 같은 회차를 한다</span><span class="cnts3">준비 중 <b>2</b> · 진행 중 1 · 종료 1</span></div><button class="btn">+ 프로젝트 생성</button></div>
+          <div class="ltool"><div class="search">🔍 프로젝트명 검색</div><div class="fil"><span class="k">상태</span> 전체 ▾</div><div class="fil"><span class="k">정렬</span> 준비 필요 순 ▾</div></div>
           <div class="card" style="height:180px"></div>
         </div>
       </div>
@@ -578,10 +557,6 @@
           <div class="fld">
             <div class="fl">프로젝트명 <span class="req">필수</span></div>
             <div class="inp">미프 5차</div>
-          </div>
-          <div class="fld">
-            <div class="fl">유형</div>
-            <div class="toggle"><span class="tg on">미프</span><span class="tg">빅프</span></div>
           </div>
           <div class="fld">
             <div class="fl">교안 연결 <span class="req">1개 이상</span> <span class="hint">· 검증 개념이 여기서 나온다</span></div>

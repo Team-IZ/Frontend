@@ -3,6 +3,7 @@ import {
   LayoutDashboardIcon,
   ChartLineIcon,
   FileTextIcon,
+  FlaskConicalIcon,
   FolderKanbanIcon,
   SettingsIcon,
   Grid3x3Icon,
@@ -77,6 +78,12 @@ export const TRAINEE_SIDEBAR: SidebarGroup[] = [
     { icon: HomeIcon, label: '홈', to: '/trainee/home' },
     { icon: FileTextIcon, label: '내 리포트', to: '/trainee/report' },
   ],
+  // dev 전용 — /trainee/__cases(TraineeCaseIndex)는 상태 9종·케이스별 확인용이라
+  // 같이 개발하는 사람이 매번 주소를 외워 치지 않아도 되게 여기 붙인다.
+  // import.meta.env.DEV라 프로덕션 빌드에는 이 그룹 자체가 안 들어간다.
+  ...(import.meta.env.DEV
+    ? [[{ icon: FlaskConicalIcon, label: '케이스 보기', to: '/trainee/__cases' }]]
+    : []),
 ]
 
 export const SIDEBAR_BY_ROLE: Record<Role, SidebarGroup[]> = {

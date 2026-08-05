@@ -143,6 +143,8 @@ export default function ProjectListScreen() {
                     교안·검증개념3건)에 맞추되, OP-03에 없는 반 열을 상태·기간 사이에
                     넣었다(사용자 지시, 4차 반영). OP-03에 없는 이 화면만의 열(진행·
                     조치 — "무엇이 밀렸는지"에 답하는 핵심)은 뒤에 이어 붙인다.
+                    유형 열은 삭제했다 — 미니/빅 프로젝트를 더 이상 나누지 않는다
+                    (사용자 지시, 렌더 비교 다음 세션 반영).
                   */}
                   <TableHead className="w-28">프로젝트</TableHead>
                   <TableHead className="w-24">상태</TableHead>

@@ -12,20 +12,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select'
-import {
-  KIND_LABEL,
-  STATUS_LABEL,
-  type ClassName,
-  type ProjectKind,
-  type ProjectSort,
-  type ProjectStatus,
-} from '../mockData'
+import { STATUS_LABEL, type ClassName, type ProjectSort, type ProjectStatus } from '../mockData'
 import { ALL, type FilterValues } from '../filterState'
 
 /*
-  목록 툴바 — 검색·상태·반·유형·교안·정렬. 순서·구성을 팀장님의 실제 OP-03 화면
+  목록 툴바 — 검색·상태·반·교안·정렬. 순서·구성을 팀장님의 실제 OP-03 화면
   (검색→상태→유형→교안→|→정렬)에 맞추되, OP-03에 없는 매니저 전용 축(반)을
-  **상태와 유형 사이**에 넣는다(사용자 지시, 4차 반영 — 3차에서 뺐다가 되돌렸다).
+  **상태와 교안 사이**에 넣는다(사용자 지시, 4차 반영 — 3차에서 뺐다가 되돌렸다).
+
+  ⚠ 유형(미니/빅) 필터 삭제 — 사용자 지시로 프로젝트를 유형으로 나누지 않기로
+  했다(렌더 비교 다음 세션 반영). `ProjectKind`·`KIND_LABEL` 자체가 `mockData.ts`
+  에서 없어졌다 — 이 화면은 그 필터 UI만 뺀다.
 
   **정렬을 2종으로 줄였다**(프로젝트 시작 순 · 마감 임박 순) — "준비 필요 순"은
   매니저에게 뜻이 없어서(확정 권한이 없다) 사용자가 직접 뺐다.
@@ -67,7 +64,6 @@ export default function ProjectFilters({
   search,
   status,
   classFilter,
-  kind,
   curriculum,
   sort,
   classes,
@@ -85,10 +81,6 @@ export default function ProjectFilters({
   const classOptions = [
     { value: ALL, label: '전체' },
     ...classes.map((c) => ({ value: c, label: c })),
-  ]
-  const kindOptions = [
-    { value: ALL, label: '전체' },
-    ...(Object.keys(KIND_LABEL) as ProjectKind[]).map((k) => ({ value: k, label: KIND_LABEL[k] })),
   ]
   const curriculumOptions = [
     { value: ALL, label: '전체' },
@@ -133,13 +125,6 @@ export default function ProjectFilters({
         options={classOptions}
         onChange={(v) => onChange({ classFilter: v })}
         className="w-32"
-      />
-      <FilterSelect
-        label="유형"
-        value={kind}
-        options={kindOptions}
-        onChange={(v) => onChange({ kind: v })}
-        className="w-44"
       />
       <FilterSelect
         label="교안"

@@ -1,7 +1,16 @@
 import { useState } from 'react'
-import { Link, useLocation } from 'react-router'
-import { SettingsIcon } from 'lucide-react'
+import { Link, useLocation, useNavigate } from 'react-router'
+import { SettingsIcon, UserCogIcon } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/Avatar'
+import { Button } from '@/components/ui/Button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/DropdownMenu'
 import {
   Select,
   SelectContent,
@@ -11,7 +20,54 @@ import {
 } from '@/components/ui/Select'
 import Wordmark from '@/components/common/Wordmark'
 import { cn } from '@/lib/utils/cn'
+import { useAuth } from '@/features/auth/AuthContext'
+import { login } from '@/features/auth/authApi'
+import { QUICK_LOGIN_ACCOUNTS } from '@/features/auth/quickLoginAccounts'
 import type { Role } from './sidebarConfig'
+
+// dev 전용 역할 전환(헤더) — import.meta.env.DEV는 프로덕션 빌드(vite build)에서
+// 항상 false라 develop Vercel 프리뷰 배포도 걸러진다. __GIT_BRANCH__(vite.config.ts
+// define, sidebarConfig.ts와 같은 패턴)로 "로컬이거나 develop 배포"일 때만 보이고
+// main 배포에서는 숨긴다.
+const SHOW_DEV_ROLE_SWITCHER = import.meta.env.DEV || __GIT_BRANCH__ === 'develop'
+
+function DevRoleSwitcher() {
+  const navigate = useNavigate()
+  const { signIn } = useAuth()
+
+  async function handleQuickLogin(email: string) {
+    try {
+      const res = await login({ email, password: 'pass1234' })
+      signIn(res)
+      navigate(res.initialScreen)
+    } catch (err) {
+      // dev 전용 지름길이라 실패해도 화면에 알릴 알림 자리가 없다 — 콘솔로 충분
+      console.error('quick login failed', err)
+    }
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button variant="ghost" size="sm" aria-label="역할 전환 (dev)">
+            <UserCogIcon className="size-4" aria-hidden="true" />
+          </Button>
+        }
+      />
+      <DropdownMenuContent align="end">
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>역할 전환 (dev)</DropdownMenuLabel>
+          {QUICK_LOGIN_ACCOUNTS.map(({ label, email }) => (
+            <DropdownMenuItem key={email} onClick={() => handleQuickLogin(email)}>
+              {label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
 
 /*
   상단바 — 브랜드 + 스코프 선택기 + 사용자. 54px 고정 높이(목업 `.topbar{height:54px}`
@@ -66,6 +122,7 @@ export default function Header({ user, scope, role }: Props) {
       </div>
 
       <div className="text-fg-muted flex shrink-0 items-center gap-3 text-sm">
+        {SHOW_DEV_ROLE_SWITCHER && <DevRoleSwitcher />}
         {role === 'superadmin' && (
           <Link
             to="/superadmin/settings"

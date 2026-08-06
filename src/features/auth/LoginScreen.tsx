@@ -8,6 +8,7 @@ import { resolveAuthState } from './authStates'
 import type { AuthState } from './authStates'
 import type { ApiError } from './authTypes'
 import { useCapsLockWarning } from './useCapsLockWarning'
+import { QUICK_LOGIN_ACCOUNTS } from './quickLoginAccounts'
 import BrandPanel from './components/BrandPanel'
 import AuthForm from './components/AuthForm'
 import TextLink from './components/TextLink'
@@ -83,14 +84,8 @@ export default function LoginScreen() {
 
   // 발표용 임시 — 실제 배포 시 이 함수와 아래 버튼 블록을 통째로 제거
   // 역할 선택 UI는 정책상 없음(§34 주석) — 이건 폼을 우회하는 데모 지름길일 뿐,
-  // 서버가 역할을 판정하는 로그인 흐름 자체는 그대로 재사용한다
-  const QUICK_LOGIN_ACCOUNTS: { label: string; email: string }[] = [
-    { label: '교육생', email: 'trainee@org.com' },
-    { label: '매니저', email: 'manager@org.com' },
-    { label: '오퍼레이터', email: 'operator@iz-get.com' },
-    { label: '슈퍼 어드민', email: 'admin@iz-get.com' },
-  ]
-
+  // 서버가 역할을 판정하는 로그인 흐름 자체는 그대로 재사용한다. 로그인 후에는
+  // 헤더의 같은 목록(dev 전용, Header.tsx)으로 화면 전환 없이 역할을 바꿀 수 있다.
   async function handleQuickLogin(quickEmail: string) {
     setAlert(null)
     setResendDone(false)

@@ -916,3 +916,12 @@ B반 사람을 A반으로 옮김 → 되돌리기 → 미배정   ← B반이 �
   - `ProjectRowCells.tsx`: `hasNoCurriculum` import·`CurriculumCell`/`ConceptCell`의 "해당 없음"/"본인 커밋 영역" 분기 삭제, 팀장님 `3a56828`의 문구로 복원.
 - **검산:** `grep`으로 `bigp`·`hasNoCurriculum`·`note?: string` 코드 참조 0건(설명 주석 1건 제외) 확인. `/tmp` 새 격리 복사 후 `tsc --noEmit -p tsconfig.app.json` 통과. `TeamTab.tsx`가 `detail.teamPhase`/`teams`/`unassigned`만 읽고 프로젝트 id를 하드코딩하지 않는 것, `deleteTeam()`이 `recomputeTeamPhase`를 호출해 `teams.length === 0 → BEFORE` 전이를 실제로 만드는 것, `ProjectDetailScreen.tsx`가 `bigp`나 프로젝트 개수를 하드코딩하지 않는 것을 코드로 확인.
 - **목적·효과:** 팀장님의 "회차 유형이 미프 하나만 남는다" 결정이 이 브랜치에도 그대로 반영된다. MG-08 "편성 전" 화면은 데모용 프로젝트가 사라져도 코드는 그대로라 `mif-4`/`mif-5`에서 팀을 전부 지우면 언제든 재현·확인할 수 있다.
+
+## D45 · 공용 Checkbox.tsx `disabled:*` 무동작 버그 수정(이슈 #113) — 원인 파일을 직접 고침
+
+- **배경:** D41에서 발견한 것 — 공용 `components/ui/Checkbox.tsx`의 `disabled:cursor-not-allowed disabled:opacity-50`·`group-has-disabled/field:opacity-50`가 처음부터 한 번도 작동한 적이 없었다. Base UI `Checkbox.Root`가 `<span role="checkbox">`로 렌더돼 네이티브 `disabled` 속성 자체가 없고 `data-disabled` 어트리뷰트로만 비활성을 표시하는데, `disabled:`·`group-has-disabled:`는 둘 다 `:disabled` 가상 클래스를 전제로 하는 선택자라 `<span>`엔 애초에 매칭될 수 없었다. D41 당시엔 팀장님 소유 파일이라 그 화면(`RetrySendDialog.tsx`)에서만 우회하고 원인 파일은 안 건드렸는데, 이번에 사용자(진용)가 "내가 고쳐보자"며 직접 승인 — CLAUDE.md §7 "팀장이 만든 파일은 임의로 수정하지 않는다 · 수정이 필요해 보이면 먼저 알리고 확인받는다"의 확인 절차를 사용자 본인이 그 자리에서 충족했다.
+- **판단:**
+  - `disabled:*` → `data-disabled:*`, `group-has-disabled/field:` → `group-has-data-disabled/field:`로 교체. 같은 파일군의 `Switch.tsx`·`Select.tsx`·`DropdownMenu.tsx`가 이미 `data-disabled:*`를 올바르게 쓰고 있어 그 표기를 그대로 옮겼다 — 새 규칙을 만들지 않았다. `group-has-data-*`도 `Field.tsx`(`group-has-data-horizontal/field:`)·`Avatar.tsx`(`group-has-data-[size=lg]/avatar-group:`)에 이미 있는 표기와 동일하다.
+  - `RetrySendDialog.tsx`의 `DISABLED_CHECKED_CLASS`(D41에서 만든 로컬 우회)는 **지우지 않았다.** 공용 컴포넌트가 고쳐져도 주는 건 "흐릿한 파랑"(`data-disabled:opacity-50`, 불투명도만 낮춤)이고, 이 화면이 사용자 지시로 이미 만들어 둔 건 "뚜렷한 회색"(다른 배경·테두리·글자색)이라 서로 다른 요구다. 두 클래스가 건드리는 CSS 속성이 겹치지 않아(opacity·cursor vs border·background·text-color) 공용 클래스 위에 로컬 오버라이드가 그대로 얹힌다 — 충돌도 중복도 아니라 그대로 뒀다.
+- **검산:** `/tmp` 격리 복사(레포 전체 — Checkbox가 14개 화면에서 쓰여 부분 복사로는 회귀를 못 잡는다) 후 `tsc --noEmit -p tsconfig.app.json`·`-p tsconfig.node.json` 둘 다 통과, `prettier --check` 통과. `oxlint`·`vite build`는 이 샌드박스의 알려진 네이티브 바인딩 문제로 실행 불가 — 브라우저 실측(`getComputedStyle`로 비활성 체크박스 opacity·cursor 확인)은 다음 렌더 확인 때 사용자가 직접.
+- **목적·효과:** 비활성 체크박스가 이 레포 전역(14개 화면)에서 처음으로 실제로 흐려지고 커서가 `not-allowed`로 바뀐다. `RetrySendDialog.tsx`처럼 이미 우회해 둔 화면은 그대로 두되, 다른 13개 화면도 별도 조치 없이 자동으로 정상화된다.

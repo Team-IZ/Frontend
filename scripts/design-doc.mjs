@@ -24,7 +24,7 @@ import {
   section,
   pageShell,
 } from './doc-shared.mjs'
-import { TOKEN_DOCS, GROUP_RATIONALE } from './design-doc-content.mjs'
+import { TOKEN_DOCS, OTHER_DOCS, GROUP_RATIONALE } from './design-doc-content.mjs'
 
 const OUT = join(ROOT, 'docs/dev/design-system.html')
 
@@ -38,11 +38,24 @@ const COLOR_GROUPS = [
     re: /^(danger|warning|success|info|neutral)/,
   },
   {
+    title: '개념 도달 단계 (0~4)',
+    note: '0→4로 이어지는 정도. 의미 색과는 축이 다르다',
+    re: /^reach/,
+  },
+  {
     title: '어두운 면 (좌측 네비)',
     note: '밝은 배경용 색은 어두운 면에서 통하지 않는다',
     re: /^nav/,
   },
+  {
+    title: '코드 패널',
+    note: '코드 텍스트 블록만 어둡다 — 감싼 패널은 흰 면이다',
+    re: /^code/,
+  },
 ]
+
+/* 위 섹션들이 각각 가져가는 접두사. 여기 안 걸리는 토큰은 마지막 섹션에 모인다 */
+const TYPED = /^(color|radius|text|font|shadow)-/
 
 function swatch(t) {
   const doc = TOKEN_DOCS[t.short]
@@ -121,6 +134,7 @@ function build() {
   const fonts = byPrefix(tokens, 'font-')
   const adjusted = colors.filter((c) => TOKEN_DOCS[c.short]?.adjusted).length
   const hasShadow = tokens.some((t) => t.name.startsWith('shadow-'))
+  const others = tokens.filter((t) => !TYPED.test(t.name))
 
   const used = new Set()
   const colorSections = COLOR_GROUPS.map((g) => {
@@ -218,6 +232,25 @@ function build() {
         a: '이 제품에서 떠 있어야 하는 것은 카드뿐이다. 모달은 배경을 덮어 구분되고, 나머지는 테두리로 나뉜다. 그림자 단계를 여럿 두면 "얼마나 떠 있나"를 매번 고민하게 된다.',
       },
     ])}`,
+  )}
+
+  ${section(
+    '그 외',
+    others.length,
+    '색·글자·모서리 어디에도 속하지 않는 값. 설명이 비어 있으면 OTHER_DOCS에 추가한다',
+    `<div class="rows">
+      ${others
+        .map(
+          (t) =>
+            `<div class="row"><code class="k">${esc(t.name)}</code><code class="val">${esc(t.value)}</code><span>${esc(OTHER_DOCS[t.name]?.use ?? '설명 없음 — scripts/design-doc-content.mjs의 OTHER_DOCS에 추가할 것')}</span></div>`,
+        )
+        .join('')}
+    </div>
+    ${rationale(
+      others
+        .filter((t) => OTHER_DOCS[t.name]?.note)
+        .map((t) => ({ q: `${t.name}은 왜 토큰인가`, a: OTHER_DOCS[t.name].note })),
+    )}`,
   )}`
 
   return pageShell({

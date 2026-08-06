@@ -28,20 +28,21 @@ export default function DetailHeader({ project }: { project: Project }) {
 
   return (
     <div className="mb-4">
-      <Button
-        variant="ghost"
-        size="sm"
-        aria-label="프로젝트 목록으로 돌아가기"
-        nativeButton={false}
-        render={<Link to="/manager/projects" />}
-        className="mb-2 -ml-1.5 p-1.5"
-      >
-        <ArrowLeft className="size-4" />
-        프로젝트
-      </Button>
-      <div className="flex flex-wrap items-baseline gap-2">
-        <h1 className="text-xl font-bold tracking-[-0.01em]">{project.name}</h1>
-        <Badge variant={STATUS_BADGE[project.status]}>{STATUS_LABEL[project.status]}</Badge>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="프로젝트 목록으로 돌아가기"
+          nativeButton={false}
+          render={<Link to="/manager/projects" />}
+          className="-ml-1.5 p-1.5"
+        >
+          <ArrowLeft className="size-5" />
+        </Button>
+        <div className="flex flex-wrap items-baseline gap-2">
+          <h1 className="text-xl font-bold tracking-[-0.01em]">{project.name}</h1>
+          <Badge variant={STATUS_BADGE[project.status]}>{STATUS_LABEL[project.status]}</Badge>
+        </div>
       </div>
       <div className="text-fg-subtle mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
         <span>{classScope}</span>

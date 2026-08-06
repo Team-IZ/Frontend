@@ -175,6 +175,80 @@ export const TRAINEES: TraineeRow[] = [
       '3': { status: 'ATTENDED', levels: [3, null, 4] },
     },
   },
+
+  /*
+   * MG-04(면담 브리프) 세션에서 추가 — `features/manager/interviews/mockData.ts`가
+   * 쓰는 `traineeId`(t-kim-minjun 등, 이 파일과 독립적으로 만들어진 값)가 위 t-1~
+   * t-12 어디에도 없어 "전체 이력"·이름 클릭이 전부 D-1(조회 권한 없음) 화면으로
+   * 막히던 문제를 사용자 확인 후 고쳤다. 기존 12명은 손대지 않고, 면담 화면이
+   * 실제로 참조하는 9명만 **같은 id·이름**으로 새로 추가한다 — 두 화면이 이제
+   * 같은 사람을 가리킨다. `rounds`·타임라인 오버레이는 채우지 않았다(면담 목업이
+   * 요구하는 범위 밖 — `getTraineeDetailOverlay`가 오버레이 없는 id는 빈 타임라인
+   * "아직 응시한 회차가 없습니다"로 이미 정상 처리한다, §6).
+   */
+  {
+    id: 't-lee-seojun',
+    name: '이서준',
+    email: 'seojun.lee@ex.com',
+    className: 'A반',
+    accountStatus: 'ACTIVE',
+  },
+  {
+    id: 't-choi-yuna',
+    name: '최유나',
+    email: 'yuna@ex.com',
+    className: 'C반',
+    accountStatus: 'ACTIVE',
+  },
+  {
+    id: 't-kim-minjun',
+    name: '김민준',
+    email: 'minjun.kim@ex.com',
+    className: 'A반',
+    accountStatus: 'ACTIVE',
+  },
+  {
+    id: 't-oh-serim',
+    name: '오세림',
+    email: 'serim@ex.com',
+    className: 'C반',
+    accountStatus: 'ACTIVE',
+  },
+  {
+    id: 't-han-jiwoo',
+    name: '한지우',
+    email: 'jiwoo.han@ex.com',
+    className: 'B반',
+    accountStatus: 'ACTIVE',
+  },
+  {
+    id: 't-park-dohyun',
+    name: '박도현',
+    email: 'dohyun.park@ex.com',
+    className: 'B반',
+    accountStatus: 'ACTIVE',
+  },
+  {
+    id: 't-kang-yunseo',
+    name: '강윤서',
+    email: 'yunseo@ex.com',
+    className: 'B반',
+    accountStatus: 'ACTIVE',
+  },
+  {
+    id: 't-jung-haneul',
+    name: '정하늘',
+    email: 'haneul@ex.com',
+    className: 'A반',
+    accountStatus: 'ACTIVE',
+  },
+  {
+    id: 't-seo-jihun',
+    name: '서지훈',
+    email: 'jihun@ex.com',
+    className: 'C반',
+    accountStatus: 'ACTIVE',
+  },
 ]
 
 /** 2단 이하 개수. 3(그 회차 검증 개념 수)은 고정 분모라 셀 수와 별개로 저장하지 않는다 */

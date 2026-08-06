@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
@@ -24,7 +24,14 @@ import {
   type ClassName,
   type InterviewCase,
 } from './mockData'
-import { ALL, INITIAL_FILTERS, isNarrowed, type FilterValues } from './filterState'
+import {
+  ALL,
+  getSessionFilters,
+  INITIAL_FILTERS,
+  isNarrowed,
+  setSessionFilters,
+  type FilterValues,
+} from './filterState'
 import InterviewStatusBadge from './components/InterviewStatusBadge'
 import RiskBadge, { RiskReason } from './components/RiskBadge'
 import InterviewFilters from './components/InterviewFilters'
@@ -53,7 +60,10 @@ const traineePath = (traineeId: string) => `/manager/trainees/${traineeId}`
 
 export default function InterviewListScreen() {
   const navigate = useNavigate()
-  const [filters, setFilters] = useState<FilterValues>(INITIAL_FILTERS)
+  // 브리프로 갔다가 "← 목록으로"로 돌아와도 회차·검색·상태가 그대로 있어야 한다
+  // (사용자 지시) — 세션 동안만 기억하는 모듈 전역값에서 초기화한다. 새로고침하면
+  // 사라진다(filterState.ts 판단 기록).
+  const [filters, setFilters] = useState<FilterValues>(getSessionFilters)
   const [voidTarget, setVoidTarget] = useState<InterviewCase | null>(null)
   const [undoBanner, setUndoBanner] = useState<{ caseId: string; name: string } | null>(null)
   const [rowPending, setRowPending] = useState<string | null>(null)
@@ -74,8 +84,24 @@ export default function InterviewListScreen() {
   const page = useAsync(loadInterviews)
   const narrowed = isNarrowed(filters)
 
+  useEffect(() => {
+    setSessionFilters(filters)
+  }, [filters])
+
+  /**
+   * 회차를 바꾸면 검색·상태·위험 유형·반 필터를 전부 초기화한다(사용자 질문에 대한
+   * 판단, decision-log D52) — 회차마다 케이스 구성 자체가 다르다(위험 유형·상태
+   * 분포가 회차마다 갈린다). 이전 회차에서 걸어둔 필터를 그대로 들고 가면 새
+   * 회차에서 "왜 아무것도 안 보이지"로 이어지기 쉽다. 브리프를 열었다 돌아오는
+   * 것(같은 회차 안에서의 이동)은 필터를 유지해야 하는 다른 경우라 여기 영향
+   * 없다 — `getSessionFilters`가 이미 그건 처리한다.
+   */
   function changeFilters(patch: Partial<FilterValues>) {
-    if (patch.round) setUndoBanner(null)
+    if (patch.round) {
+      setUndoBanner(null)
+      setFilters({ ...INITIAL_FILTERS, round: patch.round })
+      return
+    }
     setFilters((f) => ({ ...f, ...patch }))
   }
 
@@ -273,7 +299,7 @@ export default function InterviewListScreen() {
                     <TableCell>
                       <RiskReason
                         risk={c.risk}
-                        voidResolved={c.risk.type === 'INVALID' && !c.voidEvidence}
+                        voidResolved={c.risk.type === 'INVALID' && !!c.voidConfirmed}
                       />
                     </TableCell>
                     <TableCell>
@@ -362,7 +388,7 @@ function LastActivityCell({
     )
   }
   // PLANNED
-  if (c.risk.type === 'INVALID' && c.voidEvidence) {
+  if (c.risk.type === 'INVALID' && !c.voidConfirmed) {
     return <span className="text-warning font-medium">응답 없음 · 매니저 확인 필요</span>
   }
   if (c.risk.type === 'INVALID') {
@@ -386,7 +412,17 @@ function RowActions({
   onExclude: () => void
   onUndo: () => void
 }) {
-  if (c.status === 'DONE') return null
+  // 종결 — 브리프를 다시 열어 수정할 수 있다(사용자 지시). 제외는 안 보인다 —
+  // 이미 끝난 면담을 "제외"한다는 게 의미가 없다(제외는 PLANNED 케이스를 큐에서
+  // 빼는 동작이지, 완료된 기록을 지우는 동작이 아니다). `saveInterviewBrief` 판단
+  // 기록 참고.
+  if (c.status === 'DONE') {
+    return (
+      <Button variant="ghost" size="sm" disabled={pending} onClick={onOpenBrief}>
+        브리프 수정
+      </Button>
+    )
+  }
 
   if (c.status === 'EXCLUDED') {
     return (
@@ -397,7 +433,7 @@ function RowActions({
   }
 
   // PLANNED
-  const needsVoidCheck = c.risk.type === 'INVALID' && c.voidEvidence
+  const needsVoidCheck = c.risk.type === 'INVALID' && !c.voidConfirmed
   return (
     <div className="flex justify-end gap-1.5">
       {needsVoidCheck ? (

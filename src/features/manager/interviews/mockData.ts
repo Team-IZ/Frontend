@@ -41,9 +41,11 @@
     안 쓰지만, **위험 유형 필터 옵션 개수 표시**에 여전히 쓰여서 남겨뒀다.
   · **무효 응시 "그대로 두기"** — 정의서 "그대로 두면 이 결과가 남습니다"를 그대로
     반영했다. 실제 채점 결과가 없어(무효라 채점 전이었으니) 위험 유형을 다시 계산할
-    수 없다 — `voidEvidence`를 지워 재확인 대상에서 빼고, 판정 근거·마지막 활동을
-    "확인 완료"로 바꾼다. 배지 자체("무효 응시")는 그대로 둔다 — 나중에 실제 채점이
-    끝나면 그 결과가 이 케이스를 대체할 것이다(그 흐름은 이 화면 밖).
+    수 없다 — 재확인 대상에서 빼고 판정 근거·마지막 활동을 "확인 완료"로 바꾸는 건
+    `voidConfirmed`(D49)가 갖는다. `voidEvidence` 자체는 지우지 않는다 — MG-04
+    브리프가 무효 응시 케이스를 열 때마다 "시스템이 본 것"을 계속 보여줘야 해서다.
+    배지 자체("무효 응시")는 그대로 둔다 — 나중에 실제 채점이 끝나면 그 결과가 이
+    케이스를 대체할 것이다(그 흐름은 이 화면 밖).
 */
 
 export type RoundId = '1' | '2' | '3' | '4' | '5'
@@ -96,9 +98,11 @@ export type InterviewCase = {
   status: InterviewCaseStatus
   risk: CaseRisk
   /**
-   * 무효 응시일 때만. 매니저가 아직 판정하지 않았으면 값이 있다 — 확인(그대로 두기·
-   * 무효로 처리) 후에는 지워진다(무효로 처리는 케이스 자체가 목록에서 사라지고,
-   * 그대로 두기는 이 필드만 지운다. 위 파일 머리말 판단 기록 참고).
+   * 무효 응시일 때만. 이 값 자체는 "그대로 두기"를 골라도 안 지워진다 — MG-04
+   * 브리프가 "시스템이 본 것"을 보여줄 때 언제든 다시 읽어야 해서다(재확인 대상
+   * 여부는 아래 `voidConfirmed`가 별도로 갖는다. 이전엔 이 필드를 지워 "확인
+   * 완료"를 표현했는데, 그러면 브리프를 다시 열었을 때 보여줄 값이 없어져 D49로
+   * 갈라냈다).
    */
   voidEvidence?: {
     unanswered: number
@@ -106,8 +110,18 @@ export type InterviewCase = {
     copied: boolean
     durationMin: number
   }
-  /** 종결(DONE)일 때만 — 면담일 + 다음에 할 것(없으면 null) */
-  interview?: { date: string; nextAction: string | null }
+  /**
+   * 무효 응시 확인(§6 "그대로 두기")을 마쳤는가 — MG-03 목록의 "무효 확인" 게이트·
+   * "확인 완료" 표시가 이 값을 본다. `voidEvidence`와 분리한 이유는 위 주석 참고.
+   */
+  voidConfirmed?: boolean
+  /**
+   * 종결(DONE)일 때만 — 면담일 + 다음에 할 것(없으면 null). `causes`·`why`는
+   * 브리프를 다시 열었을 때 이전에 고른 원인·적은 상세 사유를 복원하기 위한
+   * 값이다(종결 후에도 브리프를 다시 열 수 있다 — 아래 `saveInterviewBrief`
+   * 판단 기록 참고).
+   */
+  interview?: { date: string; nextAction: string | null; causes?: CauseKey[]; why?: string }
   /** 제외(EXCLUDED)일 때만 */
   excludedAt?: string
   excludedBy?: string
@@ -175,7 +189,9 @@ const ROUNDS: Record<RoundId, InterviewRound> = {
         className: 'A반',
         status: 'DONE',
         risk: { type: 'DECLINE', from: 0, to: 2 },
-        interview: { date: '2026-06-22', nextAction: null },
+        // MG-04 브리프 ①의 "지난 면담에서 정한 것" 예시(정의서·와이어 그대로)가
+        // 이 케이스를 인용한다 — nextAction을 null로 두면 인용할 값이 없다.
+        interview: { date: '2026-06-22', nextAction: '담당 기능 흐름 그려오기' },
       },
       {
         id: 'iv-2-3',
@@ -447,8 +463,10 @@ export function undoExclude(roundId: RoundId, caseId: string): Promise<void> {
 /**
  * `PATCH /interviews/{id}` — 무효 응시 확인. 자동 확정하지 않는다(9-4) — 사람이
  * 고른다. `INVALIDATE`는 결과 자체를 지우므로 케이스가 목록에서 사라진다(정의서
- * "이 회차 결과가 지워집니다 · 위험 판정도 남지 않습니다"). `KEEP`은 파일 머리말
- * 판단 기록 참고.
+ * "이 회차 결과가 지워집니다 · 위험 판정도 남지 않습니다"). `KEEP`은 `voidEvidence`를
+ * 지우지 않는다(D49) — MG-04 브리프가 "그대로 둔" 뒤에도 "시스템이 본 것"을 계속
+ * 보여줘야 해서다. 대신 `voidConfirmed`만 세워 MG-03의 "무효 확인" 게이트·"확인
+ * 완료" 표시를 가른다.
  */
 export function resolveVoid(
   roundId: RoundId,
@@ -461,7 +479,368 @@ export function resolveVoid(
   if (action === 'INVALIDATE') {
     round.cases = round.cases.filter((x) => x.id !== caseId)
   } else {
-    c.voidEvidence = undefined
+    c.voidConfirmed = true
+  }
+  return delay(undefined)
+}
+
+// ── MG-04 면담 브리프 목업 ──────────────────────────────────
+/*
+  값은 목업 docs/plan/v2/wireframe/manager/interview-brief.html의 장면(#brief·
+  #one·#multi·#group·#first·#void·#confirm·#savefail)을 그대로 옮긴다.
+
+  ⚠ 판단 기록 — 정의서·와이어에 없어 이 파일이 정한 것
+
+  · **"첫 면담"은 회차가 아니라 학생 단위다.** 와이어 #first 장면은 라벨상
+    "미프 2차"이지만, 이 저장소엔 그 회차가 없다 — 대신 "이 학생에게 이전
+    **면담**(DONE) 기록이 있는가"로 재정의해 판정한다(`findPriorInterview`).
+    한지우(`iv-3-5`)는 3차에서 처음 등장하고 이전 DONE 기록이 없어 자연히
+    "첫 면담" 장면과 같은 조건이 된다 — 회차 번호를 억지로 맞추지 않았다.
+  · **① 여는 말은 위험 유형이 아니라 "이전 면담 여부"로 갈린다.** 한지우의
+    위험 유형은 DECLINE(0→2)이라 비교 숫자가 있는데도, 와이어 #first는 비교
+    없는 문장("3개 중 2개에서 멈췄어요")을 쓴다 — 헤더 배지의 "0 → 2"는 그대로
+    두고(원본 데이터 그대로), ①의 문장만 이전 면담 유무로 고른다.
+  · **지속 저점(LOW_PERSISTENT)의 "지난 회차" 숫자** — 이 위험 유형은 from이
+    없다(계속 같은 지점에서 멈춘다는 뜻이라). 비교 문장을 쓸 때는 지난·이번
+    모두 같은 `lowCount`를 넣는다(이서준 `iv-3-3`) — 그래도 "무엇이 달라졌는지"
+    질문 자체는 여전히 유효하다(숫자가 아니라 이유가 바뀌었는지 묻는 것).
+  · **막힌 개념 목록은 이번 파일에 새로 둔다**(`CASE_CONCEPTS`) — 정의서 §4
+    "막힌 개념 · 채점 근거"는 세션 데이터를 읽는다고 했지만 이 레포에 세션-면담
+    간 연동은 없다(session 목업은 검증 문제 데이터라 개념 단위가 아니다). 위험
+    유형의 개수(2단 이하 N개)와 목록 길이가 어긋나지 않게 손으로 맞췄다.
+  · **"Graph 구성"을 김민준 말고 최유나(`iv-3-2`)에게도 겹쳐 뒀다** — 반 문제로
+    판정되려면(9-6) 원래 여러 학생이 같은 지점에서 막혀야 말이 된다. 한 명만
+    막힌 개념을 "반 절반 이상"이라고 부르면 그 자체로 앞뒤가 안 맞는다.
+  · **교안 위치("N장 P–Q쪽")는 `curriculum/mockData.ts`를 참조하지 않는다** —
+    이 파일 머리말이 이미 정한 "역할 간 mock cross-import 전례 없음" 원칙을
+    그대로 따른다. 값은 이 파일에서 독립적으로 붙인, 실제 페이지와 무관한
+    표시용 문자열이다.
+  · **"설명·표현 어려움"의 보낼 곳은 정의서·와이어 어디에도 없다** — 나머지
+    6개 원인은 정의서 표 또는 와이어 장면 어딘가에 예시가 있는데 이것만 없다.
+    "개념은 아는데 표현이 안 되는" 경우라 교안 재안내(개념 이해 부족)나 강사
+    Q&A(기술 문제)로 보내는 게 맞지 않다고 판단, **매니저가 다음 면담에서 직접
+    다시 설명해 보게 하는 것**으로 채웠다(전달만이 아니라 매니저 소관 — 면담
+    진행 자체가 매니저 일이라서). 팀장님 확인 필요하면 알려달라고 다음 세션에
+    남긴다.
+  · **③ 미체크 상태의 안내 문구는 와이어 원문("③에서 고르면 보낼 곳이
+    나타납니다")을 그대로 쓴다.** 정의서 6절의 paraphrase("고르지 않아도 저장할
+    수 있어요…")는 별도 저장 시점 토스트가 아니라 이 placeholder가 이미 하는
+    말과 같은 뜻이라 판단해, 저장을 막지 않는 것 자체로 충분하다고 보고 별도
+    확인 문구를 더 만들지 않았다.
+  · **"코드 매칭 0" 개념 제외·각주(정의서 6절)는 구현하지 않았다** — 이번
+    7개 케이스 어디에도 해당하는 예시가 없어 검증할 방법이 없다. `ConceptRef`
+    타입에 자리는 남겨 뒀다(`zeroMatch?`), 실제로 쓰는 케이스가 생기면 그때
+    필터링 로직을 채운다.
+  · **"저장 실패"(#savefail)는 mock이 실제로 실패시키지 않는다** — 이 파일의
+    다른 mock API(`excludeCase`·`undoExclude`·`resolveVoid`)도 전부 항상
+    성공한다. 화면 쪽 오류 처리 UI는 정의서·와이어대로 만들되, 강제로 실패를
+    재현하는 장치는 이 레포 관례에 없어 새로 만들지 않았다.
+*/
+
+export type CauseKey =
+  | 'CONCEPT_GAP'
+  | 'OUT_OF_SCOPE'
+  | 'TIME_SHORTAGE'
+  | 'EXPRESSION'
+  | 'DIFFICULTY_UP'
+  | 'TEAM_DEPENDENCE'
+  | 'CONDITION'
+
+/** ③ 들은 것 — 정의서 §3, 순서 고정 */
+export const CAUSE_OPTIONS: { key: CauseKey; label: string }[] = [
+  { key: 'CONCEPT_GAP', label: '개념 이해 부족' },
+  { key: 'OUT_OF_SCOPE', label: '담당 범위 밖' },
+  { key: 'TIME_SHORTAGE', label: '구현 시간 부족' },
+  { key: 'EXPRESSION', label: '설명·표현 어려움' },
+  { key: 'DIFFICULTY_UP', label: '난이도 상승' },
+  { key: 'TEAM_DEPENDENCE', label: '팀 의존' },
+  { key: 'CONDITION', label: '컨디션·심리' },
+]
+export const CAUSE_LABEL: Record<CauseKey, string> = Object.fromEntries(
+  CAUSE_OPTIONS.map((o) => [o.key, o.label]),
+) as Record<CauseKey, string>
+
+/** ② 질문 — 고정, 사용자가 못 고른다(정의서 §7 "② 질문 고르기 — 하지 않는다") */
+export const BRIEF_QUESTIONS = [
+  '이전 프로젝트와 비교해서 가장 달랐던 점이 뭐였어요?',
+  '이번에 어떤 역할을 맡았어요?',
+  '만들면서 제일 자신 없던 부분은요?',
+  '답하기 어려웠던 게 코드 때문이었어요, 설명하는 방식 때문이었어요?',
+]
+/** 무효 응시 전용 질문 3개(정의서 6-2) */
+export const VOID_BRIEF_QUESTIONS = [
+  '그날 컨디션이나 일정에 무슨 일이 있었어요?',
+  '화면을 열었을 때 어디서부터 막혔어요?',
+  '다시 볼 시간을 언제로 잡으면 좋을까요?',
+]
+
+export type DestOwner = 'MANAGER' | 'PASS'
+
+/** ④ 보낼 곳 한 줄. `owner`가 없으면 라우팅 액션이 아니라 안내 정보 줄(난이도 상승 공지문) */
+export type DestLine = {
+  /** 원인 라벨을 이 줄에 보여줄지 — 한 원인이 줄을 여럿 쓰면 첫 줄에만 true */
+  showLabel: boolean
+  text: string
+  /** text 안에서 굵게 표시할 부분 문자열(정확히 일치하는 첫 구간만) */
+  bold?: string
+  owner?: DestOwner
+  href?: string
+}
+
+export type ConceptRef = {
+  name: string
+  /** 교안 인용 문구 — "N장 P–Q쪽"(이 파일 안에서만 쓰는 표시용 값, 위 판단 기록 참고) */
+  curriculumRef?: string
+  /** 반 문제로 이미 판정됐으면(9-6) — 개인 사유·개념 이해 부족 목적지에서 빠지고 배너로 대체 */
+  groupIssue?: { classLabel: string }
+  /** 코드 매칭 0(정의서 6절) — 이번 케이스엔 없어 미사용, 자리만 남긴다 */
+  zeroMatch?: boolean
+}
+
+/**
+ * 케이스별 막힌 개념 — 위 판단 기록 참고. 처음엔 브리프가 열리는 PLANNED 7개
+ * 케이스만 채웠는데, 종결 후 브리프 재오픈(D47)으로 2차 DONE 케이스(`iv-2-1`·
+ * `iv-2-2`)도 브리프를 열 수 있게 되며 "이야기할 개념"이 비어 보이는 문제가
+ * 생겨(사용자 지적) 그 둘도 채웠다. `iv-2-3`(최유나, 제외 상태)은 브리프 버튼
+ * 자체가 없어 빠졌다.
+ */
+const CASE_CONCEPTS: Record<string, ConceptRef[]> = {
+  'iv-2-1': [
+    { name: 'HITL 개념 정의', curriculumRef: 'AI_LLMOps · 1장 12–18쪽' },
+    { name: 'HITL이 필요한 이유', curriculumRef: 'AI_LLMOps · 1장 19–24쪽' },
+    { name: '승인 UI 패턴', curriculumRef: 'AI_LLMOps · 4장 66–70쪽' },
+  ],
+  'iv-2-2': [
+    { name: '역할 기반 설계', curriculumRef: 'AI_LLMOps · 3장 30–36쪽' },
+    { name: '중단과 재개', curriculumRef: 'AI_LLMOps · 2장 55–59쪽' },
+  ],
+  'iv-1-1': [
+    { name: 'HITL 개념 정의', curriculumRef: 'AI_LLMOps · 1장 12–18쪽' },
+    { name: 'HITL이 필요한 이유', curriculumRef: 'AI_LLMOps · 1장 19–24쪽' },
+    { name: '중단과 재개', curriculumRef: 'AI_LLMOps · 2장 55–59쪽' },
+  ],
+  'iv-1-2': [
+    { name: '역할 기반 설계', curriculumRef: 'AI_LLMOps · 3장 30–36쪽' },
+    { name: '승인 UI 패턴', curriculumRef: 'AI_LLMOps · 4장 66–70쪽' },
+  ],
+  'iv-3-2': [
+    { name: 'Graph 구성', groupIssue: { classLabel: 'A반 23명 중 12명이 2단 이하' } },
+    { name: '체크포인트 저장', curriculumRef: 'AI_LLMOps · 6장 95–101쪽' },
+    { name: '승인 UI 패턴', curriculumRef: 'AI_LLMOps · 4장 66–70쪽' },
+  ],
+  'iv-3-3': [
+    { name: 'AgentState 필드 설계', curriculumRef: 'AI_LLMOps · 2장 50–54쪽' },
+    { name: '중단과 재개', curriculumRef: 'AI_LLMOps · 2장 55–59쪽' },
+  ],
+  'iv-3-4': [
+    { name: 'Graph 구성', groupIssue: { classLabel: 'A반 23명 중 12명이 2단 이하' } },
+    { name: 'HITL Trigger', curriculumRef: 'AI_LLMOps · 3장 36–46쪽' },
+  ],
+  'iv-3-5': [
+    { name: '인증 흐름', curriculumRef: 'AI_LLMOps · 5장 78–84쪽' },
+    { name: '트랜잭션', curriculumRef: 'AI_LLMOps · 5장 85–91쪽' },
+  ],
+}
+
+export type BriefData = {
+  caseId: string
+  traineeId: string
+  roundId: RoundId
+  roundLabel: string
+  name: string
+  className: string
+  risk: CaseRisk
+  isVoid: boolean
+  voidEvidence?: InterviewCase['voidEvidence']
+  hasPriorInterview: boolean
+  priorInterview?: { dateLabel: string; nextAction: string }
+  concepts: ConceptRef[]
+  /**
+   * 이 케이스 자신의 저장된 기록 — 종결(DONE) 후 브리프를 다시 열었을 때 이전에
+   * 고른 원인·적은 상세 사유·추후 계획을 복원한다(아래 `saveInterviewBrief`
+   * 판단 기록 참고). PLANNED로 처음 여는 브리프는 항상 없다.
+   */
+  savedRecord?: { causes: CauseKey[]; why: string; nextAction: string }
+}
+
+export const talkingConcepts = (b: BriefData): ConceptRef[] =>
+  b.concepts.filter((c) => !c.groupIssue && !c.zeroMatch)
+export const groupIssueConcepts = (b: BriefData): ConceptRef[] =>
+  b.concepts.filter((c) => !!c.groupIssue)
+
+/**
+ * ① 여는 말에 쓸 값 — **위험 유형 4종 × 고정 문장**(D51, 사용자 지시로 다시 씀).
+ * 전엔 "이전 면담 유무"로 비교/비비교 문장을 갈랐는데, 사용자가 "다들 어색하고
+ * 똑같다"고 지적해 위험 유형별로 자연스러운 문장을 따로 만들었다 — 문장 자체는
+ * `InterviewBriefScreen.tsx`의 `renderOpeningLine`이 갖고, 여기는 거기 꽂을
+ * 숫자만 계산한다(LLM 0회 원칙 유지 — 새로 쓴 문장은 화면 쪽 고정 템플릿뿐).
+ */
+export type OpeningLine =
+  | { kind: 'VOID' }
+  | { kind: 'DECLINE'; prev: number; now: number }
+  | { kind: 'LOW_PERSISTENT'; lowCount: number; streak: number }
+  | { kind: 'OBSERVE'; lowCount: number }
+
+export function openingLine(b: BriefData): OpeningLine {
+  const risk = b.risk
+  // `risk.type`으로 직접 좁힌다 — `b.isVoid`로 갈라도 값은 같지만, 그러면
+  // TS가 나머지 분기에서 `risk`가 `INVALID`를 배제한 걸 못 좁혀 컴파일 에러가 난다.
+  if (risk.type === 'INVALID') return { kind: 'VOID' }
+  if (risk.type === 'DECLINE') return { kind: 'DECLINE', prev: risk.from, now: risk.to }
+  if (risk.type === 'LOW_PERSISTENT') {
+    return { kind: 'LOW_PERSISTENT', lowCount: risk.lowCount, streak: risk.streak }
+  }
+  return { kind: 'OBSERVE', lowCount: risk.lowCount }
+}
+
+function findCaseLocation(caseId: string): { roundId: RoundId; item: InterviewCase } | null {
+  for (const roundId of Object.keys(ROUNDS) as RoundId[]) {
+    const item = ROUNDS[roundId].cases.find(byId(caseId))
+    if (item) return { roundId, item }
+  }
+  return null
+}
+
+/** 이 학생의 가장 최근 DONE 면담(현재 회차보다 이전) — "첫 면담" 여부와 지난 약속 인용에 쓴다 */
+function findPriorInterview(
+  traineeId: string,
+  beforeRoundId: RoundId,
+): { dateLabel: string; nextAction: string } | null {
+  const before = Number(beforeRoundId)
+  let found: InterviewCase | null = null
+  let foundRoundNum = -1
+  for (const roundId of Object.keys(ROUNDS) as RoundId[]) {
+    const roundNum = Number(roundId)
+    if (roundNum >= before) continue
+    const match = ROUNDS[roundId].cases.find(
+      (c) => c.traineeId === traineeId && c.status === 'DONE',
+    )
+    if (match && roundNum > foundRoundNum) {
+      found = match
+      foundRoundNum = roundNum
+    }
+  }
+  if (!found?.interview?.nextAction) return null
+  return { dateLabel: shortDateLabel(found.interview.date), nextAction: found.interview.nextAction }
+}
+
+/** `GET /interviews/{id}/brief` */
+export function getInterviewBrief(caseId: string): Promise<BriefData | null> {
+  const loc = findCaseLocation(caseId)
+  if (!loc) return delay(null)
+  const { roundId, item } = loc
+  const isVoid = item.risk.type === 'INVALID'
+  const prior = isVoid ? null : findPriorInterview(item.traineeId, roundId)
+  return delay({
+    caseId,
+    traineeId: item.traineeId,
+    roundId,
+    roundLabel: ROUND_LABEL[roundId],
+    name: item.name,
+    className: item.className,
+    risk: item.risk,
+    isVoid,
+    voidEvidence: item.voidEvidence,
+    hasPriorInterview: prior !== null,
+    priorInterview: prior ?? undefined,
+    concepts: isVoid ? [] : (CASE_CONCEPTS[caseId] ?? []),
+    savedRecord: item.interview
+      ? {
+          causes: item.interview.causes ?? [],
+          why: item.interview.why ?? '',
+          nextAction: item.interview.nextAction ?? '',
+        }
+      : undefined,
+  })
+}
+
+/**
+ * ④ 보낼 곳 — 원인 하나를 목적지 줄로 바꾼다. 원인 체크박스는 분류 라벨이 아니라
+ * 라우팅 스위치다(정의서 §3). `CONCEPT_GAP`·`DIFFICULTY_UP`만 케이스 데이터를
+ * 본다 — 나머지 5개는 고정 문구.
+ */
+export function destinationsFor(cause: CauseKey, brief: BriefData): DestLine[] {
+  switch (cause) {
+    case 'CONCEPT_GAP': {
+      const concepts = talkingConcepts(brief)
+      const lines: DestLine[] = concepts.map((c, i) => ({
+        showLabel: i === 0,
+        text: `교안 ${c.curriculumRef ?? 'AI_LLMOps'} 안내`,
+        owner: 'MANAGER',
+        href: '/manager/curriculum/cur-1',
+      }))
+      lines.push({ showLabel: lines.length === 0, text: '강사 Q&A 안내', owner: 'PASS' })
+      return lines
+    }
+    case 'OUT_OF_SCOPE':
+      return [
+        {
+          showLabel: true,
+          text: '다음 프로젝트 역할 분담에서 조정',
+          bold: '역할 분담',
+          owner: 'MANAGER',
+        },
+      ]
+    case 'TIME_SHORTAGE':
+      return [
+        {
+          showLabel: true,
+          text: '다시 보기 창 안내 · 다음 회차 일정 확인',
+          bold: '다시 보기 창',
+          owner: 'MANAGER',
+        },
+      ]
+    case 'EXPRESSION':
+      // 정의서·와이어에 예시가 없다 — 위 판단 기록 참고
+      return [{ showLabel: true, text: '다음 면담에서 다시 설명해보게 하기', owner: 'MANAGER' }]
+    case 'TEAM_DEPENDENCE':
+      return [{ showLabel: true, text: '다음 팀 편성에서 고려', bold: '팀 편성', owner: 'MANAGER' }]
+    case 'CONDITION':
+      return [
+        {
+          showLabel: true,
+          text: '기관 상담 채널로 연결',
+          bold: '상담 채널',
+          owner: 'PASS',
+        },
+      ]
+    case 'DIFFICULTY_UP':
+      // owner 없음 — 분류가 아니라 안내 정보 줄(9-6, 매니저가 세지 않게 한다)
+      return [
+        {
+          showLabel: true,
+          text: '반 절반 이상이면 개인 문제가 아님 — 기관에 보고',
+          bold: '기관에 보고',
+        },
+      ]
+  }
+}
+
+/**
+ * `PATCH /interviews/{id}/brief` — 저장은 항상 종결(정의서 §5). mock은 항상
+ * 성공한다(위 판단 기록).
+ *
+ * ⚠ **종결(DONE) 후에도 다시 저장할 수 있다** — 정의서·와이어엔 없는 흐름이다
+ * (7절 "약속 이행 추적은 하지 않는다"가 재오픈까지 막는다는 뜻은 아니라고 판단).
+ * 사용자 지시로 `InterviewListScreen`이 종결된 케이스에도 `[브리프 수정]`을 계속
+ * 보여주므로, 여기서도 상태를 `PLANNED`로 좁히지 않고 `EXCLUDED`만 막는다 —
+ * 제외는 별개의 종결 상태라 브리프로 되돌아오지 않는다(아래 `excludeCase` 판단
+ * 기록과 같은 이유, 이 함수는 상태 전이를 만들지 않는다). 원인·상세 사유도 같이
+ * 저장해 다음에 다시 열면 그대로 복원된다(`getInterviewBrief`의 `savedRecord`).
+ */
+export function saveInterviewBrief(
+  caseId: string,
+  payload: { causes: CauseKey[]; why: string; nextAction: string },
+): Promise<void> {
+  const loc = findCaseLocation(caseId)
+  if (loc && loc.item.status !== 'EXCLUDED') {
+    loc.item.status = 'DONE'
+    loc.item.interview = {
+      date: MOCK_TODAY,
+      nextAction: payload.nextAction.trim() || null,
+      causes: payload.causes,
+      why: payload.why,
+    }
   }
   return delay(undefined)
 }

@@ -103,16 +103,18 @@ const RETRY_STATUS_VARIANT = {
 
 /**
  * 잠긴(발송된) 체크박스 전용 색 — 활성 체크(파랑)와 다른 회색으로 구분한다(사용자
- * 지시). `[data-disabled][data-checked]` 2속성 선택자라 원래 클래스의 1속성
- * 선택자보다 항상 우선한다(위 docblock 참고) — 공용 `Checkbox.tsx`는 안 건드린다.
+ * 지시). `[data-disabled][data-checked]` 2속성 선택자라 `data-checked:bg-primary`
+ * (1속성)보다 항상 우선한다.
  *
- * ⚠ `disabled:`가 아니라 **`data-disabled:`**를 쓴다 — Base UI `Checkbox.Root`는
- * `<span role="checkbox">`로 렌더돼(`<button>`·`<input>`이 아니다) 네이티브
- * `disabled` 속성 자체가 없고, 대신 `data-disabled` 어트리뷰트로 비활성을
- * 표시한다. 공용 `Checkbox.tsx`의 `disabled:opacity-50`도 같은 이유로 실제로는
- * 한 번도 적용된 적이 없었다(브라우저에서 `getComputedStyle`로 확인 — 비활성
- * 체크박스가 항상 100% 불투명이었다) — 그 파일은 팀장님 소유라 고치지 않고
- * 여기서만 올바른 선택자를 쓴다.
+ * ⚠ **공용 `Checkbox.tsx`의 `disabled:*` 버그는 이슈 #113으로 고쳐졌다**
+ * (`data-disabled:*`로 교체 — Base UI `Checkbox.Root`가 `<span role="checkbox">`로
+ * 렌더돼 네이티브 `disabled` 속성이 없고 `data-disabled` 어트리뷰트만 쓰기
+ * 때문이었다, decision-log D41). 그런데 이 로컬 클래스는 **여전히 필요하다** —
+ * 공용 컴포넌트가 고쳐져도 주는 건 "흐릿한 파랑"(`data-disabled:opacity-50`,
+ * 불투명도만 낮춤)이지, 이 화면이 원하는 "뚜렷한 회색"(다른 배경·테두리·글자색)이
+ * 아니다. 두 클래스는 겹치는 CSS 속성이 없어(opacity·cursor vs
+ * border·background·text-color) 공용 클래스 위에 이 오버라이드가 그대로 얹힌다 —
+ * 충돌도 중복도 아니다.
  */
 const DISABLED_CHECKED_CLASS =
   'data-disabled:data-checked:border-border-strong data-disabled:data-checked:bg-neutral-soft data-disabled:data-checked:text-fg-subtle'

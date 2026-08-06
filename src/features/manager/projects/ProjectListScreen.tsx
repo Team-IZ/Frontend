@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
@@ -19,11 +19,16 @@ import {
   COHORT_NAME,
   CURRICULUM_OPTIONS,
   listManagerProjects,
-  scopeLabel,
   type ClassName,
   type ProjectStatus,
 } from './mockData'
-import { ALL, INITIAL_FILTERS, isNarrowed, type FilterValues } from './filterState'
+import {
+  ALL,
+  getSessionFilters,
+  isNarrowed,
+  setSessionFilters,
+  type FilterValues,
+} from './filterState'
 import ProjectStatusBadge from './components/ProjectStatusBadge'
 import ProjectFilters from './components/ProjectFilters'
 import {
@@ -49,15 +54,18 @@ import {
 */
 
 const CLASS_NAMES = MANAGED_CLASSES.map((c) => c.name)
-const CLASS_TOTAL: Record<ClassName, number> = Object.fromEntries(
-  MANAGED_CLASSES.map((c) => [c.name, c.total]),
-) as Record<ClassName, number>
 
 const detailPath = (id: string) => `/manager/projects/${id}`
 
 export default function ProjectListScreen() {
   const navigate = useNavigate()
-  const [filters, setFilters] = useState<FilterValues>(INITIAL_FILTERS)
+  // 상세로 갔다가 "← 프로젝트"로 돌아와도 검색·상태·반·교안·정렬이 그대로 있어야
+  // 한다(면담 MG-04와 같은 지시) — 세션 동안만 기억하는 모듈 전역값에서 초기화한다.
+  const [filters, setFilters] = useState<FilterValues>(getSessionFilters)
+
+  useEffect(() => {
+    setSessionFilters(filters)
+  }, [filters])
 
   const loadProjects = useCallback(
     () =>
@@ -74,20 +82,12 @@ export default function ProjectListScreen() {
   const page = useAsync(loadProjects)
   const narrowed = isNarrowed(filters)
 
-  // 스코프 문구 — 헤더는 필터와 무관하게 항상 담당 반 전체 합계를 보여준다
-  const scopeText = scopeLabel(CLASS_NAMES, CLASS_TOTAL)
-
   return (
     <ConsoleShell role="manager">
       <PageHeader
         breadcrumb={`프로젝트 › ${COHORT_NAME} › 담당 반`}
         title="프로젝트"
         count={page.data ? `${page.data.total}개` : undefined}
-        breakdown={
-          <span className="text-fg-subtle">
-            담당 <b className="text-fg-muted font-bold">{scopeText}</b>
-          </span>
-        }
       />
 
       <ProjectFilters

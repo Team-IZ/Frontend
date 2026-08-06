@@ -29,3 +29,19 @@ export const INITIAL_FILTERS: FilterValues = {
 export function isNarrowed(f: FilterValues): boolean {
   return f.search !== '' || f.classFilter !== ALL || f.curriculum !== ALL || f.status !== ALL
 }
+
+/**
+ * 목록 필터를 세션 동안만 기억한다 — 상세로 갔다가 "← 프로젝트"로 돌아오면
+ * 검색·상태·반·교안·정렬이 그대로 있어야 한다(면담 MG-04 filterState.ts와 같은
+ * 판단). 모듈 전역값이라 SPA 화면 전환에서는 살아있고 새로고침(F5)하면 사라진다
+ * — `localStorage`를 안 쓰는 이유도 동일(그 동작을 원한 게 아니라서).
+ */
+let sessionFilters: FilterValues | null = null
+
+export function getSessionFilters(): FilterValues {
+  return sessionFilters ?? INITIAL_FILTERS
+}
+
+export function setSessionFilters(next: FilterValues): void {
+  sessionFilters = next
+}

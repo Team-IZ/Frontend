@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { SearchIcon, XIcon } from 'lucide-react'
 import ConsoleShell from '@/shells/ConsoleShell'
@@ -49,6 +49,12 @@ import { AccountStatusBadge } from './components/AccountStatusBadge'
 import { RoundBadge } from './components/RoundBadge'
 import { maskEmail } from '@/lib/utils/mask'
 import { cn } from '@/lib/utils/cn'
+import {
+  getSessionFilters,
+  setSessionFilters,
+  type FilterValues,
+  type TraineeSort,
+} from './filterState'
 
 /*
   MG-05 교육생 명부 — 목업 API 연동 없이 고정 배열(mockData)을 화면에서 직접
@@ -71,12 +77,12 @@ const ACCOUNT_LABEL = Object.fromEntries(ACCOUNT_OPTIONS.map((o) => [o.value, o.
 
 const ROUND_ITEMS = Object.fromEntries(ROUND_OPTIONS.map((o) => [o.value, `회차 · ${o.label}`]))
 
-const SORT_OPTIONS = [
+const SORT_OPTIONS: { value: TraineeSort; label: string }[] = [
   { value: 'NAME', label: '이름' },
   { value: 'CLASS', label: '반' },
   { value: 'ACE_COUNT', label: '우수 누적' },
   { value: 'LOW_COUNT', label: '2단 이하' },
-] as const
+]
 const SORT_ITEMS = Object.fromEntries(SORT_OPTIONS.map((o) => [o.value, `정렬 · ${o.label}`]))
 
 /** 도달 단계 배경색(0~4단) — MG-02 히트맵과 같은 5단 스케일. 0·4단은 배경이 진해 흰 글자 */
@@ -167,11 +173,19 @@ function AceOrNoteCell({
 export default function TraineeListScreen() {
   const navigate = useNavigate()
 
-  const [search, setSearch] = useState('')
-  const [classFilter, setClassFilter] = useState('ALL')
-  const [accountFilter, setAccountFilter] = useState<'ALL' | AccountStatus>('ACTIVE')
-  const [sort, setSort] = useState<(typeof SORT_OPTIONS)[number]['value']>('NAME')
-  const [round, setRound] = useState<RoundId>(ROUND_OPTIONS[ROUND_OPTIONS.length - 1].value)
+  // 상세로 갔다가 목록으로 돌아와도 회차·검색·반·계정·정렬이 그대로 있어야 한다
+  // (면담 MG-04와 같은 지시) — 세션 동안만 기억하는 모듈 전역값에서 초기화한다.
+  // 새로고침하면 사라진다(filterState.ts 판단 기록).
+  const [filters, setFilters] = useState<FilterValues>(getSessionFilters)
+  const { round, search, classFilter, accountFilter, sort } = filters
+
+  useEffect(() => {
+    setSessionFilters(filters)
+  }, [filters])
+
+  function changeFilters(patch: Partial<FilterValues>) {
+    setFilters((f) => ({ ...f, ...patch }))
+  }
 
   const classOptions = useMemo(
     () => Array.from(new Set(TRAINEES.map((t) => t.className))).sort(),
@@ -245,7 +259,7 @@ export default function TraineeListScreen() {
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <Select
           value={round}
-          onValueChange={(v) => setRound((v as RoundId) ?? round)}
+          onValueChange={(v) => changeFilters({ round: (v as RoundId) ?? round })}
           items={ROUND_ITEMS}
         >
           <SelectTrigger className="h-9 min-w-32 text-sm font-semibold" aria-label="회차 선택">
@@ -266,7 +280,7 @@ export default function TraineeListScreen() {
           </InputGroupAddon>
           <InputGroupInput
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => changeFilters({ search: e.target.value })}
             placeholder="이름 · 이메일 검색"
             aria-label="교육생 검색"
           />
@@ -275,7 +289,7 @@ export default function TraineeListScreen() {
               <InputGroupButton
                 size="icon-xs"
                 aria-label="검색어 지우기"
-                onClick={() => setSearch('')}
+                onClick={() => changeFilters({ search: '' })}
               >
                 <XIcon />
               </InputGroupButton>
@@ -285,7 +299,7 @@ export default function TraineeListScreen() {
 
         <Select
           value={classFilter}
-          onValueChange={(v) => setClassFilter(v ?? 'ALL')}
+          onValueChange={(v) => changeFilters({ classFilter: v ?? 'ALL' })}
           items={classItems}
         >
           <SelectTrigger className="h-9 min-w-32" aria-label="반 필터">
@@ -303,7 +317,9 @@ export default function TraineeListScreen() {
 
         <Select
           value={accountFilter}
-          onValueChange={(v) => setAccountFilter(v as typeof accountFilter)}
+          onValueChange={(v) =>
+            changeFilters({ accountFilter: v as FilterValues['accountFilter'] })
+          }
           items={ACCOUNT_ITEMS}
         >
           <SelectTrigger className="h-9 min-w-32" aria-label="계정 필터">
@@ -318,7 +334,11 @@ export default function TraineeListScreen() {
           </SelectContent>
         </Select>
 
-        <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)} items={SORT_ITEMS}>
+        <Select
+          value={sort}
+          onValueChange={(v) => changeFilters({ sort: v as TraineeSort })}
+          items={SORT_ITEMS}
+        >
           <SelectTrigger className="h-9 min-w-32" aria-label="정렬">
             <SelectValue />
           </SelectTrigger>

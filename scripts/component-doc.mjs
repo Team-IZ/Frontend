@@ -12,6 +12,10 @@
  * 그래서 카드 자체를 원본 와이어프레임으로 가는 링크로 두었다 — 진짜 화면은
  * 거기서 본다.
  *
+ * 와이어프레임 링크는 배포된 카탈로그(team-iz.github.io/Frontend)를 절대 주소로 가리킨다.
+ * 이 문서 자체도 같은 사이트에 발행되는데 로컬(docs/dev/)과 발행본(/dev/)의 깊이가 달라
+ * 상대 경로 하나로 둘 다 맞출 수 없다. 절대 주소면 어디서 열어도 같은 화면이 뜬다.
+ *
  * `--check`를 주면 생성 결과가 커밋된 파일과 다를 때 실패한다(CI용).
  */
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs'
@@ -91,7 +95,7 @@ function build() {
   const tokens = readTokens()
 
   const shellsHtml = `<div class="cards">
-    <a class="card" href="../plan/screen/wireframe/shared/login.html">
+    <a class="card" href="https://team-iz.github.io/Frontend/wireframe/shared/login.html">
       <div class="shell-mini shell-mini-auth">
         <div class="sm-brand">
           <span class="sm-dot"></span>
@@ -108,7 +112,7 @@ function build() {
       <p class="desc">좌 브랜드 패널 + 우 폼. 구조는 고정이고 헤드라인·설명·각주만 받는다.</p>
       <span class="go">와이어프레임 열기 →</span>
     </a>
-    <a class="card" href="../plan/screen/wireframe/manager/dashboard.html">
+    <a class="card" href="https://team-iz.github.io/Frontend/wireframe/manager/dashboard.html">
       <div class="shell-mini shell-mini-manager">
         <div class="sm-topbar">
           <span class="sm-dot" style="background:var(--color-primary);width:10px;height:10px;border-radius:3px"></span>

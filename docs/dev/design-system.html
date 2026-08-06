@@ -192,7 +192,7 @@
 
   <section>
     <h2>색 <span class="cnt">41</span></h2>
-    <p class="cap">값이 조정된 토큰 4개는 카드에 ✎ 표시가 있다</p>
+    <p class="cap">값이 조정된 토큰 5개는 카드에 ✎ 표시가 있다</p>
     <div class="grp">
       <h3>표면</h3><p class="cap">무엇이 무엇 위에 얹히는지를 정한다</p>
       <div class="grid"><div class="sw" tabindex="0">
@@ -564,6 +564,102 @@
   </details>
     </div>
 <div class="grp">
+      <h3>개념 도달 단계 (0~4)</h3><p class="cap">0→4로 이어지는 정도. 의미 색과는 축이 다르다</p>
+      <div class="grid"><div class="sw" tabindex="0">
+    <div class="swbox">
+      <i style="background:var(--color-reach-0)"></i>
+      <div class="swtxt">
+        <code class="n">reach-0</code>
+        <code class="v">#df6150</code>
+      </div>
+    </div><div class="pop">
+        <p>도달 0단 — 아직 설명하지 못하는 상태.</p>
+        <p class="ex">예 · <span>교육생 목록 도달 표의 칸, 리포트 분포 막대</span></p>
+        <p class="note">면이 진해 글자는 흰색을 쓴다(reach-fg 아님).</p>
+      </div>
+  </div><div class="sw" tabindex="0">
+    <div class="swbox">
+      <i style="background:var(--color-reach-1)"></i>
+      <div class="swtxt">
+        <code class="n">reach-1</code>
+        <code class="v">#ec9a5c</code>
+      </div>
+    </div><div class="pop">
+        <p>도달 1단 — &quot;무엇을 하는지까지&quot;.</p>
+        <p class="ex">예 · <span>개념 카드의 레벨 배지, 회차 레일의 핀</span></p>
+        
+      </div>
+  </div><div class="sw" tabindex="0">
+    <div class="swbox">
+      <i style="background:var(--color-reach-2)"></i>
+      <div class="swtxt">
+        <code class="n">reach-2</code>
+        <code class="v">#ecc95e</code>
+      </div>
+    </div><div class="pop">
+        <p>도달 2단 — &quot;왜 그렇게 했는지까지&quot;.</p>
+        <p class="ex">예 · <span>위와 동일</span></p>
+        
+      </div>
+  </div><div class="sw" tabindex="0">
+    <div class="swbox">
+      <i style="background:var(--color-reach-3)"></i>
+      <div class="swtxt">
+        <code class="n">reach-3</code>
+        <code class="v">#a9cf8e</code>
+      </div>
+    </div><div class="pop">
+        <p>도달 3단 — &quot;다른 방법까지&quot;.</p>
+        <p class="ex">예 · <span>위와 동일</span></p>
+        
+      </div>
+  </div><div class="sw" tabindex="0">
+    <div class="swbox">
+      <i style="background:var(--color-reach-4)"></i>
+      <div class="swtxt">
+        <code class="n">reach-4</code>
+        <code class="v">#57b083</code>
+      </div>
+    </div><div class="pop">
+        <p>도달 4단 — &quot;언제 깨지는지까지&quot;.</p>
+        <p class="ex">예 · <span>위와 동일</span></p>
+        <p class="note">0단과 마찬가지로 면이 진해 글자는 흰색이다.</p>
+      </div>
+  </div><div class="sw" tabindex="0">
+    <div class="swbox">
+      <i style="background:var(--color-reach-fg)"></i>
+      <div class="swtxt">
+        <code class="n">reach-fg</code>
+        <code class="v">#241108</code>
+      </div>
+    </div><div class="pop">
+        <p>1~3단 면 위의 글자. 밝은 중간 단계 위에서만 쓴다.</p>
+        <p class="ex">예 · <span>레벨 배지 안의 숫자·라벨</span></p>
+        
+      </div>
+  </div><div class="sw" tabindex="0">
+    <div class="swbox">
+      <i style="background:var(--color-reach-na-bg)"></i>
+      <div class="swtxt">
+        <code class="n">reach-na-bg</code>
+        <code class="v">#eceef1</code>
+      </div>
+    </div><div class="pop">
+        <p>문항 없음 — 빗금(해치) 무늬의 밝은 줄. 어두운 줄은 border와 같은 값이다.</p>
+        <p class="ex">예 · <span>도달 표의 문항 없는 칸, 분포 막대의 해당 구간</span></p>
+        <p class="note">&quot;0단&quot;과 &quot;문항 없음&quot;은 다른 상태다. 둘을 색으로 구분하면 0단처럼 보이므로 무늬로 나눈다.</p>
+      </div>
+  </div></div>
+      <details>
+    <summary>왜 이렇게 정했나 <span class="cnt">(3)</span></summary>
+    <div class="qa">
+      <div><p class="q">의미 색(danger·warning·success)으로 대신하면 안 되나</p><p class="a">축이 다르다. 의미 색은 &quot;위험이다·정상이다&quot;라는 판정이고, 이건 0에서 4로 이어지는 정도다. 5단을 의미 색 이름에 억지로 대응시키면 2단이 warning인지 info인지 매번 다투게 된다.</p></div>
+<div><p class="q">글자색이 왜 단마다 다른가</p><p class="a">0·4단은 면이 진해서 흰 글자, 1~3단은 밝아서 reach-fg다. 한 색으로 통일하면 어느 한쪽이 반드시 AA 아래로 떨어진다.</p></div>
+<div><p class="q">문항이 없는 칸은 무슨 색인가</p><p class="a">색이 아니라 빗금 무늬다(reach-na-bg + border). 회색으로 칠하면 &quot;0단&quot;과 구분되지 않는데, 못 한 것과 물어본 적이 없는 것은 완전히 다른 뜻이다.</p></div>
+    </div>
+  </details>
+    </div>
+<div class="grp">
       <h3>어두운 면 (좌측 네비)</h3><p class="cap">밝은 배경용 색은 어두운 면에서 통하지 않는다</p>
       <div class="grid"><div class="sw" tabindex="0">
     <div class="swbox">
@@ -621,73 +717,21 @@
 <div><p class="q">다크 모드와는 다른가</p><p class="a">다르다. 이건 특정 영역(사이드바)이 어두운 것이고, 다크 모드는 전체 테마가 뒤집히는 것이다. 다크 모드 요구는 현재 명세에 없다.</p></div>
     </div>
   </details>
-    </div><div class="grp">
-        <h3>그 외</h3>
-        <p class="cap">위 분류에 속하지 않는 것. 우리가 정의한 토큰이 여기 나타나면 분류가 빠진 것이다.</p>
-        <div class="grid"><div class="sw" tabindex="0">
-    <div class="swbox">
-      <i style="background:var(--color-reach-0)"></i>
-      <div class="swtxt">
-        <code class="n">reach-0</code>
-        <code class="v">#df6150</code>
-      </div>
     </div>
-  </div><div class="sw" tabindex="0">
-    <div class="swbox">
-      <i style="background:var(--color-reach-1)"></i>
-      <div class="swtxt">
-        <code class="n">reach-1</code>
-        <code class="v">#ec9a5c</code>
-      </div>
-    </div>
-  </div><div class="sw" tabindex="0">
-    <div class="swbox">
-      <i style="background:var(--color-reach-2)"></i>
-      <div class="swtxt">
-        <code class="n">reach-2</code>
-        <code class="v">#ecc95e</code>
-      </div>
-    </div>
-  </div><div class="sw" tabindex="0">
-    <div class="swbox">
-      <i style="background:var(--color-reach-3)"></i>
-      <div class="swtxt">
-        <code class="n">reach-3</code>
-        <code class="v">#a9cf8e</code>
-      </div>
-    </div>
-  </div><div class="sw" tabindex="0">
-    <div class="swbox">
-      <i style="background:var(--color-reach-4)"></i>
-      <div class="swtxt">
-        <code class="n">reach-4</code>
-        <code class="v">#57b083</code>
-      </div>
-    </div>
-  </div><div class="sw" tabindex="0">
-    <div class="swbox">
-      <i style="background:var(--color-reach-fg)"></i>
-      <div class="swtxt">
-        <code class="n">reach-fg</code>
-        <code class="v">#241108</code>
-      </div>
-    </div>
-  </div><div class="sw" tabindex="0">
-    <div class="swbox">
-      <i style="background:var(--color-reach-na-bg)"></i>
-      <div class="swtxt">
-        <code class="n">reach-na-bg</code>
-        <code class="v">#eceef1</code>
-      </div>
-    </div>
-  </div><div class="sw" tabindex="0">
+<div class="grp">
+      <h3>코드 패널</h3><p class="cap">코드 텍스트 블록만 어둡다 — 감싼 패널은 흰 면이다</p>
+      <div class="grid"><div class="sw" tabindex="0">
     <div class="swbox">
       <i style="background:var(--color-code)"></i>
       <div class="swtxt">
         <code class="n">code</code>
         <code class="v">#1e2436</code>
       </div>
-    </div>
+    </div><div class="pop">
+        <p>코드 텍스트 블록의 배경. 패널 전체가 아니라 코드 부분만이다.</p>
+        <p class="ex">예 · <span>TR-03 검증 세션의 코드 창, 이탈 안내 토스트</span></p>
+        <p class="note">nav와 값이 같지만 별도 토큰이다 — nav는 사이드바 전용으로 스코프돼 있다.</p>
+      </div>
   </div><div class="sw" tabindex="0">
     <div class="swbox">
       <i style="background:var(--color-code-fg)"></i>
@@ -695,17 +739,32 @@
         <code class="n">code-fg</code>
         <code class="v">#d6dae6</code>
       </div>
-    </div>
+    </div><div class="pop">
+        <p>코드 위의 글자.</p>
+        <p class="ex">예 · <span>코드 본문</span></p>
+        
+      </div>
   </div><div class="sw" tabindex="0">
     <div class="swbox">
       <i style="background:var(--color-code-dim)"></i>
       <div class="swtxt">
-        <code class="n">code-dim</code>
+        <code class="n">code-dim<span class="mark" title="값이 조정된 토큰" aria-label="값이 조정된 토큰">✎</span></code>
         <code class="v">#8992a6</code>
       </div>
-    </div>
-  </div></div>
+    </div><div class="pop">
+        <p>코드보다 한 단계 물러나는 글자.</p>
+        <p class="ex">예 · <span>줄번호, 생략된 줄</span></p>
+        <p class="note">목업 원안은 code 배경에서 4.14:1로 AA 미달이라 fg-subtle과 같은 방식으로 밝혀 올렸다(4.93:1).</p>
       </div>
+  </div></div>
+      <details>
+    <summary>왜 이렇게 정했나 <span class="cnt">(2)</span></summary>
+    <div class="qa">
+      <div><p class="q">다크 모드를 만든 것 아닌가</p><p class="a">아니다. 어두운 것은 코드 텍스트 블록뿐이고, 그것을 감싼 패널·제목·버튼은 흰 면 그대로다. 실제 코드 에디터가 그렇게 보이기 때문에 코드만 어둡게 뒀다.</p></div>
+<div><p class="q">nav와 값이 같은데 왜 토큰을 또 만들었나</p><p class="a">지금 우연히 같을 뿐이다. nav 토큰은 자기 주석에 &quot;사이드바 전용&quot;이라고 스코프가 박혀 있어서, 코드 패널이 그걸 빌려 쓰면 사이드바 색을 바꾸는 순간 코드 창까지 따라 바뀐다.</p></div>
+    </div>
+  </details>
+    </div>
   </section>
 
   <section>
@@ -743,6 +802,20 @@
     <summary>왜 이렇게 정했나 <span class="cnt">(1)</span></summary>
     <div class="qa">
       <div><p class="q">그림자가 왜 하나뿐인가</p><p class="a">이 제품에서 떠 있어야 하는 것은 카드뿐이다. 모달은 배경을 덮어 구분되고, 나머지는 테두리로 나뉜다. 그림자 단계를 여럿 두면 &quot;얼마나 떠 있나&quot;를 매번 고민하게 된다.</p></div>
+    </div>
+  </details>
+  </section>
+
+  <section>
+    <h2>그 외 <span class="cnt">1</span></h2>
+    <p class="cap">색·글자·모서리 어디에도 속하지 않는 값. 설명이 비어 있으면 OTHER_DOCS에 추가한다</p>
+    <div class="rows">
+      <div class="row"><code class="k">container-page</code><code class="val">1320px</code><span>콘솔 화면 콘텐츠의 최대 폭. 이보다 넓은 화면에서는 가운데 정렬된다.</span></div>
+    </div>
+    <details>
+    <summary>왜 이렇게 정했나 <span class="cnt">(1)</span></summary>
+    <div class="qa">
+      <div><p class="q">container-page은 왜 토큰인가</p><p class="a">와이어 10개 화면에서 같은 값이 쓰여 토큰으로 올렸다. 표가 주인공인 화면이라 무한정 넓히면 한 행을 눈으로 따라가기 어려워진다.</p></div>
     </div>
   </details>
   </section>

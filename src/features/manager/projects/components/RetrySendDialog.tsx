@@ -106,7 +106,7 @@ const RETRY_STATUS_VARIANT = {
  * 지시). `[data-disabled][data-checked]` 2속성 선택자라 `data-checked:bg-primary`
  * (1속성)보다 항상 우선한다.
  *
- * ⚠ **공용 `Checkbox.tsx`의 `disabled:*` 버그는 이슈 #113으로 고쳐졌다**
+ * ⚠ **공용 `Checkbox.tsx`의 `disabled:*` 버그는 이슈 113으로 고쳐졌다**
  * (`data-disabled:*`로 교체 — Base UI `Checkbox.Root`가 `<span role="checkbox">`로
  * 렌더돼 네이티브 `disabled` 속성이 없고 `data-disabled` 어트리뷰트만 쓰기
  * 때문이었다, decision-log D41). 그런데 이 로컬 클래스는 **여전히 필요하다** —

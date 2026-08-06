@@ -30,6 +30,7 @@
   .side .head .prog .bar i{display:block;height:100%;background:var(--ok);width:8%}
   .side .head .expandall{margin-top:9px;width:100%;background:none;border:1px solid #3a4258;color:#8b93a8;font-family:inherit;font-size:11px;font-weight:600;padding:6px 8px;border-radius:6px;cursor:pointer}
   .side .head .expandall:hover{color:#fff;border-color:#5c6377}
+  .side .head a.ds{display:block;text-align:center;text-decoration:none}
   .side .list{flex:1;overflow-y:auto;padding:10px 10px 24px}
 
   .grp{margin-top:14px}
@@ -77,6 +78,8 @@
       <div class="sub">계층 4 · 화면 25.<br>오퍼레이터와 매니저는 나브가 다르다 — 상하 관계가 아니다.</div>
       <div class="prog"><span>진행</span><span class="bar"><i></i></span><span id="progtx">2 / 25</span></div>
       <button class="expandall" id="expandall" data-state="collapsed">전체 펼치기</button>
+      <!-- 화면 목록 밖에 둔다 — 목록 안에 넣으면 진행률(작업된 화면 수)에 섞여 25개가 26개가 된다 -->
+      <a class="expandall ds" href="../dev/design-system.html" target="_blank">디자인 시스템 ↗</a>
     </div>
     <nav class="list" id="list">
 

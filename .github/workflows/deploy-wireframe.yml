@@ -27,6 +27,17 @@ jobs:
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
+      # 디자인 시스템·컴포넌트 문서는 develop의 생성물이다(src/index.css에서 만들어진다).
+      # 발행 시점에 develop에서 꺼내 온다 — 이 브랜치에 복사본을 두면 토큰이 바뀔 때마다
+      # 사람이 옮겨야 하고, 그 동기화는 반드시 잊힌다.
+      - name: Pull design docs from develop
+        run: |
+          git fetch --depth=1 origin develop
+          git checkout FETCH_HEAD -- docs/dev
+          mkdir -p docs/plan/v2/dev
+          cp docs/dev/design-system.html docs/dev/components.html docs/plan/v2/dev/
+
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

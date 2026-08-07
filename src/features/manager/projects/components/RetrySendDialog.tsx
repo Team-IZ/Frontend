@@ -109,7 +109,7 @@ const RETRY_STATUS_VARIANT = {
  * ⚠ **공용 `Checkbox.tsx`의 `disabled:*` 버그는 이슈 113으로 고쳐졌다**
  * (`data-disabled:*`로 교체 — Base UI `Checkbox.Root`가 `<span role="checkbox">`로
  * 렌더돼 네이티브 `disabled` 속성이 없고 `data-disabled` 어트리뷰트만 쓰기
- * 때문이었다, decision-log D41). 그런데 이 로컬 클래스는 **여전히 필요하다** —
+ * 때문이었다, mg-08-projects.md MG08-9). 그런데 이 로컬 클래스는 **여전히 필요하다** —
  * 공용 컴포넌트가 고쳐져도 주는 건 "흐릿한 파랑"(`data-disabled:opacity-50`,
  * 불투명도만 낮춤)이지, 이 화면이 원하는 "뚜렷한 회색"(다른 배경·테두리·글자색)이
  * 아니다. 두 클래스는 겹치는 CSS 속성이 없어(opacity·cursor vs

@@ -10,7 +10,7 @@ function Checkbox({ className, ...props }: CheckboxPrimitive.Root.Props) {
       className={cn(
         /*
           ⚠ `disabled:*`가 아니라 `data-disabled:*`를 쓴다(버그 수정, 이슈 113·
-          decision-log D41) — Base UI `Checkbox.Root`는 `<span role="checkbox">`로
+          mg-08-projects.md MG08-9) — Base UI `Checkbox.Root`는 `<span role="checkbox">`로
           렌더돼 네이티브 `disabled` 속성 자체가 없고 `data-disabled` 어트리뷰트로만
           비활성을 표시한다. `disabled:`는 `:disabled` 가상 클래스라 `<span>`엔
           애초에 매칭될 수 없어 여기 두 클래스는 한 번도 작동한 적이 없었다.

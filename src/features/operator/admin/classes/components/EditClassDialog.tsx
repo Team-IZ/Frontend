@@ -16,7 +16,7 @@ import type { ClassRoom } from '../../_/api/types'
 import RequiredMark from '../../_/components/RequiredMark'
 
 /*
-  반 수정 — 이름·정원(decision-log D30-②).
+  반 수정 — 이름·정원(op-06-admin.md OP06-7-②).
 
   **개강 전에만 열린다.** 이 모달을 여는 버튼 자체가 그때만 그려지고, 서버도 같은 규칙을
   다시 검증한다(화면만 막으면 우회된다).

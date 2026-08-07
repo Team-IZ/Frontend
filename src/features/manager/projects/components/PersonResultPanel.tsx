@@ -67,7 +67,7 @@ function ConceptBlock({ concept }: { concept: PersonResult['concepts'][number] }
     <div>
       <div className="mb-1.5 flex items-center gap-2">
         <span className="text-sm font-bold">{concept.concept}</span>
-        {concept.retryTarget && <Badge variant="warning">재응시 대상</Badge>}
+        {concept.retryTarget && <Badge variant="warning">다시 보기 대상</Badge>}
       </div>
 
       {!concept.inCode ? (

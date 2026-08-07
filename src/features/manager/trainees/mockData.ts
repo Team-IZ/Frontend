@@ -3,7 +3,7 @@
   실 데이터가 붙으면 이 파일은 지운다.
 
   MG-06(교육생 상세, 이슈 #47) 타임라인 데이터가 아래 이어붙었다 — 회차 격자는 위
-  TraineeRow.rounds가 유일한 정보원이고, 그 사이에 있었던 사건(세션·재응시·
+  TraineeRow.rounds가 유일한 정보원이고, 그 사이에 있었던 사건(세션·다시 보기·
   리포트 발행·면담)만 TraineeDetailOverlay로 따로 둔다(같은 값을 두 번 두지 않는다).
 */
 export type AccountStatus = 'ACTIVE' | 'INVITED' | 'INACTIVE'
@@ -269,7 +269,7 @@ export function aceSummary(trainee: TraineeRow): { count: number; rounds: RoundI
   이슈 #47(MG-06 v2)로 SC-M06의 3탭(종합·세션·면담) + 5축 점수 모델을 전면 폐기하고
   단일 타임라인으로 바꾼다. 점수·축·세션 질답 전문은 없다(정의서 §7 "v1에서 버린
   것") — 회차 격자는 위 TraineeRow.rounds를 그대로 재사용하고(같은 값을 두 번 두지
-  않는다), 아래는 그 사이에 있었던 사건(세션·재응시·리포트 발행·면담)만 다룬다.
+  않는다), 아래는 그 사이에 있었던 사건(세션·다시 보기·리포트 발행·면담)만 다룬다.
 */
 
 export type TimelineEventBase = { id: string; sortAt: string; dateLabel: string }
@@ -286,7 +286,7 @@ export type SessionEvent = TimelineEventBase & {
   evidences: ({ hint?: string; note: string } | null)[]
 }
 
-/** 재응시 — 도달이 바뀐 사건(changed)이거나 창이 미응시로 닫힌 사건(closed) */
+/** 다시 보기 — 도달이 바뀐 사건(changed)이거나 창이 미응시로 닫힌 사건(closed) */
 export type RetryEvent = TimelineEventBase & {
   kind: 'RETRY'
   label: string
@@ -295,7 +295,7 @@ export type RetryEvent = TimelineEventBase & {
   tag?: string
 }
 
-/** 리포트 발행 — 재응시 창의 기산점(발행 +3일). 몇 건 지정됐는지만 본다 */
+/** 리포트 발행 — 다시 보기 창의 기산점(발행 +3일). 몇 건 지정됐는지만 본다 */
 export type ReportEvent = TimelineEventBase & { kind: 'REPORT'; detail: string }
 
 /**
@@ -368,7 +368,7 @@ const PARK_JIMIN_OVERLAY: TraineeDetailOverlay = {
           id: 'pjm-3-r1',
           sortAt: '2026-07-15',
           dateLabel: '07.15',
-          detail: '재응시 2건 지정',
+          detail: '다시 보기 2건 지정',
         },
         {
           kind: 'RETRY',
@@ -395,9 +395,9 @@ const PARK_JIMIN_OVERLAY: TraineeDetailOverlay = {
           sortAt: '2026-07-21',
           dateLabel: '07.21',
           recorded: true,
-          summary: '구현 시간 부족 → 재응시 창 안내',
+          summary: '구현 시간 부족 → 다시 보기 창 안내',
           whatHappened: '과제 3개가 겹쳐 미프에 쓸 시간이 부족했다고 함',
-          whereSent: '재응시 창 안내 · 다음 회차 일정 확인',
+          whereSent: '다시 보기 창 안내 · 다음 회차 일정 확인',
           nextAction: { text: 'HITL Trigger 흐름 그려오기' },
         },
       ],
@@ -424,7 +424,7 @@ const PARK_JIMIN_OVERLAY: TraineeDetailOverlay = {
           id: 'pjm-2-r1',
           sortAt: '2026-06-17',
           dateLabel: '06.17',
-          detail: '재응시 1건 지정',
+          detail: '다시 보기 1건 지정',
         },
         {
           kind: 'RETRY',
@@ -469,7 +469,7 @@ const LEE_HAEUN_OVERLAY: TraineeDetailOverlay = {
           id: 'lhe-3-r1',
           sortAt: '2026-07-15',
           dateLabel: '07.15',
-          detail: '재응시 2건 지정',
+          detail: '다시 보기 2건 지정',
         },
         {
           kind: 'RETRY',
@@ -548,7 +548,7 @@ const KANG_MINJUN_OVERLAY: TraineeDetailOverlay = {
           id: 'kmj-3-r1',
           sortAt: '2026-07-15',
           dateLabel: '07.15',
-          detail: 'Graph 구성 재응시 1건 지정',
+          detail: 'Graph 구성 다시 보기 1건 지정',
         },
       ],
     },

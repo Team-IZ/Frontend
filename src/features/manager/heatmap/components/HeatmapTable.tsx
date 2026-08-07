@@ -1,6 +1,6 @@
 import { Link } from 'react-router'
 import Badge from '@/components/ui/Badge'
-import { REACH_STYLE, NA_PATTERN } from '@/features/manager/trainees/lib/reach'
+import { REACH_STYLE, NA_PATTERN } from '@/components/common/reach'
 import { cn } from '@/lib/utils/cn'
 import {
   BADGE_LABEL,
@@ -13,7 +13,9 @@ import {
 /*
   히트맵 표 — y축·셀 폭을 `<colgroup>`으로 고정한다(`table-fixed`만으로는 행마다
   내용 길이가 달라 흔들린다) · 평균 행(테두리 강조) → 그룹 안내 행 → 상세 행. 셀
-  색은 `trainees/lib/reach.ts`의 `REACH_STYLE`을 그대로 쓴다 — 반·팀 평균(연속값)은
+  색은 `@/components/common/reach`의 `REACH_STYLE`을 그대로 쓴다(원래
+  `trainees/lib/reach.ts`에서 바로 가져왔는데, oxlint의 feature 간 교차 import
+  금지에 걸려 공용 위치로 승격했다 — `reach.ts` 머리말 참고) — 반·팀 평균(연속값)은
   반올림한 정수로 색을 고르고, 개인 셀은 도달 단계 그대로 쓴다(정의서 "개인은 원값").
 
   **집단 미달**(9-6)은 그 행 자체가 전원의 절반 이상 2단 이하일 때 테두리(ring)로

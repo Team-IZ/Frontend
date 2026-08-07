@@ -1,4 +1,4 @@
-import { REACH_STYLE, NA_PATTERN } from '@/features/manager/trainees/lib/reach'
+import { REACH_STYLE, NA_PATTERN } from '@/components/common/reach'
 import { cn } from '@/lib/utils/cn'
 
 /*

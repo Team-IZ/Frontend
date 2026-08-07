@@ -9,9 +9,13 @@
   ⚠ 이 파일은 `features/manager/trainees/mockData.ts`·`features/manager/projects/
   mockData.ts`를 import하지 않는다 — 이 레포에 역할 간 mock cross-import 전례가
   없다(`interviews/mockData.ts` 머리말과 같은 이유). 대신 **표시 로직**(도달 단계
-  색·해치 무늬)은 `features/manager/trainees/lib/reach.ts`의 `REACH_STYLE`·
-  `NA_PATTERN`을 그대로 쓴다 — 그 파일은 데이터가 아니라 "두 화면이 같은 스케일을
-  써야 한다"는 이유로 만든 공용 로직이라 cross-import 금지 대상이 아니다.
+  색·해치 무늬)은 `HeatmapTable.tsx`·`HeatmapLegend.tsx`가 `@/components/common/
+  reach`의 `REACH_STYLE`·`NA_PATTERN`을 쓴다 — 처음엔 `features/manager/trainees/
+  lib/reach.ts`에서 바로 가져왔는데, oxlint `no-restricted-imports`(feature 간
+  교차 import 금지)에 걸려 공용 위치로 승격했다(`reach.ts`·`common/reach.ts`
+  머리말 참고, decision-log D14 "세 번째 도메인에서 올린다"가 그대로 들어맞은
+  경우). 이 파일(mockData.ts) 자체는 REACH_STYLE을 직접 쓰지 않는다 — 색 매핑은
+  렌더 쪽 책임이라 여기선 숫자(avg)·판정(flagged)만 낸다.
 
   **인원은 `trainees/mockData.ts`의 실제 id·이름·반을 그대로 옮겨 썼다**(값을 손으로
   다시 입력, import는 아님) — 개인 행 클릭이 MG-06으로 이동하는데, MG-04 세션 때

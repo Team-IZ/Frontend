@@ -33,7 +33,7 @@ import DeactivateTraineeDialog from './components/DeactivateTraineeDialog'
 /*
   ③ 명단 — 기수의 교육생 전체. 범위는 **선택 기수**다.
 
-  **반과 탭을 나눴다**(decision-log D24) — 두 표가 한 뷰포트에 안 들어갔다. 대신 여기서
+  **반과 탭을 나눴다**(op-06-admin.md OP06-1) — 두 표가 한 뷰포트에 안 들어갔다. 대신 여기서
   반을 알아야 하는 것이 둘 있다: 필터 드롭다운과 소속 반 열. 그래서 **반 목록을 여기서도
   조회한다** — 탭이 갈렸으므로 부모가 내려줄 수 없고, 각 탭이 자기가 그릴 것을 부른다.
 
@@ -79,7 +79,7 @@ export default function RosterTab({ onCountsChange }: Props) {
   */
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
   const [addOpen, setAddOpen] = useState(false)
-  /** 중도 이탈 처리 대상(D30-①). 한 명씩이라 대상 자체를 상태로 둔다 */
+  /** 중도 이탈 처리 대상(OP06-7-①). 한 명씩이라 대상 자체를 상태로 둔다 */
   const [deactivating, setDeactivating] = useState<Trainee | null>(null)
   /** 벌크 액션·명단 추가 결과 — 성공·실패가 같은 배너 자리를 쓴다 */
   const action = useActionResult()
@@ -385,7 +385,7 @@ export default function RosterTab({ onCountsChange }: Props) {
                       className={cn('text-xs', t.className ? 'text-fg-muted' : 'text-warning')}
                     >
                       {/*
-                        **`A반 · 3팀`에서 팀을 뺐다**(D29). 팀은 프로젝트마다 재편성되는
+                        **`A반 · 3팀`에서 팀을 뺐다**(OP06-6). 팀은 프로젝트마다 재편성되는
                         **회차의 속성**이라 사람에 고정으로 붙지 않는다(01-design-checklist).
                         한 기수에 회차가 여럿이면 회차 이름 없는 `3팀`은 무엇도 안 가리킨다.
                         매니저용 명단(MG-05)이 같은 이유로 팀 열을 이미 뺐다.
@@ -442,7 +442,7 @@ export default function RosterTab({ onCountsChange }: Props) {
         target={deactivating}
         onOpenChange={(v) => !v && setDeactivating(null)}
         onDone={(t, reason) => {
-          // 이름 뒤에 조사를 붙이지 않는다 — `을(를)`도 읽기 나쁘다(D29와 같은 이유)
+          // 이름 뒤에 조사를 붙이지 않는다 — `을(를)`도 읽기 나쁘다(OP06-6와 같은 이유)
           action.setResult({ text: `비활성 처리했어요 — ${t.name} · ${reason}` })
           refresh()
         }}

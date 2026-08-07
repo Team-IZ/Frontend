@@ -15,7 +15,7 @@ import type { Trainee } from '../../_/api/types'
 import RequiredMark from '../../_/components/RequiredMark'
 
 /*
-  교육생 비활성 — **중도 이탈 처리**(decision-log D30-①).
+  교육생 비활성 — **중도 이탈 처리**(op-06-admin.md OP06-7-①).
 
   **삭제가 아니다.** 명단에서 지우면 그 사람이 남긴 응시·리포트가 주인을 잃는다.
   퇴사한 매니저를 지우지 않고 정지로 남기는 것과 같은 판단이다(OP-06 §3).

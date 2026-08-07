@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AlertTriangle, Send } from 'lucide-react'
+import { AlertTriangle, Zap } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
@@ -19,6 +19,7 @@ import {
   cancelRetry,
   deadlinePassed,
   publishReport,
+  RETRY_STATUS_VARIANT,
   retryStatus,
   stuckConceptCount,
   type PersonResult,
@@ -39,12 +40,12 @@ import RetrySendDialog from './RetrySendDialog'
   · 발행 전엔 "다시 보기 대상" 카드가 실제 값 대신 "—발행 후 정해짐"이다(와이어
     "아직 응시하지 않은 인원은 집계에서 빠져 있어요. 발행하면 그 시점 값으로
     고정됩니다") — 발행 전 숫자를 이미 확정된 것처럼 보여주지 않는다.
-  · 다시 보기 발송은 인라인 체크리스트가 아니라 버튼이 여는 모달(`RetrySendDialog`,
+  · 다시 보기 활성화는 인라인 체크리스트가 아니라 버튼이 여는 모달(`RetrySendDialog`,
     와이어프레임 #retry-send)로 바꿨다.
-  · 발송해도 화면이 안 바뀐다는 지적(사용자) — 발송 전/후가 카운트 문구 하나로만
-    갈려서 **누구에게 보냈는지·기한이 언제인지·응시했는지**가 안 보였다. 발송된
-    사람은 이름·기한·응시 여부(`retryTakenAt`) 3열 표로 뜨게 했다 — 미발송
-    인원만 발송 버튼 아래 남는다.
+  · 활성화해도 화면이 안 바뀐다는 지적(사용자) — 활성화 전/후가 카운트 문구
+    하나로만 갈려서 **누구를 열어줬는지·기한이 언제인지·응시했는지**가 안
+    보였다. 활성화된 사람은 이름·기한·응시 여부(`retryTakenAt`) 3열 표로
+    뜨게 했다 — 활성화 전 인원만 활성화 버튼 아래 남는다.
   · "반 종합" → "프로젝트 종합"(사용자 지시). 이 프로젝트는 A반·B반·C반이 섞여
     있어서 애초에 "반" 단위 통계가 아니다 — 반별 분포가 필요하면 그건 MG-02
     히트맵 소관(위 참고)이라 이름만 실제 내용에 맞게 바꿨다.
@@ -52,34 +53,41 @@ import RetrySendDialog from './RetrySendDialog'
     개념 1개 이상 2단 미달)으로 교체. "다시 보기 대상"은 이제 그 불합격 인원 +
     **마감이 지나도록 응시를 안 한 인원**(`notStartedCount`)의 합이다(사용자
     지시) — 코드 분석이 아직 안 끝나 응시 자체가 안 열린 `BLOCKED`는 안 셈친다,
-    그건 독촉 대상이지 다시 보기 대상이 아니다. 다만 지금 발송 모달은 여전히
-    "응시했지만 불합격"한 사람만 다룬다 — 한 번도 응시 안 한 사람에게 보낼 것은
-    "다시" 보기가 아니라 최초 안내(독촉)라 다른 액션이다.
-  · **다시 보기 발송은 리포트 발행 후에만**(사용자 지시) — "다시 보기 대상"
-    카드가 이미 발행 전엔 "발행 후 정해짐"으로 숫자를 안 보여주는데, 발송
-    자체는 막혀 있지 않아 발행 전 숫자로 보낼 수 있는 모순이 있었다. 발송
+    그건 연락 대상이지 다시 보기 대상이 아니다. 다만 지금 활성화 모달은 여전히
+    "응시했지만 불합격"한 사람만 다룬다 — 한 번도 응시 안 한 사람에게 열어줄
+    것은 "다시" 보기가 아니라 최초 응시(독촉 대상)라 다른 액션이다.
+  · **다시 보기 활성화는 리포트 발행 후에만**(사용자 지시) — "다시 보기 대상"
+    카드가 이미 발행 전엔 "발행 후 정해짐"으로 숫자를 안 보여주는데, 활성화
+    자체는 막혀 있지 않아 발행 전 숫자로 열어줄 수 있는 모순이 있었다. 활성화
     섹션 전체를 `result.reportPublished`로 게이팅해 카드와 행동을 일치시켰다.
-  · **리포트 발행 — 마감 전 클릭 시 경고**(사용자 지시). 마감 전에 발행하면
-    그 뒤 들어오는 제출·응시가 반영 안 된 채로 굳는다 — `deadlinePassed`로
-    확인해 아직 안 지났으면 `AlertDialog`로 한 번 더 확인받는다("그래도
-    발행"을 눌러야 실제로 발행된다). 마감이 이미 지났으면(대부분의 경우)
-    평소처럼 바로 발행된다.
-  · **용어 — "다시 보기"를 전부 "재응시"로 바꿨다**(사용자 지시). 카드
-    라벨·섹션 헤더·버튼 문구가 대상이고 `retryTarget`·`retrySentAt` 같은
-    코드 식별자는 그대로 둔다.
-  · **재응시 발송 버튼 — 전원 발송해도 계속 노출**(사용자 지시). 전엔
-    `unsentCandidates.length > 0`일 때만 버튼이 떴는데, 전부 보내고 나면
+  · **리포트 발행 — 항상 확인 다이얼로그**(사용자 지시, 2026-08-08 수정).
+    처음엔 마감 전에만 경고했는데, 마감이 지난 흔한 경우엔 클릭 한 번에
+    바로 발행돼 실수로 누르기 쉬웠다 — 이제 클릭하면 항상 "현재 응시 인원은
+    n/n명입니다. 발행하시겠습니까?"를 먼저 보여준다(분자 n은 빨간 굵은
+    글씨, 사용자 지시). 마감 전이면(`deadlinePassed`) 같은 다이얼로그 안에
+    "마감 전이라 이후 제출이 안 반영된다"는 경고 문장을 추가로 덧붙인다 —
+    다이얼로그를 둘로 쪼개지 않는다.
+  · **⚠ 용어 롤백(결정 로그 D56 A·D절, 이슈 124)** — 지난 세션이 "다시 보기"를
+    전부 "재응시"로 바꿨던 걸 되돌린다. 2단 이하 재시험은 다시 "다시 보기"이고
+    `재응시`는 무효 응시(0단) 전용으로 좁아진다. 같이 **"발송"→"활성화"**,
+    **"발송 취소"→"비활성화"**로 바꿨다 — 백엔드가 실제로 메시지를 보내는 게
+    아니라 응시 권한·기한만 부여하는 상태 변경이라(C절, 알림 채널 절단) "보낸다"는
+    말이 더 이상 안 맞는다. `retryTarget`·`retrySentAt`·`sendRetry`·`cancelRetry`
+    같은 코드 식별자는 그대로 두고 UI 문구·JSDoc 의미만 바꿨다.
+  · **다시 보기 활성화 버튼 — 전원 활성화해도 계속 노출**(사용자 지시). 전엔
+    `unsentCandidates.length > 0`일 때만 버튼이 떴는데, 전부 열어주고 나면
     버튼 자체가 사라져서 다이얼로그를 다시 열 방법이 없었다. `!locked`만
     게이팅 조건으로 남겨 항상 눌러서 열 수 있게 했다.
-  · **발송 현황 표 배지 — `retryStatus()`로 통일**(사용자 지시). 이 표는
-    이제 `RetrySendDialog`와 같은 함수(`retryStatus`)로 상태를 계산한다 —
-    두 화면이 서로 다른 기준으로 "봤다/안 봤다"를 판단해 어긋나는 걸 막는다.
-  · **재응시 발송 취소**(사용자 지시). 발송 현황 표에 "취소" 액션을 추가했다
-    — **"재응시 발송 완료"(아직 안 봄)에만** 뜨고 **"재응시 완료"(이미
-    봄)에는 안 뜬다**(사용자 지시 "재응시 완료한 경우는 제외") — 이미 벌어진
-    일은 되돌릴 게 없다. `cancelRetry()`(`mockData.ts`)가 `retrySentAt`·
-    `retryDueAt`을 지워 그 사람을 다시 "재응시 가능"으로 돌린다. 눌러도
-    바로 취소되지 않고 `AlertDialog`로 한 번 더 확인받는다 — 학생에게 이미
+  · **활성화 현황 표 배지 — `retryStatus()`로 통일**(사용자 지시, D56로 4분류
+    확장). 이 표는 `RetrySendDialog`와 같은 함수(`retryStatus`)·같은 배지
+    색(`RETRY_STATUS_VARIANT`)으로 상태를 계산한다 — 두 화면이 서로 다른
+    기준으로 "봤다/안 봤다"를 판단해 어긋나는 걸 막는다.
+  · **다시 보기 비활성화**(사용자 지시, 명칭은 D56 D절). 활성화 현황 표에
+    "비활성화" 액션을 추가했다 — **"응시 전"·"미응시"(아직 안 봄)에만** 뜨고
+    **"완료"(이미 봄)에는 안 뜬다**(사용자 지시 "완료한 경우는 제외") — 이미
+    벌어진 일은 되돌릴 게 없다. `cancelRetry()`(`mockData.ts`)가 `retrySentAt`·
+    `retryDueAt`을 지워 그 사람을 다시 "활성화 전"으로 돌린다. 눌러도 바로
+    비활성화되지 않고 `AlertDialog`로 한 번 더 확인받는다 — 학생에게 이미
     안내된 기한을 지우는 되돌리기 비싼 행동이라 "그래도 발행" 경고와 같은
     패턴을 썼다.
 */
@@ -211,9 +219,11 @@ function SummaryPane({
   const unsentCandidates = retryCandidates.filter((p) => !p.retrySentAt)
   const [publishing, setPublishing] = useState(false)
   const [retryOpen, setRetryOpen] = useState(false)
-  const [publishWarnOpen, setPublishWarnOpen] = useState(false)
-  // 재응시 발송 취소 확인 대상 — "재응시 발송 완료"만 여기 담긴다("재응시 완료"는
-  // 취소 버튼 자체가 안 뜬다, 사용자 지시). null이면 확인 다이얼로그 닫힘
+  // ⚠ 사용자 지시(2026-08-08) — 마감 전에만 뜨던 경고를 "항상 뜨는 발행
+  // 확인"으로 넓혔다(위 판단 기록 참고). 다이얼로그는 하나만 쓴다.
+  const [publishConfirmOpen, setPublishConfirmOpen] = useState(false)
+  // 다시 보기 비활성화 확인 대상 — "응시 전"·"미응시"만 여기 담긴다("완료"는
+  // 비활성화 버튼 자체가 안 뜬다, 사용자 지시). null이면 확인 다이얼로그 닫힘
   const [cancelTarget, setCancelTarget] = useState<PersonResult | null>(null)
   const [cancelling, setCancelling] = useState(false)
 
@@ -233,18 +243,8 @@ function SummaryPane({
     onReload()
   }
 
-  function handlePublishClick() {
-    if (deadlinePassed(dueAt)) {
-      handlePublish()
-    } else {
-      // 마감 전이라 바로 발행하지 않고 한 번 더 확인받는다(사용자 지시) — "그래도
-      // 발행"을 눌러야 실제로 publishReport가 호출된다
-      setPublishWarnOpen(true)
-    }
-  }
-
   async function handleConfirmPublish() {
-    setPublishWarnOpen(false)
+    setPublishConfirmOpen(false)
     await handlePublish()
   }
 
@@ -256,7 +256,12 @@ function SummaryPane({
           {result.reportPublished ? '발행 완료' : '발행 전'}
         </Badge>
         {!locked && !result.reportPublished && (
-          <Button size="sm" className="ml-auto" disabled={publishing} onClick={handlePublishClick}>
+          <Button
+            size="sm"
+            className="ml-auto"
+            disabled={publishing}
+            onClick={() => setPublishConfirmOpen(true)}
+          >
             {publishing ? '발행 중…' : '리포트 발행'}
           </Button>
         )}
@@ -266,7 +271,7 @@ function SummaryPane({
         <SummaryCard label="응시" value={`${result.attendedCount}명`} />
         <SummaryCard label="불합격 인원" value={`${result.retryTargetCount}명`} />
         <SummaryCard
-          label="재응시 대상"
+          label="다시 보기 대상"
           value={
             result.reportPublished ? `${result.retryTargetCount + result.notStartedCount}명` : '—'
           }
@@ -340,15 +345,15 @@ function SummaryPane({
       </div>
 
       {!result.reportPublished && retryCandidates.length > 0 && (
-        <p className="text-fg-subtle text-2xs">재응시는 리포트 발행 후에 보낼 수 있어요.</p>
+        <p className="text-fg-subtle text-2xs">다시 보기는 리포트 발행 후에 활성화할 수 있어요.</p>
       )}
 
       {result.reportPublished && retryCandidates.length > 0 && (
         <div>
           <p className="text-fg-muted mb-1.5 text-xs font-bold">
-            재응시{' '}
+            다시 보기{' '}
             <span className="text-fg-subtle font-normal">
-              발송 {sentCandidates.length}명 · 미발송 {unsentCandidates.length}명
+              활성화 {sentCandidates.length}명 · 활성화 전 {unsentCandidates.length}명
             </span>
           </p>
 
@@ -377,12 +382,12 @@ function SummaryPane({
                         {p.retryDueAt ? formatDueAt(p.retryDueAt) : '—'}
                       </td>
                       <td className="px-3 py-1.5">
-                        <Badge variant={p.retryTakenAt ? 'success' : 'neutral'}>
+                        <Badge variant={RETRY_STATUS_VARIANT[retryStatus(p)]}>
                           {retryStatus(p)}
                         </Badge>
                       </td>
                       <td className="px-3 py-1.5 text-right">
-                        {/* 재응시 완료는 취소 대상이 아니다(사용자 지시) — 이미 벌어진
+                        {/* 완료는 비활성화 대상이 아니다(사용자 지시) — 이미 벌어진
                             일이라 되돌릴 게 없다 */}
                         {!p.retryTakenAt && !locked && (
                           <Button
@@ -391,7 +396,7 @@ function SummaryPane({
                             onClick={() => setCancelTarget(p)}
                             className="px-2 py-1"
                           >
-                            취소
+                            비활성화
                           </Button>
                         )}
                       </td>
@@ -404,8 +409,8 @@ function SummaryPane({
 
           {!locked && (
             <Button size="sm" onClick={() => setRetryOpen(true)}>
-              <Send className="size-3.5" />
-              재응시 발송
+              <Zap className="size-3.5" />
+              다시 보기 활성화
             </Button>
           )}
         </div>
@@ -419,22 +424,38 @@ function SummaryPane({
         onSent={onReload}
       />
 
-      <AlertDialog open={publishWarnOpen} onOpenChange={setPublishWarnOpen}>
+      <AlertDialog open={publishConfirmOpen} onOpenChange={setPublishConfirmOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogMedia className="bg-warning-soft text-warning">
-              <AlertTriangle />
+            <AlertDialogMedia
+              className={
+                deadlinePassed(dueAt)
+                  ? 'bg-primary-soft text-primary'
+                  : 'bg-warning-soft text-warning'
+              }
+            >
+              {deadlinePassed(dueAt) ? <Zap /> : <AlertTriangle />}
             </AlertDialogMedia>
-            <AlertDialogTitle>제출 마감 전인데 발행할까요?</AlertDialogTitle>
+            <AlertDialogTitle>리포트를 발행할까요?</AlertDialogTitle>
             <AlertDialogDescription>
-              {dueAt ? `마감(${dueAt.replace('T', ' ')})이` : '마감이'} 아직 지나지 않았어요. 지금
-              발행하면 마감 전에 새로 제출되거나 다시 응시한 결과가 반영되지 않은 채로 굳습니다.
+              현재 응시 인원은 <b className="text-danger font-bold">{result.attendedCount}</b>/
+              {result.totalCount}명입니다. 리포트를 발행하시겠습니까?
+              {!deadlinePassed(dueAt) && (
+                <>
+                  <br />
+                  <span className="text-warning">
+                    ⚠ {dueAt ? `마감(${dueAt.replace('T', ' ')})이` : '마감이'} 아직 지나지 않았어요
+                    — 지금 발행하면 마감 전에 새로 제출되거나 다시 응시한 결과가 반영되지 않은 채로
+                    굳습니다.
+                  </span>
+                </>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={publishing}>취소</AlertDialogCancel>
             <AlertDialogAction disabled={publishing} onClick={handleConfirmPublish}>
-              {publishing ? '발행 중…' : '그래도 발행'}
+              {publishing ? '발행 중…' : '리포트 발행'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -449,19 +470,19 @@ function SummaryPane({
             <AlertDialogMedia className="bg-warning-soft text-warning">
               <AlertTriangle />
             </AlertDialogMedia>
-            <AlertDialogTitle>재응시 발송을 취소할까요?</AlertDialogTitle>
+            <AlertDialogTitle>다시 보기를 비활성화할까요?</AlertDialogTitle>
             <AlertDialogDescription>
               {cancelTarget?.person.name}
               {cancelTarget?.retryDueAt
                 ? `에게 안내된 기한(${formatDueAt(cancelTarget.retryDueAt)})이`
                 : '에게 안내된 기한이'}{' '}
-              사라지고 "재응시 가능" 상태로 돌아갑니다. 다시 보내려면 발송을 새로 해야 해요.
+              사라지고 "활성화 전" 상태로 돌아갑니다. 다시 열어주려면 활성화를 새로 해야 해요.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel disabled={cancelling}>닫기</AlertDialogCancel>
             <AlertDialogAction disabled={cancelling} onClick={handleCancelRetry}>
-              {cancelling ? '취소하는 중…' : '발송 취소'}
+              {cancelling ? '비활성화하는 중…' : '비활성화'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

@@ -785,8 +785,8 @@ export function destinationsFor(cause: CauseKey, brief: BriefData): DestLine[] {
       return [
         {
           showLabel: true,
-          text: '재응시 창 안내 · 다음 회차 일정 확인',
-          bold: '재응시 창',
+          text: '다시 보기 창 안내 · 다음 회차 일정 확인',
+          bold: '다시 보기 창',
           owner: 'MANAGER',
         },
       ]

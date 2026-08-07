@@ -115,9 +115,15 @@ export type PersonRoundEntry =
       status: 'ATTENDED'
       levels: [Level, Level, Level]
       /**
-       * 재응시로 값이 바뀐 개념의 **재응시 전** 값 — 개념 인덱스(0~2)로 매칭.
-       * 반·팀 평균은 이 값을 쓴다(정의서 "위 평균은 1차 기준" — 섞으면 평균이
-       * 위로 밀린다). 셀에는 `levels`(재응시 후 값)를 그대로 보여주고 `↑`만 얹는다.
+       * 다시 보기로 값이 바뀐 개념의 **다시 보기 전(1차)** 값 — 개념 인덱스(0~2)로
+       * 매칭. `levels[idx]`는 다시 본 뒤 값(기록용)이지만, **화면엔 어디서도 안
+       * 뜬다** — 반·팀 평균은 물론 **개인 셀도** 이 값을 쓴다(`effectiveLevel`
+       * 참고). ⚠ 사용자 확정(2026-08-08) — "다시 보기 결과는 기록에만 남고
+       * 판정에 반영 안 된다"(`RetrySendDialog.tsx`)는 원칙을 히트맵에도 그대로
+       * 적용한다 — 히트맵도 판정 화면이라 예외가 아니다. 이전엔 개인 셀만
+       * `levels`(다시 본 값)를 보여주고 `↑`로 표시했었는데, 그 표시 자체가
+       * 틀린 전제였다(점수가 실제로는 안 바뀐다) — `↑`·범례와 함께 이 값 자체를
+       * 걷어냈다.
        */
       priorLevels?: Partial<Record<0 | 1 | 2, Level>>
       badge?: PersonBadge
@@ -227,11 +233,18 @@ function round1(n: number): number {
   return Math.round(n * 10) / 10
 }
 
-function effectiveLevel(entry: PersonRoundEntry, idx: 0 | 1 | 2, forAverage: boolean): Level {
+/**
+ * ⚠ 사용자 확정(2026-08-08) — 다시 보기 결과는 **어디에도 반영되지 않는다**
+ * (기록에만 남고 판정에 반영 안 됨, `RetrySendDialog.tsx` 문구와 같은 원칙).
+ * 개인 셀도 예외가 아니다 — 히트맵은 판정 화면이라 반·팀 평균과 똑같이 항상
+ * **1차 값**(`priorLevels`가 있으면 그 값)을 보여준다. `entry.levels[idx]`가
+ * 다시 본 뒤 값을 담고 있어도 이 함수를 거치면 항상 1차 값으로 바뀐다 —
+ * "다시 봐서 오른 값"이 화면 어디에도 안 뜬다는 뜻이라, 개인 셀 `↑` 표시를
+ * 없앤 앞선 판단과 같은 결이다.
+ */
+function effectiveLevel(entry: PersonRoundEntry, idx: 0 | 1 | 2): Level {
   if (entry.status !== 'ATTENDED') return null
-  const prior = entry.priorLevels?.[idx]
-  if (forAverage && prior !== undefined) return prior
-  return entry.levels[idx]
+  return entry.priorLevels?.[idx] ?? entry.levels[idx]
 }
 
 // ── 집계 셀(반·팀 평균 행) ──────────────────────────────────────────
@@ -246,7 +259,7 @@ function aggregateCell(personIds: string[], round: RoundId, idx: 0 | 1 | 2): Agg
   for (const id of personIds) {
     const entry = data[id]
     if (!entry) continue
-    const lv = effectiveLevel(entry, idx, true)
+    const lv = effectiveLevel(entry, idx)
     if (lv === null) continue
     values.push(lv)
   }
@@ -292,7 +305,7 @@ function rowOverallAvg(row: AggRow): number {
 
 // ── 개인 행 ────────────────────────────────────────────────────────
 
-export type PersonCell = { level: Level; retried: boolean }
+export type PersonCell = { level: Level }
 
 export type PersonRow = {
   id: string
@@ -312,8 +325,7 @@ function buildPersonRow(person: Person, round: RoundId): PersonRow {
     name: person.name,
     status: 'ATTENDED',
     cells: [0, 1, 2].map((idx) => ({
-      level: entry.levels[idx as 0 | 1 | 2],
-      retried: entry.priorLevels?.[idx as 0 | 1 | 2] !== undefined,
+      level: effectiveLevel(entry, idx as 0 | 1 | 2),
     })) as [PersonCell, PersonCell, PersonCell],
     badge: entry.badge,
   }

@@ -275,7 +275,7 @@ export default function InterviewListScreen() {
             <EmptyDescription>
               2단 이하 개념이 2개 이상인 사람이 없어요.
               <br />
-              1개인 사람은 그 개념만 재응시로 처리됩니다.
+              1개인 사람은 그 개념만 다시 보기로 처리됩니다.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>

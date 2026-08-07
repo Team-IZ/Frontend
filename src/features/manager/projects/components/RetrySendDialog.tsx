@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { ko } from 'date-fns/locale'
@@ -18,6 +18,7 @@ import { Calendar } from '@/components/ui/Calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/Popover'
 import {
   MOCK_TODAY,
+  RETRY_STATUS_VARIANT,
   retryConceptNames,
   retryStatus,
   sendRetry,
@@ -25,28 +26,33 @@ import {
 } from '../mockData'
 
 /*
-  재응시 발송 모달 — 와이어프레임(#retry-send) 그대로. 전엔 결과 요약
+  다시 보기 활성화 모달 — 와이어프레임(#retry-send) 그대로. 전엔 결과 요약
   패널에 체크리스트 + 버튼이 바로 박혀 있었는데, 모달로 빼면서 사람마다
   "막힘 N개" 대신 **막힌 개념 이름**을 보여주도록 바꿨다(와이어 "HITL Trigger
-  조건 · State 관리") — 매니저가 뭘 보낼지 확인하고 누르는 화면이라 이름이
+  조건 · State 관리") — 매니저가 뭘 열어줄지 확인하고 누르는 화면이라 이름이
   숫자보다 유용하다.
 
-  ⚠ 용어 — "다시 보기"를 전부 **"재응시"**로 바꿨다(사용자 지시).
+  ⚠ 용어 롤백(결정 로그 D56 A·D절, 이슈 124) — 지난 세션이 "다시 보기"를
+  전부 "재응시"로 바꿨던 걸 되돌린다. 같이 "발송"→"활성화"로 바꿨다 — 백엔드가
+  실제로 메시지를 보내는 게 아니라 응시 권한·기한을 부여하는 상태 변경이라
+  "보낸다"는 말이 안 맞는다(C절, 알림 채널 절단). `sendRetry` 함수명·
+  `retrySentAt` 필드명은 그대로 둔다.
 
-  ⚠ 응시 여부 표기 — 발송된 사람에게 하드코딩한 "이미 다시 봤어요"를 달고
-  있었는데, 이건 **발송됐다는 뜻이지 실제로 다시 봤다는 뜻이 아니다**(사용자
-  지적 — 사실과 다름). `ResultTab` 발송 현황 표와 같은 3분류(`retryStatus`:
-  재응시 가능·재응시 발송 완료·재응시 완료)로 통일해 두 화면이 같은 값을 쓴다.
+  ⚠ 응시 여부 표기 — 활성화된 사람에게 하드코딩한 "이미 다시 봤어요"를 달고
+  있었는데, 이건 **활성화됐다는 뜻이지 실제로 다시 봤다는 뜻이 아니다**(사용자
+  지적 — 사실과 다름). `ResultTab` 활성화 현황 표와 같은 4분류(`retryStatus`:
+  활성화 전·응시 전·미응시·완료, D56 B절과 같은 마감 전/후 구분)로 통일해 두
+  화면이 같은 값을 쓴다.
 
-  ⚠ 발송된 사람의 체크박스 — 전엔 `checked={checked.has(id)}`를 그대로 써서,
-  이 다이얼로그를 다시 열었을 때 **처음부터 발송돼 있던 사람은 빈 체크박스로
-  잠겨** 있었다(체크된 채로 보냈다가 부모가 리렌더된 사람만 우연히 체크된
+  ⚠ 활성화된 사람의 체크박스 — 전엔 `checked={checked.has(id)}`를 그대로 써서,
+  이 다이얼로그를 다시 열었을 때 **처음부터 활성화돼 있던 사람은 빈 체크박스로
+  잠겨** 있었다(체크된 채로 열어줬다가 부모가 리렌더된 사람만 우연히 체크된
   채로 보였다 — 상태가 세션에 따라 달랐다). "빈 채로 못 품" 것과 "이미
   포함돼 있어서 못 뺌"은 다른 뜻이라 헷갈렸다(사용자 지적). `p.retrySentAt`이
   있으면 `checked` Set 내용과 무관하게 **항상 체크된 채로 잠근다**.
 
   ⚠ 잠긴 체크박스의 색 — 활성 체크와 똑같은 파란색(`data-checked:bg-primary`)
-  그대로라 "지금 눌러서 체크한 것"과 "이미 발송돼 잠긴 것"이 구분이 안
+  그대로라 "지금 눌러서 체크한 것"과 "이미 활성화돼 잠긴 것"이 구분이 안
   됐다(사용자 지적 — "클릭했을 때와 다른 회색배경으로"). 원래 있던
   `disabled:opacity-50`으로 흐려질 거라 짐작했는데, 실제로 브라우저에서
   `getComputedStyle`로 재보니 **opacity가 항상 1(안 흐려짐)**이었다 — 원인은
@@ -63,11 +69,11 @@ import {
   스타일시트 순서에 안 좌우됨). `Checkbox.tsx`의 `disabled:*` 클래스 자체가
   전혀 작동하지 않는 문제는 이 화면 밖이라 고치지 않고 대화·로그에만 남긴다.
 
-  ⚠ 재응시 발송 취소(사용자 지시) — "재응시 발송 완료"(보냈지만 아직 안 봄)
-  상태는 취소할 수 있다. **"재응시 완료"(이미 봄)는 제외**(사용자 지시) —
-  이미 벌어진 일은 되돌릴 게 없다. 이 화면은 "누구에게 보낼지 고르는" 용도라
-  취소 액션은 여기 안 두고 `ResultTab`의 발송 현황 표(관리 화면)에 뒀다 —
-  `cancelRetry()`(`mockData.ts`) 참고.
+  ⚠ 다시 보기 비활성화(사용자 지시, 명칭은 D56 D절) — "응시 전"·"미응시"(열어
+  줬지만 아직 안 봄) 상태는 비활성화할 수 있다. **"완료"(이미 봄)는 제외**
+  (사용자 지시) — 이미 벌어진 일은 되돌릴 게 없다. 이 화면은 "누구를 열어줄지
+  고르는" 용도라 비활성화 액션은 여기 안 두고 `ResultTab`의 활성화 현황 표
+  (관리 화면)에 뒀다 — `cancelRetry()`(`mockData.ts`) 참고.
 
   ⚠ 기한 — 처음엔 "+3일 18:00" 고정 계산값을 문구로만 보여줬는데, 사용자가
   "매니저가 직접 정할 수 있게 해달라"고 지시(렌더 스크린샷 확인 후). 기본값은
@@ -81,6 +87,19 @@ import {
   반 전체 경고(`classWarnings`)에 이미 뜬 개념은 개인 목록에서 뺀다
   (`retryConceptNames`) — 정의서 §3 "개인 위험 사유에서 빼고 반 전체에서만
   경고" 원칙 그대로다.
+
+  ⚠ 버그 수정(사용자 지적, 2026-08-08) — 이 다이얼로그는 `open`만 바뀌고
+  컴포넌트 자체는 계속 마운트돼 있어서(Base UI `Dialog`), `useState` 초기값이
+  첫 마운트 때 한 번만 계산됐다. 비활성화 → 다시 열기를 하면 지난번 체크·
+  기한이 그대로 남아 있던 원인이다 — `useEffect`로 `open`이 열릴 때마다
+  최신 `result` 기준으로 체크·기한을 다시 계산해 덮어쓴다.
+
+  ⚠ 되돌림(사용자 지적, 2026-08-08) — "열었을 때 기본값에서 하나도 안
+  바꾸면 활성화 버튼을 막는다"는 규칙을 잠깐 넣었다가 뺐다. 기본값(체크된
+  대상 + 기한 +3일 18:00) 그대로 누르는 게 오히려 제일 흔한 정상 흐름인데,
+  그 규칙이 그 흐름 자체를 막아버렸다("체크가 그대로 남아있어서 활성화를
+  못 한다") — 재오픈 시 상태를 초기화하는 위 버그 수정과 목적이 겹치는
+  줄 알았는데 실제로는 서로 다른 문제였다.
 */
 
 type Props = {
@@ -94,15 +113,8 @@ type Props = {
 const WEEKDAY = ['일', '월', '화', '수', '목', '금', '토']
 const TODAY = new Date(`${MOCK_TODAY}T00:00:00`)
 
-/** `retryStatus` 3분류 → 배지 색. `ResultTab`의 발송 현황 표와 같은 색 대응(재응시 완료=success) */
-const RETRY_STATUS_VARIANT = {
-  '재응시 가능': 'warning',
-  '재응시 발송 완료': 'neutral',
-  '재응시 완료': 'success',
-} as const
-
 /**
- * 잠긴(발송된) 체크박스 전용 색 — 활성 체크(파랑)와 다른 회색으로 구분한다(사용자
+ * 잠긴(활성화된) 체크박스 전용 색 — 활성 체크(파랑)와 다른 회색으로 구분한다(사용자
  * 지시). `[data-disabled][data-checked]` 2속성 선택자라 `data-checked:bg-primary`
  * (1속성)보다 항상 우선한다.
  *
@@ -122,7 +134,7 @@ const DISABLED_CHECKED_CLASS =
 /**
  * 기본 기한 — "3일 뒤와 다음 프로젝트 제출일 중 빠른 쪽"(정의서·와이어)의 목업 근사값.
  * `date`가 `Date | undefined`인 이유는 아래 `deadlineValid`·`handleSend` 주석 참고 —
- * 달력에서 날짜를 지울 수 있고, 그때는 보내기를 막는다(타입만 넓혔다, 동작은 원래도 이랬다).
+ * 달력에서 날짜를 지울 수 있고, 그때는 활성화를 막는다(타입만 넓혔다, 동작은 원래도 이랬다).
  */
 function defaultDeadline(): { date: Date | undefined; time: string } {
   const d = new Date(TODAY)
@@ -139,11 +151,24 @@ export default function RetrySendDialog({ open, onOpenChange, projectId, result,
     .map((p) => ({ p, names: retryConceptNames(p, result.classWarnings) }))
     .filter(({ p, names }) => names.length > 0 || p.retrySentAt)
 
-  const [checked, setChecked] = useState<Set<string>>(
-    () => new Set(candidates.filter((c) => !c.p.retrySentAt).map((c) => c.p.person.id)),
-  )
+  // ⚠ 사용자 지적(2026-08-08) — 전엔 아직 안 보낸 대상 전원을 기본 체크해 뒀는데,
+  // 그러면 다이얼로그를 열기만 해도 "전원 활성화" 상태로 시작한다 — 매니저가
+  // 직접 고른 게 아니라 대량 발송이 기본값이 되는 셈이라 위험하다. 이제
+  // 아무도 기본 체크되지 않는다(빈 Set) — 이미 활성화된 사람(`retrySentAt`
+  // 있음)은 이 Set과 무관하게 항상 잠긴 체크로 보인다(아래 Checkbox `checked`
+  // 분기), 그 사람들 상태 표시용일 뿐 이 Set에 안 들어간다.
+  const defaultChecked = () => new Set<string>()
+
+  const [checked, setChecked] = useState<Set<string>>(defaultChecked)
   const [sending, setSending] = useState(false)
   const [{ date: dueDate, time: dueTime }, setDeadline] = useState(defaultDeadline)
+
+  useEffect(() => {
+    if (!open) return
+    setChecked(defaultChecked())
+    setDeadline(defaultDeadline())
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
 
   function toggle(id: string) {
     const next = new Set(checked)
@@ -154,7 +179,7 @@ export default function RetrySendDialog({ open, onOpenChange, projectId, result,
 
   const checkedCandidates = candidates.filter((c) => checked.has(c.p.person.id))
   const conceptCount = checkedCandidates.reduce((n, c) => n + c.names.length, 0)
-  // 날짜 없이는 보낼 기한을 만들 수 없다 — 지워도(달력 재선택 취소) 보내기를 막는다
+  // 날짜 없이는 활성화 기한을 만들 수 없다 — 지워도(달력 재선택 취소) 활성화를 막는다
   const deadlineValid = !!dueDate && !!dueTime
 
   async function handleSend() {
@@ -174,14 +199,14 @@ export default function RetrySendDialog({ open, onOpenChange, projectId, result,
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="flex max-h-[85svh] flex-col sm:max-w-[440px]">
         <DialogHeader>
-          <DialogTitle>재응시 발송 · 막힌 개념으로 자동 지정됨</DialogTitle>
+          <DialogTitle>다시 보기 활성화 · 막힌 개념으로 자동 지정됨</DialogTitle>
         </DialogHeader>
 
-        <p className="text-fg-subtle -mt-2 text-xs">받는 사람 · 체크를 풀면 제외됩니다</p>
+        <p className="text-fg-subtle -mt-2 text-xs">받는 사람 · 체크한 사람만 활성화됩니다</p>
 
         <div className="border-border min-h-0 flex-1 overflow-y-auto rounded-md border">
           {candidates.length === 0 ? (
-            <p className="text-fg-subtle p-4 text-center text-sm">재응시 대상이 없어요.</p>
+            <p className="text-fg-subtle p-4 text-center text-sm">다시 보기 대상이 없어요.</p>
           ) : (
             candidates.map(({ p, names }) => {
               const status = retryStatus(p)
@@ -259,7 +284,7 @@ export default function RetrySendDialog({ open, onOpenChange, projectId, result,
               disabled={checkedCandidates.length === 0 || !deadlineValid || sending}
               onClick={handleSend}
             >
-              {sending ? '보내는 중…' : '보내기'}
+              {sending ? '활성화하는 중…' : '활성화'}
             </Button>
           </div>
         </DialogFooter>
@@ -268,7 +293,7 @@ export default function RetrySendDialog({ open, onOpenChange, projectId, result,
   )
 }
 
-/** 기한 날짜 선택 — 오늘 이전은 고를 수 없다(지난 기한을 보내는 걸 막는다) */
+/** 기한 날짜 선택 — 오늘 이전은 고를 수 없다(지난 기한으로 활성화하는 걸 막는다) */
 function DueDateField({
   date,
   onDate,

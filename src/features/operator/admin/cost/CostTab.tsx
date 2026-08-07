@@ -219,13 +219,13 @@ export default function CostTab() {
               </TableCell>
               {/*
                 회차가 없는 달 — **`—`가 아니라 무엇이 있었는지 쓴다**(F3: 없음과 0은 다르다).
-                재시험·재응시는 회차 마감과 무관하게 일어나므로 비용이 0이 아니다.
+                다시 보기·재응시는 회차 마감과 무관하게 일어나므로 비용이 0이 아니다.
               */}
               <TableCell className="text-fg-muted truncate text-xs">
                 {m.projectNames.length > 0 ? (
                   m.projectNames.join(' · ')
                 ) : (
-                  <span className="text-fg-subtle">마감된 회차 없음 · 재시험·재응시</span>
+                  <span className="text-fg-subtle">마감된 회차 없음 · 다시 보기·재응시</span>
                 )}
               </TableCell>
               <TableCell className="text-fg-muted text-right text-xs tabular-nums">

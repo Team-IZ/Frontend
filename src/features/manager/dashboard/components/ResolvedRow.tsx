@@ -6,7 +6,9 @@ import type { ResolvedHistoryItem } from '../mockData'
 
 const KIND_LABEL: Record<ResolvedHistoryItem['kind'], string> = {
   INTERVIEW: '면담',
-  ABSENT: '미응시',
+  // 인박스(`InboxRow`)에 있던 같은 항목이 처리됨으로 내려온 것이라 라벨도 같아야 한다 —
+  // 응시 창이 열려 있는 동안 연락한 건이므로 "응시 전"(D56 B절)
+  ABSENT: '응시 전',
   INVALID: '무효 응시',
 }
 

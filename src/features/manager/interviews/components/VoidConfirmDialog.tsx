@@ -13,6 +13,10 @@ import { resolveVoid, type InterviewCase, type RoundId } from '../mockData'
   무효 응시 확인 모달(#void) — 정의서 §5 "자동 확정하지 않는다"(9-4). 시스템은
   **본 것**(무응답 문항 수·복사 여부·응답 시간)만 보여주고 판정은 사람이 한다 —
   결과를 지우는 일이라 오탐 비용이 크다.
+
+  ⚠ 확정 버튼 문구에서 "재응시 안내"를 뗐다(결정 로그 D56 C절) — 학생에게 나가는
+  알림 채널을 절단하는 결정이라 발송 문구만 빠졌고, `resolveVoid`의 무효 판정
+  로직(상태 변경)은 그대로다. 매니저가 필요하면 슬랙 등으로 직접 안내한다.
 */
 
 type Props = {
@@ -97,7 +101,7 @@ export default function VoidConfirmDialog({
             disabled={pending !== null}
             onClick={() => resolve('INVALIDATE')}
           >
-            무효로 처리하고 재응시 안내
+            무효로 처리
           </Button>
         </DialogFooter>
       </DialogContent>

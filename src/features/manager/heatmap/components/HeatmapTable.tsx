@@ -75,7 +75,7 @@ function AggCellView({ cell }: { cell: AggCell }) {
   )
 }
 
-function PersonCellView({ level, retried }: { level: 0 | 1 | 2 | 3 | 4 | null; retried: boolean }) {
+function PersonCellView({ level }: { level: 0 | 1 | 2 | 3 | 4 | null }) {
   if (level === null) {
     return (
       <td
@@ -94,10 +94,6 @@ function PersonCellView({ level, retried }: { level: 0 | 1 | 2 | 3 | 4 | null; r
       )}
     >
       <span className="text-[21px]">{level}단</span>
-      {/* 렌더 확인 후 사용자 지시 — 더 크고 진하게. `opacity-70`으로 흐리게 하던
-          것을 없애 색이 옅어지지 않게 했다(뜻은 범례 예시로 옮겨 설명한다,
-          `HeatmapLegend.tsx`) */}
-      {retried && <span className="ml-1 text-[16px] font-extrabold">↑</span>}
     </td>
   )
 }
@@ -190,7 +186,7 @@ function PersonRowLine({
     <tr>
       {nameCell}
       {row.cells.map((c, i) => (
-        <PersonCellView key={i} level={c.level} retried={c.retried} />
+        <PersonCellView key={i} level={c.level} />
       ))}
     </tr>
   )

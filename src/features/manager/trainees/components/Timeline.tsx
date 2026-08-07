@@ -27,7 +27,7 @@ import {
 } from '../mockData'
 
 /*
-  단일 타임라인 — 탭을 쓰지 않는다(§3). 세션·다시 보기·리포트·면담은 같은 시간축의
+  단일 타임라인 — 탭을 쓰지 않는다(§3). 세션·재응시·리포트·면담은 같은 시간축의
   이벤트 유형일 뿐이라 탭으로 가르면 순서가 사라진다. 유형은 필터(토글)로만 거르고,
   이벤트는 한 번만 정의해 필터로 뽑는다 — "면담"만 켰는데 "전체"에 없던 이벤트가
   나오면 필터의 정의가 깨진다(§3).
@@ -38,13 +38,13 @@ type EventFilter = 'ALL' | 'SESSION' | 'RETRY' | 'REPORT' | 'INTERVIEW'
 const FILTER_OPTIONS: { value: EventFilter; label: string }[] = [
   { value: 'ALL', label: '전체' },
   { value: 'SESSION', label: '세션' },
-  { value: 'RETRY', label: '다시 보기' },
+  { value: 'RETRY', label: '재응시' },
   { value: 'REPORT', label: '리포트' },
   { value: 'INTERVIEW', label: '면담' },
 ]
 const FILTER_LABEL: Record<Exclude<EventFilter, 'ALL'>, string> = {
   SESSION: '세션',
-  RETRY: '다시 보기',
+  RETRY: '재응시',
   REPORT: '리포트',
   INTERVIEW: '면담',
 }
@@ -176,7 +176,7 @@ function RetryRow({ event }: { event: RetryEvent }) {
         {event.changed ? <ArrowUp className="size-3" /> : <Minus className="size-3" />}
       </EventIcon>
       <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2 text-sm">
-        <b className="font-bold">{event.closed ? '다시 보기 창 마감' : '다시 보기'}</b>
+        <b className="font-bold">{event.closed ? '재응시 창 마감' : '재응시'}</b>
         <span className="text-fg-muted">{event.label}</span>
         {event.tag && (
           <span className="rounded-full border border-border px-2 py-0.5 text-2xs text-fg-subtle">
@@ -406,7 +406,7 @@ export function Timeline({
         <Empty>
           <EmptyTitle>아직 기록이 없어요</EmptyTitle>
           <EmptyDescription>
-            이해도 확인·다시 보기·면담이 생기면 여기에 시간 순으로 쌓입니다.
+            이해도 확인·재응시·면담이 생기면 여기에 시간 순으로 쌓입니다.
           </EmptyDescription>
         </Empty>
       ) : (

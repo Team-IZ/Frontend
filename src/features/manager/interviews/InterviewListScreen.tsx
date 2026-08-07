@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
 import {
@@ -18,11 +18,13 @@ import { useAsync } from '@/lib/useAsync'
 import {
   excludeCase,
   listInterviews,
+  ROUND_OPTIONS,
   shortDateLabel,
   undoExclude,
   type CaseRisk,
   type ClassName,
   type InterviewCase,
+  type RoundId,
 } from './mockData'
 import {
   ALL,
@@ -53,6 +55,12 @@ import VoidConfirmDialog from './components/VoidConfirmDialog'
   있다"가 이미 안전장치라 판단해, 되돌릴 수 없는 조작에나 쓰는 확인 모달을 여기
   또 얹지 않았다(TeamTab 팀 삭제·ResultTab 마감 전 발행처럼 **되돌릴 수 없는**
   조작에만 AlertDialog를 쓰는 이 레포 관례와 일관된다).
+
+  ⚠ **`?round=&class=` 쿼리로 들어오면 세션 필터보다 그 값을 우선한다**(MG-01
+  대시보드의 [면담 목록에서 확인]이 넘겨준다, 사용자 지시) — 그 사람이 실제로
+  뜨는 회차·반을 걸어 주지 않으면 목록이 비어 보여 "확인하러 왔는데 안 보인다"는
+  혼란을 준다. 읽고 나면 URL은 바로 지운다(주소창에 남아 있으면 새로고침 때마다
+  다시 그 필터로 돌아가 세션 기억(위 주석)과 충돌한다).
 */
 
 const briefPath = (caseId: string) => `/manager/interviews/${caseId}/brief`
@@ -60,14 +68,33 @@ const traineePath = (traineeId: string) => `/manager/trainees/${traineeId}`
 
 export default function InterviewListScreen() {
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   // 브리프로 갔다가 "← 목록으로"로 돌아와도 회차·검색·상태가 그대로 있어야 한다
   // (사용자 지시) — 세션 동안만 기억하는 모듈 전역값에서 초기화한다. 새로고침하면
-  // 사라진다(filterState.ts 판단 기록).
-  const [filters, setFilters] = useState<FilterValues>(getSessionFilters)
+  // 사라진다(filterState.ts 판단 기록). 단 대시보드가 `?round=&class=`로 넘어온
+  // 경우엔 그 값이 세션 기억보다 우선한다(위 docblock).
+  const [filters, setFilters] = useState<FilterValues>(() => {
+    const roundParam = searchParams.get('round')
+    const isValidRound = ROUND_OPTIONS.some((o) => o.value === roundParam)
+    if (roundParam && isValidRound) {
+      return {
+        ...INITIAL_FILTERS,
+        round: roundParam as RoundId,
+        classFilter: searchParams.get('class') ?? ALL,
+      }
+    }
+    return getSessionFilters()
+  })
   const [voidTarget, setVoidTarget] = useState<InterviewCase | null>(null)
   const [undoBanner, setUndoBanner] = useState<{ caseId: string; name: string } | null>(null)
   const [rowPending, setRowPending] = useState<string | null>(null)
   const [rowFailed, setRowFailed] = useState<string | null>(null)
+
+  // 딥링크 쿼리는 초기 필터에 한 번 반영하고 바로 지운다(위 docblock)
+  useEffect(() => {
+    if (searchParams.has('round')) setSearchParams({}, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const loadInterviews = useCallback(
     () =>
@@ -248,7 +275,7 @@ export default function InterviewListScreen() {
             <EmptyDescription>
               2단 이하 개념이 2개 이상인 사람이 없어요.
               <br />
-              1개인 사람은 그 개념만 다시 보기로 처리됩니다.
+              1개인 사람은 그 개념만 재응시로 처리됩니다.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>

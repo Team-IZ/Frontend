@@ -44,6 +44,25 @@ import {
   나가는 길(좌상단 뒤로가기·하단 `[취소]`)은 그대로 있다 — 매니저 도구라 잘못 열
   수 있다는 정의서 §2의 취지 자체는 유효해서다.
 
+  ⚠ **나가는 길·저장 완료 이동 전부 `navigate(-1)`을 쓴다** — 원래 셋 다
+  `listPath`(면담 목록)로 고정돼 있었는데, MG-01 대시보드가 이 화면의 두 번째
+  입구로 생기며 `trainees/DetailHeader.tsx`(D-계열, "히트맵 등 다른 입구에서
+  들어와도 정상 복귀")와 같은 문제가 그대로 재현됐다 — 대시보드에서 열었는데
+  뒤로가기·저장을 눌러도 엉뚱하게 면담 목록으로 튀었다. **처음엔 저장 완료만
+  `listPath`로 남겨뒀는데**("종결 직후엔 어디서 왔든 목록에서 확인한다"는 판단),
+  다시 보니 대시보드는 그 자체가 "오늘 처리할 것" 큐라 처리 후 그 큐로 돌아와
+  나머지를 마저 보는 게 정의서(MG-01 §2 "대시보드를 거쳐 다른 화면에 가서 그
+  사람을 다시 찾는 동선을 만들지 않는다") 취지에 더 맞다고 판단해 뒤집었다 —
+  MG-03(면담 목록)에서 열었을 땐 `navigate(-1)`이 그대로 목록이라 기존 흐름(다음
+  케이스로 이어서 처리)도 안 깨진다.
+
+  ⚠ **mock 한계 — 대시보드로 돌아가도 방금 종결한 항목이 곧바로 "처리됨"으로
+  안 바뀐다.** 대시보드(`dashboard/mockData.ts`)와 이 파일의 mock이 서로 독립된
+  데이터셋이라(교차 import 금지 — 이 파일 다른 절과 같은 원칙) 저장 성공을
+  대시보드 쪽에 알릴 방법이 없다. 실 API가 붙으면 둘 다 같은 서버 상태를 읽으므로
+  저절로 없어진다 — 지금은 mock끼리 데이터를 동기화하는 장치를 새로 만들지
+  않았다.
+
   ⚠ **상단 정보 줄도 사용자 지시로 줄였다** — breadcrumb·"미프 N차 · 2단 이하
   X→Y" 회차 요약을 뺐다("상단 좌측이 지저분하다"). 남긴 건 뒤로가기 아이콘 버튼 ·
   이름 · 반 · 위험 배지뿐이다. 회차·판정 숫자는 ①의 여는 말이 이미 자연스러운
@@ -130,7 +149,7 @@ function BriefSheet({ brief }: { brief: BriefData }) {
     setSaveFailed(false)
     try {
       await saveInterviewBrief(brief.caseId, { causes: [...causes], why, nextAction })
-      navigate(listPath)
+      navigate(-1)
     } catch {
       setSaveFailed(true)
     } finally {
@@ -152,9 +171,8 @@ function BriefSheet({ brief }: { brief: BriefData }) {
         <Button
           variant="ghost"
           size="sm"
-          aria-label="저장하지 않고 면담 목록으로 돌아가기"
-          nativeButton={false}
-          render={<Link to={listPath} />}
+          aria-label="저장하지 않고 이전 화면으로 돌아가기"
+          onClick={() => navigate(-1)}
           className="p-1.5"
         >
           <ArrowLeft className="size-5" />
@@ -376,7 +394,7 @@ function BriefSheet({ brief }: { brief: BriefData }) {
         </div>
 
         <div className="mt-4 flex items-center justify-end gap-2">
-          <Button variant="ghost" disabled={saving} onClick={() => navigate(listPath)}>
+          <Button variant="ghost" disabled={saving} onClick={() => navigate(-1)}>
             취소
           </Button>
           <Button variant="primary" disabled={saving} onClick={handleSaveClick}>

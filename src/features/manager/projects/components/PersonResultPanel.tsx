@@ -1,6 +1,7 @@
 import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { Badge } from '@/components/ui/Badge'
+import { REACH_STYLE } from '@/components/common/reach'
 import {
   AXIS_STEP_LABEL,
   AXIS_STEP_ORDER,
@@ -27,23 +28,12 @@ import {
   B안(축별 점수 병기)은 데이터에 이미 있다(`AxisStepResult.score`) — 확정되면
   각 스텝에 `<span>{step.score}</span>`만 더 그리면 된다. 지금은 A안만 그린다.
 
-  `REACH_STYLE`을 `features/manager/trainees/lib/reach.ts`에서 그대로 가져오지
-  않고 여기 다시 적었다 — oxlint `no-restricted-imports`가 feature 간 교차
-  import를 막는다(공용은 `components/common`으로 올리는 게 정책, `@/lib/*`가
-  아니다). trainees·projects 두 도메인만 쓰는 지금은 "두 번째 사용" 단계라
-  아직 안 올린다(decision-log D14 "두 번은 기록, 세 번째에 올린다"와 같은
-  기준) — 색만 같으면 되는 5줄이라 안전하게 복제해 둔다. 세 번째 도메인이
-  필요해지면 그때 `components/common`으로 올리고 여기 복제본을 지운다.
+  ⚠ `REACH_STYLE`은 예전엔 여기 복제해 뒀었다(decision-log D14 "두 번은 기록,
+  세 번째에 올린다" — trainees·projects 두 도메인만 쓰는 "두 번째 사용" 단계라
+  안 올렸었다). heatmap(MG-02)이 세 번째로 필요해지면서 `@/components/common/
+  reach`로 승격됐고, D14가 예고한 대로 이 복제본은 지우고 거기서 가져오는
+  쪽으로 바꿨다.
 */
-
-/** 도달 단계 배경색(0~4단) — `features/manager/trainees/lib/reach.ts`의 `REACH_STYLE`과 같은 값 */
-const REACH_STYLE: Record<0 | 1 | 2 | 3 | 4, string> = {
-  0: 'bg-reach-0 text-white',
-  1: 'bg-reach-1 text-reach-fg',
-  2: 'bg-reach-2 text-reach-fg',
-  3: 'bg-reach-3 text-reach-fg',
-  4: 'bg-reach-4 text-white',
-}
 
 export default function PersonResultPanel({ result }: { result: PersonResult }) {
   return (

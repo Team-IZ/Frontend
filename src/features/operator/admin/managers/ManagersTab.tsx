@@ -40,7 +40,7 @@ import ConfirmDialog from '../_/components/ConfirmDialog'
 /*
   ③ 매니저 — 계정과 담당 배정.
 
-  ⚠ **범위가 `기관 전체`에서 `선택 기수`로 바뀌었다**(decision-log D38). 정의서 §3은
+  ⚠ **범위가 `기관 전체`에서 `선택 기수`로 바뀌었다**(op-06-admin.md OP06-15). 정의서 §3은
   *"매니저는 기수를 옮겨 다니므로 기관 전체"* 라 했는데, 그렇게 두니 한 표가 두 일을
   하려다 꼬였다 — **반이 기수에 붙듯 매니저도 기수에 붙인다.**
 
@@ -57,7 +57,7 @@ import ConfirmDialog from '../_/components/ConfirmDialog'
   **오퍼레이터 계정은 여기 없다** — 초대·정지는 슈퍼어드민(SA-02) 소관이다.
 */
 /*
-  정렬 — **둘만 둔다**(D34-⑦).
+  정렬 — **둘만 둔다**(OP06-11-⑦).
 
   정의서가 이 탭을 *"초대 · 반 배정 · 정지"* 로 정의한다. 거기서 나오는 순서는 둘뿐이다.
     · **이름순** — 사람을 찾는 목록의 자연 순서(기본)
@@ -111,7 +111,7 @@ export default function ManagersTab({ onCountsChange }: Props) {
   const cohort = useAsync(loadCohort).data
 
   /*
-    **기수가 어디쯤 왔는지가 액션을 정한다**(D38 · rules.assignPolicy).
+    **기수가 어디쯤 왔는지가 액션을 정한다**(OP06-15 · rules.assignPolicy).
       · 시작 전 → 그냥 바꾼다   · 진행 중 → 확인을 받는다   · 종료 → 이력이라 못 바꾼다
   */
   const policy = cohort ? assignPolicy(cohort, getNow().slice(0, 10)) : 'CONFIRM'
@@ -250,13 +250,13 @@ export default function ManagersTab({ onCountsChange }: Props) {
                   {/*
                     **한 칸에 두 값을 쌓지 않는다**(E11). 이메일을 이름 밑에, 정지 사유를
                     상태 밑에 붙였더니 그 행만 두 줄이 되어 표가 들쭉날쭉했다(실측 57 ↔ 60px).
-                    둘 다 제 열로 뺀다 — 명단 탭과 같은 판단이다(D29·D32).
+                    둘 다 제 열로 뺀다 — 명단 탭과 같은 판단이다(OP06-6·OP06-9).
                   */}
                   <TableHead className="w-28">매니저</TableHead>
                   <TableHead className="w-52">이메일</TableHead>
                   {/*
-                    **기수와 담당 반을 갈랐다** — [[D38]]로 목록이 한 기수만 담게 되면서
-                    가능해졌다. D35에서 합쳤던 이유(겸임하면 `7기·8기` + `E반, G반, A반`이
+                    **기수와 담당 반을 갈랐다** — [[OP06-15]]로 목록이 한 기수만 담게 되면서
+                    가능해졌다. OP06-12에서 합쳤던 이유(겸임하면 `7기·8기` + `E반, G반, A반`이
                     되어 A반이 어느 기수 것인지 사라진다)가 **범위가 한 기수라 없어졌다** —
                     한 행에 기수가 하나뿐이면 쪼개도 짝이 안 깨진다.
                   */}
@@ -301,13 +301,13 @@ export default function ManagersTab({ onCountsChange }: Props) {
                       {formatLastSeen(m.lastSeenAt, now) ?? '—'}
                     </TableCell>
                     {/*
-                      정지면 사유, 초대 대기면 **언제 누가 초대했나**(D34-⑥). 초대 대기 행은
+                      정지면 사유, 초대 대기면 **언제 누가 초대했나**(OP06-11-⑥). 초대 대기 행은
                       최근 접속도 담당도 비어서, 이것이 없으면 `재발송`을 눌러야 할지
                       판단할 근거가 아무것도 없다.
                     */}
                     <TableCell className="text-fg-muted truncate text-xs">
                       {/*
-                        **지난 기수가 여기로 왔다**(D36의 값). 담당 반 칸에 붙이면 반이
+                        **지난 기수가 여기로 왔다**(OP06-13의 값). 담당 반 칸에 붙이면 반이
                         아닌 것이 반 자리에 끼어든다 — 계정에 대한 부가 정보라 사유·초대와
                         같은 자리가 맞다. 셋이 겹치는 일은 없다(정지 ↔ 초대 대기 ↔ 활성).
                       */}
@@ -392,7 +392,7 @@ export default function ManagersTab({ onCountsChange }: Props) {
                   : ''
               }. 계정과 지난 기수 담당 기록은 남고, 다시 활성화해도 담당 반은 자동으로 돌아오지 않습니다.`
             : /*
-                **초대 취소에서 반 이야기가 사라졌다**(D34-③) — 가입 전에는 반을 못 맡으므로
+                **초대 취소에서 반 이야기가 사라졌다**(OP06-11-③) — 가입 전에는 반을 못 맡으므로
                 맡겨 둔 반이 있을 수 없다.
               */
               '아직 가입 전이라 계정이 만들어지지 않았습니다. 취소하면 목록에서 사라지고, 필요하면 같은 주소로 다시 초대할 수 있습니다.'

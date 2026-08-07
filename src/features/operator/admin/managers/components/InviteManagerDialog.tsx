@@ -123,7 +123,7 @@ export default function InviteManagerDialog({ open, onOpenChange, onInvited }: P
           </Field>
 
           {/*
-            **담당 반 칸이 없다**(기획 확인 · decision-log D34).
+            **담당 반 칸이 없다**(기획 확인 · op-06-admin.md OP06-11).
 
             가입 전에는 로그인을 못 하므로 **그 반의 면담·독촉을 처리할 수 없다.** 그런데
             반에 담당 id는 박혀 있어서 `담당 없음` 경고에 안 잡혔다 — 경고가 막으려던

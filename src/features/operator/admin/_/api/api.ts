@@ -178,7 +178,7 @@ export function createCohort(req: CreateCohortRequest): Promise<Cohort> {
 /**
  * `GET /admin/cohorts/{id}` — 기수 한 건.
  *
- * **반 탭이 시작일을 알아야 한다**(D30-② — 개강 전에만 반을 고친다). 목록을 통째로
+ * **반 탭이 시작일을 알아야 한다**(OP06-7-② — 개강 전에만 반을 고친다). 목록을 통째로
  * 받아 찾지 않는다: 화면이 필요한 것은 한 건이고, 기수가 늘면 목록은 계속 커진다.
  */
 export function getCohort(id: string): Promise<Cohort> {
@@ -262,7 +262,7 @@ export function createClass(req: CreateClassRequest): Promise<ClassRoom> {
 }
 
 /**
- * `PATCH /admin/classes/{id}` — 이름·정원 수정(D30-②).
+ * `PATCH /admin/classes/{id}` — 이름·정원 수정(OP06-7-②).
  *
  * **개강 전에만 열린다.** 서버도 같은 규칙을 검증한다 — 화면만 막으면 우회된다.
  * 정원을 현재 인원보다 작게 두는 것은 막지 않는다: 정원 초과를 애초에 허용하므로
@@ -297,7 +297,7 @@ export function updateClass(
 }
 
 /**
- * `DELETE /admin/classes/{id}` — 반 삭제(D30-②).
+ * `DELETE /admin/classes/{id}` — 반 삭제(OP06-7-②).
  *
  * **개강 전에만** 열린다. 안에 사람이 있으면 **미배정으로 되돌린다** — 명단에서 지우는
  * 것이 아니다. 개강 전이라 아직 회차도 리포트도 없고, 반 편성을 다시 짜는 중이다.
@@ -324,7 +324,7 @@ export function deleteClass(classId: string): Promise<void> {
 }
 
 /**
- * `PUT /admin/managers/{id}/classes` — 이 매니저가 맡을 반 **전체를 정한다**(D34).
+ * `PUT /admin/managers/{id}/classes` — 이 매니저가 맡을 반 **전체를 정한다**(OP06-11).
  *
  * **`setClassManager`와 방향이 반대다.** 저쪽은 `반 하나 = 매니저 하나`를 쓰고, 이쪽은
  * `매니저 하나 = 반 여럿`을 쓴다. 한 함수로 둘을 처리하고 있었는데, 매니저 쪽에서
@@ -338,7 +338,7 @@ export function setManagerClasses(managerId: string, classIds: string[]): Promis
   // ===== Mock 버전 (현재 활성) =====
   const manager = MANAGERS.find((m) => m.id === managerId)
   if (!manager) return fail('ADMIN_SAVE_FAILED')
-  // 가입 전에는 반을 못 맡는다 — 로그인을 못 해 면담·독촉을 처리할 수 없다(D34)
+  // 가입 전에는 반을 못 맡는다 — 로그인을 못 해 면담·독촉을 처리할 수 없다(OP06-11)
   if (manager.status !== 'ACTIVE') return fail('ADMIN_SAVE_FAILED')
 
   for (const room of CLASSES) {
@@ -576,7 +576,7 @@ export function resendTraineeInvites(traineeIds: string[]): Promise<number> {
 }
 
 /**
- * `PATCH /admin/roster/{id}/status` — 교육생 비활성(D30-①).
+ * `PATCH /admin/roster/{id}/status` — 교육생 비활성(OP06-7-①).
  *
  * **중도 이탈은 삭제가 아니다.** 명단에서 지우면 그 사람이 남긴 응시·리포트가 주인을
  * 잃는다 — 계정만 막고 **사유·일자**를 남긴다(매니저의 `정지 · 퇴사 2026-05-02`와 같은 모양).
@@ -620,7 +620,7 @@ export function listManagers(q: ManagerQuery = {}): Promise<ManagerPage> {
     if (q.search && !hit(m.name ?? '', q.search) && !hit(m.email, q.search)) return false
     if (q.status && m.status !== q.status) return false
     /*
-      **소속으로 거른다 — 담당 유무가 아니라**(D38). 담당 반으로만 걸렀더니 초대 대기·정지
+      **소속으로 거른다 — 담당 유무가 아니라**(OP06-15). 담당 반으로만 걸렀더니 초대 대기·정지
       계정이 어느 기수에도 안 잡혀 사라졌다(실측 9명 → 7명). 계정 업무(초대·재발송·정지)가
       이 탭 일의 3분의 2라 그것들이 안 보이는 목록은 쓸 수 없다.
 
@@ -631,7 +631,7 @@ export function listManagers(q: ManagerQuery = {}): Promise<ManagerPage> {
   })
 
   /*
-    **헤더 내역도 기수 범위 안에서 센다**(D38). 기관 전체를 세면 `9명`이라 해 놓고 목록에는
+    **헤더 내역도 기수 범위 안에서 센다**(OP06-15). 기관 전체를 세면 `9명`이라 해 놓고 목록에는
     8명이 나온다 — 헤더가 필터와 무관해야 한다는 규칙은 *상태·검색*을 말하는 것이고,
     **기수는 이 화면의 범위 자체**라 그 밖을 셀 이유가 없다.
   */
@@ -649,7 +649,7 @@ export function listManagers(q: ManagerQuery = {}): Promise<ManagerPage> {
     이메일로 줄 세운다.
   */
   /*
-    **조회 범위만큼 잘라서 준다**(D37). 저장소는 모든 기수를 갖고 있고, 화면에 나가는
+    **조회 범위만큼 잘라서 준다**(OP06-14). 저장소는 모든 기수를 갖고 있고, 화면에 나가는
     행은 *지금 무엇을 보고 있나*에 맞춰야 한다.
 
       · 기수 필터 있음 → 그 기수 묶음만. 끝난 기수여도 보여준다(그게 필터의 목적이다)
@@ -730,7 +730,7 @@ export function inviteManager(req: InviteManagerRequest): Promise<Manager> {
     return fail('ADMIN_SAVE_FAILED')
 
   /*
-    **담당 반을 같이 받지 않는다**(D34). 가입 전에는 로그인을 못 해 그 반의 면담·독촉을
+    **담당 반을 같이 받지 않는다**(OP06-11). 가입 전에는 로그인을 못 해 그 반의 면담·독촉을
     처리할 수 없는데, 반에 id가 박히면 `담당 없음` 경고에 안 잡혔다 — 경고가 막으려던
     상황을 초대가 만들고 있었다. 배정은 **가입이 끝난 뒤** 매니저 목록에서 한다.
   */
@@ -738,7 +738,7 @@ export function inviteManager(req: InviteManagerRequest): Promise<Manager> {
     id: `m-${req.email}`,
     name: null,
     email: req.email,
-    // 반은 못 맡아도 **기수 소속은 정해진다** — 그래야 그 기수 목록에 보인다(D38)
+    // 반은 못 맡아도 **기수 소속은 정해진다** — 그래야 그 기수 목록에 보인다(OP06-15)
     cohortIds: [req.cohortId],
     assignments: [],
     pastCohorts: 0,
@@ -821,7 +821,7 @@ const runningCohortIds = () =>
 /**
  * 이 사람이 맡고 있던 반을 놓는다 — 정지·초대 취소가 같이 쓴다.
  *
- * **진행 중인 기수만 푼다**(D36). 전부 풀고 있었는데, 그러면 정지 한 번에 **지난 기수의
+ * **진행 중인 기수만 푼다**(OP06-13). 전부 풀고 있었는데, 그러면 정지 한 번에 **지난 기수의
  * 담당 기록이 지워졌다** — 퇴사자를 지우지 않고 정지로 남기는 이유가(OP-06 §3) 바로 그
  * 기록인데 정지가 그것을 없애고 있었다.
  *
@@ -841,7 +841,7 @@ function releaseClasses(managerId: string): void {
 /**
  * 반 목록을 원천으로 매니저의 담당을 다시 계산한다 — **기수를 가리지 않고 전부** 담는다.
  *
- * 자르는 일은 `listManagers`가 조회 범위에 맞춰 한다(D37). 여기서 미리 잘랐더니
+ * 자르는 일은 `listManagers`가 조회 범위에 맞춰 한다(OP06-14). 여기서 미리 잘랐더니
  * **기수 필터가 끝난 기수를 못 찾아 목록이 비었다** — 저장소는 다 갖고 있고 조회가
  * 좁히는 것이 맞다.
  */
@@ -865,7 +865,7 @@ function syncManagerAssignments(): void {
 
     /*
       **소속 기수 = 담당이 있는 기수 ∪ 초대받은 기수.** 초대로 붙은 소속은 담당이 없어도
-      지우지 않는다 — 지우면 초대 대기 계정이 어느 기수 목록에도 안 나온다(D38).
+      지우지 않는다 — 지우면 초대 대기 계정이 어느 기수 목록에도 안 나온다(OP06-15).
     */
     m.cohortIds = [...new Set([...m.cohortIds, ...byCohort.keys()])]
 
@@ -982,7 +982,7 @@ export function reanalyzeCurriculum(id: string): Promise<CurriculumDetail> {
  * 이 탭의 모양이다(상단은 `기관 전체`, 아래 표는 `7기 · 이번 달`).
  */
 /**
- * 반별 한 달치를 만든다 — **누적 가중치로 월 총액을 나눈다**(D42).
+ * 반별 한 달치를 만든다 — **누적 가중치로 월 총액을 나눈다**(OP06-19).
  *
  * 목이 반 10개 × 월 5개를 손으로 갖고 있으면 월 총액과 어긋나는 순간을 못 잡는다.
  * 가중치로 나누면 **합이 항상 맞고**, 반별 성향(F반이 계속 많이 쓴다)도 달마다 유지된다.
@@ -1013,9 +1013,9 @@ export function getCost(
   // ===== Mock 버전 (현재 활성) =====
   /*
     **기수로 거른다.** 인자를 `void`로 버리고 전체 반을 돌려주고 있었다 — 제목은
-    `7기 · 이번 달`이라 써 놓고 5·6기 반까지 섞여 **10반이어야 할 표가 16행**이었다(D39).
+    `7기 · 이번 달`이라 써 놓고 5·6기 반까지 섞여 **10반이어야 할 표가 16행**이었다(OP06-16).
 
-    **달마다 나눠서 준다**(D43). 한 달치만 주면 지난달 반별을 볼 방법이 없고, 달을 골라
+    **달마다 나눠서 준다**(OP06-20). 한 달치만 주면 지난달 반별을 볼 방법이 없고, 달을 골라
     가며 봐도 **두 달을 나란히 비교할 수 없다.**
   */
   const rooms = CLASSES.filter((c) => c.cohortId === cohortId && CLASS_TOTAL[c.id])
@@ -1042,7 +1042,7 @@ export function getCost(
     그러면 연동할 때 재작성이 된다.
 
     달마다 정렬 옵션을 만들지 않는다 — 월이 열로 펼쳐졌으므로 **눈으로 훑는 일**이고,
-    일곱 개짜리 드롭다운은 매트릭스가 이미 하는 일을 반복한다(D43).
+    일곱 개짜리 드롭다운은 매트릭스가 이미 하는 일을 반복한다(OP06-20).
   */
   const byName = (a: ClassCost, b: ClassCost) => a.className.localeCompare(b.className, 'ko')
   const sorted = [...rows].sort((a, b) =>

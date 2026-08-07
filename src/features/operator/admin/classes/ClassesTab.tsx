@@ -33,7 +33,7 @@ import EditClassDialog from './components/EditClassDialog'
   **명단과 탭을 나눴다.** 정의서 OP-06 §3은 *"반을 만들고 바로 그 반에 사람을 넣는 것이
   실제 동선"* 이라 한 탭으로 합쳐 뒀는데, 만들어 보니 **두 표가 한 뷰포트에 안 들어갔다** —
   반 10행 + 명단 25행이라 반 표에 내부 스크롤을 넣어야 했고, 그러면 *"같이 보인다"* 는
-  합친 이유 자체가 사라진다. 근거는 decision-log D24.
+  합친 이유 자체가 사라진다. 근거는 op-06-admin.md OP06-1.
 
   **동선은 링크로 잇는다** — 반을 만든 뒤 명단으로 가는 것은 탭 하나 누르는 일이다.
 */
@@ -73,7 +73,7 @@ export default function ClassesTab({ onCountsChange }: Props) {
   const counts = countsAsync.data
 
   /*
-    **반을 고칠 수 있는 기수인가**(D30-② — 개강 전에만). 시작일이 필요해서 기수 한 건을
+    **반을 고칠 수 있는 기수인가**(OP06-7-② — 개강 전에만). 시작일이 필요해서 기수 한 건을
     받는다. 판정은 `rules.canEditClasses`가 하고 서버도 같은 규칙을 다시 검증한다 —
     화면만 막으면 우회된다.
   */
@@ -232,7 +232,7 @@ export default function ClassesTab({ onCountsChange }: Props) {
                    **정원을 같이 적는다.** `25명`만 있으면 더 넣어도 되는지 판단할 수 없다(§3).
 
                    **누르면 그 반 명단으로 간다.** 목업 케이스 표는 이 목록이 *"반별 인원 ·
-                   담당 매니저 · 명단"* 을 준다고 했는데, 탭을 가른 뒤(D24) 반에서 명단으로
+                   담당 매니저 · 명단"* 을 준다고 했는데, 탭을 가른 뒤(OP06-1) 반에서 명단으로
                    가는 길이 없어졌다 — 인원 수를 누르는 것이 그 길이다(그 수가 곧 명단이다).
                   */}
                   <TableCell className="text-right tabular-nums">
@@ -245,7 +245,7 @@ export default function ClassesTab({ onCountsChange }: Props) {
                     </Link>
                   </TableCell>
                   {/*
-                    **개강 전에만 수정·삭제가 붙는다**(D30-②). 잠긴 뒤에도 담당 변경은
+                    **개강 전에만 수정·삭제가 붙는다**(OP06-7-②). 잠긴 뒤에도 담당 변경은
                     남는다 — 매니저 퇴사·교체는 운영 중에 계속 일어나는 일이라 잠금
                     규칙이 다르다. 못 하는 일을 흐리게 두지 않는다(C1).
                   */}

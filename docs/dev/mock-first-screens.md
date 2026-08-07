@@ -12,7 +12,8 @@
 > | 화면 그릴 때 규칙(A~I) | [../plan/v2/definition/01-design-checklist.md](../plan/v2/definition/01-design-checklist.md) |
 > | 폭·층·빈 상태 | [../plan/v2/definition/02-layout-system.md](../plan/v2/definition/02-layout-system.md) |
 > | 커밋·PR·완료의 정의 | [../handbook/git-convention.md](../handbook/git-convention.md) |
-> | 왜 그렇게 했나 | [decision-log.md](decision-log.md) |
+> | 왜 그렇게 했나 — **여러 화면에 걸치는 것만** | [decision-log.md](decision-log.md) |
+> | 왜 그렇게 했나 — **이 화면 안의 것** | 화면 문서 `docs/dev/<화면코드>-<이름>.md` — 결정이 3개를 넘으면 그때 만든다 |
 
 ---
 

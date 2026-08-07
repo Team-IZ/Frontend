@@ -8,7 +8,7 @@ import {
 
 /*
   히트맵의 현재 드릴 상태(회차·계층·반·팀·정렬·필터)를 세션 동안만 기억한다 —
-  `interviews/filterState.ts`(D51)와 같은 모듈 전역 패턴. 파일을 컴포넌트와
+  `interviews/filterState.ts`(MG04-6)와 같은 모듈 전역 패턴. 파일을 컴포넌트와
   가른 이유도 같다(React Fast Refresh, react/only-export-components).
 
   ⚠ 이걸 만든 이유는 필터 유지가 아니라 **뒤로가기 복귀**다(사용자 지시) — 개인

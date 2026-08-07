@@ -545,7 +545,7 @@ export function listManagerProjects(q: ProjectQuery): Promise<ProjectListResult>
     베꼈다.** 김민준 · HITL Trigger 조건 항목은 축별 근거 문장까지 와이어의
     글자 그대로다 — 나머지 사람·개념은 같은 모양을 프로그램으로 찍어낸다
     (`concept()` 헬퍼, MG-06 `getTraineeDetailOverlay` 폴백과 같은 절약).
-  · **집단 미달·개인별 "막힘 N"·재응시 대상 개수는 손으로 세지 않고
+  · **집단 미달·개인별 "막힘 N"·다시 보기 대상 개수는 손으로 세지 않고
     `buildProjectResult`가 사람 배열에서 계산한다** — 사람 수가 늘거나 값이
     바뀌어도 합계가 항상 맞는다(손 계산은 MG-07 초반 세션에서 반복적으로
     틀렸던 전례가 있다).
@@ -615,12 +615,20 @@ export type TeamSubmission = {
 }
 
 /**
- * 개인 응시 상태. `BLOCKED`는 "미응시"와 다르다 — 코드가 없거나(미제출)
- * 분석이 실패해 **응시 자체가 열리지 않은** 상태다(정의서 §3 "박도윤 —" 표기).
+ * 개인 응시 상태 — **응시 창(window)이 지금 어떤 상태인가**로 넷을 가른다(결정 로그 D56 B절).
+ * · `DONE` 봤다 · `OPEN` 창이 열려 있고 아직 안 봤다(**마감 전** — 아직 뒤집힐 수 있는 진행
+ *   상태라 잔여 기한을 반드시 병기한다) · `MISSED` 창이 닫히도록 끝내 안 봤다(**마감 후** —
+ *   더 손쓸 게 없는 확정 결과라 붙일 기한 자체가 없다) · `BLOCKED` 창이 애초에 안 열렸다.
+ *
+ * `BLOCKED`는 `MISSED`와 다르다 — 코드가 없거나(미제출) 분석이 실패해 **응시 자체가 열리지
+ * 않은** 상태다(정의서 §3 "박도윤 —" 표기). 전엔 `AVAILABLE`·`NOT_STARTED` 둘이 실질적으로
+ * 같은 마감 전 상태였는데 라벨만 "응시 가능"/"미응시"로 갈려, 마감 전 사람이 확정 집계
+ * 용어인 "미응시"를 달고 카운트다운을 함께 보여주는 드리프트가 있었다(D56 B절 "정리할 것").
  */
-export type AttendanceStatus = 'DONE' | 'AVAILABLE' | 'NOT_STARTED' | 'BLOCKED'
+export type AttendanceStatus = 'DONE' | 'OPEN' | 'MISSED' | 'BLOCKED'
 export type PersonAttendance = {
   status: AttendanceStatus
+  /** 잔여 기한("D-2"·"19시간 남음") — `OPEN`일 때만 값이 있다(D56 B절: 마감 후엔 붙일 값이 없다) */
   deadlineLabel: string | null
   /** 실제로 응시를 마친 시각(`YYYY-MM-DDTHH:mm`) — `DONE`일 때만 값이 있다. 제출 현황
    *  표의 "제출" 열이 팀 행에선 제출 시각을, 개인 행에선 이 값을 보여준다(사용자 지시) */
@@ -629,8 +637,8 @@ export type PersonAttendance = {
 
 export const ATTENDANCE_LABEL: Record<AttendanceStatus, string> = {
   DONE: '응시 완료',
-  AVAILABLE: '응시 가능',
-  NOT_STARTED: '미응시',
+  OPEN: '응시 전',
+  MISSED: '미응시',
   BLOCKED: '—',
 }
 
@@ -675,7 +683,7 @@ export type ConceptOutcome = {
   inCode: boolean
   /** 연속으로 통과한 단계 수(0~4) — "N단 도달" */
   reachLevel: ReachLevel
-  /** 재응시 대상 개념인가(개념별로 붙는다, 사람 전체가 아니라) */
+  /** 다시 보기 대상 개념인가(개념별로 붙는다, 사람 전체가 아니라) */
   retryTarget: boolean
   /** 실제로 물은 단계만 키가 있다 — 멈춘 뒤는 "미도달"이라 아예 없다(화면 라벨은 PersonResultPanel 참고) */
   steps: Partial<Record<AxisStepId, AxisStepResult>>
@@ -684,21 +692,23 @@ export type ConceptOutcome = {
 export type PersonResult = {
   person: PersonRef
   concepts: ConceptOutcome[]
-  /** 재응시 발송 완료일. null이면 아직 안 보냈다(체크 해제로 대상에서 뺄 수 있다) */
+  /** 다시 보기 활성화 시각. null이면 아직 활성화 안 했다(체크 해제로 대상에서 뺄 수
+   *  있다). 필드명은 그대로 두되 의미만 "보낸 시각"→"활성화한 시각"으로 바뀐다
+   *  (결정 로그 D56 D절 — 알림 채널이 없어져 "발송"이 성립하지 않는다) */
   retrySentAt: string | null
-  /** 발송할 때 매니저가 고른 기한(`YYYY-MM-DDTHH:mm`). retrySentAt과 함께 세팅된다 */
+  /** 활성화할 때 매니저가 고른 기한(`YYYY-MM-DDTHH:mm`). retrySentAt과 함께 세팅된다 */
   retryDueAt: string | null
-  /** 재응시를 실제로 마친 시각. null이면 발송은 됐어도 아직 안 봤다 — 트레이니 쪽 응시 기록(목업은 정적 시드) */
+  /** 다시 보기를 실제로 마친 시각. null이면 활성화는 됐어도 아직 안 봤다 — 트레이니 쪽 응시 기록(목업은 정적 시드) */
   retryTakenAt: string | null
 }
 
-/** 개인 표의 "막힘 N" 배지 — inCode인데 재응시 대상인 개념 수 */
+/** 개인 표의 "막힘 N" 배지 — inCode인데 다시 보기 대상인 개념 수 */
 export function stuckConceptCount(p: PersonResult): number {
   return p.concepts.filter((c) => c.inCode && c.retryTarget).length
 }
 
 /**
- * 재응시 발송 대상 개념 이름 — 반 전체 경고(`classWarnings`)에 이미 뜬 개념은 뺀다
+ * 다시 보기 대상 개념 이름 — 반 전체 경고(`classWarnings`)에 이미 뜬 개념은 뺀다
  * (와이어 "Graph 구성은 목록에 없어요 — 반 절반이 막힌 개념이라 반 전체에 안내하는
  * 편이 맞습니다"). 개인 사유와 반 사유를 겹쳐 보여주지 않는다는 정의서 §3 원칙 그대로다.
  */
@@ -707,18 +717,33 @@ export function retryConceptNames(p: PersonResult, classWarnings: ClassWarning[]
   return p.concepts.filter((c) => c.retryTarget && !excluded.has(c.concept)).map((c) => c.concept)
 }
 
-export type RetryStatus = '재응시 가능' | '재응시 발송 완료' | '재응시 완료'
+export type RetryStatus = '활성화 전' | '응시 전' | '미응시' | '완료'
 
 /**
- * 응시 여부 3분류 — 재응시 가능(아직 안 보냄) · 재응시 발송 완료(보냈지만 아직 안 봄) ·
- * 재응시 완료(다시 봄). `ResultTab`의 발송 현황 표와 `RetrySendDialog`의 체크리스트가
- * 이 함수 하나로 같은 값을 쓴다 — 전에는 다이얼로그가 "이미 다시 봤어요"를 따로
- * 하드코딩해서 발송만 되고 아직 안 본 사람한테도 "봤다"고 잘못 표시됐다(사용자 지적).
+ * 응시 여부 4분류(결정 로그 D56 D절) — 활성화 전(아직 안 켬) · 응시 전(켰고 창이
+ * 열려 있음, 기한 병기) · 미응시(창이 닫히도록 안 봄, 확정) · 완료(다시 봄).
+ * `ResultTab`의 활성화 현황 표와 `RetrySendDialog`의 체크리스트가 이 함수 하나로
+ * 같은 값을 쓴다 — 전에는 다이얼로그가 "이미 다시 봤어요"를 따로 하드코딩해서
+ * 활성화만 되고 아직 안 본 사람한테도 "봤다"고 잘못 표시됐다(사용자 지적). 마감
+ * 전/후 구분은 `AttendanceStatus`(B절)와 같은 원칙 — `retryDueAt`이 지났는지로
+ * 가른다(`deadlinePassed`).
  */
 export function retryStatus(p: PersonResult): RetryStatus {
-  if (!p.retrySentAt) return '재응시 가능'
-  return p.retryTakenAt ? '재응시 완료' : '재응시 발송 완료'
+  if (!p.retrySentAt) return '활성화 전'
+  if (p.retryTakenAt) return '완료'
+  return deadlinePassed(p.retryDueAt) ? '미응시' : '응시 전'
 }
+
+/** `retryStatus` 4분류 → 배지 색. `ResultTab`·`RetrySendDialog`가 이 상수 하나를
+ *  같이 쓴다(완료=success, 미응시=마감이 지나도록 안 봄이라 응시 전보다 급하다).
+ *  컴포넌트 파일이 아니라 여기 둔 이유 — `ATTENDANCE_LABEL`과 같은 원칙으로,
+ *  컴포넌트 파일에 두면 oxlint `react(only-export-components)` 경고가 뜬다 */
+export const RETRY_STATUS_VARIANT = {
+  '활성화 전': 'warning',
+  '응시 전': 'neutral',
+  미응시: 'danger',
+  완료: 'success',
+} as const
 
 export type ConceptAggregate = {
   concept: string
@@ -735,10 +760,11 @@ export type ProjectResult = {
   reportPublished: boolean
   attendedCount: number
   totalCount: number
-  /** 개념 1개 이상에서 2단 미달(불합격)인 사람 수 — "불합격 인원" 카드, 재응시 대상의 절반 */
+  /** 개념 1개 이상에서 2단 미달(불합격)인 사람 수 — "불합격 인원" 카드, 다시 보기 대상의 절반 */
   retryTargetCount: number
-  /** 마감이 지나도록 응시를 시작조차 안 한 사람 수(`AttendanceStatus.NOT_STARTED`) — 재응시 대상의 나머지 절반.
-   *  코드가 아직 분석되지 않아 응시 자체가 안 열린 `BLOCKED`는 포함하지 않는다(그건 독촉 대상이지 재응시 대상이 아니다) */
+  /** 응시 창이 닫히도록 끝내 안 본 사람 수(`AttendanceStatus.MISSED`) — 다시 보기 대상의 나머지 절반.
+   *  **마감 전(`OPEN`)은 세지 않는다**(D56 B절) — 아직 뒤집힐 수 있는 사람을 섞으면 확정 집계인
+   *  "미응시 N명"이 계속 흔들린다. 응시 자체가 안 열린 `BLOCKED`도 뺀다(독촉 대상이지 다시 보기 대상이 아니다) */
   notStartedCount: number
   classWarnings: ClassWarning[]
   conceptAggregates: ConceptAggregate[]
@@ -965,26 +991,34 @@ const MIF3_ATTENDANCE: Partial<Record<TraineeId, PersonAttendance>> = {
   t7: { status: 'DONE', deadlineLabel: null, completedAt: '2026-07-14T11:05' },
   t8: { status: 'DONE', deadlineLabel: null, completedAt: '2026-07-13T15:40' },
   t9: { status: 'DONE', deadlineLabel: null, completedAt: '2026-07-15T09:30' },
-  t10: { status: 'AVAILABLE', deadlineLabel: 'D-2', completedAt: null },
-  // NOT_STARTED도 deadlineLabel을 채운다 — 응시 창은 "팀의 코드 분석 완료 시점"에 함께
-  // 열리므로(정의서 v2 §14 "응시 창 — 분석 완료로부터 기산") 같은 팀(2팀=t9·t10·t11)의
-  // AVAILABLE 팀원과 마감이 같다. 전엔 null로 비워놔 독촉 문구에 쓸 "N일"을 낼 수 없었다.
-  t11: { status: 'NOT_STARTED', deadlineLabel: 'D-2', completedAt: null },
-  // 정의서 §3 예시(김민준 응시완료·이서준 응시가능·정하늘 미응시)의 기한 표기만 수정 —
+  t10: { status: 'OPEN', deadlineLabel: 'D-2', completedAt: null },
+  // 응시 창은 "팀의 코드 분석 완료 시점"에 함께 열리므로(정의서 v2 §14 "응시 창 — 분석
+  // 완료로부터 기산") **같은 팀이면 열림/닫힘도 같다** — 2팀(t9·t10·t11)은 아직 열려 있어
+  // 전원 OPEN이고 마감도 같다. 전엔 t11만 NOT_STARTED('미응시')라 같은 창의 팀원끼리
+  // 상태가 갈렸는데, 무엇으로 갈리는지가 코드에 없던 드리프트였다(D56 B절).
+  t11: { status: 'OPEN', deadlineLabel: 'D-2', completedAt: null },
+  // 정의서 §3 예시(김민준 응시완료·이서준·정하늘 미응시)의 기한 표기만 수정 —
   // "D-19h"는 실제로 안 쓰는 표기(다른 항목은 전부 "D-N" 일 단위). 하루 미만 남았을 땐
   // 일 단위로 뭉개지 않고 "N시간 남음"으로 쓴다(사용자 지시)
   t1: { status: 'DONE', deadlineLabel: null, completedAt: '2026-07-15T14:00' },
-  t2: { status: 'AVAILABLE', deadlineLabel: '19시간 남음', completedAt: null },
-  t3: { status: 'NOT_STARTED', deadlineLabel: '19시간 남음', completedAt: null }, // 3팀 팀원 t2와 같은 창
+  t2: { status: 'OPEN', deadlineLabel: '19시간 남음', completedAt: null },
+  t3: { status: 'OPEN', deadlineLabel: '19시간 남음', completedAt: null }, // 3팀 팀원 t2와 같은 창
   t18: { status: 'DONE', deadlineLabel: null, completedAt: '2026-07-13T16:45' },
-  t19: { status: 'AVAILABLE', deadlineLabel: 'D-1', completedAt: null },
-  t20: { status: 'NOT_STARTED', deadlineLabel: 'D-1', completedAt: null }, // 7팀 팀원 t19와 같은 창
+  t19: { status: 'OPEN', deadlineLabel: 'D-1', completedAt: null },
+  t20: { status: 'OPEN', deadlineLabel: 'D-1', completedAt: null }, // 7팀 팀원 t19와 같은 창
   t21: { status: 'DONE', deadlineLabel: null, completedAt: '2026-07-16T13:20' },
   t22: { status: 'DONE', deadlineLabel: null, completedAt: '2026-07-16T14:10' },
-  t23: { status: 'AVAILABLE', deadlineLabel: 'D-3', completedAt: null },
+  t23: { status: 'OPEN', deadlineLabel: 'D-3', completedAt: null },
   t24: { status: 'DONE', deadlineLabel: null, completedAt: '2026-07-17T09:50' },
   // t4·t5(미제출 팀)·t12~t17(미제출·분석실패 팀)은 키가 없다 = BLOCKED("—") — 응시 자체가
-  // 안 열려 "응시 가능한 날짜가 N일 남았습니다"를 보낼 수 없다. 독촉 대상에서 뺀다(NudgeDialog).
+  // 안 열려 "응시 가능한 날짜가 N일 남았습니다"가 성립하지 않는다. 연락함 대상에서도
+  // 뺀다(`SubmissionTab`의 `needsContact`, D56 D절 후속).
+  //
+  // ⚠ `MISSED`(마감 후 확정 미응시) 사례는 이 회차에 없다. 창이 이미 닫힌 팀은 1팀뿐인데
+  // (제출 07-12, 세 명 전원 응시 완료) 거기 안 본 사람을 만들려면 결과 9명 중 하나를 빼야
+  // 하고, 그러면 `buildProjectResult`가 세는 반 전체 비율(집단 미달 50% 경계)까지 흔들린다.
+  // 나머지 팀은 전부 창이 열려 있어 팀원 하나만 마감 후로 만들 수 없다(같은 팀=같은 창).
+  // 미프 3차는 "제출 마감은 지났지만 응시 창은 진행 중"인 장면이라 이게 데이터상 자연스럽다.
 }
 
 // ── 결과 탭 데이터 생성기 — 사람 수만큼 찍어내고 집계는 프로그램이 센다 ──
@@ -1041,7 +1075,7 @@ function concept(
     concept: name,
     inCode,
     reachLevel: inCode ? reach : 0,
-    // 재응시 대상 = 2단(설계논리) 도달 실패. 2단까지 갔으면(3·4단 미도달이어도) 대상 아님(사용자 지시)
+    // 다시 보기 대상 = 2단(설계논리) 도달 실패. 2단까지 갔으면(3·4단 미도달이어도) 대상 아님(사용자 지시)
     retryTarget: inCode && reach < 2,
     steps,
   }
@@ -1057,7 +1091,7 @@ function person(
   return { person: byId(id), concepts, retrySentAt, retryDueAt, retryTakenAt }
 }
 
-/** 집단 미달·"막힘 N"·재응시 대상 개수를 사람 배열에서 직접 센다(손 계산 금지) */
+/** 집단 미달·"막힘 N"·다시 보기 대상 개수를 사람 배열에서 직접 센다(손 계산 금지) */
 function buildProjectResult(
   people: PersonResult[],
   reportPublished: boolean,
@@ -1091,9 +1125,7 @@ function buildProjectResult(
     }))
 
   const retryTargetCount = people.filter((p) => p.concepts.some((c) => c.retryTarget)).length
-  const notStartedCount = Object.values(attendance).filter(
-    (a) => a?.status === 'NOT_STARTED',
-  ).length
+  const notStartedCount = Object.values(attendance).filter((a) => a?.status === 'MISSED').length
 
   return {
     reportPublished,
@@ -1147,8 +1179,12 @@ const MIF3_RESULT = buildProjectResult(
       concept(MIF3_CONCEPTS.graph, true, 4),
       concept(MIF3_CONCEPTS.state, true, 4),
     ]),
-    // t8·t9 — 재응시 발송·응시 표(ResultTab) 렌더 확인용 시드. t8은 발송+응시 완료,
-    // t9는 발송만 되고 아직 미응시, t1(김민준)은 미발송으로 남겨 발송 흐름도 테스트할 수 있게 둔다.
+    // t8·t9 — 다시 보기 활성화·응시 표(ResultTab) 렌더 확인용 시드. t8은 활성화+응시
+    // 완료("완료"), t9는 활성화만 되고 창이 아직 열려 있음("응시 전" — retryDueAt
+    // 07-19 18:00은 MOCK_TODAY 07-18 기준 안 지났다), t1(김민준)은 활성화 전으로
+    // 남겨 흐름도 테스트할 수 있게 둔다. ⚠ 마감이 지난 "미응시" 사례는 이 시드에
+    // 없다(B절 MISSED와 같은 공백 — 필요하면 다음에 t9의 retryDueAt을 과거로 당겨
+    // 채운다).
     person(
       't8',
       [
@@ -1489,8 +1525,18 @@ function autoAssign(
 
 // ── 조회·조작(mock API) ──────────────────────────────────────
 
+/**
+ * ⚠ 버그 수정(2026-08-08, 이슈 124 후속) — `PROJECT_DETAILS[id]`를 그대로
+ * 반환하면 발행·연락함 등 mutate 함수들이 그 객체를 제자리에서 고쳐도 참조가
+ * 안 바뀐다. `useAsync`의 `setData`가 이전 값과 참조가 같으면 리렌더를
+ * 건너뛰어(React 얕은 비교) 화면이 안 바뀐 것처럼 보인다("리포트 발행"·
+ * SubmissionTab [연락함] 클릭 무반응, 실측). 매 호출 새 객체로 얕게 복제해
+ * `getInbox`(대시보드)와 같은 패턴으로 맞춘다 — 중첩 필드는 같은 참조를
+ * 공유해도 되니(mutate는 그대로 유지) 최상위 한 겹만 새로 만들면 된다.
+ */
 export function getProjectDetail(id: string): Promise<ProjectDetail | null> {
-  return delay(PROJECT_DETAILS[id] ?? null)
+  const d = PROJECT_DETAILS[id]
+  return delay(d ? { ...d } : null)
 }
 
 /** ③ 전원 배정 → ④ 확정됨. 되돌리기는 제출 전(④)까지만(정의서 §3) */
@@ -1576,18 +1622,13 @@ export function deleteTeam(id: string, teamId: string): Promise<void> {
   return delay(undefined)
 }
 
-/** 독촉 — 상태별 고정 문구, 커스텀 없음(정의서 §5). 실제 발송은 서버 몫이라 목에선 성공만 흉내낸다 */
-export function nudgeTeam(_id: string, _teamId: string): Promise<void> {
-  return delay(undefined)
-}
-export function nudgePerson(_id: string, _traineeId: string): Promise<void> {
-  return delay(undefined)
-}
-
 /**
- * 재응시 발송 — 자동 지정 + 매니저가 버튼을 누른다(정의서 §5). 체크 해제로 대상에서
- * 뺄 수 있다. 기한(`dueAt`, `YYYY-MM-DDTHH:mm`)은 기본값(+3일 18:00)을 매니저가 직접
- * 바꿀 수 있다(사용자 지시) — 모달이 계산한 값을 그대로 받아 각 대상자에 저장한다.
+ * 다시 보기 활성화 — 자동 지정 + 매니저가 버튼을 누른다(정의서 §5). 체크 해제로
+ * 대상에서 뺄 수 있다. 기한(`dueAt`, `YYYY-MM-DDTHH:mm`)은 기본값(+3일 18:00)을
+ * 매니저가 직접 바꿀 수 있다(사용자 지시) — 모달이 계산한 값을 그대로 받아 각
+ * 대상자에 저장한다. **함수명·필드명(`retrySentAt`)은 그대로 둔다** — 메시지를
+ * 실제로 보내는 게 아니라 응시 권한·기한을 부여하는 상태 변경이라는 뜻만 바뀌었다
+ * (결정 로그 D56 D절, "발송" → "활성화").
  */
 export function sendRetry(id: string, traineeIds: string[], dueAt: string): Promise<void> {
   const d = PROJECT_DETAILS[id]
@@ -1602,11 +1643,13 @@ export function sendRetry(id: string, traineeIds: string[], dueAt: string): Prom
 }
 
 /**
- * 재응시 발송 취소(사용자 지시) — `retrySentAt`·`retryDueAt`을 지워 "재응시 가능"
- * 상태로 되돌린다. **이미 다시 응시한 사람(`retryTakenAt`)은 취소하지 않는다**
- * — 실제로 벌어진 일을 되돌릴 순 없으니, 취소는 "발송만 되고 아직 안 본" 사람에
- * 게만 의미가 있다(사용자 지시 "재응시 완료한 경우는 제외"). 방어적으로 함수
- * 안에서도 한 번 더 막는다 — 호출부(UI)가 버튼을 숨기지 못한 경우를 대비.
+ * 다시 보기 비활성화(사용자 지시, 명칭은 결정 로그 D56 D절 — "발송 취소"가
+ * 성립하지 않아 "비활성화"로 재정의) — `retrySentAt`·`retryDueAt`을 지워
+ * "활성화 전" 상태로 되돌린다. **이미 다시 응시한 사람(`retryTakenAt`)은
+ * 비활성화하지 않는다** — 실제로 벌어진 일을 되돌릴 순 없으니, 비활성화는
+ * "활성화만 되고 아직 안 본" 사람에게만 의미가 있다(사용자 지시 "완료한 경우는
+ * 제외"). 방어적으로 함수 안에서도 한 번 더 막는다 — 호출부(UI)가 버튼을
+ * 숨기지 못한 경우를 대비. 함수명은 그대로 둔다.
  */
 export function cancelRetry(id: string, traineeId: string): Promise<void> {
   const d = PROJECT_DETAILS[id]

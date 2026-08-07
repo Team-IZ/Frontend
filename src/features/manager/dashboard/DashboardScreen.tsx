@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useState, type ReactNode } from 'react'
+import { Fragment, useCallback, useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import ConsoleShell from '@/shells/ConsoleShell'
@@ -9,16 +9,37 @@ import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils/cn'
 import { useAsync } from '@/lib/useAsync'
-import { getInbox, nudgeItem, type InboxItem, type InboxScope, type ItemBand } from './mockData'
+import {
+  getInbox,
+  markContacted,
+  type InboxItem,
+  type InboxScope,
+  type ItemBand,
+  type RoundId,
+} from './mockData'
+import { getSessionView, setSessionView } from './viewState'
 import RunLine from './components/RunLine'
 import InboxRow, { briefPath } from './components/InboxRow'
 import ResolvedRow from './components/ResolvedRow'
 
 /*
   MG-01 매니저 대시보드 — "오늘 누구부터 처리할지" 한 목록(정의서 §1). 지표판이
-  아니라 인박스라 KPI 카드·회차 필터가 없다 — 있는 필터는 `지난 방문 이후`/`전체`
-  하나뿐이고, 정렬은 `mockData.ts`가 밴드 순서로 이미 고정해 둔다(사용자가 못
-  고른다, MG-03 정렬과 같은 원칙).
+  아니라 인박스라 KPI 카드 그리드는 없다 — 정렬은 `mockData.ts`가 밴드 순서로
+  이미 고정해 둔다(사용자가 못 고른다, MG-03 정렬과 같은 원칙).
+
+  ⚠ **프로젝트 select 추가(사용자 지시, 2026-08-08)** — 원래 "회차 필터가
+  없다"(정의서 §1)였는데, 교육생·히트맵·면담 화면처럼 프로젝트 select로
+  바꿨다. 처음엔 `HeatmapToolbar`처럼 별도 툴바 줄로 얹었는데, "한 줄로
+  합쳐서 `RunLine`의 회차 라벨 자리를 대신하라"는 지적을 받아 `RunLine`
+  내부로 옮겼다(`RunLine.tsx` 참고). `지난 방문 이후`/`전체` 필터는 회차
+  select와 별개로 그대로 남는다(고른 회차 안에서의 시간 범위 필터라 서로
+  안 겹친다).
+
+  ⚠ **기본값·세션 기억(사용자 지시, 2026-08-08)** — 기본 회차는 가장 최근에
+  생성된 프로젝트(`viewState.ts` 참고, heatmap과 같은 패턴). [브리프 열기]로
+  면담 화면에 갔다가 뒤로가기로 돌아오면 이 화면이 다시 마운트되는데, 그때도
+  방금 보던 회차를 그대로 유지한다 — `useState` 기본값으로만 두면 매번
+  "가장 최근 프로젝트"로 리셋돼 버린다.
 
   **행에서 바로 처리한다**(정의서 §2) — 독촉은 이 화면 안에서 끝나고(모달 없음,
   MG-08과 같은 규약·다른 진입점), 무효 응시·면담만 다른 화면으로 넘어간다.
@@ -46,32 +67,35 @@ function interviewsListPath(roundId: string, className: string): string {
 
 export default function DashboardScreen() {
   const navigate = useNavigate()
+  const initial = getSessionView()
+  const [round, setRound] = useState<RoundId>(initial.round)
   const [scope, setScope] = useState<InboxScope>('RECENT')
   const [foldOpen, setFoldOpen] = useState(false)
   const [pendingId, setPendingId] = useState<string | null>(null)
-  const [failedIds, setFailedIds] = useState<Set<string>>(new Set())
 
-  const load = useCallback(() => getInbox(scope), [scope])
+  useEffect(() => {
+    setSessionView({ round })
+  }, [round])
+
+  const load = useCallback(() => getInbox(scope, round), [scope, round])
   const page = useAsync(load)
   const data = page.data
 
-  async function handleNudge(item: InboxItem) {
+  // 실제로 메시지를 보내는 게 아니라 매니저가 직접 연락한 뒤 스스로 체크하는
+  // 동작이라(D56 C절) 실패 분기가 없다 — 두 결과 다 화면을 새로고침한다.
+  // ⚠ 정정(2026-08-08): 행은 "처리됨" 접이 섹션으로 내려가지 않는다 — 그
+  // 섹션(`RESOLVED_HISTORY`)은 고정 시드고 이 액션과 무관하다. 실제로는
+  // 같은 밴드 안에 남아 회색으로 흐려지고 버튼이 "체크함 · 방금" 텍스트로
+  // 바뀐다(InboxRow `done` 분기). 이전에 반대로 적어놨던 주석 때문에 검증
+  // 체크리스트도 잘못 안내했었다.
+  async function handleContact(item: InboxItem) {
     setPendingId(item.id)
-    setFailedIds((s) => {
-      const next = new Set(s)
-      next.delete(item.id)
-      return next
-    })
     try {
-      const res = await nudgeItem(item.id)
+      const res = await markContacted(item.id)
       if (res.kind === 'ALREADY_RESOLVED') {
         toast('이미 제출했습니다')
-        page.reload()
-      } else if (res.kind === 'FAILED') {
-        setFailedIds((s) => new Set(s).add(item.id))
-      } else {
-        page.reload()
       }
+      page.reload()
     } finally {
       setPendingId(null)
     }
@@ -100,7 +124,12 @@ export default function DashboardScreen() {
       ) : (
         data && (
           <>
-            <RunLine run={data.run} nextRoundLabel="미프 4차 제출 시작 07-29" />
+            <RunLine
+              round={round}
+              onRoundChange={setRound}
+              run={data.run}
+              nextRoundLabel="미프 4차 제출 시작 07-29"
+            />
 
             <div className="mb-3 flex items-baseline gap-2">
               <span className="text-lg font-bold">할 일</span>
@@ -176,8 +205,7 @@ export default function DashboardScreen() {
                           key={item.id}
                           item={item}
                           pending={pendingId === item.id}
-                          failed={failedIds.has(item.id)}
-                          onNudge={() => void handleNudge(item)}
+                          onContact={() => void handleContact(item)}
                           onOpenBrief={() =>
                             item.kind === 'INTERVIEW' && navigate(briefPath(item.caseId))
                           }

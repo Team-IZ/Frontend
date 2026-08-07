@@ -2,20 +2,36 @@ import { AlertTriangle, Clock, PenLine, Users } from 'lucide-react'
 import { Link } from 'react-router'
 import { cn } from '@/lib/utils/cn'
 import { Button } from '@/components/ui/Button'
-import type { InboxItem, ItemBand } from '../mockData'
+import { checkedLabel, type InboxItem, type ItemBand } from '../mockData'
 
 /*
   인박스 행 하나 — 목업 `.it`(와이어 #inbox). 밴드 4종이 아이콘·색 하나씩만
   다르고 나머지 뼈대(아이콘·유형·이름·사유·액션)는 같아서 컴포넌트 하나로
   묶는다(`InterviewStatusBadge`처럼 유형별 파일을 쪼개기엔 조합이 이 하나뿐).
+
+  ⚠ D56 C절 후속(이슈 124) — 액션 버튼을 "알림"에서 "연락함"으로 바꿨다.
+  매니저가 슬랙 등으로 직접 연락한 뒤 스스로 체크하는 동작이라 발송 실패라는
+  상태가 성립하지 않아 그 UI(재시도 버튼)도 같이 지웠다.
+
+  ⚠ 용어 재조정(사용자 지적, 2026-08-08) — "연락함"이 명령/상태 어느 쪽인지
+  애매하고 시스템이 실제로 메시지를 보낸 것 같은 오해도 줬다. "연락"이라는
+  단어 자체를 빼고 "체크"로 바꿨다 — 행에 이미 사유(응시 전·마감 등)가
+  보여서 "뭘 체크하는지"는 문맥으로 읽힌다.
+
+  ⚠ "방금"이 고정 문구였다(사용자 지적, 2026-08-08) — 체크한 지 몇 시간·며칠이
+  지나도 계속 "방금"이라 실제로 언제 체크했는지 알 수 없었다. 분 단위까진
+  필요 없다는 지시라(`mockData.ts` `checkedLabel` 참고) 날짜 단위로
+  "오늘"·"어제"·"N일 전"만 계산해 보여준다.
 */
 
 const traineePath = (id: string) => `/manager/trainees/${id}`
 const briefPath = (caseId: string) => `/manager/interviews/${caseId}/brief`
 
 const KIND_LABEL: Record<InboxItem['kind'], string> = {
-  ABSENT: '미응시',
-  RETRY: '재응시',
+  // 응시 창이 아직 열려 있는(잔여 시간이 붙는) 사람이라 "미응시"가 아니라 "응시 전" —
+  // "미응시"는 창이 닫힌 뒤의 확정 결과에만 쓴다(결정 로그 D56 B절)
+  ABSENT: '응시 전',
+  RETRY: '다시 보기',
   INVALID: '무효 응시',
   INTERVIEW: '면담',
   UNSUBMITTED: '미제출',
@@ -84,7 +100,7 @@ function ItemWhy({ item }: { item: InboxItem }) {
 function WhoCell({ item }: { item: InboxItem }) {
   if (item.kind === 'UNSUBMITTED' || item.kind === 'ANALYSIS_FAILED') {
     return (
-      <span className="flex w-[130px] shrink-0 flex-col text-sm">
+      <span className="flex w-[130px] shrink-0 items-baseline gap-1.5 text-sm">
         <span className="font-bold">{item.teamLabel}</span>
         <span className="text-fg-subtle text-2xs">{item.memberCount}명</span>
       </span>
@@ -103,22 +119,18 @@ function WhoCell({ item }: { item: InboxItem }) {
 type Props = {
   item: InboxItem
   pending: boolean
-  /** 마지막으로 시도한 알림이 실패한 채 재시도 대기 중인가(NUDGE_FAILED 인라인) */
-  failed: boolean
-  onNudge: () => void
+  /** 매니저가 슬랙 등으로 직접 연락한 뒤 "체크"를 눌렀을 때(D56 C절 — 실제
+   *  발송이 아니라 자기 신고라 실패 상태가 없다). ⚠ 사용자 지적(2026-08-08) —
+   *  "연락함"은 명령/상태 어느 쪽인지 애매하고, 시스템이 실제로 메시지를
+   *  보낸 것 같은 오해도 줬다. "체크"로 바꿨다 — 행에 이미 사유(응시 전·
+   *  마감 등)가 보여서 "뭘 체크하는지"는 문맥으로 읽힌다. */
+  onContact: () => void
   onOpenBrief: () => void
   onReviewVoid: () => void
 }
 
-export default function InboxRow({
-  item,
-  pending,
-  failed,
-  onNudge,
-  onOpenBrief,
-  onReviewVoid,
-}: Props) {
-  const done = item.status === 'SENT'
+export default function InboxRow({ item, pending, onContact, onOpenBrief, onReviewVoid }: Props) {
+  const done = item.status === 'CONTACTED'
 
   return (
     <div
@@ -141,18 +153,11 @@ export default function InboxRow({
       <span className="flex shrink-0 items-center gap-2">
         {done ? (
           <span className="text-success text-xs font-semibold whitespace-nowrap">
-            알림 보냄 · 방금
+            체크함 · {checkedLabel(item.checkedAt)}
           </span>
-        ) : failed ? (
-          <>
-            <span className="text-danger text-2xs">보내지 못했습니다</span>
-            <Button variant="ghost" size="sm" onClick={onNudge}>
-              다시
-            </Button>
-          </>
         ) : item.kind === 'ABSENT' || item.kind === 'RETRY' ? (
-          <Button size="sm" disabled={pending} onClick={onNudge}>
-            알림
+          <Button size="sm" disabled={pending} onClick={onContact}>
+            체크
           </Button>
         ) : item.kind === 'INVALID' ? (
           <Button variant="ghost" size="sm" onClick={onReviewVoid}>
@@ -163,8 +168,8 @@ export default function InboxRow({
             브리프 열기
           </Button>
         ) : (
-          <Button size="sm" disabled={pending} onClick={onNudge}>
-            팀 전원에게 알림
+          <Button size="sm" disabled={pending} onClick={onContact}>
+            체크
           </Button>
         )}
       </span>

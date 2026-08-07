@@ -96,7 +96,7 @@ export default function NudgeDialog({ open, onOpenChange, projectId, detail, onS
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[440px]">
         <DialogHeader>
-          <DialogTitle>독촉 보내기</DialogTitle>
+          <DialogTitle>알림 보내기</DialogTitle>
         </DialogHeader>
 
         <p className="text-fg-subtle -mt-2 text-xs">
@@ -136,7 +136,7 @@ export default function NudgeDialog({ open, onOpenChange, projectId, detail, onS
           )}
           {unsubmitted.length === 0 && failed.length === 0 && dueSoon.length === 0 && (
             <p className="text-fg-subtle py-4 text-center text-sm">
-              지금은 독촉이 필요한 대상이 없어요.
+              지금은 알림이 필요한 대상이 없어요.
             </p>
           )}
         </div>

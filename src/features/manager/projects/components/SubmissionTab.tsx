@@ -89,12 +89,12 @@ export default function SubmissionTab({ projectId, detail, onReload }: Props) {
       <div className="flex items-center gap-2">
         <p className="text-fg-subtle text-xs">
           제출 {submittedCount}/{teams.length}팀
-          {locked && <span className="ml-2">· 종료된 회차라 독촉·팀 이동을 할 수 없습니다</span>}
+          {locked && <span className="ml-2">· 종료된 회차라 알림·팀 이동을 할 수 없습니다</span>}
         </p>
         {!locked && (
           <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setNudgeOpen(true)}>
             <Megaphone className="size-3.5" />
-            독촉 보내기
+            알림 보내기
           </Button>
         )}
       </div>

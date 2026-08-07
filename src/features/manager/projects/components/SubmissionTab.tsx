@@ -1,8 +1,7 @@
 import { useState } from 'react'
-import { ChevronRight, Megaphone } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { Badge } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
 import {
   Table,
   TableBody,
@@ -16,23 +15,32 @@ import {
   ATTENDANCE_LABEL,
   ROSTER,
   requirementTally,
+  type PersonAttendance,
   type ProjectDetail,
   type Team,
 } from '../mockData'
-import NudgeDialog from './NudgeDialog'
 
 /*
   MG-08 제출 현황 탭 — 팀 그룹 + 개인 행 2계층(정의서 §3). 팀이 한 명이라도
   내면 팀원 전원이 같은 코드를 쓰므로 제출·분석·요구사항은 **팀 행**에,
-  응시·재응시는 **개인 행**에 붙는다.
+  응시·다시 보기는 **개인 행**에 붙는다.
 
   팀 편성이 안 끝났으면(편성 전·편성 중·전원 배정) 제출 자체가 안 열린다 —
   빈 상태로 그 이유를 말한다. 확정(④)부터 표가 나온다.
 
   요구사항 판정은 **팀 행을 펼쳐서** 본다(모달 아님) — `showReq`로 그 팀만 토글.
 
-  ⚠ 렌더 비교 반영 — 독촉을 행마다 개별 버튼이 아니라 상단 "독촉 보내기"
-  하나가 여는 **일괄 모달**(`NudgeDialog`)로 바꿨다(와이어프레임 #nudge 그대로).
+  ⚠ [연락함] 제거(사용자 지적, 2026-08-08) — D56 D절에서 상단 일괄 모달
+  (`NudgeDialog`)을 행마다 [연락함] 버튼으로 바꿨었는데, 다시 검토해 아예
+  없앴다. 대시보드의 [연락함]과 달리 이 탭은 "지난 방문 이후" 같은 스코프
+  분리가 없는 한 프로젝트짜리 좁은 명단(팀 몇 개·인원 수십 명)이라, 누구를
+  이미 연락했는지는 바로 옆 "제출"·"응시" 열(제출 시각·"응시 전 / D-2" 등)만
+  봐도 충분히 판단된다 — 대시보드는 여러 날에 걸친 여러 유형의 백로그를
+  다뤄서 "이미 손댔다" 표시가 따로 필요했지만, 이 탭은 그 정도로 오래 쌓이지
+  않는다. 미제출 팀에 연락함을 누르면 빈 제출 레코드를 만들어 상태만 얹는
+  구조(`markTeamContacted`)도 이 화면 하나를 위해 치르기엔 비용이 커
+  보였다 — 실제 제출·응시가 반영되면 그 자체로 "확인됐다"는 신호가 된다.
+
   요구사항 펼침에도 파일:줄 근거(`evidence`)를 한 줄 더 붙였다 — 이 화면
   제목 자체가 "구현 근거"라 판정이 어느 코드에서 나왔는지 보여야 한다.
 
@@ -55,9 +63,8 @@ const ROSTER_NAME: Record<string, string> = Object.fromEntries(ROSTER.map((p) =>
 
 const REQ_ICON: Record<string, string> = { MET: '✓', UNUSED: '✗', EMPTY: '✗', NOMATCH: '✗' }
 
-export default function SubmissionTab({ projectId, detail, onReload }: Props) {
+export default function SubmissionTab({ detail }: Props) {
   const [expandedReq, setExpandedReq] = useState<Set<string>>(new Set())
-  const [nudgeOpen, setNudgeOpen] = useState(false)
 
   const { teamPhase, teams, locked } = detail
   const opened = teamPhase === 'LOCKED' || teamPhase === 'SUBMITTING'
@@ -86,18 +93,10 @@ export default function SubmissionTab({ projectId, detail, onReload }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2">
-        <p className="text-fg-subtle text-xs">
-          제출 {submittedCount}/{teams.length}팀
-          {locked && <span className="ml-2">· 종료된 회차라 알림·팀 이동을 할 수 없습니다</span>}
-        </p>
-        {!locked && (
-          <Button variant="ghost" size="sm" className="ml-auto" onClick={() => setNudgeOpen(true)}>
-            <Megaphone className="size-3.5" />
-            알림 보내기
-          </Button>
-        )}
-      </div>
+      <p className="text-fg-subtle text-xs">
+        제출 {submittedCount}/{teams.length}팀
+        {locked && <span className="ml-2">· 종료된 회차라 팀 이동을 할 수 없습니다</span>}
+      </p>
 
       <Table>
         <TableHeader>
@@ -123,14 +122,6 @@ export default function SubmissionTab({ projectId, detail, onReload }: Props) {
           ))}
         </TableBody>
       </Table>
-
-      <NudgeDialog
-        open={nudgeOpen}
-        onOpenChange={setNudgeOpen}
-        projectId={projectId}
-        detail={detail}
-        onSent={onReload}
-      />
     </div>
   )
 }
@@ -147,8 +138,10 @@ function TeamRows({
   onToggleReq: () => void
 }) {
   const submission = detail.submissions[team.id]
+  // 레코드 존재가 아니라 `submittedAt`으로 판정한다 — 제출 전이면 아직 아무 값도
+  // 없다는 뜻이라 "제출됨"으로 오판하면 안 된다.
   const submitted = !!submission?.submittedAt
-  const tally = submission ? requirementTally(submission.requirements) : null
+  const tally = submitted ? requirementTally(submission!.requirements) : null
 
   return (
     <>
@@ -201,7 +194,10 @@ function TeamRows({
         <TableCell>
           {submission?.analysisStatus === 'FAILED' && <Badge variant="danger">분석 실패</Badge>}
           {submission?.analysisStatus === 'DONE' && <Badge variant="success">분석 완료</Badge>}
-          {!submission && <span className="text-fg-subtle text-xs">—</span>}
+          {/* 위 `tally`와 같은 이유 — 레코드 존재가 아니라 `analysisStatus` 유무로 판정한다.
+              존재로 판정하면 미제출 팀에 [연락함]을 누른 뒤 이 칸이 "—"도 배지도 없는
+              빈 칸이 된다(분석 결과가 사라진 것처럼 보인다) */}
+          {!submission?.analysisStatus && <span className="text-fg-subtle text-xs">—</span>}
         </TableCell>
       </TableRow>
 
@@ -243,7 +239,7 @@ function TeamRows({
           <TableRow key={id}>
             <TableCell className="pl-8 text-sm">{ROSTER_NAME[id] ?? id}</TableCell>
             {/* "제출" 열 — 팀 행은 제출 시각, 개인 행은 그 사람이 응시를 마친 시각(사용자 지시).
-                아직 안 봤으면(AVAILABLE·NOT_STARTED·BLOCKED) 대시 — 응시 상태 자체는 옆 칸에 있다 */}
+                아직 안 봤으면(OPEN·MISSED·BLOCKED) 대시 — 응시 상태 자체는 옆 칸에 있다 */}
             <TableCell className="text-fg-muted text-xs">
               {attendance.completedAt ? (
                 attendance.completedAt.replace('T', ' ')
@@ -253,7 +249,8 @@ function TeamRows({
             </TableCell>
             <TableCell />
             {/* 요구사항은 팀 전원이 같은 코드를 쓰는 팀 단위 값이라 위 팀 행에만 둔다 —
-                여기 또 찍으면 사람마다 같은 값이 반복돼 무엇을 보라는 건지 헷갈린다 */}
+                여기 또 찍으면 사람마다 같은 값이 반복돼 무엇을 보라는 건지 헷갈린다.
+                개인 행에선 원래 항상 비던 칸이다([연락함]을 없애며 다시 원래대로) */}
             <TableCell />
             <TableCell>
               <AttendanceCell attendance={attendance} />
@@ -265,27 +262,21 @@ function TeamRows({
   )
 }
 
-function AttendanceCell({
-  attendance,
-}: {
-  attendance: {
-    status: 'DONE' | 'AVAILABLE' | 'NOT_STARTED' | 'BLOCKED'
-    deadlineLabel: string | null
-    completedAt: string | null
-  }
-}) {
+function AttendanceCell({ attendance }: { attendance: PersonAttendance }) {
   if (attendance.status === 'BLOCKED') return <span className="text-fg-subtle text-xs">—</span>
   const tone =
     attendance.status === 'DONE'
       ? 'text-success'
-      : attendance.status === 'AVAILABLE'
+      : attendance.status === 'OPEN'
         ? 'text-fg'
         : 'text-fg-subtle'
   return (
     <span className={cn('text-xs font-semibold', tone)}>
       {ATTENDANCE_LABEL[attendance.status]}
       {/* "D-2일"→"D-2"로 줄이면서 라벨과 헷갈리지 않게 "/"로 갈랐다(사용자 지시,
-          "응시 가능 / D-2") — "19시간 남음"도 같은 구분자를 쓴다 */}
+          "응시 전 / D-2") — "19시간 남음"도 같은 구분자를 쓴다. 기한은 `OPEN`에만
+          붙는다 — 마감 후(`MISSED`)는 `deadlineLabel`이 null이라 "미응시" 한 마디로
+          끝나고, 그 유무가 마감 전/후를 라벨 없이도 갈라 준다(결정 로그 D56 B절) */}
       {attendance.deadlineLabel && (
         <span className="ml-1 font-normal">/ {attendance.deadlineLabel}</span>
       )}

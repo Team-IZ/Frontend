@@ -37,9 +37,19 @@ export type SidebarItem = {
 
 export type SidebarGroup = SidebarItem[]
 
-/** 슈퍼어드민 — 1. 실질 화면이 기관 하나뿐이다(플랫폼 설정은 우상단 ⚙, 자리 없음) */
+/*
+  슈퍼어드민 — 2. 기관 / 플랫폼 관리.
+
+  플랫폼 관리는 원래 우상단 톱니(⚙)에 있었다. 정의서가 *"네비 자리를 주지 않는다 —
+  화면이라기보다 설정 항목이다"* 라고 해서 그렇게 뒀는데, **실제로 만들고 보니 화면이었다** —
+  모델 정책·티어·단가·보정 버전·계정 관리까지 탭 두 개짜리다.
+
+  오퍼레이터의 `운영 관리`와 성격이 같아 배치도 같게 간다 — **구분선 아래 별도 그룹.**
+  "매일 보는 것"과 "설정하러 들어가는 것"이 갈리는 자리다.
+*/
 export const SUPERADMIN_SIDEBAR: SidebarGroup[] = [
   [{ icon: Building2Icon, label: '기관', to: '/superadmin/orgs' }],
+  [{ icon: SettingsIcon, label: '플랫폼 관리', to: '/superadmin/settings' }],
 ]
 
 /** 오퍼레이터 — 5. 면담·교육생 없음(담당 반이 없다, 17번 3-2) */

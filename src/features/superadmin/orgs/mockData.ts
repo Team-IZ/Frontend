@@ -16,6 +16,8 @@
   모델 단가 기준이라 달러가 자연스럽다 — SA-03도 같은 단위를 쓸 것으로 예상).
 */
 
+import { isEmailShape } from '@/lib/validation'
+
 export type OrgStatus = 'ACTIVE' | 'SUSPENDED'
 
 /** 소프트 삭제 요청 — 즉시 파기가 아니라 보존기간이 지나야 파기된다(SA-02 §6·§7).
@@ -578,8 +580,6 @@ export function getOrgDetail(orgId: string): { org: Org; detail: OrgDetail } | n
 
 export type InviteFieldErrorCode = 'INVALID_EMAIL' | 'ALREADY_INVITED' | 'DOMAIN_NOT_ALLOWED'
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
 /** 케이스 2·N1 — 제출 전 필드 검증(정의서 §3 "모달 필드 하단"). 서버 왕복이 필요
  * 없는 형식·중복·도메인 검사라 OrgCreateDialog의 실시간 중복 확인과 달리 동기로 둔다. */
 export function validateOperatorEmail(
@@ -588,7 +588,7 @@ export function validateOperatorEmail(
   email: string,
 ): InviteFieldErrorCode | null {
   const trimmed = email.trim()
-  if (!EMAIL_RE.test(trimmed)) return 'INVALID_EMAIL'
+  if (!isEmailShape(trimmed)) return 'INVALID_EMAIL'
   const domain = trimmed.slice(trimmed.indexOf('@') + 1).toLowerCase()
   if (domain !== orgDomain.toLowerCase()) return 'DOMAIN_NOT_ALLOWED'
   if (existing.some((o) => o.email.toLowerCase() === trimmed.toLowerCase()))

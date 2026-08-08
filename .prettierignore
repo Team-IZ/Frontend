@@ -16,3 +16,9 @@ docs/plan/v2/wireframe
 # 생성물 — 포맷하면 생성기 출력과 달라져 드리프트 검사가 깨진다
 docs/dev/design-system.html
 docs/dev/components.html
+
+# 생성물(src/api/generated)은 여기서 빼지 않는다 — api:gen이 마지막에 prettier를 돌리므로
+# 이미 같은 포맷이고, format:check가 "생성 후 손댔는지"까지 잡아 준다.
+
+# 백엔드에서 받아 온 스펙 원본. 포매터가 손대면 api:pull이 매번 되돌려 diff가 튄다
+api/openapi.json

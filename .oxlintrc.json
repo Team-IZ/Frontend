@@ -1,7 +1,9 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
   "plugins": ["react", "typescript", "oxc"],
-  "ignorePatterns": ["scripts/**", "dist/**"],
+  // openapi-typescript가 뱉는 스펙 전량 타입. 사람이 안 읽고 안 고치는 파일이라 제외한다.
+  // 나머지 생성물(호출 함수·훅)은 우리 생성기가 만들고 우리 규칙을 지켜야 하므로 린트한다.
+  "ignorePatterns": ["scripts/**", "dist/**", "src/api/schema.d.ts"],
   "rules": {
     "react/rules-of-hooks": "error",
     "react/only-export-components": ["warn", { "allowConstantExport": true }],

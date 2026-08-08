@@ -109,7 +109,7 @@ features/operator/projects/
 
 > **탭을 다시 짰다 — 잠금 폐지 + 순서 변경.** 정의서 원안(`구성·일정·현황` + 개념 3건
 > 전까지 잠금)을 뒤집었다. 근거와 상태별 문구는 **정의서 §6·§8에 적었다** —
-> [OP-04-project-detail.md](../plan/v2/definition/OP-04-project-detail.md). 정의서를 안
+> [OP-04-project-detail.md](../../plan/v2/definition/OP-04-project-detail.md). 정의서를 안
 > 고치면 다음 사람이 원안대로 다시 만든다.
 
 **검증 개념 3건이 관문인 것은 맞다** — 3건이 정해져야 문항이 만들어지고 현황이 집계된다.
@@ -196,7 +196,7 @@ features/operator/projects/
 
 **편집 정책을 `rules.ts`에 모았다** — `canEditConfig` · `canEditSchedule` ·
 `canOnlyExtendDue` · `canDelete` · `lockedReason`. 4상태 × 3액션 표는
-[정의서 §8-2-1](../plan/v2/definition/OP-04-project-detail.md)에 있다.
+[정의서 §8-2-1](../../plan/v2/definition/OP-04-project-detail.md)에 있다.
 
 > **화면마다 `status === 'RUNNING'`을 쓰면 안 되는 이유가 실측으로 나왔다.** 감사 전에는
 > **네 액션이 모든 상태에서 다 열려 있었다** — 종료된 회차의 검증 개념도 바꿀 수 있었다.

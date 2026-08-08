@@ -35,6 +35,23 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      # 커밋된 스펙이 코드 생성을 감당할 품질인가. 네트워크를 타지 않는다(api/openapi.json을 읽는다).
+      # error만 실패시킨다 — warn(백엔드에 개선 요청 중인 것들)은 통과한다.
+      - name: API spec
+        run: |
+          npm run api:test
+          npm run api:check
+
+      # 스펙만 갱신하고 생성을 안 돌린 PR을 막는다. 네트워크를 타지 않는다
+      # (openapi-typescript는 devDependency라 npm ci로 이미 들어와 있다).
+      # git diff는 추적되지 않는 새 파일을 못 보므로 add로 인덱스에 올린 뒤 비교한다 —
+      # 오퍼레이션이 추가돼 새 파일이 생기는 경우가 정확히 그 사각지대다.
+      - name: API codegen up to date
+        run: |
+          npm run api:gen
+          git add -A -- src/api
+          git diff --cached --exit-code -- src/api ':(exclude)src/api/_contract'
+
       # 아래 셋은 typecheck·lint·build가 **전부 통과하는 버그**를 잡는다.
       # 문법도 타입도 맞는데 규칙이 틀린 것들이라, 여기 없으면 사람이 눈으로 찾게 된다.
       # (실제로 IME 가드는 사용자가 칩 두 개 생기는 걸 보고 알려줘서 발견했다)

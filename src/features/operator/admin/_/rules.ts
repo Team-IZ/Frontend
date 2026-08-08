@@ -8,11 +8,11 @@
   전부 순수 함수다 — `npm run check:admin`이 이 파일만 보고 규칙을 검사한다.
 */
 /*
-  ⚠️ 여기만 `@/` 별칭이 아니라 상대 경로 + `.ts` 확장자다.
-  이 파일은 `npm run check:admin`이 **Node로 단독 실행**한다(`--experimental-strip-types`).
-  Node는 우리 별칭을 모르므로 `@/lib/...`로 쓰면 검사가 통째로 깨진다.
+  `#lib/`은 package.json의 `imports` 필드로 정의한 **Node 표준 서브패스 import**다.
+  이 파일은 `npm run check:admin`이 Node로 단독 실행하는데(`--experimental-strip-types`)
+  Node는 우리 번들러 별칭(`@/`)을 모른다. `#`은 Node·TypeScript·Vite가 모두 읽는다.
 */
-import { isEmailShape } from '../../../../lib/validation.ts'
+import { isEmailShape } from '#lib/validation.ts'
 import type {
   ClassRoom,
   CohortStatus,
@@ -93,7 +93,6 @@ export function assignPolicy(
   진짜 판정은 초대 메일이 도착하는지로 갈린다 — 여기서 막을 것은 `이름만 적힌 칸`처럼
   명백히 주소가 아닌 것이다.
 */
-export { isEmailShape } from '../../../../lib/validation.ts'
 
 /** 기관 도메인 주소인가. 대소문자를 가리지 않는다 — 사용자는 섞어 친다 */
 export function isOrgEmail(value: string, domain: string): boolean {

@@ -1,0 +1,55 @@
+/* 자동 생성 — 손으로 고치지 마세요. 다시 만들려면: npm run api:gen */
+
+import type { operations } from '@/api/schema'
+
+/*
+  operationId별 타입 별칭. 규칙이 고정이라 스키마 이름을 몰라도 찾을 수 있다:
+    {operationId}_Body · _Query · _Path · _Response · _Item · _Errors
+*/
+
+// POST /api/v0/members/organizations/{organizationId}/manager-invitations — 매니저 초대
+export type inviteManager_Path = operations['inviteManager']['parameters']['path']
+export type inviteManager_Body = NonNullable<
+  operations['inviteManager']['requestBody']
+>['content']['application/json']
+export type inviteManager_Response =
+  operations['inviteManager']['responses'][201]['content']['application/json']
+export type inviteManager_Errors =
+  | 'EMAIL_FORMAT_INVALID'
+  | 'MANAGER_COHORT_REQUIRED'
+  | 'COHORT_NOT_IN_ORGANIZATION'
+  | 'INVITER_NOT_FOUND'
+  | 'UNAUTHENTICATED'
+  | 'INVITE_ROLE_NOT_ALLOWED'
+  | 'INVITE_CROSS_ORGANIZATION'
+  | 'INVITER_NOT_ACTIVE'
+  | 'ACCESS_DENIED'
+  | 'ORGANIZATION_NOT_FOUND'
+  | 'ALREADY_INVITED'
+  | 'INVITATION_SAVE_FAILED'
+  | 'INVITE_MAIL_FAILED'
+
+// POST /api/v0/cohorts/{cohortId}/trainees/invitations — 직접 입력 교육생 등록 및 초대
+export type registerTrainees_Path = operations['registerTrainees']['parameters']['path']
+export type registerTrainees_Body = NonNullable<
+  operations['registerTrainees']['requestBody']
+>['content']['application/json']
+export type registerTrainees_Response =
+  operations['registerTrainees']['responses'][201]['content']['application/json']
+export type registerTrainees_Item = registerTrainees_Response['failures'][number]
+export type registerTrainees_Errors =
+  | 'VALIDATION_FAILED'
+  | 'TRAINEE_NAME_INVALID'
+  | 'EMAIL_FORMAT_INVALID'
+  | 'INVITER_NOT_FOUND'
+  | 'UNAUTHENTICATED'
+  | 'INVITE_ROLE_NOT_ALLOWED'
+  | 'INVITER_NOT_ACTIVE'
+  | 'INVITE_CROSS_ORGANIZATION'
+  | 'ACCESS_DENIED'
+  | 'COHORT_NOT_INVITABLE'
+
+// GET /api/v0/members/me — 내 정보 조회
+export type getCurrentMember_Response =
+  operations['getCurrentMember']['responses'][200]['content']['application/json']
+export type getCurrentMember_Errors = 'MEMBER_NOT_FOUND' | 'UNAUTHENTICATED'

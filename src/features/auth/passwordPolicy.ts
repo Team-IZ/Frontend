@@ -6,6 +6,7 @@
 export function checkPasswordPolicy(password: string): string[] {
   const unmet: string[] = []
   if (password.length < 8) unmet.push('8자 이상')
+  if (password.length > 16) unmet.push('16자 이하')
   if (!/[A-Za-z]/.test(password)) unmet.push('영문 포함')
   if (!/[0-9]/.test(password)) unmet.push('숫자 포함')
   if (!/[^A-Za-z0-9]/.test(password)) unmet.push('특수문자 포함')

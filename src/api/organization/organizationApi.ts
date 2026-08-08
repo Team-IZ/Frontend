@@ -8,6 +8,11 @@ import type {
   createOrganization_Response,
   restoreOrganization_Path,
   restoreOrganization_Response,
+  inviteOperator_Path,
+  inviteOperator_Body,
+  inviteOperator_Response,
+  resendOperatorInvitation_Path,
+  resendOperatorInvitation_Response,
   findOrganization_Path,
   findOrganization_Response,
   deleteOrganization_Path,
@@ -26,6 +31,8 @@ import type {
   findPlatformSummary_Response,
   checkNameAvailability_Query,
   checkNameAvailability_Response,
+  cancelInvitation_Path,
+  cancelInvitation_Response,
 } from './organizationTypes'
 
 /** 기관 목록 조회 — `GET /api/v0/organizations` */
@@ -49,6 +56,29 @@ export const createOrganization = (params: { body: createOrganization_Body } & R
 export const restoreOrganization = (params: { path: restoreOrganization_Path } & RequestOptions) =>
   unwrap<restoreOrganization_Response>(
     izClient.POST('/api/v0/organizations/{organizationId}/restore', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 오퍼레이터 초대 — `POST /api/v0/organizations/{organizationId}/operators/invitations` */
+export const inviteOperator = (
+  params: { path: inviteOperator_Path; body: inviteOperator_Body } & RequestOptions,
+) =>
+  unwrap<inviteOperator_Response>(
+    izClient.POST('/api/v0/organizations/{organizationId}/operators/invitations', {
+      params: { path: params.path },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 오퍼레이터 초대 재발송 — `POST /api/v0/organizations/{organizationId}/operators/invitations/{tokenId}/resend` */
+export const resendOperatorInvitation = (
+  params: { path: resendOperatorInvitation_Path } & RequestOptions,
+) =>
+  unwrap<resendOperatorInvitation_Response>(
+    izClient.POST('/api/v0/organizations/{organizationId}/operators/invitations/{tokenId}/resend', {
       params: { path: params.path },
       signal: params.signal,
     }) as never,
@@ -132,6 +162,15 @@ export const checkNameAvailability = (
   unwrap<checkNameAvailability_Response>(
     izClient.GET('/api/v0/organizations/name-availability', {
       params: { query: params.query },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 오퍼레이터 초대 취소 — `DELETE /api/v0/organizations/{organizationId}/operators/invitations/{tokenId}` */
+export const cancelInvitation = (params: { path: cancelInvitation_Path } & RequestOptions) =>
+  unwrap<cancelInvitation_Response>(
+    izClient.DELETE('/api/v0/organizations/{organizationId}/operators/invitations/{tokenId}', {
+      params: { path: params.path },
       signal: params.signal,
     }) as never,
   )

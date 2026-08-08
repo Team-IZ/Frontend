@@ -32,6 +32,23 @@ export type restoreOrganization_Item = restoreOrganization_Response['operators']
 export type restoreOrganization_Errors =
   'ORG_NOT_FOUND' | 'ORG_NOT_DELETED' | 'ORG_ALREADY_DELETED' | 'ORG_NAME_TAKEN'
 
+// POST /api/v0/organizations/{organizationId}/operators/invitations — 오퍼레이터 초대
+export type inviteOperator_Path = operations['inviteOperator']['parameters']['path']
+export type inviteOperator_Body = NonNullable<
+  operations['inviteOperator']['requestBody']
+>['content']['application/json']
+export type inviteOperator_Response =
+  operations['inviteOperator']['responses'][201]['content']['application/json']
+export type inviteOperator_Errors = 'NOT_FOUND' | 'ALREADY_INVITED' | 'INVITE_MAIL_FAILED'
+
+// POST /api/v0/organizations/{organizationId}/operators/invitations/{tokenId}/resend — 오퍼레이터 초대 재발송
+export type resendOperatorInvitation_Path =
+  operations['resendOperatorInvitation']['parameters']['path']
+export type resendOperatorInvitation_Response =
+  operations['resendOperatorInvitation']['responses'][200]['content']['application/json']
+export type resendOperatorInvitation_Item = resendOperatorInvitation_Response['content'][number]
+export type resendOperatorInvitation_Errors = 'OPERATOR_INVITATION_NOT_FOUND' | 'INVITE_MAIL_FAILED'
+
 // GET /api/v0/organizations/{organizationId} — 기관 상세 조회
 export type findOrganization_Path = operations['findOrganization']['parameters']['path']
 export type findOrganization_Response =
@@ -95,3 +112,10 @@ export type checkNameAvailability_Query = NonNullable<
 >
 export type checkNameAvailability_Response =
   operations['checkNameAvailability']['responses'][200]['content']['application/json']
+
+// DELETE /api/v0/organizations/{organizationId}/operators/invitations/{tokenId} — 오퍼레이터 초대 취소
+export type cancelInvitation_Path = operations['cancelInvitation']['parameters']['path']
+export type cancelInvitation_Response =
+  operations['cancelInvitation']['responses'][200]['content']['application/json']
+export type cancelInvitation_Item = cancelInvitation_Response['content'][number]
+export type cancelInvitation_Errors = 'OPERATOR_INVITATION_NOT_FOUND'

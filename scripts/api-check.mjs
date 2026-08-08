@@ -47,13 +47,61 @@ const GENERIC_CODES = new Set([
   required에서 의도적으로 빠진 스키마 — 백엔드가 @JsonInclude(NON_NULL)로 키 자체를 빼는
   응답이라 정말로 optional이다(1차 요청 회신에서 확인). 프론트 타입도 `?`가 맞다.
   ⚠️ 새 스키마가 여기 들어오려면 근거가 있어야 한다. 늘어나기 시작하면 규칙이 무력해진다.
+
+  ⓘ 리포트 스키마 셋(ReportDisclosureResponse·RoundReportResponse·ConceptReportResponse)이
+    여기 있었는데 뺐다. 그것들은 합의된 예외가 아니라 **아직 생성하지 않는 API의 스키마**였고,
+    이제 `reachableFromAvailable`이 자동으로 걸러 준다 — 백엔드가 available로 바꾸면
+    이름을 지우는 것을 기억하지 않아도 검사가 저절로 켜진다.
 */
-const REQUIRED_EXEMPT = new Set([
-  'ReportDisclosureResponse',
-  'RoundReportResponse',
-  'ConceptReportResponse',
-  'UpdateModelPricingRequest',
-])
+const REQUIRED_EXEMPT = new Set(['UpdateModelPricingRequest'])
+
+/*
+  `available`인 오퍼레이션에서 실제로 도달하는 스키마 이름 — `$ref`를 재귀로 따라간다.
+
+  **생성하지 않는 API의 스키마는 검사하지 않는다.** 등급 기준이 "이 상태로 코드를 생성해도
+  되나"인데, 호출 함수를 만들지 않는 API의 스키마는 우리 타입을 거짓말시키지 않는다.
+  (`x-readiness`가 `available`이 아니면 생성기가 건너뛴다 — api-gen.mjs와 같은 기준)
+*/
+/*
+  PATCH 요청 본문 스키마 이름 — **부분 수정은 전부 선택인 것이 맞다.**
+
+  `required` 규칙은 "전 필드가 optional이면 필수 누락이 컴파일에서 안 걸린다"를 잡는데,
+  PATCH 본문은 **안 보낸 필드를 유지한다는 계약**이라 그 지적이 성립하지 않는다.
+  실제로 우리가 운영 설정을 PUT→PATCH로 바꿔 달라고 요청해서 0/11이 됐다(6차 R1).
+
+  응답 스키마와 POST·PUT 본문은 그대로 검사한다.
+*/
+function patchRequestBodies(spec) {
+  const names = new Set()
+  for (const item of Object.values(spec.paths ?? {})) {
+    const op = item?.patch
+    const ref = op?.requestBody?.content?.['application/json']?.schema?.$ref
+    if (ref) names.add(ref.slice(ref.lastIndexOf('/') + 1))
+  }
+  return names
+}
+
+export function reachableFromAvailable(spec) {
+  const schemas = spec.components?.schemas ?? {}
+  const refsOf = (json) =>
+    (JSON.stringify(json ?? {}).match(/schemas\/(\w+)/g) ?? []).map((x) => x.slice(8))
+
+  const queue = []
+  for (const item of Object.values(spec.paths ?? {})) {
+    for (const op of Object.values(item)) {
+      if (op?.responses && (op['x-readiness'] ?? 'available') === 'available')
+        queue.push(...refsOf(op))
+    }
+  }
+  const seen = new Set()
+  while (queue.length) {
+    const name = queue.pop()
+    if (seen.has(name)) continue
+    seen.add(name)
+    queue.push(...refsOf(schemas[name]))
+  }
+  return seen
+}
 
 /*
   일반 코드뿐인 것이 **합의된** 오퍼레이션. 2차 요청 회신에서 근거를 받았다.
@@ -69,7 +117,7 @@ const GENERIC_ONLY_AGREED = new Map([
 ])
 
 /** enum을 공유 스키마로 못 뺀 것 — Java enum이 아니라 int + 커스텀 검증이라 $ref가 안 나온다 */
-const ENUM_INLINE_AGREED = new Set(['90|180|365'])
+const ENUM_INLINE_AGREED = new Set(['180|365|90']) // 정렬된 키로 적는다
 
 const PAGE_FIELDS = ['page', 'size', 'totalElements', 'totalPages']
 
@@ -127,7 +175,7 @@ const codesOf = (res) => Object.keys(res?.content?.['application/json']?.example
 
 // ── 규칙 ─────────────────────────────────────────────────────────────────────
 
-const rules = [
+export const rules = [
   {
     id: 'error-schema',
     severity: 'error',
@@ -148,10 +196,14 @@ const rules = [
     severity: 'error',
     title: '객체 스키마에 required가 없다',
     why: '전 필드가 optional이 되어 화면이 ?·!를 남발하고, 요청 DTO는 필수 누락이 컴파일에서 안 걸린다.',
-    run: (spec) =>
-      Object.entries(spec.components?.schemas ?? {})
-        .filter(([name, s]) => s.properties && !s.required?.length && !REQUIRED_EXEMPT.has(name))
-        .map(([name]) => name),
+    run: (spec) => {
+      const live = reachableFromAvailable(spec)
+      const partial = patchRequestBodies(spec)
+      return Object.entries(spec.components?.schemas ?? {})
+        .filter(([name, s]) => s.properties && !s.required?.length)
+        .filter(([name]) => live.has(name) && !REQUIRED_EXEMPT.has(name) && !partial.has(name))
+        .map(([name]) => name)
+    },
   },
   {
     id: 'nullable',
@@ -253,9 +305,15 @@ const rules = [
     title: '같은 enum 값 집합이 여러 곳에 복사돼 있다',
     why: '같은 개념이 서로 다른 타입이 된다. 한쪽에만 값이 추가되면 아무도 모른다.',
     run: (spec) => {
+      // 정렬해서 비교한다 — 값 순서만 다른 복사본을 놓치면 규칙이 반쪽이 된다.
+      // 실제로 DisclosureScope(SUMMARY·PRIVATE·FULL)와 Item.scope(PRIVATE·SUMMARY·FULL)를
+      // 같은 집합으로 못 보고 지나쳤다.
       const counts = new Map()
       JSON.stringify(spec.components?.schemas ?? {}, (k, v) => {
-        if (v?.enum) counts.set(v.enum.join('|'), (counts.get(v.enum.join('|')) ?? 0) + 1)
+        if (v?.enum) {
+          const key = [...v.enum].sort().join('|')
+          counts.set(key, (counts.get(key) ?? 0) + 1)
+        }
         return v
       })
       return [...counts]

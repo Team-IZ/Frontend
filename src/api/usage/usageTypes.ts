@@ -13,7 +13,7 @@ export type findOrganizationOperationSettings_Path =
 export type findOrganizationOperationSettings_Response =
   operations['findOrganizationOperationSettings']['responses'][200]['content']['application/json']
 
-// PUT /api/v0/organizations/{organizationId}/operations/settings — 기관 운영 설정 변경
+// PATCH /api/v0/organizations/{organizationId}/operations/settings — 기관 운영 설정 변경
 export type updateOrganizationOperationSettings_Path =
   operations['updateOrganizationOperationSettings']['parameters']['path']
 export type updateOrganizationOperationSettings_Body = NonNullable<

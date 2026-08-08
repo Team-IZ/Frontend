@@ -5,9 +5,12 @@ import type { MutationOptions } from '@/api/_contract'
 import {
   createOrganization,
   restoreOrganization,
+  inviteOperator,
+  resendOperatorInvitation,
   deleteOrganization,
   updateOrganization,
   updateOperatorStatus,
+  cancelInvitation,
 } from './organizationApi'
 import { organizationKeys } from './organizationKeys'
 import type {
@@ -15,6 +18,11 @@ import type {
   createOrganization_Response,
   restoreOrganization_Path,
   restoreOrganization_Response,
+  inviteOperator_Path,
+  inviteOperator_Body,
+  inviteOperator_Response,
+  resendOperatorInvitation_Path,
+  resendOperatorInvitation_Response,
   deleteOrganization_Path,
   deleteOrganization_Body,
   deleteOrganization_Response,
@@ -24,6 +32,8 @@ import type {
   updateOperatorStatus_Path,
   updateOperatorStatus_Body,
   updateOperatorStatus_Response,
+  cancelInvitation_Path,
+  cancelInvitation_Response,
 } from './organizationTypes'
 
 /*
@@ -54,6 +64,45 @@ export function useRestoreOrganization(
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (vars: { path: restoreOrganization_Path }) => restoreOrganization(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: organizationKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 오퍼레이터 초대 */
+export function useInviteOperator(
+  options?: MutationOptions<
+    inviteOperator_Response,
+    { path: inviteOperator_Path; body: inviteOperator_Body }
+  >,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: inviteOperator_Path; body: inviteOperator_Body }) =>
+      inviteOperator(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: organizationKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 오퍼레이터 초대 재발송 */
+export function useResendOperatorInvitation(
+  options?: MutationOptions<
+    resendOperatorInvitation_Response,
+    { path: resendOperatorInvitation_Path }
+  >,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: resendOperatorInvitation_Path }) => resendOperatorInvitation(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
@@ -114,6 +163,22 @@ export function useUpdateOperatorStatus(
   return useMutation({
     mutationFn: (vars: { path: updateOperatorStatus_Path; body: updateOperatorStatus_Body }) =>
       updateOperatorStatus(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: organizationKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 오퍼레이터 초대 취소 */
+export function useCancelInvitation(
+  options?: MutationOptions<cancelInvitation_Response, { path: cancelInvitation_Path }>,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: cancelInvitation_Path }) => cancelInvitation(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다

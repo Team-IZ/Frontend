@@ -26,7 +26,7 @@ export const findOrganizationOperationSettings = (
     }) as never,
   )
 
-/** 기관 운영 설정 변경 — `PUT /api/v0/organizations/{organizationId}/operations/settings` */
+/** 기관 운영 설정 변경 — `PATCH /api/v0/organizations/{organizationId}/operations/settings` */
 export const updateOrganizationOperationSettings = (
   params: {
     path: updateOrganizationOperationSettings_Path
@@ -34,7 +34,7 @@ export const updateOrganizationOperationSettings = (
   } & RequestOptions,
 ) =>
   unwrap<updateOrganizationOperationSettings_Response>(
-    izClient.PUT('/api/v0/organizations/{organizationId}/operations/settings', {
+    izClient.PATCH('/api/v0/organizations/{organizationId}/operations/settings', {
       params: { path: params.path },
       body: params.body,
       signal: params.signal,

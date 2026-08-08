@@ -18,7 +18,13 @@ import {
 } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'
-import { checkOrgName, createOrg, type Org, type OrgApiErrorCode } from '../mockData'
+import { useCreateOrganization } from '@/api/organization/useOrganizationMutations'
+import { checkNameAvailability } from '@/api/organization/organizationApi'
+import type {
+  createOrganization_Body,
+  createOrganization_Response,
+} from '@/api/organization/organizationTypes'
+import { isApiError, isGenericCode } from '@/api/_contract'
 
 /*
   SA-01 §3 "생성 모달" · 케이스 1(중복 기관명, 제출 전 차단) · 케이스 3(생성 실패 롤백).
@@ -36,9 +42,36 @@ import { checkOrgName, createOrg, type Org, type OrgApiErrorCode } from '../mock
 const RETENTION_OPTIONS = [90, 180, 365] as const
 const RETENTION_ITEMS = Object.fromEntries(RETENTION_OPTIONS.map((d) => [String(d), `${d}일`]))
 
-const SUBMIT_ERROR_MESSAGE: Record<OrgApiErrorCode, string> = {
+/*
+  서버가 내는 코드 → 화면 문구. **문구는 프론트가 정한다** — 서버 `message`는 "사람이 읽는
+  기본 문구라 바뀔 수 있다"고 스펙에 적혀 있다.
+
+  모르는 코드는 폴백으로 간다. 스펙에 없는 코드가 올 수 있고(스펙이 늘 최신은 아니다),
+  일반 코드(`CONFLICT` 등)는 상태만 말할 뿐 원인을 못 가른다.
+*/
+const SUBMIT_ERROR_MESSAGE: Record<string, string> = {
   ORG_NAME_TAKEN: '이미 있는 기관명입니다.',
-  ORG_CREATE_FAILED: '기관을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.',
+  ORG_IDEMPOTENCY_CONFLICT: '같은 요청이 이미 처리 중입니다. 잠시 후 확인해 주세요.',
+}
+const SUBMIT_ERROR_FALLBACK = '기관을 만들지 못했습니다. 잠시 후 다시 시도해 주세요.'
+
+/*
+  ⚠️ 스펙 오류 우회 — `dataRetentionDays`가 `type: integer`인데 `enum`이 **문자열**
+  `["90","180","365"]`로 적혀 있어(같은 스키마의 `example`은 숫자 `180`) 생성 타입이
+  `'90' | '180' | '365'`가 됐다. **보내야 하는 것은 숫자다.**
+
+  백엔드에 수정 요청해 뒀고(`UpdateOperationSettingRequest`도 같은 상태다),
+  스펙이 고쳐지면 **이 함수만 지우면 된다.** 캐스트를 호출부에 흩지 않으려고 한 곳에 모은다.
+*/
+const asRetentionDays = (days: number) =>
+  days as unknown as createOrganization_Body['dataRetentionDays']
+
+function submitErrorMessage(error: unknown): string {
+  if (!isApiError(error)) return SUBMIT_ERROR_FALLBACK
+  if (!isGenericCode(error.code) && SUBMIT_ERROR_MESSAGE[error.code]) {
+    return SUBMIT_ERROR_MESSAGE[error.code]
+  }
+  return SUBMIT_ERROR_FALLBACK
 }
 
 type NameCheckState = 'idle' | 'checking' | 'available' | 'taken'
@@ -50,14 +83,20 @@ export default function OrgCreateDialog({
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onCreated: (org: Org) => void
+  onCreated: (org: createOrganization_Response) => void
 }) {
   const [name, setName] = useState('')
   const [domain, setDomain] = useState('')
   const [retentionDays, setRetentionDays] = useState<number>(180)
   const [nameCheck, setNameCheck] = useState<NameCheckState>('idle')
-  const [submitting, setSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<OrgApiErrorCode | null>(null)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
+  /*
+    생성이 성공하면 **이 도메인의 조회가 전부 무효화된다**(생성 훅 기본 동작).
+    목록·상단 집계가 같은 `organization` 접두어라 둘 다 다시 읽힌다 — 화면이 따로
+    갱신을 부르지 않는 이유다.
+  */
+  const create = useCreateOrganization()
 
   // 열릴 때만 초기화한다 — 실패 후에도 dialog가 열려 있는 동안엔 입력값을 유지해야 한다.
   useEffect(() => {
@@ -70,7 +109,7 @@ export default function OrgCreateDialog({
     }
   }, [open])
 
-  // 입력 중 실시간 중복 확인 — 디바운스 400ms(mockData.checkOrgName의 지연과 맞춤)
+  // 입력 중 실시간 중복 확인 — 디바운스 400ms. 한 글자마다 서버에 묻지 않는다
   useEffect(() => {
     const trimmed = name.trim()
     if (!trimmed) {
@@ -80,9 +119,14 @@ export default function OrgCreateDialog({
     setNameCheck('checking')
     let cancelled = false
     const timer = setTimeout(() => {
-      checkOrgName(trimmed).then(({ available }) => {
-        if (!cancelled) setNameCheck(available ? 'available' : 'taken')
-      })
+      checkNameAvailability({ query: { name: trimmed } })
+        .then(({ available }) => {
+          if (!cancelled) setNameCheck(available ? 'available' : 'taken')
+        })
+        // 중복 확인 실패는 막지 않는다 — 최종 판정은 생성 요청이 한다(409)
+        .catch(() => {
+          if (!cancelled) setNameCheck('idle')
+        })
     }, 400)
     return () => {
       cancelled = true
@@ -95,22 +139,26 @@ export default function OrgCreateDialog({
     domain.trim().length > 0 &&
     nameCheck !== 'taken' &&
     nameCheck !== 'checking' &&
-    !submitting
+    !create.isPending
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!canSubmit) return
 
-    setSubmitting(true)
     setSubmitError(null)
     try {
-      const org = await createOrg({ name: name.trim(), domain: domain.trim(), retentionDays })
+      const org = await create.mutateAsync({
+        body: {
+          name: name.trim(),
+          // 빈 값은 안 보낸다 — 서버가 "비우면 도메인 제한 없음"으로 읽는다
+          emailDomain: domain.trim() || null,
+          dataRetentionDays: asRetentionDays(retentionDays),
+        },
+      })
       onCreated(org)
       onOpenChange(false)
     } catch (err) {
-      setSubmitError((err as { code: OrgApiErrorCode }).code)
-    } finally {
-      setSubmitting(false)
+      setSubmitError(submitErrorMessage(err))
     }
   }
 
@@ -122,7 +170,7 @@ export default function OrgCreateDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-          {submitError && <Alert variant="danger">{SUBMIT_ERROR_MESSAGE[submitError]}</Alert>}
+          {submitError && <Alert variant="danger">{submitError}</Alert>}
 
           <Field data-invalid={nameCheck === 'taken'}>
             <FieldLabel htmlFor="org-name">기관명</FieldLabel>
@@ -132,7 +180,7 @@ export default function OrgCreateDialog({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="기관명을 입력하세요"
-                disabled={submitting}
+                disabled={create.isPending}
                 aria-invalid={nameCheck === 'taken'}
                 autoComplete="off"
                 className="pr-9"
@@ -168,7 +216,7 @@ export default function OrgCreateDialog({
               value={domain}
               onChange={(e) => setDomain(e.target.value)}
               placeholder="example.ac.kr"
-              disabled={submitting}
+              disabled={create.isPending}
               autoComplete="off"
             />
             <FieldDescription>이 도메인 주소로만 초대할 수 있습니다</FieldDescription>
@@ -179,7 +227,7 @@ export default function OrgCreateDialog({
             <Select
               value={String(retentionDays)}
               onValueChange={(v) => setRetentionDays(Number(v ?? retentionDays))}
-              disabled={submitting}
+              disabled={create.isPending}
               items={RETENTION_ITEMS}
             >
               <SelectTrigger id="org-retention" className="w-full">
@@ -200,13 +248,13 @@ export default function OrgCreateDialog({
             <Button
               type="button"
               variant="ghost"
-              disabled={submitting}
+              disabled={create.isPending}
               onClick={() => onOpenChange(false)}
             >
               취소
             </Button>
             <Button type="submit" disabled={!canSubmit}>
-              {submitting ? '만드는 중…' : '기관 생성'}
+              {create.isPending ? '만드는 중…' : '기관 생성'}
             </Button>
           </DialogFooter>
         </form>

@@ -29,6 +29,7 @@
 - [배포 정리 + 파일 업로드](backend-deployment-and-files.md) — **프록시 URL 검증 통과** · App Runner에 옛 코드 · presigned URL 권고
 - [App Runner 배포 — 안 닿음(해결됨)](backend-apprunner-deploy.md) — 원인 후보와 환경변수. 기록으로 남긴다
 - [백엔드 API — 4차 요청](backend-api-requests-4.md) — 3차 반영 확인(실서버 전 구간 동작) · 요청 1건(차단이 인스턴스 분산으로 새어나감) · **다음 API 출시 순서 요청**
+- [인증·세션 설계](auth-design.md) — 토큰을 어디에 두나 · 왜 Context가 아니라 스토어인가 · 401 재발급의 함정 셋 · 실무 정석과 우리 절충
 - [API 계층 결정 지점](api-layer-decisions.md) — 층·훅·쿼리 키·타입·에러를 왜 이렇게 했나 · **알려진 결함 3건**
 - [codegen 설계](api-codegen.md) — 기존 툴킷 해부 · 결정 지점 전량(후보·판단·근거) · 착수 순서
 - [개발 결정 기록](decision-log.md) — **여러 화면에 걸치는** 결정과 근거("왜 이렇게 했는가"). 한 화면 안의 결정은 위 화면별 문서가 갖는다 — 판정 기준은 그 문서 맨 위 "어디에 적는가"

@@ -34,7 +34,7 @@ export const accounts: Record<string, MockAccount> = {
   'admin@iz-get.com': {
     email: 'admin@iz-get.com',
     name: '슈퍼어드민',
-    role: 'SUPERADMIN',
+    role: 'SUPER_ADMIN',
     password: 'pass1234',
     active: true,
   },

@@ -24,8 +24,7 @@ import {
 } from '@/components/ui/InputGroup'
 import { Kbd } from '@/components/ui/Kbd'
 import { Button } from '@/components/ui/Button'
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { EMAIL_PATTERN, EMAIL_INVALID_MESSAGE } from '@/lib/validation'
 
 interface RequestFormValues {
   email: string
@@ -104,7 +103,7 @@ function RequestStage() {
           aria-invalid={!!errors.email}
           {...register('email', {
             required: '이메일을 입력해주세요.',
-            pattern: { value: EMAIL_PATTERN, message: '올바른 이메일 형식이 아닙니다.' },
+            pattern: { value: EMAIL_PATTERN, message: EMAIL_INVALID_MESSAGE },
           })}
         />
         <FieldError>{errors.email?.message}</FieldError>

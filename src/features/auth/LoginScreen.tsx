@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate, Navigate, Link } from 'react-router'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
-import { useAuth } from './AuthContext'
-import { login, resendInviteMail } from './authApi'
+import { initialScreenFor } from './authStore'
+import { useSession, useSignIn } from './useSession'
+import { login, resendAccountInvitation } from '@/api/auth/authApi'
 import { resolveAuthState } from './authStates'
 import type { AuthState } from './authStates'
-import type { ApiError } from './authTypes'
 import { useCapsLockWarning } from './useCapsLockWarning'
 import { QUICK_LOGIN_ACCOUNTS } from './quickLoginAccounts'
 import BrandPanel from './components/BrandPanel'
@@ -23,8 +23,7 @@ import {
 } from '@/components/ui/InputGroup'
 import { Kbd } from '@/components/ui/Kbd'
 import { Button } from '@/components/ui/Button'
-
-const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { EMAIL_PATTERN, EMAIL_INVALID_MESSAGE } from '@/lib/validation'
 
 interface LoginFormValues {
   email: string
@@ -40,8 +39,18 @@ interface LoginFormValues {
  */
 export default function LoginScreen() {
   const navigate = useNavigate()
-  const { session, signIn } = useAuth()
-  const [alert, setAlert] = useState<AuthState | null>(null)
+  const { user, isLoading: sessionLoading, endReason: sessionEndReason } = useSession()
+  const signIn = useSignIn()
+  /*
+    세션이 저절로 끝나 여기로 온 경우, **왜 끊겼는지**를 먼저 띄운다.
+    단순 만료(`expired`)는 설명하지 않는다 — 흔한 일이라 매번 알리면 잔소리가 된다.
+    비밀번호 변경 등으로 신원이 바뀐 경우만 이유를 말한다(백엔드 2차 회신 1-2).
+  */
+  const [alert, setAlert] = useState<AuthState | null>(
+    sessionEndReason === 'identity-changed'
+      ? { variant: 'info', message: '계정 정보가 변경되어 다시 로그인해 주세요.' }
+      : null,
+  )
   const [resendDone, setResendDone] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const passwordCaps = useCapsLockWarning()
@@ -66,19 +75,17 @@ export default function LoginScreen() {
     setResendDone(false)
 
     try {
-      const res = await login(values)
+      const res = await login({ body: values })
       // 인증 컨텍스트에 세션 저장 → 이후 보호된 화면 진입 가능
-      signIn(res)
-      // 서버가 지정한 초기 화면으로 이동 (클라이언트가 역할→화면 매핑을 하지 않음)
-      navigate(res.initialScreen)
+      await signIn(res)
+      navigate(initialScreenFor(res.role))
     } catch (err) {
-      const { code, retryAfter } = err as ApiError
-      setAlert(resolveAuthState(code, retryAfter))
+      setAlert(resolveAuthState(err))
     }
   }
 
   async function handleResend() {
-    await resendInviteMail(email)
+    await resendAccountInvitation({ body: { email } })
     setResendDone(true)
   }
 
@@ -86,22 +93,27 @@ export default function LoginScreen() {
   // 역할 선택 UI는 정책상 없음(§34 주석) — 이건 폼을 우회하는 데모 지름길일 뿐,
   // 서버가 역할을 판정하는 로그인 흐름 자체는 그대로 재사용한다. 로그인 후에는
   // 헤더의 같은 목록(dev 전용, Header.tsx)으로 화면 전환 없이 역할을 바꿀 수 있다.
-  async function handleQuickLogin(quickEmail: string) {
+  async function handleQuickLogin(quickEmail: string, quickPassword: string) {
     setAlert(null)
     setResendDone(false)
     try {
-      const res = await login({ email: quickEmail, password: 'pass1234' })
-      signIn(res)
-      navigate(res.initialScreen)
+      const res = await login({ body: { email: quickEmail, password: quickPassword } })
+      await signIn(res)
+      navigate(initialScreenFor(res.role))
     } catch (err) {
-      const { code, retryAfter } = err as ApiError
-      setAlert(resolveAuthState(code, retryAfter))
+      setAlert(resolveAuthState(err))
     }
   }
 
+  /*
+    세션을 확인하는 동안은 아무것도 그리지 않는다. 로그인 폼을 먼저 보여주면
+    쿠키가 살아 있는 사용자에게 **로그인 화면이 깜빡였다가 사라진다.**
+  */
+  if (sessionLoading) return null
+
   // 이미 로그인한 사용자가 로그인 화면에 오면 자기 초기 화면으로 되돌림
-  if (session) {
-    return <Navigate to={session.initialScreen} replace />
+  if (user) {
+    return <Navigate to={initialScreenFor(user.role)} replace />
   }
 
   return (
@@ -111,24 +123,34 @@ export default function LoginScreen() {
 
         {/* stableHeight: 알림이 뜨고 사라져도 제목·입력 필드 위치가 흔들리지 않게 (AU-01 §6) */}
         <AuthForm title="로그인" subtitle="계정 정보를 입력하세요." stableHeight>
-          {/* 발표용 임시 버튼 — 실제 배포 시 이 블록 통째로 제거 */}
-          <div className="mb-6 rounded-md bg-canvas px-3 py-2.5">
-            <p className="mb-2 text-[11px] font-medium text-fg-muted">발표용 · 역할별 바로 입장</p>
-            <div className="grid grid-cols-2 gap-2">
-              {QUICK_LOGIN_ACCOUNTS.map(({ label, email: quickEmail }) => (
-                <Button
-                  key={quickEmail}
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  disabled={isSubmitting}
-                  onClick={() => handleQuickLogin(quickEmail)}
-                >
-                  {label}
-                </Button>
-              ))}
+          {/*
+            발표용 임시 버튼 — 실제 배포 시 이 블록 통째로 제거.
+            계정은 `.env.local`에서 온다. **없으면 상자째 안 그린다** — 빈 상자가 남으면
+            "버튼이 안 뜨는 버그"로 보인다.
+          */}
+          {QUICK_LOGIN_ACCOUNTS.length > 0 && (
+            <div className="mb-6 rounded-md bg-canvas px-3 py-2.5">
+              <p className="mb-2 text-[11px] font-medium text-fg-muted">
+                발표용 · 역할별 바로 입장
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {QUICK_LOGIN_ACCOUNTS.map(
+                  ({ label, email: quickEmail, password: quickPassword }) => (
+                    <Button
+                      key={quickEmail}
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      disabled={isSubmitting}
+                      onClick={() => handleQuickLogin(quickEmail, quickPassword)}
+                    >
+                      {label}
+                    </Button>
+                  ),
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* noValidate: 브라우저 기본 검증 대신 RHF/Alert로 상태를 일원화 */}
           <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
@@ -143,7 +165,7 @@ export default function LoginScreen() {
                 aria-invalid={!!errors.email}
                 {...register('email', {
                   required: '이메일을 입력해주세요.',
-                  pattern: { value: EMAIL_PATTERN, message: '올바른 이메일 형식이 아닙니다.' },
+                  pattern: { value: EMAIL_PATTERN, message: EMAIL_INVALID_MESSAGE },
                 })}
               />
               <FieldError>{errors.email?.message}</FieldError>
@@ -215,18 +237,19 @@ export default function LoginScreen() {
             <TextLink to="/shared/password-reset">비밀번호를 잊으셨나요?</TextLink>
           </div>
 
-          {/* 개발용 안내 — 실제 배포 시 제거 */}
+          {/*
+            개발용 안내 — 실제 배포 시 제거.
+
+            로그인은 **실서버에 붙어 있다.** 계정은 위 「발표용 · 역할별 바로 입장」 버튼이
+            들고 있으므로 여기 다시 적지 않는다 — 두 곳에 적으면 한쪽이 반드시 낡는다.
+            아래에 남긴 것은 **아직 목으로 도는 흐름**(AU-02 초대 · AU-03 재설정)뿐이다.
+          */}
           <div className="mt-8 rounded-md bg-canvas px-3 py-2.5 text-[11px] leading-relaxed text-fg-subtle">
-            <b className="text-fg-muted">Mock 계정</b> · 비밀번호 <code>pass1234</code>
+            <b className="text-fg-muted">로그인</b> · 실서버 연동됨. 위 버튼으로 역할별 입장
             <br />
-            manager@org.com · trainee@org.com · admin@iz-get.com
+            연속 실패 시 잠시 차단된다(잠금 아님) — 서버가 남은 시간을 알려준다
             <br />
-            <b className="text-fg-muted">상태 시연</b> · newtrainee@(미활성) · suspended@(정지) ·
-            error@ · rollback@ · cookie@ · noctx@org.com
-            <br />
-            같은 계정 3회 연속 실패 → 지연(잠금 아님, 30초 후 재시도)
-            <br />
-            <b className="text-fg-muted">초대 링크(AU-02)</b> ·{' '}
+            <b className="text-fg-muted">초대 링크(AU-02)</b> · <span>아직 목</span> ·{' '}
             <Link to="/invite/mgr-8f3a" className="text-primary hover:underline">
               매니저 가입
             </Link>{' '}
@@ -235,10 +258,7 @@ export default function LoginScreen() {
               교육생 활성화
             </Link>
             <br />
-            가입/활성화 후 <b className="text-fg-muted">newmanager@org.com</b> ·{' '}
-            <b className="text-fg-muted">newtrainee@org.com</b> + 직접 설정한 비밀번호로 로그인
-            <br />
-            <b className="text-fg-muted">비밀번호 재설정(AU-03)</b> ·{' '}
+            <b className="text-fg-muted">비밀번호 재설정(AU-03)</b> · <span>아직 목</span> ·{' '}
             <Link
               to="/shared/password-reset?token=reset-valid"
               className="text-primary hover:underline"
@@ -281,8 +301,8 @@ export default function LoginScreen() {
               저장실패
             </Link>
             <br />
-            reset-valid로 제출 시 비밀번호를 <code>pass1234</code>(현재값)로 넣으면 same-as-current
-            시연
+            <span className="text-fg-muted">정상</span> 링크에서 현재 비밀번호(<code>pass1234</code>
+            )를 그대로 넣으면 &quot;이전과 같은 비밀번호&quot; 케이스가 나온다
           </div>
         </AuthForm>
       </div>

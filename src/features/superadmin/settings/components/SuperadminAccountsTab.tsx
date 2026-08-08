@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { PlusIcon } from 'lucide-react'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { Alert } from '@/components/ui/Alert'
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import {
   Table,
   TableHeader,
@@ -11,193 +13,164 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/Table'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-} from '@/components/ui/Pagination'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/Dialog'
-import { cancelSuperadminInvite, suspendSuperadmin, type SuperadminAccount } from '../mockData'
+import { useFindSuperAdmins } from '@/api/platform/usePlatformQueries'
+import { useUpdateSuperAdminStatus } from '@/api/platform/usePlatformMutations'
+import type { findSuperAdmins_Item } from '@/api/platform/platformTypes'
+import { isApiError } from '@/api/_contract'
+import { useGetCurrentMember } from '@/api/member/useMemberQueries'
+import { ACCOUNT_STATUS_LABEL, ACCOUNT_STATUS_VARIANT, formatDate, formatDateTime } from '../labels'
 import SuperadminInviteDialog from './SuperadminInviteDialog'
 
 /*
-  SA-03 §3 "슈퍼어드민 계정" — 목록 · 초대 · 정지(재활성 없음, mockData.ts 파일
-  머리말 판단 근거). 초대는 SA-02 오퍼레이터와 같이 INVITED로 시작해 실제 로그인
-  전까지 활성으로 치지 않는다(mockData.ts 판단 근거) — 그래서 액션도 상태별로
-  갈린다: ACTIVE는 정지, INVITED는 초대 취소(아직 아무도 아니라 "정지"가 성립하지
-  않는다), SUSPENDED는 없음. 표는 SA-02 OperatorsTab의 bare Table 관례를 따르고,
-  "마지막 슈퍼어드민 정지 차단"은 OperatorsTab의 LAST_OPERATOR 차단 모달과 같은
-  구조(Dialog + 빨간 Alert, AlertDialog가 아닌 이유도 동일 — 닫기 ✕가 있어야 한다)를
-  재사용한다. 와이어 #page-accounts의 하단 범위·페이지네이션도 그대로 둔다(SA-01
-  목록과 같은 1쪽 고정 표기 — 실제 다중 페이지 로직은 아직 없다).
+  SA-03 §3 "슈퍼어드민 계정" — 목록 · 초대 · 정지/재활성.
+
+  ## 서버가 판정하는 것 둘
+  | | |
+  |---|---|
+  | `deactivatable` | 이 계정을 정지할 수 있나. **활성이 1명뿐이면 false** — 화면이 `activeCount === 1`로 유추하지 않는다 |
+  | `activeCount` | 활성 슈퍼어드민 수 |
+
+  ## ⚠️ 초대 취소가 서버에 없다
+  목에는 `cancelSuperadminInvite`가 있었지만 **API가 없다.** 대신 `PENDING` 계정도
+  `INACTIVE`로 정지할 수 있어 "들어오지 못하게" 하는 것은 된다. 목록에서 지우는 기능은
+  백엔드에 요청해 두었고, 그전까지는 정지로 대신한다 — **없는 기능을 버튼으로 만들지 않는다.**
 */
 
-export default function SuperadminAccountsTab({
-  accounts,
-  onChange,
-}: {
-  accounts: SuperadminAccount[]
-  onChange: () => void
-}) {
-  const [inviteOpen, setInviteOpen] = useState(false)
-  const [blocked, setBlocked] = useState<SuperadminAccount | null>(null)
+type Account = findSuperAdmins_Item
 
-  function handleSuspend(account: SuperadminAccount) {
-    const result = suspendSuperadmin(account.id)
-    if (!result.ok) {
-      setBlocked(account)
-      return
+export default function SuperadminAccountsTab() {
+  const [inviteOpen, setInviteOpen] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const { data, isPending, isError, refetch } = useFindSuperAdmins()
+  const updateStatus = useUpdateSuperAdminStatus()
+  /*
+    "나" 배지를 위해 지금 로그인한 사람이 필요하다. 인증 도메인의 훅을 쓰면 레이어 린트에
+    걸린다(features 간 교차 import 금지) — **생성된 `/me` 훅을 직접 쓴다.** 어차피 같은
+    쿼리 키라 요청이 한 번 더 나가지 않는다.
+  */
+  const { data: me } = useGetCurrentMember()
+
+  async function changeStatus(account: Account, status: 'ACTIVE' | 'INACTIVE') {
+    setError(null)
+    try {
+      await updateStatus.mutateAsync({ path: { memberId: account.memberId }, body: { status } })
+    } catch (e) {
+      setError(
+        isApiError(e) && e.code === 'LAST_SUPER_ADMIN'
+          ? '마지막 슈퍼어드민은 정지할 수 없습니다. 플랫폼에 들어갈 사람이 없어집니다.'
+          : '상태를 바꾸지 못했습니다. 잠시 후 다시 시도해 주세요.',
+      )
     }
-    onChange()
   }
 
-  function handleCancelInvite(account: SuperadminAccount) {
-    cancelSuperadminInvite(account.id)
-    onChange()
+  if (isError) {
+    return (
+      <Empty>
+        <EmptyHeader>
+          <EmptyTitle>계정 목록을 불러오지 못했습니다</EmptyTitle>
+          <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
+        </EmptyHeader>
+        <Button variant="ghost" onClick={() => refetch()}>
+          다시 시도
+        </Button>
+      </Empty>
+    )
   }
 
   return (
     <div className="flex flex-col gap-4">
+      {error && <Alert variant="danger">{error}</Alert>}
+
       <div className="flex items-center justify-between">
         <p className="text-fg-subtle text-xs font-semibold">
-          슈퍼어드민 계정 · {accounts.length}명
+          {data ? `슈퍼어드민 계정 · ${data.content.length}명 (활성 ${data.activeCount})` : ' '}
         </p>
         <Button onClick={() => setInviteOpen(true)}>
           <PlusIcon /> 계정 초대
         </Button>
       </div>
 
-      <Table>
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="w-40">이름</TableHead>
-            <TableHead className="w-52">이메일</TableHead>
-            <TableHead className="w-28">상태</TableHead>
-            <TableHead className="w-28">최근 로그인</TableHead>
-            <TableHead className="w-20" />
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {accounts.map((a) => {
-            const suspended = a.status === 'SUSPENDED'
-            const invited = a.status === 'INVITED'
-            return (
-              <TableRow key={a.id} className={suspended ? 'opacity-60' : undefined}>
-                <TableCell className={a.name ? 'font-bold' : 'text-fg-subtle font-normal'}>
-                  <span className="flex items-center gap-1.5">
-                    {a.name}
-                    {a.isSelf && (
-                      <Badge variant="neutral" className="text-[10px]">
-                        나
-                      </Badge>
+      {isPending ? (
+        <Skeleton className="h-40 w-full" />
+      ) : (
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead className="w-40">이름</TableHead>
+              <TableHead className="w-56">이메일</TableHead>
+              <TableHead className="w-24">상태</TableHead>
+              <TableHead className="w-36">최근 로그인</TableHead>
+              <TableHead className="w-28">등록일</TableHead>
+              <TableHead className="w-24" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.content.map((a) => {
+              const inactive = a.status === 'INACTIVE'
+              // 서버는 "나"를 표시해 주지 않는다 — 지금 로그인한 사람과 대조한다
+              const isSelf = me?.memberId === a.memberId
+              return (
+                <TableRow key={a.memberId} className={inactive ? 'opacity-60' : undefined}>
+                  <TableCell className={a.name ? 'font-bold' : 'text-fg-subtle font-normal'}>
+                    <span className="flex items-center gap-1.5">
+                      {/* 초대만 되고 활성화 전이면 이름이 없다(서버 null) */}
+                      {a.name ?? '—'}
+                      {isSelf && (
+                        <Badge variant="neutral" className="text-[10px]">
+                          나
+                        </Badge>
+                      )}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-xs">{a.email}</TableCell>
+                  <TableCell>
+                    <Badge variant={ACCOUNT_STATUS_VARIANT[a.status]}>
+                      {ACCOUNT_STATUS_LABEL[a.status]}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-fg-muted text-xs">
+                    {formatDateTime(a.lastLoginAt)}
+                  </TableCell>
+                  <TableCell className="text-fg-muted text-xs">{formatDate(a.createdAt)}</TableCell>
+                  <TableCell>
+                    {inactive ? (
+                      <button
+                        type="button"
+                        disabled={updateStatus.isPending}
+                        onClick={() => changeStatus(a, 'ACTIVE')}
+                        className="text-primary text-xs font-semibold hover:underline disabled:opacity-50"
+                      >
+                        재활성
+                      </button>
+                    ) : (
+                      /*
+                        `deactivatable`이 false면 **버튼을 흐리게 두지 않고 이유를 말한다.**
+                        제품 원칙이 흐린 버튼을 금지한다 — 왜 못 누르는지 알 수 없기 때문이다.
+                      */
+                      <button
+                        type="button"
+                        disabled={!a.deactivatable || updateStatus.isPending}
+                        title={
+                          a.deactivatable
+                            ? undefined
+                            : '마지막 활성 슈퍼어드민은 정지할 수 없습니다'
+                        }
+                        onClick={() => changeStatus(a, 'INACTIVE')}
+                        className="text-danger text-xs font-semibold hover:underline disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        정지
+                      </button>
                     )}
-                  </span>
-                </TableCell>
-                <TableCell className="font-mono text-xs">{a.email}</TableCell>
-                <TableCell>
-                  {suspended ? (
-                    <Badge variant="neutral">정지</Badge>
-                  ) : invited ? (
-                    <Badge variant="warning">초대됨</Badge>
-                  ) : (
-                    <Badge variant="success">활성</Badge>
-                  )}
-                </TableCell>
-                <TableCell className="text-fg-muted text-xs">
-                  {a.lastLoginAt ?? (invited ? '대기 중' : '—')}
-                </TableCell>
-                <TableCell>
-                  {a.status === 'ACTIVE' && (
-                    <button
-                      type="button"
-                      onClick={() => handleSuspend(a)}
-                      className="text-danger text-xs font-semibold hover:underline"
-                    >
-                      정지
-                    </button>
-                  )}
-                  {invited && (
-                    <button
-                      type="button"
-                      onClick={() => handleCancelInvite(a)}
-                      className="text-danger text-xs font-semibold hover:underline"
-                    >
-                      초대 취소
-                    </button>
-                  )}
-                </TableCell>
-              </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+      )}
 
-      <div className="grid grid-cols-3 items-center">
-        <p className="text-fg-subtle text-xs">{`1–${accounts.length} / ${accounts.length}개`}</p>
-        <div className="flex justify-center">
-          <Pagination className="mx-0 w-auto">
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationLink isActive aria-label="1쪽">
-                  1
-                </PaginationLink>
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
-        <div />
-      </div>
-
-      <SuperadminInviteDialog
-        open={inviteOpen}
-        onOpenChange={setInviteOpen}
-        onInvited={() => onChange()}
-      />
-
-      {/* 마지막 슈퍼어드민 정지 차단 — OperatorsTab의 LAST_OPERATOR 모달과 같은 구조.
-          닫기 ✕가 필요해 AlertDialog가 아니라 Dialog를 쓴다. */}
-      <Dialog open={blocked !== null} onOpenChange={(v) => !v && setBlocked(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>정지할 수 없습니다</DialogTitle>
-          </DialogHeader>
-
-          <div className="flex flex-col gap-3">
-            <Alert variant="danger">
-              <AlertTitle>마지막 슈퍼어드민 계정입니다</AlertTitle>
-              <AlertDescription>
-                정지하면 플랫폼 콘솔에 들어갈 수 있는 사람이 아무도 없어집니다. 풀어 줄 상위 권한이
-                없어 되돌릴 방법도 없습니다.
-              </AlertDescription>
-            </Alert>
-            <p className="text-fg-subtle text-xs">
-              새 슈퍼어드민을 먼저 초대한 뒤에 정지할 수 있습니다
-            </p>
-          </div>
-
-          <DialogFooter className="-mx-4 -mb-4 mt-0">
-            <Button type="button" variant="ghost" onClick={() => setBlocked(null)}>
-              닫기
-            </Button>
-            <Button
-              type="button"
-              onClick={() => {
-                setBlocked(null)
-                setInviteOpen(true)
-              }}
-            >
-              계정 초대
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <SuperadminInviteDialog open={inviteOpen} onOpenChange={setInviteOpen} />
     </div>
   )
 }

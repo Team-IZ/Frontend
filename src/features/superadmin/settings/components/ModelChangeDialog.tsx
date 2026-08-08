@@ -6,7 +6,8 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/Dialog'
-import { Field, FieldLabel } from '@/components/ui/Field'
+import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/Field'
+import { Input } from '@/components/ui/Input'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import {
@@ -16,107 +17,212 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select'
-import { AVAILABLE_MODELS, changeGradingModel, type ModelId } from '../mockData'
+import { useUpdateGradingModel } from '@/api/platform/usePlatformMutations'
+import type { findModelSettings_Response } from '@/api/platform/platformTypes'
+import { isApiError } from '@/api/_contract'
+import { isSelectableModel } from '../labels'
 
 /*
-  SA-03 §6 "채점 모델 변경은 되돌릴 수 없다고 먼저 말한다" — 와이어 #modelchange.
-  확정 전에 전 기관 재캘리브레이션 경고를 빨간 Alert(§3 규약 그대로, OperatorsTab의
-  마지막 오퍼레이터 차단 모달과 같은 `.warnbox` 구조 재사용)로 보여주고, 확정 버튼도
-  danger로 눌러야 실제 위험을 담는다.
+  SA-03 §6 "채점 모델 변경은 되돌릴 수 없다고 먼저 말한다".
+
+  **제품 원칙이 그대로 걸리는 자리다** — *"되돌릴 수 없는 것을 가장 크게."*
+  전 기관 재캘리브레이션이 돌고, 그 사이 채점 결과가 새 기준으로 바뀐다.
+
+  ## 서버가 요구하는 것 셋
+  | | |
+  |---|---|
+  | `modelId` | 새 채점 모델 |
+  | `calibrationVersionCode` | **사용자가 짓는다.** 결과 비교에서 이 코드로 버전을 구분한다 |
+  | `acknowledgeRecalibration` | `true`가 아니면 400. **확인 모달을 우회한 호출을 막는 안전장치**라 화면이 무조건 true를 보내면 안 된다 — 사용자가 실제로 확인한 뒤에만 켠다 |
 */
+
+type Settings = findModelSettings_Response
+type Pricing = Settings['modelPricings'][number]
+
+/** 서버 패턴 그대로 — 대문자로 시작, 대문자·숫자·밑줄만 */
+const VERSION_CODE_PATTERN = /^[A-Z][A-Z0-9_]*$/
+
+/** `CAL_2026_08_V1` — 사용자가 매번 형식을 고민하지 않게 기본값을 준다 */
+function suggestVersionCode(now: Date) {
+  const y = now.getFullYear()
+  const m = String(now.getMonth() + 1).padStart(2, '0')
+  return `CAL_${y}_${m}_V1`
+}
 
 export default function ModelChangeDialog({
   open,
   onOpenChange,
-  currentModel,
-  orgCount,
-  onChanged,
+  gradingPolicy,
+  models,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  currentModel: ModelId
-  orgCount: number
-  onChanged: () => void
+  gradingPolicy: Settings['gradingPolicy']
+  models: Pricing[]
 }) {
-  const [model, setModel] = useState<ModelId>(currentModel)
-  const [submitting, setSubmitting] = useState(false)
+  const [modelId, setModelId] = useState(gradingPolicy.modelId)
+  const [versionCode, setVersionCode] = useState('')
+  const [reason, setReason] = useState('')
+  const [acknowledged, setAcknowledged] = useState(false)
+  const [touched, setTouched] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const update = useUpdateGradingModel()
 
   useEffect(() => {
-    if (open) setModel(currentModel)
-  }, [open, currentModel])
+    if (open) {
+      setModelId(gradingPolicy.modelId)
+      setVersionCode(suggestVersionCode(new Date()))
+      setReason('')
+      setAcknowledged(false)
+      setTouched(false)
+      setError(null)
+    }
+  }, [open, gradingPolicy.modelId])
 
-  const canSubmit = model !== currentModel && !submitting
+  const options = models.filter((m) => isSelectableModel(m) || m.modelId === gradingPolicy.modelId)
+  const versionValid = VERSION_CODE_PATTERN.test(versionCode)
+  const changed = modelId !== gradingPolicy.modelId
+  const canSubmit = changed && versionValid && acknowledged && !update.isPending
 
-  function handleConfirm() {
+  async function handleConfirm() {
+    setTouched(true)
     if (!canSubmit) return
-    setSubmitting(true)
+    setError(null)
     try {
-      changeGradingModel(model)
-      onChanged()
+      await update.mutateAsync({
+        body: {
+          modelId,
+          calibrationVersionCode: versionCode,
+          changeReason: reason.trim() || null,
+          // 사용자가 위 경고를 읽고 켠 값만 보낸다 — 하드코딩하면 안전장치가 무의미해진다
+          acknowledgeRecalibration: acknowledged,
+          recalibrationAcknowledged: acknowledged,
+        },
+      })
       onOpenChange(false)
-    } finally {
-      setSubmitting(false)
+    } catch (e) {
+      setError(errorMessage(e))
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>채점 모델 변경</DialogTitle>
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
+          {error && <Alert variant="danger">{error}</Alert>}
+
+          <Alert variant="danger">
+            <AlertTitle>되돌릴 수 없습니다</AlertTitle>
+            <AlertDescription>
+              바꾸는 즉시 <b>전 기관 재캘리브레이션</b>이 시작되고, 이후 채점은 새 기준으로
+              이뤄집니다. 이전 결과와 직접 비교할 수 없게 됩니다.
+            </AlertDescription>
+          </Alert>
+
           <Field>
             <FieldLabel htmlFor="grading-model-select">모델</FieldLabel>
             <Select
-              value={model}
-              onValueChange={(v) => setModel((v as ModelId) ?? currentModel)}
-              items={Object.fromEntries(AVAILABLE_MODELS.map((m) => [m, m]))}
+              value={modelId}
+              onValueChange={(v) => setModelId(v ?? gradingPolicy.modelId)}
+              disabled={update.isPending}
+              items={Object.fromEntries(options.map((m) => [m.modelId, m.modelDisplayName]))}
             >
-              <SelectTrigger
-                id="grading-model-select"
-                className="w-full font-mono text-xs"
-                aria-label="채점 모델"
-              >
+              <SelectTrigger id="grading-model-select" className="w-full" aria-label="채점 모델">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {AVAILABLE_MODELS.map((m) => (
-                  <SelectItem key={m} value={m} className="font-mono text-xs">
-                    {m}
-                    {m === currentModel && ' (현재)'}
+                {options.map((m) => (
+                  <SelectItem key={m.modelId} value={m.modelId}>
+                    {m.modelDisplayName}
+                    {m.modelId === gradingPolicy.modelId && ' (현재)'}
+                    {m.pricingMissing && ' · 단가 미설정'}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </Field>
 
-          <div className="flex flex-col gap-2">
-            <Alert variant="danger">
-              <AlertTitle>{orgCount}개 기관 전체가 재캘리브레이션 대기 상태가 됩니다</AlertTitle>
-              <AlertDescription>
-                끝나기 전까지 이전 버전으로 채점된 결과와는 비교할 수 없습니다.
-              </AlertDescription>
-            </Alert>
-            <p className="text-fg-subtle text-xs">진행 중인 세션은 기존 모델로 끝까지 채점됩니다</p>
-          </div>
+          <Field data-invalid={touched && !versionValid}>
+            <FieldLabel htmlFor="calibration-version">캘리브레이션 버전 코드</FieldLabel>
+            <Input
+              id="calibration-version"
+              value={versionCode}
+              disabled={update.isPending}
+              onChange={(e) => setVersionCode(e.target.value.toUpperCase())}
+              aria-invalid={touched && !versionValid}
+              className="font-mono"
+            />
+            <FieldDescription>
+              결과를 비교할 때 이 코드로 버전을 구분합니다. 대문자로 시작하고 대문자·숫자·밑줄만 쓸
+              수 있습니다.
+            </FieldDescription>
+            <FieldError>
+              {touched && !versionValid ? '예: CAL_2026_08_V1 형식으로 입력하세요.' : ''}
+            </FieldError>
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="change-reason">변경 사유 (선택)</FieldLabel>
+            <Input
+              id="change-reason"
+              value={reason}
+              disabled={update.isPending}
+              placeholder="감사·이력 확인용"
+              onChange={(e) => setReason(e.target.value)}
+            />
+          </Field>
+
+          {/*
+            서버가 `acknowledgeRecalibration !== true`면 400으로 막는다 — 확인 모달을 우회한
+            호출을 걸러내는 장치다. 화면이 자동으로 true를 보내면 그 장치가 무의미해지므로
+            **사용자가 직접 켜게** 한다.
+          */}
+          <label className="border-danger-border bg-danger-soft flex items-start gap-2 rounded-md border px-3 py-2.5 text-xs">
+            <input
+              type="checkbox"
+              checked={acknowledged}
+              disabled={update.isPending}
+              onChange={(e) => setAcknowledged(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              전 기관 재캘리브레이션이 시작되고 <b>되돌릴 수 없다</b>는 것을 확인했습니다.
+            </span>
+          </label>
         </div>
 
         <DialogFooter className="-mx-4 -mb-4 mt-0">
           <Button
             type="button"
             variant="ghost"
-            disabled={submitting}
+            disabled={update.isPending}
             onClick={() => onOpenChange(false)}
           >
             취소
           </Button>
           <Button type="button" variant="danger" disabled={!canSubmit} onClick={handleConfirm}>
-            변경하고 재캘리브레이션 시작
+            {update.isPending ? '변경 중…' : '변경하고 재캘리브레이션 시작'}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
   )
+}
+
+function errorMessage(e: unknown): string {
+  if (!isApiError(e)) return '변경하지 못했습니다. 잠시 후 다시 시도해 주세요.'
+  switch (e.code) {
+    case 'CALIBRATION_IN_PROGRESS':
+      return '이미 재캘리브레이션이 진행 중입니다. 끝난 뒤에 다시 시도해 주세요.'
+    case 'CALIBRATION_VERSION_CODE_TAKEN':
+      return '이미 쓰인 버전 코드입니다. 다른 코드를 입력해 주세요.'
+    case 'AI_MODEL_NOT_AVAILABLE':
+      return '사용할 수 없는 모델입니다.'
+    default:
+      return '변경하지 못했습니다. 잠시 후 다시 시도해 주세요.'
+  }
 }

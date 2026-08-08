@@ -13,3 +13,12 @@
 *.woff binary
 *.woff2 binary
 *.pdf binary
+
+# 자동 생성물 — PR diff에서 접어 리뷰 소음을 줄인다(내용은 그대로 커밋된다)
+# 손으로 쓰는 _contract는 제외한다. 나머지 src/api/**는 api:gen 산출물이다.
+src/api/*.ts linguist-generated=true
+src/api/*.d.ts linguist-generated=true
+src/api/PENDING.md linguist-generated=true
+src/api/*/*.ts linguist-generated=true
+src/api/_contract/** !linguist-generated
+api/openapi.json linguist-generated=true

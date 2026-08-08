@@ -2,8 +2,8 @@
 
 > **다음 세션이 이 파일부터 읽는다.** 무엇을 어디까지 했고, 왜 그렇게 했고, 무엇이 남았는지.
 >
-> 규칙은 [mock-first-screens.md](mock-first-screens.md)(화면 만드는 순서) ·
-> [api-boundary.md](api-boundary.md)(서버/화면 경계) · [01 점검표](../plan/v2/definition/01-design-checklist.md)가
+> 규칙은 [mock-first-screens.md](../mock-first-screens.md)(화면 만드는 순서) ·
+> [api-boundary.md](../api/api-boundary.md)(서버/화면 경계) · [01 점검표](../../plan/v2/definition/01-design-checklist.md)가
 > 갖는다. 여기는 **이 화면에서 실제로 내린 결정**만 적는다.
 >
 > 같은 목 데이터를 쓰는 짝이 [OP-02 분석](op-02-analysis.md)이다.
@@ -38,7 +38,7 @@ src/features/operator/dashboard/
 이 화면은 **"효과적으로 보여서 전달하려는 바가 한눈에 들어오는 것"** 이 목적 자체라,
 목업을 옮기기 전에 **두 장을 기계로 대조**하고 UI/UX 관점에서 전수 검토했다.
 목업이 계약인 것은 **케이스·문구**이고 값과 배치는 검증 대상이라는
-[D22](decision-log.md)의 경계를 그대로 적용한 것이다.
+[D22](../decision-log.md)의 경계를 그대로 적용한 것이다.
 
 | 무엇 | 어떻게 |
 |---|---|
@@ -157,7 +157,7 @@ G반  ██████│░░░░░░░░░░░░░░        12%
 
 | 목업 | 왜 뺐나 |
 |---|---|
-| `개인 위험 사유에서 빠집니다**(9-6)**` | **크롬 안에 기획 조항 번호가 있으면 그것도 화면에 나가는 글로 읽힌다**([02-layout §8](../plan/v2/definition/02-layout-system.md)). 규칙의 내용은 남기고 번호만 뺐다 |
+| `개인 위험 사유에서 빠집니다**(9-6)**` | **크롬 안에 기획 조항 번호가 있으면 그것도 화면에 나가는 글로 읽힌다**([02-layout §8](../../plan/v2/definition/02-layout-system.md)). 규칙의 내용은 남기고 번호만 뺐다 |
 | `면담 11일째 … **회차 경과 기준(등재일은 반마다 같음)**` | **읽는 법을 가르치는 문장**이다(A7 ③). 정의서 §3 예시에도 없다 — 거기는 두 줄로 끝난다 |
 
 ---

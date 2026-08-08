@@ -4,7 +4,7 @@ import type { ProjectStatus } from './types'
   기획이 정한 규칙과, 그 규칙에서 나오는 표시값.
 
   **서버도 같은 규칙을 검증한다.** 클라이언트 검증만 있으면 우회되므로, 여기 있는
-  값이 바뀌면 백엔드와 같이 바꾼다(`docs/dev/api-boundary.md` §1-④).
+  값이 바뀌면 백엔드와 같이 바꾼다(`docs/dev/api/api-boundary.md` §1-④).
   목 데이터가 아니므로 **연동해도 이 파일은 남는다.**
 */
 

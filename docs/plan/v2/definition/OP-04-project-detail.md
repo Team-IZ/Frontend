@@ -188,7 +188,7 @@ Graph 구성은 후보에 아예 없다. 목록에 `재투입 검토 →`를 두
 > **몇 군데를 의도적으로 뒤집었다.** 그 사실이 여기 없으면 다음 사람이 원안대로 다시
 > 만든다(실제로 §6 잠금이 그런 자리였다).
 >
-> 코드 결정·파일 배치·다음 할 일은 [`docs/dev/op-projects-progress.md`](../../../dev/op-projects-progress.md)가
+> 코드 결정·파일 배치·다음 할 일은 [`docs/dev/screens/op-projects-progress.md`](../../../dev/op-projects-progress.md)가
 > 갖는다. **여기는 화면 계약만** 적는다.
 
 ### 8-1. 상태별로 무엇을 보여주나

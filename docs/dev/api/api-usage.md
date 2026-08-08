@@ -225,7 +225,7 @@ findOrganizations_Item    // 목록의 한 줄
 - [codegen 설계](api-codegen.md) — 결정 지점 전량(후보·판단·근거)
 - [인증·세션 설계](auth-design.md) — 토큰을 어디에 두나
 - [API 경계](api-boundary.md) — 화면이 하면 안 되는 서버 판정
-- [API 없이 화면 만들기](mock-first-screens.md) — **아직 API가 없는 화면**을 만들 때는 이쪽
+- [API 없이 화면 만들기](../mock-first-screens.md) — **아직 API가 없는 화면**을 만들 때는 이쪽
 
 ---
 

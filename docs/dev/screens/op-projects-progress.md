@@ -2,8 +2,8 @@
 
 > **다음 세션이 이 파일부터 읽는다.** 무엇을 어디까지 했고, 왜 그렇게 했고, 무엇이 남았는지.
 >
-> 규칙은 [mock-first-screens.md](mock-first-screens.md)(화면 만드는 순서) ·
-> [api-boundary.md](api-boundary.md)(서버/화면 경계)가 갖는다. 여기는 **이 도메인에서
+> 규칙은 [mock-first-screens.md](../mock-first-screens.md)(화면 만드는 순서) ·
+> [api-boundary.md](../api/api-boundary.md)(서버/화면 경계)가 갖는다. 여기는 **이 도메인에서
 > 실제로 내린 결정**만 적는다.
 
 ---
@@ -57,7 +57,7 @@ features/operator/projects/
 
 > **미적용 — 폴더 이름.** 위 배치는 *"`detail/`과 `components/`가 나란히 있어 구분이
 > 안 된다"* 는 지적을 아직 반영하지 않은 상태다. 결론은
-> [frontend-architecture §2-1](frontend-architecture.md)로 정해졌다 — **`features/operator/`
+> [frontend-architecture §2-1](../frontend-architecture.md)로 정해졌다 — **`features/operator/`
 > 전 도메인이 URL 축(`{url-세그먼트}/` + `_/`)을 쓴다.** admin은 이미 그 배치이고
 > `projects/`만 남았다. 적용하면 이렇게 된다:
 >

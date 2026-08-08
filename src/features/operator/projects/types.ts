@@ -1,7 +1,7 @@
 /*
   프로젝트 도메인 **계약** — 서버와 주고받는 모양만 둔다.
 
-  여기 있는 이름과 값은 **백엔드와 합의해야 하는 것**이다(`docs/dev/api-boundary.md` §1-③).
+  여기 있는 이름과 값은 **백엔드와 합의해야 하는 것**이다(`docs/dev/api/api-boundary.md` §1-③).
   판정 규칙은 projectRules.ts, 목 데이터는 projectMockDb.ts, 호출은 projectApi.ts로
   갈라 뒀다 — 연동할 때 무엇을 지우고 무엇을 남길지가 파일 경계로 보이게.
 

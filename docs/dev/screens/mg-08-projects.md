@@ -2,9 +2,9 @@
 
 > **다음 세션이 이 파일부터 읽는다.** 이 화면에서 무엇을 왜 그렇게 정했는지.
 >
-> 규칙은 [mock-first-screens.md](mock-first-screens.md)(화면 만드는 순서) ·
-> [api-boundary.md](api-boundary.md)(서버/화면 경계) · [01 점검표](../plan/v2/definition/01-design-checklist.md)가
-> 갖는다. **여러 화면에 걸치는 결정은** [decision-log.md](decision-log.md)가 갖는다.
+> 규칙은 [mock-first-screens.md](../mock-first-screens.md)(화면 만드는 순서) ·
+> [api-boundary.md](../api/api-boundary.md)(서버/화면 경계) · [01 점검표](../../plan/v2/definition/01-design-checklist.md)가
+> 갖는다. **여러 화면에 걸치는 결정은** [decision-log.md](../decision-log.md)가 갖는다.
 
 ---
 

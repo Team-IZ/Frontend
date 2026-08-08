@@ -224,7 +224,7 @@ function Protected({ allow }: { allow: Role[] }) {
 
 > **단위는 확인됐다 — 밀리초다.** 실제 값이 `3600000`(1시간)이었다. 초라면 41일이라
 > 성립하지 않는다. **사전 갱신을 붙일 수 있다.** 다만 `SameSite`가 고쳐져 재발급이 실제로
-> 동작하기 전에는 의미가 없으므로([3차 요청](backend-api-requests-3.md) R1) 그 뒤에 붙인다.
+> 동작하기 전에는 의미가 없으므로([3차 요청](../backend/backend-api-requests-3.md) R1) 그 뒤에 붙인다.
 
 **다중 탭 동기화**(한 탭에서 로그아웃하면 다른 탭도)는 `BroadcastChannel`로 나중에 붙인다.
 쿠키는 탭이 공유하므로 동작 자체는 지금도 맞고, **화면이 어긋나는 것뿐**이라 급하지 않다.
@@ -248,7 +248,7 @@ function Protected({ allow }: { allow: Role[] }) {
 
 ---
 
-## 8. 백엔드에 물을 것 — [3차 요청서](backend-api-requests-3.md)로 전달
+## 8. 백엔드에 물을 것 — [3차 요청서](../backend/backend-api-requests-3.md)로 전달
 
 | | 상태 |
 |---|---|

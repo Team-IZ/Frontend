@@ -376,4 +376,4 @@ OpenAPI 문서 → [생성기] → TypeScript 타입 + 호출 함수 + 훅
 
 - [**API 붙이는 법**](api-usage.md) — 화면에서 실제로 쓰는 법 (다음은 이걸 읽으면 된다)
 - [API 코드는 어떻게 만들어지나](api-process.md) — 생성 과정 전체. 생성기를 고칠 때
-- [백엔드 API 문서 진단 — 1차](backend-api-requests.md) — "자동 생성인데 왜 틀리나"의 실제 사례 99건
+- [백엔드 API 문서 진단 — 1차](../backend/backend-api-requests.md) — "자동 생성인데 왜 틀리나"의 실제 사례 99건

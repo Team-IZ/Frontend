@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { MutationOptions } from '@/api/_contract'
-import { inviteManager, registerTrainees } from './memberApi'
+import { inviteManager, registerTrainees, updateTraineeStatus } from './memberApi'
 import { memberKeys } from './memberKeys'
 import type {
   inviteManager_Path,
@@ -11,6 +11,9 @@ import type {
   registerTrainees_Path,
   registerTrainees_Body,
   registerTrainees_Response,
+  updateTraineeStatus_Path,
+  updateTraineeStatus_Body,
+  updateTraineeStatus_Response,
 } from './memberTypes'
 
 /*
@@ -49,6 +52,26 @@ export function useRegisterTrainees(
   return useMutation({
     mutationFn: (vars: { path: registerTrainees_Path; body: registerTrainees_Body }) =>
       registerTrainees(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: memberKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 교육생 계정 상태 변경 */
+export function useUpdateTraineeStatus(
+  options?: MutationOptions<
+    updateTraineeStatus_Response,
+    { path: updateTraineeStatus_Path; body: updateTraineeStatus_Body }
+  >,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: updateTraineeStatus_Path; body: updateTraineeStatus_Body }) =>
+      updateTraineeStatus(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다

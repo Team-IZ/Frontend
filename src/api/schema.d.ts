@@ -974,7 +974,92 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    get?: never
+    /**
+     * 기수 교육생 명단 조회 | ✅ 사용 가능
+     * @description 운영 관리 `반·명단` 탭의 교육생 명단 표를 채운다. 소속 반·계정 상태 필터, 이름·이메일 검색,
+     *     정렬, 페이지네이션을 **모두 서버가 처리**하므로 화면은 파라미터만 넘기면 된다.
+     *     조회 범위인 기관은 액세스 토큰에서 가져온다.
+     *
+     *     ## 요청 (경로 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     | --- | --- | --- | --- |
+     *     | `cohortId` | 필수 | UUID | 명단을 조회할 기수 |
+     *
+     *     ## 요청 (쿼리 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     | --- | --- | --- | --- |
+     *     | `classroomId` | 선택 | UUID | 특정 반으로 좁힌다. `unassignedOnly`와 함께 지정하면 400 |
+     *     | `unassignedOnly` | 선택 | boolean | 반 배정이 없는 교육생만. 기본 `false` |
+     *     | `accountStatus` | 선택 | enum | `INVITED`(초대 대기) · `ACTIVE`(활성) · `INACTIVE`(비활성). 비우면 전체(화면의 `계정 · 전체`) |
+     *     | `query` | 선택 | string | 이름·이메일 부분검색. 비우면 전체 |
+     *     | `sort` | 선택 | enum | `NAME`(이름순, 기본) · `RECENT_ENROLLED`(최근 등록순) |
+     *     | `page` | 선택 | int | 0부터 시작. 기본 `0` |
+     *     | `size` | 선택 | int | 페이지당 개수. 기본 `20`, 최대 `100` |
+     *
+     *     ⚠️ **`accountStatus`에 `LOCKED`는 쓸 수 없다.** 이 화면이 쓰지 않는 값이라 지정하면 400이다.
+     *
+     *     ⚠️ **`classroomId`와 `unassignedOnly`는 함께 못 쓴다.** 화면에서 `반 · 전체 / 미배정 / A반…`이
+     *     단일 드롭다운이라 동시에 지정될 일이 없고, 들어오면 400으로 막는다.
+     *
+     *     ## 응답 (200)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `content[]` | array | 명단 목록. 각 항목 구조는 아래 |
+     *     | `page` | int | 현재 페이지(0부터) |
+     *     | `size` | int | 페이지당 개수 |
+     *     | `totalElements` | long | **필터 적용 후** 전체 건수 |
+     *     | `totalPages` | int | 전체 페이지 수 |
+     *     | `unassignedCount` | int | 반 배정이 없는 교육생 수. 화면 상단 `미배정 N` 배지 |
+     *     | `cohortTotal` | int | 기수 전체 교육생 수. 화면 상단 `명단 393명` |
+     *
+     *     ### content[] 각 항목
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `traineeId` | UUID | 교육생 사용자 ID. 상태 변경 시 경로에 쓴다 |
+     *     | `name` | string | 이름 |
+     *     | `email` | string | 이메일 |
+     *     | `status` | enum | `INVITED` · `ACTIVE` · `INACTIVE` |
+     *     | `classroomId` | UUID? | 현재 소속 반. 배정이 없으면 `null` |
+     *     | `className` | string? | 현재 소속 반 이름. 배정이 없으면 `null` |
+     *     | `joinedAt` | date-time | 기수 등록일 |
+     *     | `leftAt` | date-time? | 중도 이탈일. 이탈하지 않았으면 `null` |
+     *     | `inactivatedReasonCode` | enum? | 비활성화 사유 코드. 활성이면 `null` |
+     *     | `inactivatedReason` | string? | 비활성화 상세 사유. **INACTIVE여도 `null`일 수 있다** |
+     *     | `inactivatedById` | UUID? | 비활성화한 사용자 ID. 활성이면 `null` |
+     *     | `inactivatedByName` | string? | 비활성화한 사용자 이름. 화면 표시용 |
+     *     | `inactivatedAt` | date-time? | 비활성화 시각. 활성이면 `null` |
+     *
+     *     #### inactivatedReasonCode 값
+     *
+     *     | 값 | 설명 |
+     *     | --- | --- |
+     *     | `RESIGNED` | 퇴사 |
+     *     | `ADMIN_SUSPENDED` | 운영자 조치. 이 화면의 `비활성` 버튼이 넣는 값 |
+     *     | `CONTRACT_ENDED` | 계약 종료 |
+     *     | `SECURITY_ACTION` | 보안 조치 |
+     *     | `OTHER` | 기타 |
+     *
+     *     ⚠️ **`unassignedCount`·`cohortTotal`은 필터와 무관한 기수 전체 기준**이라 `totalElements`와 다르다.
+     *     검색 결과가 없을 때의 `7기 393명에서 찾았습니다`도 `cohortTotal`이며, 두 값이 같은 모집단이라
+     *     `393명 중 미배정 12`가 그대로 성립한다.
+     *
+     *     ⚠️ **`classroomId`·`className`은 둘 다 있거나 둘 다 `null`이다.**
+     *
+     *     ⚠️ **`leftAt`은 중도 이탈(`cohort_member.status=LEFT`)한 경우에만 값이 있다.**
+     *     화면의 `중도 이탈 {날짜}` 비고가 이 값이다.
+     *
+     *     💡 **비활성 교육생은 `inactivatedReasonCode`·`inactivatedById`·`inactivatedAt`이 반드시 있다.**
+     *     `ck_app_user_status_3`이 INACTIVE인 행에 이 셋을 NOT NULL로 강제하기 때문이다. 다만 상세 사유
+     *     (`inactivatedReason`)는 상태 변경 요청에서 생략할 수 있어 `null`일 수 있다.
+     *
+     *     💡 **`inactivatedByName`은 `inactivatedById`가 가리키는 계정의 이름이다.** 화면은 이 값을
+     *     그대로 쓰면 되고 ID로 다시 조회할 필요가 없다.
+     */
+    get: operations['findTraineeRoster']
     put?: never
     /**
      * CSV 교육생 명단 등록 및 초대 | ✅ 사용 가능
@@ -1795,6 +1880,105 @@ export interface paths {
     patch: operations['updateOperatorStatus']
     trace?: never
   }
+  '/api/v0/cohorts/{cohortId}/trainees/{traineeId}/status': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /**
+     * 교육생 계정 상태 변경 | ✅ 사용 가능
+     * @description 명단 표 행별 액션의 `비활성`/`활성화` 버튼에 대응한다. 벌크 선택 바가 아니라
+     *     **행 하나**를 대상으로 한다 — 목업의 벌크 선택 바에는 `반 배정`·`초대 재발송`만 있고
+     *     상태 변경은 행별 버튼으로만 제공되기 때문이다.
+     *
+     *     ## 요청 (경로 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     | --- | --- | --- | --- |
+     *     | `cohortId` | 필수 | UUID | 대상 교육생이 속한 기수 |
+     *     | `traineeId` | 필수 | UUID | 명단 조회 응답의 `content[].traineeId`(사용자 ID) |
+     *
+     *     ## 요청 (본문)
+     *
+     *     | 필드 | 필수 | 타입 | 설명 |
+     *     | --- | --- | --- | --- |
+     *     | `status` | 필수 | enum | `ACTIVE`(활성화) · `INACTIVE`(비활성화) |
+     *     | `reason` | 선택 | string | 변경 사유. 감사 로그에 남는다 |
+     *
+     *     ```json
+     *     {
+     *       "status": "INACTIVE",
+     *       "reason": "중도 이탈"
+     *     }
+     *     ```
+     *
+     *     ⚠️ **`status`는 `ACTIVE`·`INACTIVE` 두 값만 받는다.** `INVITED`·`LOCKED`는 초대·인증 흐름이
+     *     설정하는 값이라 이 API의 대상이 아니다. 요청 타입 자체가 두 값만 받으므로 그 외 문자열은
+     *     역직렬화 단계에서 `VALIDATION_FAILED`(400)로 거절된다.
+     *
+     *     ## 응답 (200)
+     *
+     *     변경 후의 명단 **한 행**이며, 필드 구성은 `기수 교육생 명단 조회`의 `content[]` 항목과 같다.
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `traineeId` | UUID | 교육생 사용자 ID |
+     *     | `name` | string | 이름 |
+     *     | `email` | string | 이메일 |
+     *     | `status` | enum | **변경 후** 계정 상태 |
+     *     | `classroomId` | UUID? | 현재 소속 반. 배정이 없으면 `null` |
+     *     | `className` | string? | 현재 소속 반 이름. 배정이 없으면 `null` |
+     *     | `joinedAt` | date-time | 기수 등록일 |
+     *     | `leftAt` | date-time? | 중도 이탈일. 이탈하지 않았으면 `null` |
+     *     | `inactivatedReasonCode` | enum? | 비활성화 사유 코드. 활성이면 `null` |
+     *     | `inactivatedReason` | string? | 비활성화 상세 사유. **INACTIVE여도 `null`일 수 있다** |
+     *     | `inactivatedById` | UUID? | 비활성화한 사용자 ID. 활성이면 `null` |
+     *     | `inactivatedByName` | string? | 비활성화한 사용자 이름. 화면 표시용 |
+     *     | `inactivatedAt` | date-time? | 비활성화 시각. 활성이면 `null` |
+     *
+     *     #### inactivatedReasonCode 값
+     *
+     *     | 값 | 설명 |
+     *     | --- | --- |
+     *     | `RESIGNED` | 퇴사 |
+     *     | `ADMIN_SUSPENDED` | 운영자 조치. 이 화면의 `비활성` 버튼이 넣는 값 |
+     *     | `CONTRACT_ENDED` | 계약 종료 |
+     *     | `SECURITY_ACTION` | 보안 조치 |
+     *     | `OTHER` | 기타 |
+     *
+     *     ⚠️ **계정 상태와 기수 소속을 함께 바꾼다.** 화면이 한 행에 `계정 비활성`과
+     *     `중도 이탈 {날짜}`를 같이 보여주기 때문이다.
+     *
+     *     | 요청 `status` | `app_user.status` | `cohort_member.status` | `cohort_member.left_at` |
+     *     | --- | --- | --- | --- |
+     *     | `INACTIVE` | `INACTIVE` | `LEFT` | **현재 시각으로 기록** |
+     *     | `ACTIVE` | `ACTIVE` | `ACTIVE` | `NULL`로 되돌림 |
+     *
+     *     `left_at`을 되돌리는 것은 선택이 아니다 — 테이블정의서가 **ACTIVE면 `left_at IS NULL`,
+     *     LEFT면 `left_at` 필수**를 요구하는데 DB CHECK는 status 값만 보고 둘의 정합성은 보지 않아,
+     *     한쪽만 바꾸면 어긋난 채로 저장된다.
+     *
+     *     ⚠️ **비활성화하면 `inactivatedReasonCode`가 `ADMIN_SUSPENDED`로 기록된다.**
+     *     이 화면에서 오는 정지는 전부 운영자 조치이기 때문이며, 요청의 `reason`은
+     *     상세 사유(`inactivatedReason`)로 따로 남는다.
+     *
+     *     ⚠️ **초대 대기(`INVITED`) 교육생은 대상이 아니다.** 아직 계정이 활성화되지 않아 정지·재활성
+     *     개념이 성립하지 않는다. 시도하면 409이며, 화면이 할 일은 초대 재발송이다.
+     *
+     *     💡 **멱등이다.** 이미 같은 상태면 아무 것도 바꾸지 않고 현재 값을 그대로 돌려준다 —
+     *     `left_at`도 다시 찍히지 않으므로 최초 이탈 시각이 보존된다.
+     */
+    patch: operations['updateTraineeStatus']
+    trace?: never
+  }
   '/api/v0/cohorts/{cohortId}/end': {
     parameters: {
       query?: never
@@ -2059,6 +2243,76 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v0/reports/managed': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 담당 반 리포트 목록 조회 (매니저) | ⚠️ 사용 불가
+     * @description 매니저가 **담당하는 반**의 개인 리포트 목록. 발행 여부와 공개 상태만 준다.
+     *
+     *     ⚠️ 신설 직후라 **실제 DB로 검증되지 않았다.** SQL이 도는 것을 확인한 뒤
+     *     `✅ 사용 가능`으로 올린다 — 나머지 Reporting 오퍼레이션과 같은 기준이다.
+     *
+     *     ## 왜 필요한가
+     *
+     *     매니저에게 열린 리포트 API는 `PUT /reports/{reportId}/disclosure` 하나뿐이었다.
+     *     공개 범위를 정할 수는 있는데 **정할 대상을 찾을 방법이 없었다** —
+     *     상태를 확인하려면 상태를 바꿔야 하는 모순이라 이 API로 메운다.
+     *
+     *     ## 본문은 들어 있지 않다
+     *
+     *     개념·서술·문답은 나가지 않는다. 개인 리포트 본문 열람은 별개 정책이고,
+     *     이 API는 "어느 리포트가 발행됐고 지금 어떤 공개 상태인가"에만 답한다.
+     *
+     *     ## 권한 범위 — 담당 반 전체
+     *
+     *     요청 매니저가 **지금** 배정된 반의 교육생만 나온다.
+     *     해제된 배정(`manager_assignment.unassigned_at`)과 이탈한 교육생
+     *     (`cohort_member.left_at`)은 빠진다. 조인 경로가 `PUT .../disclosure`의
+     *     담당 판정과 **같아서**, 목록에 보이는 리포트는 반드시 수정도 된다.
+     *
+     *     면담 대상으로 좁히지 않는다 — 공개 범위 지정은 면담과 무관하게 회차마다
+     *     생기는 일이라, 면담 대상만 보이면 나머지 교육생 리포트가 영원히 미지정으로 남는다.
+     *
+     *     ## 요청
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     |---|---|---|---|
+     *     | `cohortId` | 선택 | UUID | 기수로 좁힌다 |
+     *     | `roundId` | 선택 | UUID | 회차로 좁힌다(`assessmentRoundId`) |
+     *     | `classId` | 선택 | UUID | 담당 반이 여럿일 때 하나만 |
+     *
+     *     ## 응답
+     *
+     *     | 필드 | 설명 |
+     *     |---|---|
+     *     | `releaseStatus` | `NOT_CONFIGURED` · `WITHHELD` · `RELEASED` — **판별자** |
+     *     | `scope` | `PRIVATE` · `SUMMARY` · `FULL`. 미지정이면 **키가 빠진다** |
+     *     | `publishedAt` | 발행 시각. 발행 전이면 키가 빠진다 |
+     *     | `bodyVisible` | 교육생이 지금 본문을 읽을 수 있는가 |
+     *
+     *     ⚠️ **`NOT_CONFIGURED`를 "비공개"로 그리면 안 된다.** 아직 아무도 정하지 않은
+     *     초기 상태이고, `WITHHELD`(정해서 닫았다)와 구분해야 한다.
+     *
+     *     ## 담당하지 않는 리포트
+     *
+     *     목록에서 **빠질 뿐** 404가 아니다. 목록 조회에서 404는 "그런 반이 없다"는
+     *     뜻이 되어 실제로 담당이 없는 경우와 구분되지 않는다.
+     *     빈 목록도 정상이다 — 담당 반이 없거나, 회차가 아직 안 끝났거나, 필터가 좁은 경우다.
+     */
+    get: operations['findManagedReports']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v0/reports/class-diagnosis': {
     parameters: {
       query?: never
@@ -2087,6 +2341,14 @@ export interface paths {
      *     | `cohortId` | 쿼리 | **필수** | UUID | 기수 식별자 |
      *
      *     필터·드릴다운이 없는 고정 스냅샷이라 파라미터가 이것 하나뿐이다(정의서 §4).
+     *
+     *     🔴 **프론트엔드 경로 수정 필요.** Frontend `operator/report/_/api/api.ts`의
+     *     주석은 `GET /reports/{cohortId}`인데 실제 경로는
+     *     `GET /api/v0/reports/class-diagnosis?cohortId=` 다.
+     *     `GET /reports`는 이미 `hasRole('TRAINEE')`가 점유하고 있어 `/{cohortId}` 형태를
+     *     쓸 수 없다 — 같은 경로에 역할별로 다른 응답을 주면 안 되기 때문이다.
+     *     현재 프론트는 목(`loadReport()`) 단계라 연동 시 주석 처리된 `http<Report>()`
+     *     줄을 이 경로로 고쳐야 한다.
      *
      *     ## `status` 가 응답의 절반을 결정한다
      *
@@ -2122,11 +2384,11 @@ export interface paths {
      *
      *     `section` 의 구분자는 하이픈이 아니라 **en-dash(–, U+2013)** 다.
      *
-     *     ## 아직 비어 있는 값
+     *     ## 값의 출처와 아직 비어 있는 값
      *
      *     | 필드 | 상태 |
      *     |---|---|
-     *     | `excluded` | **항상 `{0,0,0}`.** 제외 사유별 집계가 지표에 없다. 생성 파이프라인이 스냅샷에 적재하도록 추가한 뒤 채운다 |
+     *     | `excluded` | `report_snapshot.summary_payload` 의 `excluded` 키에서 읽는다(2026-08-08). **생성 파이프라인이 아직 이 키를 안 채우면 `{0,0,0}`** 이다 |
      *     | `groupShortfalls[].round` | **항상 `""`.** 이 지표의 grain 이 반×개념이라 회차 축이 없다 |
      *
      *     ## 오류
@@ -2138,6 +2400,116 @@ export interface paths {
      *     회차가 하나도 안 끝났으면 정상적으로 404 다 — 빈 문서를 그리지 않는다.
      */
     get: operations['findClassDiagnosis']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v0/projects/{projectId}/class-progress': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 반별 제출·분석·응시 현황 조회 | ✅ 사용 가능
+     * @description 프로젝트 회차의 반별 진행을 제출 → 분석 → 응시 순으로 한 번에 조회합니다.
+     *     대시보드 '이번 회차' 카드와 프로젝트 상세 '현황' 화면이 함께 쓰는 API입니다.
+     *
+     *     단계별 깔때기라 각 단계의 분모가 앞 단계의 분자입니다.
+     *     제출률은 submittedCount / targetTraineeCount,
+     *     응시율은 assessedCount / analysisSucceededCount 입니다.
+     *     응시율의 분모가 제출 단계에서 나오므로 두 지표를 나눠 호출하지 않습니다.
+     *
+     *     제출은 팀 단위 원장이지만 이 화면은 인원 기준으로 환산합니다.
+     *
+     *     분석 상태는 성공·실패·부분 성공·진행 중 네 갈래를 모두 내려줍니다.
+     *     부분 성공(PARTIAL)은 분석 완료로 세지 않으므로 응시율 분모에서 빠집니다.
+     *     네 값을 더하면 제출 인원과 같아 어느 열에도 잡히지 않고 사라지는 인원이 없습니다.
+     *
+     *     회차는 projectId와 roundNo로 특정합니다. round_no는 프로젝트 안에서만 유일합니다.
+     *
+     *     ## 요청
+     *
+     *     | 파라미터 | 위치 | 필수 | 타입 | 설명 |
+     *     |---|---|---|---|---|
+     *     | `projectId` | 경로 | **필수** | UUID | 조회할 프로젝트 ID |
+     *     | `roundNo` | 쿼리 | 선택(기본 `1`) | int | 조회할 회차 번호. 프로젝트 안에서만 유일하며 1 미만이면 400 |
+     *
+     *     ## 응답 — 최상위
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     |---|---|---|
+     *     | `projectId` | UUID | 조회한 프로젝트 |
+     *     | `projectName` | string | 프로젝트 이름 |
+     *     | `assessmentRoundId` | UUID | 이 회차의 내부 식별자 |
+     *     | `roundNo` | int | 회차 번호(프로젝트 안에서만 유일) |
+     *     | `roundName` | string | 회차 이름 |
+     *     | `totalRoundCount` | int | 이 프로젝트에 속한 전체 회차 수. 화면의 'N차 / M회' 표기에 씁니다 |
+     *     | `submissionDueAt` | timestamp | 제출 마감 시각 |
+     *     | `reportPublishMode` | enum | 리포트 발행 방식. 현재는 마감 후 전 반을 한 번에 발행하는 `ROUND_BATCH`만 존재 |
+     *     | `reportPublished` | boolean | 이 회차 리포트가 발행됐는지 여부. `false`면 화면에 '미발행'을 표시 |
+     *     | `summary` | object | 회차 전체 진행 현황 합계. classes[]를 합산한 값이 아니라 회차 단위로 직접 집계 |
+     *     | `classes[]` | array | 반 행 목록. 반 이름 오름차순 |
+     *     | `conceptMatches[]` | array | 검증 개념별 코드 매칭 현황 |
+     *
+     *     **`summary`** — 회차 전체 합계
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     |---|---|---|
+     *     | `targetTraineeCount` | long | 이번 회차 수행 대상 교육생 수(기수 총원). 제출률의 분모 |
+     *     | `submittedCount` | long | 제출을 마친 교육생 수 |
+     *     | `analysisTargetCount` | long | 분석 대상 교육생 수. `submittedCount`와 값이 같습니다 — 단계별 분모를 필드 이름으로도 드러내려고 따로 둡니다 |
+     *     | `analysisSucceededCount` | long | 분석이 성공한 교육생 수 |
+     *     | `assessmentTargetCount` | long | 응시 대상 교육생 수. `analysisSucceededCount`와 값이 같습니다 |
+     *     | `assessedCount` | long | 응시(INITIAL 완료)를 마친 교육생 수 |
+     *
+     *     **`classes[]`** — 반 한 행
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     |---|---|---|
+     *     | `classId` | UUID | 반 식별자 |
+     *     | `className` | string | 반 이름 |
+     *     | `targetTraineeCount` | long | 회차 수행 대상 교육생 수. 제출률의 분모 |
+     *     | `submittedCount` | long | 소속 팀이 제출을 마친 교육생 수 |
+     *     | `analysisSucceededCount` | long | 분석이 성공한 교육생 수. 응시율의 분모이며 PARTIAL은 포함하지 않음 |
+     *     | `analysisFailedCount` | long | 분석이 실패한 교육생 수(**인원** 기준) |
+     *     | `analysisPartialCount` | long | 분석이 부분 성공(PARTIAL)한 교육생 수. 응시율 분모에서 빠짐 |
+     *     | `analysisInProgressCount` | long | 분석이 대기·진행 중인 교육생 수 |
+     *     | `assessedCount` | long | 최초 응시(INITIAL)를 완료한 교육생 수 |
+     *     | `notAttendedCount` | long | 미응시(NOT_ATTENDED) 교육생 수 |
+     *     | `sessionIncompleteCount` | long | 중단(SESSION_INCOMPLETE) 교육생 수 |
+     *     | `invalidAttemptCount` | long | 무효 확정(CONFIRMED_INVALID) 교육생 수. 무효 확인 중(PENDING)은 미포함 |
+     *     | `managerNames[]` | string[] | 활성 담당 매니저 이름 목록. 비어 있으면 화면의 '담당 없음'이며 대시보드 미배정 경보와 같은 조건 |
+     *     | `failedTeams[]` | array | 분석이 실패한 팀 목록(**팀** 기준). 크기가 `analysisFailedCount`(인원 기준)와 다를 수 있습니다 — 한 팀에 팀원이 여럿이면 인원 수가 더 큽니다 |
+     *
+     *     submittedCount = analysisSucceededCount + analysisFailedCount + analysisPartialCount + analysisInProgressCount
+     *
+     *     **`classes[].failedTeams[]`** — 분석 실패 팀 한 건. 팀·회차별 최신 제출과 그 제출에 매인 최신 분석 시도만 봅니다(재시도 반영)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     |---|---|---|
+     *     | `teamId` | UUID | 팀 식별자 |
+     *     | `teamName` | string | 팀 이름 |
+     *     | `representativeUserId` | UUID | 대표자(그 팀·회차의 최신 제출을 실행한 사용자) ID |
+     *     | `representativeName` | string | 대표자 이름 |
+     *     | `failureReason` | string? | `analysis_job.failure_reason` 원문. null일 수 있음 |
+     *
+     *     **`conceptMatches[]`** — 검증 개념별 코드 매칭 한 행. 문제는 팀 공용이라 팀 단위 매칭 판정을 팀원 인원으로 펼쳐 셉니다
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     |---|---|---|
+     *     | `teachesId` | UUID | 검증 개념 식별자 |
+     *     | `conceptName` | string | 검증 개념 이름 |
+     *     | `analysedTraineeCount` | long | 분석에 성공한 교육생 수. 매칭률의 분모 |
+     *     | `matchedTraineeCount` | long | 그 개념의 문제를 받은 교육생 수 |
+     *     | `unmatchedTeamCount` | long | 그 개념이 코드에서 발견되지 않아 전원이 문제를 받지 못한 팀 수 |
+     */
+    get: operations['findProjectClassProgress']
     put?: never
     post?: never
     delete?: never
@@ -2767,6 +3139,102 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v0/managers': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 매니저 목록 조회 | ✅ 사용 가능
+     * @description 운영 관리 `매니저` 탭의 매니저 목록 표를 채운다. 상태 필터·이름 검색·정렬·페이지네이션을
+     *     **모두 서버가 처리**하므로 화면은 파라미터만 넘기면 된다. 조회 범위인 기관은 액세스 토큰에서
+     *     가져온다.
+     *
+     *     ## 요청 (쿼리 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     | --- | --- | --- | --- |
+     *     | `cohortId` | 선택 | UUID | 담당 기수로 좁힌다. 화면 상단 기수 선택기에 대응. 비우면 기관 전체 |
+     *     | `status` | 선택 | enum | `INVITED`(초대 대기) · `ACTIVE`(활성) · `INACTIVE`(정지). 비우면 전체(화면의 `상태 · 전체`) |
+     *     | `query` | 선택 | string | 이름·이메일 부분검색. 비우면 전체 |
+     *     | `sort` | 선택 | enum | `NAME`(이름순, 기본) · `ASSIGNED_TRAINEE_COUNT`(담당 인원순) |
+     *     | `page` | 선택 | int | 0부터 시작. 기본 `0` |
+     *     | `size` | 선택 | int | 페이지당 개수. 기본 `20`, 최대 `100` |
+     *
+     *     ⚠️ **`status`에 `LOCKED`는 쓸 수 없다.** 이 화면이 쓰지 않는 값이라 지정하면 400이다.
+     *
+     *     ## 응답 (200)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `content[]` | array | 매니저 목록. 각 항목 구조는 아래 |
+     *     | `page` | int | 현재 페이지(0부터) |
+     *     | `size` | int | 페이지당 개수 |
+     *     | `totalElements` | long | **필터 적용 후** 전체 건수 |
+     *     | `totalPages` | int | 전체 페이지 수 |
+     *     | `statusCounts` | object | 계정 상태별 인원. 화면 상단 `활성 7 · 초대 대기 1 · 정지 0` |
+     *
+     *     ### statusCounts (object)
+     *
+     *     키는 계정 상태, 값은 인원 수입니다. 예: `{"INVITED": 1, "ACTIVE": 7, "INACTIVE": 0}`
+     *
+     *     | 키 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `INVITED` | long | 초대 대기 인원 |
+     *     | `ACTIVE` | long | 활성 인원 |
+     *     | `INACTIVE` | long | 정지 인원 |
+     *
+     *     ### content[] 각 항목
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `managerId` | UUID | 매니저 사용자 ID |
+     *     | `name` | string? | 이름. 초대만 되고 미활성이면 `null`(화면에서는 `가입 대기`) |
+     *     | `email` | string | 이메일 |
+     *     | `status` | enum | `INVITED` · `ACTIVE` · `INACTIVE` |
+     *     | `cohortId` | UUID? | 담당 기수 ID |
+     *     | `cohortName` | string? | 담당 기수명 |
+     *     | `classroomNames` | string[] | 현재 담당 반 이름 목록. 없으면 `[]`(화면의 `미배정`) |
+     *     | `assignedTraineeCount` | long | 담당 반의 재학(ACTIVE) 교육생 합계. 없으면 `0` |
+     *     | `lastLoginAt` | date-time? | 최근 로그인. 이력이 없으면 `null`(화면에서는 `—`) |
+     *     | `invitedAt` | date-time? | 최초 초대 시각 |
+     *     | `invitedByName` | string? | 초대한 사람 이름 |
+     *
+     *     ⚠️ **`statusCounts`는 상태·검색 필터와 무관한 모집단**이라 `totalElements`와 다르다.
+     *     상태 칩이 자기 자신을 필터링하면 안 되므로 목록 한 페이지로는 만들 수 없다.
+     *     `INVITED`·`ACTIVE`·`INACTIVE` 세 키가 **항상 모두 있고**, 0명인 상태는 `0`으로 온다 —
+     *     키가 빠지는 것과 0명인 것은 다르다.
+     *
+     *     ⚠️ **단 `cohortId`는 필터가 아니라 조회 범위라 `statusCounts`에도 똑같이 걸린다.**
+     *     여기만 기관 전체로 세면 칩 합계가 목록 건수와 어긋난다.
+     *
+     *     💡 **`cohortId`를 넘기면 그 기수를 담당하는 매니저만 나온다.** 판정 기준은
+     *     **그 기수 반에 활성 배정이 있거나, 그 기수를 대상으로 한 매니저 초대가 있는 것**이다.
+     *     초대만 되고 아직 반이 없는 매니저(화면의 `가입 대기 · 미배정`)도 나와야 해서 OR로 본다.
+     *     이때 `classroomNames`·`assignedTraineeCount`도 그 기수 것만 세므로, 과거 기수를 담당했던
+     *     매니저의 이전 반이 현재 기수 화면에 섞이지 않는다.
+     *
+     *     💡 **`cohortId`·`cohortName`은 가장 최근 매니저 초대의 담당 기수다.** 매니저 초대는
+     *     `POST /members/organizations/{organizationId}/manager-invitations`에서 기수를 필수로
+     *     지정하므로 초대 이력이 있는 매니저라면 항상 값이 있다.
+     *
+     *     💡 **`invitedAt`·`invitedByName`은 같은 초대 행에서 읽는다.** 화면 비고가
+     *     `2026-07-24 초대 · 김오퍼레이터`처럼 둘을 한 문장으로 쓰기 때문이다.
+     *
+     *     💡 **다른 역할 목록은 각자의 화면 전용 API를 쓴다** — 오퍼레이터는 SA-02 오퍼레이터 목록,
+     *     교육생은 `GET /cohorts/{cohortId}/trainees`다. 그래서 이 경로에는 역할 파라미터가 없다.
+     */
+    get: operations['findManagers']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v0/consents': {
     parameters: {
       query?: never
@@ -2831,6 +3299,558 @@ export interface paths {
      *     **아직 채워지지 않는 값** — traineeCount는 항상 0, managers는 항상 빈 배열이다(목록 조회와 동일).
      */
     get: operations['findCohort']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v0/cohorts/{cohortId}/analytics/risk-trainees': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 회차별 기수 전체·반별 위험 교육생 비율 조회 | ⚠️ 사용 불가
+     * @description ⚠️ **API 테스트를 위한 더미 데이터 없음** — 이 응답의 원천은 발행된 리포트 스냅샷과
+     *     회차 채점 결과인데 현재 어느 기수에도 그 데이터가 없습니다. 호출하면 200과 함께 빈
+     *     격자만 돌아오므로 **응답 형태를 확인하는 용도로도 쓸 수 없습니다.** 스펙과 구현은
+     *     완성돼 있어 시드가 준비되면 그대로 사용 가능으로 바뀝니다.
+     *
+     *     선택 기수의 **미니프로젝트 회차별**로 기수 전체와 반별 위험 교육생 비율을 계산합니다.
+     *
+     *     ## 요청 (경로 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     | --- | --- | --- | --- |
+     *     | `cohortId` | 필수 | UUID | 분석할 기수 |
+     *
+     *     ## 요청 (쿼리 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     | --- | --- | --- | --- |
+     *     | `projectId` | 선택 | UUID | 한 미니프로젝트로 좁힌다. 비우면 기수의 모든 미니프로젝트 |
+     *     | `classroomId` | 선택 | UUID[] | 조회할 반 목록. 비우면 기수의 모든 반 |
+     *     | `fromRoundNo` | 선택 | int | 시작 회차. 비우면 1차부터. 최소 `1` |
+     *     | `toRoundNo` | 선택 | int | 종료 회차. 비우면 마지막 회차까지. 최소 `1` |
+     *     | `level` | 선택 | enum | `CLASS`(반, 기본) · `TEAM`(팀) |
+     *     | `sort` | 선택 | enum | `RECENT_ROUND_WORST`(기본) · `WORSE_ROUND_COUNT` · `EXCLUSION_COUNT` · `NAME` |
+     *
+     *     ⚠️ **`level=TEAM`이면 `projectId`와 `classroomId` 한 건이 모두 필요합니다.** 팀 번호는 반
+     *     안에서만 유일하고 팀은 프로젝트에 종속이라 둘 다 좁혀야 행이 성립합니다. 빠지면 400입니다.
+     *
+     *     ## 응답 (200)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `cohortId` | UUID | 분석한 기수 |
+     *     | `projectCategory` | string | 프로젝트 분류. 미니프로젝트만 지원 |
+     *     | `projectId` | UUID? | 좁힌 프로젝트. 지정하지 않았으면 `null` |
+     *     | `totalRegisteredRoundCount` | int | **회차 범위 필터 적용 전** 등록 회차 수. `rounds` 길이와 다를 수 있다 |
+     *     | `appliedSort` | enum | 실제 적용된 정렬 |
+     *     | `level` | enum | 실제 적용된 행 계층 |
+     *     | `rounds[]` | array | 격자의 **열**(회차) 정의 |
+     *     | `cohortSummary` | object | 기수 전체 **행** |
+     *     | `classes[]` | array | 반 **행** 목록 |
+     *     | `teams[]` | array | 팀 **행** 목록. `level=CLASS`이면 `[]` |
+     *
+     *     ### rounds[] 각 항목 — 격자의 열
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `assessmentRoundId` | UUID | 회차 ID |
+     *     | `roundNo` | int | 회차 번호. **프로젝트 안에서만 유일** |
+     *     | `roundName` | string | 회차 이름 |
+     *     | `projectId` | UUID | 회차가 속한 프로젝트 ID |
+     *     | `projectName` | string | 프로젝트 이름. 화면의 `미프 N차` 기준 |
+     *     | `aggregationStatus` | enum | `NOT_STARTED`(시작 전) · `NOT_AGGREGATED`(리포트 미발행) · `AGGREGATED`(발행 완료) |
+     *
+     *     ### cohortSummary (object) — 기수 전체 행
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `traineeCount` | long | 중도 이탈하지 않은 현재 기수 교육생 수 |
+     *     | `withdrawnCount` | long | 중도 이탈한 교육생 수 |
+     *     | `exclusionRollup` | object | **최근 발행 회차 기준** 미집계 합계. 구조는 **ExclusionBreakdown** 참조 |
+     *     | `cells[]` | array | 회차별 칸. `rounds`와 **같은 순서·길이** |
+     *
+     *     ### classes[] 각 항목 — 반 행
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `classId` | UUID | 반 ID |
+     *     | `className` | string | 반 이름 |
+     *     | `traineeCount` | long | 중도 이탈하지 않은 현재 반 교육생 수 |
+     *     | `withdrawnCount` | long | 중도 이탈한 교육생 수 |
+     *     | `exclusionRollup` | object | 최근 발행 회차 기준 미집계 합계. **ExclusionBreakdown** 참조 |
+     *     | `managerNames[]` | string[] | 활성 담당 매니저 이름. 비면 화면의 `담당 없음` |
+     *     | `cells[]` | array | 회차별 칸. `rounds`와 같은 순서·길이 |
+     *
+     *     ### teams[] 각 항목 — 팀 행
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `teamId` | UUID | 팀 ID |
+     *     | `teamNumber` | string | 반 안에서의 팀 번호 |
+     *     | `teamName` | string | 팀 이름 |
+     *     | `classId` | UUID | 이 팀이 속한 반 ID |
+     *     | `className` | string | 이 팀이 속한 반 이름 |
+     *     | `memberCount` | long | 현재 팀에 속한 인원 |
+     *     | `exclusionRollup` | object | 최근 발행 회차 기준 미집계 합계. **ExclusionBreakdown** 참조 |
+     *     | `cells[]` | array | 회차별 칸. `rounds`와 같은 순서·길이 |
+     *
+     *     ### cells[] 각 항목 — 격자 한 칸
+     *
+     *     `cohortSummary.cells[]` · `classes[].cells[]` · `teams[].cells[]`가 공통으로 쓰는 구조입니다.
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `assessmentRoundId` | UUID | 이 칸이 속한 회차. `rounds[].assessmentRoundId`와 짝 |
+     *     | `roundNo` | int | 회차 번호 |
+     *     | `aggregationStatus` | enum | `NOT_STARTED` · `NOT_AGGREGATED` · `AGGREGATED` |
+     *     | `eligibleCount` | long | 미집계를 제외한 **분모** |
+     *     | `riskCount` | long | 위험 유형을 하나라도 가진 고유 교육생 수(**분자**) |
+     *     | `riskRate` | decimal? | `riskCount / eligibleCount`. 집계 전이거나 분모가 0이면 `null` |
+     *     | `comparisonToCohort` | enum? | `BETTER`(낮음) · `SAME` · `WORSE`(높음). 기준이 없으면 `null` |
+     *     | `exclusion` | object | 이 칸의 미집계 내역. **ExclusionBreakdown** 참조 |
+     *
+     *     ### ExclusionBreakdown (object) — 미집계 내역
+     *
+     *     `cells[].exclusion`과 각 행의 `exclusionRollup`이 공통으로 쓰는 구조입니다.
+     *     세 값을 `eligibleCount`와 합치면 회차의 전체 수행 대상자가 됩니다.
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `notAttendedCount` | long | 미응시(`terminal_reason_code=NOT_ATTENDED`) |
+     *     | `sessionIncompleteCount` | long | 중단(`terminal_reason_code=SESSION_INCOMPLETE`) |
+     *     | `invalidAttemptCount` | long | 무효 응시(`validity_review_status=CONFIRMED_INVALID`) |
+     *
+     *     ### 분모 (`eligibleCount`)
+     *
+     *     회차의 `INITIAL` 수행 대상 교육생에서 **ExclusionBreakdown의 3종**을 뺀 인원입니다.
+     *
+     *     ⚠️ **무효 확인 중(`validity_review_status=PENDING`)은 아직 확정되지 않아 분모에 남습니다.**
+     *     확정(`CONFIRMED_INVALID`)된 것만 빠집니다.
+     *
+     *     ### 분자 (`riskCount`)
+     *
+     *     위험 유형(단계 하락·지속 저점) 중 **하나 이상이 활성으로 일치한 고유 교육생 수**이며,
+     *     한 교육생이 여러 유형에 해당해도 1명으로 셉니다.
+     *
+     *     ⚠️ **`INVALID_ATTEMPT`는 분자에 넣지 않습니다.** 해당 교육생이 무효 응시로 분모에서 이미
+     *     빠졌기 때문입니다.
+     *
+     *     ⚠️ **집계 상태는 회차 생명주기가 아니라 발행된 리포트 유무로 판정합니다.** 발행본이 없으면
+     *     `riskRate`는 0이 아니라 `null`이고 `aggregationStatus`로 원인을 구분합니다.
+     *
+     *     ⚠️ **`roundNo`는 `(project_id, round_no)` UNIQUE라 프로젝트마다 1부터 다시 시작합니다.**
+     *     기수에 미니프로젝트가 여러 건이면 같은 회차 번호가 여러 열에 나타나므로, 한 프로젝트의
+     *     흐름만 보려면 `projectId`로 좁혀야 합니다.
+     *
+     *     💡 **`comparisonToCohort`는 서버가 계산해 내려주므로 클라이언트가 다시 계산할 필요가 없습니다.**
+     *     반 행은 같은 회차의 **기수 전체** 비율과, 팀 행은 **소속 반(`classes[0]`) 전체** 비율과 견준
+     *     방향이며 임계 구간 없이 단순 비교합니다 — 팀 번호는 반 안에서만 유일해 팀끼리는 소속 반
+     *     안에서만 비교가 성립하기 때문입니다. 기수 전체 행이거나 두 비율 중 하나라도 없으면 `null`입니다.
+     *
+     *     💡 **`classes[]`에 담기는 범위는 `level`에 따라 다릅니다.** `level=CLASS`이면 기수의 모든 반이,
+     *     `level=TEAM`이면 **선택된 반 1건만** 담깁니다 — 화면 상단 `반 전체` 요약 행이자
+     *     `teams[].cells[].comparisonToCohort`의 비교 기준으로 쓰입니다.
+     *
+     *     💡 **팀당 인원이 4~5명이라 팀 행의 비율은 0%·25%·50% 같은 거친 값이 됩니다.**
+     *
+     *     💡 **빅프로젝트는 위험 판정식이 달라 이 격자에 포함하지 않습니다.**
+     */
+    get: operations['findCohortRiskTraineeRates']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v0/cohorts/{cohortId}/analytics/group-gaps': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 집단 미달 목록 조회 | ⚠️ 사용 불가
+     * @description ⚠️ **API 테스트를 위한 더미 데이터 없음** — 이 응답의 원천은 발행된 리포트 스냅샷과
+     *     회차 채점 결과인데 현재 어느 기수에도 그 데이터가 없습니다. 호출하면 200과 함께 빈
+     *     격자만 돌아오므로 **응답 형태를 확인하는 용도로도 쓸 수 없습니다.** 스펙과 구현은
+     *     완성돼 있어 시드가 준비되면 그대로 사용 가능으로 바뀝니다.
+     *
+     *     기수 전체에서 **반 인원의 절반을 넘는 인원이 한 검증 개념에서 2단 이하**인 조합을 조회합니다.
+     *     개인 위험 사유가 아니라 반 문제로 분류하며, 시스템은 표시까지만 하고 이후 처리는 기관 판단입니다.
+     *
+     *     ## 요청 (경로 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     | --- | --- | --- | --- |
+     *     | `cohortId` | 필수 | UUID | 분석할 기수 |
+     *
+     *     쿼리 파라미터는 없습니다.
+     *
+     *     ## 응답 (200)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `cohortId` | UUID | 분석한 기수 |
+     *     | `underperformanceThresholdRatio` | decimal | 미달 판정 비율 임계값(반 인원 대비) |
+     *     | `lowLevelMaxStage` | int | 저단계로 보는 최대 도달 단계(2단) |
+     *     | `evaluatedClassConceptCount` | int | 평가된 반×개념 조합 수 |
+     *     | `emptyReasonCode` | enum? | `gaps`가 비었을 때의 사유. 미달이 실제 0건이면 `null` |
+     *     | `gaps[]` | array | 미달 조합 목록. 각 항목 구조는 아래 |
+     *
+     *     ### gaps[] 각 항목
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `assessmentRoundId` | UUID | 회차 ID |
+     *     | `roundNo` | int | 회차 번호 |
+     *     | `roundName` | string | 회차명 |
+     *     | `projectId` | UUID | 프로젝트 ID |
+     *     | `projectName` | string | 프로젝트명 |
+     *     | `classId` | UUID | 반 ID |
+     *     | `className` | string | 반 이름 |
+     *     | `teachesId` | UUID | 검증 개념 ID |
+     *     | `conceptName` | string | 검증 개념명 |
+     *     | `lowLevelCount` | long | 2단 이하 인원(분자) |
+     *     | `classMemberCount` | long | 반 인원 전체(분모) |
+     *     | `lowLevelRate` | decimal | `lowLevelCount / classMemberCount` |
+     *
+     *     ⚠️ **분자는 실제 응시를 마친 인원 중 2단 이하만 셉니다.** 미응시·무효 확정은 0단으로
+     *     치환하지 않으므로 분자에서 빠지고 **분모(반 인원 전체)에만 남습니다.**
+     *
+     *     ⚠️ **목록이 비었을 때 `emptyReasonCode`로 두 경우를 구분합니다** — 평가 자체가 없는 경우와
+     *     미달이 실제로 0건인 경우는 다릅니다.
+     *
+     *     💡 **발행된 리포트에 의존하지 않고 원천에서 실시간 집계하므로 발행 전에도 값이 나옵니다.**
+     */
+    get: operations['findCohortGroupGaps']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v0/cohorts/{cohortId}/analytics/cohort-comparison': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 두 기수의 검증 개념별 평균 도달 단계 비교 | ⚠️ 사용 불가
+     * @description ⚠️ **API 테스트를 위한 더미 데이터 없음** — 이 응답의 원천은 발행된 리포트 스냅샷과
+     *     회차 채점 결과인데 현재 어느 기수에도 그 데이터가 없습니다. 호출하면 200과 함께 빈
+     *     격자만 돌아오므로 **응답 형태를 확인하는 용도로도 쓸 수 없습니다.** 스펙과 구현은
+     *     완성돼 있어 시드가 준비되면 그대로 사용 가능으로 바뀝니다.
+     *
+     *     같은 기관의 두 기수를 **검증 개념(`teaches_id`) 단위**로 맞대어 평균 도달 단계를 비교합니다.
+     *     검증 개념이 기수마다 다르면 같은 프로젝트라도 비교할 수 없으므로 개념 단위로만 맞춥니다.
+     *
+     *     ## 요청 (경로 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     | --- | --- | --- | --- |
+     *     | `cohortId` | 필수 | UUID | 이번 기수 |
+     *
+     *     ## 요청 (쿼리 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     | --- | --- | --- | --- |
+     *     | `baselineCohortId` | 선택 | UUID | 비교할 지난 기수. 비우면 **후보 목록만** 반환 |
+     *     | `sort` | 선택 | enum | `WORSENED`(나빠진 순, 기본) · `IMPROVED`(좋아진 순) · `CONCEPT`(검증 개념 순) |
+     *     | `sameCurriculumOnly` | 선택 | boolean | 같은 교안 버전을 쓴 개념만. 기본 `false` |
+     *
+     *     💡 **`sameCurriculumOnly=true`이면** 교안이 바뀐 개념을 걸러냅니다 — 평균 차이가 교육생
+     *     변화인지 교안 변화인지 갈라 볼 수 없기 때문입니다. 한쪽 기수에 없던 개념도 함께 제외됩니다.
+     *
+     *     ## 응답 (200)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `targetCohort` | object | 이번 기수 |
+     *     | `baselineCohort` | object? | 지난 기수. 미지정이면 `null` |
+     *     | `availableBaselineCohorts[]` | array | 드롭다운 후보 목록 |
+     *     | `emptyStateCode` | enum? | `concepts`가 비었을 때의 사유 |
+     *     | `levelScale` | object | 색 눈금 정의 |
+     *     | `changeThreshold` | object | 변화 판정 임계값 |
+     *     | `appliedSort` | enum | 실제 적용된 정렬 |
+     *     | `sameCurriculumOnly` | boolean | 실제 적용 여부 |
+     *     | `concepts[]` | array | 개념별 비교 행 |
+     *
+     *     ### targetCohort · baselineCohort (object)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `cohortId` | UUID | 기수 ID |
+     *     | `cohortName` | string | 기수명 |
+     *
+     *     ### availableBaselineCohorts[] 각 항목
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `cohortId` | UUID | 후보 기수 ID |
+     *     | `cohortName` | string | 후보 기수명 |
+     *     | `comparable` | boolean | 비교 가능 여부. `false`면 드롭다운에서 비활성 |
+     *
+     *     ### levelScale (object)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `min` | int | 최소 단계(1) |
+     *     | `max` | int | 최대 단계(4) |
+     *     | `bandThresholds[]` | decimal[] | 밴드 경계값. 아래 **색 눈금** 표 참조 |
+     *
+     *     ### changeThreshold (object)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `worsened` | decimal | 나빠짐 판정 임계값(-0.3) |
+     *     | `improved` | decimal | 좋아짐 판정 임계값(+0.3) |
+     *
+     *     ### concepts[] 각 항목
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `teachesId` | UUID | 검증 개념 ID |
+     *     | `conceptName` | string | 검증 개념명 |
+     *     | `source` | object | 개념이 나온 교안 위치 |
+     *     | `target` | object | 이번 기수 값. **CohortConceptValue** 참조 |
+     *     | `baseline` | object | 지난 기수 값. **CohortConceptValue** 참조 |
+     *     | `change` | object | 지난 기수 대비 변화 |
+     *     | `curriculumVersion` | object | 교안 버전 변화 |
+     *
+     *     #### concepts[].source (object)
+     *
+     *     이번 기수 기준이며, 이번 기수에 없으면 지난 기수 기준입니다.
+     *     **개념이 교안에 매핑되지 않았으면 아래 값이 모두 `null`입니다.**
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `curriculumTitle` | string? | 교안 이름 |
+     *     | `sectionSequenceNo` | int? | 교안 장 순번. 화면의 `4장` |
+     *     | `sectionTitle` | string? | 교안 장 제목 |
+     *     | `pageStart` | int? | 개념이 시작되는 쪽수 |
+     *     | `pageEnd` | int? | 개념이 끝나는 쪽수 |
+     *     | `roundNo` | int? | 개념을 검증한 회차 번호. 여러 회차면 **가장 최근** |
+     *     | `roundLabel` | string? | 회차 이름. 화면의 `미프 3차` |
+     *
+     *     #### CohortConceptValue (object) — `target` · `baseline` 공통
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `averageReachedLevel` | decimal? | 평균 도달 단계. 개념이 없거나 분모가 0이면 `null` |
+     *     | `levelBand` | int? | 평균이 속한 색 밴드(1~4). 값이 없으면 `null` |
+     *     | `participantCount` | long | 평균의 분모가 된 인원 |
+     *     | `missingCount` | long | 집계에서 빠진 인원 |
+     *     | `presence` | enum | `PRESENT` · `ABSENT_IN_COHORT`(그 기수에 없던 개념) · `MERGED`(다른 개념으로 병합) |
+     *     | `aggregationStatus` | string? | 발행 스냅샷의 집계 상태. 개념이 없으면 `null` |
+     *
+     *     #### concepts[].change (object)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `direction` | enum | `WORSE` · `SIMILAR` · `BETTER` · `NOT_COMPARABLE` |
+     *     | `delta` | decimal? | 이번 기수 평균 − 지난 기수 평균. 비교 불가면 `null` |
+     *     | `notComparableReasonCode` | enum? | 비교할 수 없는 이유. 비교 가능하면 `null` |
+     *
+     *     💡 **`delta`는 화면에 보이는 두 평균을 그대로 뺀 값이라 표시값과 항상 일치합니다.**
+     *
+     *     #### concepts[].curriculumVersion (object)
+     *
+     *     화면의 `v1 → v2` 또는 `v3 · 그대로`입니다.
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `baselineVersionNo` | int? | 지난 기수에서 쓴 교안 버전 |
+     *     | `targetVersionNo` | int? | 이번 기수에서 쓴 교안 버전 |
+     *     | `versionChanged` | boolean | 두 버전이 모두 있고 서로 다르면 `true` |
+     *
+     *     ### 평균 산식
+     *
+     *     발행된 수업 진단 리포트의 **활성 스냅샷**에서 개념별 도달 단계 분포를 읽어
+     *     `Σ(도달 단계 × 인원) / Σ인원`으로 계산합니다.
+     *
+     *     ⚠️ **응시 인원이 없으면 0이 아니라 `null`입니다.** 낮은 평균은 측정 결과이고,
+     *     `null`은 측정 자체가 없다는 뜻이라 화면에서 구분해 그려야 합니다.
+     *
+     *     ### 색 눈금 (`levelBand`)
+     *
+     *     회차별 위험 비율과 달리 **절대 눈금**이며 목업 색상표와 같은 값입니다. 평균은 연속값이므로
+     *     정수 경계 미만을 **버림(floor)**해 밴드를 배정합니다.
+     *
+     *     | 밴드 | 구간 |
+     *     | --- | --- |
+     *     | 1단 | 0 이상 2 미만 |
+     *     | 2단 | 2 이상 3 미만 |
+     *     | 3단 | 3 이상 4 미만 |
+     *     | 4단 | 4 |
+     *
+     *     💡 **서버가 `levelBand`와 밴드 경계를 함께 내려주므로 클라이언트가 다시 계산할 필요가 없습니다.**
+     *
+     *     ### 변화 (`change`)
+     *
+     *     이번 기수 평균에서 지난 기수 평균을 뺀 값이며, **-0.3단 이하가 나빠짐 · +0.3단 이상이 좋아짐**입니다.
+     *
+     *     ⚠️ **다음은 뺄셈이 성립하지 않아 `NOT_COMPARABLE`로 내려갑니다.**
+     *     한쪽 기수에 없는 개념, 다른 개념으로 병합된 개념(`teaches.status=MERGED`),
+     *     반복 개념 집계 산식이 확정되지 않은 개념.
+     *
+     *     💡 **`baselineCohortId`를 지정하지 않으면** 드롭다운 후보 목록(`availableBaselineCohorts`)만
+     *     채워 돌려주고 `concepts`는 비어 있습니다.
+     */
+    get: operations['findCohortComparison']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v0/cohorts/{cohortId}/analytics/actions': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 조치 필요 경보 조회 | ⚠️ 사용 불가
+     * @description ⚠️ **API 테스트를 위한 더미 데이터 없음** — 이 응답의 원천은 발행된 리포트 스냅샷과
+     *     회차 채점 결과인데 현재 어느 기수에도 그 데이터가 없습니다. 호출하면 200과 함께 빈
+     *     격자만 돌아오므로 **응답 형태를 확인하는 용도로도 쓸 수 없습니다.** 스펙과 구현은
+     *     완성돼 있어 시드가 준비되면 그대로 사용 가능으로 바뀝니다.
+     *
+     *     오퍼레이터 대시보드의 `조치 필요` 네 경보를 한 번에 조회합니다. 유형별로 **가장 나쁜 한 건씩**
+     *     올립니다.
+     *
+     *     ## 요청 (경로 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     | --- | --- | --- | --- |
+     *     | `cohortId` | 필수 | UUID | 분석할 기수 |
+     *
+     *     쿼리 파라미터는 없습니다.
+     *
+     *     ## 응답 (200)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `cohortId` | UUID | 분석한 기수. 경로 변수를 그대로 반영 |
+     *     | `actionCount` | int | `null`이 아닌 경보 수(0~4). 화면의 `조치 필요 · N건` |
+     *     | `managerUnassigned` | object? | 담당 매니저 미배정. 없으면 `null` |
+     *     | `conceptGap` | object? | 검증 개념 공백. 없으면 `null` |
+     *     | `groupGap` | object? | 집단 미달. 없으면 `null` |
+     *     | `interviewBacklog` | object? | 면담 적체. 없으면 `null` |
+     *
+     *     ### managerUnassigned (object)
+     *
+     *     활성 담당 매니저가 없는 반. **상시 경보라 회차 맥락이 없습니다.**
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `classes[]` | array | 매니저가 없는 반 목록. 반 이름 오름차순 |
+     *     | `affectedTraineeCount` | long | 그 반들에 속한 재학 교육생 합계 |
+     *
+     *     #### managerUnassigned.classes[] 각 항목
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `classId` | UUID | 반 ID |
+     *     | `className` | string | 반 이름 |
+     *     | `traineeCount` | long | 이 반의 재학(중도 이탈하지 않은) 교육생 수 |
+     *
+     *     ### conceptGap (object)
+     *
+     *     계획한 개념이 팀 코드에 없어 문제를 만들지 못한 경우.
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `round` | object | 경보가 발생한 회차. 구조는 **RoundRef** 참조 |
+     *     | `teachesId` | UUID | 검증 개념 ID(`teaches.teaches_id`) |
+     *     | `conceptName` | string | 검증 개념 이름 |
+     *     | `gapTeamCount` | long | 그 개념의 코드 근거를 찾지 못한 팀 수 |
+     *     | `participatingTeamCount` | long | 회차에서 이해도 검증 세션이 발생한 팀 수(분모) |
+     *
+     *     ### groupGap (object)
+     *
+     *     반 인원의 절반을 넘는 인원이 한 개념에서 2단 이하인 경우.
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `round` | object | 경보가 발생한 회차. 구조는 **RoundRef** 참조 |
+     *     | `classId` | UUID | 미달이 발생한 반 ID |
+     *     | `className` | string | 미달이 발생한 반 이름 |
+     *     | `teachesId` | UUID | 검증 개념 ID |
+     *     | `conceptName` | string | 검증 개념 이름 |
+     *     | `lowLevelCount` | long | 2단 이하 인원(분자) |
+     *     | `classMemberCount` | long | 반 인원 전체(분모) |
+     *
+     *     ### interviewBacklog (object)
+     *
+     *     예정일이 지났는데 아직 시작되지 않은 면담.
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `round` | object | 경보가 발생한 회차. 구조는 **RoundRef** 참조 |
+     *     | `classId` | UUID | 면담이 적체된 반 ID |
+     *     | `className` | string | 면담이 적체된 반 이름 |
+     *     | `maxDelayDays` | int | 가장 오래 밀린 면담의 지연일 |
+     *     | `pendingInterviewCount` | long | 종결되지 않은 면담 인원. **진행 중을 포함** |
+     *     | `notCreatedCount` | long | 면담이 아직 생성되지 않아 지연일을 계산할 수 없는 후보 수 |
+     *     | `unplannedCount` | long | 예정일이 잡히지 않아 지연일을 계산할 수 없는 면담 수 |
+     *
+     *     ### RoundRef (object)
+     *
+     *     `conceptGap.round` · `groupGap.round` · `interviewBacklog.round`가 공통으로 쓰는 구조입니다.
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `assessmentRoundId` | UUID | 회차 ID(`ProjectAssessmentRound.assessment_round_id`) |
+     *     | `roundNo` | int | 회차 번호. **프로젝트 안에서만 유일** |
+     *     | `roundName` | string | 회차 이름 |
+     *     | `projectId` | UUID | 회차가 속한 프로젝트 ID |
+     *     | `projectName` | string | 프로젝트 이름. 화면의 `미프 3차` |
+     *
+     *     ⚠️ **`maxDelayDays`와 `pendingInterviewCount`는 모집단이 다릅니다.** 지연일은
+     *     `Interview.planned_at`을 기산점으로 아직 시작되지 않은(`PENDING`) 건만 세지만,
+     *     `pendingInterviewCount`는 진행 중을 포함한 미종결 전체입니다.
+     *
+     *     ⚠️ **`notCreatedCount`·`unplannedCount`는 경보 판정에서 빠집니다.** 지연일을 계산할 수 없어
+     *     제외되므로 화면에 따로 표시해야 놓치지 않습니다.
+     *
+     *     💡 **`conceptGap` 판정은 계산이 아니라 읽기입니다.**
+     *     `AssessmentProblem.generation_status='NOT_GENERATED'`이면 사유가
+     *     `NO_MATCHING_CODE_EVIDENCE` 하나로 고정돼 있습니다.
+     *
+     *     💡 **`groupGap`의 분자는 실제 응시를 마친 인원 중 2단 이하만 셉니다.** 미응시·무효 확정은
+     *     0단으로 치환하지 않으므로 분자에서 빠지고 분모(반 인원 전체)에만 남습니다.
+     *
+     *     ⚠️ **경보가 없으면 그 필드는 `null`입니다.** `actionCount`는 `null`이 아닌 경보의 개수이므로,
+     *     화면은 네 필드를 각각 `null` 검사해서 그려야 합니다.
+     *
+     *     💡 **최댓값 한 건만 고르므로 별도 임계값 정책이 없습니다.**
+     *
+     *     💡 **경보는 파생 조회이며 해소·무시 상태를 저장하지 않습니다.** 원인이 사라지면 경보도
+     *     사라지므로 조치 완료를 기록하는 쓰기 API가 없습니다.
+     *
+     *     💡 **회차 범위는 미니프로젝트로 좁히되 면담 적체만 빅프로젝트 회차도 포함합니다.**
+     */
+    get: operations['findCohortActionsRequired']
     put?: never
     post?: never
     delete?: never
@@ -4056,6 +5076,89 @@ export interface components {
       reason?: string | null
       mutableStatus?: boolean
     }
+    /**
+     * @description 교육생 계정 상태 변경 대상. ACTIVE(활성화) · INACTIVE(비활성화)
+     * @enum {string}
+     */
+    TraineeStatusUpdate: 'ACTIVE' | 'INACTIVE'
+    /**
+     * @description 교육생 계정 상태 변경 요청.
+     *
+     *     `status`는 **ACTIVE(활성화) 또는 INACTIVE(비활성화)만** 지정할 수 있다. INVITED·LOCKED는 초대·인증
+     *     흐름이 설정하는 값이라 이 API의 대상이 아니며, 타입 자체가 두 값만 받으므로 그 외 값은 400이다.
+     */
+    UpdateTraineeStatusRequest: {
+      /**
+       * @description 변경할 계정 상태
+       * @example INACTIVE
+       */
+      status: components['schemas']['TraineeStatusUpdate']
+      /**
+       * @description 변경 사유(감사 로그용, 선택)
+       * @example 중도 이탈
+       */
+      reason?: string | null
+    }
+    /** @description 교육생 명단 한 행 */
+    TraineeRosterEntry: {
+      /**
+       * Format: uuid
+       * @description 교육생 사용자 ID. 상태 변경 시 이 값을 경로에 쓴다
+       */
+      traineeId: string
+      name: string
+      email: string
+      /** @description 계정 상태. INVITED(초대 대기)는 아직 활성화 전이라 상태를 직접 바꿀 수 없다 */
+      status: components['schemas']['AccountStatus']
+      /**
+       * Format: uuid
+       * @description 현재 소속 반 ID. 반 배정이 없으면 null
+       */
+      classroomId: string | null
+      /** @description 현재 소속 반 이름. 반 배정이 없으면 null */
+      className: string | null
+      /**
+       * Format: date-time
+       * @description 기수 등록일
+       */
+      joinedAt: string
+      /**
+       * Format: date-time
+       * @description 중도 이탈일. 이탈하지 않았으면 null
+       */
+      leftAt: string | null
+      /**
+       * @description 계정 비활성화 사유 코드입니다. RESIGNED(퇴사) · ADMIN_SUSPENDED(운영자 조치) ·
+       *     CONTRACT_ENDED(계약 종료) · SECURITY_ACTION(보안 조치) · OTHER(기타).
+       *     계정이 INACTIVE일 때만 값이 있으며 그때는 **항상 채워져 있습니다** —
+       *     ck_app_user_status_3이 INACTIVE인 행에 이 값을 NOT NULL로 강제하기 때문입니다.
+       * @example ADMIN_SUSPENDED
+       */
+      inactivatedReasonCode: string | null
+      /**
+       * @description 비활성화 상세 사유이며 상태 변경 요청의 reason이 그대로 들어갑니다.
+       *     사유 코드와 달리 **INACTIVE여도 null일 수 있습니다**(요청에서 생략 가능).
+       * @example 중도 이탈 처리
+       */
+      inactivatedReason: string | null
+      /**
+       * Format: uuid
+       * @description 계정을 비활성화한 사용자 ID이며 계정이 INACTIVE일 때만 값이 있습니다.
+       *     ck_app_user_status_3이 INACTIVE인 행에 이 값을 NOT NULL로 강제하므로 그때는 항상 채워집니다.
+       */
+      inactivatedById: string | null
+      /**
+       * @description 계정을 비활성화한 사용자의 이름이며 화면에 그대로 표시하는 값입니다.
+       *     `inactivatedById`가 가리키는 계정에서 읽어 오고, 활성이면 null입니다.
+       * @example 김오퍼레이터
+       */
+      inactivatedByName: string | null
+      /**
+       * Format: date-time
+       * @description 계정이 비활성화된 시각. 활성이면 null
+       */
+      inactivatedAt: string | null
+    }
     /** @description 기수 종료 요청 */
     EndCohortRequest: {
       /**
@@ -4159,6 +5262,56 @@ export interface components {
       reportsById: {
         [key: string]: components['schemas']['RoundReportResponse']
       }
+    }
+    Item: {
+      /**
+       * Format: uuid
+       * @description 리포트 식별자. PUT /reports/{reportId}/disclosure에 그대로 쓴다
+       */
+      reportId?: string
+      /**
+       * Format: uuid
+       * @description 회차 식별자. 리포트 id가 아니다
+       */
+      assessmentRoundId?: string
+      /** @description 회차 이름(예: 미프 3차). 회차 행이 없으면 키가 빠진다 */
+      roundName?: string | null
+      /** Format: int32 */
+      roundNo?: number
+      /** Format: uuid */
+      traineeUserId?: string
+      traineeName?: string
+      /** Format: uuid */
+      classId?: string
+      className?: string
+      /**
+       * Format: date-time
+       * @description 발행 시각. 아직 발행 전이면 키가 빠진다
+       */
+      publishedAt?: string | null
+      /**
+       * @description 공개 상태 판별자
+       * @example NOT_CONFIGURED
+       * @enum {string}
+       */
+      releaseStatus?: 'NOT_CONFIGURED' | 'WITHHELD' | 'RELEASED'
+      /**
+       * @description 공개 범위. NOT_CONFIGURED이면 키가 빠진다
+       * @enum {string|null}
+       */
+      scope?: 'PRIVATE' | 'SUMMARY' | 'FULL' | null
+      /**
+       * Format: date-time
+       * @description 공개 처리 시각. RELEASED에서만 있다
+       */
+      releasedAt?: string | null
+      /** @description 교육생이 지금 본문을 읽을 수 있는가 */
+      bodyVisible?: boolean
+    }
+    /** @description 매니저가 담당하는 반의 리포트 목록 */
+    ManagedReportListResponse: {
+      /** @description 담당 반 교육생의 개인 리포트. 담당이 없거나 필터가 좁으면 빈 배열 */
+      reports: components['schemas']['Item'][]
     }
     ClassRiskRate: {
       className: string
@@ -4266,6 +5419,233 @@ export interface components {
       /** Format: int32 */
       miniTopCount: number
       miniTopRounds: number[]
+    }
+    /**
+     * @description 반 한 행.
+     *
+     *     분석 상태는 네 갈래를 모두 내려줍니다. PARTIAL을 분석 완료로 세지 않기로 했으므로
+     *     완료·실패만으로는 제출 인원과 등식이 성립하지 않습니다. 네 값을 모두 보면
+     *     어느 열에도 잡히지 않고 사라지는 인원이 없습니다.
+     *
+     *     submittedCount = analysisSucceededCount + analysisFailedCount
+     *                    + analysisPartialCount + analysisInProgressCount
+     */
+    ClassProgress: {
+      /** Format: uuid */
+      classId: string
+      className: string
+      /**
+       * Format: int64
+       * @description 회차 수행 대상 교육생 수이며 제출률의 분모입니다.
+       * @example 25
+       */
+      targetTraineeCount: number
+      /**
+       * Format: int64
+       * @description 소속 팀이 제출을 마친 교육생 수
+       * @example 24
+       */
+      submittedCount: number
+      /**
+       * Format: int64
+       * @description 분석이 성공한 교육생 수이며 응시율의 분모입니다. PARTIAL은 포함하지 않습니다.
+       * @example 23
+       */
+      analysisSucceededCount: number
+      /**
+       * Format: int64
+       * @description 분석이 실패한 교육생 수
+       * @example 1
+       */
+      analysisFailedCount: number
+      /**
+       * Format: int64
+       * @description 분석이 부분 성공(PARTIAL)한 교육생 수입니다.
+       *     분석 완료로 세지 않으므로 응시율 분모에서 빠집니다. 이 값이 0이 아닌데
+       *     응시율이 100%를 넘으면 그 인원이 응시를 마쳤다는 뜻입니다.
+       * @example 0
+       */
+      analysisPartialCount: number
+      /**
+       * Format: int64
+       * @description 분석이 대기·진행 중인 교육생 수
+       * @example 0
+       */
+      analysisInProgressCount: number
+      /**
+       * Format: int64
+       * @description 최초 응시(INITIAL)를 완료한 교육생 수
+       * @example 20
+       */
+      assessedCount: number
+      /**
+       * Format: int64
+       * @description 미응시(NOT_ATTENDED) 교육생 수
+       */
+      notAttendedCount: number
+      /**
+       * Format: int64
+       * @description 중단(SESSION_INCOMPLETE) 교육생 수
+       */
+      sessionIncompleteCount: number
+      /**
+       * Format: int64
+       * @description 무효 확정(CONFIRMED_INVALID) 교육생 수이며 무효 확인 중은 세지 않습니다.
+       */
+      invalidAttemptCount: number
+      /**
+       * @description 활성 담당 매니저 이름 목록입니다. 한 반에 여러 명이 배정될 수 있습니다.
+       *     비어 있으면 화면의 '담당 없음'이며 대시보드의 미배정 경보와 같은 조건입니다.
+       */
+      managerNames: string[]
+      /**
+       * @description 분석이 실패한 팀 목록입니다. 크기는 analysisFailedCount와 같지 않을 수 있습니다 —
+       *     analysisFailedCount는 인원 기준이고 이 목록은 팀 기준입니다(한 팀에 여러 팀원).
+       */
+      failedTeams: components['schemas']['FailedTeam'][]
+    }
+    /**
+     * @description 프로젝트 회차의 반별 제출 → 분석 → 응시 진행 현황.
+     *
+     *     단계별 깔때기라 각 단계의 분모가 앞 단계의 분자입니다.
+     *     제출률은 submittedCount / targetTraineeCount,
+     *     응시율은 assessedCount / analysisSucceededCount 입니다.
+     *
+     *     제출은 팀 단위 원장이지만 이 화면은 인원 기준으로 환산합니다.
+     */
+    ClassProgressResponse: {
+      /** Format: uuid */
+      projectId: string
+      projectName: string
+      /** Format: uuid */
+      assessmentRoundId: string
+      /**
+       * Format: int32
+       * @description 회차 번호이며 프로젝트 안에서만 유일합니다.
+       * @example 1
+       */
+      roundNo: number
+      roundName: string
+      /**
+       * Format: int32
+       * @description 이 프로젝트에 속한 전체 회차 수입니다. 화면의 'N차 / M회' 표기에 씁니다.
+       * @example 6
+       */
+      totalRoundCount: number
+      /**
+       * Format: date-time
+       * @description 제출 마감 시각입니다.
+       */
+      submissionDueAt: string
+      /**
+       * @description 리포트 발행 방식입니다. 현재는 마감 후 전 반을 한 번에 발행하는 ROUND_BATCH만 존재합니다.
+       * @example ROUND_BATCH
+       */
+      reportPublishMode: string
+      /** @description 이 회차 리포트가 발행됐는지 여부입니다. false면 화면에 '미발행'을 표시합니다. */
+      reportPublished: boolean
+      /** @description 회차 전체 진행 현황 합계입니다. classes[]를 합산한 것이 아니라 회차 단위로 직접 집계합니다. */
+      summary: components['schemas']['Summary']
+      /** @description 반 행 목록이며 반 이름 오름차순입니다. */
+      classes: components['schemas']['ClassProgress'][]
+      /** @description 검증 개념별 코드 매칭 현황입니다. */
+      conceptMatches: components['schemas']['ConceptMatch'][]
+    }
+    /**
+     * @description 검증 개념별 코드 매칭.
+     *
+     *     문제는 팀 공용이라 팀 단위 매칭 판정을 팀원 인원으로 펼쳐 셉니다.
+     *     매칭 실패는 AssessmentProblem.generation_status='NOT_GENERATED'이며
+     *     사유는 NO_MATCHING_CODE_EVIDENCE 하나로 고정돼 있습니다.
+     */
+    ConceptMatch: {
+      /** Format: uuid */
+      teachesId: string
+      /**
+       * @description 검증 개념 이름
+       * @example Snapshot 개념과 구성 요소
+       */
+      conceptName: string
+      /**
+       * Format: int64
+       * @description 분석에 성공한 교육생 수이며 매칭률의 분모입니다.
+       * @example 227
+       */
+      analysedTraineeCount: number
+      /**
+       * Format: int64
+       * @description 그 개념의 문제를 받은 교육생 수
+       * @example 84
+       */
+      matchedTraineeCount: number
+      /**
+       * Format: int64
+       * @description 그 개념이 코드에서 발견되지 않아 전원이 문제를 받지 못한 팀 수
+       * @example 31
+       */
+      unmatchedTeamCount: number
+    }
+    /**
+     * @description 분석이 실패한 팀 한 건.
+     *
+     *     대표자는 그 팀·회차의 최신 제출(submission.submitted_by)을 실행한 사용자이며,
+     *     실패 판정은 그 제출에 매인 최신 분석 시도(analysis_job) 기준입니다.
+     */
+    FailedTeam: {
+      /** Format: uuid */
+      teamId: string
+      teamName: string
+      /** Format: uuid */
+      representativeUserId: string
+      /** @description 대표자(제출을 실행한 사용자) 이름 */
+      representativeName: string
+      /** @description analysis_job.failure_reason 그대로이며 사유가 기록되지 않았으면 null입니다. */
+      failureReason: string | null
+    }
+    /**
+     * @description 회차 전체 합계.
+     *
+     *     analysisTargetCount는 submittedCount와, assessmentTargetCount는 analysisSucceededCount와
+     *     값이 같습니다 — 단계별 분모를 필드 이름으로도 드러내기 위해 따로 둡니다.
+     *     제출률은 submittedCount / targetTraineeCount, 응시율은 assessedCount / analysisTargetCount 입니다.
+     */
+    Summary: {
+      /**
+       * Format: int64
+       * @description 이번 회차 수행 대상 교육생 수(기수 총원)이며 제출률의 분모입니다.
+       * @example 250
+       */
+      targetTraineeCount: number
+      /**
+       * Format: int64
+       * @description 제출을 마친 교육생 수
+       * @example 231
+       */
+      submittedCount: number
+      /**
+       * Format: int64
+       * @description 분석 대상 교육생 수이며 submittedCount와 같습니다.
+       * @example 231
+       */
+      analysisTargetCount: number
+      /**
+       * Format: int64
+       * @description 분석이 성공한 교육생 수
+       * @example 223
+       */
+      analysisSucceededCount: number
+      /**
+       * Format: int64
+       * @description 응시 대상 교육생 수이며 analysisSucceededCount와 같습니다.
+       * @example 223
+       */
+      assessmentTargetCount: number
+      /**
+       * Format: int64
+       * @description 응시(INITIAL 완료)를 마친 교육생 수
+       * @example 198
+       */
+      assessedCount: number
     }
     /**
      * @description 기관 목록 정렬 기준
@@ -4782,6 +6162,98 @@ export interface components {
       /** @description 현재 배정된 반. 아직 배정 전이면 null */
       classroom: components['schemas']['Classroom'] | null
     }
+    /**
+     * @description 매니저 목록 정렬 기준. NAME(이름순) · ASSIGNED_TRAINEE_COUNT(담당 인원순)
+     * @enum {string}
+     */
+    ManagerRosterSort: 'NAME' | 'ASSIGNED_TRAINEE_COUNT'
+    /** @description 매니저 한 행 */
+    ManagerRosterEntry: {
+      /**
+       * Format: uuid
+       * @description 매니저 사용자 ID
+       */
+      managerId: string
+      /** @description 이름. 초대만 되고 아직 활성화되지 않으면 비어 있다(화면에서는 `—`) */
+      name: string | null
+      email: string
+      /** @description 계정 상태. INVITED(초대 대기) / ACTIVE(활성) / INACTIVE(정지) */
+      status: components['schemas']['AccountStatus']
+      /**
+       * Format: uuid
+       * @description 담당할 기수 ID. 가장 최근 매니저 초대의 target_cohort_id 기준
+       */
+      cohortId: string | null
+      /** @description 담당할 기수명 */
+      cohortName: string | null
+      /** @description 현재 담당 반 이름 목록. 담당이 없으면 빈 배열(화면에서는 `미배정`) */
+      classroomNames: string[]
+      /**
+       * Format: int64
+       * @description 담당 반들에 소속된 재학(ACTIVE) 교육생 합계. 담당이 없으면 0
+       * @example 50
+       */
+      assignedTraineeCount: number
+      /**
+       * Format: date-time
+       * @description 최근 로그인 시각. 한 번도 로그인하지 않았으면 null(화면에서는 `—`)
+       */
+      lastLoginAt: string | null
+      /**
+       * Format: date-time
+       * @description 최초 초대 시각. 초대 이력이 없으면 null
+       */
+      invitedAt: string | null
+      /**
+       * @description 초대한 사람의 이름이며 `invitedAt`과 **같은 초대 행**에서 읽습니다.
+       *     화면 비고의 '2026-07-24 초대 · 김오퍼레이터'에서 뒷부분이 이 값이라, 날짜와 사람이
+       *     서로 다른 초대에서 오면 안 됩니다. 초대 이력이 없거나 초대한 계정이 지워졌으면 null입니다.
+       * @example 김오퍼레이터
+       */
+      invitedByName: string | null
+    }
+    /** @description 기관 매니저 목록 페이지 응답 */
+    ManagerRosterResponse: {
+      /** @description 이 페이지의 매니저 목록 */
+      content: components['schemas']['ManagerRosterEntry'][]
+      /**
+       * Format: int32
+       * @description 0부터 시작하는 현재 페이지 번호
+       * @example 0
+       */
+      page: number
+      /**
+       * Format: int32
+       * @description 페이지당 개수
+       * @example 20
+       */
+      size: number
+      /**
+       * Format: int64
+       * @description 필터 적용 후 전체 매니저 수
+       */
+      totalElements: number
+      /**
+       * Format: int32
+       * @description 필터 적용 후 전체 페이지 수
+       */
+      totalPages: number
+      /**
+       * @description 계정 상태별 매니저 수이며 **필터를 적용하지 않은 기관 전체 모집단**이라 totalElements와 다릅니다.
+       *     화면 상단의 '매니저 9명 · 활성 7 · 초대 대기 1 · 정지 1'이 이 값이며, 상태 칩이 자기 자신을
+       *     필터링하면 안 되므로 목록 한 페이지로는 만들 수 없습니다.
+       *     INVITED · ACTIVE · INACTIVE 세 키가 **항상 모두 있고**, 0명인 상태는 0으로 옵니다 —
+       *     키가 빠지는 것과 0명인 것은 다릅니다. 세 값을 더하면 기관 전체 매니저 수입니다.
+       * @example {
+       *       "INVITED": 1,
+       *       "ACTIVE": 7,
+       *       "INACTIVE": 1
+       *     }
+       */
+      statusCounts: {
+        [key: string]: number
+      }
+    }
     /** @description 가입 화면에 표시할 동의 항목 */
     ConsentItemResponse: {
       /**
@@ -4837,10 +6309,847 @@ export interface components {
        */
       totalPages: number
     }
+    /**
+     * @description 명단 정렬 기준. NAME(이름순) · RECENT_ENROLLED(최근 등록순)
+     * @enum {string}
+     */
+    TraineeRosterSort: 'NAME' | 'RECENT_ENROLLED'
+    /** @description 기수 교육생 명단 페이지 응답 */
+    TraineeRosterResponse: {
+      /** @description 이 페이지의 교육생 목록 */
+      content: components['schemas']['TraineeRosterEntry'][]
+      /**
+       * Format: int32
+       * @description 0부터 시작하는 현재 페이지 번호
+       * @example 0
+       */
+      page: number
+      /**
+       * Format: int32
+       * @description 페이지당 개수
+       * @example 20
+       */
+      size: number
+      /**
+       * Format: int64
+       * @description 필터 적용 후 전체 교육생 수
+       */
+      totalElements: number
+      /**
+       * Format: int32
+       * @description 필터 적용 후 전체 페이지 수
+       */
+      totalPages: number
+      /**
+       * Format: int32
+       * @description 반 배정이 없는 교육생 수. 필터와 무관하게 기수 전체 기준(화면 상단 '미배정 N')
+       */
+      unassignedCount: number
+      /**
+       * Format: int32
+       * @description 기수 전체 교육생 수이며 **필터를 적용하지 않은 모집단**이라 totalElements와 다릅니다.
+       *     화면 상단의 '명단 393명'과 검색 결과가 없을 때의 '7기 393명에서 찾았습니다'가 이 값이며,
+       *     둘 다 필터와 무관하게 같은 수를 보여줘야 해서 목록 한 페이지로는 만들 수 없습니다.
+       *     unassignedCount와 같은 모집단이라 '393명 중 미배정 12'가 그대로 성립합니다.
+       * @example 393
+       */
+      cohortTotal: number
+    }
     /** @description 기수 반 목록 응답 */
     ClassroomListResponse: {
       /** @description 그 기수에 편성된 반 전체. 하나도 없으면 빈 배열 */
       classrooms: components['schemas']['ClassroomResponse'][]
+    }
+    /**
+     * @description 위험 교육생 격자의 행 계층. CLASS(반 단위) · TEAM(팀 단위, projectId와 classroomId 한 건이 모두 필요)
+     * @enum {string}
+     */
+    RiskTraineeLevel: 'CLASS' | 'TEAM'
+    /**
+     * @description 위험 교육생 비율 격자의 반·팀 행 정렬 기준. RECENT_ROUND_WORST(최근 발행 회차 나쁜 순) · WORSE_ROUND_COUNT(기준보다 나쁜 회차가 많은 순) · EXCLUSION_COUNT(미집계 많은 순) · NAME(이름순)
+     * @enum {string}
+     */
+    RiskTraineeSort: 'RECENT_ROUND_WORST' | 'WORSE_ROUND_COUNT' | 'EXCLUSION_COUNT' | 'NAME'
+    /** @description 반 행 */
+    ClassRiskSummary: {
+      /**
+       * Format: uuid
+       * @description 반 ID이며 "class".class_id입니다.
+       */
+      classId: string
+      /**
+       * @description 반 이름
+       * @example C반
+       */
+      className: string
+      /**
+       * Format: int64
+       * @description 중도 이탈하지 않은 현재 반 교육생 수
+       * @example 25
+       */
+      traineeCount: number
+      /**
+       * Format: int64
+       * @description 중도 이탈한 교육생 수
+       * @example 1
+       */
+      withdrawnCount: number
+      /** @description 최근 발행 회차 기준 미집계 합계입니다. */
+      exclusionRollup: components['schemas']['ExclusionBreakdown']
+      /**
+       * @description 활성 담당 매니저 이름 목록입니다. 한 반에 여러 명이 배정될 수 있습니다.
+       *     비어 있으면 화면의 '담당 없음'이며 대시보드의 미배정 경보와 같은 조건입니다.
+       */
+      managerNames: string[]
+      /** @description 이 반의 회차별 위험 비율 칸 목록이며 rounds와 같은 순서·길이입니다. */
+      cells: components['schemas']['RiskCell'][]
+    }
+    /**
+     * @description 같은 회차의 기수 전체 위험 비율과 견준 방향. BETTER(낮음) · SAME(같음) · WORSE(높음). 임계 구간 없이 단순 비교합니다.
+     * @enum {string}
+     */
+    CohortRiskComparison: 'BETTER' | 'SAME' | 'WORSE'
+    /** @description 기수 전체 행 */
+    CohortRiskSummary: {
+      /**
+       * Format: int64
+       * @description 중도 이탈하지 않은 현재 기수 교육생 수
+       * @example 250
+       */
+      traineeCount: number
+      /**
+       * Format: int64
+       * @description 중도 이탈한 교육생 수
+       * @example 1
+       */
+      withdrawnCount: number
+      /**
+       * @description 최근 발행 회차 기준 미집계 합계입니다. 화면의 '채점에서 빠진 사람' 열에 대응합니다.
+       *     발행된 회차가 없으면 세 값이 모두 0입니다.
+       */
+      exclusionRollup: components['schemas']['ExclusionBreakdown']
+      /** @description 기수 전체의 회차별 위험 비율 칸 목록이며 rounds와 같은 순서·길이입니다. */
+      cells: components['schemas']['RiskCell'][]
+    }
+    /**
+     * @description 미집계 내역. 세 값 모두 분모에서 제외한 인원이며 eligibleCount와 합치면 회차의 전체 수행 대상자가 됩니다.
+     *     무효 확인 중(validity_review_status=PENDING)은 아직 무효로 확정되지 않아 분모에 남습니다.
+     */
+    ExclusionBreakdown: {
+      /**
+       * Format: int64
+       * @description 미응시(terminal_reason_code=NOT_ATTENDED) 인원이며 분모에서 제외합니다.
+       */
+      notAttendedCount: number
+      /**
+       * Format: int64
+       * @description 중단(terminal_reason_code=SESSION_INCOMPLETE) 인원이며 분모에서 제외합니다.
+       */
+      sessionIncompleteCount: number
+      /**
+       * Format: int64
+       * @description 무효 응시(validity_review_status=CONFIRMED_INVALID) 인원이며 분모에서 제외합니다.
+       */
+      invalidAttemptCount: number
+    }
+    /** @description 회차 격자 한 칸 */
+    RiskCell: {
+      /**
+       * Format: uuid
+       * @description 이 칸이 속한 회차 ID이며 rounds[].assessmentRoundId와 짝을 이룹니다.
+       */
+      assessmentRoundId: string
+      /**
+       * Format: int32
+       * @description 회차 번호이며 프로젝트 안에서만 유일합니다.
+       * @example 2
+       */
+      roundNo: number
+      /** @description NOT_STARTED(시작 전) / NOT_AGGREGATED(리포트 미발행) / AGGREGATED(발행 완료) */
+      aggregationStatus: components['schemas']['RoundAggregationStatus']
+      /**
+       * Format: int64
+       * @description 미집계 인원을 제외한 분모입니다.
+       * @example 24
+       */
+      eligibleCount: number
+      /**
+       * Format: int64
+       * @description 위험 유형(단계 하락·지속 저점)을 하나라도 가진 고유 교육생 수입니다.
+       * @example 6
+       */
+      riskCount: number
+      /**
+       * @description riskCount / eligibleCount 비율이며 집계 전이거나 분모가 0이면 null입니다.
+       * @example 0.25
+       */
+      riskRate: number | null
+      /**
+       * @description 같은 회차의 기준 비율과 견준 방향입니다. 반 행은 기수 전체 비율과, 팀 행은
+       *     소속 반(classes[0]) 전체 비율과 비교합니다 — 팀 번호는 반 안에서만 유일해
+       *     팀끼리는 소속 반 안에서만 비교가 성립하기 때문입니다.
+       *     BETTER(낮음) / SAME(같음) / WORSE(높음)이며 임계 구간 없이 단순 비교합니다.
+       *     기수 전체 행이거나 두 비율 중 하나라도 없으면 null입니다.
+       */
+      comparisonToCohort: components['schemas']['CohortRiskComparison'] | null
+      /** @description 미집계 내역 */
+      exclusion: components['schemas']['ExclusionBreakdown']
+    }
+    /** @description 기수 전체·반별 회차 위험 교육생 비율 */
+    RiskTraineeRateResponse: {
+      /**
+       * Format: uuid
+       * @description 집계 대상 기수 ID
+       */
+      cohortId: string
+      /**
+       * @description 집계 대상 프로젝트 분류이며 미니프로젝트만 지원합니다.
+       * @example MINI_PROJECT
+       */
+      projectCategory: string
+      /**
+       * Format: uuid
+       * @description 조회 대상을 한 프로젝트로 좁혔으면 그 프로젝트 ID이고 좁히지 않았으면 null입니다.
+       */
+      projectId: string | null
+      /**
+       * Format: int32
+       * @description 회차 범위 필터를 적용하기 전의 등록 회차 수입니다.
+       *     화면의 회차 범위 선택지를 그리는 데 쓰며 rounds 길이와 다를 수 있습니다.
+       * @example 6
+       */
+      totalRegisteredRoundCount: number
+      /** @description 실제로 적용된 정렬 기준 */
+      appliedSort: components['schemas']['RiskTraineeSort']
+      /** @description 행 계층이며 CLASS면 classes가, TEAM이면 teams가 채워집니다. */
+      level: components['schemas']['RiskTraineeLevel']
+      /** @description 격자의 회차 열 정의이며 프로젝트 운영 순서·회차 번호 오름차순입니다. */
+      rounds: components['schemas']['RoundColumn'][]
+      /** @description 기수 전체 행이며 팀 계층에서도 색 판정 기준으로 함께 내려갑니다. */
+      cohortSummary: components['schemas']['CohortRiskSummary']
+      /**
+       * @description 반 행 목록입니다. level=CLASS면 기수의 모든 반이 담기고,
+       *     level=TEAM이면 선택된 반 1건만 담깁니다 — 화면 상단 '반 전체' 요약 행이자
+       *     teams[].cells[].comparisonToCohort의 비교 기준입니다.
+       */
+      classes: components['schemas']['ClassRiskSummary'][]
+      /** @description 팀 행 목록이며 level=CLASS이면 빈 배열입니다. */
+      teams: components['schemas']['TeamRiskSummary'][]
+    }
+    /**
+     * @description 회차 열의 집계 가능 상태. NOT_STARTED(시작 전이라 표시할 값 없음) · NOT_AGGREGATED(진행됐으나 발행된 리포트 없음) · AGGREGATED(발행 완료, 비율을 읽을 수 있음)
+     * @enum {string}
+     */
+    RoundAggregationStatus: 'NOT_STARTED' | 'NOT_AGGREGATED' | 'AGGREGATED'
+    /**
+     * @description 회차 열 정의.
+     *
+     *     roundNo는 ProjectAssessmentRound.round_no이며 (project_id, round_no) UNIQUE라
+     *     프로젝트마다 1부터 다시 시작합니다. 기수에 미니프로젝트가 여러 건이면 같은 roundNo가
+     *     여러 열에 나타나므로 열을 구분할 때 projectId를 함께 보아야 합니다.
+     */
+    RoundColumn: {
+      /**
+       * Format: uuid
+       * @description 회차 ID이며 ProjectAssessmentRound.assessment_round_id입니다.
+       */
+      assessmentRoundId: string
+      /**
+       * Format: int32
+       * @description 회차 번호이며 프로젝트 안에서만 유일합니다.
+       * @example 1
+       */
+      roundNo: number
+      /**
+       * @description 회차 이름
+       * @example K8s 배포 실습
+       */
+      roundName: string
+      /**
+       * Format: uuid
+       * @description 회차가 속한 프로젝트 ID입니다.
+       */
+      projectId: string
+      /**
+       * @description 회차가 속한 프로젝트 이름이며 화면의 '미프 N차' 표기의 기준입니다.
+       * @example 미니프로젝트 2
+       */
+      projectName: string
+      /** @description NOT_STARTED(시작 전) / NOT_AGGREGATED(리포트 미발행) / AGGREGATED(발행 완료) */
+      aggregationStatus: components['schemas']['RoundAggregationStatus']
+    }
+    /**
+     * @description 팀 행.
+     *
+     *     팀 번호는 반 안에서만 유일하고 team은 project_id에 종속이라 이 목록은 한 프로젝트·한 반으로
+     *     좁혔을 때만 나옵니다. 팀당 인원이 4~5명이라 비율이 0%·25%·50% 같은 거친 값이 됩니다.
+     */
+    TeamRiskSummary: {
+      /**
+       * Format: uuid
+       * @description 팀 ID이며 team.team_id입니다.
+       */
+      teamId: string
+      /**
+       * @description 반 안에서의 팀 번호
+       * @example 3
+       */
+      teamNumber: string
+      /**
+       * @description 팀 이름
+       * @example 3팀
+       */
+      teamName: string
+      /**
+       * Format: uuid
+       * @description 이 팀이 속한 반 ID입니다.
+       */
+      classId: string
+      /**
+       * @description 이 팀이 속한 반 이름
+       * @example C반
+       */
+      className: string
+      /**
+       * Format: int64
+       * @description 현재 팀에 속한 인원
+       * @example 5
+       */
+      memberCount: number
+      /** @description 최근 발행 회차 기준 미집계 합계입니다. */
+      exclusionRollup: components['schemas']['ExclusionBreakdown']
+      /** @description 이 팀의 회차별 위험 비율 칸 목록이며 rounds와 같은 순서·길이입니다. */
+      cells: components['schemas']['RiskCell'][]
+    }
+    /**
+     * @description 기수 전체의 집단 미달 목록.
+     *
+     *     한 검증 개념에서 반 인원의 절반을 넘는 인원이 2단 이하면 개인 문제가 아니라 반 문제로 봅니다.
+     *     목록이 비어 있을 때 emptyReasonCode로 '평가 자체가 없음'과 '미달이 실제로 0건'을 구분합니다.
+     */
+    GroupGapResponse: {
+      /** Format: uuid */
+      cohortId: string
+      /**
+       * @description 미달 판정 경계이며 이 비율을 초과해야 미달입니다.
+       * @example 0.5
+       */
+      underperformanceThresholdRatio: number
+      /**
+       * Format: int32
+       * @description 2단 이하로 세는 최대 도달 단계
+       * @example 2
+       */
+      lowLevelMaxStage: number
+      /**
+       * Format: int32
+       * @description 미달 여부와 무관하게 평가가 이뤄진 회차 × 반 × 개념 조합 수
+       * @example 90
+       */
+      evaluatedClassConceptCount: number
+      /**
+       * @description 목록이 비어 있는 이유이며 미달 건이 있으면 null입니다.
+       *     NO_ELIGIBLE_PARTICIPANT(평가된 조합이 없음) / NO_GROUP_UNDERPERFORMANCE(평가했으나 미달 0건)
+       * @enum {string|null}
+       */
+      emptyReasonCode: 'NO_ELIGIBLE_PARTICIPANT' | 'NO_GROUP_UNDERPERFORMANCE' | null
+      /** @description 미달 비율 내림차순 목록 */
+      gaps: components['schemas']['GroupGapRow'][]
+    }
+    /** @description 집단 미달 한 건 */
+    GroupGapRow: {
+      /** Format: uuid */
+      assessmentRoundId: string
+      /**
+       * Format: int32
+       * @description 회차 번호이며 프로젝트 안에서만 유일합니다.
+       * @example 2
+       */
+      roundNo: number
+      roundName: string
+      /** Format: uuid */
+      projectId: string
+      /**
+       * @description 화면의 '미프 2차'에 해당합니다.
+       * @example 미프 2차
+       */
+      projectName: string
+      /** Format: uuid */
+      classId: string
+      className: string
+      /** Format: uuid */
+      teachesId: string
+      /**
+       * @description 검증 개념 이름
+       * @example Graph 구성
+       */
+      conceptName: string
+      /**
+       * Format: int64
+       * @description 2단 이하 인원이며 미응시·무효 확정은 세지 않습니다.
+       * @example 14
+       */
+      lowLevelCount: number
+      /**
+       * Format: int64
+       * @description 반 인원 전체
+       * @example 25
+       */
+      classMemberCount: number
+      /**
+       * @description lowLevelCount / classMemberCount
+       * @example 0.56
+       */
+      lowLevelRate: number
+    }
+    /**
+     * @description 기수 간 비교 행 정렬 기준. WORSENED(나빠진 순) · IMPROVED(좋아진 순) · CONCEPT(검증 개념 순)
+     * @enum {string}
+     */
+    ComparisonSort: 'WORSENED' | 'IMPROVED' | 'CONCEPT'
+    /** @description 비교 후보 기수 */
+    BaselineOption: {
+      /** Format: uuid */
+      cohortId: string
+      cohortName: string
+      /** @description 발행된 수업 진단 리포트가 있어 실제로 비교할 수 있는지 여부입니다. */
+      comparable: boolean
+    }
+    /**
+     * @description 지난 기수 대비 변화 방향. WORSE(나빠짐, delta ≤ -0.3단) · SIMILAR(비슷함) · BETTER(좋아짐, delta ≥ +0.3단) · NOT_COMPARABLE(비교 불가)
+     * @enum {string}
+     */
+    ChangeDirection: 'WORSE' | 'SIMILAR' | 'BETTER' | 'NOT_COMPARABLE'
+    /** @description 나빠짐·좋아짐 경계값이며 대칭입니다. */
+    ChangeThreshold: {
+      /**
+       * @description 이 값 이하면 나빠짐입니다.
+       * @example -0.3
+       */
+      worsened: number
+      /**
+       * @description 이 값 이상이면 좋아짐입니다.
+       * @example 0.3
+       */
+      improved: number
+    }
+    /** @description 두 기수의 검증 개념별 평균 도달 단계 비교 격자 */
+    CohortComparisonResponse: {
+      /** @description 이번 기수 */
+      targetCohort: components['schemas']['CohortRef']
+      /** @description 지난 기수이며 비교 대상을 고르지 않았으면 null입니다. */
+      baselineCohort: components['schemas']['CohortRef'] | null
+      /** @description 비교 드롭다운 후보이며 같은 기관의 다른 기수를 최근 시작 순으로 내려줍니다. */
+      availableBaselineCohorts: components['schemas']['BaselineOption'][]
+      /**
+       * @description 격자를 그릴 수 없는 원인이며 비교 가능하면 null입니다.
+       *     값이 있으면 concepts는 항상 빈 배열입니다.
+       */
+      emptyStateCode: components['schemas']['ComparisonEmptyState'] | null
+      /** @description 색 눈금 정의 */
+      levelScale: components['schemas']['LevelScale']
+      /** @description 변화 방향 경계값 */
+      changeThreshold: components['schemas']['ChangeThreshold']
+      /** @description 실제로 적용된 정렬 기준 */
+      appliedSort: components['schemas']['ComparisonSort']
+      /**
+       * @description 같은 교안 버전을 쓴 개념만 남겼는지 여부입니다.
+       *     교안이 바뀌면 평균 차이가 교육생 변화인지 교안 변화인지 갈라 볼 수 없어 걸러냅니다.
+       */
+      sameCurriculumOnly: boolean
+      /** @description 검증 개념 행 목록 */
+      concepts: components['schemas']['ConceptComparison'][]
+    }
+    /** @description 한 기수의 개념 값 */
+    CohortConceptValue: {
+      /**
+       * @description 평균 도달 단계이며 Σ(도달 단계 × 인원) / Σ인원입니다.
+       *     개념이 없거나 분모가 0이면 값이 아니라 null입니다.
+       * @example 2.5
+       */
+      averageReachedLevel: number | null
+      /**
+       * Format: int32
+       * @description 평균이 속한 색 밴드(1~4)이며 값이 없으면 null입니다.
+       * @example 3
+       */
+      levelBand: number | null
+      /**
+       * Format: int64
+       * @description 평균의 분모가 된 인원
+       * @example 24
+       */
+      participantCount: number
+      /**
+       * Format: int64
+       * @description 집계에서 빠진 인원
+       * @example 1
+       */
+      missingCount: number
+      /** @description PRESENT / ABSENT_IN_COHORT(그 기수에 없던 개념) / MERGED(다른 개념으로 병합) */
+      presence: components['schemas']['ConceptPresence']
+      /**
+       * @description 발행 스냅샷의 집계 상태이며 개념이 없으면 null입니다.
+       * @example SINGLE_SOURCE
+       */
+      aggregationStatus: string | null
+    }
+    /** @description 기수 표시 정보 */
+    CohortRef: {
+      /** Format: uuid */
+      cohortId: string
+      /**
+       * @description 기수 표시명이며 cohort에는 기수 번호 컬럼이 없어 이름을 그대로 씁니다.
+       * @example 7기
+       */
+      cohortName: string
+    }
+    /**
+     * @description 기수 간 비교 격자를 그릴 수 없는 원인. NO_COMPARABLE_COHORT(같은 기관에 다른 기수가 없음) · REPORT_NOT_PUBLISHED(한쪽 기수에 발행된 리포트가 없음) · NO_SHARED_CONCEPT(공통 검증 개념이 0건)
+     * @enum {string}
+     */
+    ComparisonEmptyState: 'NO_COMPARABLE_COHORT' | 'REPORT_NOT_PUBLISHED' | 'NO_SHARED_CONCEPT'
+    /** @description 지난 기수 대비 변화 */
+    ConceptChange: {
+      /** @description WORSE / SIMILAR / BETTER / NOT_COMPARABLE */
+      direction: components['schemas']['ChangeDirection']
+      /**
+       * @description 이번 기수 평균 - 지난 기수 평균이며 비교할 수 없으면 null입니다.
+       *     화면에 보이는 두 평균을 그대로 뺀 값이라 표시값과 항상 일치합니다.
+       * @example -0.4
+       */
+      delta: number | null
+      /** @description 비교할 수 없는 이유이며 비교 가능하면 null입니다. */
+      notComparableReasonCode: components['schemas']['NotComparableReason'] | null
+    }
+    /** @description 검증 개념 한 행 */
+    ConceptComparison: {
+      /**
+       * Format: uuid
+       * @description 기수를 넘어 안정적인 검증 개념 ID이며 두 기수를 잇는 매칭 키입니다.
+       */
+      teachesId: string
+      /**
+       * @description 검증 개념 이름
+       * @example Graph 구성
+       */
+      conceptName: string
+      /** @description 교안 출처 표기 */
+      source: components['schemas']['ConceptSource']
+      /** @description 이번 기수 값 */
+      target: components['schemas']['CohortConceptValue']
+      /** @description 지난 기수 값 */
+      baseline: components['schemas']['CohortConceptValue']
+      /** @description 변화 요약 */
+      change: components['schemas']['ConceptChange']
+      /** @description 교안 버전 변화 */
+      curriculumVersion: components['schemas']['CurriculumVersionChange']
+    }
+    /**
+     * @description 기수에서 검증 개념의 존재 형태. PRESENT(발행 스냅샷에 있어 평균을 읽을 수 있음) · ABSENT_IN_COHORT(그 기수에 없던 개념) · MERGED(다른 개념으로 병합됨)
+     * @enum {string}
+     */
+    ConceptPresence: 'PRESENT' | 'ABSENT_IN_COHORT' | 'MERGED'
+    /** @description 개념이 나온 교안 위치이며 이번 기수 기준이고 없으면 지난 기수 기준입니다. */
+    ConceptSource: {
+      /**
+       * @description 교안 이름이며 개념이 교안에 매핑되지 않았으면 null입니다.
+       * @example AI_LLMOps
+       */
+      curriculumTitle: string | null
+      /**
+       * Format: int32
+       * @description 교안 장 순번이며 화면의 '4장'입니다. 개념이 교안에 매핑되지 않았으면 null입니다.
+       * @example 4
+       */
+      sectionSequenceNo: number | null
+      /** @description 교안 장 제목이며 개념이 교안에 매핑되지 않았으면 null입니다. */
+      sectionTitle: string | null
+      /**
+       * Format: int32
+       * @description 개념이 시작되는 쪽수이며 개념이 교안에 매핑되지 않았으면 null입니다.
+       * @example 62
+       */
+      pageStart: number | null
+      /**
+       * Format: int32
+       * @description 개념이 끝나는 쪽수이며 개념이 교안에 매핑되지 않았으면 null입니다.
+       * @example 65
+       */
+      pageEnd: number | null
+      /**
+       * Format: int32
+       * @description 개념을 검증한 회차 번호이며 여러 회차면 가장 최근 회차입니다. 검증한 회차가 없으면 null입니다.
+       * @example 3
+       */
+      roundNo: number | null
+      /** @description 회차 이름이며 화면의 '미프 3차'입니다. 검증한 회차가 없으면 null입니다. */
+      roundLabel: string | null
+    }
+    /** @description 교안 버전 변화이며 화면의 'v1 → v2' 또는 'v3 · 그대로'입니다. */
+    CurriculumVersionChange: {
+      /**
+       * Format: int32
+       * @description 지난 기수에서 쓴 교안 버전이며 지난 기수에 없던 개념이거나 교안에 매핑되지 않았으면 null입니다.
+       * @example 1
+       */
+      baselineVersionNo: number | null
+      /**
+       * Format: int32
+       * @description 이번 기수에서 쓴 교안 버전이며 이번 기수에 없던 개념이거나 교안에 매핑되지 않았으면 null입니다.
+       * @example 2
+       */
+      targetVersionNo: number | null
+      /** @description 두 버전이 모두 있고 서로 다르면 true입니다. */
+      versionChanged: boolean
+    }
+    /**
+     * @description 절대 색 눈금이며 분석 › 기수 간 비교 목업의 색상표와 같은 값입니다.
+     *     1~4 정수 네 단계(1단·2단·3단·4단)에 네 색을 대응시키며 평균은 연속값이므로
+     *     정수 경계 미만을 버림(floor)해 밴드를 배정합니다.
+     *     levelBand는 서버가 미리 계산해 내려주므로 클라이언트가 다시 계산할 필요는 없습니다.
+     */
+    LevelScale: {
+      /**
+       * Format: int32
+       * @description 최소 도달 단계이며 목업 색상 눈금이 1단부터 시작합니다.
+       * @example 1
+       */
+      min: number
+      /**
+       * Format: int32
+       * @description 최대 도달 단계
+       * @example 4
+       */
+      max: number
+      /**
+       * @description 밴드 경계값이며 경계에 걸친 값은 위쪽 밴드로 올립니다.
+       * @example [
+       *       2,
+       *       3,
+       *       4
+       *     ]
+       */
+      bandThresholds: number[]
+    }
+    /**
+     * @description 두 기수의 평균 도달 단계를 뺄 수 없는 이유. ABSENT_IN_BASELINE(지난 기수에 없던 개념) · ABSENT_IN_TARGET(이번 기수에 없는 개념) · CONCEPT_MERGED(한쪽이 다른 개념으로 병합됨) · AGGREGATION_UNAVAILABLE(집계 산식 미확정 또는 집계 실패)
+     * @enum {string}
+     */
+    NotComparableReason:
+      'ABSENT_IN_BASELINE' | 'ABSENT_IN_TARGET' | 'CONCEPT_MERGED' | 'AGGREGATION_UNAVAILABLE'
+    /**
+     * @description 오퍼레이터 대시보드 '조치 필요' 경보.
+     *
+     *     경보는 파생 조회이며 해소·무시 상태를 저장하지 않습니다. 원인이 사라지면 경보도 사라지므로
+     *     조치 완료를 기록하는 쓰기 API가 없습니다.
+     *
+     *     네 유형은 서로 모양이 달라 각각 별도 필드로 내려갑니다. 해당 경보가 없으면 null이며
+     *     actionCount는 null이 아닌 경보 수입니다.
+     */
+    ActionRequiredResponse: {
+      /**
+       * Format: uuid
+       * @description 조회한 기수 ID이며 경로 변수 cohortId를 그대로 반영합니다.
+       */
+      cohortId: string
+      /**
+       * Format: int32
+       * @description 실제로 발생한 경보 수이며 화면의 '조치 필요 · N건'입니다.
+       * @example 4
+       */
+      actionCount: number
+      /** @description 활성 담당 매니저가 없는 반이며 없으면 null입니다. */
+      managerUnassigned: components['schemas']['ManagerUnassignedAlert'] | null
+      /** @description 코드 근거를 찾지 못한 팀이 가장 많은 검증 개념이며 없으면 null입니다. */
+      conceptGap: components['schemas']['ConceptGapAlert'] | null
+      /** @description 반 인원의 절반을 넘게 2단 이하가 나온 반·개념 중 가장 나쁜 건이며 없으면 null입니다. */
+      groupGap: components['schemas']['GroupGapAlert'] | null
+      /** @description 면담 예정일이 가장 오래 지난 반이며 없으면 null입니다. */
+      interviewBacklog: components['schemas']['InterviewBacklogAlert'] | null
+    }
+    /**
+     * @description 검증 개념 공백. 계획한 개념이 팀 코드에 없어 문제를 만들지 못한 경우입니다.
+     *
+     *     판정은 계산이 아니라 읽기입니다. AssessmentProblem.generation_status='NOT_GENERATED'이면
+     *     사유가 NO_MATCHING_CODE_EVIDENCE 하나로 고정돼 있습니다.
+     *     분모는 이해도 검증 세션이 실제 발생한 팀 수입니다.
+     */
+    ConceptGapAlert: {
+      /** @description 경보가 발생한 회차입니다. */
+      round: components['schemas']['RoundRef']
+      /**
+       * Format: uuid
+       * @description 검증 개념 ID이며 teaches.teaches_id입니다.
+       */
+      teachesId: string
+      /**
+       * @description 검증 개념 이름
+       * @example State 관리
+       */
+      conceptName: string
+      /**
+       * Format: int64
+       * @description 그 개념의 코드 근거를 찾지 못한 팀 수
+       * @example 6
+       */
+      gapTeamCount: number
+      /**
+       * Format: int64
+       * @description 회차에서 이해도 검증 세션이 발생한 팀 수
+       * @example 8
+       */
+      participatingTeamCount: number
+    }
+    /**
+     * @description 집단 미달. 반 인원의 절반을 넘는 인원이 한 개념에서 2단 이하인 경우입니다.
+     *
+     *     개인 위험 사유가 아니라 반 문제로 분류합니다. 시스템은 표시까지만 하고 이후 처리는
+     *     기관 판단입니다.
+     *
+     *     분자는 실제 응시를 마친 인원 중 2단 이하만 셉니다. 미응시·무효 확정은 0단으로
+     *     치환하지 않으므로 분자에서 빠지고 분모(반 인원 전체)에만 남습니다.
+     */
+    GroupGapAlert: {
+      /** @description 경보가 발생한 회차입니다. */
+      round: components['schemas']['RoundRef']
+      /**
+       * Format: uuid
+       * @description 미달이 발생한 반 ID
+       */
+      classId: string
+      /**
+       * @description 미달이 발생한 반 이름
+       * @example C반
+       */
+      className: string
+      /**
+       * Format: uuid
+       * @description 검증 개념 ID이며 teaches.teaches_id입니다.
+       */
+      teachesId: string
+      /**
+       * @description 검증 개념 이름
+       * @example Graph 구성
+       */
+      conceptName: string
+      /**
+       * Format: int64
+       * @description 2단 이하 인원
+       * @example 14
+       */
+      lowLevelCount: number
+      /**
+       * Format: int64
+       * @description 반 인원 전체
+       * @example 25
+       */
+      classMemberCount: number
+    }
+    /**
+     * @description 면담 적체. 예정일이 지났는데 아직 시작되지 않은 면담입니다.
+     *
+     *     지연일은 Interview.planned_at을 기산점으로 하며 아직 시작되지 않은(PENDING) 건만 셉니다.
+     *     pendingInterviewCount는 진행 중을 포함한 미종결 전체라 두 값의 모집단이 다릅니다.
+     */
+    InterviewBacklogAlert: {
+      /** @description 경보가 발생한 회차입니다. 면담 적체만 빅프로젝트 회차도 포함할 수 있습니다. */
+      round: components['schemas']['RoundRef']
+      /**
+       * Format: uuid
+       * @description 면담이 적체된 반 ID
+       */
+      classId: string
+      /**
+       * @description 면담이 적체된 반 이름
+       * @example D반
+       */
+      className: string
+      /**
+       * Format: int32
+       * @description 가장 오래 밀린 면담의 지연일
+       * @example 11
+       */
+      maxDelayDays: number
+      /**
+       * Format: int64
+       * @description 종결되지 않은 면담 인원이며 진행 중을 포함합니다.
+       * @example 7
+       */
+      pendingInterviewCount: number
+      /**
+       * Format: int64
+       * @description 면담이 아직 생성되지 않아 지연일을 계산할 수 없는 후보 수입니다.
+       *     경보 판정에서 빠지므로 별도로 표시해야 놓치지 않습니다.
+       */
+      notCreatedCount: number
+      /**
+       * Format: int64
+       * @description 예정일이 잡히지 않아 지연일을 계산할 수 없는 면담 수입니다.
+       */
+      unplannedCount: number
+    }
+    /**
+     * @description 담당 매니저 미배정. 상시 경보라 회차 맥락이 없습니다.
+     *     면담·독촉을 처리할 사람이 없다는 뜻이라 다른 경보보다 먼저 다뤄야 합니다.
+     */
+    ManagerUnassignedAlert: {
+      /** @description 매니저가 없는 반 목록이며 반 이름 오름차순입니다. */
+      classes: components['schemas']['UnassignedClass'][]
+      /**
+       * Format: int64
+       * @description 그 반들에 속한 재학 교육생 합계
+       * @example 25
+       */
+      affectedTraineeCount: number
+    }
+    /** @description 경보가 가리키는 프로젝트 회차 */
+    RoundRef: {
+      /**
+       * Format: uuid
+       * @description 회차 ID이며 ProjectAssessmentRound.assessment_round_id입니다.
+       */
+      assessmentRoundId: string
+      /**
+       * Format: int32
+       * @description 회차 번호이며 프로젝트 안에서만 유일합니다.
+       * @example 3
+       */
+      roundNo: number
+      /**
+       * @description 회차 이름
+       * @example K8s 배포 실습
+       */
+      roundName: string
+      /**
+       * Format: uuid
+       * @description 회차가 속한 프로젝트 ID입니다.
+       */
+      projectId: string
+      /**
+       * @description 화면의 '미프 3차'에 해당합니다.
+       * @example 미프 3차
+       */
+      projectName: string
+    }
+    /** @description 담당 매니저가 없는 반 한 건 */
+    UnassignedClass: {
+      /**
+       * Format: uuid
+       * @description 반 ID
+       */
+      classId: string
+      /**
+       * @description 반 이름
+       * @example F반
+       */
+      className: string
+      /**
+       * Format: int64
+       * @description 이 반의 재학(중도 이탈하지 않은) 교육생 수
+       * @example 25
+       */
+      traineeCount: number
     }
     /** @description 기관 삭제 확인 요청 */
     DeleteOrganizationRequest: {
@@ -5669,6 +7978,104 @@ export interface operations {
         }
       }
       /** @description ORGANIZATION_CONTEXT_MISSING 인증 정보에서 organizationId를 확인할 수 없음 */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  findTraineeRoster: {
+    parameters: {
+      query?: {
+        /** @description 특정 반으로 좁힌다. unassignedOnly와 함께 지정할 수 없다 */
+        classroomId?: string
+        /** @description true면 반 배정이 없는 교육생만 조회한다 */
+        unassignedOnly?: boolean
+        /** @description 계정 상태 필터. INVITED/ACTIVE/INACTIVE만 지원하며 생략하면 전체 */
+        accountStatus?: components['schemas']['AccountStatus']
+        /**
+         * @description 이름·이메일 부분검색
+         * @example 강건우
+         */
+        query?: string
+        /**
+         * @description 정렬 기준
+         * @example NAME
+         */
+        sort?: components['schemas']['TraineeRosterSort']
+        /**
+         * @description 0부터 시작하는 페이지 번호
+         * @example 0
+         */
+        page?: number
+        /**
+         * @description 페이지당 개수(최대 100)
+         * @example 20
+         */
+        size?: number
+      }
+      header?: never
+      path: {
+        /**
+         * @description 명단을 조회할 기수 ID
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        cohortId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 명단 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['TraineeRosterResponse']
+        }
+      }
+      /** @description ROSTER_FILTER_CONFLICT classroomId와 unassignedOnly를 함께 지정함 · ACCOUNT_STATUS_FILTER_NOT_SUPPORTED 이 화면이 쓰지 않는 계정 상태(LOCKED) · VALIDATION_FAILED page·size 값이 올바르지 않음 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 만료됨 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED 오퍼레이터·매니저 권한이 아님 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description COHORT_NOT_FOUND 조회할 기수를 찾을 수 없음. 다른 기관의 기수도 존재를 알리지 않고 여기로 묶는다 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ORGANIZATION_CONTEXT_MISSING 인증 정보에서 기관을 확인할 수 없음 */
       500: {
         headers: {
           [name: string]: unknown
@@ -6659,6 +9066,95 @@ export interface operations {
       }
     }
   }
+  updateTraineeStatus: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /**
+         * @description 대상 교육생이 속한 기수 ID
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        cohortId: string
+        /**
+         * @description 상태를 바꿀 교육생의 사용자 ID
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        traineeId: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateTraineeStatusRequest']
+      }
+    }
+    responses: {
+      /** @description 상태 변경 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['TraineeRosterEntry']
+        }
+      }
+      /** @description VALIDATION_FAILED status가 비었거나 ACTIVE·INACTIVE 외의 값임 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 만료됨 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED 오퍼레이터 권한이 아님 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description COHORT_NOT_FOUND 기수를 찾을 수 없음 · TRAINEE_NOT_FOUND 그 기수에 그 교육생이 없음(다른 기수·다른 기관 포함) */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description TRAINEE_STATUS_NOT_MUTABLE 초대 대기(INVITED) 교육생이라 상태를 직접 바꿀 수 없음. 화면이 할 일은 초대 재발송이다 */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ORGANIZATION_CONTEXT_MISSING 인증 정보에서 기관을 확인할 수 없음 */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
   endCohort: {
     parameters: {
       query?: never
@@ -6970,6 +9466,30 @@ export interface operations {
       }
     }
   }
+  findManagedReports: {
+    parameters: {
+      query?: {
+        cohortId?: string
+        roundId?: string
+        classId?: string
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description OK */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ManagedReportListResponse']
+        }
+      }
+    }
+  }
   findClassDiagnosis: {
     parameters: {
       query: {
@@ -6988,6 +9508,74 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['CohortDiagnosisResponse']
+        }
+      }
+    }
+  }
+  findProjectClassProgress: {
+    parameters: {
+      query?: {
+        /**
+         * @description 조회할 회차 번호이며 프로젝트 안에서만 유일합니다.
+         * @example 1
+         */
+        roundNo?: number
+      }
+      header?: never
+      path: {
+        /**
+         * @description 조회할 프로젝트 ID
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        projectId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 반별 현황 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ClassProgressResponse']
+        }
+      }
+      /** @description ROUND_NO_INVALID 회차 번호가 1 미만 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ANALYTICS_VIEWER_NOT_FOUND 토큰은 유효하지만 계정을 찾을 수 없음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ANALYTICS_VIEWER_NOT_ACTIVE 활성 계정 아님 · ANALYTICS_ORGANIZATION_NOT_ACTIVE 소속 기관이 활성 아님 · ANALYTICS_ROLE_NOT_ALLOWED 오퍼레이터·매니저가 아님 · PROJECT_CROSS_ORGANIZATION 다른 기관의 프로젝트 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description PROJECT_ROUND_NOT_FOUND 그 프로젝트에 그 번호의 회차가 없음 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -7235,6 +9823,90 @@ export interface operations {
       }
     }
   }
+  findManagers: {
+    parameters: {
+      query?: {
+        /**
+         * @description 담당 기수로 좁힌다. 생략하면 기관 전체
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        cohortId?: string
+        /** @description 계정 상태 필터. INVITED/ACTIVE/INACTIVE만 지원하며 생략하면 전체 */
+        status?: components['schemas']['AccountStatus']
+        /**
+         * @description 이름·이메일 부분검색
+         * @example 강민서
+         */
+        query?: string
+        /**
+         * @description 정렬 기준
+         * @example NAME
+         */
+        sort?: components['schemas']['ManagerRosterSort']
+        /**
+         * @description 0부터 시작하는 페이지 번호
+         * @example 0
+         */
+        page?: number
+        /**
+         * @description 페이지당 개수(최대 100)
+         * @example 20
+         */
+        size?: number
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 매니저 목록 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ManagerRosterResponse']
+        }
+      }
+      /** @description ACCOUNT_STATUS_FILTER_NOT_SUPPORTED 이 화면이 쓰지 않는 계정 상태(LOCKED) · VALIDATION_FAILED page·size 값이 올바르지 않음 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 만료됨 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED 오퍼레이터 권한이 아님 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ORGANIZATION_CONTEXT_MISSING 인증 정보에서 기관을 확인할 수 없음 */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
   findConsents: {
     parameters: {
       query?: {
@@ -7311,6 +9983,283 @@ export interface operations {
       }
       /** @description ORGANIZATION_CONTEXT_MISSING 인증 정보에서 organizationId를 확인할 수 없음 */
       500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  findCohortRiskTraineeRates: {
+    parameters: {
+      query?: {
+        /**
+         * @description 조회 대상을 한 미니프로젝트로 좁힙니다. 생략 시 기수의 모든 미니프로젝트를 조회합니다.
+         *     회차 번호는 프로젝트마다 1부터 다시 시작하므로 미니프로젝트가 여러 건인 기수에서
+         *     한 프로젝트의 회차 흐름만 보려면 지정해야 합니다.
+         */
+        projectId?: string
+        /** @description 조회할 반 ID 목록이며 생략 시 기수의 모든 반을 조회합니다. */
+        classroomId?: string[]
+        /**
+         * @description 조회 시작 회차 번호이며 생략 시 1차부터 조회합니다.
+         * @example 1
+         */
+        fromRoundNo?: number
+        /**
+         * @description 조회 종료 회차 번호이며 생략 시 마지막 회차까지 조회합니다.
+         * @example 4
+         */
+        toRoundNo?: number
+        /**
+         * @description 행 계층입니다. TEAM이면 projectId와 classroomId 한 건이 모두 필요합니다.
+         *     팀 번호는 반 안에서만 유일하고 팀은 프로젝트에 종속이라 둘 다 좁혀야 행이 성립합니다.
+         * @example CLASS
+         */
+        level?: components['schemas']['RiskTraineeLevel']
+        /**
+         * @description 반·팀 행 정렬 기준입니다.
+         *     RECENT_ROUND_WORST(최근 발행 회차 나쁜 순) / WORSE_ROUND_COUNT(기준보다 나쁜 회차가 많은 순)
+         *     / EXCLUSION_COUNT(미집계 많은 순) / NAME(이름순)
+         * @example RECENT_ROUND_WORST
+         */
+        sort?: components['schemas']['RiskTraineeSort']
+      }
+      header?: never
+      path: {
+        /**
+         * @description 분석할 기수 ID
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        cohortId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 위험 교육생 비율 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['RiskTraineeRateResponse']
+        }
+      }
+      /** @description CLASSROOM_NOT_IN_COHORT 기수에 속하지 않은 반 · PROJECT_NOT_IN_COHORT 기수의 미니프로젝트가 아님 · ROUND_RANGE_INVALID 회차 범위 오류 · TEAM_LEVEL_PROJECT_REQUIRED 팀 계층인데 프로젝트 미지정 · TEAM_LEVEL_SINGLE_CLASSROOM_REQUIRED 팀 계층인데 반이 하나가 아님 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ANALYTICS_VIEWER_NOT_FOUND 토큰은 유효하지만 계정을 찾을 수 없음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ANALYTICS_VIEWER_NOT_ACTIVE 활성 계정 아님 · ANALYTICS_ORGANIZATION_NOT_ACTIVE 소속 기관이 활성 아님 · ANALYTICS_ROLE_NOT_ALLOWED 오퍼레이터·매니저가 아님 · ANALYTICS_COHORT_CROSS_ORGANIZATION 다른 기관의 기수 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description COHORT_NOT_FOUND 조회할 기수를 찾을 수 없음 · CLASSROOM_NOT_FOUND 팀 계층에서 지정한 반을 찾을 수 없음 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  findCohortGroupGaps: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /**
+         * @description 분석할 기수 ID
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        cohortId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 집단 미달 목록 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['GroupGapResponse']
+        }
+      }
+      /** @description ANALYTICS_VIEWER_NOT_FOUND 토큰은 유효하지만 계정을 찾을 수 없음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ANALYTICS_VIEWER_NOT_ACTIVE 활성 계정 아님 · ANALYTICS_ORGANIZATION_NOT_ACTIVE 소속 기관이 활성 아님 · ANALYTICS_ROLE_NOT_ALLOWED 오퍼레이터·매니저가 아님 · ANALYTICS_COHORT_CROSS_ORGANIZATION 다른 기관의 기수 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description COHORT_NOT_FOUND 조회할 기수를 찾을 수 없음 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  findCohortComparison: {
+    parameters: {
+      query?: {
+        /** @description 비교할 지난 기수 ID이며 생략 시 비교 후보 목록만 반환합니다. */
+        baselineCohortId?: string
+        /**
+         * @description 정렬 기준이며 나빠진 순·좋아진 순·검증 개념 순을 지원합니다.
+         * @example WORSENED
+         */
+        sort?: components['schemas']['ComparisonSort']
+        /**
+         * @description 같은 교안 버전을 쓴 개념만 남깁니다.
+         *     교안이 바뀌면 평균 차이가 교육생 변화인지 교안 변화인지 갈라 볼 수 없어 걸러냅니다.
+         *     한쪽 기수에 없던 개념도 함께 제외됩니다.
+         * @example false
+         */
+        sameCurriculumOnly?: boolean
+      }
+      header?: never
+      path: {
+        /**
+         * @description 이번 기수 ID
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        cohortId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 기수 간 비교 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CohortComparisonResponse']
+        }
+      }
+      /** @description BASELINE_COHORT_INVALID 비교 대상이 같은 기관의 다른 기수가 아님 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ANALYTICS_VIEWER_NOT_FOUND 토큰은 유효하지만 계정을 찾을 수 없음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ANALYTICS_VIEWER_NOT_ACTIVE 활성 계정 아님 · ANALYTICS_ORGANIZATION_NOT_ACTIVE 소속 기관이 활성 아님 · ANALYTICS_ROLE_NOT_ALLOWED 오퍼레이터·매니저가 아님 · ANALYTICS_COHORT_CROSS_ORGANIZATION 다른 기관의 기수 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description COHORT_NOT_FOUND 조회할 기수를 찾을 수 없음 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  findCohortActionsRequired: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /**
+         * @description 분석할 기수 ID
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        cohortId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 조치 필요 경보 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ActionRequiredResponse']
+        }
+      }
+      /** @description ANALYTICS_VIEWER_NOT_FOUND 토큰은 유효하지만 계정을 찾을 수 없음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ANALYTICS_VIEWER_NOT_ACTIVE 활성 계정 아님 · ANALYTICS_ORGANIZATION_NOT_ACTIVE 소속 기관이 활성 아님 · ANALYTICS_ROLE_NOT_ALLOWED 오퍼레이터·매니저가 아님 · ANALYTICS_COHORT_CROSS_ORGANIZATION 다른 기관의 기수 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description COHORT_NOT_FOUND 조회할 기수를 찾을 수 없음 */
+      404: {
         headers: {
           [name: string]: unknown
         }

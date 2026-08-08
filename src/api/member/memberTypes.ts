@@ -29,6 +29,23 @@ export type inviteManager_Errors =
   | 'INVITATION_SAVE_FAILED'
   | 'INVITE_MAIL_FAILED'
 
+// GET /api/v0/cohorts/{cohortId}/trainees — 기수 교육생 명단 조회
+export type findTraineeRoster_Path = operations['findTraineeRoster']['parameters']['path']
+export type findTraineeRoster_Query = NonNullable<
+  operations['findTraineeRoster']['parameters']['query']
+>
+export type findTraineeRoster_Response =
+  operations['findTraineeRoster']['responses'][200]['content']['application/json']
+export type findTraineeRoster_Item = findTraineeRoster_Response['content'][number]
+export type findTraineeRoster_Errors =
+  | 'ROSTER_FILTER_CONFLICT'
+  | 'ACCOUNT_STATUS_FILTER_NOT_SUPPORTED'
+  | 'VALIDATION_FAILED'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'COHORT_NOT_FOUND'
+  | 'ORGANIZATION_CONTEXT_MISSING'
+
 // POST /api/v0/cohorts/{cohortId}/trainees/invitations — 직접 입력 교육생 등록 및 초대
 export type registerTrainees_Path = operations['registerTrainees']['parameters']['path']
 export type registerTrainees_Body = NonNullable<
@@ -49,7 +66,35 @@ export type registerTrainees_Errors =
   | 'ACCESS_DENIED'
   | 'COHORT_NOT_INVITABLE'
 
+// PATCH /api/v0/cohorts/{cohortId}/trainees/{traineeId}/status — 교육생 계정 상태 변경
+export type updateTraineeStatus_Path = operations['updateTraineeStatus']['parameters']['path']
+export type updateTraineeStatus_Body = NonNullable<
+  operations['updateTraineeStatus']['requestBody']
+>['content']['application/json']
+export type updateTraineeStatus_Response =
+  operations['updateTraineeStatus']['responses'][200]['content']['application/json']
+export type updateTraineeStatus_Errors =
+  | 'VALIDATION_FAILED'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'COHORT_NOT_FOUND'
+  | 'TRAINEE_NOT_FOUND'
+  | 'TRAINEE_STATUS_NOT_MUTABLE'
+  | 'ORGANIZATION_CONTEXT_MISSING'
+
 // GET /api/v0/members/me — 내 정보 조회
 export type getCurrentMember_Response =
   operations['getCurrentMember']['responses'][200]['content']['application/json']
 export type getCurrentMember_Errors = 'MEMBER_NOT_FOUND' | 'UNAUTHENTICATED'
+
+// GET /api/v0/managers — 매니저 목록 조회
+export type findManagers_Query = NonNullable<operations['findManagers']['parameters']['query']>
+export type findManagers_Response =
+  operations['findManagers']['responses'][200]['content']['application/json']
+export type findManagers_Item = findManagers_Response['content'][number]
+export type findManagers_Errors =
+  | 'ACCOUNT_STATUS_FILTER_NOT_SUPPORTED'
+  | 'VALIDATION_FAILED'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'ORGANIZATION_CONTEXT_MISSING'

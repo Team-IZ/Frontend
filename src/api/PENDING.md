@@ -15,7 +15,12 @@
 | `hold` | POST /api/v0/organizations/{organizationId}/operators/invitations/{tokenId}/resend | 오퍼레이터 초대 재발송 |
 | `unavailable` | GET /api/v0/reports | 내 리포트 전량 조회 |
 | `unavailable` | GET /api/v0/reports/{reportId} | 리포트 단건 조회 |
+| `unavailable` | GET /api/v0/reports/managed | 담당 반 리포트 목록 조회 (매니저) |
 | `unavailable` | GET /api/v0/reports/class-diagnosis | 수업 진단 리포트 조회 |
+| `unavailable` | GET /api/v0/cohorts/{cohortId}/analytics/risk-trainees | 회차별 기수 전체·반별 위험 교육생 비율 조회 |
+| `unavailable` | GET /api/v0/cohorts/{cohortId}/analytics/group-gaps | 집단 미달 목록 조회 |
+| `unavailable` | GET /api/v0/cohorts/{cohortId}/analytics/cohort-comparison | 두 기수의 검증 개념별 평균 도달 단계 비교 |
+| `unavailable` | GET /api/v0/cohorts/{cohortId}/analytics/actions | 조치 필요 경보 조회 |
 | `hold` | DELETE /api/v0/organizations/{organizationId}/operators/invitations/{tokenId} | 오퍼레이터 초대 취소 |
 
 ## 손으로 쓰는 것 — multipart

@@ -47,13 +47,42 @@ const GENERIC_CODES = new Set([
   required에서 의도적으로 빠진 스키마 — 백엔드가 @JsonInclude(NON_NULL)로 키 자체를 빼는
   응답이라 정말로 optional이다(1차 요청 회신에서 확인). 프론트 타입도 `?`가 맞다.
   ⚠️ 새 스키마가 여기 들어오려면 근거가 있어야 한다. 늘어나기 시작하면 규칙이 무력해진다.
+
+  ⓘ 리포트 스키마 셋(ReportDisclosureResponse·RoundReportResponse·ConceptReportResponse)이
+    여기 있었는데 뺐다. 그것들은 합의된 예외가 아니라 **아직 생성하지 않는 API의 스키마**였고,
+    이제 `reachableFromAvailable`이 자동으로 걸러 준다 — 백엔드가 available로 바꾸면
+    이름을 지우는 것을 기억하지 않아도 검사가 저절로 켜진다.
 */
-const REQUIRED_EXEMPT = new Set([
-  'ReportDisclosureResponse',
-  'RoundReportResponse',
-  'ConceptReportResponse',
-  'UpdateModelPricingRequest',
-])
+const REQUIRED_EXEMPT = new Set(['UpdateModelPricingRequest'])
+
+/*
+  `available`인 오퍼레이션에서 실제로 도달하는 스키마 이름 — `$ref`를 재귀로 따라간다.
+
+  **생성하지 않는 API의 스키마는 검사하지 않는다.** 등급 기준이 "이 상태로 코드를 생성해도
+  되나"인데, 호출 함수를 만들지 않는 API의 스키마는 우리 타입을 거짓말시키지 않는다.
+  (`x-readiness`가 `available`이 아니면 생성기가 건너뛴다 — api-gen.mjs와 같은 기준)
+*/
+export function reachableFromAvailable(spec) {
+  const schemas = spec.components?.schemas ?? {}
+  const refsOf = (json) =>
+    (JSON.stringify(json ?? {}).match(/schemas\/(\w+)/g) ?? []).map((x) => x.slice(8))
+
+  const queue = []
+  for (const item of Object.values(spec.paths ?? {})) {
+    for (const op of Object.values(item)) {
+      if (op?.responses && (op['x-readiness'] ?? 'available') === 'available')
+        queue.push(...refsOf(op))
+    }
+  }
+  const seen = new Set()
+  while (queue.length) {
+    const name = queue.pop()
+    if (seen.has(name)) continue
+    seen.add(name)
+    queue.push(...refsOf(schemas[name]))
+  }
+  return seen
+}
 
 /*
   일반 코드뿐인 것이 **합의된** 오퍼레이션. 2차 요청 회신에서 근거를 받았다.
@@ -148,10 +177,13 @@ const rules = [
     severity: 'error',
     title: '객체 스키마에 required가 없다',
     why: '전 필드가 optional이 되어 화면이 ?·!를 남발하고, 요청 DTO는 필수 누락이 컴파일에서 안 걸린다.',
-    run: (spec) =>
-      Object.entries(spec.components?.schemas ?? {})
-        .filter(([name, s]) => s.properties && !s.required?.length && !REQUIRED_EXEMPT.has(name))
-        .map(([name]) => name),
+    run: (spec) => {
+      const live = reachableFromAvailable(spec)
+      return Object.entries(spec.components?.schemas ?? {})
+        .filter(([name, s]) => s.properties && !s.required?.length)
+        .filter(([name]) => live.has(name) && !REQUIRED_EXEMPT.has(name))
+        .map(([name]) => name)
+    },
   },
   {
     id: 'nullable',

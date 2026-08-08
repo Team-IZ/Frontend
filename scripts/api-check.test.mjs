@@ -8,7 +8,7 @@
 */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { isNullable, assertsNull } from './api-check.mjs'
+import { isNullable, assertsNull, reachableFromAvailable } from './api-check.mjs'
 
 test('isNullable — null을 허용하는 네 가지 표기', () => {
   assert.ok(isNullable({ type: 'string', nullable: true }), '3.0 nullable 플래그')
@@ -44,4 +44,49 @@ test('assertsNull — 부정문은 잡지 않는다', () => {
 test('assertsNull — null 언급이 없으면 대상이 아니다', () => {
   assert.ok(!assertsNull('기관명'))
   assert.ok(!assertsNull(undefined))
+})
+
+/*
+  `reachableFromAvailable`이 생성 대상 스키마를 정확히 고르는가.
+
+  이 함수가 조용히 빈 집합을 돌려주면 **required 규칙 전체가 무력해진다** — 위반이 없어서가
+  아니라 검사 대상이 없어서 통과한다. 실제로 `'schemas/'.slice(9)`로 첫 글자를 잘라
+  아무것도 못 찾는 버그를 냈고, 탐침을 심어보고서야 알았다.
+*/
+test('reachableFromAvailable — available에서 $ref를 재귀로 따라간다', () => {
+  const spec = {
+    paths: {
+      '/live': {
+        get: {
+          responses: {
+            200: {
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/Live' } } },
+            },
+          },
+        },
+      },
+      '/pending': {
+        get: {
+          'x-readiness': 'unavailable',
+          responses: {
+            200: {
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/Hidden' } } },
+            },
+          },
+        },
+      },
+    },
+    components: {
+      schemas: {
+        Live: { type: 'object', properties: { child: { $ref: '#/components/schemas/Nested' } } },
+        Nested: { type: 'object', properties: { x: { type: 'string' } } },
+        Hidden: { type: 'object', properties: { y: { type: 'string' } } },
+      },
+    },
+  }
+  const live = reachableFromAvailable(spec)
+
+  assert.ok(live.has('Live'), '직접 참조를 못 찾으면 규칙 전체가 무력해진다')
+  assert.ok(live.has('Nested'), '중첩 $ref도 따라가야 한다')
+  assert.ok(!live.has('Hidden'), 'unavailable에서만 쓰는 스키마는 생성하지 않으므로 대상이 아니다')
 })

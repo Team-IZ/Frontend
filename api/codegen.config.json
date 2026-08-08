@@ -1,0 +1,55 @@
+{
+  "$comment": [
+    "코드 생성 설정 — 경로·이름 규칙을 여기 한 곳에서만 정한다.",
+    "생성기(scripts/api-gen.mjs)는 이 파일 밖의 경로를 하드코딩하지 않는다.",
+    "배치를 바꾸고 싶으면 이 파일만 고치고 `npm run api:gen`을 다시 돌린다 — 파일을 손으로 옮기지 않는다.",
+    "치환자: {tagName}(짧은 도메인 이름) · {TagName}(PascalCase) · {featurePath}(tagPaths 값)"
+  ],
+  "spec": {
+    "url": "https://xvdanr6m362b2ge232vdmfbrny0kwakz.lambda-url.ap-northeast-1.on.aws/v3/api-docs",
+    "file": "api/openapi.json"
+  },
+  "paths": {
+    "$comment": "shared = 전 도메인이 함께 쓰는 생성물 · domain = 도메인별 생성물 · contract = 손으로 쓰는 것",
+    "shared": "src/api",
+    "domain": "src/api/{tagName}",
+    "contract": "src/api/_contract"
+  },
+  "files": {
+    "schema": "schema.d.ts",
+    "errorCodes": "errorCodes.ts",
+    "pending": "PENDING.md",
+    "domainTypes": "{tagName}Types.ts",
+    "domainApi": "{tagName}Api.ts",
+    "queryKeys": "{tagName}Keys.ts",
+    "queries": "use{TagName}Queries.ts",
+    "mutations": "use{TagName}Mutations.ts"
+  },
+  "imports": {
+    "contract": "@/api/_contract",
+    "schema": "@/api/schema",
+    "errorCodes": "@/api/errorCodes",
+    "domainTypes": "./{tagName}Types",
+    "domainApi": "./{tagName}Api",
+    "queryKeys": "./{tagName}Keys",
+    "reactQuery": "@tanstack/react-query"
+  },
+  "$comment_tags": [
+    "OpenAPI 태그 → 폴더·파일 이름. 'Academic Operations'를 그대로 쓰면 길어져 읽기 나쁘다.",
+    "여기 없는 태그는 camelCase 변환을 그대로 쓴다.",
+    "",
+    "화면 폴더로 나누지 않는 이유: 태그가 화면과 1:1이 아니다.",
+    "  Usage Metering → SA-02 + OP-06 · Disclosure → TR-04 + MG-08 · Reporting → TR-04 + OP-05",
+    "화면 폴더에 넣으면 ① 어느 화면 것인지 임의로 골라야 하고 ② 다른 역할이 쓸 때",
+    "레이어 린트(features/A → features/B 금지)에 막힌다. 상세는 docs/dev/api-codegen.md D7."
+  ],
+  "tags": {
+    "Auth": "auth",
+    "Consent": "consent",
+    "Organization": "organization",
+    "Usage Metering": "usage",
+    "Platform Governance": "platform",
+    "Academic Operations": "academic",
+    "Member": "member"
+  }
+}

@@ -6,33 +6,33 @@
 
 **그 화면을 이어서 만들 때 이 파일부터 읽는다.** 무엇을 어디까지 했고, 왜 그렇게 했고, 무엇이 남았는지.
 
-- [**OP-01 대시보드**](op-01-dashboard.md) — 목업 대조로 잡은 기획 결함 3건 · 반 비교 기준선 · 파이프라인 단위 · 렌더에서만 잡힌 것들
-- [**OP-02 분석**](op-02-analysis.md) — 탭마다 갈라 쓰는 색 체계 · 계층 전환 · 도달 단계 계단 · 화면이 정한 값 1건
-- [**OP-03 · OP-04 프로젝트**](op-projects-progress.md) — 무엇을 어디까지 했고 왜 그렇게 했나 · 남은 것
-- [**OP-05 리포트**](op-05-report-progress.md) — 문서형 화면(값이 얼어 있다) · 인쇄/CSV가 화면과 갈리는 지점 · 목 데이터 출처
-- [**OP-06 운영 관리**](op-06-admin.md) — 반·명단 탭 분리 · 배정 모드 · 매니저 배정 모델(1:N) · 기수 스코프 · 비용 월별·매트릭스
-- [**MG-02 히트맵**](mg-02-heatmap.md) — 목 설계 · 정의서 밖 빈틈 판단 · 드릴 계층
-- [**MG-04 면담 브리프**](mg-04-brief.md) — 정의서·와이어에 없던 빈틈 5건 · 종결 후 재오픈 · 무효 응시 증거
-- [**MG-08 프로젝트**](mg-08-projects.md) — 재응시 판정·발송 · 독촉 모달 · 제출 현황 표 · `bigp` 제거(MG-07 목록 포함)
+- [**OP-01 대시보드**](screens/op-01-dashboard.md) — 목업 대조로 잡은 기획 결함 3건 · 반 비교 기준선 · 파이프라인 단위 · 렌더에서만 잡힌 것들
+- [**OP-02 분석**](screens/op-02-analysis.md) — 탭마다 갈라 쓰는 색 체계 · 계층 전환 · 도달 단계 계단 · 화면이 정한 값 1건
+- [**OP-03 · OP-04 프로젝트**](screens/op-projects-progress.md) — 무엇을 어디까지 했고 왜 그렇게 했나 · 남은 것
+- [**OP-05 리포트**](screens/op-05-report-progress.md) — 문서형 화면(값이 얼어 있다) · 인쇄/CSV가 화면과 갈리는 지점 · 목 데이터 출처
+- [**OP-06 운영 관리**](screens/op-06-admin.md) — 반·명단 탭 분리 · 배정 모드 · 매니저 배정 모델(1:N) · 기수 스코프 · 비용 월별·매트릭스
+- [**MG-02 히트맵**](screens/mg-02-heatmap.md) — 목 설계 · 정의서 밖 빈틈 판단 · 드릴 계층
+- [**MG-04 면담 브리프**](screens/mg-04-brief.md) — 정의서·와이어에 없던 빈틈 5건 · 종결 후 재오픈 · 무효 응시 증거
+- [**MG-08 프로젝트**](screens/mg-08-projects.md) — 재응시 판정·발송 · 독촉 모달 · 제출 현황 표 · `bigp` 제거(MG-07 목록 포함)
 
 ## 아키텍처 · 결정 기록
 
 - [**API 없이 화면 만들기**](mock-first-screens.md) — **화면 하나를 시작할 때 이것부터 본다.** 착수 점검 → 목업 값 옮기기 → 목/경계 구조 → 완료 판정
-- [**OpenAPI(스웨거)가 뭔가**](openapi-basics.md) — **"스웨거가 뭔데요?" 부터인 사람은 여기부터(15분, 사전 지식 0).** OpenAPI가 뭐고 왜 있나 · 누가 만드나 · 문서 구조 · `$ref`·`enum`·`required` · **다섯 가지 용도**와 우리가 쓰는 것
-- [**API 붙이는 법**](api-usage.md) — **서버에 연결할 때 이것부터 본다(10분).** 화면에서 쓰는 법 · 명령 3개 · 폴더 구조 · 손대면 안 되는 것 · 자주 막히는 것
-- [**API 코드는 어떻게 만들어지나**](api-process.md) — **생성기를 고쳐야 할 때 본다.** `pull`→`check`→`gen` 전 과정 · IR 필드 전량 · 렌더러 6개가 무엇을 왜 만드나 · 요청 한 번의 전체 경로 · 생성기 고치는 법
+- [**OpenAPI(스웨거)가 뭔가**](api/openapi-basics.md) — **"스웨거가 뭔데요?" 부터인 사람은 여기부터(15분, 사전 지식 0).** OpenAPI가 뭐고 왜 있나 · 누가 만드나 · 문서 구조 · `$ref`·`enum`·`required` · **다섯 가지 용도**와 우리가 쓰는 것
+- [**API 붙이는 법**](api/api-usage.md) — **서버에 연결할 때 이것부터 본다(10분).** 화면에서 쓰는 법 · 명령 3개 · 폴더 구조 · 손대면 안 되는 것 · 자주 막히는 것
+- [**API 코드는 어떻게 만들어지나**](api/api-process.md) — **생성기를 고쳐야 할 때 본다.** `pull`→`check`→`gen` 전 과정 · IR 필드 전량 · 렌더러 6개가 무엇을 왜 만드나 · 요청 한 번의 전체 경로 · 생성기 고치는 법
 - [프론트엔드 구조 설계](frontend-architecture.md) — 두 명이 영역을 나눠 병렬 개발하기 위한 폴더·레이어 규칙
-- [API 경계](api-boundary.md) — 값 하나를 어디에 둘 것인가(생성물/손) · **화면이 하면 안 되는 서버 판정** · 연동 시 지워지는 것
-- [백엔드 API 문서 진단 — 1차](backend-api-requests.md) — 스펙 실측 · 치명 3건(에러 스키마·required·nullable) · **전부 반영됨**
-- [백엔드 API — 2차 요청](backend-api-requests-2.md) — 1차 반영 검증 · 요청 1건(도메인 에러 코드) · 나머지 3건은 프론트가 흡수(철회 근거)
-- [백엔드 API — 3차 요청](backend-api-requests-3.md) — 실계정 연동 테스트에서 나온 것 · 쿠키 `SameSite` · 배포 도메인 Origin · `GET /me` — **전부 반영됨**
-- [배포 정리 + 파일 업로드](backend-deployment-and-files.md) — **프록시 URL 검증 통과** · App Runner에 옛 코드 · presigned URL 권고
-- [App Runner 배포 — 안 닿음(해결됨)](backend-apprunner-deploy.md) — 원인 후보와 환경변수. 기록으로 남긴다
-- [백엔드 API — 4차 요청](backend-api-requests-4.md) — 3차 반영 확인(실서버 전 구간 동작) · 요청 1건(차단이 인스턴스 분산으로 새어나감) · **다음 API 출시 순서 요청**
-- [인증·세션 설계](auth-design.md) — 토큰을 어디에 두나 · 왜 Context가 아니라 스토어인가 · 401 재발급의 함정 셋 · 실무 정석과 우리 절충
-- [연동 계획 — Auth·슈퍼어드민](integration-plan-auth-superadmin.md) — **지금 붙일 수 있는 6화면** · 타입 불일치 · 순서와 완료 판정
-- [API 계층 결정 지점](api-layer-decisions.md) — 층·훅·쿼리 키·타입·에러를 왜 이렇게 했나 · **알려진 결함 3건**
-- [codegen 설계](api-codegen.md) — 기존 툴킷 해부 · 결정 지점 전량(후보·판단·근거) · 착수 순서
+- [API 경계](api/api-boundary.md) — 값 하나를 어디에 둘 것인가(생성물/손) · **화면이 하면 안 되는 서버 판정** · 연동 시 지워지는 것
+- [백엔드 API 문서 진단 — 1차](backend/backend-api-requests.md) — 스펙 실측 · 치명 3건(에러 스키마·required·nullable) · **전부 반영됨**
+- [백엔드 API — 2차 요청](backend/backend-api-requests-2.md) — 1차 반영 검증 · 요청 1건(도메인 에러 코드) · 나머지 3건은 프론트가 흡수(철회 근거)
+- [백엔드 API — 3차 요청](backend/backend-api-requests-3.md) — 실계정 연동 테스트에서 나온 것 · 쿠키 `SameSite` · 배포 도메인 Origin · `GET /me` — **전부 반영됨**
+- [배포 정리 + 파일 업로드](backend/backend-deployment-and-files.md) — **프록시 URL 검증 통과** · App Runner에 옛 코드 · presigned URL 권고
+- [App Runner 배포 — 안 닿음(해결됨)](backend/backend-apprunner-deploy.md) — 원인 후보와 환경변수. 기록으로 남긴다
+- [백엔드 API — 4차 요청](backend/backend-api-requests-4.md) — 3차 반영 확인(실서버 전 구간 동작) · 요청 1건(차단이 인스턴스 분산으로 새어나감) · **다음 API 출시 순서 요청**
+- [인증·세션 설계](api/auth-design.md) — 토큰을 어디에 두나 · 왜 Context가 아니라 스토어인가 · 401 재발급의 함정 셋 · 실무 정석과 우리 절충
+- [연동 계획 — Auth·슈퍼어드민](api/integration-plan-auth-superadmin.md) — **지금 붙일 수 있는 6화면** · 타입 불일치 · 순서와 완료 판정
+- [API 계층 결정 지점](api/api-layer-decisions.md) — 층·훅·쿼리 키·타입·에러를 왜 이렇게 했나 · **알려진 결함 3건**
+- [codegen 설계](api/api-codegen.md) — 기존 툴킷 해부 · 결정 지점 전량(후보·판단·근거) · 착수 순서
 - [개발 결정 기록](decision-log.md) — **여러 화면에 걸치는** 결정과 근거("왜 이렇게 했는가"). 한 화면 안의 결정은 위 화면별 문서가 갖는다 — 판정 기준은 그 문서 맨 위 "어디에 적는가"
 
 ## 컴포넌트 · 입력 인벤토리

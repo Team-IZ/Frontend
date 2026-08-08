@@ -6,7 +6,7 @@
 > 옆 문서와의 경계 — [api-layer-decisions.md](api-layer-decisions.md)는 *왜 이 구조인가*,
 > [api-codegen.md](api-codegen.md)는 *생성기가 어떻게 만드나*, 여기는 **누구 소관인가**.
 >
-> **화면을 새로 시작할 때는** [mock-first-screens.md](mock-first-screens.md)를 먼저 본다.
+> **화면을 새로 시작할 때는** [mock-first-screens.md](../mock-first-screens.md)를 먼저 본다.
 
 ---
 
@@ -173,7 +173,7 @@ export const DUE_SOON_DAYS = 7
 | `CONCEPT_COUNT = 3` 서버 검증 | ⏳ **프로젝트 API가 아직 없다.** 클라 검증만 있으면 우회된다 |
 | `DUE_SOON_DAYS` | ⏳ 기획 결정 대기 |
 
-**막힘 3건은 [3차 요청서](backend-api-requests-3.md)에 있다** — 쿠키 `SameSite` · 배포 도메인 Origin · `GET /me`.
+**막힘 3건은 [3차 요청서](../backend/backend-api-requests-3.md)에 있다** — 쿠키 `SameSite` · 배포 도메인 Origin · `GET /me`.
 
 ---
 

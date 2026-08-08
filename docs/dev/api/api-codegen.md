@@ -6,7 +6,7 @@
 > **전제 1 — 뷰만 안 깨지면 다 갈아엎어도 된다.** 지금의 `api.ts`·`mockDb.ts`·`AuthContext`·
 > `useAsync`는 전부 API가 없던 동안의 임시 구조다.
 > **전제 2 — 스펙의 절반이 아직 없다.** 55 오퍼레이션은 세팅·계정 절반이고 제품 핵심
-> 루프(제출→세션→리포트→면담)는 스펙에 없다([backend-api-requests.md](backend-api-requests.md) 4절).
+> 루프(제출→세션→리포트→면담)는 스펙에 없다([backend-api-requests.md](../backend/backend-api-requests.md) 4절).
 > **그래서 "생성물과 목이 공존한다"가 요구사항이지 과도기 편법이 아니다.**
 
 ---
@@ -115,7 +115,7 @@ if (functionName.startsWith('create') || functionName.startsWith('modify') || ..
 
 ### ★ A2. 스펙 검증 게이트
 **판단: 자체 검사 스크립트를 만든다**(외부 린터 도입 안 함).
-[backend-api-requests.md](backend-api-requests.md)에서 센 것들(에러 스키마 = 성공 스키마, `required` 없음,
+[backend-api-requests.md](../backend/backend-api-requests.md)에서 센 것들(에러 스키마 = 성공 스키마, `required` 없음,
 `nullable` 0건, 목록 봉투 불일치, `operationId` 중복)을 **그대로 검사 규칙으로 굳힌다.**
 - Spectral/Redocly는 규칙이 방대하지만 **우리 문제 대부분을 잡지 못한다**(문법은 valid하다).
 - `api:pull` 뒤 자동 실행 → **위반 목록이 곧 백엔드에 보낼 요청서**가 된다. 문서를 손으로 다시 쓰지 않는다.
@@ -599,7 +599,7 @@ POST · 페이징 없는 목록 · `unavailable` 1개)을 넣고 **생성 결과
 | **2** | 손으로 쓰는 계약 — `client`·`errors`·`authBridge`·`options`·`page` | ✅ 실서버로 4가지 시나리오 검증 |
 | **3** | IR + 생성기 (타입·함수·키·**훅**) | ✅ 45개 호출 함수 · 7개 도메인 · 생성기 테스트 8개 |
 | **3-1** | TanStack Query 도입 · 인증을 Zustand 스토어로 (`AuthContext` 삭제) | ✅ |
-| **4** | **AU-01 로그인 실연동** | 🔴 **막힘** — 쿠키 `SameSite=Lax`라 재발급이 동작하지 않는다([3차 요청](backend-api-requests-3.md) R1) |
+| **4** | **AU-01 로그인 실연동** | 🔴 **막힘** — 쿠키 `SameSite=Lax`라 재발급이 동작하지 않는다([3차 요청](../backend/backend-api-requests-3.md) R1) |
 | **5** | 나머지 도메인 · 첫 표 화면(SA-01) | ⏳ |
 
 **4번이 여전히 핵심이다.** 로그인은 케이스가 여러 개라 **에러 계약을 가장 세게 시험한다.**

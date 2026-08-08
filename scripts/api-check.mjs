@@ -3,7 +3,7 @@
   받아 둔 OpenAPI 스펙이 **코드 생성을 감당할 품질인가**를 검사한다 — `npm run api:check`
 
   이 검사들은 추상적인 모범사례가 아니라 **실제로 우리를 물었던 것들**이다.
-  전부 docs/dev/backend-api-requests.md(1차)·backend-api-requests-2.md(2차)에서 왔고,
+  전부 docs/dev/backend/backend-api-requests.md(1차)·backend-api-requests-2.md(2차)에서 왔고,
   거기서 손으로 세던 것을 그대로 코드로 옮긴 것이다. 목적 둘:
 
     ① 백엔드가 "고쳤어요" 했을 때 눈으로 99건을 다시 세지 않는다

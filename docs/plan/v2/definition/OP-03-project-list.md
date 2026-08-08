@@ -211,7 +211,7 @@
 ## 8. 구현 상태 (2026-08-03)
 
 > **§3 뷰 스케치와 열이 다르다.** 아래가 구현된 것이고, 바꾼 이유를 같이 적는다.
-> 코드 결정은 [`docs/dev/op-projects-progress.md`](../../../dev/op-projects-progress.md)가 갖는다.
+> 코드 결정은 [`docs/dev/screens/op-projects-progress.md`](../../../dev/op-projects-progress.md)가 갖는다.
 
 ### 8-1. 열 — 순서가 곧 판단 순서다
 

@@ -8,7 +8,7 @@
 > | 무엇 | 어디 |
 > |---|---|
 > | 폴더·레이어·라우팅 | [frontend-architecture.md](frontend-architecture.md) |
-> | 무엇이 서버 것이고 무엇이 화면 것인가 | [api-boundary.md](api-boundary.md) |
+> | 무엇이 서버 것이고 무엇이 화면 것인가 | [api-boundary.md](api/api-boundary.md) |
 > | 화면 그릴 때 규칙(A~I) | [../plan/v2/definition/01-design-checklist.md](../plan/v2/definition/01-design-checklist.md) |
 > | 폭·층·빈 상태 | [../plan/v2/definition/02-layout-system.md](../plan/v2/definition/02-layout-system.md) |
 > | 커밋·PR·완료의 정의 | [../handbook/git-convention.md](../handbook/git-convention.md) |
@@ -266,7 +266,7 @@ useEffect(() => {
 
 같은 이메일 정규식이 **이름만 다른 채 5곳**에 흩어져 있었다(`EMAIL_PATTERN`·`EMAIL_SHAPE`·`EMAIL_RE`). 문구도 각자 적혀 있어 한 곳만 고치면 조용히 갈린다. **새 검증 규칙은 두 번째 도메인이 필요로 한 시점에 `lib/`로 올린다**(§3-1의 배치 규칙과 같다).
 
-> **스키마 검증 라이브러리(zod 등)는 아직 안 넣는다.** 지금 규칙이 4종뿐이라 이득이 없고, **요청 바디 타입이 스펙에서 생성되므로 손으로 쓴 스키마는 새 드리프트 지점이 된다.** 넣는다면 ① 위 통일을 마친 뒤 ② 손으로 쓰지 말고 스펙에서 생성하는 방식으로. 상세는 [api-codegen.md](api-codegen.md) G1.
+> **스키마 검증 라이브러리(zod 등)는 아직 안 넣는다.** 지금 규칙이 4종뿐이라 이득이 없고, **요청 바디 타입이 스펙에서 생성되므로 손으로 쓴 스키마는 새 드리프트 지점이 된다.** 넣는다면 ① 위 통일을 마친 뒤 ② 손으로 쓰지 말고 스펙에서 생성하는 방식으로. 상세는 [api-codegen.md](api/api-codegen.md) G1.
 
 ---
 

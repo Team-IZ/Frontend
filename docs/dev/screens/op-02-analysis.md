@@ -2,8 +2,8 @@
 
 > **다음 세션이 이 파일부터 읽는다.** 무엇을 어디까지 했고, 왜 그렇게 했고, 무엇이 남았는지.
 >
-> 규칙은 [mock-first-screens.md](mock-first-screens.md)(화면 만드는 순서) ·
-> [api-boundary.md](api-boundary.md)(서버/화면 경계) · [01 점검표](../plan/v2/definition/01-design-checklist.md)가
+> 규칙은 [mock-first-screens.md](../mock-first-screens.md)(화면 만드는 순서) ·
+> [api-boundary.md](../api/api-boundary.md)(서버/화면 경계) · [01 점검표](../../plan/v2/definition/01-design-checklist.md)가
 > 갖는다. 여기는 **이 화면에서 실제로 내린 결정**만 적는다.
 >
 > 같은 목 데이터를 쓰는 짝이 [OP-01 대시보드](op-01-dashboard.md)다.

@@ -4,7 +4,7 @@
 > 프로젝트·교안·세션·리포트·면담은 스펙에 없으므로 **목 그대로 둔다.**
 >
 > 관련 — [api-boundary.md](api-boundary.md)(무엇이 누구 소관인가) ·
-> [api-layer-decisions.md](api-layer-decisions.md)(훅·키·에러) · [mock-first-screens.md](mock-first-screens.md)(완료 판정)
+> [api-layer-decisions.md](api-layer-decisions.md)(훅·키·에러) · [mock-first-screens.md](../mock-first-screens.md)(완료 판정)
 
 ---
 

@@ -6,7 +6,7 @@
 //
 // **검색·필터·정렬·페이지·집계는 전부 이 파일 안에서 합니다.** 목이 배열이라 화면에서
 // 돌리는 게 되지만, 실제 API는 그 결과를 서버가 줍니다 — 그대로 두면 연동이 재작성이
-// 됩니다(`docs/dev/api-boundary.md` §1-②, `docs/dev/mock-first-screens.md` §3-3).
+// 됩니다(`docs/dev/api/api-boundary.md` §1-②, `docs/dev/mock-first-screens.md` §3-3).
 import type {
   AddRosterRequest,
   AddRosterResult,

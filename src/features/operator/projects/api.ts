@@ -79,7 +79,7 @@ export function getToday(): string {
  *
  * 검색·필터·정렬을 **전부 서버가 처리한다.** 화면은 받은 `items`를 그리기만 한다 —
  * 전량을 받아 거르면 회차가 쌓였을 때 못 쓰고, `counts`(전체 모집단 기준)를 셀 수
- * 없다(`docs/dev/api-boundary.md` §1-②). 페이지 분할은 필요한 화면에서 더한다.
+ * 없다(`docs/dev/api/api-boundary.md` §1-②). 페이지 분할은 필요한 화면에서 더한다.
  */
 export function listProjects(q: ProjectQuery): Promise<ProjectPage> {
   // ===== Mock 버전 (현재 활성) =====

@@ -1,4 +1,5 @@
 import type { RouteObject } from 'react-router'
+import RequireRole from '@/shells/RequireRole'
 import PlatformSettingsScreen from './PlatformSettingsScreen'
 
 /*
@@ -14,5 +15,9 @@ import PlatformSettingsScreen from './PlatformSettingsScreen'
 */
 export const route: RouteObject = {
   path: '/superadmin/settings',
-  element: <PlatformSettingsScreen />,
+  element: (
+    <RequireRole allow={['SUPER_ADMIN']}>
+      <PlatformSettingsScreen />
+    </RequireRole>
+  ),
 }

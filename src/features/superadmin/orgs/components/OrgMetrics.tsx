@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Progress } from '@/components/ui/Progress'
 import type { findPlatformSummary_Response } from '@/api/organization/organizationTypes'
-import { formatChangeRate, formatCost, formatGb } from '../labels'
+import { formatBytes, formatChangeRate, formatCost } from '../labels'
 
 /*
   와이어프레임 `.metrics`(4카드) — 기관별 데이터가 아닌 **플랫폼 집계**다.
@@ -91,10 +91,10 @@ export default function OrgMetrics({ summary }: { summary: findPlatformSummary_R
       </MetricCard>
       <MetricCard
         label="저장량"
-        value={formatGb(storage.totalBytes)}
+        value={formatBytes(storage.totalBytes)}
         sub={[
           storageChange && `전월 대비 ${storageChange}`,
-          `기관 평균 ${formatGb(storage.averageBytesPerOrganization)}`,
+          `기관 평균 ${formatBytes(storage.averageBytesPerOrganization)}`,
         ]
           .filter(Boolean)
           .join(' · ')}

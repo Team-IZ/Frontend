@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ArrowLeft } from 'lucide-react'
 import ConsoleShell from '@/shells/ConsoleShell'
@@ -7,33 +6,54 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
-import { getOrgDetail, orgStatusBadge } from './mockData'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { useFindOrganization } from '@/api/organization/useOrganizationQueries'
+import { orgStatusBadge } from './labels'
 import OverviewTab from './components/detail/OverviewTab'
 import OperatorsTab from './components/detail/OperatorsTab'
 import UsageTab from './components/detail/UsageTab'
 import SettingsTab from './components/detail/SettingsTab'
 
 /*
-  SA-02 기관 상세 — 탭 4(개요·오퍼레이터·사용량 · 비용·설정). 정의서
-  (SA-02-org-detail.md) · 와이어프레임(superadmin/console.html#page-overview
-  이하)만 보고 새로 짰다(v1 원본 없음, SA-01과 같은 사정). 케이스별 판단은
-  mockData.ts의 "SA-02 기관 상세" 섹션 주석에 몰아뒀다.
+  SA-02 기관 상세 — 탭 4(개요·오퍼레이터·사용량 · 비용·설정).
 
-  탭들이 mockData.detailStore를 직접 mutate하는 mock API(초대·정지·설정 변경·삭제
-  요청)를 쓰기 때문에, 이 화면은 그 변경을 React state로 들고 있지 않고 "다시
-  읽어오기"로 반영한다 — refresh()가 getOrgDetail을 재호출해 org·detail을 새
-  객체로 세팅한다(SA-01 OrgListScreen의 setOrgs([...ORGS])와 같은 패턴).
+  ## 이 화면은 헤더에 필요한 것만 조회한다
+  기관 이름과 상태 배지가 전부다. **탭 데이터는 각 탭이 자기 것을 조회한다** —
+  SA-03 플랫폼 설정과 같은 구조다(SuperadminAccountsTab이 자기 목록을 직접 읽는다).
+
+  화면이 4탭 데이터를 다 받아 내려주면 **첫 진입에 조회가 4건 나가는데 사용자가 보는
+  것은 1건**이다(mock-first-screens.md §6-1: "화면 진입당 조회 수는 화면이 실제로
+  그리는 데이터 수와 같아야 한다"). 탭을 눌러야 그 탭이 조회한다.
+
+  ## refresh()가 없어진 이유
+  목일 때는 탭들이 detailStore를 직접 고치고 이 화면이 다시 읽어 내려줬다. 지금은
+  **쓰기 훅이 성공하면 그 도메인 조회가 자동으로 무효화**되므로 화면이 중개하지 않는다.
 */
 
 export default function OrgDetailScreen() {
   const { id = '' } = useParams()
-  const [snapshot, setSnapshot] = useState(() => getOrgDetail(id))
+  const { data: org, isPending, isError } = useFindOrganization({ path: { organizationId: id } })
 
-  function refresh() {
-    setSnapshot(getOrgDetail(id))
+  if (isPending) {
+    return (
+      <ConsoleShell role="superadmin">
+        <div className="[&_h1]:sr-only">
+          <PageHeader breadcrumb="기관" title="기관 상세" />
+        </div>
+        <div className="mb-4 flex items-center gap-2.5">
+          <BackButton />
+          <Skeleton className="h-7 w-48" />
+        </div>
+        <Skeleton className="h-64 w-full" />
+      </ConsoleShell>
+    )
   }
 
-  if (!snapshot) {
+  /*
+    404와 그 밖의 실패를 가르지 않는다 — 슈퍼어드민이 목록에서 눌러 들어오는 화면이라
+    "없는 기관"은 삭제됐거나 주소를 직접 고친 경우뿐이고, 둘 다 할 수 있는 일이 같다.
+  */
+  if (isError) {
     return (
       <ConsoleShell role="superadmin">
         <div className="mx-auto max-w-3xl">
@@ -53,7 +73,6 @@ export default function OrgDetailScreen() {
     )
   }
 
-  const { org, detail } = snapshot
   const badge = orgStatusBadge(org)
 
   return (
@@ -77,16 +96,16 @@ export default function OrgDetailScreen() {
         </TabsList>
 
         <TabsContent value="overview">
-          <OverviewTab org={org} detail={detail} />
+          <OverviewTab org={org} />
         </TabsContent>
         <TabsContent value="operators">
-          <OperatorsTab org={org} detail={detail} onChange={refresh} />
+          <OperatorsTab org={org} />
         </TabsContent>
         <TabsContent value="usage">
           <UsageTab org={org} />
         </TabsContent>
         <TabsContent value="settings">
-          <SettingsTab org={org} detail={detail} onChange={refresh} />
+          <SettingsTab org={org} />
         </TabsContent>
       </Tabs>
     </ConsoleShell>

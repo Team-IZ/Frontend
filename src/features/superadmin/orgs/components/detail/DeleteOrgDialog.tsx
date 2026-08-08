@@ -10,7 +10,10 @@ import { Field, FieldLabel, FieldDescription } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
-import { requestOrgDeletion, type Org } from '../../mockData'
+import { useDeleteOrganization } from '@/api/organization/useOrganizationMutations'
+import type { findOrganization_Response } from '@/api/organization/organizationTypes'
+
+type Org = findOrganization_Response
 
 /*
   SA-02 §7 "기관 삭제 — 즉시 파기가 아니다". 기관명을 정확히 입력해야 버튼이
@@ -23,13 +26,11 @@ export default function DeleteOrgDialog({
   onOpenChange,
   org,
   retentionDays,
-  onDeleted,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   org: Org
   retentionDays: number
-  onDeleted: () => void
 }) {
   const [typed, setTyped] = useState('')
 
@@ -37,13 +38,27 @@ export default function DeleteOrgDialog({
     if (open) setTyped('')
   }, [open])
 
+  /*
+    이름 대조는 화면에서도 하지만 **서버가 최종 판정한다** — 스펙: *"저장된 기관명과 다르면
+    거절된다."* 화면 검사는 버튼을 잠그는 용도이고, 실패 처리를 따로 두는 이유는
+    다이얼로그를 연 뒤 다른 사람이 기관명을 바꿀 수 있기 때문이다.
+  */
   const matches = typed.trim() === org.name
+  const remove = useDeleteOrganization()
+  const [error, setError] = useState<string | null>(null)
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!matches) return
-    requestOrgDeletion(org.id)
-    onDeleted()
-    onOpenChange(false)
+    setError(null)
+    try {
+      await remove.mutateAsync({
+        path: { organizationId: org.organizationId },
+        body: { confirmName: typed.trim() },
+      })
+      onOpenChange(false)
+    } catch {
+      setError('삭제하지 못했습니다. 기관명이 바뀌었을 수 있습니다.')
+    }
   }
 
   return (
@@ -54,6 +69,8 @@ export default function DeleteOrgDialog({
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
+          {error && <Alert variant="danger">{error}</Alert>}
+
           <Alert variant="danger">
             <AlertTitle>지금 바로 지워지지 않습니다</AlertTitle>
             <AlertDescription>

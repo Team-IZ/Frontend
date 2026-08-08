@@ -6,75 +6,75 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/Dialog'
-import { Field, FieldLabel, FieldDescription } from '@/components/ui/Field'
+import { Field, FieldLabel, FieldDescription, FieldError } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
-import {
-  inviteOperator,
-  validateOperatorEmail,
-  type InviteFieldErrorCode,
-  type Operator,
-  type Org,
-} from '../../mockData'
+import { Alert } from '@/components/ui/Alert'
+import { useInviteOperator } from '@/api/organization/useOrganizationMutations'
+import { isApiError } from '@/api/_contract'
+import { EMAIL_PATTERN, EMAIL_INVALID_MESSAGE } from '#lib/validation.ts'
 
 /*
-  SA-02 §3 "초대 모달" — 이메일 하나만 받는다(기수 배정 없음, 오퍼레이터는 기관
-  전체를 본다). 케이스 2·N1(형식·중복·도메인 밖)은 제출 전에 막는다 — 서버 왕복이
-  필요 없는 검사라 OrgCreateDialog의 실시간 중복 확인과 달리 입력마다 동기 검증만
-  한다(mockData.validateOperatorEmail).
-*/
+  SA-02 ② 초대 모달 — 이메일 하나만 받는다(기수 배정 없음, 오퍼레이터는 기관 전체를 본다).
 
-const ERROR_MESSAGE: Record<InviteFieldErrorCode, string> = {
-  INVALID_EMAIL: '올바른 이메일 형식이 아닙니다.',
-  ALREADY_INVITED: '이미 초대된 이메일입니다.',
-  DOMAIN_NOT_ALLOWED: '이 기관 도메인 밖의 주소는 초대할 수 없습니다.',
-}
+  ## 화면이 하던 검사 둘을 서버에 넘겼다
+  | 검사 | 왜 화면이 못 하나 |
+  |---|---|
+  | **도메인 제한** | 스펙 명시 — *"이메일 도메인 제한이 없다. `emailDomain`이 설정돼 있어도 아무 주소로나"*. 목이 막고 있던 것이 **없는 규칙**이었다 |
+  | **중복 초대** | 이미 가입했는지·초대 진행 중인지는 서버만 안다. 목은 화면이 가진 목록으로 셌다 |
+
+  형식 검사만 화면에 남는다 — 왕복 없이 즉시 알려줄 수 있는 것이라 그렇다.
+
+  ## `INVITE_MAIL_FAILED`(502)는 에러 코드지만 초대는 됐다
+  스펙에 적혀 있다 — *"502여도 계정 자리는 남는다. 목록을 다시 부르면 그 계정이
+  `invitationDeliveryFailed=true`로 나오므로 화면은 **그 행에** 재발송 버튼을 붙이면 된다."*
+
+  그래서 **모달을 닫는다.** 에러로 남겨 두면 사용자가 다시 누르고, 그때는 `ALREADY_INVITED`가
+  나서 "초대가 안 된 건가?"로 더 헷갈린다. 자리가 남는 이유도 스펙에 있다 — 지우면
+  **중복 초대인지 재시도인지 구분할 수 없다.**
+*/
 
 export default function OperatorInviteDialog({
   open,
   onOpenChange,
-  org,
-  existing,
-  onInvited,
+  organizationId,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  org: Org
-  existing: Operator[]
-  onInvited: (operator: Operator) => void
+  organizationId: string
 }) {
   const [email, setEmail] = useState('')
   const [touched, setTouched] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const invite = useInviteOperator()
 
+  // 다이얼로그는 닫아도 언마운트되지 않는다 — 열 때마다 비운다
   useEffect(() => {
     if (open) {
       setEmail('')
       setTouched(false)
+      setSubmitError(null)
     }
   }, [open])
 
   const trimmed = email.trim()
-  const error = trimmed ? validateOperatorEmail(org.domain, existing, trimmed) : null
-  // 버튼은 "제출 가능한 상태"가 아니라 "누를 수 있는 상태"만 따진다 — 에러가 있어도
-  // 비활성으로 막으면 클릭 자체가 안 먹혀서 handleSubmit이 안 불리고(setTouched(true)도
-  // 안 됨), 결과적으로 입력칸에서 포커스가 빠져야만(onBlur) 에러가 보이는 문제가
-  // 생긴다. "초대 발송"을 눌렀을 때 바로 에러가 뜨려면 클릭이 항상 handleSubmit까지
-  // 도달해야 한다.
-  const canAttemptSubmit = trimmed.length > 0 && !submitting
-  const canSubmit = canAttemptSubmit && error === null
+  const formatError = trimmed && !EMAIL_PATTERN.test(trimmed) ? EMAIL_INVALID_MESSAGE : null
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleSubmit() {
     setTouched(true)
-    if (!canSubmit) return
-    setSubmitting(true)
+    setSubmitError(null)
+    if (!trimmed || formatError) return
+
     try {
-      const operator = await inviteOperator(org.id, trimmed)
-      onInvited(operator)
+      await invite.mutateAsync({ path: { organizationId }, body: { email: trimmed } })
       onOpenChange(false)
-    } finally {
-      setSubmitting(false)
+    } catch (e) {
+      // 메일 실패는 초대 자체가 된 것이라 닫는다. 표의 그 행이 재발송을 안내한다
+      if (isApiError(e) && e.code === 'INVITE_MAIL_FAILED') {
+        onOpenChange(false)
+        return
+      }
+      setSubmitError(inviteErrorMessage(e))
     }
   }
 
@@ -82,47 +82,56 @@ export default function OperatorInviteDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>오퍼레이터 초대 · {org.name}</DialogTitle>
+          <DialogTitle>오퍼레이터 초대</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-          <Field data-invalid={touched && error !== null}>
+        <div className="flex flex-col gap-3">
+          {submitError && <Alert variant="danger">{submitError}</Alert>}
+
+          <Field data-invalid={touched && Boolean(formatError)}>
             <FieldLabel htmlFor="operator-email">이메일</FieldLabel>
             <Input
               id="operator-email"
               type="email"
               value={email}
+              autoFocus
+              placeholder="operator@example.com"
+              aria-invalid={touched && Boolean(formatError)}
               onChange={(e) => setEmail(e.target.value)}
               onBlur={() => setTouched(true)}
-              placeholder={`example@${org.domain}`}
-              disabled={submitting}
-              aria-invalid={touched && error !== null}
-              autoComplete="off"
+              onKeyDown={(e) => e.key === 'Enter' && void handleSubmit()}
             />
-            {touched && error ? (
-              <p className="text-danger text-xs font-medium">{ERROR_MESSAGE[error]}</p>
-            ) : (
-              <FieldDescription>
-                이 주소로 초대 메일이 갑니다 · {org.domain} 도메인만 가능
-              </FieldDescription>
-            )}
+            <FieldError>{touched && formatError ? formatError : ''}</FieldError>
+            <FieldDescription>
+              초대 링크가 이 주소로 갑니다. 기관 도메인 밖의 주소도 초대할 수 있습니다.
+            </FieldDescription>
           </Field>
+        </div>
 
-          <DialogFooter className="-mx-4 -mb-4 mt-0">
-            <Button
-              type="button"
-              variant="ghost"
-              disabled={submitting}
-              onClick={() => onOpenChange(false)}
-            >
-              취소
-            </Button>
-            <Button type="submit" disabled={!canAttemptSubmit}>
-              {submitting ? '보내는 중…' : '초대 발송'}
-            </Button>
-          </DialogFooter>
-        </form>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            취소
+          </Button>
+          <Button disabled={invite.isPending} onClick={() => void handleSubmit()}>
+            초대 보내기
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )
+}
+
+/** 서버 문구를 그대로 띄우지 않는다 — 개발자용이고 백엔드가 문구만 고쳐도 화면이 바뀐다 */
+function inviteErrorMessage(e: unknown): string {
+  if (!isApiError(e)) return '초대하지 못했습니다. 잠시 후 다시 시도해 주세요.'
+  switch (e.code) {
+    case 'ALREADY_INVITED':
+      // 스펙: "이미 등록되었거나 초대가 진행 중" — 둘을 구분할 수 없어 양쪽을 다 말한다
+      return '이미 등록되었거나 초대가 진행 중인 이메일입니다.'
+    case 'NOT_FOUND':
+      // 스펙: "활성 기관이 아님(삭제·미존재)"
+      return '활성 상태인 기관이 아닙니다. 목록에서 다시 들어와 주세요.'
+    default:
+      return '초대하지 못했습니다. 잠시 후 다시 시도해 주세요.'
+  }
 }

@@ -2,7 +2,9 @@ import { useState, type ReactNode } from 'react'
 import { PlusIcon, TriangleAlertIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import {
   Table,
   TableHeader,
@@ -11,50 +13,60 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/Table'
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/Dialog'
 import { cn } from '@/lib/utils/cn'
+import { useFindOperators } from '@/api/organization/useOrganizationQueries'
 import {
-  cancelInvite,
-  reactivateOperator,
-  resendInvite,
-  suspendOperator,
-  type Operator,
-  type Org,
-  type OrgDetail,
-} from '../../mockData'
+  useCancelInvitation,
+  useResendOperatorInvitation,
+  useUpdateOperatorStatus,
+} from '@/api/organization/useOrganizationMutations'
+import { isApiError } from '@/api/_contract'
+import type { findOperators_Item } from '@/api/organization/organizationTypes'
+import { formatDate, formatDateTime } from '../../labels'
 import OperatorInviteDialog from './OperatorInviteDialog'
 
 /*
-  SA-02 §3 "오퍼레이터 탭" — 계정 관리이지 매니저 관리가 아니다(반 담당 매니저는
-  오퍼레이터가 기관 안에서 초대한다). 정지 액션은 항상 눌릴 수 있게 두고, 그게
-  마지막 활성 오퍼레이터일 때만 suspendOperator가 LAST_OPERATOR를 돌려줘서
-  차단 모달(N2)을 띄운다 — 미리 버튼을 숨기면 "왜 안 눌리지"를 설명할 곳이 없다.
+  SA-02 ② 오퍼레이터 — 계정 관리이지 매니저 관리가 아니다(반 담당 매니저는 오퍼레이터가
+  기관 안에서 초대한다).
+
+  ## 버튼 노출을 서버 값으로 판정한다
+  | 서버 값 | 목일 때 화면이 하던 것 |
+  |---|---|
+  | `suspendable` | **마지막 활성인지 화면이 셌다.** 규칙이 바뀌면 조용히 틀린다 |
+  | `pendingInvitationTokenId` | `status === 'INVITED'`로 유추 |
+  | `invitationDeliveryFailed` | `MAIL_FAILED`라는 **없는 상태값을 지어냈다** |
+
+  메일 실패는 **상태가 아니라 플래그**다. `PENDING`이면서 실패한 것이라 배지와 따로 다룬다.
+
+  ## 정지 버튼은 잠그되 이유를 말한다
+  `suspendable === false`면 흐리게 두고 `title`로 사유를 준다 — 제품 원칙이 이유 없는 흐린
+  버튼을 금지한다. 그래도 **서버가 거절할 수 있다**(목록을 받은 뒤 남이 정지시킨 경우).
+  그때는 `LAST_OPERATOR`를 문장으로 바꿔 띄운다. 앞은 평소를 위한 것이고 뒤는 어긋난 순간을 위한 것이다.
 */
+
+type Operator = findOperators_Item
 
 function ActionLink({
   onClick,
   tone = 'neutral',
   children,
   disabled,
+  title,
 }: {
   onClick: () => void
   tone?: 'neutral' | 'danger' | 'primary'
   children: ReactNode
   disabled?: boolean
+  title?: string
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
+      title={title}
       className={cn(
-        'text-xs font-semibold hover:underline disabled:cursor-not-allowed disabled:opacity-50 disabled:no-underline',
+        'text-xs font-semibold hover:underline disabled:cursor-not-allowed disabled:no-underline disabled:opacity-50',
         tone === 'danger' && 'text-danger',
         tone === 'primary' && 'text-primary',
         tone === 'neutral' && 'text-fg-muted',
@@ -65,65 +77,70 @@ function ActionLink({
   )
 }
 
-function OperatorStatusBadge({ status }: { status: Operator['status'] }) {
-  switch (status) {
+/** 메일 실패는 여기 없다 — 상태가 아니라 플래그라 `PENDING` 안에서 갈린다 */
+function OperatorStatusBadge({ op }: { op: Operator }) {
+  switch (op.status) {
     case 'ACTIVE':
       return <Badge variant="success">활성</Badge>
-    case 'INVITED':
-      return <Badge variant="warning">초대됨</Badge>
-    case 'MAIL_FAILED':
-      return <Badge variant="warning">메일 발송 실패</Badge>
-    case 'SUSPENDED':
+    case 'INACTIVE':
       return <Badge variant="neutral">정지</Badge>
+    case 'PENDING':
+      return op.invitationDeliveryFailed ? (
+        <Badge variant="warning">메일 발송 실패</Badge>
+      ) : (
+        <Badge variant="warning">초대됨</Badge>
+      )
+    default:
+      // 스펙에 없는 값이 오면 원문 그대로 — 빈칸은 "데이터 없음"으로 읽힌다
+      return <Badge variant="neutral">{op.status}</Badge>
   }
 }
 
-export default function OperatorsTab({
-  org,
-  detail,
-  onChange,
-}: {
-  org: Org
-  detail: OrgDetail
-  onChange: () => void
-}) {
+export default function OperatorsTab({ org }: { org: { organizationId: string } }) {
+  const organizationId = org.organizationId
+  const { data, isPending, isError, refetch } = useFindOperators({ path: { organizationId } })
   const [inviteOpen, setInviteOpen] = useState(false)
-  const [blockedOperator, setBlockedOperator] = useState<Operator | null>(null)
-  const [pendingId, setPendingId] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
-  async function handleSuspend(op: Operator) {
-    const result = suspendOperator(org.id, op.id)
-    if (!result.ok) {
-      setBlockedOperator(op)
-      return
-    }
-    onChange()
-  }
+  const updateStatus = useUpdateOperatorStatus()
+  const resend = useResendOperatorInvitation()
+  const cancel = useCancelInvitation()
+  const busy = updateStatus.isPending || resend.isPending || cancel.isPending
 
-  function handleReactivate(op: Operator) {
-    reactivateOperator(org.id, op.id)
-    onChange()
-  }
-
-  async function handleResend(op: Operator) {
-    setPendingId(op.id)
+  async function run(action: () => Promise<unknown>, fallback: string) {
+    setError(null)
     try {
-      await resendInvite(org.id, op.id)
-      onChange()
-    } finally {
-      setPendingId(null)
+      await action()
+    } catch (e) {
+      setError(
+        isApiError(e) && e.code === 'LAST_OPERATOR'
+          ? '이 기관의 마지막 오퍼레이터라 정지할 수 없습니다. 새 오퍼레이터를 먼저 초대하세요.'
+          : fallback,
+      )
     }
   }
 
-  function handleCancel(op: Operator) {
-    cancelInvite(org.id, op.id)
-    onChange()
+  if (isError) {
+    return (
+      <Empty>
+        <EmptyHeader>
+          <EmptyTitle>오퍼레이터를 불러오지 못했습니다</EmptyTitle>
+          <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
+        </EmptyHeader>
+        <Button variant="ghost" onClick={() => refetch()}>
+          다시 시도
+        </Button>
+      </Empty>
+    )
   }
 
-  const hasMailFailure = detail.operators.some((o) => o.status === 'MAIL_FAILED')
+  const operators = data?.content ?? []
+  const hasMailFailure = operators.some((o) => o.invitationDeliveryFailed)
 
   return (
     <div className="flex flex-col gap-4">
+      {error && <Alert variant="danger">{error}</Alert>}
+
       {hasMailFailure && (
         <Alert variant="warning">
           <TriangleAlertIcon />
@@ -136,14 +153,18 @@ export default function OperatorsTab({
 
       <div className="flex items-center justify-between">
         <p className="text-fg-subtle text-xs font-semibold">
-          이 기관의 오퍼레이터 계정 · {detail.operators.length}명
+          {data
+            ? `이 기관의 오퍼레이터 계정 · ${operators.length}명 (활성 ${data.activeCount})`
+            : ' '}
         </p>
         <Button onClick={() => setInviteOpen(true)}>
           <PlusIcon /> 오퍼레이터 초대
         </Button>
       </div>
 
-      {detail.operators.length === 0 ? (
+      {isPending ? (
+        <Skeleton className="h-40 w-full" />
+      ) : operators.length === 0 ? (
         <p className="text-fg-subtle rounded-md border border-dashed border-border-strong bg-surface-2 p-8 text-center text-sm">
           아직 오퍼레이터가 없습니다. 첫 오퍼레이터를 초대해 이 기관을 시작하세요.
         </p>
@@ -155,55 +176,109 @@ export default function OperatorsTab({
               <TableHead className="w-52">이메일</TableHead>
               <TableHead className="w-32">상태</TableHead>
               <TableHead className="w-28">초대일</TableHead>
-              <TableHead className="w-28">최근 로그인</TableHead>
+              <TableHead className="w-36">최근 로그인</TableHead>
               <TableHead className="w-32" />
             </TableRow>
           </TableHeader>
           <TableBody>
-            {detail.operators.map((op) => {
-              const suspended = op.status === 'SUSPENDED'
-              const mailFailed = op.status === 'MAIL_FAILED'
+            {operators.map((op) => {
+              const inactive = op.status === 'INACTIVE'
+              // 대기 중인 초대가 있어야 재발송·취소가 된다. 상태로 유추하지 않는다
+              const tokenId = op.pendingInvitationTokenId
               return (
                 <TableRow
-                  key={op.id}
-                  className={cn(suspended && 'opacity-60', mailFailed && 'bg-warning-soft')}
+                  key={op.memberId}
+                  className={cn(
+                    inactive && 'opacity-60',
+                    op.invitationDeliveryFailed && 'bg-warning-soft',
+                  )}
                 >
                   <TableCell className={cn('font-bold', !op.name && 'text-fg-subtle font-normal')}>
+                    {/* 초대만 되고 가입 전이면 이름이 없다(서버 null) */}
                     {op.name ?? '—'}
                   </TableCell>
                   <TableCell className="font-mono text-xs">{op.email}</TableCell>
                   <TableCell>
-                    <OperatorStatusBadge status={op.status} />
+                    <OperatorStatusBadge op={op} />
                   </TableCell>
-                  <TableCell className="text-fg-muted text-xs">{op.invitedAt}</TableCell>
                   <TableCell className="text-fg-muted text-xs">
-                    {op.lastLoginAt ?? (op.status === 'INVITED' || mailFailed ? '대기 중' : '—')}
+                    {op.invitedAt ? formatDate(op.invitedAt) : '—'}
+                  </TableCell>
+                  <TableCell className="text-fg-muted text-xs">
+                    {op.lastLoginAt ? formatDateTime(op.lastLoginAt) : tokenId ? '대기 중' : '—'}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       {op.status === 'ACTIVE' && (
-                        <ActionLink tone="danger" onClick={() => handleSuspend(op)}>
+                        <ActionLink
+                          tone="danger"
+                          disabled={!op.suspendable || busy}
+                          title={
+                            op.suspendable
+                              ? undefined
+                              : '이 기관의 마지막 활성 오퍼레이터는 정지할 수 없습니다'
+                          }
+                          onClick={() =>
+                            void run(
+                              () =>
+                                updateStatus.mutateAsync({
+                                  path: { organizationId, memberId: op.memberId },
+                                  body: { status: 'INACTIVE' },
+                                }),
+                              '정지하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+                            )
+                          }
+                        >
                           정지
                         </ActionLink>
                       )}
-                      {(op.status === 'INVITED' || mailFailed) && (
+
+                      {inactive && (
+                        <ActionLink
+                          tone="primary"
+                          disabled={busy}
+                          onClick={() =>
+                            void run(
+                              () =>
+                                updateStatus.mutateAsync({
+                                  path: { organizationId, memberId: op.memberId },
+                                  body: { status: 'ACTIVE' },
+                                }),
+                              '재활성하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+                            )
+                          }
+                        >
+                          재활성
+                        </ActionLink>
+                      )}
+
+                      {tokenId && (
                         <>
                           <ActionLink
                             tone="primary"
-                            disabled={pendingId === op.id}
-                            onClick={() => handleResend(op)}
+                            disabled={busy}
+                            onClick={() =>
+                              void run(
+                                () => resend.mutateAsync({ path: { organizationId, tokenId } }),
+                                '재발송하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+                              )
+                            }
                           >
                             재발송
                           </ActionLink>
-                          <ActionLink tone="danger" onClick={() => handleCancel(op)}>
+                          <ActionLink
+                            tone="danger"
+                            disabled={busy}
+                            onClick={() =>
+                              void run(
+                                () => cancel.mutateAsync({ path: { organizationId, tokenId } }),
+                                '취소하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+                              )
+                            }
+                          >
                             취소
                           </ActionLink>
                         </>
-                      )}
-                      {suspended && (
-                        <ActionLink tone="primary" onClick={() => handleReactivate(op)}>
-                          재활성
-                        </ActionLink>
                       )}
                     </div>
                   </TableCell>
@@ -217,50 +292,8 @@ export default function OperatorsTab({
       <OperatorInviteDialog
         open={inviteOpen}
         onOpenChange={setInviteOpen}
-        org={org}
-        existing={detail.operators}
-        onInvited={() => onChange()}
+        organizationId={organizationId}
       />
-
-      {/* N2 — 마지막 활성 오퍼레이터 정지 차단. 정의서 §6 "고아 기관 방지".
-          와이어 `.warnbox`(빨간 상자) + `.fhint`(상자 밖 잔글씨) 구조를 그대로 따른다 —
-          Dialog를 쓰는 이유는 AlertDialog엔 닫기 ✕가 없어서다(닫기 버튼이 이미 있어도
-          모달 우상단에 ✕가 있는 게 이 팀 모달의 기본형, DialogContent가 기본 제공한다). */}
-      <Dialog open={blockedOperator !== null} onOpenChange={(v) => !v && setBlockedOperator(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>정지할 수 없습니다</DialogTitle>
-          </DialogHeader>
-
-          <div className="flex flex-col gap-3">
-            <Alert variant="danger">
-              <AlertTitle>이 기관의 마지막 오퍼레이터입니다</AlertTitle>
-              <AlertDescription>
-                정지하면 기관에 들어갈 수 있는 사람이 아무도 없어지고, 기수·명단·매니저를 손댈
-                방법이 사라집니다.
-              </AlertDescription>
-            </Alert>
-            <p className="text-fg-subtle text-xs">
-              새 오퍼레이터를 먼저 초대한 뒤에 정지할 수 있습니다
-            </p>
-          </div>
-
-          <DialogFooter className="-mx-4 -mb-4 mt-0">
-            <Button type="button" variant="ghost" onClick={() => setBlockedOperator(null)}>
-              닫기
-            </Button>
-            <Button
-              type="button"
-              onClick={() => {
-                setBlockedOperator(null)
-                setInviteOpen(true)
-              }}
-            >
-              오퍼레이터 초대
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

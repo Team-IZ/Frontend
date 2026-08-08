@@ -79,6 +79,10 @@ export const ORG_SORT_DEFAULT_DIRECTION: Record<OrgSortKey, OrgSortDirection> = 
 /** `2026-08-07T…` → `2026-08-07`. 목록에 시각까지 쓰면 열이 넓어지기만 한다 */
 export const formatDate = (iso: string) => format(parseISO(iso), 'yyyy-MM-dd')
 
+/** 로그인 기록처럼 "언제"가 중요한 값. 없으면 대시 — 호출부가 매번 분기하지 않게 여기서 받는다 */
+export const formatDateTime = (iso: string | null | undefined) =>
+  iso ? format(parseISO(iso), 'yyyy-MM-dd HH:mm') : '—'
+
 /** 통화는 서버가 코드로 준다(플랫폼 공통 USD). 정책이 없으면 null이라 기호를 못 붙인다 */
 export function formatCost(amount: number, currencyCode: string | null): string {
   const rounded = Math.round(amount).toLocaleString()
@@ -87,8 +91,23 @@ export function formatCost(amount: number, currencyCode: string | null): string 
     : `${rounded}${currencyCode ? ` ${currencyCode}` : ''}`
 }
 
-/** 저장량은 바이트로 온다. GB 미만이 나올 규모가 아니라 정수 GB로 줄인다 */
-export const formatGb = (bytes: number) => `${Math.round(bytes / 1024 ** 3).toLocaleString()} GB`
+/*
+  저장량은 바이트로 온다. 단위를 크기에 맞춰 고른다.
+
+  SA-01 목록은 기관 전체 합이라 늘 GB 이상이지만, SA-02 상세는 **한 기관의 항목별**
+  내역이라 이제 MB 단위가 나온다 — 정수 GB로 줄이면 `0 GB`가 여러 줄 생긴다.
+  TB는 아직 안 나오지만 상한을 열어 둔다(분기 하나 값이 크지 않다).
+*/
+const UNITS = ['B', 'KB', 'MB', 'GB', 'TB'] as const
+
+export function formatBytes(bytes: number): string {
+  if (!bytes) return '0 B'
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), UNITS.length - 1)
+  const value = bytes / 1024 ** i
+  // GB 이상은 소수 첫째 자리까지. MB 이하는 정수로 충분하다
+  const digits = i >= 3 && value < 100 ? 1 : 0
+  return `${value.toLocaleString(undefined, { maximumFractionDigits: digits })} ${UNITS[i]}`
+}
 
 /** `0.0675` → `+7%`. null이면 비교할 전월이 없다는 뜻이라 문구를 안 만든다 */
 export function formatChangeRate(rate: number | null | undefined): string | null {
@@ -102,4 +121,35 @@ export function formatOperators(operators: Org['operators']): string {
   if (!operators?.length) return '—'
   const [first, ...rest] = operators
   return rest.length ? `${first.name} 외 ${rest.length}` : first.name
+}
+
+// ── 기수 ─────────────────────────────────────────────────────────────────────
+
+/*
+  기수 상태 — 스펙에 **enum이 없고 `string`**이다(설명문에만 세 값이 적혀 있다).
+  그래서 모르는 값이 올 수 있고, 그때는 **빈칸 대신 받은 값을 그대로** 보여준다.
+  빈칸은 "데이터 없음"으로 읽히지만 원문은 "아직 모르는 값이 왔다"로 읽혀서,
+  화면을 보는 사람이 이상을 발견할 수 있다(SA-03 calibrationStatus와 같은 판단).
+*/
+const COHORT_STATUS: Record<string, OrgBadge> = {
+  PLANNED: { variant: 'neutral', label: '예정' },
+  RUNNING: { variant: 'success', label: '진행 중' },
+  CLOSED: { variant: 'neutral', label: '종료' },
+}
+
+export const cohortStatusBadge = (status: string): OrgBadge =>
+  COHORT_STATUS[status] ?? { variant: 'neutral', label: status }
+
+/**
+ * 기수 기간 — `2026-03-02 ~ 2026-06-30`.
+ *
+ * 시작·종료가 **각각 null일 수 있다**(미정). 둘 다 없으면 기간 자체를 말할 수 없으므로
+ * `null`을 돌려주고 화면이 `—`를 그린다. 한쪽만 있으면 그쪽만 보여준다 —
+ * "미정"을 지어내 채우지 않는다.
+ */
+export function formatPeriod(startDate: string | null, endDate: string | null): string | null {
+  if (!startDate && !endDate) return null
+  const s = startDate ? formatDate(startDate) : ''
+  const e = endDate ? formatDate(endDate) : ''
+  return startDate && endDate ? `${s} ~ ${e}` : startDate ? `${s} ~` : `~ ${e}`
 }

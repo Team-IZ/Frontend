@@ -1,4 +1,5 @@
 import type { RouteObject } from 'react-router'
+import RequireRole from '@/shells/RequireRole'
 import AdminScreen from './AdminScreen'
 
 /*
@@ -21,4 +22,11 @@ import AdminScreen from './AdminScreen'
   세그먼트가 더 많아** React Router 랭킹에서 `:tab?`보다 먼저 잡힌다 — 순서를 손으로
   맞출 필요가 없다(app/routes.tsx가 glob으로 모으므로 순서를 정할 수도 없다).
 */
-export const route: RouteObject = { path: '/operator/admin/:tab?', element: <AdminScreen /> }
+export const route: RouteObject = {
+  path: '/operator/admin/:tab?',
+  element: (
+    <RequireRole allow={['OPERATOR']}>
+      <AdminScreen />
+    </RequireRole>
+  ),
+}

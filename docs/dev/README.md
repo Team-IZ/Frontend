@@ -29,6 +29,7 @@
 - [배포 정리 + 파일 업로드](backend/backend-deployment-and-files.md) — **프록시 URL 검증 통과** · App Runner에 옛 코드 · presigned URL 권고
 - [App Runner 배포 — 안 닿음(해결됨)](backend/backend-apprunner-deploy.md) — 원인 후보와 환경변수. 기록으로 남긴다
 - [백엔드 API — 4차 요청](backend/backend-api-requests-4.md) — 3차 반영 확인(실서버 전 구간 동작) · 요청 1건(차단이 인스턴스 분산으로 새어나감) · **다음 API 출시 순서 요청**
+- [백엔드 API — 5차 요청](backend/backend-api-requests-5.md) — 새 스펙 65개 수신 · **요청 2건**: 초대 3종 `hold` 해제(막힘) · 새 `Item` 스키마(이름·`required`·enum 재사용)
 - [인증·세션 설계](api/auth-design.md) — 토큰을 어디에 두나 · 왜 Context가 아니라 스토어인가 · 401 재발급의 함정 셋 · 실무 정석과 우리 절충
 - [연동 계획 — Auth·슈퍼어드민](api/integration-plan-auth-superadmin.md) — **지금 붙일 수 있는 6화면** · 타입 불일치 · 순서와 완료 판정
 - [API 계층 결정 지점](api/api-layer-decisions.md) — 층·훅·쿼리 키·타입·에러를 왜 이렇게 했나 · **알려진 결함 3건**

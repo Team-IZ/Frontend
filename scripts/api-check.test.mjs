@@ -8,7 +8,7 @@
 */
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { isNullable, assertsNull, reachableFromAvailable } from './api-check.mjs'
+import { isNullable, assertsNull, reachableFromAvailable, rules } from './api-check.mjs'
 
 test('isNullable — null을 허용하는 네 가지 표기', () => {
   assert.ok(isNullable({ type: 'string', nullable: true }), '3.0 nullable 플래그')
@@ -89,4 +89,26 @@ test('reachableFromAvailable — available에서 $ref를 재귀로 따라간다'
   assert.ok(live.has('Live'), '직접 참조를 못 찾으면 규칙 전체가 무력해진다')
   assert.ok(live.has('Nested'), '중첩 $ref도 따라가야 한다')
   assert.ok(!live.has('Hidden'), 'unavailable에서만 쓰는 스키마는 생성하지 않으므로 대상이 아니다')
+})
+
+/*
+  enum-inline이 **값 순서가 다른 복사본**도 같은 집합으로 보는가.
+
+  원래는 `v.enum.join('|')`로 비교해서 순서만 다르면 못 잡았다. 실제 스펙에서
+  DisclosureScope(SUMMARY·PRIVATE·FULL)와 Item.scope(PRIVATE·SUMMARY·FULL)를
+  놓쳤고, 손으로 세어보고서야 알았다. 규칙이 위반을 못 알아보면 없는 것과 같다.
+*/
+test('enum-inline — 값 순서가 달라도 같은 집합으로 본다', () => {
+  const rule = rules.find((r) => r.id === 'enum-inline')
+  const spec = {
+    components: {
+      schemas: {
+        Shared: { type: 'string', enum: ['B', 'A', 'C'] },
+        Copied: { type: 'object', properties: { x: { type: 'string', enum: ['A', 'C', 'B'] } } },
+      },
+    },
+  }
+  const hits = rule.run(spec)
+  assert.equal(hits.length, 1, '순서만 다른 복사본을 놓치면 규칙이 반쪽이 된다')
+  assert.match(hits[0], /A\|B\|C/, '정렬된 키로 보고해야 사람이 대조할 수 있다')
 })

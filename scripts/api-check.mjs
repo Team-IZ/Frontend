@@ -98,7 +98,7 @@ const GENERIC_ONLY_AGREED = new Map([
 ])
 
 /** enum을 공유 스키마로 못 뺀 것 — Java enum이 아니라 int + 커스텀 검증이라 $ref가 안 나온다 */
-const ENUM_INLINE_AGREED = new Set(['90|180|365'])
+const ENUM_INLINE_AGREED = new Set(['180|365|90']) // 정렬된 키로 적는다
 
 const PAGE_FIELDS = ['page', 'size', 'totalElements', 'totalPages']
 
@@ -156,7 +156,7 @@ const codesOf = (res) => Object.keys(res?.content?.['application/json']?.example
 
 // ── 규칙 ─────────────────────────────────────────────────────────────────────
 
-const rules = [
+export const rules = [
   {
     id: 'error-schema',
     severity: 'error',
@@ -285,9 +285,15 @@ const rules = [
     title: '같은 enum 값 집합이 여러 곳에 복사돼 있다',
     why: '같은 개념이 서로 다른 타입이 된다. 한쪽에만 값이 추가되면 아무도 모른다.',
     run: (spec) => {
+      // 정렬해서 비교한다 — 값 순서만 다른 복사본을 놓치면 규칙이 반쪽이 된다.
+      // 실제로 DisclosureScope(SUMMARY·PRIVATE·FULL)와 Item.scope(PRIVATE·SUMMARY·FULL)를
+      // 같은 집합으로 못 보고 지나쳤다.
       const counts = new Map()
       JSON.stringify(spec.components?.schemas ?? {}, (k, v) => {
-        if (v?.enum) counts.set(v.enum.join('|'), (counts.get(v.enum.join('|')) ?? 0) + 1)
+        if (v?.enum) {
+          const key = [...v.enum].sort().join('|')
+          counts.set(key, (counts.get(key) ?? 0) + 1)
+        }
         return v
       })
       return [...counts]

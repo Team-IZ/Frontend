@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Link, useLocation, useNavigate } from 'react-router'
-import { SettingsIcon, UserCogIcon } from 'lucide-react'
+import { useNavigate } from 'react-router'
+import { UserCogIcon } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import {
@@ -19,12 +19,10 @@ import {
   SelectValue,
 } from '@/components/ui/Select'
 import Wordmark from '@/components/common/Wordmark'
-import { cn } from '@/lib/utils/cn'
 import { initialScreenFor } from '@/features/auth/authStore'
 import { useSignIn } from '@/features/auth/useSession'
 import { login } from '@/api/auth/authApi'
 import { QUICK_LOGIN_ACCOUNTS } from '@/features/auth/quickLoginAccounts'
-import type { Role } from './sidebarConfig'
 
 // dev 전용 역할 전환(헤더) — import.meta.env.DEV는 프로덕션 빌드(vite build)에서
 // 항상 false라 develop Vercel 프리뷰 배포도 걸러진다. __GIT_BRANCH__(vite.config.ts
@@ -86,22 +84,17 @@ function DevRoleSwitcher() {
   기수 · 교육생은 자기 자신) 없으면 자리 자체를 렌더하지 않는다. 지금은 옵션이
   현재 값 하나뿐이다 — 실제 기수 목록은 화면 이식 때 API에서 받는다.
 
-  우상단 톱니(⚙) — SA-03(플랫폼 설정) 진입점. 정의서 "네비 자리를 주지 않는다 —
-  화면이라기보다 설정 항목이다"(SA-03-platform-settings.md §2)를 그대로 따라 네비가
-  아니라 여기 둔다. superadmin 역할일 때만 렌더하고(다른 역할엔 이 설정 자체가
-  없다), 현재 경로가 /superadmin/settings 아래면 활성 색(primary)을 준다 — 와이어
-  `.gear.on`과 같은 신호다.
+  우상단 톱니(⚙)는 없앴다 — SA-03이 사이드바 `플랫폼 관리`로 내려갔다. 정의서는
+  "네비 자리를 주지 않는다"고 했지만 만들고 보니 탭 두 개짜리 화면이라, 오퍼레이터의
+  `운영 관리`와 같은 자리(구분선 아래 별도 그룹)로 옮겼다(sidebarConfig.ts 참고).
 */
 type Props = {
   user: { name: string; role: string }
   scope?: { label: string; value: string }
-  role: Role
 }
 
-export default function Header({ user, scope, role }: Props) {
+export default function Header({ user, scope }: Props) {
   const [value, setValue] = useState(scope?.value)
-  const location = useLocation()
-  const isSettingsActive = location.pathname.startsWith('/superadmin/settings')
 
   return (
     <header className="bg-surface border-border flex h-[54px] w-full shrink-0 items-center justify-between overflow-x-auto border-b px-6">
@@ -126,18 +119,6 @@ export default function Header({ user, scope, role }: Props) {
 
       <div className="text-fg-muted flex shrink-0 items-center gap-3 text-sm">
         {SHOW_DEV_ROLE_SWITCHER && <DevRoleSwitcher />}
-        {role === 'superadmin' && (
-          <Link
-            to="/superadmin/settings"
-            aria-label="플랫폼 설정"
-            className={cn(
-              'rounded-md p-1.5 text-fg-subtle transition-colors hover:bg-surface-2 hover:text-fg',
-              isSettingsActive && 'text-primary hover:text-primary',
-            )}
-          >
-            <SettingsIcon className="size-4" aria-hidden="true" />
-          </Link>
-        )}
         <span className="hidden sm:inline">
           {user.name} · {user.role}
         </span>

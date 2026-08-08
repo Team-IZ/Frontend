@@ -78,7 +78,7 @@ export default function ConsoleShell({
         본문으로 건너뛰기
       </a>
 
-      <Header user={user} scope={scope} role={role} />
+      <Header user={user} scope={scope} />
 
       <div className="flex min-h-0 min-w-0 flex-1 print:block">
         <Sidebar sidebar={sidebar} />

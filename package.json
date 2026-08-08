@@ -21,6 +21,7 @@
     "api:pull": "node scripts/api-pull.mjs",
     "api:check": "node scripts/api-check.mjs",
     "api:gen": "node scripts/api-gen.mjs",
+    "verify:ci": "node scripts/verify-ci.mjs",
     "api:test": "node --test scripts/api-check.test.mjs scripts/api-gen.test.mjs",
     "check:design": "node scripts/check-design.mjs",
     "doc:design": "node scripts/design-doc.mjs",

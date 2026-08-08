@@ -52,6 +52,40 @@ check ng "chore: set up hooks (#3)\n\nco-authored-by: someone <x@y.z>"
 check ng "docs: update guide (#3)\n\n🤖 Generated with Claude Code"
 check ok "chore: set up hooks (#3)\n\n본문에 co-authored-by 를 문장 안에서 언급하는 건 허용"
 
+# ── pre-commit · lock 드리프트 ────────────────────────────────────────────────
+# 차단보다 **정당한 커밋을 통과시키는 것**이 중요하다. 의존성을 안 건드린 package.json
+# 수정(imports·scripts 등)을 막으면 훅이 일을 방해한다 — 규약 §6이 기록한 사고 유형.
+
+pkg_bak=$(mktemp); lock_bak=$(mktemp)
+cp package.json "$pkg_bak"; cp package-lock.json "$lock_bak"
+restore() { cp "$pkg_bak" package.json; cp "$lock_bak" package-lock.json; git reset -q; }
+trap 'rm -f "$tmp" "$pkg_bak" "$lock_bak"' EXIT
+
+# hook <기대 ok|ng> <설명>  — 현재 스테이징 상태로 pre-commit을 돌린다
+hook() {
+  if sh .githooks/pre-commit >/dev/null 2>&1; then got=ok; else got=ng; fi
+  if [ "$got" = "$1" ]; then pass=$((pass + 1)); else
+    fail=$((fail + 1)); echo "  FAIL  기대=$1 결과=$got  |  $2"
+  fi
+  restore
+}
+
+# 의존성이 바뀌었는데 lock이 없으면 차단 (CI가 npm ci에서 죽는다)
+sed -i.t 's/"dependencies": {/"dependencies": {\n    "zz-probe": "^1.0.0",/' package.json && rm -f package.json.t
+git add package.json 2>/dev/null
+hook ng "의존성 추가 + lock 없음"
+
+# 의존성 + lock을 함께 담으면 통과
+sed -i.t 's/"dependencies": {/"dependencies": {\n    "zz-probe": "^1.0.0",/' package.json && rm -f package.json.t
+printf '\n' >> package-lock.json
+git add package.json package-lock.json 2>/dev/null
+hook ok "의존성 + lock 함께"
+
+# 의존성이 아닌 필드만 고친 커밋은 lock 없이 통과해야 한다
+sed -i.t 's/"scripts": {/"scripts": {\n    "zz:probe": "echo hi",/' package.json && rm -f package.json.t
+git add package.json 2>/dev/null
+hook ok "scripts만 수정 + lock 없음"
+
 echo ""
 echo "통과 $pass · 실패 $fail"
 [ "$fail" -eq 0 ]

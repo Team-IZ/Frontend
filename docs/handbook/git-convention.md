@@ -1,5 +1,7 @@
 # Git 협업 규약
 
+> **CI·훅이 처음이면** [검사는 어디서 어떻게 도나](ci-and-checks.md)를 먼저 읽는다 — 무엇이 언제 돌고, 빨간불이 뜨면 어떻게 하는지를 사전 지식 0에서 설명한다. 이 문서는 **무엇을 하라**만 적는다.
+
 > **이 문서가 단일 원천.** 같은 규칙을 다른 곳에 다시 쓰지 않는다 — 사본이 생기면 드리프트가 시작되고, 규약이 3개면 지켜지는 건 0개다.
 > **훅이 막는 규칙은 여기서 설명하지 않는다**(§6 색인만). 어기는 순간 훅이 형식을 알려주므로 문서가 또 가르칠 필요가 없다.
 > 여기 남은 것은 **사람이 판단해야 하는 것**뿐이다.
@@ -106,6 +108,25 @@ chore: enable ts strict, prettier, path alias
 - 파일 10개 이내 권장 — 리뷰어가 30분 안에 볼 수 있는 크기
 - `// TODO`를 남기면 이슈 번호를 같이 단다 (`// TODO: #12`)
 
+### 올리기 전에 CI를 재현할 수 있다 — `npm run verify:ci`
+
+**로컬 검사는 CI와 다른 것을 본다.** ① 커밋 안 된 파일까지 검사하고 ② `node_modules`가
+이미 있어 **설치 단계를 안 거친다.** ②가 실제로 우리를 물었다 — `package.json`에 의존성을
+선언하고 `package-lock.json`을 다른 커밋으로 보냈더니 로컬은 전부 통과했는데 CI가 `npm ci`에서
+죽었다. 지금은 그 경우를 `pre-commit`이 막지만(§6), 다른 종류의 어긋남은 여전히 남는다.
+
+`verify:ci`는 임시 워크트리에 **커밋된 상태만** 꺼내 `npm ci`부터 돌린다. 작업 폴더는
+건드리지 않는다. 돌리는 목록은 `ci.yml`에서 읽으므로 CI가 바뀌면 같이 바뀐다.
+
+| 언제 | 왜 |
+|---|---|
+| **PR을 쪼갤 때** | 파일이 브랜치마다 갈리면 각 커밋이 혼자 성립하는지 알 수 없다 |
+| **빌드 설정을 건드릴 때** | `package.json` · `tsconfig` · `ci.yml` · 번들러 설정 |
+| **커밋 안 된 파일이 많이 쌓였을 때** | 로컬 검사가 다른 것을 보고 있다 |
+
+**매번 돌릴 필요는 없다.** 1분 가까이 걸려서 훅에 넣지 않았다 — 훅에 붙이면 `--no-verify`로
+우회하게 되고 그러면 훅 전체가 무력해진다.
+
 ### 리뷰 승인은 강제하지 않는다 (의도적 이탈)
 
 정석은 **최소 1인 승인 후 머지**다. 이 레포는 그렇게 하지 않는다
@@ -183,6 +204,7 @@ git status · git stash list · git worktree list
 | 이슈 번호 자동 부착 | `.githooks/prepare-commit-msg` | ✅ |
 | `main`·`develop` 직접 커밋 | `.githooks/pre-commit` | ✅ |
 | `.env` 커밋 | `.gitignore` + `.githooks/pre-commit` | ✅ |
+| **의존성만 커밋하고 lock을 빠뜨림** | `.githooks/pre-commit` | ✅ |
 | `console.log` 잔존 | `.oxlintrc.json` `no-console` | ✅ |
 | 빌드 통과 | GitHub Actions + ruleset required check | ✅ |
 | `main`·`develop` 직접 **push** | GitHub ruleset `protect-main-develop` | ✅ |

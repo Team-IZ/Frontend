@@ -1,4 +1,5 @@
 import type { RouteObject } from 'react-router'
+import RequireRole from '@/shells/RequireRole'
 import OrgListScreen from './OrgListScreen'
 
 /*
@@ -12,4 +13,11 @@ import OrgListScreen from './OrgListScreen'
   `*.route.tsx`를 훑어 route만 모은다(import.meta.glob) — 새 화면을
   추가해도 그 파일은 안 바뀐다.
 */
-export const route: RouteObject = { path: '/superadmin/orgs', element: <OrgListScreen /> }
+export const route: RouteObject = {
+  path: '/superadmin/orgs',
+  element: (
+    <RequireRole allow={['SUPER_ADMIN']}>
+      <OrgListScreen />
+    </RequireRole>
+  ),
+}

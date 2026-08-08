@@ -1,4 +1,5 @@
 import type { RouteObject } from 'react-router'
+import RequireRole from '@/shells/RequireRole'
 import ProjectDetailScreen from './ProjectDetailScreen'
 
 /*
@@ -14,5 +15,9 @@ import ProjectDetailScreen from './ProjectDetailScreen'
 */
 export const route: RouteObject = {
   path: '/manager/projects/:id',
-  element: <ProjectDetailScreen />,
+  element: (
+    <RequireRole allow={['MANAGER']}>
+      <ProjectDetailScreen />
+    </RequireRole>
+  ),
 }

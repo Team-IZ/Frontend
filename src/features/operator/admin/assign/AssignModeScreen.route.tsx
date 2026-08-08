@@ -1,4 +1,5 @@
 import type { RouteObject } from 'react-router'
+import RequireRole from '@/shells/RequireRole'
 import AssignModeScreen from './AssignModeScreen'
 
 /*
@@ -14,5 +15,9 @@ import AssignModeScreen from './AssignModeScreen'
 */
 export const route: RouteObject = {
   path: '/operator/admin/assign',
-  element: <AssignModeScreen />,
+  element: (
+    <RequireRole allow={['OPERATOR']}>
+      <AssignModeScreen />
+    </RequireRole>
+  ),
 }

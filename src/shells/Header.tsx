@@ -20,8 +20,9 @@ import {
 } from '@/components/ui/Select'
 import Wordmark from '@/components/common/Wordmark'
 import { cn } from '@/lib/utils/cn'
-import { useAuth } from '@/features/auth/AuthContext'
-import { login } from '@/features/auth/authApi'
+import { initialScreenFor } from '@/features/auth/authStore'
+import { useSignIn } from '@/features/auth/useSession'
+import { login } from '@/api/auth/authApi'
 import { QUICK_LOGIN_ACCOUNTS } from '@/features/auth/quickLoginAccounts'
 import type { Role } from './sidebarConfig'
 
@@ -29,17 +30,19 @@ import type { Role } from './sidebarConfig'
 // 항상 false라 develop Vercel 프리뷰 배포도 걸러진다. __GIT_BRANCH__(vite.config.ts
 // define, sidebarConfig.ts와 같은 패턴)로 "로컬이거나 develop 배포"일 때만 보이고
 // main 배포에서는 숨긴다.
-const SHOW_DEV_ROLE_SWITCHER = import.meta.env.DEV || __GIT_BRANCH__ === 'develop'
+// 계정이 없으면(.env.local 미설정) 드롭다운을 열어도 항목이 없다 — 아예 안 그린다
+const SHOW_DEV_ROLE_SWITCHER =
+  (import.meta.env.DEV || __GIT_BRANCH__ === 'develop') && QUICK_LOGIN_ACCOUNTS.length > 0
 
 function DevRoleSwitcher() {
   const navigate = useNavigate()
-  const { signIn } = useAuth()
+  const signIn = useSignIn()
 
-  async function handleQuickLogin(email: string) {
+  async function handleQuickLogin(email: string, password: string) {
     try {
-      const res = await login({ email, password: 'pass1234' })
-      signIn(res)
-      navigate(res.initialScreen)
+      const res = await login({ body: { email, password } })
+      await signIn(res)
+      navigate(initialScreenFor(res.role))
     } catch (err) {
       // dev 전용 지름길이라 실패해도 화면에 알릴 알림 자리가 없다 — 콘솔로 충분
       console.error('quick login failed', err)
@@ -58,8 +61,8 @@ function DevRoleSwitcher() {
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
           <DropdownMenuLabel>역할 전환 (dev)</DropdownMenuLabel>
-          {QUICK_LOGIN_ACCOUNTS.map(({ label, email }) => (
-            <DropdownMenuItem key={email} onClick={() => handleQuickLogin(email)}>
+          {QUICK_LOGIN_ACCOUNTS.map(({ label, email, password }) => (
+            <DropdownMenuItem key={email} onClick={() => handleQuickLogin(email, password)}>
               {label}
             </DropdownMenuItem>
           ))}

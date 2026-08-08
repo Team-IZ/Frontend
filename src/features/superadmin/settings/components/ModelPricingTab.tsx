@@ -11,23 +11,35 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/Table'
+import type { findModelSettings_Response } from '@/api/platform/platformTypes'
 import {
-  getPlatformSettings,
-  getUnpricedModelsInUse,
-  type ModelId,
-  type ModelPricing,
-  type TierMapping,
-} from '../mockData'
+  calibrationStatus,
+  TIER_DESCRIPTION,
+  TIER_LABEL,
+  TIER_ORDER,
+  calibrationProgressText,
+  formatDate,
+  formatDateTime,
+  formatPrice,
+} from '../labels'
 import ModelChangeDialog from './ModelChangeDialog'
 import TierModelDialog from './TierModelDialog'
 import PricingDialog from './PricingDialog'
 
 /*
-  SA-03 §3 "모델 · 단가" 탭. 와이어 #page-model의 `.setrow`(채점 모델·캘리브레이션
-  버전)는 SA-02 SettingsTab의 SettingRow와 같은 모양이라 그 패턴을 그대로 옮겼다
-  (좌: 제목+설명, 우: 컨트롤, 구분선). 티어 매핑·단가는 표 형태라 OperatorsTab의
-  bare Table 관례를 따른다.
+  SA-03 §3 "모델 · 단가" 탭.
+
+  **모델 목록을 화면이 갖지 않는다.** `modelPricings`가 곧 모델 목록이다(단가 미설정 모델도
+  포함되고 `status`로 사용 가능 여부가 온다). 예전에는 `AVAILABLE_MODELS` 상수를 들고
+  있었는데, 그러면 백엔드가 모델을 추가해도 화면이 모른다.
+
+  **모델을 UUID로 다루고 이름으로 보여준다.** 서버가 `modelId`(UUID)·`modelDisplayName`·
+  `modelCode`를 함께 주므로 화면이 매핑을 만들 이유가 없다.
 */
+
+type Settings = findModelSettings_Response
+type Pricing = Settings['modelPricings'][number]
+type TierMapping = Settings['tierMappings'][number]
 
 function SettingRow({
   title,
@@ -36,12 +48,12 @@ function SettingRow({
   children,
 }: {
   title: string
-  description: string
+  description: ReactNode
   badge?: string
   children: ReactNode
 }) {
   return (
-    <div className="flex items-center justify-between gap-6 border-b border-border py-4 last:border-0">
+    <div className="border-border flex items-center justify-between gap-6 border-b py-4 last:border-0">
       <div>
         <p className="flex items-center gap-1.5 text-sm font-bold">
           {title}
@@ -58,27 +70,25 @@ function SettingRow({
   )
 }
 
-type Snapshot = ReturnType<typeof getPlatformSettings>
-
-export default function ModelPricingTab({
-  snapshot,
-  onChange,
-}: {
-  snapshot: Snapshot
-  onChange: () => void
-}) {
+export default function ModelPricingTab({ settings }: { settings: Settings }) {
   const [modelChangeOpen, setModelChangeOpen] = useState(false)
-  const [tierDialogTarget, setTierDialogTarget] = useState<TierMapping | null>(null)
-  const [pricingDialogTarget, setPricingDialogTarget] = useState<ModelId | null>(null)
+  const [tierTarget, setTierTarget] = useState<TierMapping | null>(null)
+  const [pricingTarget, setPricingTarget] = useState<Pricing | null>(null)
 
-  const { gradingModel, tierMappings, pricing, orgCountSnapshot } = snapshot
-  const unpriced = getUnpricedModelsInUse()
-  const pricedModels = Object.keys(pricing) as ModelId[]
-  // 단가 표에 보여줄 모델 — 이미 단가가 있는 것 + 지금 실제로 쓰이는데 아직 없는 것
-  // (예: 채점 모델을 opus-6으로 바꾼 직후). 순서는 채점 모델·티어 매핑에 쓰이는
-  // 순서를 앞에 두고 나머지를 뒤에 붙인다.
-  const inUseOrder: ModelId[] = [gradingModel.model, ...tierMappings.map((t) => t.model)]
-  const rowModels = [...new Set([...inUseOrder, ...pricedModels])]
+  const { gradingPolicy, tierMappings, modelPricings } = settings
+  const { activeCalibration, runningCalibration } = gradingPolicy
+
+  const unpriced = modelPricings.filter((p) => p.pricingMissing)
+  // 서버 응답 순서에 기대지 않는다 — 정확도 → 균형 → 비용으로 고정한다
+  const orderedTiers = TIER_ORDER.map((code) =>
+    tierMappings.find((t) => t.tierCode === code),
+  ).filter((t): t is TierMapping => Boolean(t))
+
+  /*
+    재캘리브레이션이 도는 중에는 채점 모델을 또 바꾸지 못하게 막는다.
+    전 기관 대상이고 되돌릴 수 없는 작업이라, 겹치면 어느 기준으로 채점됐는지 알 수 없어진다.
+  */
+  const recalibrating = runningCalibration != null
 
   return (
     <div className="flex flex-col gap-4">
@@ -86,7 +96,8 @@ export default function ModelPricingTab({
         <Alert variant="warning">
           <TriangleAlertIcon />
           <AlertTitle>
-            <span className="font-mono">{unpriced.join(', ')}</span> 단가가 입력되지 않았습니다
+            <span className="font-mono">{unpriced.map((p) => p.modelDisplayName).join(', ')}</span>{' '}
+            단가가 입력되지 않았습니다
           </AlertTitle>
           <AlertDescription>
             이 모델이 쓰인 만큼은 비용 화면에서 단가 미설정으로 표시되고 금액에 합산되지 않습니다.
@@ -94,15 +105,38 @@ export default function ModelPricingTab({
         </Alert>
       )}
 
-      <div className="rounded-md border border-border bg-surface px-4">
+      {recalibrating && runningCalibration && (
+        <Alert variant="warning">
+          <TriangleAlertIcon />
+          <AlertTitle>
+            전 기관 재캘리브레이션 {calibrationStatus(runningCalibration.status).label} ·{' '}
+            <span className="font-mono">{runningCalibration.versionCode}</span>
+          </AlertTitle>
+          <AlertDescription>
+            {[
+              calibrationProgressText(runningCalibration.progress),
+              '끝날 때까지 채점 모델을 다시 바꿀 수 없습니다.',
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      <div className="border-border bg-surface rounded-md border px-4">
         <SettingRow
           title="채점 모델"
-          description="기관이 바꿀 수 없다. 바뀌면 전 기관 재캘리브레이션이 필요합니다"
+          description="기관이 바꿀 수 없습니다. 바뀌면 전 기관 재캘리브레이션이 필요합니다"
           badge="전 기관 공통"
         >
           <div className="flex items-center gap-3">
-            <span className="font-mono text-xs">{gradingModel.model}</span>
-            <Button variant="ghost" size="sm" onClick={() => setModelChangeOpen(true)}>
+            <span className="text-xs font-semibold">{gradingPolicy.modelDisplayName}</span>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={recalibrating}
+              onClick={() => setModelChangeOpen(true)}
+            >
               변경
             </Button>
           </div>
@@ -110,35 +144,59 @@ export default function ModelPricingTab({
 
         <SettingRow
           title="캘리브레이션 버전"
-          description={`${gradingModel.appliedAt} 적용 · 이후 모든 채점 결과에 이 버전이 붙는다.`}
+          description={
+            activeCalibration
+              ? `${formatDate(gradingPolicy.effectiveFrom)} 적용 · 이후 모든 채점 결과에 이 버전이 붙습니다`
+              : '아직 적용된 버전이 없습니다'
+          }
         >
-          <span className="font-mono text-xs">{gradingModel.calibrationVersion}</span>
+          {activeCalibration ? (
+            <div className="flex items-center gap-2">
+              <span className="font-mono text-xs">{activeCalibration.versionCode}</span>
+              <Badge variant={calibrationStatus(activeCalibration.status).variant}>
+                {calibrationStatus(activeCalibration.status).label}
+              </Badge>
+              {/*
+                일부 기관이 실패한 채로 ACTIVE가 될 수 있다 — 그 기관들은 옛 기준으로 채점된다.
+                완료율만 보면 "거의 다 됐다"로 읽히므로 실패 건수를 같이 쓴다.
+              */}
+              {(activeCalibration.progress?.failed ?? 0) > 0 && (
+                <span className="text-warning text-xs font-semibold">
+                  {calibrationProgressText(activeCalibration.progress)}
+                </span>
+              )}
+            </div>
+          ) : (
+            <span className="text-fg-subtle text-xs">—</span>
+          )}
         </SettingRow>
       </div>
 
       <div>
         <p className="text-fg-subtle mb-2 text-xs font-semibold">
-          티어 매핑 <span className="text-fg-subtle font-normal">· 질문 생성 · 요약</span>
+          티어 매핑 <span className="text-fg-subtle font-normal">· 코드 세션</span>
         </p>
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead className="w-32">티어</TableHead>
-              <TableHead className="w-48">모델</TableHead>
+              <TableHead className="w-56">모델</TableHead>
               <TableHead>쓰이는 곳</TableHead>
               <TableHead className="w-20" />
             </TableRow>
           </TableHeader>
           <TableBody>
-            {tierMappings.map((t) => (
-              <TableRow key={t.tier}>
-                <TableCell className="font-bold">{t.label}</TableCell>
-                <TableCell className="font-mono text-xs">{t.model}</TableCell>
-                <TableCell className="text-fg-muted text-xs">{t.usedFor}</TableCell>
+            {orderedTiers.map((t) => (
+              <TableRow key={t.tierPolicyId}>
+                <TableCell className="font-bold">{TIER_LABEL[t.tierCode]}</TableCell>
+                <TableCell className="text-xs">{t.modelDisplayName}</TableCell>
+                <TableCell className="text-fg-muted text-xs">
+                  {TIER_DESCRIPTION[t.tierCode]}
+                </TableCell>
                 <TableCell>
                   <button
                     type="button"
-                    onClick={() => setTierDialogTarget(t)}
+                    onClick={() => setTierTarget(t)}
                     className="text-primary text-xs font-semibold hover:underline"
                   >
                     변경
@@ -155,51 +213,62 @@ export default function ModelPricingTab({
           단가 <span className="text-fg-subtle font-normal">· 100만 토큰당</span>
         </p>
         <p className="text-fg-subtle mb-2 text-xs">
-          미설정으로 되돌리려면 입력·출력에 0을 입력하세요.
+          비워 두면 단가 미설정이 됩니다 — <b>0은 &quot;무료&quot;를 뜻하므로 다릅니다.</b>
         </p>
         <Table>
           <TableHeader>
             <TableRow className="hover:bg-transparent">
-              <TableHead className="w-40">모델</TableHead>
-              <TableHead className="w-28">입력</TableHead>
-              <TableHead className="w-28">출력</TableHead>
-              <TableHead className="w-28">적용일</TableHead>
+              <TableHead className="w-52">모델</TableHead>
+              <TableHead className="w-24">입력</TableHead>
+              <TableHead className="w-24">출력</TableHead>
+              <TableHead className="w-24">캐시 입력</TableHead>
+              <TableHead className="w-36">최종 수정</TableHead>
               <TableHead className="w-20" />
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rowModels.map((m) => {
-              const row: ModelPricing | undefined = pricing[m]
-              return (
-                <TableRow key={m} className={!row ? 'bg-warning-soft' : undefined}>
-                  <TableCell className="font-mono text-xs">{m}</TableCell>
-                  <TableCell className="text-xs">
-                    {row ? (
-                      `$${row.inputUsdPerM.toFixed(2)}`
-                    ) : (
-                      <span className="text-warning font-semibold">미설정</span>
+            {modelPricings.map((p) => (
+              <TableRow
+                key={p.modelId}
+                className={p.pricingMissing ? 'bg-warning-soft' : undefined}
+              >
+                <TableCell className="text-xs">
+                  <span className="flex items-center gap-1.5">
+                    {p.modelDisplayName}
+                    {p.status !== 'ACTIVE' && (
+                      <Badge variant="neutral" className="text-[10px]">
+                        중지
+                      </Badge>
                     )}
-                  </TableCell>
-                  <TableCell className="text-xs">
-                    {row ? (
-                      `$${row.outputUsdPerM.toFixed(2)}`
-                    ) : (
-                      <span className="text-warning font-semibold">미설정</span>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-fg-muted text-xs">{row?.appliedAt ?? '—'}</TableCell>
-                  <TableCell>
-                    <button
-                      type="button"
-                      onClick={() => setPricingDialogTarget(m)}
-                      className="text-primary text-xs font-semibold hover:underline"
-                    >
-                      {row ? '수정' : '입력'}
-                    </button>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
+                  </span>
+                </TableCell>
+                <TableCell className="text-xs tabular-nums">
+                  {p.pricingMissing ? (
+                    <span className="text-warning font-semibold">미설정</span>
+                  ) : (
+                    formatPrice(p.inputPricePerMillionTokens)
+                  )}
+                </TableCell>
+                <TableCell className="text-xs tabular-nums">
+                  {formatPrice(p.outputPricePerMillionTokens)}
+                </TableCell>
+                <TableCell className="text-xs tabular-nums">
+                  {formatPrice(p.cachedInputPricePerMillionTokens)}
+                </TableCell>
+                <TableCell className="text-fg-muted text-xs">
+                  {formatDateTime(p.priceUpdatedAt)}
+                </TableCell>
+                <TableCell>
+                  <button
+                    type="button"
+                    onClick={() => setPricingTarget(p)}
+                    className="text-primary text-xs font-semibold hover:underline"
+                  >
+                    {p.pricingMissing ? '입력' : '수정'}
+                  </button>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
@@ -207,24 +276,21 @@ export default function ModelPricingTab({
       <ModelChangeDialog
         open={modelChangeOpen}
         onOpenChange={setModelChangeOpen}
-        currentModel={gradingModel.model}
-        orgCount={orgCountSnapshot}
-        onChanged={onChange}
+        gradingPolicy={gradingPolicy}
+        models={modelPricings}
       />
 
       <TierModelDialog
-        open={tierDialogTarget !== null}
-        onOpenChange={(v) => !v && setTierDialogTarget(null)}
-        tierMapping={tierDialogTarget}
-        onChanged={onChange}
+        open={tierTarget !== null}
+        onOpenChange={(v) => !v && setTierTarget(null)}
+        tierMapping={tierTarget}
+        models={modelPricings}
       />
 
       <PricingDialog
-        open={pricingDialogTarget !== null}
-        onOpenChange={(v) => !v && setPricingDialogTarget(null)}
-        model={pricingDialogTarget}
-        current={pricingDialogTarget ? pricing[pricingDialogTarget] : undefined}
-        onChanged={onChange}
+        open={pricingTarget !== null}
+        onOpenChange={(v) => !v && setPricingTarget(null)}
+        pricing={pricingTarget}
       />
     </div>
   )

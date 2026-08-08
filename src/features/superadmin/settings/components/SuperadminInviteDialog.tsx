@@ -6,70 +6,61 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/Dialog'
-import { Field, FieldLabel, FieldDescription } from '@/components/ui/Field'
+import { Field, FieldLabel, FieldError, FieldDescription } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
+import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
-import {
-  inviteSuperadmin,
-  validateSuperadminInvite,
-  type SuperadminAccount,
-  type SuperadminInviteErrorCode,
-} from '../mockData'
+import { useInviteSuperAdmin } from '@/api/platform/usePlatformMutations'
+import { isApiError } from '@/api/_contract'
+import { EMAIL_PATTERN, EMAIL_INVALID_MESSAGE } from '@/lib/validation'
 
 /*
-  SA-03 §3 "슈퍼어드민 계정" — 목록 · 초대 · 정지. 이메일만 받는 오퍼레이터 초대와
-  달리 이름도 함께 받는다(초대 즉시 활성 계정을 만들기 때문 — mockData.ts 파일
-  머리말 판단 근거). 검증 타이밍은 OperatorInviteDialog와 같은 패턴: 버튼은 항상
-  handleSubmit까지 도달하게 두고(disabled는 "누를 수 있는 상태"만 따짐), 제출
-  시점에 touched를 세워 에러를 보여준다.
-*/
+  SA-03 슈퍼어드민 초대.
 
-const ERROR_MESSAGE: Record<SuperadminInviteErrorCode, string> = {
-  NAME_REQUIRED: '이름을 입력하세요.',
-  INVALID_EMAIL: '올바른 이메일 형식이 아닙니다.',
-  ALREADY_EXISTS: '이미 등록된 이메일입니다.',
-}
+  **이메일만 받는다.** 서버 요청 스키마에 이름이 없다 — 이름은 초대받은 사람이
+  **가입할 때 직접 정한다**(그래서 목록의 `name`이 활성화 전까지 null이다).
+  예전 폼은 이름을 받았는데, 그 값은 보낼 곳이 없어 화면에만 남았을 것이다.
+
+  ## 메일 발송 실패를 성공으로 처리하지 않는다
+  `INVITE_MAIL_FAILED`(502)는 **계정 자리와 초대 기록은 남고 메일만 못 간 것**이다.
+  "실패"로만 말하면 사용자가 다시 초대를 시도하는데, 그때는 `ALREADY_INVITED`가 나서
+  막힌다. 그래서 **무엇이 됐고 무엇이 안 됐는지**를 문구에 담는다.
+*/
 
 export default function SuperadminInviteDialog({
   open,
   onOpenChange,
-  onInvited,
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onInvited: (account: SuperadminAccount) => void
 }) {
-  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [touched, setTouched] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const invite = useInviteSuperAdmin()
 
   useEffect(() => {
     if (open) {
-      setName('')
       setEmail('')
       setTouched(false)
+      setError(null)
     }
   }, [open])
 
-  const trimmedName = name.trim()
-  const trimmedEmail = email.trim()
-  const error =
-    trimmedName || trimmedEmail ? validateSuperadminInvite(trimmedName, trimmedEmail) : null
-  const canAttemptSubmit = trimmedName.length > 0 && trimmedEmail.length > 0 && !submitting
-  const canSubmit = canAttemptSubmit && error === null
+  const trimmed = email.trim()
+  const emailValid = EMAIL_PATTERN.test(trimmed)
+  const canSubmit = emailValid && !invite.isPending
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setTouched(true)
     if (!canSubmit) return
-    setSubmitting(true)
+    setError(null)
     try {
-      const account = inviteSuperadmin(trimmedName, trimmedEmail)
-      onInvited(account)
+      await invite.mutateAsync({ body: { email: trimmed } })
       onOpenChange(false)
-    } finally {
-      setSubmitting(false)
+    } catch (e) {
+      setError(errorMessage(e))
     }
   }
 
@@ -77,62 +68,58 @@ export default function SuperadminInviteDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>슈퍼어드민 계정 초대</DialogTitle>
+          <DialogTitle>슈퍼어드민 초대</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-4">
-          <Field data-invalid={touched && error === 'NAME_REQUIRED'}>
-            <FieldLabel htmlFor="superadmin-name">이름</FieldLabel>
-            <Input
-              id="superadmin-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onBlur={() => setTouched(true)}
-              disabled={submitting}
-              autoComplete="off"
-            />
-            {touched && error === 'NAME_REQUIRED' && (
-              <p className="text-danger text-xs font-medium">{ERROR_MESSAGE.NAME_REQUIRED}</p>
-            )}
-          </Field>
+          {error && <Alert variant="danger">{error}</Alert>}
 
-          <Field
-            data-invalid={touched && (error === 'INVALID_EMAIL' || error === 'ALREADY_EXISTS')}
-          >
+          <Field data-invalid={touched && !emailValid}>
             <FieldLabel htmlFor="superadmin-email">이메일</FieldLabel>
             <Input
               id="superadmin-email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onBlur={() => setTouched(true)}
-              placeholder="example@iz-get.com"
-              disabled={submitting}
-              aria-invalid={touched && (error === 'INVALID_EMAIL' || error === 'ALREADY_EXISTS')}
               autoComplete="off"
+              placeholder="name@example.com"
+              value={email}
+              disabled={invite.isPending}
+              onChange={(e) => setEmail(e.target.value)}
+              aria-invalid={touched && !emailValid}
             />
-            {touched && (error === 'INVALID_EMAIL' || error === 'ALREADY_EXISTS') ? (
-              <p className="text-danger text-xs font-medium">{ERROR_MESSAGE[error]}</p>
-            ) : (
-              <FieldDescription>플랫폼 콘솔에 로그인할 수 있는 계정입니다</FieldDescription>
-            )}
+            <FieldDescription>
+              초대 메일의 링크로 가입하며, 이름은 본인이 정합니다.
+            </FieldDescription>
+            <FieldError>{touched && !emailValid ? EMAIL_INVALID_MESSAGE : ''}</FieldError>
           </Field>
 
           <DialogFooter className="-mx-4 -mb-4 mt-0">
             <Button
               type="button"
               variant="ghost"
-              disabled={submitting}
+              disabled={invite.isPending}
               onClick={() => onOpenChange(false)}
             >
               취소
             </Button>
-            <Button type="submit" disabled={!canAttemptSubmit}>
-              {submitting ? '초대하는 중…' : '계정 초대'}
+            <Button type="submit" disabled={!canSubmit}>
+              {invite.isPending ? '초대 중…' : '초대'}
             </Button>
           </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
   )
+}
+
+function errorMessage(e: unknown): string {
+  if (!isApiError(e)) return '초대하지 못했습니다. 잠시 후 다시 시도해 주세요.'
+  switch (e.code) {
+    case 'ALREADY_INVITED':
+      return '이미 등록되었거나 초대된 이메일입니다.'
+    case 'INVITE_MAIL_FAILED':
+      // 계정 자리는 만들어졌다 — 다시 초대하면 ALREADY_INVITED가 난다
+      return '계정은 만들어졌지만 초대 메일 발송에 실패했습니다. 목록에서 재발송해 주세요.'
+    default:
+      return '초대하지 못했습니다. 잠시 후 다시 시도해 주세요.'
+  }
 }

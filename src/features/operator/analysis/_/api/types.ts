@@ -31,6 +31,9 @@ export type Level = 'class' | 'team'
  */
 export type RoundColumn = {
   projectId: string
+  /** 셀을 열에 잇는 키. **`roundNo`로는 못 잇는다** — 프로젝트 안 번호라 전부 같다 */
+  assessmentRoundId: string
+  /** 기수 안 순번(`3차`의 3). 서버 `roundNo`가 아니라 **정렬 후 자리**다 */
   no: number
   /** `1차`. 열 머리 1단 */
   label: string
@@ -39,6 +42,9 @@ export type RoundColumn = {
   /** 값이 있나. 없으면 왜 없는지가 `RoundCell.state`에 있다 */
   published: boolean
 }
+
+/** 반 하나 — **이름이 아니라 id로 고른다.** 서버 필터가 `classroomId`를 받는다 */
+export type ClassOption = { classId: string; className: string }
 
 /**
  * 셀 하나. **칸에는 값 하나**이고 분모·비교는 호버·포커스로 준다(E11).
@@ -127,10 +133,18 @@ export type RoundQuery = {
    *
    * **팀 계층에서 비어 있으면 아직 반을 안 고른 것**이다 — 시스템이 임의로 고르지
    * 않는다(어느 반인지가 그 계층 질문의 전제다).
+   *
+   * ⚠ **이름이 아니라 id다.** 서버 필터가 `classroomId`를 받는다.
    */
-  classNames: string[]
-  /** 팀 계층에서만. 복수 선택 */
-  teamNames?: string[]
+  classIds: string[]
+  /**
+   * 팀 계층에서 보는 **회차 하나**.
+   *
+   * ⚠ **팀 계층은 격자가 아니다.** 한때 팀 행 × 회차 열로 그렸는데 서버가 막는다
+   * (`TEAM_LEVEL_PROJECT_REQUIRED`) — **팀은 회차마다 재편성될 수 있어** 회차를
+   * 가로질러 같은 팀을 추적하는 것이 성립하지 않는다. 한 회차 안에서만 비교한다.
+   */
+  projectId?: string
   /**
    * 회차 범위 — **시작·끝을 직접 고른다**(프리셋으로 묶지 않는다). 다만
    * **안 보내면 서버가 정한다.**
@@ -170,14 +184,12 @@ export type RoundGrid = {
   /** 축 라벨·범례가 이 이름을 쓴다. 안 바꾸면 **무엇과 비교한 색인지** 알 수 없다 */
   baselineName: string
   /**
-   * 팀 계층인데 **반을 아직 안 골랐다.** 빈 표가 아니라 **사용자가 할 일이 남은
-   * 상태**라 화면이 따로 그린다.
+   * 팀 계층인데 **반이나 회차를 아직 안 골랐다.** 빈 표가 아니라 **사용자가 할 일이
+   * 남은 상태**라 화면이 따로 그린다 — 무엇이 빠졌는지도 같이 준다.
    */
-  needsClass?: boolean
+  needs?: 'CLASS' | 'ROUND' | 'BOTH'
   /** 선택 가능한 반 전체(칩·드롭다운) */
-  allClassNames: string[]
-  /** 팀 계층에서 그 반의 팀 전체 */
-  allTeamNames?: string[]
+  allClasses: ClassOption[]
 }
 
 // ── ② 기수 간 비교 ──────────────────────────────────────────
@@ -188,6 +200,18 @@ export type RoundGrid = {
  * 회차 흐름 탭이 부호를 쓰는 것과 **값의 성격이 다르다**: 저기는 회차마다 다른 것을
  * 물어서 값끼리 못 비교하고, 여기는 비교된다.
  */
+/**
+ * 좋아졌나 나빠졌나 — **서버가 판정한다.**
+ *
+ * 한때 화면이 `|diff| <= 0.2`를 임계값으로 두고 갈랐는데, 그 숫자가 어느 문서에도
+ * 없어서 **화면이 기준을 만드는 것**이었다(E8). 서버가 `changeThreshold`를 갖고
+ * 판정까지 해 주므로 그 자리를 없앴다.
+ *
+ * `NOT_COMPARABLE`은 한쪽에 그 개념이 없거나 집계 전이라 견줄 수 없다는 뜻이다 —
+ * `SIMILAR`(견줬는데 비슷하다)와 다르다.
+ */
+export type ChangeDirection = 'WORSE' | 'SIMILAR' | 'BETTER' | 'NOT_COMPARABLE'
+
 export type ConceptCompare = {
   conceptId: string
   conceptName: string
@@ -195,28 +219,44 @@ export type ConceptCompare = {
   source: string
   /** 지난 기수 평균 도달(1~4). **그 기수에 없던 개념이면 null** */
   baseAvg: number | null
-  /** 이번 기수 평균 도달 */
-  currentAvg: number
+  /**
+   * 이번 기수 평균 도달.
+   *
+   * ⚠ **`null`이 될 수 있다.** 집계 전이거나 이번 기수에 없는 개념일 때다
+   * (`target.presence`가 `ABSENT_IN_COHORT`). 한때 필수였는데 서버가 두 쪽 모두
+   * 없을 수 있다고 준다 — 0으로 채우면 *"평균 0단"* 이라는 없는 사실이 된다.
+   */
+  currentAvg: number | null
   /**
    * 교안 버전. *"교안을 고친 것이 효과가 있었나"* 가 이 표의 핵심 질문이고
    * 버전이 없으면 답할 수 없다.
    */
   baseVersion: string | null
-  currentVersion: string
+  currentVersion: string | null
+  /** 서버 판정. 화면은 이 값으로 문구·색만 고른다 */
+  direction: ChangeDirection
+  /** 도달 단계 차이. `NOT_COMPARABLE`이면 `null` */
+  delta: number | null
 }
 
 export type CohortSort = 'WORSENED' | 'CONCEPT_NAME'
 
 export type CohortQuery = {
   cohortId: string
-  /** 비교 대상 기수. 없으면 첫 기수다 */
+  /** 비교 대상 기수. 없으면 서버가 고른다 */
   compareCohortId: string | null
   sort: CohortSort
 }
 
 export type CohortCompare = {
-  /** 비교 가능한 기수 목록. **비어 있으면 첫 기수**다 — 다른 기관 평균을 만들지 않는다 */
-  availableCohorts: { id: string; label: string }[]
+  /**
+   * 비교 가능한 기수 목록. **비어 있으면 첫 기수**다 — 다른 기관 평균을 만들지 않는다.
+   *
+   * 서버는 비교 불가한 기수도 `comparable: false`로 함께 준다(교안이 하나도 안 겹치는
+   * 기수). **그것까지 목록에 두고 고를 수 없게 한다** — 빼 버리면 *"왜 저 기수는
+   * 목록에 없지"* 가 되고, 답은 "겹치는 교안이 없어서"라 사용자가 알아야 할 사실이다.
+   */
+  availableCohorts: { id: string; label: string; comparable: boolean }[]
   compareCohortLabel: string | null
   currentCohortLabel: string
   rows: ConceptCompare[]

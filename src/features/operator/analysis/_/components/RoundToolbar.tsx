@@ -12,17 +12,21 @@ import {
   SelectValue,
 } from '@/components/ui/Select'
 import { ROUND_SORTS, ROUND_SORT_LABEL } from '../labels'
-import type { Level, RoundColumn, RoundSort } from '../api/types'
+import type { ClassOption, Level, RoundColumn, RoundSort } from '../api/types'
 
 /*
   회차 흐름 툴바. **전부 왼쪽**(E3) — 이 화면엔 주 액션이 없으므로 오른쪽은 비운다.
 
   ─── 배치 ────────────────────────────────────────────────────────
-      [반별|팀] [반 ▾] ([팀 ▾])  │  [회차 ▾] [정렬 ▾]
+      반별  [반별|팀] [반 ▾]           │  [회차 ▾ – 회차 ▾] [정렬 ▾]
+      팀    [반별|팀] [반 ▾] [회차 ▾]  │  [정렬 ▾]
 
   ▸ **계층이 선택 방식을 정한다**(OP-02 §3). 반별은 반 **복수**(체크박스), 팀은 반
-    **단일**(라디오) + 팀 복수 — 팀 번호는 **반 안에서만 유일**해서(`C반 3팀` vs
-    `D반 3팀`) 반이 여럿이면 같은 이름의 다른 팀이 한 표에 섞인다.
+    **단일**(라디오) — 팀 번호는 **반 안에서만 유일**해서(`C반 3팀` vs `D반 3팀`)
+    반이 여럿이면 같은 이름의 다른 팀이 한 표에 섞인다.
+  ▸ **팀 계층은 회차도 하나 골라야 한다.** 서버가 그렇게 막는다 —
+    **팀은 회차마다 다시 짜일 수 있어** 회차를 가로질러 같은 팀으로 추적할 수 없다.
+    그래서 팀 계층에는 범위(시작–끝) 대신 **회차 단일 선택**이 온다.
   ▸ **컨트롤 모양이 곧 규칙이다.** 안내 문장을 쓰지 않는다(E10) — 체크박스면 복수,
     라디오면 단일. 단일 선택일 때는 **개수 배지도 빼는데**, 붙어 있으면 더 고를 수
     있는 것처럼 보인다.
@@ -56,11 +60,10 @@ function FilterTrigger({ k, children }: { k: string; children: React.ReactNode }
 
 export default function RoundToolbar({
   level,
-  classNames: picked,
-  teamClass,
-  teamNames,
-  allClassNames,
-  allTeamNames,
+  classIds: picked,
+  teamClassId,
+  teamProjectId,
+  allClasses,
   allRounds,
   fromRound,
   toRound,
@@ -68,31 +71,34 @@ export default function RoundToolbar({
   onChange,
 }: {
   level: Level
-  classNames: string[]
+  classIds: string[]
   /** 팀 계층에서 보고 있는 반. `null`이면 아직 안 골랐다 */
-  teamClass: string | null
-  teamNames: string[]
-  allClassNames: string[]
-  allTeamNames: string[]
+  teamClassId: string | null
+  /** 팀 계층에서 보고 있는 회차. `null`이면 아직 안 골랐다 */
+  teamProjectId: string | null
+  allClasses: ClassOption[]
   allRounds: RoundColumn[]
   fromRound: number
   toRound: number
   sort: RoundSort
   onChange: (patch: {
     level?: Level
-    classNames?: string[]
-    teamClass?: string | null
-    teamNames?: string[]
+    classIds?: string[]
+    teamClassId?: string | null
+    teamProjectId?: string | null
     fromRound?: number
     toRound?: number
     sort?: RoundSort
   }) => void
 }) {
-  const toggle = (list: string[], name: string) =>
-    list.includes(name) ? list.filter((n) => n !== name) : [...list, name]
+  const toggle = (list: string[], id: string) =>
+    list.includes(id) ? list.filter((n) => n !== id) : [...list, id]
+
+  const allClassIds = allClasses.map((c) => c.classId)
+  const nameOf = (id: string) => allClasses.find((c) => c.classId === id)?.className ?? ''
 
   /** 팀 계층인데 반이 없다 — 고를 때까지 팝오버가 열려 있다 */
-  const needsClass = level === 'team' && teamClass === null
+  const needsClass = level === 'team' && teamClassId === null
   const [classOpen, setClassOpen] = useState(false)
 
   return (
@@ -117,9 +123,9 @@ export default function RoundToolbar({
             질문의 전제**다. 시스템이 대신 고르면 그것이 답인 줄 안다 — 안 고른 상태로
             두고 반 선택을 열어 사용자가 정하게 한다.
 
-            **반별 선택(`classNames`)은 건드리지 않는다** — 돌아왔을 때 보던 그대로여야 한다.
+            **반별 선택(`classIds`)은 건드리지 않는다** — 돌아왔을 때 보던 그대로여야 한다.
           */
-          onClick={() => onChange({ level: 'team', teamNames: [] })}
+          onClick={() => onChange({ level: 'team' })}
         >
           팀
         </Button>
@@ -143,9 +149,17 @@ export default function RoundToolbar({
         }}
       >
         <FilterTrigger k="반">
-          {level === 'class'
-            ? pickLabel(allClassNames, picked, '반')
-            : (teamClass ?? <span className="text-fg-subtle">고르세요</span>)}
+          {level === 'class' ? (
+            pickLabel(
+              allClasses.map((c) => c.className),
+              picked.map(nameOf),
+              '반',
+            )
+          ) : teamClassId ? (
+            nameOf(teamClassId)
+          ) : (
+            <span className="text-fg-subtle">고르세요</span>
+          )}
         </FilterTrigger>
         <PopoverContent className="w-44 p-1.5">
           {level === 'class' && (
@@ -153,25 +167,23 @@ export default function RoundToolbar({
               type="button"
               className="text-primary hover:bg-surface-2 w-full rounded-sm px-2 py-1.5 text-left text-xs"
               onClick={() =>
-                onChange({
-                  classNames: picked.length === allClassNames.length ? [] : allClassNames,
-                })
+                onChange({ classIds: picked.length === allClassIds.length ? [] : allClassIds })
               }
             >
-              {picked.length === allClassNames.length ? '전체 해제' : '전체 선택'}
+              {picked.length === allClassIds.length ? '전체 해제' : '전체 선택'}
             </button>
           )}
-          {allClassNames.map((name) => (
+          {allClasses.map(({ classId, className }) => (
             <label
-              key={name}
+              key={classId}
               className="hover:bg-surface-2 flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm"
             >
               {level === 'class' ? (
                 <Checkbox
-                  checked={picked.length === 0 || picked.includes(name)}
+                  checked={picked.length === 0 || picked.includes(classId)}
                   onCheckedChange={() =>
                     onChange({
-                      classNames: toggle(picked.length === 0 ? allClassNames : picked, name),
+                      classIds: toggle(picked.length === 0 ? allClassIds : picked, classId),
                     })
                   }
                 />
@@ -181,53 +193,37 @@ export default function RoundToolbar({
                   type="radio"
                   name="class"
                   className="accent-primary size-3.5"
-                  checked={teamClass === name}
+                  checked={teamClassId === classId}
                   onChange={() => {
-                    onChange({ teamClass: name, teamNames: [] })
+                    onChange({ teamClassId: classId })
                     setClassOpen(false)
                   }}
                 />
               )}
-              {name}
+              {className}
             </label>
           ))}
         </PopoverContent>
       </Popover>
 
-      {/* 팀 선택은 팀 계층에서만 나온다 */}
+      {/*
+        **팀 계층은 회차 하나를 고른다.** 서버가 요구한다 — 팀은 회차마다 다시 짜일 수
+        있어 회차를 가로질러 같은 팀으로 추적할 수 없다. 아래 회차 **범위**와 자리를
+        나눠 쓰는 것이 아니라 **대체한다**(범위가 뜻이 없는 계층이다).
+      */}
       {level === 'team' && (
-        <Popover>
-          <FilterTrigger k="팀">{pickLabel(allTeamNames, teamNames, '팀')}</FilterTrigger>
-          <PopoverContent className="w-40 p-1.5">
-            <button
-              type="button"
-              className="text-primary hover:bg-surface-2 w-full rounded-sm px-2 py-1.5 text-left text-xs"
-              onClick={() =>
-                onChange({
-                  teamNames: teamNames.length === allTeamNames.length ? [] : allTeamNames,
-                })
-              }
-            >
-              {teamNames.length === allTeamNames.length ? '전체 해제' : '전체 선택'}
-            </button>
-            {allTeamNames.map((name) => (
-              <label
-                key={name}
-                className="hover:bg-surface-2 flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm"
-              >
-                <Checkbox
-                  checked={teamNames.length === 0 || teamNames.includes(name)}
-                  onCheckedChange={() =>
-                    onChange({
-                      teamNames: toggle(teamNames.length === 0 ? allTeamNames : teamNames, name),
-                    })
-                  }
-                />
-                {name}
-              </label>
-            ))}
-          </PopoverContent>
-        </Popover>
+        <span className="text-fg-subtle flex items-center gap-1.5 text-2xs">
+          회차
+          <RoundSelect
+            value={allRounds.find((r) => r.projectId === teamProjectId)?.no ?? null}
+            rounds={allRounds}
+            onChange={(no) =>
+              onChange({
+                teamProjectId: allRounds.find((r) => r.no === no)?.projectId ?? null,
+              })
+            }
+          />
+        </span>
       )}
 
       <span className="bg-border mx-1 h-5 w-px" />
@@ -236,22 +232,26 @@ export default function RoundToolbar({
         회차 범위 — 시작·끝을 직접. 프리셋으로 묶지 않는다.
         **등록 수를 같이 쓴다** — 범위가 `1–3차`인데 등록이 6회면 *"뒤에 더 있다"* 를
         알아야 범위를 넓힐 생각을 한다(정의서 §4-2 — 그 수는 데이터에서 나온다).
+
+        **반별에서만 나온다** — 팀 계층은 회차 하나를 고르므로 범위가 뜻이 없다.
       */}
-      <span className="text-fg-subtle flex items-center gap-1.5 text-2xs">
-        회차
-        <RoundSelect
-          value={fromRound}
-          rounds={allRounds}
-          onChange={(v) => onChange({ fromRound: v, toRound: Math.max(v, toRound) })}
-        />
-        –
-        <RoundSelect
-          value={toRound}
-          rounds={allRounds}
-          onChange={(v) => onChange({ toRound: v, fromRound: Math.min(v, fromRound) })}
-        />
-        <span className="text-fg-subtle/70">등록 {allRounds.length}회</span>
-      </span>
+      {level === 'class' && (
+        <span className="text-fg-subtle flex items-center gap-1.5 text-2xs">
+          회차
+          <RoundSelect
+            value={fromRound}
+            rounds={allRounds}
+            onChange={(v) => onChange({ fromRound: v, toRound: Math.max(v, toRound) })}
+          />
+          –
+          <RoundSelect
+            value={toRound}
+            rounds={allRounds}
+            onChange={(v) => onChange({ toRound: v, fromRound: Math.min(v, fromRound) })}
+          />
+          <span className="text-fg-subtle/70">등록 {allRounds.length}회</span>
+        </span>
+      )}
 
       {/*
         `items`가 있어야 트리거에 **라벨**이 뜬다 — 없으면 내부 값(`LATEST_WORST`)이
@@ -283,23 +283,35 @@ function RoundSelect({
   rounds,
   onChange,
 }: {
-  value: number
+  /** `null`이면 아직 안 고른 상태 — 트리거에 `고르세요`가 뜬다 */
+  value: number | null
   rounds: RoundColumn[]
   onChange: (v: number) => void
 }) {
   return (
     <Select
-      value={String(value)}
-      onValueChange={(v) => onChange(Number(v))}
+      /*
+        **`undefined`를 넣지 않는다.** 그러면 Select가 비제어로 시작했다가 값이 생길 때
+        제어로 바뀌면서 첫 선택이 먹지 않는다(Base UI 경고). 빈 문자열이 "안 고름"이다.
+      */
+      value={value === null ? '' : String(value)}
+      /*
+        **빈 값을 무시한다.** 팝오버가 닫힐 때 Base UI가 `''`로 한 번 더 발화하는데,
+        그대로 받으면 방금 고른 회차가 도로 풀린다 — 고를 수 없는 셀렉트가 됐던 자리다.
+      */
+      onValueChange={(v) => {
+        if (v) onChange(Number(v))
+      }}
       items={rounds.map((r) => ({ value: String(r.no), label: r.label }))}
     >
-      <SelectTrigger size="sm" className="w-20" aria-label="회차">
-        <SelectValue />
+      <SelectTrigger size="sm" className="w-24" aria-label="회차">
+        <SelectValue placeholder="고르세요" />
       </SelectTrigger>
       <SelectContent>
         {rounds.map((r) => (
-          <SelectItem key={r.no} value={String(r.no)}>
+          <SelectItem key={r.projectId} value={String(r.no)}>
             {r.label}
+            <span className="text-fg-subtle ml-1.5 text-2xs">{r.projectName}</span>
             {/* **왜 값이 없는지**를 고르는 자리에서 말한다 — 고르고 나서 빈 열을 보지 않게 */}
             {!r.published && <span className="text-fg-subtle ml-1.5 text-2xs">미발행</span>}
           </SelectItem>

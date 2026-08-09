@@ -1,5 +1,5 @@
 import { reachClass, reachFg } from '../labels'
-import type { CohortCompare } from '../api/types'
+import type { ChangeDirection, CohortCompare } from '../api/types'
 
 /*
   기수 간 비교 — **같은 교안 · 같은 개념만.**
@@ -15,32 +15,34 @@ import type { CohortCompare } from '../api/types'
     안 읽힌다. 행이 검증 개념이고 열이 기수라는 것만 다르다.
 */
 
-/** 변화. **단위를 만들지 않는다** — 도달 단계는 기획이 정한 눈금이라 `단`을 쓸 수 있다 */
-function Change({ base, current }: { base: number | null; current: number }) {
-  if (base === null) {
+/**
+ * 변화. **단위를 만들지 않는다** — 도달 단계는 기획이 정한 눈금이라 `단`을 쓸 수 있다.
+ *
+ * ⚠ **판정을 화면이 하지 않는다.** 한때 `|diff| <= 0.2`를 임계값으로 두고 갈랐는데
+ * 그 숫자가 어느 문서에도 없어서 **화면이 기준을 만드는 것**이었다(E8). 서버가
+ * `changeThreshold`를 갖고 판정까지 해 준다 — 여기서는 문구와 색만 고른다.
+ */
+function Change({ direction, delta }: { direction: ChangeDirection; delta: number | null }) {
+  if (direction === 'NOT_COMPARABLE') {
     return (
       <span className="text-fg-subtle text-xs">
         비교 대상 아님
-        <span className="mt-0.5 block text-2xs">지난 기수에 없던 개념</span>
+        <span className="mt-0.5 block text-2xs">한쪽 기수에 없거나 아직 집계 전인 개념</span>
       </span>
     )
   }
-  const diff = Math.round((current - base) * 10) / 10
-  /*
-    ⚠ 이 경계는 기획에 없다 — 프론트가 정한 값이다.
-    도달 단계는 1~4단이고 소수 첫째 자리까지 내려오는데, **얼마부터 "달라졌다"인지**
-    어느 문서에도 없다. `0.2단`을 고른 이유는 4단 척도의 5%라는 것뿐이다.
-    기획에서 값이 나오면 여기만 바꾼다.
-  */
-  const SAME_WITHIN = 0.2
-  const same = Math.abs(diff) <= SAME_WITHIN
+  const tone =
+    direction === 'SIMILAR' ? 'text-fg-muted' : direction === 'WORSE' ? 'text-danger' : 'text-info'
+  const label = direction === 'SIMILAR' ? '— 비슷' : direction === 'WORSE' ? '↘ 나빠짐' : '↗ 나아짐'
   return (
-    <span className={`text-xs ${same ? 'text-fg-muted' : diff < 0 ? 'text-danger' : 'text-info'}`}>
-      {same ? '— 비슷' : diff < 0 ? '↘ 나빠짐' : '↗ 나아짐'}
-      <span className="mt-0.5 block text-2xs tabular-nums">
-        {diff > 0 ? '+' : ''}
-        {diff.toFixed(1)}단
-      </span>
+    <span className={`text-xs ${tone}`}>
+      {label}
+      {delta !== null && (
+        <span className="mt-0.5 block text-2xs tabular-nums">
+          {delta > 0 ? '+' : ''}
+          {delta.toFixed(1)}단
+        </span>
+      )}
     </span>
   )
 }
@@ -114,7 +116,7 @@ export default function CohortCompareTable({ data }: { data: CohortCompare }) {
                 <ReachCell avg={r.currentAvg} label={data.currentCohortLabel} />
               </td>
               <td className="py-1.5 pl-4">
-                <Change base={r.baseAvg} current={r.currentAvg} />
+                <Change direction={r.direction} delta={r.delta} />
               </td>
               <td className="text-fg-muted py-1.5 pl-4 text-xs">
                 {r.baseVersion === null ? (

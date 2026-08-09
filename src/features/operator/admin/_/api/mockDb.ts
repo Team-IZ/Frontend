@@ -11,15 +11,7 @@
 // 명단 수와 어긋나면 배정 모드의 `미배정 3명`이 설명되지 않습니다.
 //
 // ▸ 목업끼리 어긋난 자리 셋은 아래 해당 위치에 `⚠ 목업 불일치`로 적어 뒀습니다.
-import type {
-  ClassRoom,
-  MockCohort,
-  CostSummary,
-  CurriculumDetail,
-  Manager,
-  Org,
-  Trainee,
-} from './types'
+import type { ClassRoom, MockCohort, CurriculumDetail, Manager, Org, Trainee } from './types'
 
 /**
  * 목업이 그려진 기준 시각. 실제 `new Date()`를 쓰면 값이 매일 달라져 목업과 대조할 때
@@ -768,72 +760,4 @@ export const CURRICULA: CurriculumDetail[] = [AI_LLMOPS, STREAMLIT, K8S, DATA_PI
   withCounts,
 )
 
-// ── ⑤ 비용 ──────────────────────────────────────────────────
-/*
-  ⚠ 이번 달(2026-07)에는 **7기만 돌고 있다.** 8기는 9월 시작이라 아직 비용이 없다 —
-  기수 카드가 하나만 뜨는 것이 정상이고, 전환기(9월)에 둘이 된다.
-
-  `previousTotal`은 증감의 근거다 — `+12%`만 있으면 얼마에서 얼마로 늘었는지 모른다(OP06-16).
-*/
-export const COST: CostSummary = {
-  month: '2026-07',
-  total: 268,
-  previousTotal: 239,
-  /*
-    기수 누적 — 아래 `monthly` 합과 같아야 한다. 화면이 둘을 같이 보여주므로 어긋나면
-    바로 드러난다(OP06-16에서 반 합계가 기수 총액과 안 맞던 것과 같은 자리).
-  */
-  cohortTotal: 1147,
-  // 계약 예산은 **기수 전체** 기준이다 — 월 예산으로 두면 7개월치 판단을 못 한다
-  budget: 2400,
-  monthsLeft: 2,
-  changePct: 12,
-  /*
-    **최근이 앞으로.** 3월 개강이라 다섯 달치가 쌓였다.
-
-    `projectNames`가 금액을 설명한다 — 회차가 둘인 6·7월이 비싸고, 5월은 회차 없이
-    재시험만 있던 달이라 싸다. 이것이 없으면 `$268`이 많은지 적은지 판단할 수 없다(OP06-17).
-  */
-  monthly: [
-    { month: '2026-07', amount: 268, sessions: 668, projectNames: ['미프 4차', '미프 5차'] },
-    { month: '2026-06', amount: 239, sessions: 601, projectNames: ['미프 3차'] },
-    { month: '2026-05', amount: 168, sessions: 422, projectNames: [] },
-    { month: '2026-04', amount: 251, sessions: 631, projectNames: ['미프 1차', '미프 2차'] },
-    { month: '2026-03', amount: 221, sessions: 555, projectNames: ['오리엔테이션 진단'] },
-  ],
-  cohorts: [{ id: '7', name: '7기', amount: 268, trainees: 250, period: '2026-03 ~ 09' }],
-}
-
-/*
-  반별 [이번 달 세션, 이번 달 비용, 누적 세션, 누적 비용].
-
-  **합이 위 총계와 맞아야 한다** — 이번 달 비용 합 = `COST.total`(268), 누적 비용 합 =
-  `COST.cohortTotal`(1147), 이번 달 세션 합 = `monthly[0].sessions`(668). 화면이 이 수들을
-  같이 보여주므로 어긋나면 바로 드러난다.
-
-  **F반이 이번 달은 중간인데 누적 1위다.** 이번 달만 보면 안 보이는 반을 일부러 뒀다 —
-  그래야 누적 열이 왜 필요한지가 화면에서 보인다(OP06-18). 22명인데 재시험이 계속 많았던 반이다.
-*/
-/*
-  반별 **기수 누적** [세션, 비용].
-
-  이 값이 **월별 배분의 가중치이자 누적 합계**다 — 반 10개 × 월 5개 = 50칸을 손으로 적으면
-  월 총액과 어긋나는 순간을 아무도 못 잡는다. `api.ts`가 이 가중치로 각 달을 나눈다(OP06-19).
-
-  합계가 위 총계와 맞는다 — 세션 2877 = `monthly` 세션 합, 비용 1147 = `cohortTotal`.
-
-  **F반이 누적 1위다.** 22명인데 재시험이 계속 많았던 반이라, *이번 달만 보면 중간인데
-  누적으로는 가장 비싼* 자리를 만든다(OP06-18).
-*/
-export const CLASS_TOTAL: Record<string, [number, number]> = {
-  'c-a': [296, 118],
-  'c-b': [281, 112],
-  'c-c': [321, 128],
-  'c-d': [288, 115],
-  'c-e': [256, 102],
-  'c-f': [346, 138],
-  'c-g': [296, 118],
-  'c-h': [286, 114],
-  'c-i': [263, 105],
-  'c-j': [244, 97],
-}
+// ── ⑤ 비용 ── **연동 완료.** 목 데이터를 지웠다(CostTab이 실서버를 쓴다)

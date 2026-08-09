@@ -13,12 +13,9 @@ import type {
   AdminCounts,
   AssignClassRequest,
   AssignResult,
-  ClassCost,
-  ClassCostSort,
   ClassQuery,
   ClassRoom,
   MockCohort,
-  CostSummary,
   CreateClassRequest,
   CurriculumDetail,
   CurriculumPage,
@@ -38,17 +35,7 @@ import type {
 import { ROSTER_PAGE_SIZE, canEditClasses, checkEmail, needsManager } from '../rules'
 
 // ───────── Mock 전용 (백엔드 연동 시 이 블록 삭제) ─────────
-import {
-  CLASSES,
-  CLASS_TOTAL,
-  COHORTS,
-  COST,
-  CURRICULA,
-  MANAGERS,
-  MOCK_NOW,
-  ORG,
-  TRAINEES,
-} from './mockDb'
+import { CLASSES, COHORTS, CURRICULA, MANAGERS, MOCK_NOW, ORG, TRAINEES } from './mockDb'
 
 /*
   **매니저의 담당·인원은 반에서 파생시킨다.** 목 파일에 손으로 적어 두면 반을 고칠 때
@@ -938,75 +925,5 @@ export function reanalyzeCurriculum(id: string): Promise<CurriculumDetail> {
  * 반별은 **선택 기수** 범위이고 요약은 기관 전체다 — 한 응답에 두 범위가 들어가는 것이
  * 이 탭의 모양이다(상단은 `기관 전체`, 아래 표는 `7기 · 이번 달`).
  */
-/**
- * 반별 한 달치를 만든다 — **누적 가중치로 월 총액을 나눈다**(OP06-19).
- *
- * 목이 반 10개 × 월 5개를 손으로 갖고 있으면 월 총액과 어긋나는 순간을 못 잡는다.
- * 가중치로 나누면 **합이 항상 맞고**, 반별 성향(F반이 계속 많이 쓴다)도 달마다 유지된다.
- *
- * 반올림 오차는 **가중치가 가장 큰 반이 흡수한다** — 작은 반에 몰면 그 반 숫자가 튄다.
- */
-function splitByWeight(total: number, pick: (t: [number, number]) => number): Map<string, number> {
-  const ids = Object.keys(CLASS_TOTAL)
-  const sum = ids.reduce((n, id) => n + pick(CLASS_TOTAL[id]), 0)
-  const top = ids.reduce((a, b) => (pick(CLASS_TOTAL[a]) >= pick(CLASS_TOTAL[b]) ? a : b))
 
-  const out = new Map<string, number>()
-  let assigned = 0
-  for (const id of ids) {
-    if (id === top) continue
-    const v = Math.round((total * pick(CLASS_TOTAL[id])) / sum)
-    out.set(id, v)
-    assigned += v
-  }
-  out.set(top, total - assigned)
-  return out
-}
-
-export function getCost(
-  cohortId: string,
-  sort: ClassCostSort = 'NAME',
-): Promise<{ summary: CostSummary; classes: ClassCost[] }> {
-  // ===== Mock 버전 (현재 활성) =====
-  /*
-    **기수로 거른다.** 인자를 `void`로 버리고 전체 반을 돌려주고 있었다 — 제목은
-    `7기 · 이번 달`이라 써 놓고 5·6기 반까지 섞여 **10반이어야 할 표가 16행**이었다(OP06-16).
-
-    **달마다 나눠서 준다**(OP06-20). 한 달치만 주면 지난달 반별을 볼 방법이 없고, 달을 골라
-    가며 봐도 **두 달을 나란히 비교할 수 없다.**
-  */
-  const rooms = CLASSES.filter((c) => c.cohortId === cohortId && CLASS_TOTAL[c.id])
-
-  // 오래된 달이 앞 — 매트릭스는 왼쪽에서 오른쪽으로 시간이 흐른다
-  const months = [...COST.monthly].reverse()
-  const byMonth = months.map((m) => ({
-    month: m.month,
-    split: splitByWeight(m.amount, (t) => t[1]),
-  }))
-
-  const rows: ClassCost[] = rooms.map((room) => ({
-    classId: room.id,
-    cohortId: room.cohortId,
-    className: room.name,
-    managerName: room.managerName,
-    monthly: byMonth.map(({ month, split }) => ({ month, amount: split.get(room.id) ?? 0 })),
-    cohortSessions: CLASS_TOTAL[room.id][0],
-    cohortAmount: CLASS_TOTAL[room.id][1],
-  }))
-
-  /*
-    **정렬도 서버가 한다**(api-boundary §1-②). 목이 배열이라 화면에서 돌려도 되지만
-    그러면 연동할 때 재작성이 된다.
-
-    달마다 정렬 옵션을 만들지 않는다 — 월이 열로 펼쳐졌으므로 **눈으로 훑는 일**이고,
-    일곱 개짜리 드롭다운은 매트릭스가 이미 하는 일을 반복한다(OP06-20).
-  */
-  const byName = (a: ClassCost, b: ClassCost) => a.className.localeCompare(b.className, 'ko')
-  const sorted = [...rows].sort((a, b) =>
-    sort === 'COHORT_AMOUNT' ? b.cohortAmount - a.cohortAmount || byName(a, b) : byName(a, b),
-  )
-
-  return delay({ summary: COST, classes: sorted })
-
-  // return http<{ summary: CostSummary; classes: ClassCost[] }>(`/admin/cost?cohort=${cohortId}`)
-}
+// ── ⑥ 비용 ── **연동 완료.** CostTab이 실서버를 쓴다(useFindCohortCost)

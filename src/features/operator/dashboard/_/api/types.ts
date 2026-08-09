@@ -134,8 +134,13 @@ export type Todo =
       /** 담당 없는 반. **여러 반이면 묶어서 한 줄**이다 */
       classNames: string[]
       trainees: number
-      /** 왜 비었나. 목업 `박지현 매니저가 퇴사 처리된 뒤 반이 남았습니다` */
-      reason: string | null
+      /*
+        ⚠ **`reason`이 없어졌다.** 목업의 `박지현 매니저가 퇴사 처리된 뒤 반이 남았습니다`를
+        담던 자리인데 서버가 주지 않는다(`managerUnassigned`는 반과 인원만 준다).
+
+        **지어내지 않는다.** 왜 비었는지는 배정 이력을 봐야 아는 사실이고, 화면이 추측하면
+        틀린 이유를 그럴듯하게 쓰게 된다. 반 이름과 인원만으로도 할 일은 정해진다.
+      */
     }
   | {
       kind: 'CONCEPT_GAP'
@@ -143,7 +148,7 @@ export type Todo =
       projectId: string
       roundLabel: string
       conceptName: string
-      /** 코드 매칭 0인 팀 수 / 전체 팀 수 — `8팀 중 6팀` */
+      /** 코드 매칭 0인 팀 수 / 참여 팀 수 — `46팀 중 6팀` */
       unmatchedTeams: number
       totalTeams: number
     }
@@ -152,20 +157,21 @@ export type Todo =
       /**
        * 어느 회차 판정인가. **9-6은 리포트 발행 시점에 켜지므로**(10-1 일괄 발행) 항상
        * 직전 발행 회차 것이고, 진행 중 회차 것일 수 없다.
-       *
-       * ⚠ 계약에 없던 필드다 — 목업이 `C반 · "Graph 구성" 14/25`까지만 쓰고 회차를
-       * 안 적어서 **네 줄이 전부 이번 회차 것으로 읽혔다**(MG-01이 경고한 그것).
        */
       roundLabel: string
       conceptName: string
       /**
-       * 미달한 반. **여러 반이면 개념 선택 자체를 다시 봐야 한다**(OP-01 §6) —
-       * 반마다 공지를 보내면 원인을 못 고친다. 화면이 개수로 문구를 가른다.
+       * 미달한 반 **하나**.
+       *
+       * ⚠ **한때 배열이었다.** 여러 반이 같은 개념에서 미달하면 *"반 문제가 아니라 개념
+       * 선택을 다시 보라"* 고 문구를 갈랐는데, 서버는 **유형별로 가장 나쁜 한 건씩만**
+       * 올린다(`findCohortActionsRequired`). 그래서 복수 케이스가 이 화면에 도달하지
+       * 않는다 — 여러 반에 걸친 판단은 **분석(OP-02)의 집단 미달 목록**이 맡는다.
        */
-      classNames: string[]
-      /** 한 반일 때만 쓰는 `14/25`. 여러 반이면 반마다 달라 못 쓴다 */
-      below: number | null
-      total: number | null
+      className: string
+      /** `24/26` — 2단 이하 인원 / 반 인원 */
+      below: number
+      total: number
     }
   | {
       kind: 'INTERVIEW_BACKLOG'
@@ -176,22 +182,43 @@ export type Todo =
        * 개인 대기 일수가 안 생긴다(10-2 · OP-01 §3).
        */
       elapsedDays: number
+      /** 아직 안 끝난 면담 */
       pending: number
-      /** 다른 반 범위 `3~5일`. 11일이 긴 건지는 이것으로만 판단된다 */
-      othersMinDays: number
-      othersMaxDays: number
+      /**
+       * 아직 **만들어지지도 않은** 면담. `pending`과 성격이 다르다 — 잡혔는데 안 끝난
+       * 것과 아예 없는 것은 할 일이 다르다(`notCreatedCount`).
+       *
+       * ⚠ **`othersMinDays`·`othersMaxDays`가 없어졌다.** 목업의 `다른 반은 3~5일`을
+       * 담던 자리인데 서버가 주지 않는다. **다른 반 값을 화면이 모으지 않는다** —
+       * 그러려면 반 전량의 면담 상태를 받아야 하고, 그건 서버 집계다(api-boundary §1-②).
+       */
+      notCreated: number
     }
 
 // ── 응답 ────────────────────────────────────────────────────
 /**
- * `GET /operator/dashboard?cohort={id}`
+ * 대시보드 한 장.
  *
- * 케이스 표가 **호출 하나**로 정해 뒀다. 블록별로 실패가 갈리므로 재시도는 전체
- * 재조회다 — 블록 단위 엔드포인트가 생기면 그때 나눈다.
+ * ⚠ **한 호출이 아니다 — 셋이다.** 목일 때는 `GET /operator/dashboard` 하나를 가정했는데
+ * 서버에는 그런 엔드포인트가 없고 세 곳에서 모은다.
+ *
+ * ```
+ * pipeline  ←  findProjects + findProjectClassProgress   (OP-04와 같은 조회)
+ * compare   ←  findCohortRiskTraineeRates
+ * todos     ←  findCohortActionsRequired
+ * ```
+ *
+ * **그래서 `Block<T>`가 이제 실제 값을 갖는다.** 목에서는 부분 실패를 흉내만 냈지만
+ * (`?case=partial`), 지금은 셋 중 하나만 죽는 일이 실제로 생긴다 — 반 비교가 실패해도
+ * 조치 필요는 그대로 그린다(F2).
  */
 export type DashboardResponse = {
-  /** 헤더 빵부스러기 `대시보드 › 7기 › 250명 · 10반` */
-  cohortLabel: string
+  /*
+    헤더 빵부스러기 `대시보드 › 9기 › 223명 · 8반`의 뒷부분.
+
+    ⚠ **기수 이름은 여기 없다.** 세 응답 어디에도 없고, 화면이 이미 스코프
+    (`stores/cohortScope`)에서 알고 있다 — 같은 값을 두 곳에서 받으면 갈린다.
+  */
   trainees: number
   classes: number
   pipeline: Block<RoundPipeline>
@@ -199,9 +226,3 @@ export type DashboardResponse = {
   /** **0건도 정상이다** — 빈 배열과 실패를 갈라야 한다(F3) */
   todos: Block<Todo[]>
 }
-
-/**
- * 목업 케이스 표의 에러코드. **표에 있는 것만 둔다** — 표에 없는 코드는 문구도 다음
- * 행동도 정해진 게 없어 화면이 받아도 쓸 수 없다(mock-first §5).
- */
-export type DashboardErrorCode = 'DASHBOARD_UNAVAILABLE'

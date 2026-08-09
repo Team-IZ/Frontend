@@ -5,6 +5,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import { useAsync } from '@/lib/useAsync'
+import { useCohortId } from '@/stores/cohortScope'
 import { getDashboard, getToday } from './_/api/api'
 import { ANALYSIS, GO_ANALYSIS, GO_PROJECT, projectPath } from './_/labels'
 import { Section, BlockBody } from './_/components/Section'
@@ -39,24 +40,39 @@ import TodoBlock from './_/components/TodoBlock'
   네 블록은 한 뷰포트에 들어간다(02-layout §6).
 */
 
-/** 기수는 아직 스위처가 하나뿐이라 상수다. 실제 세션이 붙으면 헤더 스코프에서 받는다 */
-const COHORT_ID = '7'
-
 export default function DashboardScreen() {
-  const load = useCallback(() => getDashboard(COHORT_ID), [])
-  const page = useAsync(load)
+  /*
+    기수는 서버에 물어본다(`stores/cohortScope`). 목일 때 쓰던 상수 `'7'`은 UUID가 아니라
+    실서버에서 안 통한다. **정해지기 전에는 조회가 안 나간다.**
+  */
+  const { cohortId, cohortName, failed: cohortFailed } = useCohortId()
+  const load = useCallback(() => getDashboard(cohortId!), [cohortId])
+  const page = useAsync(load, !!cohortId)
   const d = page.data
 
   return (
-    <ConsoleShell role="operator">
+    <ConsoleShell role="operator" cohort={cohortName}>
       {d && (
+        /*
+          기수 이름은 스코프가 안다 — 대시보드 응답에는 없다(`api.ts` `loadScope`).
+          인원·반 수는 반 비교 응답에서 나온다.
+        */
         <PageHeader
-          breadcrumb={`대시보드 › ${d.cohortLabel} › ${d.trainees}명 · ${d.classes}반`}
+          breadcrumb={`대시보드 › ${cohortName ?? ''} › ${d.trainees}명 · ${d.classes}반`}
           title="대시보드"
         />
       )}
 
-      {page.loading ? (
+      {cohortFailed ? (
+        <Empty>
+          <EmptyHeader>
+            <EmptyTitle>기수가 없습니다</EmptyTitle>
+            <EmptyDescription>
+              운영 관리에서 기수를 먼저 만들면 여기에 진행 상황이 쌓입니다.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : page.loading ? (
         <div className="flex justify-center py-16">
           <Spinner className="size-6" aria-label="대시보드를 불러오는 중" />
         </div>

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { XIcon } from 'lucide-react'
 import {
   Dialog,
@@ -12,11 +12,14 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
-import { useAsync } from '@/lib/useAsync'
-import { addRoster, getOrg, previewRoster, MOCK_COHORT_ID } from '../../_/api/api'
+import { useGetCurrentMember } from '@/api/member/useMemberQueries'
+import { useRegisterTrainees, usePreviewTrainees } from '@/api/member/useMemberMutations'
+import { registerTraineesFromCsv, previewTraineesFromCsv } from '@/api/uploads'
+import type { registerTrainees_Response } from '@/api/member/memberTypes'
 import { checkRosterRows, type ParsedRoster } from '../../_/rules'
 import { ROSTER_ISSUE_LABEL } from '../../_/labels'
-import type { AddRosterResult, RosterEntry, RosterIssue } from '../../_/api/types'
+import { useCohortScope } from '../../_/cohortScope'
+import type { RosterEntry, RosterIssue } from '../../_/api/types'
 import RosterCsvField from '../../_/components/RosterCsvField'
 import RosterIssueList from '../../_/components/RosterIssueList'
 
@@ -33,11 +36,24 @@ import RosterIssueList from '../../_/components/RosterIssueList'
   수백 명 파일을 통째로 되돌리면 아무도 안 쓴다(OP-06 §6).
 
   **등록과 동시에 활성화 초대가 나간다.** 그래서 누르기 전에 몇 명에게 나가는지를 보여준다.
+
+  ## 두 방식이 서로 다른 API를 쓴다
+  | | 등록 | 사전 검증 |
+  |---|---|---|
+  | CSV | `POST .../trainees` (multipart) | `POST .../trainees/preview` |
+  | 직접 입력 | `POST .../trainees/invitations` | `.../invitations/preview` |
+
+  **드라이런은 9차 Q3-③으로 생겼다.** 파일 안에서 알 수 없는 것 하나 — *이미 등록된
+  이메일* — 을 서버가 세 준다. 200명을 붙여 넣고 나서야 30명이 중복이라는 걸 알게 되는
+  상황이 이걸로 없어졌다.
+
+  ⚠ **미리보기가 통과해도 등록이 반드시 성공하지는 않는다**(스펙 명시) — 두 호출 사이에
+  다른 운영자가 같은 주소를 등록할 수 있다. 등록 결과의 `failures`를 그대로 확인한다.
 */
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onAdded: (result: AddRosterResult) => void
+  onAdded: (result: registerTrainees_Response) => void
 }
 
 /** 직접 입력의 빈 행. 목업처럼 **한 줄은 늘 비어 있다** — `+ 행 추가`를 안 눌러도 칠 수 있다 */
@@ -46,14 +62,20 @@ const emptyRow = (): RosterEntry => ({ name: '', email: '' })
 export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) {
   const [mode, setMode] = useState('csv')
   const [parsed, setParsed] = useState<ParsedRoster | null>(null)
-  const [preview, setPreview] = useState<AddRosterResult | null>(null)
+  /** 고른 파일 자체 — CSV 등록이 multipart라 텍스트가 아니라 파일을 보낸다 */
+  const [file, setFile] = useState<File | null>(null)
+  const [preview, setPreview] = useState<registerTrainees_Response | null>(null)
   const [rows, setRows] = useState<RosterEntry[]>([emptyRow()])
   const [submitting, setSubmitting] = useState(false)
   const [failed, setFailed] = useState(false)
 
-  const loadOrg = useCallback(() => getOrg(), [])
-  const org = useAsync(loadOrg, open)
-  const domain = org.data?.domain
+  /** 기관 도메인은 세션이 준다(9차 Q3-④) — `null`이면 도메인 제한을 걸지 않는다 */
+  const { data: me } = useGetCurrentMember()
+  const domain = me?.emailDomain ?? undefined
+  const scope = useCohortScope()
+  const cohortId = scope.cohortId
+  const registerTyped = useRegisterTrainees()
+  const previewTyped = usePreviewTrainees()
 
   /*
     **판정은 rules.ts가 한다** — CSV와 같은 규칙을 같은 순서로 돌린다(`checkRosterRows`).
@@ -68,19 +90,30 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
 
   const entries = mode === 'csv' ? (parsed?.entries ?? []) : typedValid
   const issues = mode === 'csv' ? (parsed?.invalid ?? []) : typedIssues
-  const submittable = entries.length > 0 && issues.length === 0 && !submitting
+  const submittable = entries.length > 0 && issues.length === 0 && !submitting && !!cohortId
 
-  const askPreview = async (next: RosterEntry[]) => {
-    if (next.length === 0) return setPreview(null)
-    // 파일 안에서 알 수 없는 것 하나 — **이미 등록된 이메일**. 서버가 센다
-    setPreview(await previewRoster({ cohortId: MOCK_COHORT_ID, entries: next }))
+  /** 서버가 센 중복 수 — 응답이 실패 행을 이유별 코드로 준다(3 = 이미 있는 이메일) */
+  const duplicates = preview?.failures.filter((f) => f.status === 3).length ?? 0
+
+  const askPreviewCsv = async (next: File | null) => {
+    if (!next || !cohortId) return setPreview(null)
+    setPreview(await previewTraineesFromCsv({ path: { cohortId }, file: next }))
+  }
+
+  const askPreviewTyped = async (next: RosterEntry[]) => {
+    if (next.length === 0 || !cohortId) return setPreview(null)
+    setPreview(await previewTyped.mutateAsync({ path: { cohortId }, body: { trainees: next } }))
   }
 
   const submit = async () => {
+    if (!cohortId) return
     setSubmitting(true)
     setFailed(false)
     try {
-      const result = await addRoster({ cohortId: MOCK_COHORT_ID, entries })
+      const result =
+        mode === 'csv' && file
+          ? await registerTraineesFromCsv({ path: { cohortId }, file })
+          : await registerTyped.mutateAsync({ path: { cohortId }, body: { trainees: entries } })
       onAdded(result)
       close(false) // 닫기가 비우는 일까지 한다 — 성공·취소가 같은 길로 나간다
     } catch {
@@ -92,6 +125,7 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
 
   const reset = () => {
     setParsed(null)
+    setFile(null)
     setPreview(null)
     setRows([emptyRow()])
     setFailed(false)
@@ -112,7 +146,8 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
       <DialogContent className="flex max-h-[85svh] flex-col sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>
-            명단 추가 <span className="text-fg-subtle text-xs font-normal">· 7기</span>
+            명단 추가{' '}
+            <span className="text-fg-subtle text-xs font-normal">· {scope.current?.name}</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -136,15 +171,19 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
             </TabsList>
 
             <TabsContent value="csv" className="pt-3">
-              {domain && (
-                <RosterCsvField
-                  domain={domain}
-                  onChange={(next) => {
-                    setParsed(next)
-                    void askPreview(next?.entries ?? [])
-                  }}
-                />
-              )}
+              {/*
+                **파일 자체를 들고 있는다.** 화면이 그 자리에서 형식·도메인을 판정하고
+                (`parseRosterCsv`), 서버에는 **원본 파일을 그대로** 보낸다 — 파싱한 결과를
+                다시 CSV로 만들어 보내면 판정 규칙이 두 벌이 된다.
+              */}
+              <RosterCsvField
+                domain={domain ?? ''}
+                onChange={(next, _name, picked) => {
+                  setParsed(next)
+                  setFile(picked)
+                  void askPreviewCsv(picked)
+                }}
+              />
               <p className="text-fg-subtle mt-2 text-2xs">
                 수십~수백 명을 한 번에 넣을 때 씁니다. 기관 도메인 밖 주소는 등록되지 않습니다. 반
                 배정은 등록한 뒤 배정 모드에서 합니다.
@@ -169,6 +208,11 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
                         setRows(patch(rows, i, { email: e.target.value }))
                         setPreview(null)
                       }}
+                      /*
+                        **칸을 떠날 때 서버에 물어본다.** 타이핑 중에 부르면 한 글자마다
+                        요청이 나가고, 등록을 누른 뒤에 알려주면 그때 고쳐야 한다.
+                      */
+                      onBlur={() => void askPreviewTyped(typedValid)}
                     />
                     <Button
                       variant="ghost"
@@ -203,14 +247,14 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
               {/* 유효가 0이면 이 줄을 쓰지 않는다 — `✓ 유효 0명`은 체크 표시가 거짓말을 한다 */}
               {entries.length > 0 && (
                 <p className="text-success text-xs">
-                  ✓ 유효 <b className="font-semibold">{preview?.added ?? entries.length}명</b> —
+                  ✓ 유효{' '}
+                  <b className="font-semibold">{preview?.registeredCount ?? entries.length}명</b> —
                   등록하면 활성화 초대가 나갑니다
                 </p>
               )}
-              {preview !== null && preview.skipped > 0 && (
+              {duplicates > 0 && (
                 <p className="text-warning mt-0.5 text-xs">
-                  ⚠ 이미 등록된 이메일 <b className="font-semibold">{preview.skipped}명</b> —
-                  건너뜁니다
+                  ⚠ 이미 등록된 이메일 <b className="font-semibold">{duplicates}명</b> — 건너뜁니다
                 </p>
               )}
               {mode === 'csv' ? (

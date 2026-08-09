@@ -13,13 +13,7 @@
   Node는 우리 번들러 별칭(`@/`)을 모른다. `#`은 Node·TypeScript·Vite가 모두 읽는다.
 */
 import { isEmailShape } from '#lib/validation.ts'
-import type {
-  ClassRoom,
-  CohortStatus,
-  RosterEntry,
-  RosterIssue,
-  RosterIssueReason,
-} from './api/types'
+import type { CohortStatus, RosterEntry, RosterIssue, RosterIssueReason } from './api/types'
 
 /**
  * 명단 한 쪽에 몇 명.
@@ -211,21 +205,12 @@ export type CapacityPreview = {
  * **정원 초과를 막지 않는다**(OP-06 §3). 중도 합류·반 통폐합으로 실제로 생기고,
  * 막으면 운영이 멈춘다 — **넘는다는 사실만 알린다.**
  */
-export function capacityPreview(room: ClassRoom, adding: number): CapacityPreview {
+export function capacityPreview(
+  room: { capacity: number; size: number },
+  adding: number,
+): CapacityPreview {
   const next = room.size + adding
   return { next, over: next > room.capacity, remaining: room.capacity - next }
-}
-
-/**
- * 담당 매니저가 없는 반인가.
- *
- * **서버 판정 필드를 따로 두지 않는다.** `managerId === null`과 1:1이라 필드를 만들면
- * 같은 사실이 두 곳에 생기고, 한쪽만 갱신되는 순간 목록과 경고가 어긋난다.
- * (프로젝트의 `ProjectStatus`와 다른 경우다 — 저쪽은 교안·개념·마감 **여러 입력**을
- * 서버가 종합해 판정하는 값이라 화면이 유추하면 규칙이 두 벌이 된다.)
- */
-export function needsManager(room: ClassRoom): boolean {
-  return room.managerId === null
 }
 
 // ── 표시값 ──────────────────────────────────────────────────

@@ -20,12 +20,10 @@ import {
   formatLastSeen,
   formatPeriod,
   formatUsd,
-  needsManager,
   parseRosterCsv,
   perTrainee,
   toIsoDate,
 } from '../src/features/operator/admin/_/rules.ts'
-import type { ClassRoom } from '../src/features/operator/admin/_/api/types.ts'
 
 const DOMAIN = 'green.com'
 
@@ -134,16 +132,9 @@ assert.strictEqual(
 )
 
 // ── 정원 ────────────────────────────────────────────────────
-const room = (size: number, capacity = 25): ClassRoom => ({
-  id: 'c-f',
-  cohortId: '7',
-  name: 'F반',
+const room = (size: number, capacity = 25) => ({
   capacity,
   size,
-  managerId: null,
-  managerName: null,
-  assignedAt: null,
-  assignedBy: null,
 })
 
 // 목업 레일의 `22 → 24 / 25 · 1자리 남음`이 이 계산이다
@@ -152,9 +143,11 @@ assert.deepStrictEqual(capacityPreview(room(25), 0), { next: 25, over: false, re
 // **정원 초과를 막지 않는다** — 넘는다는 사실만 알린다(중도 합류·반 통폐합)
 assert.deepStrictEqual(capacityPreview(room(24), 3), { next: 27, over: true, remaining: -2 })
 
-// 담당 없음은 필드 하나로 판정한다 — 서버 플래그를 따로 두면 목록과 경고가 어긋난다
-assert.strictEqual(needsManager(room(22)), true)
-assert.strictEqual(needsManager({ ...room(22), managerId: 'm-1', managerName: '박지현' }), false)
+/*
+  ⚠ `needsManager` 검사를 뺐다 — **서버가 판정해 준다**(`ClassroomResponse
+  .managerAssignmentRequired`). 목일 때는 `managerId === null`과 1:1이라 화면이 셌는데,
+  실제로는 반 하나에 매니저가 **여럿**일 수 있어 그 등가가 성립하지 않는다.
+*/
 
 // ── 표시값 ──────────────────────────────────────────────────
 const NOW = '2026-07-16T14:20'

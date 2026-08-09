@@ -10,8 +10,8 @@ import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
-import { deactivateTrainee } from '../../_/api/api'
-import type { Trainee } from '../../_/api/types'
+import { useUpdateTraineeStatus } from '@/api/member/useMemberMutations'
+import type { findTraineeRoster_Item } from '@/api/member/memberTypes'
 import RequiredMark from '../../_/components/RequiredMark'
 
 /*
@@ -34,17 +34,21 @@ import RequiredMark from '../../_/components/RequiredMark'
   **다시 활성으로 못 되돌린다는 사실을 누르기 전에 적는다** — `ConfirmDialog`가 되돌릴
   수 없는 것에만 확인을 세우는 것과 같은 자리다.
 */
+type Trainee = findTraineeRoster_Item
+
 type Props = {
   /** 비활성할 사람. null이면 닫힌 상태 */
   target: Trainee | null
+  /** 이 사람이 속한 기수 — 상태 변경 경로가 기수를 받는다 */
+  cohortId: string
   onOpenChange: (open: boolean) => void
   onDone: (t: Trainee, reason: string) => void
 }
 
-export default function DeactivateTraineeDialog({ target, onOpenChange, onDone }: Props) {
+export default function DeactivateTraineeDialog({ target, cohortId, onOpenChange, onDone }: Props) {
   const [reason, setReason] = useState('')
-  const [saving, setSaving] = useState(false)
   const [failed, setFailed] = useState(false)
+  const update = useUpdateTraineeStatus()
 
   const close = (next: boolean) => {
     onOpenChange(next)
@@ -57,16 +61,16 @@ export default function DeactivateTraineeDialog({ target, onOpenChange, onDone }
 
   const save = async () => {
     if (!target) return
-    setSaving(true)
     setFailed(false)
     try {
-      await deactivateTrainee(target.id, reason)
+      await update.mutateAsync({
+        path: { cohortId, traineeId: target.traineeId },
+        body: { status: 'INACTIVE', reason: reason.trim() },
+      })
       onDone(target, reason)
       close(false)
     } catch {
       setFailed(true)
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -111,11 +115,11 @@ export default function DeactivateTraineeDialog({ target, onOpenChange, onDone }
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => close(false)} disabled={saving}>
+          <Button variant="ghost" onClick={() => close(false)} disabled={update.isPending}>
             취소
           </Button>
-          <Button variant="danger" disabled={saving || !reason.trim()} onClick={save}>
-            {saving && <Spinner className="size-3.5" />}
+          <Button variant="danger" disabled={update.isPending || !reason.trim()} onClick={save}>
+            {update.isPending && <Spinner className="size-3.5" />}
             비활성 처리
           </Button>
         </DialogFooter>

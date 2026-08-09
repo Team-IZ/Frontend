@@ -12,7 +12,6 @@ import type {
   CohortStatus,
   CurriculumStatus,
   LinkedProjectStatus,
-  ManagerStatus,
   RosterIssueReason,
 } from './api/types'
 
@@ -47,10 +46,17 @@ export const ACCOUNT_STATUS_LABEL: Record<AccountStatus, string> = {
   INACTIVE: '비활성',
 }
 
-export const MANAGER_STATUS_LABEL: Record<ManagerStatus, string> = {
+/**
+ * 매니저 계정 상태 — **교육생과 같은 `AccountStatus`인데 라벨이 하나 다르다.**
+ *
+ * 서버는 둘 다 `INVITED`·`ACTIVE`·`INACTIVE`를 쓴다. 그런데 교육생의 `INACTIVE`는
+ * *중도 이탈*이고 매니저의 것은 *운영자가 막은 것*이라, 교육생은 `비활성`이고 매니저는
+ * **`정지`** 다 — 목일 때 `SUSPENDED`라는 별도 값으로 갈라 두었던 그 차이가 라벨로 남는다.
+ */
+export const MANAGER_STATUS_LABEL: Record<AccountStatus, string> = {
   ACTIVE: '활성',
   INVITED: '초대 대기',
-  SUSPENDED: '정지',
+  INACTIVE: '정지',
 }
 
 export const CURRICULUM_STATUS_LABEL: Record<CurriculumStatus, string> = {

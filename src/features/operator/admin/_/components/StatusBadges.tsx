@@ -11,7 +11,6 @@ import type {
   CohortStatus,
   CurriculumStatus,
   LinkedProjectStatus,
-  ManagerStatus,
 } from '../api/types'
 
 /*
@@ -42,11 +41,11 @@ const ACCOUNT: Record<AccountStatus, Variant> = {
   INACTIVE: 'neutral',
 }
 
-const MANAGER: Record<ManagerStatus, Variant> = {
+const MANAGER: Record<AccountStatus, Variant> = {
   ACTIVE: 'success',
   INVITED: 'info',
   // 정지는 되돌릴 수 있고(재활성) 사고가 아니다 — danger가 아니라 회색이다
-  SUSPENDED: 'neutral',
+  INACTIVE: 'neutral',
 }
 
 const CURRICULUM: Record<CurriculumStatus, Variant> = {
@@ -71,7 +70,7 @@ export const AccountStatusBadge = ({ status }: { status: AccountStatus }) => (
   <Badge variant={ACCOUNT[status]}>{ACCOUNT_STATUS_LABEL[status]}</Badge>
 )
 
-export const ManagerStatusBadge = ({ status }: { status: ManagerStatus }) => (
+export const ManagerStatusBadge = ({ status }: { status: AccountStatus }) => (
   <Badge variant={MANAGER[status]}>{MANAGER_STATUS_LABEL[status]}</Badge>
 )
 

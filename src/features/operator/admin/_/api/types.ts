@@ -21,6 +21,7 @@
   갈린다. 마지막 탭이 붙으면 이 파일과 `api.ts`·`mockDb.ts`가 함께 사라진다.
 */
 import type { findCohorts_Item } from '@/api/academic/academicTypes'
+import type { findManagers_Item as ManagerRosterEntry } from '@/api/member/memberTypes'
 
 // ── 기관 ────────────────────────────────────────────────────
 /**
@@ -127,8 +128,13 @@ export type ClassQuery = {
 
 export type ClassStaffing = 'STAFFED' | 'UNSTAFFED'
 
-/** 계정 상태. **MG-05와 같은 값·같은 라벨을 쓴다** — 라벨 근거는 labels.ts */
-export type AccountStatus = 'ACTIVE' | 'INVITED' | 'INACTIVE'
+/**
+ * 계정 상태 — **스펙에서 온다**(`AccountStatus`: INVITED · ACTIVE · INACTIVE).
+ *
+ * 교육생과 매니저가 같은 값을 쓰고 라벨만 갈린다(labels.ts). 9차에서 `LOCKED`가
+ * 제거됐다 — DB CHECK가 애초에 세 값만 허용해 도달할 수 없는 값이었다.
+ */
+export type AccountStatus = ManagerRosterEntry['status']
 
 export type Trainee = {
   id: string

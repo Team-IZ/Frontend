@@ -48,21 +48,25 @@ ok(canCreate(['ai-llmops', 'streamlit'], ['a', 'b', 'c']), true, '교안 2 · �
 // 목업 값 재현 — 07-16 기준으로 미프 4차가 `5일 남음`, 빅프가 `72일 남음`이다
 const at = (iso: string) => dueLabel(iso, '2026-07-16')
 
-assert.deepStrictEqual(at('2026-07-21T23:59'), { text: '5일 남음', overdue: false, urgent: true })
-assert.deepStrictEqual(at('2026-09-26T23:59'), { text: '72일 남음', overdue: false, urgent: false })
-assert.deepStrictEqual(at('2026-07-14T23:59'), { text: '지남', overdue: true, urgent: false })
+assert.deepStrictEqual(at('2026-07-21'), { text: '5일 남음', overdue: false, urgent: true })
+assert.deepStrictEqual(at('2026-09-26'), { text: '72일 남음', overdue: false, urgent: false })
+assert.deepStrictEqual(at('2026-07-14'), { text: '지남', overdue: true, urgent: false })
 
 // 마감 당일은 `지남`이 아니다 — 그날 자정까지가 마감인데 아침에 지났다고 쓰면 거짓말이다
-assert.deepStrictEqual(at('2026-07-16T23:59'), { text: '0일 남음', overdue: false, urgent: true })
+assert.deepStrictEqual(at('2026-07-16'), { text: '0일 남음', overdue: false, urgent: true })
 
 // 하드코딩 테이블을 없앤 이유 — 표에 없는 날짜가 조용히 사라지면 안 된다
-assert.notStrictEqual(at('2027-03-01T09:00'), null, '새 날짜도 계산돼야 한다')
+assert.notStrictEqual(at('2027-03-01'), null, '새 날짜도 계산돼야 한다')
 assert.strictEqual(dueLabel(null, '2026-07-16'), null, '마감 미설정')
 
 // 해를 넘겨도 일수가 맞아야 한다(문자열 비교로는 안 되는 자리)
-assert.strictEqual(dueLabel('2027-01-01T00:00', '2026-12-25')!.text, '7일 남음')
+assert.strictEqual(dueLabel('2027-01-01', '2026-12-25')!.text, '7일 남음')
 
-assert.strictEqual(formatDue('2026-07-21T23:59'), '07-21 23:59')
+/*
+  **시각이 빠졌다.** 서버가 날짜만 저장하고 학생에게 나가는 실제 마감은 다른 값이라,
+  화면이 시각을 말하면 서버가 뒷받침하지 않는 주장을 하게 된다(9차 회신 §15).
+*/
+assert.strictEqual(formatDue('2026-07-21'), '07-21')
 
 // ── 개념 토글 — 생성·변경 모달이 같은 규칙을 쓴다 ──────────────
 const eq = (a: unknown, b: unknown, msg: string) =>
@@ -83,15 +87,24 @@ eq(toggleConcept(['a', 'b', 'c'], 'b'), ['a', 'c'], '3건일 때도 끄기는 �
   고르는 화면에 바로 보이고, 확정된 회차(OP-04 §5)는 조용히 3건이 2건이 되면 **학생에게
   낼 문항이 사라진다.** **한쪽 규칙을 다른 쪽에 쓰면 안 된다.**
 */
-const CUR = [
-  { id: 'x', teaches: [{ id: 'x1' }, { id: 'x2' }] },
-  { id: 'y', teaches: [{ id: 'y1' }] },
+/*
+  키가 서버 이름으로 바뀌었다 — 후보는 `mappingId`로 고르고 출처는 `curriculumVersionId`다.
+  개념 확정(`PUT /concepts`)이 `mappingIds`를 받으므로 고른 것을 그대로 보낼 수 있다.
+*/
+const CAND = [
+  { mappingId: 'x1', curriculumVersionId: 'x' },
+  { mappingId: 'x2', curriculumVersionId: 'x' },
+  { mappingId: 'y1', curriculumVersionId: 'y' },
 ]
-eq(dropOrphanConcepts(['x1', 'y1'], CUR, ['x', 'y']), ['x1', 'y1'], '교안 둘 다 유지')
-eq(dropOrphanConcepts(['x1', 'y1'], CUR, ['x']), ['x1'], 'y를 빼면 y1도 빠진다')
-eq(dropOrphanConcepts(['x1', 'y1'], CUR, []), [], '교안을 다 빼면 개념도 없다')
+eq(dropOrphanConcepts(['x1', 'y1'], CAND, ['x', 'y']), ['x1', 'y1'], '교안 둘 다 유지')
+eq(dropOrphanConcepts(['x1', 'y1'], CAND, ['x']), ['x1'], 'y를 빼면 y1도 빠진다')
+eq(dropOrphanConcepts(['x1', 'y1'], CAND, []), [], '교안을 다 빼면 개념도 없다')
 
-const FIXED = [{ curriculumId: 'x' }, { curriculumId: 'x' }, { curriculumId: 'y' }]
+const FIXED = [
+  { curriculumVersionId: 'x' },
+  { curriculumVersionId: 'x' },
+  { curriculumVersionId: 'y' },
+]
 ok(canUnlinkCurriculum(FIXED, 'x'), false, '개념 2건이 쓰는 교안은 못 뺀다')
 ok(canUnlinkCurriculum(FIXED, 'y'), false, '개념 1건이라도 쓰면 못 뺀다')
 ok(canUnlinkCurriculum(FIXED, 'z'), true, '아무 개념도 안 쓰는 교안은 뺄 수 있다')
@@ -146,57 +159,28 @@ ok(lockedReason('READY') === null, true, 'READY: 〃')
 ok(typeof lockedReason('RUNNING') === 'string', true, 'RUNNING: 사유가 있다')
 ok(typeof lockedReason('DONE') === 'string', true, 'DONE: 사유가 있다')
 
-// ── 일정 — 날짜 + 시각 ─────────────────────────────────────
+// ── 일정 — 날짜만 ──────────────────────────────────────────
 /*
-  **시각을 사용자에게 받는다.** 한때 마감을 `23:59`로 고정했는데, 목업의 `18:00`도 그 값도
-  예시였을 뿐인데 상수로 두니 *"자정 마감이 규칙"* 인 것처럼 굳었다(E8).
+  **시각 입력을 뺐다.** 서버 컬럼이 `DATE`이고, 학생에게 나가는 실제 마감
+  (`submission_due_at`)은 다른 테이블이며 이 값과 연결돼 있지 않다(9차 회신 §15).
+  받아 놓고 버리는 입력은 거짓말이라, 결론이 날 때까지 날짜만 다룬다.
 
-  **같은 날이면 달력이 못 막는다** — 마감 달력은 시작일 이전을 비활성으로 막지만 같은
-  날은 고를 수 있다. 그때 `09:00 시작 · 08:00 마감`이 통과하던 자리라 여기서 막는다.
+  **같은 날이 허용으로 바뀌었다.** 시각이 없어져 `시작 = 마감`을 막을 근거가 사라졌고,
+  하루짜리 회차가 실제로 있다.
 */
 const d = (iso: string) => new Date(iso)
 
 eq(
-  toSchedule(d('2026-07-07'), '09:00', d('2026-07-21'), '18:00'),
-  { startAt: '2026-07-07T09:00', dueAt: '2026-07-21T18:00' },
-  '날짜·시각을 그대로 싣는다',
-)
-// 시각이 고정이 아니다 — 같은 날짜라도 다른 값이 나와야 한다
-eq(
-  toSchedule(d('2026-07-07'), '10:30', d('2026-07-21'), '23:59'),
-  { startAt: '2026-07-07T10:30', dueAt: '2026-07-21T23:59' },
-  '임의 시각',
+  toSchedule(d('2026-07-07'), d('2026-07-21')),
+  { startDate: '2026-07-07', endDate: '2026-07-21' },
+  '두 날짜를 그대로 싣는다',
 )
 
-assert.strictEqual(toSchedule(undefined, '09:00', d('2026-07-21'), '18:00'), null, '시작 날짜 없음')
-assert.strictEqual(toSchedule(d('2026-07-07'), '09:00', undefined, '18:00'), null, '마감 날짜 없음')
-assert.strictEqual(
-  toSchedule(d('2026-07-07'), '', d('2026-07-21'), '18:00'),
-  null,
-  '시작 시각 없음',
-)
-assert.strictEqual(
-  toSchedule(d('2026-07-07'), '09:00', d('2026-07-21'), ''),
-  null,
-  '마감 시각 없음',
-)
+assert.strictEqual(toSchedule(undefined, d('2026-07-21')), null, '시작 날짜 없음')
+assert.strictEqual(toSchedule(d('2026-07-07'), undefined), null, '마감 날짜 없음')
 
-// 같은 날 — 시각으로만 갈린다
-assert.strictEqual(
-  toSchedule(d('2026-07-07'), '09:00', d('2026-07-07'), '08:00'),
-  null,
-  '같은 날 · 마감이 시작보다 앞',
-)
-assert.strictEqual(
-  toSchedule(d('2026-07-07'), '09:00', d('2026-07-07'), '09:00'),
-  null,
-  '같은 날 · 같은 시각(기간이 0이다)',
-)
-assert.notStrictEqual(
-  toSchedule(d('2026-07-07'), '09:00', d('2026-07-07'), '18:00'),
-  null,
-  '같은 날 · 마감이 뒤면 통과(당일 회차)',
-)
+assert.strictEqual(toSchedule(d('2026-07-21'), d('2026-07-07')), null, '마감이 시작보다 앞')
+assert.notStrictEqual(toSchedule(d('2026-07-07'), d('2026-07-07')), null, '같은 날(당일 회차)')
 
 // ── 한글 조사 ──────────────────────────────────────────────
 // `을(를)` 표기는 괄호를 건너뛰며 읽어야 한다. 회차 이름이 데이터라 미리 고를 수도 없다

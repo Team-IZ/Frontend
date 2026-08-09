@@ -10,10 +10,9 @@ import {
 import { Progress } from '@/components/ui/Progress'
 import { useAsync } from '@/lib/useAsync'
 import { cn } from '@/lib/utils/cn'
-import { getCost } from '../_/api/api'
+import { getCost, MOCK_COHORT_ID } from '../_/api/api'
 import type { ClassCostSort } from '../_/api/types'
 import { formatUsd } from '../_/rules'
-import { COHORT_ID } from '../_/cohortScope'
 import SectionHeader from '../_/components/SectionHeader'
 import { FilterSelect } from '../_/components/AdminFilters'
 import { Loading, LoadFailed } from '../_/components/AsyncState'
@@ -32,7 +31,7 @@ import { Loading, LoadFailed } from '../_/components/AsyncState'
   있으므로 각 제목에 그것을 쓴다(스코프 표기 규칙).
 */
 /*
-  `onCountsChange`를 받지 않는다 — 이 탭은 **목록이 아니라 금액**이라 셀 것이 없고,
+  `onCount`를 쓰지 않는다 — 이 탭은 **목록이 아니라 금액**이라 셀 것이 없고,
   여기서 바꾸는 것도 없다(읽기 전용). 레지스트리가 넘겨도 무시된다.
 */
 /*
@@ -57,9 +56,9 @@ const SORT_OPTIONS = [
   { value: 'COHORT_AMOUNT', label: '누적 많은 순' },
 ]
 
-export default function CostTab() {
+export default function CostTab(_: { onCount: (count: number | null) => void }) {
   const [sort, setSort] = useState<ClassCostSort>('NAME')
-  const load = useCallback(() => getCost(COHORT_ID, sort), [sort])
+  const load = useCallback(() => getCost(MOCK_COHORT_ID, sort), [sort])
   const cost = useAsync(load)
 
   if (cost.loading) return <Loading label="비용을 불러오는 중" />

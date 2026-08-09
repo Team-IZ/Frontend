@@ -13,10 +13,16 @@ import {
 import { useAsync } from '@/lib/useAsync'
 import { useDebounced } from '@/lib/useDebounced'
 import { cn } from '@/lib/utils/cn'
-import { deleteClass, getAdminCounts, getCohort, getNow, listClasses } from '../_/api/api'
+import {
+  deleteClass,
+  getAdminCounts,
+  getCohort,
+  getNow,
+  listClasses,
+  MOCK_COHORT_ID,
+} from '../_/api/api'
 import { canEditClasses, needsManager } from '../_/rules'
 import type { ClassRoom, ClassStaffing } from '../_/api/types'
-import { COHORT_ID } from '../_/cohortScope'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
 import { Loading, LoadFailed } from '../_/components/AsyncState'
@@ -39,10 +45,14 @@ import EditClassDialog from './components/EditClassDialog'
 */
 type Props = {
   /** 반이 바뀌었다 — 탭 이름 옆 개수 갱신 */
-  onCountsChange: () => void
+  /**
+   * ⚠ **아직 목이다.** 실서버로 옮길 때 이 탭의 개수를 여기로 알린다 —
+   * 목 개수를 배지에 쓰면 실제와 다른 수가 탭 이름 옆에 붙는다.
+   */
+  onCount: (count: number | null) => void
 }
 
-export default function ClassesTab({ onCountsChange }: Props) {
+export default function ClassesTab(_: Props) {
   const [search, setSearch] = useState('')
   /** 입력칸은 `search`(즉시 반응), 조회는 `query`(멈춘 뒤) — 한 글자마다 요청하지 않는다 */
   const query = useDebounced(search)
@@ -55,7 +65,7 @@ export default function ClassesTab({ onCountsChange }: Props) {
   const load = useCallback(
     () =>
       listClasses({
-        cohortId: COHORT_ID,
+        cohortId: MOCK_COHORT_ID,
         search: query || undefined,
         staffing: asQuery<ClassStaffing>(staffing),
       }),
@@ -68,7 +78,7 @@ export default function ClassesTab({ onCountsChange }: Props) {
     동안 헤더가 그 수를 그대로 반복한다 — 다른 탭이 `counts`를 따로 받는 것과 같은 이유
     (api-boundary §1-②). 탭 배지가 이미 받는 값이라 조회가 늘지 않는다.
   */
-  const loadCounts = useCallback(() => getAdminCounts(COHORT_ID), [])
+  const loadCounts = useCallback(() => getAdminCounts(MOCK_COHORT_ID), [])
   const countsAsync = useAsync(loadCounts)
   const counts = countsAsync.data
 
@@ -77,7 +87,7 @@ export default function ClassesTab({ onCountsChange }: Props) {
     받는다. 판정은 `rules.canEditClasses`가 하고 서버도 같은 규칙을 다시 검증한다 —
     화면만 막으면 우회된다.
   */
-  const loadCohort = useCallback(() => getCohort(COHORT_ID), [])
+  const loadCohort = useCallback(() => getCohort(MOCK_COHORT_ID), [])
   const cohort = useAsync(loadCohort).data
   const editable = cohort ? canEditClasses(cohort.startAt, getNow().slice(0, 10)) : false
 
@@ -89,7 +99,6 @@ export default function ClassesTab({ onCountsChange }: Props) {
     classes.reload()
     // 이 탭의 헤더와 상단 탭 배지가 같은 값을 읽으므로 둘 다 새로 받는다
     countsAsync.reload()
-    onCountsChange()
   }
 
   return (

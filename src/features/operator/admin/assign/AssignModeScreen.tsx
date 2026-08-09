@@ -14,10 +14,9 @@ import {
 import { useAsync } from '@/lib/useAsync'
 import { useDebounced } from '@/lib/useDebounced'
 import { cn } from '@/lib/utils/cn'
-import { assignClass, listClasses, listRoster, undoAssign } from '../_/api/api'
+import { assignClass, listClasses, listRoster, undoAssign, MOCK_COHORT_ID } from '../_/api/api'
 import { ROSTER_PAGE_SIZE, capacityPreview, needsManager, type CapacityPreview } from '../_/rules'
 import type { AssignResult, ClassRoom, RosterScope, Trainee } from '../_/api/types'
-import { COHORT_ID } from '../_/cohortScope'
 import TableFooterBar from '../_/components/TableFooterBar'
 import ResultBanner from '../_/components/ResultBanner'
 import { Loading, LoadFailed } from '../_/components/AsyncState'
@@ -124,9 +123,9 @@ export default function AssignModeScreen() {
   const last = banner?.kind === 'assigned' ? banner.result : null
   const [saving, setSaving] = useState(false)
 
-  const loadClasses = useCallback(() => listClasses(COHORT_ID), [])
+  const loadClasses = useCallback(() => listClasses(MOCK_COHORT_ID), [])
   const loadRoster = useCallback(
-    () => listRoster({ cohortId: COHORT_ID, search: query || undefined, scope, page }),
+    () => listRoster({ cohortId: MOCK_COHORT_ID, search: query || undefined, scope, page }),
     [query, scope, page],
   )
   const classes = useAsync(loadClasses)
@@ -149,7 +148,7 @@ export default function AssignModeScreen() {
     setSaving(true)
     try {
       const result = await assignClass({
-        cohortId: COHORT_ID,
+        cohortId: MOCK_COHORT_ID,
         classId: target.id,
         traineeIds: [...picked],
       })

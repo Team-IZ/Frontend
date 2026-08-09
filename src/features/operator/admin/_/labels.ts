@@ -16,7 +16,15 @@ import type {
   RosterIssueReason,
 } from './api/types'
 
+/**
+ * 기수 상태 — **서버가 셋을 준다**(`PLANNED`·`RUNNING`·`CLOSED`).
+ *
+ * 목일 때는 둘(진행·종료)이었다. 개강 전 기수를 진행 중으로 그리면 **아직 시작 안 한
+ * 기수에 사람을 넣어도 되는지**가 화면에서 안 갈린다 — 반 편성을 고칠 수 있는 구간이
+ * 바로 여기다(개강 후에는 잠근다).
+ */
 export const COHORT_STATUS_LABEL: Record<CohortStatus, string> = {
+  PLANNED: '개강 전',
   RUNNING: '진행 중',
   CLOSED: '종료',
 }

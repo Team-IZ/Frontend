@@ -20,6 +20,7 @@ import {
   listManagers,
   resendManagerInvite,
   setManagerStatus,
+  MOCK_COHORT_ID,
 } from '../_/api/api'
 import { MANAGER_STATUS_LABEL } from '../_/labels'
 import { assignPolicy, formatLastSeen } from '../_/rules'
@@ -32,7 +33,6 @@ import { Loading, LoadFailed } from '../_/components/AsyncState'
 import { ManagerStatusBadge } from '../_/components/StatusBadges'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
 import { ALL, asQuery, withAll } from '../_/filterState'
-import { COHORT_ID } from '../_/cohortScope'
 import InviteManagerDialog from './components/InviteManagerDialog'
 import AssignManagerDialog from '../_/components/AssignManagerDialog'
 import ConfirmDialog from '../_/components/ConfirmDialog'
@@ -72,7 +72,11 @@ const SORT_OPTIONS = [
 ]
 
 type Props = {
-  onCountsChange: () => void
+  /**
+   * ⚠ **아직 목이다.** 실서버로 옮길 때 이 탭의 개수를 여기로 알린다 —
+   * 목 개수를 배지에 쓰면 실제와 다른 수가 탭 이름 옆에 붙는다.
+   */
+  onCount: (count: number | null) => void
 }
 
 type Pending = { kind: 'suspend'; manager: Manager } | { kind: 'cancel'; manager: Manager } | null
@@ -80,7 +84,7 @@ type Pending = { kind: 'suspend'; manager: Manager } | { kind: 'cancel'; manager
 /** 지금 맡은 반 이름들 — 확인 문구가 **어느 반이 비는지 이름을 대야** 판단이 된다 */
 const heldClasses = (m: Manager) => m.assignments.flatMap((a) => a.classNames).join(' · ')
 
-export default function ManagersTab({ onCountsChange }: Props) {
+export default function ManagersTab(_: Props) {
   const [search, setSearch] = useState('')
   /*
     **입력값과 조회값을 가른다.** 입력칸은 `search`(즉시 반응), 조회는 `query`(멈춘 뒤).
@@ -100,13 +104,13 @@ export default function ManagersTab({ onCountsChange }: Props) {
       listManagers({
         // **화면이 늘 기수를 보낸다** — 상단 스위처가 가리키는 기수가 이 목록의 범위다
         search: query || undefined,
-        cohortId: COHORT_ID,
+        cohortId: MOCK_COHORT_ID,
         status: asQuery<ManagerStatus>(status),
         sort,
       }),
     [query, status, sort],
   )
-  const loadCohort = useCallback(() => getCohort(COHORT_ID), [])
+  const loadCohort = useCallback(() => getCohort(MOCK_COHORT_ID), [])
   const page = useAsync(load)
   const cohort = useAsync(loadCohort).data
 
@@ -124,7 +128,6 @@ export default function ManagersTab({ onCountsChange }: Props) {
 
   const refresh = () => {
     page.reload()
-    onCountsChange()
   }
 
   return (

@@ -266,10 +266,18 @@ export function toIsoDate(d: Date): string {
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
-/** 기간 표기 `2026-03 ~ 09`. 해가 같으면 뒤쪽 연도를 접는다 — 표에서 같은 글자가 반복된다 */
-export function formatPeriod(startAt: string, endAt: string): string {
-  const start = startAt.slice(0, 7)
-  const end = endAt.slice(0, 7)
+/**
+ * 기간 표기 `2026-03 ~ 09`. 해가 같으면 뒤쪽 연도를 접는다 — 표에서 같은 글자가 반복된다.
+ *
+ * **한쪽이 비어 있을 수 있다.** 서버의 `startDate`·`endDate`가 둘 다 nullable이라
+ * 날짜를 안 정하고 만든 기수가 온다 — 있는 쪽만 쓰고 없는 쪽은 `?`로 둔다.
+ * 둘 다 없으면 기간 자체가 정해지지 않은 것이라 `—`다.
+ */
+export function formatPeriod(startAt: string | null, endAt: string | null): string {
+  if (!startAt && !endAt) return '—'
+  const start = startAt?.slice(0, 7)
+  const end = endAt?.slice(0, 7)
+  if (!start || !end) return `${start ?? '?'} ~ ${end ?? '?'}`
   return start.slice(0, 4) === end.slice(0, 4) ? `${start} ~ ${end.slice(5)}` : `${start} ~ ${end}`
 }
 

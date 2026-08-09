@@ -17,13 +17,9 @@ import type {
   ClassCostSort,
   ClassQuery,
   ClassRoom,
-  Cohort,
-  CohortPage,
-  CohortQuery,
-  CohortStatus,
+  MockCohort,
   CostSummary,
   CreateClassRequest,
-  CreateCohortRequest,
   CurriculumDetail,
   CurriculumPage,
   CurriculumQuery,
@@ -60,6 +56,15 @@ import {
   실제 서버에서는 DB 조인이 그 자리를 대신하므로 이 줄은 목과 함께 사라진다.
 */
 let derived = false
+
+/*
+  ⚠ **아직 목인 탭이 쓰는 기수 id.** 실제 기수 id는 UUID이고, 붙은 탭은
+  `useCohortScope()`에서 받는다(`_/cohortScope.ts`).
+
+  이 상수는 **목 데이터의 키**라 목과 함께 사라진다 — 화면이 아니라 목 경계가 갖고 있어야
+  마지막 탭이 붙는 순간 `mockDb.ts`와 같이 지워진다.
+*/
+export const MOCK_COHORT_ID = '7'
 
 /** 목 지연. 로딩 상태가 실제로 보이는지 개발 중 확인하려면 필요합니다 */
 const LATENCY_MS = 250
@@ -126,62 +131,14 @@ export function getAdminCounts(cohortId: string): Promise<AdminCounts> {
   // return http<AdminCounts>(`/admin/counts?cohort=${cohortId}`)
 }
 
-// ── ① 기수 ──────────────────────────────────────────────────
-/** `GET /admin/cohorts` — 기관 전체. 기수 탭만 상단 스위처의 영향을 받지 않는다 */
-export function listCohorts(q: CohortQuery = {}): Promise<CohortPage> {
-  // ===== Mock 버전 (현재 활성) =====
-  const filtered = COHORTS.filter((c) => {
-    if (q.search && !hit(c.name, q.search)) return false
-    if (q.status && c.status !== q.status) return false
-    return true
-  })
-
-  const sorted = [...filtered].sort((a, b) =>
-    q.sort === 'NAME'
-      ? a.name.localeCompare(b.name)
-      : // 최신순 — 시작일 늦은 것이 위로. 운영 중인 기수를 먼저 본다
-        b.startAt.localeCompare(a.startAt),
-  )
-
-  // counts는 **필터와 무관한 전체 모집단** 기준이다(헤더 내역과 푸터 개수는 다른 값)
-  const counts: Record<CohortStatus, number> = { RUNNING: 0, CLOSED: 0 }
-  for (const c of COHORTS) counts[c.status]++
-
-  return delay({ items: sorted, total: sorted.length, counts })
-
-  // return http<CohortPage>(`/admin/cohorts?${qs(q)}`)
-}
-
-/** `POST /admin/cohorts` — 초기 명단을 같이 넣으면 등록과 동시에 활성화 초대가 나간다 */
-export function createCohort(req: CreateCohortRequest): Promise<Cohort> {
-  // ===== Mock 버전 (현재 활성) =====
-  if (!req.name.trim() || req.startAt >= req.endAt) return fail('ADMIN_SAVE_FAILED')
-  // 같은 기관 안에서 기수명은 중복될 수 없다 — 서버도 같은 규칙을 검증한다
-  if (COHORTS.some((c) => c.name === req.name.trim())) return fail('ADMIN_SAVE_FAILED')
-
-  const created: Cohort = {
-    id: `c-${req.name.trim()}`,
-    name: req.name.trim(),
-    status: 'RUNNING',
-    classes: 0,
-    trainees: req.roster?.length ?? 0,
-    startAt: req.startAt,
-    endAt: req.endAt,
-    current: false,
-  }
-  COHORTS.unshift(created)
-  return delay(created)
-
-  // return http<Cohort>('/admin/cohorts', { method: 'POST', body: req })
-}
-
+// ── ① 기수 ── **연동 완료.** 목록·생성·종료는 실서버를 쓴다(CohortsTab)
 /**
  * `GET /admin/cohorts/{id}` — 기수 한 건.
  *
  * **반 탭이 시작일을 알아야 한다**(OP06-7-② — 개강 전에만 반을 고친다). 목록을 통째로
  * 받아 찾지 않는다: 화면이 필요한 것은 한 건이고, 기수가 늘면 목록은 계속 커진다.
  */
-export function getCohort(id: string): Promise<Cohort> {
+export function getCohort(id: string): Promise<MockCohort> {
   // ===== Mock 버전 (현재 활성) =====
   const target = COHORTS.find((c) => c.id === id)
   if (!target) return fail('ADMIN_SAVE_FAILED')
@@ -191,7 +148,7 @@ export function getCohort(id: string): Promise<Cohort> {
 }
 
 /** `PATCH /admin/cohorts/{id}` — 종료. 되돌리는 것은 화면에 없다(운영 판단) */
-export function closeCohort(id: string): Promise<Cohort> {
+export function closeCohort(id: string): Promise<MockCohort> {
   // ===== Mock 버전 (현재 활성) =====
   const target = COHORTS.find((c) => c.id === id)
   if (!target) return fail('ADMIN_SAVE_FAILED')

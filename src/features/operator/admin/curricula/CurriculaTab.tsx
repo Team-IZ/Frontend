@@ -39,10 +39,14 @@ const detailPath = (id: string) => `/operator/admin/curricula/${id}`
 
 type Props = {
   /** 교안을 등록하면 탭 이름 옆 개수가 바뀐다 */
-  onCountsChange: () => void
+  /**
+   * ⚠ **아직 목이다.** 실서버로 옮길 때 이 탭의 개수를 여기로 알린다 —
+   * 목 개수를 배지에 쓰면 실제와 다른 수가 탭 이름 옆에 붙는다.
+   */
+  onCount: (count: number | null) => void
 }
 
-export default function CurriculaTab({ onCountsChange }: Props) {
+export default function CurriculaTab(_: Props) {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   /*
@@ -198,7 +202,6 @@ export default function CurriculaTab({ onCountsChange }: Props) {
         onOpenChange={setRegisterOpen}
         onRegistered={() => {
           page.reload()
-          onCountsChange()
         }}
       />
     </>

@@ -12,9 +12,14 @@ import { Checkbox } from '@/components/ui/Checkbox'
 import { Spinner } from '@/components/ui/Spinner'
 import { useAsync } from '@/lib/useAsync'
 import { cn } from '@/lib/utils/cn'
-import { listClasses, listManagers, setClassManager, setManagerClasses } from '../api/api'
+import {
+  listClasses,
+  listManagers,
+  setClassManager,
+  setManagerClasses,
+  MOCK_COHORT_ID,
+} from '../api/api'
 import type { ClassRoom, Manager } from '../api/types'
-import { COHORT_ID } from '../cohortScope'
 import { needsManager } from '../rules'
 
 /*
@@ -51,7 +56,7 @@ export default function AssignManagerDialog({ open, onOpenChange, fixed, onSaved
   const [saving, setSaving] = useState(false)
   const [failed, setFailed] = useState(false)
 
-  const loadClasses = useCallback(() => listClasses(COHORT_ID), [])
+  const loadClasses = useCallback(() => listClasses(MOCK_COHORT_ID), [])
   const loadManagers = useCallback(() => listManagers({ status: 'ACTIVE' }), [])
   const classes = useAsync(loadClasses, open)
   const managers = useAsync(loadManagers, open)

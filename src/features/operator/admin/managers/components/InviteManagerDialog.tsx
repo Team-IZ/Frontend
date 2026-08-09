@@ -12,9 +12,8 @@ import { Field, FieldLabel, FieldDescription } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
 import { useAsync } from '@/lib/useAsync'
-import { getOrg, inviteManager } from '../../_/api/api'
+import { getOrg, inviteManager, MOCK_COHORT_ID } from '../../_/api/api'
 import { checkEmail } from '../../_/rules'
-import { COHORT_ID } from '../../_/cohortScope'
 import RequiredMark from '../../_/components/RequiredMark'
 
 /*
@@ -67,7 +66,7 @@ export default function InviteManagerDialog({ open, onOpenChange, onInvited }: P
     setSubmitting(true)
     setError(null)
     try {
-      await inviteManager({ email: email.trim(), cohortId: COHORT_ID })
+      await inviteManager({ email: email.trim(), cohortId: MOCK_COHORT_ID })
       onInvited()
       close(false) // 닫기가 비우는 일까지 한다 — 성공·취소가 같은 길로 나간다
     } catch (e) {

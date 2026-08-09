@@ -13,10 +13,9 @@ import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import { useAsync } from '@/lib/useAsync'
-import { addRoster, getOrg, previewRoster } from '../../_/api/api'
+import { addRoster, getOrg, previewRoster, MOCK_COHORT_ID } from '../../_/api/api'
 import { checkRosterRows, type ParsedRoster } from '../../_/rules'
 import { ROSTER_ISSUE_LABEL } from '../../_/labels'
-import { COHORT_ID } from '../../_/cohortScope'
 import type { AddRosterResult, RosterEntry, RosterIssue } from '../../_/api/types'
 import RosterCsvField from '../../_/components/RosterCsvField'
 import RosterIssueList from '../../_/components/RosterIssueList'
@@ -74,14 +73,14 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
   const askPreview = async (next: RosterEntry[]) => {
     if (next.length === 0) return setPreview(null)
     // 파일 안에서 알 수 없는 것 하나 — **이미 등록된 이메일**. 서버가 센다
-    setPreview(await previewRoster({ cohortId: COHORT_ID, entries: next }))
+    setPreview(await previewRoster({ cohortId: MOCK_COHORT_ID, entries: next }))
   }
 
   const submit = async () => {
     setSubmitting(true)
     setFailed(false)
     try {
-      const result = await addRoster({ cohortId: COHORT_ID, entries })
+      const result = await addRoster({ cohortId: MOCK_COHORT_ID, entries })
       onAdded(result)
       close(false) // 닫기가 비우는 일까지 한다 — 성공·취소가 같은 길로 나간다
     } catch {

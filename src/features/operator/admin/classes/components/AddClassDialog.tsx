@@ -12,9 +12,8 @@ import { Field, FieldLabel, FieldDescription } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
 import { useAsync } from '@/lib/useAsync'
-import { createClass, listManagers } from '../../_/api/api'
+import { createClass, listManagers, MOCK_COHORT_ID } from '../../_/api/api'
 import { DEFAULT_CLASS_CAPACITY } from '../../_/rules'
-import { COHORT_ID } from '../../_/cohortScope'
 import { FilterSelect } from '../../_/components/AdminFilters'
 import { ALL } from '../../_/filterState'
 import RequiredMark from '../../_/components/RequiredMark'
@@ -60,7 +59,7 @@ export default function AddClassDialog({ open, onOpenChange, onCreated }: Props)
     setFailed(false)
     try {
       await createClass({
-        cohortId: COHORT_ID,
+        cohortId: MOCK_COHORT_ID,
         name: name.trim(),
         capacity: size,
         managerId: managerId === ALL ? null : managerId,

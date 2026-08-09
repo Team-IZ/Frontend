@@ -13,7 +13,7 @@
 // ▸ 목업끼리 어긋난 자리 셋은 아래 해당 위치에 `⚠ 목업 불일치`로 적어 뒀습니다.
 import type {
   ClassRoom,
-  Cohort,
+  MockCohort,
   CostSummary,
   CurriculumDetail,
   Manager,
@@ -37,7 +37,7 @@ export const ORG: Org = {
 }
 
 // ── ① 기수 ──────────────────────────────────────────────────
-export const COHORTS: Cohort[] = [
+export const COHORTS: MockCohort[] = [
   /*
     **8기는 7기가 끝나갈 때 시작한다.** 부트캠프는 한 번에 한 기수를 돌리므로 두 기수가
     통째로 겹치면 안 된다 — 목이 `2026-06-01 ~ 09-30`으로 7기와 완전히 겹쳐 있어서

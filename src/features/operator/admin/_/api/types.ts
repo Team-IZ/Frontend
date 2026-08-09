@@ -14,7 +14,13 @@
     · **담당 배정은 기간형 이력이다.** 퇴사한 매니저를 지우지 않고 정지로 남기는 이유가
       이것이다 — 6기 A반 담당이 누구였는지가 그 계정에 붙어 있다.
     · **오퍼레이터 계정은 여기 없다.** 초대·정지는 슈퍼어드민(SA-02) 소관이다.
+
+  ## ⚠ 이 파일은 줄어드는 중이다
+  탭을 하나씩 실서버에 붙이면서 **연동이 끝난 블록은 지운다** — 그 자리의 타입은
+  스펙에서 생성된다(`src/api/` 아래). 손으로 쓴 계약이 남아 있으면 생성 타입과 조용히
+  갈린다. 마지막 탭이 붙으면 이 파일과 `api.ts`·`mockDb.ts`가 함께 사라진다.
 */
+import type { findCohorts_Item } from '@/api/academic/academicTypes'
 
 // ── 기관 ────────────────────────────────────────────────────
 /**
@@ -47,44 +53,31 @@ export type AdminCounts = {
   curricula: number
 }
 
-// ── ① 기수 ──────────────────────────────────────────────────
-export type CohortStatus = 'RUNNING' | 'CLOSED'
+// ── ① 기수 ── **연동 완료.** 손으로 쓴 계약을 지웠다 ────────────
+/*
+  기수 타입은 이제 스펙에서 생성된다(`@/api/academic/academicTypes`). 여기 남은 것은
+  **라벨·배지가 상태값을 알아야 해서** 한 줄뿐이다 — 두 파일이 각자 파생 타입을 만들면
+  같은 개념을 가리키는 경로가 둘이 된다.
 
-export type Cohort = {
+  ⚠ 값이 `RUNNING`·`CLOSED` 둘에서 **셋(`PLANNED` 추가)으로 늘었다.** 목이 개강 전을
+  진행 중에 섞고 있었다.
+*/
+export type CohortStatus = findCohorts_Item['status']
+
+/**
+ * ⚠ **목 전용.** 아직 목인 반·매니저 탭이 `getCohort()`로 기수 하나를 읽는다
+ * (개강일로 반 수정 가능 여부를 가른다). 그 탭들이 붙으면 이 타입도 함께 사라진다.
+ */
+export type MockCohort = {
   id: string
-  /** 표시명. 예: `7기` */
   name: string
-  status: CohortStatus
-  /** 반 수·교육생 수. **서버가 세어서 내려준다** — 반 목록을 받아 세면 전량이 필요하다 */
+  status: Extract<CohortStatus, 'RUNNING' | 'CLOSED'>
   classes: number
   trainees: number
   startAt: string
   endAt: string
-  /** 상단 스위처가 지금 가리키는 기수인가 — 목업 `7기 현재` */
+  /** 상단 스위처가 지금 가리키는 기수인가 */
   current: boolean
-}
-
-export type CohortSort = 'RECENT' | 'NAME'
-
-export type CohortQuery = {
-  search?: string
-  status?: CohortStatus
-  sort?: CohortSort
-}
-
-export type CohortPage = {
-  items: Cohort[]
-  total: number
-  /** 헤더 내역(`진행 2 · 종료 1`). **필터와 무관한 전체 모집단** 기준이라 목록만으로는 못 만든다 */
-  counts: Record<CohortStatus, number>
-}
-
-export type CreateCohortRequest = {
-  name: string
-  startAt: string
-  endAt: string
-  /** 초기 명단 · 선택. 넣으면 등록과 동시에 활성화 초대가 나간다 */
-  roster?: RosterEntry[]
 }
 
 // ── ② 반 · 명단 ─────────────────────────────────────────────

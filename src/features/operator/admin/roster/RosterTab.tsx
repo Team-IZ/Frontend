@@ -14,11 +14,10 @@ import {
 import { useAsync } from '@/lib/useAsync'
 import { useDebounced } from '@/lib/useDebounced'
 import { cn } from '@/lib/utils/cn'
-import { listClasses, listRoster, resendTraineeInvites } from '../_/api/api'
+import { listClasses, listRoster, resendTraineeInvites, MOCK_COHORT_ID } from '../_/api/api'
 import { ACCOUNT_STATUS_LABEL } from '../_/labels'
 import { ROSTER_PAGE_SIZE } from '../_/rules'
 import type { AccountStatus, RosterSort, Trainee } from '../_/api/types'
-import { COHORT_ID } from '../_/cohortScope'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
 import ResultBanner from '../_/components/ResultBanner'
@@ -50,10 +49,14 @@ const SORT_OPTIONS = [
 
 type Props = {
   /** 명단이 바뀌었다 — 탭 이름 옆 개수 갱신 */
-  onCountsChange: () => void
+  /**
+   * ⚠ **아직 목이다.** 실서버로 옮길 때 이 탭의 개수를 여기로 알린다 —
+   * 목 개수를 배지에 쓰면 실제와 다른 수가 탭 이름 옆에 붙는다.
+   */
+  onCount: (count: number | null) => void
 }
 
-export default function RosterTab({ onCountsChange }: Props) {
+export default function RosterTab(_: Props) {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   /*
@@ -87,7 +90,7 @@ export default function RosterTab({ onCountsChange }: Props) {
   const load = useCallback(
     () =>
       listRoster({
-        cohortId: COHORT_ID,
+        cohortId: MOCK_COHORT_ID,
         search: query || undefined,
         // `미배정`은 반 하나가 아니라 조건이다 — 같은 드롭다운에서 왔지만 쿼리가 갈린다
         classId: classId === UNASSIGNED ? undefined : asQuery(classId),
@@ -101,7 +104,7 @@ export default function RosterTab({ onCountsChange }: Props) {
   const roster = useAsync(load)
 
   /** 필터 드롭다운용 반 목록 — 명단과 달리 필터·페이지에 안 걸리므로 따로 조회한다 */
-  const loadRooms = useCallback(() => listClasses(COHORT_ID), [])
+  const loadRooms = useCallback(() => listClasses(MOCK_COHORT_ID), [])
   const rooms = useAsync(loadRooms).data ?? []
 
   /** 필터를 바꾸면 1쪽으로 돌아간다 — 3쪽을 보다 검색하면 결과가 1쪽뿐이라 빈 화면이 된다 */
@@ -128,7 +131,6 @@ export default function RosterTab({ onCountsChange }: Props) {
 
   const refresh = () => {
     roster.reload()
-    onCountsChange()
     setSelected(new Set())
   }
 

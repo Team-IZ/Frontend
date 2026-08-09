@@ -29,6 +29,8 @@ import type {
 type Variant = 'success' | 'warning' | 'danger' | 'info' | 'neutral'
 
 const COHORT: Record<CohortStatus, Variant> = {
+  // 개강 전은 **아직**이다 — 할 일이 남았다는 뜻이라 안내색을 쓴다(경고는 아니다)
+  PLANNED: 'info',
   RUNNING: 'success',
   // 종료는 나쁜 것이 아니라 **끝난 것**이다 — 의미 색을 쓰지 않는다
   CLOSED: 'neutral',

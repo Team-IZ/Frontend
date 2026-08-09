@@ -11,8 +11,8 @@ import { Button } from '@/components/ui/Button'
 import { Field, FieldLabel, FieldDescription } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
-import { updateClass } from '../../_/api/api'
-import type { ClassRoom } from '../../_/api/types'
+import { useUpdateClassroom } from '@/api/academic/useAcademicMutations'
+import type { findClassrooms_Item } from '@/api/academic/academicTypes'
 import RequiredMark from '../../_/components/RequiredMark'
 
 /*
@@ -22,17 +22,19 @@ import RequiredMark from '../../_/components/RequiredMark'
   다시 검증한다(화면만 막으면 우회된다).
 
   **담당 매니저는 여기서 안 바꾼다.** 담당 변경은 개강 후에도 계속 일어나는 일이라
-  잠금 규칙이 다르고, 이미 제 모달이 있다(`AssignManagerDialog`) — 같은 값을 두 곳에서
+  잠금 규칙이 다르고, 이미 제 모달이 있다(`ClassManagersDialog`) — 같은 값을 두 곳에서
   바꾸면 규칙이 두 벌이 된다.
+
+  **`PATCH`라 바뀐 것만 보낸다.** 이름만 고치는데 정원까지 실어 보내면 그 사이 남이 바꾼
+  정원을 옛 값으로 덮어쓴다(SA-02 운영 설정 모달과 같은 근거 · 6차 요청 R1).
 */
 type Props = {
   /** 수정할 반. null이면 닫힌 상태 */
-  target: ClassRoom | null
+  target: findClassrooms_Item | null
   onOpenChange: (open: boolean) => void
-  onSaved: () => void
 }
 
-export default function EditClassDialog({ target, onOpenChange, onSaved }: Props) {
+export default function EditClassDialog({ target, onOpenChange }: Props) {
   /*
     **열 때마다 지금 값에서 시작한다.** `key`로 리마운트시키는 대신 대상 id가 바뀌면
     상태를 다시 잡는다 — 이전에 열었던 반의 값이 남아 있으면 그대로 저장된다.
@@ -40,11 +42,11 @@ export default function EditClassDialog({ target, onOpenChange, onSaved }: Props
   const [editing, setEditing] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [capacity, setCapacity] = useState('')
-  const [saving, setSaving] = useState(false)
   const [failed, setFailed] = useState(false)
+  const update = useUpdateClassroom()
 
-  if (target && target.id !== editing) {
-    setEditing(target.id)
+  if (target && target.classroomId !== editing) {
+    setEditing(target.classroomId)
     setName(target.name)
     setCapacity(String(target.capacity))
     setFailed(false)
@@ -61,16 +63,19 @@ export default function EditClassDialog({ target, onOpenChange, onSaved }: Props
 
   const save = async () => {
     if (!target) return
-    setSaving(true)
     setFailed(false)
     try {
-      await updateClass(target.id, { name: name.trim(), capacity: size })
-      onSaved()
+      await update.mutateAsync({
+        path: { cohortId: target.cohortId, classroomId: target.classroomId },
+        // 바뀐 것만 — 둘 다 생략하면 서버가 400 `CLASSROOM_UPDATE_EMPTY`로 답한다
+        body: {
+          ...(name.trim() !== target.name && { name: name.trim() }),
+          ...(size !== target.capacity && { capacity: size }),
+        },
+      })
       close(false)
     } catch {
       setFailed(true)
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -118,19 +123,19 @@ export default function EditClassDialog({ target, onOpenChange, onSaved }: Props
             </div>
             <FieldDescription className="mt-1.5">
               {/* 이름을 바꾸면 명단의 `소속 반`도 같이 바뀐다 — 한 사실이 한 곳에서 나온다 */}
-              지금 {target?.size ?? 0}명이 있습니다. 이름을 바꾸면 명단의 소속 반 표기도 같이
-              바뀝니다.
+              지금 {target?.traineeCount ?? 0}명이 있습니다. 이름을 바꾸면 명단의 소속 반 표기도
+              같이 바뀝니다.
             </FieldDescription>
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => close(false)} disabled={saving}>
+          <Button variant="ghost" onClick={() => close(false)} disabled={update.isPending}>
             취소
           </Button>
           {/* 안 바꾼 것은 저장할 것이 없다 — `AssignManagerDialog`와 같은 규칙 */}
-          <Button disabled={!submittable || saving} onClick={save}>
-            {saving && <Spinner className="size-3.5" />}
+          <Button disabled={!submittable || update.isPending} onClick={save}>
+            {update.isPending && <Spinner className="size-3.5" />}
             저장
           </Button>
         </DialogFooter>

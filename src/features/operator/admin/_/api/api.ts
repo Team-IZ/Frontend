@@ -10,39 +10,25 @@
 import type {
   AddRosterRequest,
   AddRosterResult,
-  AdminCounts,
   AssignClassRequest,
   AssignResult,
   ClassQuery,
   ClassRoom,
   MockCohort,
-  CreateClassRequest,
   CurriculumDetail,
   CurriculumPage,
   CurriculumQuery,
   CurriculumStatus,
-  InviteManagerRequest,
-  Manager,
-  ManagerPage,
-  ManagerQuery,
-  ManagerStatus,
   MovedTrainee,
   Org,
   RosterPage,
   RosterQuery,
   Trainee,
 } from './types'
-import { ROSTER_PAGE_SIZE, canEditClasses, checkEmail, needsManager } from '../rules'
+import { ROSTER_PAGE_SIZE, checkEmail, needsManager } from '../rules'
 
 // ───────── Mock 전용 (백엔드 연동 시 이 블록 삭제) ─────────
 import { CLASSES, COHORTS, CURRICULA, MANAGERS, MOCK_NOW, ORG, TRAINEES } from './mockDb'
-
-/*
-  **매니저의 담당·인원은 반에서 파생시킨다.** 목 파일에 손으로 적어 두면 반을 고칠 때
-  어긋나므로, 모듈이 처음 읽힐 때 한 번 계산해 둔다(아래 `syncManagerAssignments`).
-  실제 서버에서는 DB 조인이 그 자리를 대신하므로 이 줄은 목과 함께 사라진다.
-*/
-let derived = false
 
 /*
   ⚠ **아직 목인 탭이 쓰는 기수 id.** 실제 기수 id는 UUID이고, 붙은 탭은
@@ -94,45 +80,7 @@ export function getOrg(): Promise<Org> {
   // return http<Org>('/admin/org')
 }
 
-/**
- * `GET /admin/counts?cohort=` — 탭 이름 옆 개수.
- *
- * **탭 하나를 열려고 다섯 탭을 다 조회하지 않는다.** 개수는 목록이 아니라 수라서 서버가
- * 세는 편이 싸고, 이 한 번으로 다섯 탭이 채워진다 — 탭마다 목록을 미리 부르면 열지도
- * 않은 탭 때문에 요청이 넷 더 나간다.
- *
- * 범위가 탭마다 다르다는 것이 여기서도 보인다 — `classes`·`trainees`는 **선택 기수**,
- * `managers`·`curricula`·`cohorts`는 **기관 전체**다(OP-06 §3).
- */
-export function getAdminCounts(cohortId: string): Promise<AdminCounts> {
-  // ===== Mock 버전 (현재 활성) =====
-  return delay({
-    cohorts: COHORTS.length,
-    classes: CLASSES.filter((c) => c.cohortId === cohortId).length,
-    unstaffedClasses: CLASSES.filter((c) => c.cohortId === cohortId && needsManager(c)).length,
-    trainees: TRAINEES.length,
-    managers: MANAGERS.length,
-    curricula: CURRICULA.length,
-  })
-
-  // return http<AdminCounts>(`/admin/counts?cohort=${cohortId}`)
-}
-
 // ── ① 기수 ── **연동 완료.** 목록·생성·종료는 실서버를 쓴다(CohortsTab)
-/**
- * `GET /admin/cohorts/{id}` — 기수 한 건.
- *
- * **반 탭이 시작일을 알아야 한다**(OP06-7-② — 개강 전에만 반을 고친다). 목록을 통째로
- * 받아 찾지 않는다: 화면이 필요한 것은 한 건이고, 기수가 늘면 목록은 계속 커진다.
- */
-export function getCohort(id: string): Promise<MockCohort> {
-  // ===== Mock 버전 (현재 활성) =====
-  const target = COHORTS.find((c) => c.id === id)
-  if (!target) return fail('ADMIN_SAVE_FAILED')
-  return delay(target)
-
-  // return http<Cohort>(`/admin/cohorts/${id}`)
-}
 
 /** `PATCH /admin/cohorts/{id}` — 종료. 되돌리는 것은 화면에 없다(운영 판단) */
 export function closeCohort(id: string): Promise<MockCohort> {
@@ -177,159 +125,6 @@ export function listClasses(q: string | ClassQuery): Promise<ClassRoom[]> {
   return delay([...filtered].sort((a, b) => a.name.localeCompare(b.name, 'ko')))
 
   // return http<ClassRoom[]>(`/admin/classes?${qs(q)}`)
-}
-
-export function createClass(req: CreateClassRequest): Promise<ClassRoom> {
-  // ===== Mock 버전 (현재 활성) =====
-  const name = req.name.trim()
-  if (!name || req.capacity < 1) return fail('ADMIN_SAVE_FAILED')
-  // 같은 기수 안에서 반 이름은 중복될 수 없다
-  if (CLASSES.some((c) => c.cohortId === req.cohortId && c.name === name))
-    return fail('ADMIN_SAVE_FAILED')
-
-  const manager = MANAGERS.find((m) => m.id === req.managerId)
-  const created: ClassRoom = {
-    id: `c-${name}`,
-    cohortId: req.cohortId,
-    name,
-    capacity: req.capacity,
-    size: 0,
-    managerId: manager?.id ?? null,
-    managerName: manager?.name ?? null,
-    assignedAt: manager ? getNow().slice(0, 10) : null,
-    assignedBy: manager ? '김오퍼레이터' : null,
-  }
-  CLASSES.push(created)
-  return delay(created)
-
-  // return http<ClassRoom>('/admin/classes', { method: 'POST', body: req })
-}
-
-/**
- * `PATCH /admin/classes/{id}` — 이름·정원 수정(OP06-7-②).
- *
- * **개강 전에만 열린다.** 서버도 같은 규칙을 검증한다 — 화면만 막으면 우회된다.
- * 정원을 현재 인원보다 작게 두는 것은 막지 않는다: 정원 초과를 애초에 허용하므로
- * (중도 합류·반 통폐합) 여기서만 막으면 규칙이 두 벌이 된다.
- */
-export function updateClass(
-  classId: string,
-  req: { name: string; capacity: number },
-): Promise<ClassRoom> {
-  // ===== Mock 버전 (현재 활성) =====
-  const room = CLASSES.find((c) => c.id === classId)
-  if (!room) return fail('ADMIN_SAVE_FAILED')
-
-  const cohort = COHORTS.find((c) => c.id === room.cohortId)
-  if (!cohort || !canEditClasses(cohort.startAt, getNow().slice(0, 10)))
-    return fail('ADMIN_SAVE_FAILED')
-
-  const name = req.name.trim()
-  if (!name || req.capacity < 1) return fail('ADMIN_SAVE_FAILED')
-  // 같은 기수 안에서 반 이름은 중복될 수 없다 — 자기 자신은 뺀다
-  if (CLASSES.some((c) => c.cohortId === room.cohortId && c.name === name && c.id !== classId))
-    return fail('ADMIN_SAVE_FAILED')
-
-  room.name = name
-  room.capacity = req.capacity
-  // 반 이름이 바뀌면 그 반 사람들이 들고 있는 표시명도 같이 바뀐다(D1 — 한 사실은 한 곳에서)
-  for (const t of TRAINEES) if (t.classId === classId) t.className = name
-  syncManagerAssignments()
-  return delay(room)
-
-  // return http<ClassRoom>(`/admin/classes/${classId}`, { method: 'PATCH', body: req })
-}
-
-/**
- * `DELETE /admin/classes/{id}` — 반 삭제(OP06-7-②).
- *
- * **개강 전에만** 열린다. 안에 사람이 있으면 **미배정으로 되돌린다** — 명단에서 지우는
- * 것이 아니다. 개강 전이라 아직 회차도 리포트도 없고, 반 편성을 다시 짜는 중이다.
- */
-export function deleteClass(classId: string): Promise<void> {
-  // ===== Mock 버전 (현재 활성) =====
-  const index = CLASSES.findIndex((c) => c.id === classId)
-  if (index < 0) return fail('ADMIN_SAVE_FAILED')
-
-  const cohort = COHORTS.find((c) => c.id === CLASSES[index].cohortId)
-  if (!cohort || !canEditClasses(cohort.startAt, getNow().slice(0, 10)))
-    return fail('ADMIN_SAVE_FAILED')
-
-  for (const t of TRAINEES) {
-    if (t.classId !== classId) continue
-    t.classId = null
-    t.className = null
-  }
-  CLASSES.splice(index, 1)
-  syncManagerAssignments()
-  return delay(undefined)
-
-  // return http<void>(`/admin/classes/${classId}`, { method: 'DELETE' })
-}
-
-/**
- * `PUT /admin/managers/{id}/classes` — 이 매니저가 맡을 반 **전체를 정한다**(OP06-11).
- *
- * **`setClassManager`와 방향이 반대다.** 저쪽은 `반 하나 = 매니저 하나`를 쓰고, 이쪽은
- * `매니저 하나 = 반 여럿`을 쓴다. 한 함수로 둘을 처리하고 있었는데, 매니저 쪽에서
- * 부르면 반이 **하나씩 더해지기만** 했다 — 라디오로 골랐는데 결과는 추가였다.
- *
- * **넘긴 목록이 곧 결과다**(PUT). 빠진 반은 담당이 풀리고 더해진 반은 이 사람이 맡는다 —
- * 그래야 모달에서 체크를 풀어 담당을 뺄 수 있다. 여러 번 나눠 부르면 중간에 실패했을 때
- * 절반만 반영된다.
- */
-export function setManagerClasses(managerId: string, classIds: string[]): Promise<Manager> {
-  // ===== Mock 버전 (현재 활성) =====
-  const manager = MANAGERS.find((m) => m.id === managerId)
-  if (!manager) return fail('ADMIN_SAVE_FAILED')
-  // 가입 전에는 반을 못 맡는다 — 로그인을 못 해 면담·독촉을 처리할 수 없다(OP06-11)
-  if (manager.status !== 'ACTIVE') return fail('ADMIN_SAVE_FAILED')
-
-  for (const room of CLASSES) {
-    const wanted = classIds.includes(room.id)
-    if (wanted && room.managerId !== managerId) {
-      room.managerId = managerId
-      room.managerName = manager.name
-      room.assignedAt = getNow().slice(0, 10)
-      room.assignedBy = '김오퍼레이터'
-    } else if (!wanted && room.managerId === managerId) {
-      // 체크가 풀린 반은 담당이 빈다 — `담당 없음` 경고가 다시 켜진다
-      room.managerId = null
-      room.managerName = null
-      room.assignedAt = null
-      room.assignedBy = null
-    }
-  }
-  syncManagerAssignments()
-  return delay(manager)
-
-  // return http<Manager>(`/admin/managers/${managerId}/classes`, {
-  //   method: 'PUT', body: { classIds },
-  // })
-}
-
-/**
- * `PATCH /admin/classes/{id}/manager` — 담당 배정·변경·해제.
- *
- * **배정은 기간형 이력이다**(OP-06 §3) — 서버는 덮어쓰는 것이 아니라 구간을 닫고 새로
- * 연다. 화면은 지금 담당만 보면 되므로 반 한 건을 돌려받는다.
- */
-export function setClassManager(classId: string, managerId: string | null): Promise<ClassRoom> {
-  // ===== Mock 버전 (현재 활성) =====
-  const room = CLASSES.find((c) => c.id === classId)
-  if (!room) return fail('ADMIN_SAVE_FAILED')
-  const manager = MANAGERS.find((m) => m.id === managerId)
-  room.managerId = manager?.id ?? null
-  room.managerName = manager?.name ?? null
-  // 구간을 새로 연다 — 해제면 여는 구간이 없으므로 비운다
-  room.assignedAt = manager ? getNow().slice(0, 10) : null
-  room.assignedBy = manager ? '김오퍼레이터' : null
-  syncManagerAssignments()
-  return delay(room)
-
-  // return http<ClassRoom>(`/admin/classes/${classId}/manager`, {
-  //   method: 'PATCH', body: { managerId },
-  // })
 }
 
 // ── ② 명단 ──────────────────────────────────────────────────
@@ -548,239 +343,12 @@ export function deactivateTrainee(id: string, reason: string): Promise<Trainee> 
 }
 
 // ── ③ 매니저 ────────────────────────────────────────────────
-/**
- * `GET /admin/managers` — **기관 전체** 범위. 매니저는 기수를 옮겨 다닌다.
- *
- * `unstaffedClasses`를 같이 준다 — 목록 위 경고가 **필터와 무관한 사실**이라 매니저
- * 목록만으로는 만들 수 없다. OP-01 `조치 필요`의 `미배정`과 같은 신호다.
- */
-export function listManagers(q: ManagerQuery = {}): Promise<ManagerPage> {
-  // ===== Mock 버전 (현재 활성) =====
-  if (!derived) {
-    syncManagerAssignments()
-    derived = true
-  }
-  const filtered = MANAGERS.filter((m) => {
-    if (q.search && !hit(m.name ?? '', q.search) && !hit(m.email, q.search)) return false
-    if (q.status && m.status !== q.status) return false
-    /*
-      **소속으로 거른다 — 담당 유무가 아니라**(OP06-15). 담당 반으로만 걸렀더니 초대 대기·정지
-      계정이 어느 기수에도 안 잡혀 사라졌다(실측 9명 → 7명). 계정 업무(초대·재발송·정지)가
-      이 탭 일의 3분의 2라 그것들이 안 보이는 목록은 쓸 수 없다.
-
-      끝난 기수도 걸린다 — `6기에 누가 무엇을 맡았나`가 실제 질문이다.
-    */
-    if (q.cohortId && !m.cohortIds.includes(q.cohortId)) return false
-    return true
-  })
-
-  /*
-    **헤더 내역도 기수 범위 안에서 센다**(OP06-15). 기관 전체를 세면 `9명`이라 해 놓고 목록에는
-    8명이 나온다 — 헤더가 필터와 무관해야 한다는 규칙은 *상태·검색*을 말하는 것이고,
-    **기수는 이 화면의 범위 자체**라 그 밖을 셀 이유가 없다.
-  */
-  const inScope = MANAGERS.filter((m) => !q.cohortId || m.cohortIds.includes(q.cohortId))
-  const counts: Record<ManagerStatus, number> = { ACTIVE: 0, INVITED: 0, SUSPENDED: 0 }
-  for (const m of inScope) counts[m.status]++
-
-  /*
-    **이름순 — 순서를 서버가 정한다.** 걸러낸 배열을 그대로 돌려주고 있었는데, 그러면
-    순서가 *목 배열에 적힌 차례*라는 뜻이라 실제 서버로 바꾸면 순서가 달라진다.
-    초대한 사람이 목록 맨 끝에 붙는 것도 그 탓이었다(`MANAGERS.push`).
-
-    정렬 옵션은 두지 않는다 — 사람을 찾는 목록이라 이름순이 유일하게 자연스럽다
-    (반 목록을 `A반 · B반 …`으로 고정한 것과 같은 이유). 가입 전이라 이름이 없으면
-    이메일로 줄 세운다.
-  */
-  /*
-    **조회 범위만큼 잘라서 준다**(OP06-14). 저장소는 모든 기수를 갖고 있고, 화면에 나가는
-    행은 *지금 무엇을 보고 있나*에 맞춰야 한다.
-
-      · 기수 필터 있음 → 그 기수 묶음만. 끝난 기수여도 보여준다(그게 필터의 목적이다)
-      · 없음 → 진행 중인 기수 묶음 + 나머지는 수로
-
-    `headcount`도 같은 범위로 센다 — 담당과 인원이 다른 범위를 말하면 행이 거짓말을 한다.
-  */
-  const running = new Set(COHORTS.filter((c) => c.status === 'RUNNING').map((c) => c.id))
-  const scoped = filtered.map((m) => {
-    const shown = q.cohortId
-      ? m.assignments.filter((a) => a.cohortId === q.cohortId)
-      : m.assignments.filter((a) => running.has(a.cohortId))
-
-    const names = new Set(shown.flatMap((a) => a.classNames.map((n) => `${a.cohortId}:${n}`)))
-    const headcount = CLASSES.filter((c) => names.has(`${c.cohortId}:${c.name}`)).reduce(
-      (n, c) => n + c.size,
-      0,
-    )
-
-    return {
-      ...m,
-      assignments: shown,
-      headcount: shown.length > 0 ? headcount : null,
-      // 필터를 걸면 그 기수가 곧 답이라 나머지를 세지 않는다
-      pastCohorts: q.cohortId ? 0 : m.assignments.filter((a) => !running.has(a.cohortId)).length,
-    }
-  })
-
-  const byName = (a: Manager, b: Manager) =>
-    (a.name ?? a.email).localeCompare(b.name ?? b.email, 'ko')
-
-  const sorted = [...scoped].sort((a, b) =>
-    q.sort === 'HEADCOUNT'
-      ? /*
-          **담당 인원 많은 순** — 부하가 한 사람에게 몰리는 것이 이 탭의 조치 대상이다
-          (배정 모달도 같은 이유로 각 매니저의 담당을 보여준다). 담당이 없으면(null)
-          0으로 보고 뒤로 보낸다. 같으면 이름순 — 순서가 흔들리면 목록이 매번 달라진다.
-        */
-        (b.headcount ?? 0) - (a.headcount ?? 0) || byName(a, b)
-      : byName(a, b),
-  )
-
-  /*
-    **담당 없는 반은 `지금 기수` 것만 센다.** 기관 전체 반을 훑고 있었는데, 지난 기수의
-    반까지 섞이면 **이미 끝난 기수에 담당을 붙이라는 경고**가 뜬다 — 조치할 수 없는 신호다.
-    이 탭 자체는 기관 전체지만 이 경고는 `조치 필요`라서 진행 중인 기수의 것이어야 한다.
-
-    **매니저 필터(`q.cohortId`)를 쓰지 않는다.** 그것으로 세면 8기로 걸러 보는 동안
-    7기 경고가 사라진다 — 헤더 수가 필터와 무관해야 하는 것과 같은 이유다.
-  */
-  const current = COHORTS.find((c) => c.current)
-
-  return delay({
-    items: sorted,
-    total: sorted.length,
-    counts,
-    unstaffedClasses: CLASSES.filter((c) => c.cohortId === current?.id && needsManager(c)).map(
-      (c) => c.name,
-    ),
-  })
-
-  // return http<ManagerPage>(`/admin/managers?${qs(q)}`)
-}
-
-/**
- * `POST /admin/managers/invite` — 이메일 + 담당 반만 받는다.
- *
- * **권한 선택이 없다**(OP-06 §3). 총괄/담당이 폐기되어 매니저가 한 종류뿐이고, 무엇을
- * 볼 수 있는지는 담당 반이 정한다.
- */
-export function inviteManager(req: InviteManagerRequest): Promise<Manager> {
-  // ===== Mock 버전 (현재 활성) =====
-  const reason = checkEmail(req.email, ORG.domain)
-  // 도메인 밖 주소는 `저장 실패`가 아니라 **다른 문구**로 답해야 한다
-  if (reason)
-    return fail(reason === 'DOMAIN_NOT_ALLOWED' ? 'DOMAIN_NOT_ALLOWED' : 'ADMIN_SAVE_FAILED')
-  if (MANAGERS.some((m) => m.email.toLowerCase() === req.email.toLowerCase()))
-    return fail('ADMIN_SAVE_FAILED')
-
-  /*
-    **담당 반을 같이 받지 않는다**(OP06-11). 가입 전에는 로그인을 못 해 그 반의 면담·독촉을
-    처리할 수 없는데, 반에 id가 박히면 `담당 없음` 경고에 안 잡혔다 — 경고가 막으려던
-    상황을 초대가 만들고 있었다. 배정은 **가입이 끝난 뒤** 매니저 목록에서 한다.
-  */
-  const created: Manager = {
-    id: `m-${req.email}`,
-    name: null,
-    email: req.email,
-    // 반은 못 맡아도 **기수 소속은 정해진다** — 그래야 그 기수 목록에 보인다(OP06-15)
-    cohortIds: [req.cohortId],
-    assignments: [],
-    pastCohorts: 0,
-    headcount: null,
-    status: 'INVITED',
-    statusNote: null,
-    lastSeenAt: null,
-    invitedAt: getNow().slice(0, 10),
-    invitedBy: '김오퍼레이터',
-  }
-  MANAGERS.push(created)
-  return delay(created)
-
-  // return http<Manager>('/admin/managers/invite', { method: 'POST', body: req })
-}
-
-/**
- * `PATCH /admin/managers/{id}` — 정지 · 재활성.
- *
- * **지우지 않는다.** 담당 반 배정이 기간형 이력이라 계정을 지우면 지난 기수의 담당
- * 기록이 끊긴다(OP-06 §3).
- */
-export function setManagerStatus(id: string, status: ManagerStatus): Promise<Manager> {
-  // ===== Mock 버전 (현재 활성) =====
-  const target = MANAGERS.find((m) => m.id === id)
-  if (!target) return fail('ADMIN_SAVE_FAILED')
-  target.status = status
-  target.statusNote = status === 'SUSPENDED' ? `정지 ${getNow().slice(0, 10)}` : null
-
-  /*
-    **정지하면 담당 반을 놓는다.** 상태만 바꾸고 있었는데, 그러면 퇴사한 사람이 반을
-    붙들고 있어 **`담당 없음` 경고에 안 잡힌다** — 그 반 학생의 면담·독촉을 아무도
-    처리하지 않는데 OP-01 `조치 필요`에도 안 올라간다. 경고 체계가 막으려던 바로 그 상황을
-    정지 기능이 만들고 있었다(확인 모달도 *"담당 반에서 빠집니다"* 라고 약속하고 있었다).
-
-    **재활성해도 반은 돌아오지 않는다.** 그 사이 다른 사람이 맡았을 수 있고, 되돌리는
-    것은 배정이지 상태가 아니다.
-  */
-  if (status === 'SUSPENDED') releaseClasses(id)
-  syncManagerAssignments()
-  return delay(target)
-
-  // return http<Manager>(`/admin/managers/${id}`, { method: 'PATCH', body: { status } })
-}
-
-/** `POST /admin/managers/{id}/invite` — 초대 재발송 */
-export function resendManagerInvite(id: string): Promise<void> {
-  // ===== Mock 버전 (현재 활성) =====
-  void id
-  return delay(undefined)
-
-  // return http<void>(`/admin/managers/${id}/invite`, { method: 'POST' })
-}
-
-/** `DELETE /admin/managers/{id}/invite` — 초대 취소. 가입 전이라 이력이 없어 지워도 된다 */
-export function cancelManagerInvite(id: string): Promise<void> {
-  // ===== Mock 버전 (현재 활성) =====
-  const i = MANAGERS.findIndex((m) => m.id === id && m.status === 'INVITED')
-  if (i < 0) return fail('ADMIN_SAVE_FAILED')
-  /*
-    **초대와 함께 맡긴 반도 같이 푼다.** 초대할 때 담당 반을 정할 수 있는데(선택),
-    계정만 지우고 있었다 — 반에는 **없는 사람의 id가 남아** 담당이 있는 것처럼 보였다.
-  */
-  releaseClasses(id)
-  MANAGERS.splice(i, 1)
-  syncManagerAssignments()
-  return delay(undefined)
-
-  // return http<void>(`/admin/managers/${id}/invite`, { method: 'DELETE' })
-}
 
 /*
   Mock 전용 — 반의 담당이 바뀌면 매니저 쪽 `담당 반`·`담당 인원`도 같이 바뀐다.
   실제로는 서버가 한 테이블에서 양쪽을 만들어 내려주므로 이런 동기화 함수가 없다.
 */
 /** 진행 중인 기수 id — 담당·인원·해제가 전부 이 범위에서만 움직인다 */
-const runningCohortIds = () =>
-  new Set(COHORTS.filter((c) => c.status === 'RUNNING').map((c) => c.id))
-
-/**
- * 이 사람이 맡고 있던 반을 놓는다 — 정지·초대 취소가 같이 쓴다.
- *
- * **진행 중인 기수만 푼다**(OP06-13). 전부 풀고 있었는데, 그러면 정지 한 번에 **지난 기수의
- * 담당 기록이 지워졌다** — 퇴사자를 지우지 않고 정지로 남기는 이유가(OP-06 §3) 바로 그
- * 기록인데 정지가 그것을 없애고 있었다.
- *
- * **지우는 것이 아니라 비우는 것이다.** 반은 남고 담당만 빠져 `담당 없음` 경고가 켜진다.
- */
-function releaseClasses(managerId: string): void {
-  const running = runningCohortIds()
-  for (const c of CLASSES) {
-    if (c.managerId !== managerId || !running.has(c.cohortId)) continue
-    c.managerId = null
-    c.managerName = null
-    c.assignedAt = null
-    c.assignedBy = null
-  }
-}
 
 /**
  * 반 목록을 원천으로 매니저의 담당을 다시 계산한다 — **기수를 가리지 않고 전부** 담는다.

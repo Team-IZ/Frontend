@@ -15,10 +15,6 @@
 | `unavailable` | GET /api/v0/reports/{reportId} | 리포트 단건 조회 |
 | `unavailable` | GET /api/v0/reports/managed | 담당 반 리포트 목록 조회 (매니저) |
 | `unavailable` | GET /api/v0/reports/class-diagnosis | 수업 진단 리포트 조회 |
-| `unavailable` | GET /api/v0/cohorts/{cohortId}/analytics/risk-trainees | 회차별 기수 전체·반별 위험 교육생 비율 조회 |
-| `unavailable` | GET /api/v0/cohorts/{cohortId}/analytics/group-gaps | 집단 미달 목록 조회 |
-| `unavailable` | GET /api/v0/cohorts/{cohortId}/analytics/cohort-comparison | 두 기수의 검증 개념별 평균 도달 단계 비교 |
-| `unavailable` | GET /api/v0/cohorts/{cohortId}/analytics/actions | 조치 필요 경보 조회 |
 
 ## 손으로 쓰는 것 — multipart
 
@@ -27,5 +23,6 @@
 
 - `POST /api/v0/curricula` — 교안 등록
 - `POST /api/v0/cohorts/{cohortId}/trainees` — CSV 교육생 명단 등록 및 초대
+- `POST /api/v0/cohorts/{cohortId}/trainees/preview` — CSV 교육생 명단 사전 검증(드라이런)
 
 > 이 파일은 자동 생성물이다. 손으로 고치지 마세요.

@@ -1,6 +1,9 @@
 /* 자동 생성 — 손으로 고치지 마세요. 다시 만들려면: npm run api:gen */
 
 import type {
+  findOrganizationCurricula_Path,
+  findOrganizationCurricula_Query,
+  findCurriculum_Path,
   findSections_Path,
   findUsedProjects_Path,
   findComparableCohorts_Query,
@@ -14,6 +17,18 @@ import type {
 */
 export const curriculumKeys = {
   all: ['curriculum'] as const,
+  findOrganizationCurricula: (params: {
+    path: findOrganizationCurricula_Path
+    query?: findOrganizationCurricula_Query
+  }) =>
+    [
+      ...curriculumKeys.all,
+      'findOrganizationCurricula',
+      params.path ?? null,
+      params.query ?? null,
+    ] as const,
+  findCurriculum: (params: { path: findCurriculum_Path }) =>
+    [...curriculumKeys.all, 'findCurriculum', params.path ?? null] as const,
   findSections: (params: { path: findSections_Path }) =>
     [...curriculumKeys.all, 'findSections', params.path ?? null] as const,
   findUsedProjects: (params: { path: findUsedProjects_Path }) =>

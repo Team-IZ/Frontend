@@ -61,6 +61,28 @@ export type endCohort_Item = endCohort_Response['managers'][number]
 export type endCohort_Errors =
   'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND'
 
+// DELETE /api/v0/cohorts/{cohortId}/classrooms/{classroomId} — 반 삭제
+export type deleteClassroom_Path = operations['deleteClassroom']['parameters']['path']
+export type deleteClassroom_Response = void
+export type deleteClassroom_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'CLASSROOM_NOT_FOUND' | 'CLASSROOM_NOT_DELETABLE'
+
+// PATCH /api/v0/cohorts/{cohortId}/classrooms/{classroomId} — 반 수정
+export type updateClassroom_Path = operations['updateClassroom']['parameters']['path']
+export type updateClassroom_Body = NonNullable<
+  operations['updateClassroom']['requestBody']
+>['content']['application/json']
+export type updateClassroom_Response =
+  operations['updateClassroom']['responses'][200]['content']['application/json']
+export type updateClassroom_Item = updateClassroom_Response['managers'][number]
+export type updateClassroom_Errors =
+  | 'CLASSROOM_UPDATE_EMPTY'
+  | 'VALIDATION_FAILED'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'CLASSROOM_NOT_FOUND'
+  | 'CLASSROOM_NAME_TAKEN'
+
 // PATCH /api/v0/cohorts/{cohortId}/classrooms/{classroomId}/managers — 반 담당 매니저 변경
 export type updateManagers_Path = operations['updateManagers']['parameters']['path']
 export type updateManagers_Body = NonNullable<

@@ -3,6 +3,8 @@
 import { useQuery } from '@tanstack/react-query'
 import type { QueryOptions } from '@/api/_contract'
 import {
+  findOrganizationCurricula,
+  findCurriculum,
   findSections,
   findUsedProjects,
   findComparableCohorts,
@@ -10,6 +12,11 @@ import {
 } from './curriculumApi'
 import { curriculumKeys } from './curriculumKeys'
 import type {
+  findOrganizationCurricula_Path,
+  findOrganizationCurricula_Query,
+  findOrganizationCurricula_Response,
+  findCurriculum_Path,
+  findCurriculum_Response,
   findSections_Path,
   findSections_Response,
   findUsedProjects_Path,
@@ -19,6 +26,30 @@ import type {
   findLinkableCurricula_Path,
   findLinkableCurricula_Response,
 } from './curriculumTypes'
+
+/** 기관 교안 목록 */
+export function useFindOrganizationCurricula(
+  params: { path: findOrganizationCurricula_Path; query?: findOrganizationCurricula_Query },
+  options?: QueryOptions<findOrganizationCurricula_Response>,
+) {
+  return useQuery({
+    queryKey: curriculumKeys.findOrganizationCurricula(params),
+    queryFn: ({ signal }) => findOrganizationCurricula({ ...params, signal }),
+    ...options,
+  })
+}
+
+/** 교안 단건 상세 */
+export function useFindCurriculum(
+  params: { path: findCurriculum_Path },
+  options?: QueryOptions<findCurriculum_Response>,
+) {
+  return useQuery({
+    queryKey: curriculumKeys.findCurriculum(params),
+    queryFn: ({ signal }) => findCurriculum({ ...params, signal }),
+    ...options,
+  })
+}
 
 /** 교안 섹션·개념 조회 */
 export function useFindSections(

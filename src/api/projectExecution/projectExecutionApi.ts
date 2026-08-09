@@ -12,12 +12,15 @@ import type {
   linkCurriculum_Body,
   linkCurriculum_Response,
   findProjects_Path,
+  findProjects_Query,
   findProjects_Response,
   createProject_Path,
   createProject_Body,
   createProject_Response,
   findProject_Path,
   findProject_Response,
+  deleteProject_Path,
+  deleteProject_Response,
   updateSchedule_Path,
   updateSchedule_Body,
   updateSchedule_Response,
@@ -31,6 +34,8 @@ import type {
   findProjectClassProgress_Path,
   findProjectClassProgress_Query,
   findProjectClassProgress_Response,
+  unlinkCurriculum_Path,
+  unlinkCurriculum_Response,
 } from './projectExecutionTypes'
 
 /** 프로젝트 요구사항 전체 교체 — `PUT /api/v0/projects/{projectId}/requirements` */
@@ -70,10 +75,12 @@ export const linkCurriculum = (
   )
 
 /** 기수 프로젝트 목록 — `GET /api/v0/cohorts/{cohortId}/projects` */
-export const findProjects = (params: { path: findProjects_Path } & RequestOptions) =>
+export const findProjects = (
+  params: { path: findProjects_Path; query?: findProjects_Query } & RequestOptions,
+) =>
   unwrap<findProjects_Response>(
     izClient.GET('/api/v0/cohorts/{cohortId}/projects', {
-      params: { path: params.path },
+      params: { path: params.path, query: params.query ?? {} },
       signal: params.signal,
     }) as never,
   )
@@ -94,6 +101,15 @@ export const createProject = (
 export const findProject = (params: { path: findProject_Path } & RequestOptions) =>
   unwrap<findProject_Response>(
     izClient.GET('/api/v0/projects/{projectId}', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 프로젝트(회차) 삭제 — `DELETE /api/v0/projects/{projectId}` */
+export const deleteProject = (params: { path: deleteProject_Path } & RequestOptions) =>
+  unwrap<deleteProject_Response>(
+    izClient.DELETE('/api/v0/projects/{projectId}', {
       params: { path: params.path },
       signal: params.signal,
     }) as never,
@@ -153,6 +169,15 @@ export const findProjectClassProgress = (
   unwrap<findProjectClassProgress_Response>(
     izClient.GET('/api/v0/projects/{projectId}/class-progress', {
       params: { path: params.path, query: params.query ?? {} },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 프로젝트 교안 연결 해제 — `DELETE /api/v0/projects/{projectId}/curricula/{projectCurriculumId}` */
+export const unlinkCurriculum = (params: { path: unlinkCurriculum_Path } & RequestOptions) =>
+  unwrap<unlinkCurriculum_Response>(
+    izClient.DELETE('/api/v0/projects/{projectId}/curricula/{projectCurriculumId}', {
+      params: { path: params.path },
       signal: params.signal,
     }) as never,
   )

@@ -14,6 +14,11 @@ import type {
   endCohort_Path,
   endCohort_Body,
   endCohort_Response,
+  deleteClassroom_Path,
+  deleteClassroom_Response,
+  updateClassroom_Path,
+  updateClassroom_Body,
+  updateClassroom_Response,
   updateManagers_Path,
   updateManagers_Body,
   updateManagers_Response,
@@ -70,6 +75,27 @@ export const endCohort = (
 ) =>
   unwrap<endCohort_Response>(
     izClient.PATCH('/api/v0/cohorts/{cohortId}/end', {
+      params: { path: params.path },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 반 삭제 — `DELETE /api/v0/cohorts/{cohortId}/classrooms/{classroomId}` */
+export const deleteClassroom = (params: { path: deleteClassroom_Path } & RequestOptions) =>
+  unwrap<deleteClassroom_Response>(
+    izClient.DELETE('/api/v0/cohorts/{cohortId}/classrooms/{classroomId}', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 반 수정 — `PATCH /api/v0/cohorts/{cohortId}/classrooms/{classroomId}` */
+export const updateClassroom = (
+  params: { path: updateClassroom_Path; body: updateClassroom_Body } & RequestOptions,
+) =>
+  unwrap<updateClassroom_Response>(
+    izClient.PATCH('/api/v0/cohorts/{cohortId}/classrooms/{classroomId}', {
       params: { path: params.path },
       body: params.body,
       signal: params.signal,

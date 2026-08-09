@@ -7,8 +7,10 @@ import {
   confirmConcepts,
   linkCurriculum,
   createProject,
+  deleteProject,
   updateSchedule,
   updateRoundSchedule,
+  unlinkCurriculum,
 } from './projectExecutionApi'
 import { projectExecutionKeys } from './projectExecutionKeys'
 import type {
@@ -24,12 +26,16 @@ import type {
   createProject_Path,
   createProject_Body,
   createProject_Response,
+  deleteProject_Path,
+  deleteProject_Response,
   updateSchedule_Path,
   updateSchedule_Body,
   updateSchedule_Response,
   updateRoundSchedule_Path,
   updateRoundSchedule_Body,
   updateRoundSchedule_Response,
+  unlinkCurriculum_Path,
+  unlinkCurriculum_Response,
 } from './projectExecutionTypes'
 
 /*
@@ -117,6 +123,22 @@ export function useCreateProject(
   })
 }
 
+/** 프로젝트(회차) 삭제 */
+export function useDeleteProject(
+  options?: MutationOptions<deleteProject_Response, { path: deleteProject_Path }>,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: deleteProject_Path }) => deleteProject(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: projectExecutionKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
 /** 프로젝트 일정 수정 */
 export function useUpdateSchedule(
   options?: MutationOptions<
@@ -148,6 +170,22 @@ export function useUpdateRoundSchedule(
   return useMutation({
     mutationFn: (vars: { path: updateRoundSchedule_Path; body: updateRoundSchedule_Body }) =>
       updateRoundSchedule(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: projectExecutionKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 프로젝트 교안 연결 해제 */
+export function useUnlinkCurriculum(
+  options?: MutationOptions<unlinkCurriculum_Response, { path: unlinkCurriculum_Path }>,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: unlinkCurriculum_Path }) => unlinkCurriculum(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다

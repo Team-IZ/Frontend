@@ -2,22 +2,50 @@
 
 import { izClient, unwrap, type RequestOptions } from '@/api/_contract'
 import type {
+  replaceManagerClassrooms_Path,
+  replaceManagerClassrooms_Body,
+  replaceManagerClassrooms_Response,
   inviteManager_Path,
   inviteManager_Body,
   inviteManager_Response,
+  resendManagerInvitation_Path,
+  resendManagerInvitation_Response,
   findTraineeRoster_Path,
   findTraineeRoster_Query,
   findTraineeRoster_Response,
   registerTrainees_Path,
   registerTrainees_Body,
   registerTrainees_Response,
+  previewTrainees_Path,
+  previewTrainees_Body,
+  previewTrainees_Response,
+  updateManagerStatus_Path,
+  updateManagerStatus_Body,
+  updateManagerStatus_Response,
   updateTraineeStatus_Path,
   updateTraineeStatus_Body,
   updateTraineeStatus_Response,
   getCurrentMember_Response,
   findManagers_Query,
   findManagers_Response,
+  cancelManagerInvitation_Path,
+  cancelManagerInvitation_Response,
 } from './memberTypes'
+
+/** 매니저 담당 반 전체 교체 — `PUT /api/v0/members/organizations/{organizationId}/managers/{managerId}/classrooms` */
+export const replaceManagerClassrooms = (
+  params: {
+    path: replaceManagerClassrooms_Path
+    body: replaceManagerClassrooms_Body
+  } & RequestOptions,
+) =>
+  unwrap<replaceManagerClassrooms_Response>(
+    izClient.PUT('/api/v0/members/organizations/{organizationId}/managers/{managerId}/classrooms', {
+      params: { path: params.path },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
 
 /** 매니저 초대 — `POST /api/v0/members/organizations/{organizationId}/manager-invitations` */
 export const inviteManager = (
@@ -29,6 +57,17 @@ export const inviteManager = (
       body: params.body,
       signal: params.signal,
     }) as never,
+  )
+
+/** 매니저 초대 재발송 — `POST /api/v0/members/organizations/{organizationId}/manager-invitations/{tokenId}/resend` */
+export const resendManagerInvitation = (
+  params: { path: resendManagerInvitation_Path } & RequestOptions,
+) =>
+  unwrap<resendManagerInvitation_Response>(
+    izClient.POST(
+      '/api/v0/members/organizations/{organizationId}/manager-invitations/{tokenId}/resend',
+      { params: { path: params.path }, signal: params.signal },
+    ) as never,
   )
 
 /** 기수 교육생 명단 조회 — `GET /api/v0/cohorts/{cohortId}/trainees` */
@@ -48,6 +87,30 @@ export const registerTrainees = (
 ) =>
   unwrap<registerTrainees_Response>(
     izClient.POST('/api/v0/cohorts/{cohortId}/trainees/invitations', {
+      params: { path: params.path },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 직접 입력 교육생 명단 사전 검증(드라이런) — `POST /api/v0/cohorts/{cohortId}/trainees/invitations/preview` */
+export const previewTrainees = (
+  params: { path: previewTrainees_Path; body: previewTrainees_Body } & RequestOptions,
+) =>
+  unwrap<previewTrainees_Response>(
+    izClient.POST('/api/v0/cohorts/{cohortId}/trainees/invitations/preview', {
+      params: { path: params.path },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 매니저 계정 정지 / 재활성 — `PATCH /api/v0/members/organizations/{organizationId}/managers/{managerId}/status` */
+export const updateManagerStatus = (
+  params: { path: updateManagerStatus_Path; body: updateManagerStatus_Body } & RequestOptions,
+) =>
+  unwrap<updateManagerStatus_Response>(
+    izClient.PATCH('/api/v0/members/organizations/{organizationId}/managers/{managerId}/status', {
       params: { path: params.path },
       body: params.body,
       signal: params.signal,
@@ -79,4 +142,15 @@ export const findManagers = (params: { query?: findManagers_Query } & RequestOpt
       params: { query: params.query ?? {} },
       signal: params.signal,
     }) as never,
+  )
+
+/** 매니저 초대 취소 — `DELETE /api/v0/members/organizations/{organizationId}/manager-invitations/{tokenId}` */
+export const cancelManagerInvitation = (
+  params: { path: cancelManagerInvitation_Path } & RequestOptions,
+) =>
+  unwrap<cancelManagerInvitation_Response>(
+    izClient.DELETE(
+      '/api/v0/members/organizations/{organizationId}/manager-invitations/{tokenId}',
+      { params: { path: params.path }, signal: params.signal },
+    ) as never,
   )

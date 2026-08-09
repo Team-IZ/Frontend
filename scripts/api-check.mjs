@@ -116,8 +116,15 @@ const GENERIC_ONLY_AGREED = new Map([
   ['GET /api/v0/consents', '단순 조회. 검증 실패 외에 실패할 사유가 없다'],
 ])
 
-/** enum을 공유 스키마로 못 뺀 것 — Java enum이 아니라 int + 커스텀 검증이라 $ref가 안 나온다 */
-const ENUM_INLINE_AGREED = new Set(['180|365|90']) // 정렬된 키로 적는다
+/**
+ * 값이 같아도 **합쳐서는 안 되는** enum — 정렬된 키로 적는다.
+ *
+ * - `180|365|90` — enum을 공유 스키마로 못 뺀 것. Java enum이 아니라 int + 커스텀 검증이라 $ref가 안 나온다
+ * - `CLOSED|PLANNED|RUNNING` — `CohortStatus`와 `ProjectStatus`. **저희가 나눠 달라고 한 것이다**
+ *   (8차 §4 질문 → 9차 §5 답). 값이 같은 건 우연이고 판정 주체가 다르다 — 기수 종료는 운영자
+ *   조작, 회차 종료는 마감일이다. 실제로 9차에서 프로젝트에만 `readiness`가 붙어 갈렸다.
+ */
+const ENUM_INLINE_AGREED = new Set(['180|365|90', 'CLOSED|PLANNED|RUNNING'])
 
 const PAGE_FIELDS = ['page', 'size', 'totalElements', 'totalPages']
 
@@ -142,12 +149,18 @@ export function isNullable(schema) {
 
   단순히 'null'이라는 단어를 찾으면 안 된다 — `null은 허용하지 않는다(빈 배열로 보낼 것)`
   같은 문장이 걸린다. 실제로 걸렸다. 부정문을 먼저 걷어낸다.
+
+  ⚠️ 부정문에 **마크다운을 허용해야 한다.** 9차에서 백엔드가 같은 문장을 <code>`null`은 허용하지
+  않는다</code>로 다시 쓰자 단어와 조사 사이에 백틱이 끼어 부정문 판정이 빗나갔고,
+  "null을 허용하지 않는다"는 필드가 "null이 온다"로 뒤집혀 잡혔다. 강조 표기는 뜻을 바꾸지
+  않으므로 걷어내고 본다.
 */
 export function assertsNull(description) {
   if (typeof description !== 'string' || !/\bnull\b/i.test(description)) return false
+  const plain = description.replace(/[`*_"']/g, '')
   const denies =
     /null(을|은|이|가)?\s*(허용하지\s*않|안\s*됨|불가|아니다|아님|보내지\s*(마|말|않))/i
-  return !denies.test(description)
+  return !denies.test(plain)
 }
 
 // ── 스펙 훑기 ────────────────────────────────────────────────────────────────

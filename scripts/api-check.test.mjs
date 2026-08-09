@@ -41,6 +41,19 @@ test('assertsNull — 부정문은 잡지 않는다', () => {
   assert.ok(!assertsNull('null을 보내지 마세요'))
 })
 
+test('assertsNull — 부정문의 마크다운 강조에 속지 않는다', () => {
+  // 9차 실제 스펙 문장. 백엔드가 같은 뜻을 백틱으로 다시 쓰자 단어와 조사 사이에
+  // 백틱이 끼어 부정문 판정이 빗나갔고, 정상인 필드가 error로 잡혔다
+  assert.ok(
+    !assertsNull(
+      '최종 담당 반 ID 목록. **빈 배열 허용**(전체 해제).\n`null`은 허용하지 않는다 — 빈 배열과 구분되지 않기 때문이다.',
+    ),
+  )
+  assert.ok(!assertsNull('*null*은 허용하지 않는다'))
+  // 강조가 붙어도 주장문은 여전히 잡아야 한다
+  assert.ok(assertsNull('배정 전이면 `null`'))
+})
+
 test('assertsNull — null 언급이 없으면 대상이 아니다', () => {
   assert.ok(!assertsNull('기관명'))
   assert.ok(!assertsNull(undefined))

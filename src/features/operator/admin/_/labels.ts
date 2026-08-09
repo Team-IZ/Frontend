@@ -7,13 +7,7 @@
   **한 곳에 모은 이유** — 같은 상태를 배지와 필터 드롭다운이 같이 쓴다. 각자 갖게 두면
   `초대 대기`를 고칠 때 한 곳만 바뀌고 같은 상태가 화면 안에서 두 이름으로 보인다.
 */
-import type {
-  AccountStatus,
-  CohortStatus,
-  CurriculumStatus,
-  LinkedProjectStatus,
-  RosterIssueReason,
-} from './api/types'
+import type { AccountStatus, CohortStatus, CurriculumStatus, RosterIssueReason } from './api/types'
 
 /**
  * 기수 상태 — **서버가 셋을 준다**(`PLANNED`·`RUNNING`·`CLOSED`).
@@ -59,17 +53,17 @@ export const MANAGER_STATUS_LABEL: Record<AccountStatus, string> = {
   INACTIVE: '정지',
 }
 
+/**
+ * 교안 분석 상태 — **대기와 진행을 한 라벨로 묶는다.**
+ *
+ * 서버는 `PENDING`(큐에 들어감)과 `RUNNING`(돌고 있음)을 가르는데, 운영자가 그 둘로
+ * 할 일이 같다 — 기다리는 것뿐이다. 스펙 설명도 *"둘 다 화면의 `분석 중`"* 이라 적고 있다.
+ */
 export const CURRICULUM_STATUS_LABEL: Record<CurriculumStatus, string> = {
-  DONE: '완료',
-  ANALYZING: '분석 중',
+  SUCCEEDED: '완료',
+  PENDING: '분석 중',
+  RUNNING: '분석 중',
   FAILED: '분석 실패',
-}
-
-export const LINKED_PROJECT_STATUS_LABEL: Record<LinkedProjectStatus, string> = {
-  PREP: '준비 중',
-  READY: '예정',
-  RUNNING: '진행 중',
-  DONE: '종료',
 }
 
 /**

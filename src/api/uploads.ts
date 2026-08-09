@@ -8,6 +8,8 @@ import type { operations } from '@/api/schema'
 */
 type CsvUploadResponse =
   operations['registerTraineesFromCsv']['responses'][201]['content']['application/json']
+type RegisterCurriculumResponse =
+  operations['registerCurriculum']['responses'][201]['content']['application/json']
 
 /*
   **손으로 쓰는 계약 — multipart 업로드.**
@@ -25,6 +27,7 @@ type CsvUploadResponse =
 /** 기수 ID 하나를 경로로 받는 CSV 업로드 — 등록과 드라이런이 같은 모양이다 */
 type CsvUpload = { path: { cohortId: string }; file: File } & RequestOptions
 
+/** `file` 한 칸짜리 폼 — CSV든 PDF든 서버가 받는 필드 이름이 같다 */
 const csvBody = (file: File) => {
   const form = new FormData()
   form.append('file', file)
@@ -56,6 +59,25 @@ export const previewTraineesFromCsv = (params: CsvUpload) =>
   unwrap<CsvUploadResponse>(
     izClient.POST('/api/v0/cohorts/{cohortId}/trainees/preview', {
       params: { path: params.path },
+      body: csvBody(params.file) as never,
+      signal: params.signal,
+    }) as never,
+  )
+
+/**
+ * 교안 등록 — `POST /api/v0/curricula` (PDF)
+ *
+ * **제목·주제가 쿼리 파라미터다**(본문이 아니다) — 본문 자리는 파일이 통째로 쓴다.
+ *
+ * ⚠ **등록 직후에는 분석이 안 된 상태다.** 섹션·검증개념을 쓰려면 별도로
+ * `POST /curricula/{materialId}/analyses`를 불러야 한다(스펙 명시).
+ */
+export const registerCurriculum = (
+  params: { query: { title: string; topic?: string }; file: File } & RequestOptions,
+) =>
+  unwrap<RegisterCurriculumResponse>(
+    izClient.POST('/api/v0/curricula', {
+      params: { query: params.query },
       body: csvBody(params.file) as never,
       signal: params.signal,
     }) as never,

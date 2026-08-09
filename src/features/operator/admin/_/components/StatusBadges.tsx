@@ -3,15 +3,9 @@ import {
   ACCOUNT_STATUS_LABEL,
   COHORT_STATUS_LABEL,
   CURRICULUM_STATUS_LABEL,
-  LINKED_PROJECT_STATUS_LABEL,
   MANAGER_STATUS_LABEL,
 } from '../labels'
-import type {
-  AccountStatus,
-  CohortStatus,
-  CurriculumStatus,
-  LinkedProjectStatus,
-} from '../api/types'
+import type { AccountStatus, CohortStatus, CurriculumStatus } from '../api/types'
 
 /*
   상태 배지 다섯 벌.
@@ -49,17 +43,11 @@ const MANAGER: Record<AccountStatus, Variant> = {
 }
 
 const CURRICULUM: Record<CurriculumStatus, Variant> = {
-  DONE: 'success',
-  ANALYZING: 'info',
+  SUCCEEDED: 'success',
+  PENDING: 'info',
+  RUNNING: 'info',
   // 실패한 교안은 **프로젝트에 연결할 수 없다** — 조치가 필요한 상태라 danger다
   FAILED: 'danger',
-}
-
-const LINKED_PROJECT: Record<LinkedProjectStatus, Variant> = {
-  PREP: 'warning',
-  READY: 'info',
-  RUNNING: 'success',
-  DONE: 'neutral',
 }
 
 export const CohortStatusBadge = ({ status }: { status: CohortStatus }) => (
@@ -76,10 +64,6 @@ export const ManagerStatusBadge = ({ status }: { status: AccountStatus }) => (
 
 export const CurriculumStatusBadge = ({ status }: { status: CurriculumStatus }) => (
   <Badge variant={CURRICULUM[status]}>{CURRICULUM_STATUS_LABEL[status]}</Badge>
-)
-
-export const LinkedProjectStatusBadge = ({ status }: { status: LinkedProjectStatus }) => (
-  <Badge variant={LINKED_PROJECT[status]}>{LINKED_PROJECT_STATUS_LABEL[status]}</Badge>
 )
 
 /**

@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils/cn'
 import { getCohortScope, getToday, listCurricula, listProjects } from '../api'
 import { CONCEPT_COUNT, dueLabel } from '../rules'
 import { useAsync } from '../useAsync'
-import { COHORT_ID } from '../cohortScope'
+import { useCohortId } from '@/stores/cohortScope'
 import type { ProjectSort, ProjectStatus } from '../types'
 import ProjectStatusBadge from '../components/ProjectStatusBadge'
 import ProjectFilters from './components/ProjectFilters'
@@ -46,11 +46,6 @@ import CreateProjectDialog from './components/CreateProjectDialog'
   재서 8배수로 올리고, **흡수 열 하나(검증 개념)를 비운다.**
 */
 
-/*
-  기수는 아직 스위처가 하나뿐이라 상수다. 실제 세션이 붙으면 헤더 스코프에서 받는다 —
-  그때 이 한 줄만 바뀐다.
-*/
-
 /** 상세 경로. 행 클릭과 링크가 같은 곳을 가리켜야 한다 — 문자열을 두 번 적지 않는다 */
 const detailPath = (id: string) => `/operator/projects/${id}`
 
@@ -58,40 +53,50 @@ export default function ProjectListScreen() {
   const navigate = useNavigate()
   const [filters, setFilters] = useState<FilterValues>(INITIAL_FILTERS)
   const [createOpen, setCreateOpen] = useState(false)
+  /*
+    기수는 서버에 물어본다 — 목일 때 쓰던 상수 `'7'`은 UUID가 아니라 실서버에서 안 통한다
+    (`cohortScope.ts`). **정해지기 전에는 아무 조회도 안 나간다** — 없는 기수로 부르면
+    실패 화면이 잠깐 스쳤다가 사라진다.
+  */
+  const { cohortId, cohortName, failed: cohortFailed } = useCohortId()
 
   const loadProjects = useCallback(
     () =>
       listProjects({
-        cohortId: COHORT_ID,
+        cohortId: cohortId!,
         search: filters.search || undefined,
         curriculumId: filters.curriculumId === ALL ? undefined : filters.curriculumId,
         status: filters.status === ALL ? undefined : (filters.status as ProjectStatus),
         sort: filters.sort as ProjectSort,
       }),
-    [filters],
+    [filters, cohortId],
   )
-  const loadCurricula = useCallback(() => listCurricula(COHORT_ID), [])
-  const loadScope = useCallback(() => getCohortScope(COHORT_ID), [])
+  const loadCurricula = useCallback(() => listCurricula(cohortId!), [cohortId])
+  const loadScope = useCallback(() => getCohortScope(cohortId!), [cohortId])
 
-  const page = useAsync(loadProjects)
-  const curricula = useAsync(loadCurricula)
-  const scope = useAsync(loadScope)
+  const page = useAsync(loadProjects, !!cohortId)
+  const curricula = useAsync(loadCurricula, !!cohortId)
+  const scope = useAsync(loadScope, !!cohortId)
 
   const curriculumList = curricula.data ?? []
   const counts = page.data?.counts
-  // 상태를 하나 더 만들어도 합계가 조용히 틀리지 않게 키를 나열하지 않는다
-  const totalAll = counts ? Object.values(counts).reduce((a, b) => a + b, 0) : 0
+  /*
+    전체 회차 수는 **서버가 준 세 값의 합**이다(`ProjectPage.population`).
+    한때 `counts`를 더해 만들었는데, 서버가 `PLANNED`를 준비 중·준비됨으로 갈라 주지
+    않으면서 `counts`에 구멍이 생겨 합이 모자라게 됐다.
+  */
+  const totalAll = page.data?.population ?? 0
   const today = getToday()
   /** 빈 결과가 "아직 없음"인지 "필터에 안 걸림"인지 — 문구가 갈린다 */
   const narrowed = isNarrowed(filters)
 
   return (
-    <ConsoleShell role="operator">
+    <ConsoleShell role="operator" cohort={cohortName}>
       <PageHeader
         // 기수 이름을 하드코딩했었다 — 기수를 바꾸면 빵부스러기만 옛 기수를 가리킨다
-        breadcrumb={scope.data ? `프로젝트 › ${scope.data.name}` : '프로젝트'}
+        breadcrumb={cohortName ? `프로젝트 › ${cohortName}` : '프로젝트'}
         title="프로젝트"
-        count={counts ? `총 ${totalAll}개` : undefined}
+        count={page.data ? `총 ${totalAll}개` : undefined}
         /*
           **스코프 한 줄만 남긴다.** 프로젝트가 기수 단위라 반을 지정하지 않는데, 이
           문구가 없으면 *"반이 왜 없지"* 라는 질문이 남는다(OP-03 3-1).
@@ -102,9 +107,10 @@ export default function ProjectListScreen() {
           이라 개수는 **고르는 자리**(상태 필터)에 있어야 한다. 옮겼다.
         */
         breakdown={
-          scope.data && (
+          scope.data &&
+          cohortName && (
             <span className="text-fg-subtle">
-              {scope.data.name} 전체 ·{' '}
+              {cohortName} 전체 ·{' '}
               <b className="text-fg-muted font-bold">
                 {scope.data.classes}반 {scope.data.trainees}명
               </b>
@@ -118,10 +124,24 @@ export default function ProjectListScreen() {
         {...filters}
         curricula={curriculumList}
         counts={counts}
+        population={page.data?.population}
         onChange={(patch) => setFilters((f) => ({ ...f, ...patch }))}
       />
 
-      {page.loading ? (
+      {cohortFailed ? (
+        /*
+          기수가 없으면 이 화면이 답할 질문 자체가 없다 — 회차는 기수 하위다(OP-03 3-1).
+          다음 행동(기수 만들기)은 운영 관리 소관이라 링크를 걸지 않는다(C4).
+        */
+        <Empty>
+          <EmptyHeader>
+            <EmptyTitle>기수가 없습니다</EmptyTitle>
+            <EmptyDescription>
+              프로젝트는 기수 안에 만듭니다 — 운영 관리에서 기수를 먼저 만드세요.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : page.loading ? (
         // Spinner가 이미 role="status"를 갖는다 — 래퍼에 또 붙이면 라이브 리전이 중첩된다.
         // 기본 aria-label이 영문("Loading")이라 화면 언어에 맞춰 덮어쓴다.
         <div className="flex justify-center py-16">
@@ -189,15 +209,15 @@ export default function ProjectListScreen() {
               <TableBody>
                 {page.data.items.map((p) => {
                   // 이 화면의 유일한 경고는 조합이다 — 마감 임박 + 준비 중
-                  const urgent = p.status === 'PREP' && dueLabel(p.dueAt, today)?.urgent === true
+                  const urgent = p.status === 'PREP' && dueLabel(p.endDate, today)?.urgent === true
                   return (
                     <TableRow
-                      key={p.id}
+                      key={p.projectId}
                       className={cn(
                         'cursor-pointer',
                         urgent ? 'bg-warning-soft' : 'hover:bg-surface-2',
                       )}
-                      onClick={() => navigate(detailPath(p.id))}
+                      onClick={() => navigate(detailPath(p.projectId))}
                     >
                       <TableCell>
                         {/*
@@ -207,7 +227,7 @@ export default function ProjectListScreen() {
                           행 클릭과 중복 실행되지 않게 전파를 멈춘다.
                         */}
                         <Link
-                          to={detailPath(p.id)}
+                          to={detailPath(p.projectId)}
                           className="text-fg hover:text-primary font-semibold hover:underline"
                           onClick={(e) => e.stopPropagation()}
                         >
@@ -221,7 +241,7 @@ export default function ProjectListScreen() {
                         <PeriodCell project={p} now={today} />
                       </TableCell>
                       <TableCell className="text-xs">
-                        <CurriculumCell project={p} curricula={curriculumList} />
+                        <CurriculumCell project={p} />
                       </TableCell>
                       <TableCell>
                         <ConceptCell project={p} />
@@ -250,10 +270,18 @@ export default function ProjectListScreen() {
       <CreateProjectDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        cohortId={COHORT_ID}
+        cohortId={cohortId ?? ''}
         curricula={curriculumList}
         cohort={scope.data}
         onCreated={page.reload}
+        /*
+          부분 성공 — 회차는 만들어졌는데 교안·개념·요구사항 중 하나가 안 붙었다.
+          **상세로 보낸다.** 목록에 남겨 두면 `준비 중` 행 하나만 늘고 무엇이 빠졌는지
+          모르는데, 지우고 다시 만드는 길은 이름 재사용 제약으로 막혀 있다.
+        */
+        onPartial={(projectId, message) =>
+          navigate(`/operator/projects/${projectId}/config`, { state: { notice: message } })
+        }
       />
     </ConsoleShell>
   )

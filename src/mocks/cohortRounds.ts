@@ -8,11 +8,11 @@
 // `features/A`는 `features/B`를 import할 수 없으므로(레이어 규칙) 도메인 밖에 둔다.
 // 화면은 이 파일을 열지 않는다 — 각 도메인의 `api.ts`만 읽고, 화면은 그 응답을 받는다.
 //
-// ⚠ **이 파일만 `features/*`를 향한다.** `src/mocks/`는 린트의 레이어 규칙 대상이 아니라
-// 막히지 않지만, 방향이 거꾸로인 것은 맞다. 근거는 **이것이 목이기 때문**이다 —
-// 연동 시 이 파일과 `projects/mockDb.ts`가 **같이 삭제되므로** 이 의존은 그때 함께
-// 사라진다. 살아남는 코드(`api.ts` 시그니처·화면)는 서로를 모른다.
-import { PROJECTS } from '@/features/operator/projects/mockDb'
+// ⚠ **한때 OP-03의 목에서 회차를 파생시켰다.** 그 목(`projects/mockDb.ts`)이 실서버
+// 연동으로 삭제되면서 파생원이 사라져, 그때 나오던 값을 그대로 옮겨 적었다.
+//
+// 값이 굳었다는 뜻이다 — OP-01·OP-02가 실서버로 갈 때 이 파일도 같이 사라진다.
+// 그 전까지 **두 화면이 같은 숫자를 보게 하는 역할은 그대로다.**
 
 /** 위험자 비율의 출처: `docs/plan/v2/wireframe/operator/analysis.html#round` 격자 */
 
@@ -50,22 +50,14 @@ export type MockRound = {
  * 시스템이 개수를 미리 알 방법이 없다"* 고 못 박았다. **등록된 프로젝트 수**를 분모로 쓴다
  * — 기획에서 "계획 회차 수"가 나오면 그때 별도 필드가 된다.
  */
-export const ROUNDS: MockRound[] = PROJECTS
-  // `미프 3차` → 3. 회차 번호의 원천은 이름이다 — 운영자가 붙인 데이터라 화면이 안 고친다
-  .map((p) => ({ p, no: Number(/(\d+)\s*차/.exec(p.name)?.[1] ?? 0) }))
-  .filter((x) => x.no > 0)
-  .sort((a, b) => a.no - b.no)
-  .map(({ p, no }) => ({
-    projectId: p.id,
-    no,
-    /** 격자 열 머리 2단의 아랫줄 — 회차 번호만으로는 어느 회차인지 짚을 수 없다 */
-    projectName: p.name,
-    state: (p.status === 'DONE'
-      ? 'PUBLISHED'
-      : p.status === 'RUNNING'
-        ? 'RUNNING'
-        : 'BEFORE') as RoundState,
-  }))
+export const ROUNDS: MockRound[] = [
+  { projectId: 'mif-1', no: 1, projectName: '미프 1차', state: 'PUBLISHED' },
+  { projectId: 'mif-2', no: 2, projectName: '미프 2차', state: 'PUBLISHED' },
+  { projectId: 'mif-3', no: 3, projectName: '미프 3차', state: 'RUNNING' },
+  { projectId: 'mif-4', no: 4, projectName: '미프 4차', state: 'BEFORE' },
+  { projectId: 'mif-5', no: 5, projectName: '미프 5차', state: 'BEFORE' },
+  { projectId: 'mif-6', no: 6, projectName: '미프 6차', state: 'BEFORE' },
+]
 
 /** 판정에서 빠진 사람 3종. 총계만 쓰면 어디를 볼지가 안 나온다(OP-02 §4-2) */
 export type Uncounted = {

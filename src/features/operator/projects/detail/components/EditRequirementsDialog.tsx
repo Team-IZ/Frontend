@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { saveRequirements } from '../../api'
 import RequirementsField from '../../components/RequirementsField'
-import type { Project } from '../../types'
+import type { ProjectDetail } from '../../types'
 
 /*
   요구사항 편집 — **교안과 별개다.** 과제 문서에서 나와 **구현 P/F에만** 쓴다(14번 6-3).
@@ -27,7 +27,7 @@ import type { Project } from '../../types'
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  project: Project
+  project: ProjectDetail
   /** 저장 성공 시 — 상세를 다시 부른다 */
   onSaved: () => void
 }
@@ -40,14 +40,14 @@ export default function EditRequirementsDialog({ open, onOpenChange, project, on
   // 열 때마다 저장된 원문에서 시작한다 — 편집하러 열었는데 비어 있으면 다시 쳐야 한다
   useEffect(() => {
     if (open) {
-      setItems(project.requirements)
+      setItems(project.requirementTitles)
       setFailed(false)
     }
-  }, [open, project.requirements])
+  }, [open, project.requirementTitles])
 
   const changed =
-    items.length !== project.requirements.length ||
-    items.some((r, i) => r !== project.requirements[i])
+    items.length !== project.requirementTitles.length ||
+    items.some((r, i) => r !== project.requirementTitles[i])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -89,7 +89,7 @@ export default function EditRequirementsDialog({ open, onOpenChange, project, on
                 setSubmitting(true)
                 setFailed(false)
                 try {
-                  await saveRequirements(project.id, items)
+                  await saveRequirements(project.projectId, items)
                   onSaved()
                   onOpenChange(false)
                 } catch {

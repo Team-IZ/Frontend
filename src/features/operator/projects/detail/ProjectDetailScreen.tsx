@@ -1,22 +1,23 @@
 import { useCallback, useEffect, useState } from 'react'
-import { useNavigate, useParams } from 'react-router'
+import { useLocation, useNavigate, useParams } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
+import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import { Spinner } from '@/components/ui/Spinner'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import {
   getCohortScope,
-  getConceptHistory,
   getProject,
   getProjectStatus,
   getToday,
+  listConceptCandidates,
   listCurricula,
   listProjects,
 } from '../api'
 import { CONCEPT_COUNT } from '../rules'
 import { useAsync } from '../useAsync'
-import { COHORT_ID } from '../cohortScope'
+import { useCohortId } from '@/stores/cohortScope'
 import type { ProjectTab } from '../types'
 import DetailHeader from './components/DetailHeader'
 import OverviewTab from './components/OverviewTab'
@@ -52,6 +53,21 @@ const DEFAULT_TAB: ProjectTab = 'overview'
 export default function ProjectDetailScreen() {
   const { id = '', tab } = useParams()
   const navigate = useNavigate()
+  /*
+    생성이 중간에 끊겨 넘어온 경우 — 무엇이 안 붙었는지를 여기서 말한다.
+    **주소에 실어 온다**(`location.state`) — 스토어를 만들면 이 한 줄 때문에 전역 상태가
+    생기고, 새로고침하면 사라지는 편이 맞다(이미 본 안내다).
+  */
+  const notice = (useLocation().state as { notice?: string } | null)?.notice
+  /*
+    상단 스위처 라벨용이다 — **조회에는 쓰지 않는다.**
+
+    형제 회차·교안·기수 기간은 **이 회차가 속한 기수**(`data.cohortId`)로 부른다.
+    한때 여기서 얻은 "지금 보고 있는 기수"로 불렀는데, 주소로 직접 들어오면
+    (딥링크·새로고침·다른 기수 회차 링크) **화면이 두 기수를 섞어 보여준다** —
+    10기 회차를 열었는데 9기의 교안 목록과 형제 회차를 조회했다. 렌더로 잡았다.
+  */
+  const { cohortName } = useCohortId()
   const [pickOpen, setPickOpen] = useState(false)
   const [curriculaOpen, setCurriculaOpen] = useState(false)
   const [requirementsOpen, setRequirementsOpen] = useState(false)
@@ -59,16 +75,22 @@ export default function ProjectDetailScreen() {
   const [deleteOpen, setDeleteOpen] = useState(false)
 
   const loadProject = useCallback(() => getProject(id), [id])
-  const loadCurricula = useCallback(() => listCurricula(COHORT_ID), [])
-  const loadHistory = useCallback(() => getConceptHistory(id), [id])
+  const project = useAsync(loadProject)
+  /*
+    조회 기준은 **응답이 알려준 기수**다. 상세를 받기 전에는 부를 수 없으므로 아래
+    `enabled`들이 `cohortId`를 함께 본다 — 그 순서가 이 화면의 조회 의존 관계 그대로다.
+  */
+  const cohortId = project.data?.cohortId
+  const loadCurricula = useCallback(() => listCurricula(cohortId!), [cohortId])
+  const loadCandidates = useCallback(() => listConceptCandidates(id), [id])
   const loadStatus = useCallback(() => getProjectStatus(id), [id])
   // 재시험 창이 다음 회차 제출일을 참조한다 — 목록에서 그 값을 찾는다
-  const loadSiblings = useCallback(() => listProjects({ cohortId: COHORT_ID, sort: 'DUE' }), [])
+  const loadSiblings = useCallback(
+    () => listProjects({ cohortId: cohortId!, sort: 'DUE' }),
+    [cohortId],
+  )
   // 기수 기간은 일정 수정 달력만 쓴다 — 열기 전에는 부르지 않는다(#64 ②)
-  const loadCohort = useCallback(() => getCohortScope(COHORT_ID), [])
-
-  const project = useAsync(loadProject)
-  const curricula = useAsync(loadCurricula)
+  const loadCohort = useCallback(() => getCohortScope(cohortId!), [cohortId])
 
   const data = project.data
   const requested = TABS.find((t) => t.value === tab)?.value
@@ -78,17 +100,21 @@ export default function ProjectDetailScreen() {
     **필요할 때만 부른다.** 탭이 안 잠기니 *"잠긴 탭은 안 부른다"* 는 근거가 사라졌다 —
     이제 기준은 **그 탭이 그 값을 실제로 그리나**다.
 
-    `history`는 **모달을 열 때만** 부른다. 개념이 확정된 회차라고 미리 부르면 개요만 보고
-    나가는 대부분의 경우에 쓰지 않을 조회가 나간다. `siblings`는 마감이 있어야 재시험 창을
-    계산할 수 있으므로 그때만, `status`는 개념 3건이 있어야 집계가 존재하므로 그때만.
+    `candidates`·`curricula`는 **개념 선택 모달을 열 때만** 부른다. 개념이 확정된 회차라고
+    미리 부르면 개요만 보고 나가는 대부분의 경우에 쓰지 않을 조회가 둘 나간다.
+    `siblings`는 마감이 있어야 재시험 창을 계산할 수 있으므로 그때만, `status`는 개념
+    3건이 있어야 집계가 존재하므로 그때만.
+
+    **교안 목록도 모달용이다.** 개요·구성 탭은 상세 응답이 준 교안 이름을 그리므로
+    따로 조회할 필요가 없어졌다(9차 R1) — 후보를 교안별로 묶을 때만 이름표로 쓴다.
   */
-  const status = useAsync(
-    loadStatus,
-    active === 'status' && data?.concepts.length === CONCEPT_COUNT,
-  )
-  const siblings = useAsync(loadSiblings, active === 'overview' && !!data?.dueAt)
-  const history = useAsync(loadHistory, pickOpen)
-  const cohort = useAsync(loadCohort, scheduleOpen)
+  const status = useAsync(loadStatus, active === 'status' && data?.conceptCount === CONCEPT_COUNT)
+  const siblings = useAsync(loadSiblings, active === 'overview' && !!data?.endDate && !!cohortId)
+  const candidates = useAsync(loadCandidates, pickOpen)
+  const curricula = useAsync(loadCurricula, pickOpen && !!cohortId)
+  const cohort = useAsync(loadCohort, scheduleOpen && !!cohortId)
+  // 교안 변경 모달은 **연결 가능한 교안 전량**이 필요하다 — 후보와 목적이 다르다
+  const linkable = useAsync(loadCurricula, curriculaOpen && !!cohortId)
 
   /*
     모르는 탭으로 들어오면 **주소도** 되돌린다. 내용만 개요로 바꾸면 주소는 `/bogus`인데
@@ -107,7 +133,7 @@ export default function ProjectDetailScreen() {
   if (!data) {
     if (project.failed) {
       return (
-        <ConsoleShell role="operator">
+        <ConsoleShell role="operator" cohort={cohortName}>
           <Empty>
             <EmptyHeader>
               <EmptyTitle>회차를 찾을 수 없습니다</EmptyTitle>
@@ -121,7 +147,7 @@ export default function ProjectDetailScreen() {
       )
     }
     return (
-      <ConsoleShell role="operator">
+      <ConsoleShell role="operator" cohort={cohortName}>
         <div className="flex justify-center py-16">
           <Spinner className="size-6" aria-label="회차를 불러오는 중" />
         </div>
@@ -132,14 +158,21 @@ export default function ProjectDetailScreen() {
   /** 다음 회차 — 마감이 이번보다 뒤인 것 중 가장 이른 것(목록이 마감순으로 정렬돼 있다) */
   const next =
     siblings.data?.items.find(
-      (p) => p.id !== data.id && p.dueAt && data.dueAt && p.dueAt > data.dueAt,
+      (p) =>
+        p.projectId !== data.projectId && p.endDate && data.endDate && p.endDate > data.endDate,
     ) ?? null
 
   const goTab = (t: ProjectTab) => navigate(`/operator/projects/${id}/${t}`, { replace: true })
 
   return (
-    <ConsoleShell role="operator">
+    <ConsoleShell role="operator" cohort={cohortName}>
       <DetailHeader project={data} now={getToday()} />
+
+      {notice && (
+        <Alert variant="warning" className="mb-4">
+          <AlertTitle>{notice}</AlertTitle>
+        </Alert>
+      )}
 
       <Tabs value={active} onValueChange={(v) => goTab(v as ProjectTab)}>
         <TabsList className="mb-4">
@@ -153,9 +186,8 @@ export default function ProjectDetailScreen() {
         <TabsContent value="overview">
           <OverviewTab
             project={data}
-            curricula={curricula.data ?? []}
             now={getToday()}
-            nextDueAt={next?.dueAt ?? null}
+            nextDueAt={next?.endDate ?? null}
             nextProjectName={next?.name ?? null}
             onEditSchedule={() => setScheduleOpen(true)}
           />
@@ -175,7 +207,6 @@ export default function ProjectDetailScreen() {
         <TabsContent value="config">
           <ConfigTab
             project={data}
-            curricula={curricula.data ?? []}
             onPickConcepts={() => setPickOpen(true)}
             onChangeCurricula={() => setCurriculaOpen(true)}
             onEditRequirements={() => setRequirementsOpen(true)}
@@ -188,8 +219,9 @@ export default function ProjectDetailScreen() {
         open={pickOpen}
         onOpenChange={setPickOpen}
         project={data}
+        candidates={candidates.data ?? []}
+        loadingCandidates={candidates.loading}
         curricula={curricula.data ?? []}
-        history={history.data ?? []}
         onSaved={project.reload}
       />
 
@@ -197,7 +229,7 @@ export default function ProjectDetailScreen() {
         open={curriculaOpen}
         onOpenChange={setCurriculaOpen}
         project={data}
-        curricula={curricula.data ?? []}
+        curricula={linkable.data ?? []}
         onSaved={project.reload}
       />
 
@@ -212,7 +244,6 @@ export default function ProjectDetailScreen() {
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         project={data}
-        curricula={curricula.data ?? []}
         // 지워진 회차의 상세에 남아 있을 수 없다 — 뒤로 가기로 돌아오지 못하게 replace
         onDeleted={() => navigate('/operator/projects', { replace: true })}
       />
@@ -222,7 +253,7 @@ export default function ProjectDetailScreen() {
         onOpenChange={setScheduleOpen}
         project={data}
         cohort={cohort.data}
-        nextDueAt={next?.dueAt ?? null}
+        nextDueAt={next?.endDate ?? null}
         nextProjectName={next?.name ?? null}
         onSaved={() => {
           project.reload()

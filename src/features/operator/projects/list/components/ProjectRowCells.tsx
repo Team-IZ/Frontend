@@ -37,16 +37,25 @@ export {
  * `now`는 화면이 넘긴다(목 단계에서는 목업 기준일).
  */
 export function PeriodCell({ project, now }: { project: Project; now: string }) {
-  if (!project.dueAt && !project.startAt) {
-    return <span className="text-warning font-semibold">미설정</span>
+  if (!project.endDate) {
+    // 시작일은 서버가 필수로 받으므로 비지 않는다 — 비는 것은 마감뿐이다
+    return (
+      <div className="flex flex-col gap-0.5">
+        <span className="tabular-nums">
+          {formatDue(project.startDate)}
+          <span className="text-fg-subtle"> ~ </span>
+          <span className="text-warning font-semibold">미설정</span>
+        </span>
+      </div>
+    )
   }
-  const due = project.dueAt ? dueLabel(project.dueAt, now) : null
+  const due = dueLabel(project.endDate, now)
   return (
     <div className="flex flex-col gap-0.5">
       <span className="tabular-nums">
-        {project.startAt ? formatDue(project.startAt).slice(0, 5) : '—'}
+        {formatDue(project.startDate)}
         <span className="text-fg-subtle"> ~ </span>
-        {project.dueAt ? formatDue(project.dueAt) : '—'}
+        {formatDue(project.endDate)}
       </span>
       {due && (
         // 색만으로 상태를 구분하지 않는다 — 남은 시간 텍스트가 같이 있다(F4)

@@ -13,7 +13,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils/cn'
 import { saveCurricula } from '../../api'
 import { canUnlinkCurriculum } from '../../rules'
-import type { Curriculum, Project } from '../../types'
+import type { Curriculum, ProjectDetail } from '../../types'
 
 /*
   교안 변경 — **개념이 쓰는 교안은 못 뺀다**(OP-04 §5).
@@ -36,7 +36,7 @@ import type { Curriculum, Project } from '../../types'
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  project: Project
+  project: ProjectDetail
   curricula: Curriculum[]
   /** 저장 성공 시 — 후보 수·상태를 서버가 다시 판정하므로 상세를 다시 부른다 */
   onSaved: () => void
@@ -56,17 +56,16 @@ export default function ChangeCurriculaDialog({
   // 열 때마다 현재 연결에서 시작한다 — 변경하러 열었는데 빈 상태면 처음부터 다시 골라야 한다
   useEffect(() => {
     if (open) {
-      setPicked(project.curriculumIds)
+      setPicked(project.curricula.map((c) => c.curriculumVersionId))
       setFailed(false)
     }
-  }, [open, project.curriculumIds])
+  }, [open, project.curricula])
 
   const toggle = (id: string) =>
     setPicked((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
 
-  const changed =
-    picked.length !== project.curriculumIds.length ||
-    picked.some((id) => !project.curriculumIds.includes(id))
+  const linkedIds = project.curricula.map((c) => c.curriculumVersionId)
+  const changed = picked.length !== linkedIds.length || picked.some((id) => !linkedIds.includes(id))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -95,17 +94,19 @@ export default function ChangeCurriculaDialog({
           ) : (
             <div className="border-border divide-border divide-y rounded-md border">
               {curricula.map((c) => {
-                const checked = picked.includes(c.id)
+                const checked = picked.includes(c.versionId)
                 /*
                   규칙은 `rules.ts`가 갖는다 — 여기서 `concepts.some(...)`을 다시 쓰면
                   같은 규칙이 두 곳에 생기고, 서버 검증(`saveCurricula`)과 갈릴 수 있다.
                 */
-                const locked = checked && !canUnlinkCurriculum(project.concepts, c.id)
-                const users = locked ? project.concepts.filter((k) => k.curriculumId === c.id) : []
+                const locked = checked && !canUnlinkCurriculum(project.concepts, c.versionId)
+                const users = locked
+                  ? project.concepts.filter((k) => k.curriculumVersionId === c.versionId)
+                  : []
 
                 return (
                   <label
-                    key={c.id}
+                    key={c.versionId}
                     className={cn(
                       'flex gap-2 p-2.5 text-sm',
                       checked && 'bg-primary-soft',
@@ -116,14 +117,19 @@ export default function ChangeCurriculaDialog({
                       className="mt-0.5"
                       checked={checked}
                       disabled={locked}
-                      onCheckedChange={() => toggle(c.id)}
+                      onCheckedChange={() => toggle(c.versionId)}
                     />
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-2">
-                        <b className="font-medium">{c.name}</b>
-                        <span className="text-fg-subtle text-xs">{c.version}</span>
+                        <b className="font-medium">{c.originalFileName}</b>
+                        <span className="text-fg-subtle text-xs">v{c.versionNo}</span>
+                        {/*
+                          한때 `가르친 항목 N`을 썼는데 교안 목록에 그 수가 없다 —
+                          후보는 프로젝트 기준으로 따로 조회된다. 쪽수로 바꿨다:
+                          **없는 값을 추정하지 않고 응답에 있는 사실을 쓴다.**
+                        */}
                         <span className="text-fg-subtle ml-auto shrink-0 text-xs">
-                          가르친 항목 {c.teaches.length}
+                          {c.pageCount}쪽
                         </span>
                       </span>
                       {/*
@@ -134,7 +140,7 @@ export default function ChangeCurriculaDialog({
                       {locked && (
                         <span className="text-fg-subtle mt-1 block text-2xs">
                           검증 개념 {users.length}건이 쓰고 있어 뺄 수 없습니다 —{' '}
-                          {users.map((k) => k.name).join(' · ')}
+                          {users.map((k) => k.extractedName).join(' · ')}
                         </span>
                       )}
                     </span>
@@ -164,7 +170,7 @@ export default function ChangeCurriculaDialog({
                 setSubmitting(true)
                 setFailed(false)
                 try {
-                  await saveCurricula(project.id, picked)
+                  await saveCurricula(project.projectId, project.curricula, picked)
                   onSaved()
                   onOpenChange(false)
                 } catch {

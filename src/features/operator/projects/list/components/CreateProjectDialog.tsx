@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -13,11 +13,9 @@ import { Field, FieldLabel } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils/cn'
-import { createProject } from '../../api'
+import { createProject, listSectionCandidates } from '../../api'
 import {
   CONCEPT_COUNT,
-  DEFAULT_DUE_TIME,
-  DEFAULT_START_TIME,
   canCreate,
   dropOrphanConcepts,
   toSchedule,
@@ -25,7 +23,7 @@ import {
 } from '../../rules'
 import ConceptPicker from '../../components/ConceptPicker'
 import RequirementsField from '../../components/RequirementsField'
-import type { CohortScope, Curriculum } from '../../types'
+import type { CohortScope, ConceptCandidate, Curriculum } from '../../types'
 import SchedulePicker, { type ScheduleValue } from '../../components/SchedulePicker'
 
 /*
@@ -61,6 +59,11 @@ type Props = {
   cohort?: CohortScope
   /** 생성 성공 시 — 목록을 다시 부르게 한다(서버가 정렬·집계를 다시 해야 한다) */
   onCreated: () => void
+  /**
+   * 회차는 만들어졌는데 뒤 단계가 실패했다 — **상세로 보내 이어서 채우게 한다.**
+   * 되돌리지 않는 이유는 지운 이름을 다시 못 쓰기 때문이다(9차 회신 §10).
+   */
+  onPartial: (projectId: string, message: string) => void
 }
 
 export default function CreateProjectDialog({
@@ -70,59 +73,95 @@ export default function CreateProjectDialog({
   curricula,
   cohort,
   onCreated,
+  onPartial,
 }: Props) {
   const [name, setName] = useState('')
-  const [curriculumIds, setCurriculumIds] = useState<string[]>([])
+  const [versionIds, setVersionIds] = useState<string[]>([])
   const [conceptIds, setConceptIds] = useState<string[]>([])
   const [requirements, setRequirements] = useState<string[]>([])
   const [schedule, setSchedule] = useState<ScheduleValue>({
     startAt: undefined,
-    startTime: DEFAULT_START_TIME,
     dueAt: undefined,
-    dueTime: DEFAULT_DUE_TIME,
   })
   const [submitting, setSubmitting] = useState(false)
   const [failed, setFailed] = useState(false)
+  const [candidates, setCandidates] = useState<ConceptCandidate[]>([])
+  const [loadingCandidates, setLoadingCandidates] = useState(false)
 
-  /** 연결한 교안들의 `teaches` 합집합 — 이것이 검증 개념 후보다 */
   const selected = useMemo(
-    () => curricula.filter((c) => curriculumIds.includes(c.id)),
-    [curricula, curriculumIds],
+    () => curricula.filter((c) => versionIds.includes(c.versionId)),
+    [curricula, versionIds],
   )
-  const candidateCount = selected.reduce((n, c) => n + c.teaches.length, 0)
+
+  /*
+    **후보를 교안 기준으로 조회한다.** 상세의 `findConceptCandidates`는 `projectId`를
+    요구하는데 여기는 아직 회차가 없다 — 섹션 조회(`findSections`)가 같은 매핑을 주고
+    겹치는 필드가 이름·타입까지 같아서(9차 R2 회신) 그대로 쓸 수 있다.
+
+    교안 하나에 조회 하나다. 고른 교안이 바뀔 때만 다시 부르고, **결과가 늦게 와도
+    지금 고른 교안 것만 반영한다**(`alive`) — 빠르게 체크를 바꾸면 순서가 뒤집힌다.
+  */
+  useEffect(() => {
+    if (selected.length === 0) {
+      setCandidates([])
+      return
+    }
+    let alive = true
+    setLoadingCandidates(true)
+    Promise.all(selected.map((c) => listSectionCandidates(c.materialId, c.versionId)))
+      .then((lists) => {
+        if (alive) setCandidates(lists.flat())
+      })
+      .catch(() => {
+        if (alive) setCandidates([])
+      })
+      .finally(() => {
+        if (alive) setLoadingCandidates(false)
+      })
+    return () => {
+      alive = false
+    }
+  }, [selected])
 
   /** 교안은 골랐는데 항목이 0 — 등록이 아니라 **분석 상태**를 봐야 한다 */
-  const noTeachItem = curriculumIds.length > 0 && candidateCount === 0
+  const noTeachItem = versionIds.length > 0 && !loadingCandidates && candidates.length === 0
 
   const toggleCurriculum = (id: string) => {
-    setCurriculumIds((prev) => {
+    setVersionIds((prev) => {
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
-      setConceptIds((ids) => dropOrphanConcepts(ids, curricula, next))
+      setConceptIds((ids) => dropOrphanConcepts(ids, candidates, next))
       return next
     })
   }
 
   const pickConcept = (id: string) => setConceptIds((prev) => toggleConcept(prev, id))
 
-  const period = toSchedule(schedule.startAt, schedule.startTime, schedule.dueAt, schedule.dueTime)
+  const period = toSchedule(schedule.startAt, schedule.dueAt)
   const submittable =
-    name.trim().length > 0 && canCreate(curriculumIds, conceptIds) && !!period && !submitting
+    name.trim().length > 0 && canCreate(versionIds, conceptIds) && !!period && !submitting
 
   const submit = async () => {
     setSubmitting(true)
     setFailed(false)
     try {
-      await createProject({
+      const result = await createProject({
         cohortId,
         name,
-        curriculumIds,
-        conceptIds,
-        requirements,
+        curriculumVersionIds: versionIds,
+        mappingIds: conceptIds,
+        requirementTitles: requirements,
         ...period!,
       })
       onCreated()
       onOpenChange(false)
       reset()
+      /*
+        **부분 성공을 조용히 넘기지 않는다.** 회차는 만들어졌는데 교안·개념·요구사항 중
+        하나가 안 붙은 상태라, 목록에서는 `준비 중`으로만 보이고 무엇이 빠졌는지 모른다.
+        상세로 보내 이어서 채우게 한다 — 지우고 다시 만드는 길은 이름 재사용 제약 때문에
+        막혀 있다(9차 회신 §10).
+      */
+      if (result.step !== 'COMPLETE') onPartial(result.projectId, PARTIAL_MESSAGE[result.step])
     } catch {
       // 입력값을 유지한다 — 작업 중 저장 실패로 폼이 비면 처음부터 다시 해야 한다(F5)
       setFailed(true)
@@ -133,15 +172,10 @@ export default function CreateProjectDialog({
 
   const reset = () => {
     setName('')
-    setCurriculumIds([])
+    setVersionIds([])
     setConceptIds([])
     setRequirements([])
-    setSchedule({
-      startAt: undefined,
-      startTime: DEFAULT_START_TIME,
-      dueAt: undefined,
-      dueTime: DEFAULT_DUE_TIME,
-    })
+    setSchedule({ startAt: undefined, dueAt: undefined })
     setFailed(false)
   }
 
@@ -186,12 +220,12 @@ export default function CreateProjectDialog({
             <SchedulePicker
               value={schedule}
               onChange={(patch) => setSchedule((prev) => ({ ...prev, ...patch }))}
-              min={cohort?.startAt}
-              max={cohort?.endAt}
+              min={cohort?.startDate ?? undefined}
+              max={cohort?.endDate ?? undefined}
             />
             {/* 왜 저장이 안 되는지를 그 자리에서 — 같은 날이면 날짜만 봐서는 안 갈린다 */}
             {schedule.startAt && schedule.dueAt && !period && (
-              <p className="text-danger text-2xs">제출 마감이 시작보다 뒤여야 합니다</p>
+              <p className="text-danger text-2xs">제출 마감이 시작보다 앞설 수 없습니다</p>
             )}
           </Field>
 
@@ -212,21 +246,20 @@ export default function CreateProjectDialog({
               ) : (
                 curricula.map((c) => (
                   <label
-                    key={c.id}
+                    key={c.versionId}
                     className={cn(
                       'flex cursor-pointer items-center gap-2 p-2.5 text-sm',
-                      curriculumIds.includes(c.id) && 'bg-primary-soft',
+                      versionIds.includes(c.versionId) && 'bg-primary-soft',
                     )}
                   >
                     <Checkbox
-                      checked={curriculumIds.includes(c.id)}
-                      onCheckedChange={() => toggleCurriculum(c.id)}
+                      checked={versionIds.includes(c.versionId)}
+                      onCheckedChange={() => toggleCurriculum(c.versionId)}
                     />
-                    <span className="font-medium">{c.name}</span>
-                    <span className="text-fg-subtle text-xs">{c.version}</span>
-                    <span className="text-fg-subtle ml-auto text-xs">
-                      가르친 항목 {c.teaches.length}
-                    </span>
+                    <span className="font-medium">{c.originalFileName}</span>
+                    <span className="text-fg-subtle text-xs">v{c.versionNo}</span>
+                    {/* 항목 수는 이 목록에 없다 — 고르면 아래 후보 목록이 채워진다 */}
+                    <span className="text-fg-subtle ml-auto text-xs">{c.pageCount}쪽</span>
                   </label>
                 ))
               )}
@@ -249,8 +282,12 @@ export default function CreateProjectDialog({
               </div>
 
               {/* 교안을 고르기 전에는 항목 목록이 비활성이다 — 항목은 교안에서 나온다 */}
-              {curriculumIds.length === 0 ? (
+              {versionIds.length === 0 ? (
                 <p className="text-fg-subtle p-5 text-center text-xs">연결된 교안이 없습니다</p>
+              ) : loadingCandidates ? (
+                <div className="flex justify-center py-8">
+                  <Spinner className="size-5" aria-label="후보를 불러오는 중" />
+                </div>
               ) : noTeachItem ? (
                 <div className="p-5 text-center">
                   <p className="text-fg-muted text-xs">이 교안에서 가르친 항목이 아직 없습니다</p>
@@ -260,7 +297,12 @@ export default function CreateProjectDialog({
                 </div>
               ) : (
                 <div className="max-h-64 overflow-y-auto">
-                  <ConceptPicker curricula={selected} picked={conceptIds} onToggle={pickConcept} />
+                  <ConceptPicker
+                    candidates={candidates}
+                    curricula={selected}
+                    picked={conceptIds}
+                    onToggle={pickConcept}
+                  />
                 </div>
               )}
             </div>
@@ -296,6 +338,15 @@ export default function CreateProjectDialog({
       </DialogContent>
     </Dialog>
   )
+}
+
+/** 어디서 멈췄나 → 상세에서 무엇을 이어서 해야 하나. 상태 이름이 아니라 **할 일**을 쓴다 */
+const PARTIAL_MESSAGE: Record<string, string> = {
+  CURRICULA_FAILED: '회차는 만들어졌지만 교안이 연결되지 않았습니다 — 구성 탭에서 이어서 하세요.',
+  CONCEPTS_FAILED:
+    '회차는 만들어졌지만 검증 개념이 확정되지 않았습니다 — 구성 탭에서 이어서 하세요.',
+  REQUIREMENTS_FAILED:
+    '회차는 만들어졌지만 요구사항이 저장되지 않았습니다 — 구성 탭에서 이어서 하세요.',
 }
 
 function RequiredMark({ children }: { children: React.ReactNode }) {

@@ -58,11 +58,11 @@ type Props = FilterValues & {
    * 고른 조건에 따라 줄어들면 *"고르면 몇 개가 되나"* 를 미리 알 수 없다.
    * 아직 안 왔으면 개수 없이 라벨만 그린다 — `0`으로 쓰면 없는 사실을 주장한다.
    */
-  counts?: Record<ProjectStatus, number>
+  counts?: Partial<Record<ProjectStatus, number>>
+  /** 전체 회차 수. `counts`에 구멍이 있어 더해서 만들 수 없다(`ProjectPage.population`) */
+  population?: number
   onChange: (patch: Partial<FilterValues>) => void
 }
-
-const sum = (c: Record<ProjectStatus, number>) => Object.values(c).reduce((a, b) => a + b, 0)
 
 /** 라벨 접두사를 붙인 선택지 맵 — Select가 닫힌 상태에서 무엇으로 거른 건지 읽히게 */
 const items = (prefix: string, options: { value: string; label: string }[]) =>
@@ -75,20 +75,30 @@ export default function ProjectFilters({
   sort,
   curricula,
   counts,
+  population,
   onChange,
 }: Props) {
-  /** 상태 선택지 — 개수를 라벨에 싣는다. `전체`는 합이므로 같이 센다 */
+  /*
+    상태 선택지 — 개수를 라벨에 싣는다. `전체`는 합이므로 같이 센다.
+
+    ⚠ **준비 중·준비됨은 개수가 없다.** 서버 `counts`가 `PLANNED`·`RUNNING`·`CLOSED`
+    세 값이라 `PLANNED`를 그 둘로 가를 수 없다(`ProjectPage.counts`). **`0`으로 채우지
+    않는다** — 없는 사실을 주장하게 되고, 개수가 0인 상태와 구분이 안 된다.
+  */
   const statusOptions = [
-    { value: ALL, label: counts ? `전체 (${sum(counts)})` : '전체' },
+    { value: ALL, label: population != null ? `전체 (${population})` : '전체' },
     ...(Object.keys(STATUS_LABEL) as ProjectStatus[]).map((st) => ({
       value: st,
-      label: counts ? `${STATUS_LABEL[st]} (${counts[st]})` : STATUS_LABEL[st],
+      label: counts?.[st] != null ? `${STATUS_LABEL[st]} (${counts[st]})` : STATUS_LABEL[st],
     })),
   ]
 
   const curriculumOptions = [
     { value: ALL, label: '전체' },
-    ...curricula.map((c) => ({ value: c.id, label: c.name })),
+    ...curricula.map((c) => ({
+      value: c.versionId,
+      label: `${c.originalFileName} v${c.versionNo}`,
+    })),
   ]
 
   return (

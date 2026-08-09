@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import { UserCogIcon } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/Avatar'
@@ -111,12 +110,16 @@ type Props = {
 export default function Header({ user, scope }: Props) {
   /*
     선택은 **화면이 갖는 것이 맞다** — 기수는 URL에 실려 새로고침·공유를 견뎌야 한다
-    (`features/operator/admin/_/cohortScope.ts`). `onChange`를 준 화면은 그쪽이 주인이고,
-    안 준 화면(아직 목)은 헤더가 눌린 값이라도 보여 준다.
-  */
-  const [local, setLocal] = useState(scope?.value)
-  const value = scope?.onChange ? scope.value : local
+    (`stores/cohortScope.ts`). `onChange`를 준 화면이 그 값의 주인이다.
 
+    **헤더는 고른 값을 자기 상태로 들지 않는다.** 한때 `useState(scope?.value)`로 들었는데
+    그것은 **첫 렌더 값에서 얼어붙는다** — 화면들이 하드코딩된 `'7기'`를 넘기던 동안에는
+    드러나지 않았고, 실제로 조회해 온 기수 이름을 넘기는 화면이 생기자 **본문은 `9기`인데
+    이 스위처만 `7기`** 인 상태가 됐다. 같은 화면이 두 기수를 말한다.
+
+    `onChange`가 없는 화면은 선택지도 하나뿐이라 눌러도 바뀔 것이 없다 — 그래서 값을
+    들어 둘 이유가 아예 없고, 프롭을 그대로 그리면 얼어붙지도 않는다.
+  */
   return (
     <header className="bg-surface border-border flex h-[54px] w-full shrink-0 items-center justify-between overflow-x-auto border-b px-6">
       <div className="flex items-center gap-4">
@@ -124,8 +127,8 @@ export default function Header({ user, scope }: Props) {
 
         {scope && (
           <Select
-            value={value}
-            onValueChange={(v) => (scope.onChange ?? setLocal)((v as string | null) ?? scope.value)}
+            value={scope.value}
+            onValueChange={(v) => scope.onChange?.((v as string | null) ?? scope.value)}
             items={Object.fromEntries(
               (scope.options ?? [{ value: scope.value, label: scope.value }]).map((o) => [
                 o.value,

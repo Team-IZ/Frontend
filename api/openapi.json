@@ -2160,7 +2160,7 @@
           "Academic Operations"
         ],
         "summary": "기관 기수 목록 조회 | ✅ 사용 가능",
-        "description": "로그인한 사용자의 소속 기관에 개설된 기수를 상태 필터·이름 검색으로 페이지네이션 조회한다.\n조회 범위인 기관은 요청 파라미터가 아니라 액세스 토큰에서 가져온다 — 다른 기관의 기수는 조회할 수 없다.\n\n**요청**\n- status (쿼리, 선택): 기수 상태 필터. PLANNED/RUNNING/CLOSED. 생략하면 전체\n- query (쿼리, 선택): 기수명 부분검색\n- page (쿼리, 선택, 기본 0): 0부터 시작하는 페이지 번호\n- size (쿼리, 선택, 기본 20, 최대 100): 페이지당 개수\n\n**응답 (200)**\n- content[]: 기수 목록(필드는 아래 \"기수 상세 조회\" 응답과 동일)\n- page / size: 요청한 페이지 정보 그대로\n- totalElements: 조건에 맞는 전체 기수 수\n- totalPages: 전체 페이지 수\n\ncontent[].traineeCount는 **재적 교육생 수**다 — 이 기수에 등록돼 있고 아직 나가지 않은 인원이며,\n중도 이탈자는 빠진다(10차 R3). 그래서 교육생 명단 조회의 전체 건수보다 작을 수 있다.\n\n**아직 채워지지 않는 값** — content[].managers는 항상 빈 배열이다.\n담당 매니저는 classroom 도메인 조인이 필요해 아직 연결되지 않았다.\n반 목록·담당 매니저가 필요하면 `GET /cohorts/{cohortId}/classrooms`를 함께 호출한다.\n",
+        "description": "로그인한 사용자의 소속 기관에 개설된 기수를 상태 필터·이름 검색으로 페이지네이션 조회한다.\n조회 범위인 기관은 요청 파라미터가 아니라 액세스 토큰에서 가져온다 — 다른 기관의 기수는 조회할 수 없다.\n\n**요청**\n- status (쿼리, 선택): 기수 상태 필터. PLANNED/RUNNING/CLOSED. 생략하면 전체\n- query (쿼리, 선택): 기수명 부분검색\n- page (쿼리, 선택, 기본 0): 0부터 시작하는 페이지 번호\n- size (쿼리, 선택, 기본 20, 최대 100): 페이지당 개수\n\n**응답 (200)**\n- content[]: 기수 목록(필드는 아래 \"기수 상세 조회\" 응답과 동일)\n- page / size: 요청한 페이지 정보 그대로\n- totalElements: 조건에 맞는 전체 기수 수\n- totalPages: 전체 페이지 수\n\ncontent[].traineeCount는 **재적 교육생 수**다 — 이 기수에 등록돼 있고 아직 나가지 않은 인원이며,\n중도 이탈자는 빠진다(10차 R3). 그래서 교육생 명단 조회의 전체 건수보다 작을 수 있다.\n\ncontent[].classroomCount는 **반 개수**이며 삭제된 반은 빠진다(13차 Q1).\n화면의 `10반 250명`이 이 둘이다 — 반 개수 때문에 기수마다\n`GET /cohorts/{cohortId}/classrooms`를 부르지 않아도 된다.\n둘 다 이 페이지의 기수 전체를 한 번에 세므로 기수가 늘어도 조회가 늘지 않는다.\n\n**아직 채워지지 않는 값** — content[].managers는 항상 빈 배열이다.\n담당 매니저는 classroom 도메인 조인이 필요해 아직 연결되지 않았다.\n반 목록·담당 매니저가 필요하면 `GET /cohorts/{cohortId}/classrooms`를 함께 호출한다.\n",
         "operationId": "findCohorts",
         "parameters": [
           {
@@ -6044,7 +6044,7 @@
           "Academic Operations"
         ],
         "summary": "기수 상세 조회 | ✅ 사용 가능",
-        "description": "기수 하나의 상세 정보를 조회한다. 조회 범위인 기관은 액세스 토큰에서 가져오며,\n다른 기관의 기수를 요청하면 404다(존재 여부 자체를 알려주지 않기 위해 403이 아니라 404로 응답한다).\n삭제된 기수도 404다.\n\n**요청**\n- cohortId (경로): 조회할 기수 ID\n\n**응답 (200)**\n- cohortId: 기수 ID\n- organizationId: 소속 기관 ID\n- name: 기수명\n- status: PLANNED(개설 예정) / RUNNING(진행 중) / CLOSED(종료)\n- startDate / endDate: 기수 기간\n- traineeCount: 재적 교육생 수(등록돼 있고 아직 나가지 않은 인원. 중도 이탈자 제외)\n- managers[]: 담당 매니저 목록\n\n**아직 채워지지 않는 값** — managers는 항상 빈 배열이다(목록 조회와 동일).\n",
+        "description": "기수 하나의 상세 정보를 조회한다. 조회 범위인 기관은 액세스 토큰에서 가져오며,\n다른 기관의 기수를 요청하면 404다(존재 여부 자체를 알려주지 않기 위해 403이 아니라 404로 응답한다).\n삭제된 기수도 404다.\n\n**요청**\n- cohortId (경로): 조회할 기수 ID\n\n**응답 (200)**\n- cohortId: 기수 ID\n- organizationId: 소속 기관 ID\n- name: 기수명\n- status: PLANNED(개설 예정) / RUNNING(진행 중) / CLOSED(종료)\n- startDate / endDate: 기수 기간\n- traineeCount: 재적 교육생 수(등록돼 있고 아직 나가지 않은 인원. 중도 이탈자 제외)\n- classroomCount: 반 개수(삭제된 반 제외) — 13차 Q1\n- managers[]: 담당 매니저 목록\n\n**아직 채워지지 않는 값** — managers는 항상 빈 배열이다(목록 조회와 동일).\n",
         "operationId": "findCohort",
         "parameters": [
           {
@@ -8160,7 +8160,7 @@
           "Curriculum"
         ],
         "summary": "기관 교안 목록 | ✅ 사용 가능",
-        "description": "OP-06 `교안` 탭의 표를 채운다. **기관 전체 범위**이며 기수 스위처의 영향을 받지 않는다(9차 R8).\n\n지금까지는 기수마다 `GET /cohorts/{cohortId}/curricula`를 부르고 합쳐야 했는데,\n① 기수가 늘면 요청이 그만큼 늘고 ② *\"연결 가능한 것\"*은 전체와 같지 않다 —\n이미 연결됐거나 분석에 실패한 교안이 빠진다. 이 API는 **기관의 모든 교안**을 준다.\n\n## 요청\n\n| 파라미터 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `organizationId` | **필수**(경로) | UUID | 기관 식별자. 호출자의 소속 기관과 다르면 403 |\n| `query` | 선택 | string | 파일명·교안 제목 부분검색(대소문자 무시) |\n| `status` | 선택 | enum | `PENDING` · `RUNNING` · `SUCCEEDED` · `FAILED`. 최신 버전의 **가장 최근 분석 시도** 기준 |\n| `sort` | 선택 | enum | `RECENT`(최근 업로드 순, **기본**) · `NAME`(파일명순) · `USAGE`(사용 회차 많은 순) |\n| `page` | 선택 | int | 0부터 시작. 기본 `0` |\n| `size` | 선택 | int | 페이지당 개수. 기본 `20`, 최대 `100` |\n\n## 응답 (200)\n\n`content[]` · `page` · `size` · `totalElements` · `totalPages` —\n매니저 목록과 같은 모양이다. **`totalElements`가 OP-06 교안 탭의 배지 숫자**다.\n\n### content[] 각 항목 — 한 행이 **교안 하나**, 값은 **최신 버전** 기준\n\n| 필드 | 화면 |\n|---|---|\n| `materialId` · `versionId` | 상세 이동 / 프로젝트 연결에 보낼 값 |\n| `title` · `originalFileName` · `versionNo` | 이름 열 |\n| `analysisStatus` | `분석 중`(PENDING·RUNNING) · `분석 완료`(SUCCEEDED) · `분석 실패`(FAILED) 배지 |\n| `sectionCount` · `conceptCount` | `12섹션 · 개념 48건` |\n| `usedProjectCount` | `3개 회차에서 사용 중` — 삭제·교체 판단 근거 |\n| `uploadedAt` · `uploadedByName` | 비고 |\n\n⚠️ **`analysisStatus`는 한 번도 분석하지 않은 교안에서 `null`이다.** 실패와 구분해야 해서\n값을 만들어 넣지 않는다. `POST /curricula/{materialId}/analyses`로 재분석을 건 뒤\n이 값을 폴링하면 진행 중인지 실패했는지 알 수 있다.\n\n💡 **한 행이 교안(material) 하나다.** 버전은 같은 자리의 새 파일이지 별도 항목이 아니라서,\n값은 전부 최신 버전 기준이고 `usedProjectCount`만 모든 버전을 합쳐 센다.\n",
+        "description": "OP-06 `교안` 탭의 표를 채운다. **기관 전체 범위**이며 기수 스위처의 영향을 받지 않는다(9차 R8).\n\n지금까지는 기수마다 `GET /cohorts/{cohortId}/curricula`를 부르고 합쳐야 했는데,\n① 기수가 늘면 요청이 그만큼 늘고 ② *\"연결 가능한 것\"*은 전체와 같지 않다 —\n이미 연결됐거나 분석에 실패한 교안이 빠진다. 이 API는 **기관의 모든 교안**을 준다.\n\n## 요청\n\n| 파라미터 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `organizationId` | **필수**(경로) | UUID | 기관 식별자. 호출자의 소속 기관과 다르면 403 |\n| `query` | 선택 | string | 파일명·교안 제목 부분검색(대소문자 무시) |\n| `status` | 선택 | enum | `PENDING` · `RUNNING` · `SUCCEEDED` · `FAILED`. 최신 버전의 **가장 최근 분석 시도** 기준 |\n| `notAnalyzedOnly` | 선택 | boolean | **한 번도 분석하지 않은 교안만.** 기본 `false`(13차 R2) |\n| `sort` | 선택 | enum | `RECENT`(최근 업로드 순, **기본**) · `NAME`(파일명순) · `USAGE`(사용 회차 많은 순) |\n| `page` | 선택 | int | 0부터 시작. 기본 `0` |\n| `size` | 선택 | int | 페이지당 개수. 기본 `20`, 최대 `100` |\n\n## 응답 (200)\n\n`content[]` · `page` · `size` · `totalElements` · `totalPages` —\n매니저 목록과 같은 모양이다. **`totalElements`가 OP-06 교안 탭의 배지 숫자**다.\n\n### content[] 각 항목 — 한 행이 **교안 하나**, 값은 **최신 버전** 기준\n\n| 필드 | 화면 |\n|---|---|\n| `materialId` · `versionId` | 상세 이동 / 프로젝트 연결에 보낼 값 |\n| `title` · `originalFileName` · `versionNo` | 이름 열 |\n| `analysisStatus` | `분석 중`(PENDING·RUNNING) · `분석 완료`(SUCCEEDED) · `분석 실패`(FAILED) 배지 |\n| `sectionCount` · `conceptCount` | `12섹션 · 개념 48건` |\n| `usedProjectCount` | `3개 회차에서 사용 중` — 삭제·교체 판단 근거 |\n| `uploadedAt` · `uploadedByName` | 비고 |\n\n⚠️ **`analysisStatus`는 한 번도 분석하지 않은 교안에서 `null`이다.** 실패와 구분해야 해서\n값을 만들어 넣지 않는다. `POST /curricula/{materialId}/analyses`로 재분석을 건 뒤\n이 값을 폴링하면 진행 중인지 실패했는지 알 수 있다.\n\n## `분석 전`만 골라 보기 (13차 R2)\n\n위 이유로 그런 교안은 **`status`로 고를 수 없다** — 상태가 없기 때문이다.\n`notAnalyzedOnly=true`가 그 자리다. 헤더의 `notAnalyzedCount`와 **같은 기준**이라\n그 숫자를 눌러 좁히면 그만큼 나온다.\n\n`status`를 `NOT_ANALYZED` 같은 값으로 늘리지 않은 이유는 그 enum이 **응답의\n`analysisStatus`와 같은 타입**이기 때문이다. 넣으면 응답이 절대 갖지 않는 값을\n타입이 허용하게 된다. 명단의 `unassignedOnly`와 같은 모양으로 뒀다.\n\n⚠️ **`status`와 `notAnalyzedOnly=true`를 함께 보내면 400** `CURRICULUM_FILTER_CONFLICT`다 —\n서로를 배제하는 조건이라 결과가 항상 비는데, 빈 목록을 조용히 주면 화면이\n\"그런 교안이 없다\"로 읽는다.\n\n💡 **한 행이 교안(material) 하나다.** 버전은 같은 자리의 새 파일이지 별도 항목이 아니라서,\n값은 전부 최신 버전 기준이고 `usedProjectCount`만 모든 버전을 합쳐 센다.\n",
         "operationId": "findOrganizationCurricula",
         "parameters": [
           {
@@ -8187,11 +8187,22 @@
           {
             "name": "status",
             "in": "query",
-            "description": "분석 상태 필터. 최신 버전의 가장 최근 분석 시도 기준",
+            "description": "분석 상태 필터. 최신 버전의 가장 최근 분석 시도 기준. `notAnalyzedOnly=true`와 함께 보내면 400이다",
             "required": false,
             "schema": {
               "$ref": "#/components/schemas/CurriculumAnalysisStatus"
             }
+          },
+          {
+            "name": "notAnalyzedOnly",
+            "in": "query",
+            "description": "한 번도 분석하지 않은 교안만 남깁니다(13차 R2).\n\n그런 교안은 분석 상태가 **없어서** `status`로는 고를 수 없습니다 —\n그래서 상태 축이 아니라 별도 조건이며, 명단의 `unassignedOnly`와 같은 모양입니다.\n응답 헤더의 `notAnalyzedCount`가 세는 것과 **같은 기준**이라 그 숫자를 누르면\n그만큼 나옵니다.\n\n`status`와 함께 보내면 서로를 배제하므로 400 `CURRICULUM_FILTER_CONFLICT`입니다.\n",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            },
+            "example": false
           },
           {
             "name": "sort",
@@ -8244,7 +8255,7 @@
             }
           },
           "400": {
-            "description": "VALIDATION_FAILED page·size 값이 올바르지 않음",
+            "description": "VALIDATION_FAILED page·size 값이 올바르지 않음 · CURRICULUM_FILTER_CONFLICT status와 notAnalyzedOnly를 함께 지정함",
             "content": {
               "application/json": {
                 "schema": {
@@ -8256,6 +8267,13 @@
                     "value": {
                       "code": "VALIDATION_FAILED",
                       "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "CURRICULUM_FILTER_CONFLICT": {
+                    "summary": "CURRICULUM_FILTER_CONFLICT",
+                    "value": {
+                      "code": "CURRICULUM_FILTER_CONFLICT",
+                      "message": "상태 필터와 분석 전 필터는 함께 지정할 수 없습니다."
                     }
                   }
                 }
@@ -8900,13 +8918,13 @@
           "Curriculum"
         ],
         "summary": "쓰인 회차 | ✅ 사용 가능",
-        "description": "이 교안 버전을 연결한 회차 목록을 조회한다. **재분석 경고를 좁히는 데 쓴다.**\n\n⚠️ **11차 R3 — 응답이 문자열 배열에서 객체 배열로 바뀌었습니다.**\n예전에는 `[\"미니프로젝트 4차\", …]` 였습니다.\n\n**요청**\n- materialId (경로): 교안 버전 ID\n\n**응답 (200)** — 연결된 회차가 없으면 빈 배열\n\n| 필드 | 설명 |\n|---|---|\n| `projectId` | 회차 ID. 이름을 눌러 프로젝트 화면으로 보낼 때 쓴다 |\n| `name` | 기수 안에서 붙인 회차 이름 (`미니프로젝트 4차`) |\n| `roundLabel` | 기수를 포함한 라벨 (`9기 미프 4차`) |\n| `cohortId` \\ `cohortName` | 기수 |\n| **`attendedCount`** | **응시를 시작한 인원.** 재분석 경고의 문턱 |\n| `conceptNames` | 이 회차가 쓰는 확정 검증 개념 이름 |\n\n## `attendedCount`가 경고를 정한다\n\n`0`이면 아직 아무도 응시하지 않은 회차라 **다시 분석해도 발행된 리포트가 어긋나지 않는다.**\n1 이상이면 이미 문항을 받은 학생이 있으므로, 재분석으로 섹션·쪽 번호가 달라지면\n리포트가 가리키는 교안 위치가 실제와 어긋난다.\n\n**완료가 아니라 시작 기준이다.** 완료만 세면 진행 중인 응시가 빠져 경고를 놓친다.\n\n## 빅프로젝트는 라벨이 없다\n\n예전에는 연결된 회차 중 빅프로젝트가 하나라도 있으면 400으로 <b>조회 전체가 실패</b>했다.\n지금은 `roundLabel`만 `null`로 두고 나머지는 그대로 준다 — 목록 하나 때문에\n화면이 통째로 비는 편이 더 나쁘다.\n",
+        "description": "이 **교안**을 연결한 회차 목록을 조회한다. **재분석 경고를 좁히는 데 쓴다.**\n\n🔴 **13차 R1 — 경로 변수를 교안 ID로 읽도록 고쳤습니다.**\n예전에는 같은 자리를 **교안 버전 ID**로 읽었습니다. 경로 이름이 `materialId`이고\n목록 응답도 `materialId`를 주므로 화면은 교안 ID를 넣었는데, 두 ID는 값이 겹치지 않아\n**늘 빈 배열**이 됐습니다 — 목록이 `24개 회차에서 사용 중`이라고 쓰는데 상세는\n`쓰는 회차가 아직 없습니다`라고 답하던 원인입니다.\n\n⚠️ **11차 R3 — 응답이 문자열 배열에서 객체 배열로 바뀌었습니다.**\n예전에는 `[\"미니프로젝트 4차\", …]` 였습니다.\n\n**요청**\n- materialId (경로): **교안 ID**(버전이 바뀌어도 유지되는 고정 식별자).\n  교안 목록 응답의 `materialId`와 형제 엔드포인트 `GET /curricula/{materialId}/sections`가\n  받는 값과 **같은 것**이다\n\n**응답 (200)** — 연결된 회차가 없으면 빈 배열\n\n## 목록의 `usedProjectCount`와 같은 기준이다\n\n이 교안의 **모든 버전**을 쓰는 회차를 모은다. 삭제된 회차는 뺀다.\n교안 목록의 `usedProjectCount`가 세는 것과 같은 모집단이라\n**`usedProjectCount`와 이 배열의 길이가 일치한다.**\n\n최신 버전만 보지 않는 이유는 지난 버전으로 연결된 회차가 빠지면 두 숫자가 다시\n갈리기 때문이다 — 화면이 어느 쪽을 믿어야 할지 정할 수 없게 된다.\n\n| 필드 | 설명 |\n|---|---|\n| `projectId` | 회차 ID. 이름을 눌러 프로젝트 화면으로 보낼 때 쓴다 |\n| `name` | 기수 안에서 붙인 회차 이름 (`미니프로젝트 4차`) |\n| `roundLabel` | 기수를 포함한 라벨 (`9기 미프 4차`) |\n| `cohortId` \\ `cohortName` | 기수 |\n| **`attendedCount`** | **응시를 시작한 인원.** 재분석 경고의 문턱 |\n| `conceptNames` | 이 회차가 쓰는 확정 검증 개념 이름 |\n\n## `attendedCount`가 경고를 정한다\n\n`0`이면 아직 아무도 응시하지 않은 회차라 **다시 분석해도 발행된 리포트가 어긋나지 않는다.**\n1 이상이면 이미 문항을 받은 학생이 있으므로, 재분석으로 섹션·쪽 번호가 달라지면\n리포트가 가리키는 교안 위치가 실제와 어긋난다.\n\n**완료가 아니라 시작 기준이다.** 완료만 세면 진행 중인 응시가 빠져 경고를 놓친다.\n\n## 빅프로젝트는 라벨이 없다\n\n예전에는 연결된 회차 중 빅프로젝트가 하나라도 있으면 400으로 <b>조회 전체가 실패</b>했다.\n지금은 `roundLabel`만 `null`로 두고 나머지는 그대로 준다 — 목록 하나 때문에\n화면이 통째로 비는 편이 더 나쁘다.\n",
         "operationId": "findUsedProjects",
         "parameters": [
           {
             "name": "materialId",
             "in": "path",
-            "description": "교안 버전 ID",
+            "description": "교안 ID(버전이 바뀌어도 유지되는 고정 식별자)",
             "required": true,
             "schema": {
               "type": "string",
@@ -8946,6 +8964,25 @@
                 }
               }
             }
+          },
+          "404": {
+            "description": "CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(다른 기관의 교안 포함)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "CURRICULUM_MATERIAL_NOT_FOUND": {
+                    "summary": "CURRICULUM_MATERIAL_NOT_FOUND",
+                    "value": {
+                      "code": "CURRICULUM_MATERIAL_NOT_FOUND",
+                      "message": "교안을 찾을 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -8962,7 +8999,7 @@
           "Curriculum"
         ],
         "summary": "비교 가능한 기수 목록 | ✅ 사용 가능",
-        "description": "이 기수가 쓴 교안과 하나라도 겹치는 교안을 쓴 다른 기수 ID 목록을 조회한다.\n\n**요청**\n- cohortId (쿼리, 필수): 기준 기수 ID\n\n**응답 (200)**\n- UUID 배열. 겹치는 교안이 없으면 빈 배열\n",
+        "description": "이 기수가 쓴 교안과 하나라도 겹치는 교안을 쓴 다른 기수 ID 목록을 조회한다.\n\n**요청**\n- cohortId (**쿼리**, 필수): 기준 기수 ID\n\n**응답 (200)**\n- UUID 배열. 겹치는 교안이 없으면 빈 배열\n\n⚠️ **기수 간 비교(`GET /cohorts/{cohortId}/analytics/cohort-comparison`)와 헷갈리기 쉽다**(12차 Q1).\n이름이 비슷하지만 다른 오퍼레이션이고 `cohortId`를 받는 자리도 다르다.\n\n| | 이 API | 기수 간 비교 |\n|---|---|---|\n| 경로 | `/curricula/comparable-cohorts` | `/cohorts/{cohortId}/analytics/cohort-comparison` |\n| `cohortId` | **쿼리** 파라미터 | **경로** 파라미터 |\n| 돌려주는 것 | 비교 후보 기수 ID 배열 | 개념별 비교 격자 |\n\n이쪽은 **후보를 고르기 전** 드롭다운을 채우는 용도다.\n",
         "operationId": "findComparableCohorts",
         "parameters": [
           {
@@ -9152,7 +9189,7 @@
           "Analytics"
         ],
         "summary": "회차별 기수 전체·반별 위험 교육생 비율 조회 | ✅ 사용 가능",
-        "description": "선택 기수의 **미니프로젝트 회차별**로 기수 전체와 반별 위험 교육생 비율을 계산합니다.\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n| --- | --- | --- | --- |\n| `cohortId` | 필수 | UUID | 분석할 기수 |\n\n## 요청 (쿼리 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n| --- | --- | --- | --- |\n| `projectId` | 선택 | UUID | 한 미니프로젝트로 좁힌다. 비우면 기수의 모든 미니프로젝트 |\n| `classroomId` | 선택 | UUID[] | 조회할 반 목록. 비우면 기수의 모든 반 |\n| `fromRoundNo` | 선택 | int | 시작 회차. 비우면 1차부터. 최소 `1` |\n| `toRoundNo` | 선택 | int | 종료 회차. 비우면 마지막 회차까지. 최소 `1` |\n| `level` | 선택 | enum | `CLASS`(반, 기본) · `TEAM`(팀) |\n| `sort` | 선택 | enum | `RECENT_ROUND_WORST`(기본) · `WORSE_ROUND_COUNT` · `EXCLUSION_COUNT` · `NAME` |\n\n⚠️ **`level=TEAM`이면 `projectId`와 `classroomId` 한 건이 모두 필요합니다.** 팀 번호는 반\n안에서만 유일하고 팀은 프로젝트에 종속이라 둘 다 좁혀야 행이 성립합니다. 빠지면 400입니다.\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `cohortId` | UUID | 분석한 기수 |\n| `projectCategory` | string | 프로젝트 분류. 미니프로젝트만 지원 |\n| `projectId` | UUID? | 좁힌 프로젝트. 지정하지 않았으면 `null` |\n| `totalRegisteredRoundCount` | int | **회차 범위 필터 적용 전** 등록 회차 수. `rounds` 길이와 다를 수 있다 |\n| `appliedSort` | enum | 실제 적용된 정렬 |\n| `level` | enum | 실제 적용된 행 계층 |\n| `rounds[]` | array | 격자의 **열**(회차) 정의 |\n| `cohortSummary` | object | 기수 전체 **행** |\n| `classes[]` | array | 반 **행** 목록 |\n| `teams[]` | array | 팀 **행** 목록. `level=CLASS`이면 `[]` |\n\n### rounds[] 각 항목 — 격자의 열\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID | 회차 ID |\n| `roundNo` | int | 회차 번호. **프로젝트 안에서만 유일** |\n| `roundName` | string | 회차 이름 |\n| `projectId` | UUID | 회차가 속한 프로젝트 ID |\n| `projectName` | string | 프로젝트 이름. 화면의 `미프 N차` 기준 |\n| `aggregationStatus` | enum | `NOT_STARTED`(시작 전) · `NOT_AGGREGATED`(리포트 미발행) · `AGGREGATED`(발행 완료) |\n\n### cohortSummary (object) — 기수 전체 행\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `traineeCount` | long | 중도 이탈하지 않은 현재 기수 교육생 수 |\n| `withdrawnCount` | long | 중도 이탈한 교육생 수 |\n| `exclusionRollup` | object | **최근 발행 회차 기준** 미집계 합계. 구조는 **ExclusionBreakdown** 참조 |\n| `cells[]` | array | 회차별 칸. `rounds`와 **같은 순서·길이** |\n\n### classes[] 각 항목 — 반 행\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `classId` | UUID | 반 ID |\n| `className` | string | 반 이름 |\n| `traineeCount` | long | 중도 이탈하지 않은 현재 반 교육생 수 |\n| `withdrawnCount` | long | 중도 이탈한 교육생 수 |\n| `exclusionRollup` | object | 최근 발행 회차 기준 미집계 합계. **ExclusionBreakdown** 참조 |\n| `managerNames[]` | string[] | 활성 담당 매니저 이름. 비면 화면의 `담당 없음` |\n| `cells[]` | array | 회차별 칸. `rounds`와 같은 순서·길이 |\n\n### teams[] 각 항목 — 팀 행\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `teamId` | UUID | 팀 ID |\n| `teamNumber` | string | 반 안에서의 팀 번호 |\n| `teamName` | string | 팀 이름 |\n| `classId` | UUID | 이 팀이 속한 반 ID |\n| `className` | string | 이 팀이 속한 반 이름 |\n| `memberCount` | long | 현재 팀에 속한 인원 |\n| `exclusionRollup` | object | 최근 발행 회차 기준 미집계 합계. **ExclusionBreakdown** 참조 |\n| `cells[]` | array | 회차별 칸. `rounds`와 같은 순서·길이 |\n\n### cells[] 각 항목 — 격자 한 칸\n\n`cohortSummary.cells[]` · `classes[].cells[]` · `teams[].cells[]`가 공통으로 쓰는 구조입니다.\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID | 이 칸이 속한 회차. `rounds[].assessmentRoundId`와 짝 |\n| `roundNo` | int | 회차 번호 |\n| `aggregationStatus` | enum | `NOT_STARTED` · `NOT_AGGREGATED` · `AGGREGATED` |\n| `eligibleCount` | long | 미집계를 제외한 **분모** |\n| `riskCount` | long | 위험 유형을 하나라도 가진 고유 교육생 수(**분자**) |\n| `riskRate` | decimal? | `riskCount / eligibleCount`. 집계 전이거나 분모가 0이면 `null` |\n| `comparisonToCohort` | enum? | `BETTER`(낮음) · `SAME` · `WORSE`(높음). 기준이 없으면 `null` |\n| `exclusion` | object | 이 칸의 미집계 내역. **ExclusionBreakdown** 참조 |\n\n### ExclusionBreakdown (object) — 미집계 내역\n\n`cells[].exclusion`과 각 행의 `exclusionRollup`이 공통으로 쓰는 구조입니다.\n세 값을 `eligibleCount`와 합치면 회차의 전체 수행 대상자가 됩니다.\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `notAttendedCount` | long | 미응시(`terminal_reason_code=NOT_ATTENDED`) |\n| `sessionIncompleteCount` | long | 중단(`terminal_reason_code=SESSION_INCOMPLETE`) |\n| `invalidAttemptCount` | long | 무효 응시(`validity_review_status=CONFIRMED_INVALID`) |\n\n### 분모 (`eligibleCount`)\n\n회차의 `INITIAL` 수행 대상 교육생에서 **ExclusionBreakdown의 3종**을 뺀 인원입니다.\n\n⚠️ **무효 확인 중(`validity_review_status=PENDING`)은 아직 확정되지 않아 분모에 남습니다.**\n확정(`CONFIRMED_INVALID`)된 것만 빠집니다.\n\n### 분자 (`riskCount`)\n\n위험 유형(단계 하락·지속 저점) 중 **하나 이상이 활성으로 일치한 고유 교육생 수**이며,\n한 교육생이 여러 유형에 해당해도 1명으로 셉니다.\n\n⚠️ **`INVALID_ATTEMPT`는 분자에 넣지 않습니다.** 해당 교육생이 무효 응시로 분모에서 이미\n빠졌기 때문입니다.\n\n⚠️ **집계 상태는 회차 생명주기가 아니라 발행된 리포트 유무로 판정합니다.** 발행본이 없으면\n`riskRate`는 0이 아니라 `null`이고 `aggregationStatus`로 원인을 구분합니다.\n\n⚠️ **`roundNo`는 `(project_id, round_no)` UNIQUE라 프로젝트마다 1부터 다시 시작합니다.**\n미니프로젝트는 프로젝트마다 이해도 확인 회차가 1건뿐이라 모든 열의 `roundNo`가 1입니다.\n기수의 차수 흐름은 프로젝트 순서에만 남으므로 **격자의 가로축은 `roundNo`가 아니라 프로젝트\n순서**이며, `fromRoundNo`·`toRoundNo`도 이 프로젝트 순서 범위입니다. 열을 구분해야 하면\n`roundNo`가 아니라 `assessmentRoundId`나 `projectName`을 쓰십시오.\n\n⚠️ **`rounds[]`와 각 행의 `cells[]`는 최근 프로젝트부터 내림차순입니다.** 두 배열의 순서와\n길이는 항상 같으므로 인덱스로 짝지어도 됩니다.\n\n⚠️ **`exclusionRollup`은 조회 범위 전체 회차를 유형별로 합산한 값입니다.** 특정 회차의\n미집계는 `cells[].exclusion`에서 봅니다. `EXCLUSION_COUNT` 정렬은 이 합계 기준입니다.\n\n💡 **`comparisonToCohort`는 서버가 계산해 내려주므로 클라이언트가 다시 계산할 필요가 없습니다.**\n반 행은 같은 회차의 **기수 전체** 비율과, 팀 행은 **소속 반(`classes[0]`) 전체** 비율과 견준\n방향이며 임계 구간 없이 단순 비교합니다 — 팀 번호는 반 안에서만 유일해 팀끼리는 소속 반\n안에서만 비교가 성립하기 때문입니다. 기수 전체 행이거나 두 비율 중 하나라도 없으면 `null`입니다.\n\n💡 **`classes[]`에 담기는 범위는 `level`에 따라 다릅니다.** `level=CLASS`이면 기수의 모든 반이,\n`level=TEAM`이면 **선택된 반 1건만** 담깁니다 — 화면 상단 `반 전체` 요약 행이자\n`teams[].cells[].comparisonToCohort`의 비교 기준으로 쓰입니다.\n\n💡 **팀당 인원이 4~5명이라 팀 행의 비율은 0%·25%·50% 같은 거친 값이 됩니다.**\n\n💡 **빅프로젝트는 위험 판정식이 달라 이 격자에 포함하지 않습니다.**\n",
+        "description": "선택 기수의 **미니프로젝트 회차별**로 기수 전체와 반별 위험 교육생 비율을 계산합니다.\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n| --- | --- | --- | --- |\n| `cohortId` | 필수 | UUID | 분석할 기수 |\n\n## 요청 (쿼리 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n| --- | --- | --- | --- |\n| `projectId` | 선택 | UUID | 한 미니프로젝트로 좁힌다. 비우면 기수의 모든 미니프로젝트 |\n| `classroomId` | 선택 | UUID[] | 조회할 반 목록. 비우면 기수의 모든 반 |\n| `fromRoundNo` | 선택 | int | 시작 차수. 비우면 1차부터. 최소 `1`. **`rounds[].cohortRoundNo`와 같은 축** |\n| `toRoundNo` | 선택 | int | 종료 차수. 비우면 마지막 차수까지. 최소 `1`. **`rounds[].cohortRoundNo`와 같은 축** |\n| `level` | 선택 | enum | `CLASS`(반, 기본) · `TEAM`(팀) |\n| `sort` | 선택 | enum | `RECENT_ROUND_WORST`(기본) · `WORSE_ROUND_COUNT` · `EXCLUSION_COUNT` · `NAME` |\n\n⚠️ **`level=TEAM`이면 `projectId`와 `classroomId` 한 건이 모두 필요합니다.** 팀 번호는 반\n안에서만 유일하고 팀은 프로젝트에 종속이라 둘 다 좁혀야 행이 성립합니다. 빠지면 400입니다.\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `cohortId` | UUID | 분석한 기수 |\n| `projectCategory` | string | 프로젝트 분류. 미니프로젝트만 지원 |\n| `projectId` | UUID? | 좁힌 프로젝트. 지정하지 않았으면 `null` |\n| `totalRegisteredRoundCount` | int | **회차 범위 필터 적용 전** 등록 회차 수. `rounds` 길이와 다를 수 있다 |\n| `appliedSort` | enum | 실제 적용된 정렬 |\n| `level` | enum | 실제 적용된 행 계층 |\n| `rounds[]` | array | 격자의 **열**(회차) 정의 |\n| `cohortSummary` | object | 기수 전체 **행** |\n| `classes[]` | array | 반 **행** 목록 |\n| `teams[]` | array | 팀 **행** 목록. `level=CLASS`이면 `[]` |\n\n### rounds[] 각 항목 — 격자의 열\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID | 회차 ID |\n| **`cohortRoundNo`** | int | **기수 안의 회차 순번. 열 키로 쓰세요** — 요청의 `fromRoundNo`·`toRoundNo`와 같은 축 |\n| `roundNo` | int | 프로젝트 안의 응시 번호. **프로젝트 안에서만 유일**하며 미니프로젝트는 늘 `1` |\n| `roundName` | string | 회차 이름 |\n| `projectId` | UUID | 회차가 속한 프로젝트 ID |\n| `projectName` | string | 프로젝트 이름. 화면의 `미프 N차` 기준 |\n| `aggregationStatus` | enum | `NOT_STARTED`(시작 전) · `NOT_AGGREGATED`(리포트 미발행) · `AGGREGATED`(발행 완료) |\n\n### cohortSummary (object) — 기수 전체 행\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `traineeCount` | long | 중도 이탈하지 않은 현재 기수 교육생 수 |\n| `withdrawnCount` | long | 중도 이탈한 교육생 수 |\n| `exclusionRollup` | object | **최근 발행 회차 기준** 미집계 합계. 구조는 **ExclusionBreakdown** 참조 |\n| `cells[]` | array | 회차별 칸. `rounds`와 **같은 순서·길이** |\n\n### classes[] 각 항목 — 반 행\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `classId` | UUID | 반 ID |\n| `className` | string | 반 이름 |\n| `traineeCount` | long | 중도 이탈하지 않은 현재 반 교육생 수 |\n| `withdrawnCount` | long | 중도 이탈한 교육생 수 |\n| `exclusionRollup` | object | 최근 발행 회차 기준 미집계 합계. **ExclusionBreakdown** 참조 |\n| `managerNames[]` | string[] | 활성 담당 매니저 이름. 비면 화면의 `담당 없음` |\n| `cells[]` | array | 회차별 칸. `rounds`와 같은 순서·길이 |\n\n### teams[] 각 항목 — 팀 행\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `teamId` | UUID | 팀 ID |\n| `teamNumber` | string | 반 안에서의 팀 번호 |\n| `teamName` | string | 팀 이름 |\n| `classId` | UUID | 이 팀이 속한 반 ID |\n| `className` | string | 이 팀이 속한 반 이름 |\n| `memberCount` | long | 현재 팀에 속한 인원 |\n| `exclusionRollup` | object | 최근 발행 회차 기준 미집계 합계. **ExclusionBreakdown** 참조 |\n| `cells[]` | array | 회차별 칸. `rounds`와 같은 순서·길이 |\n\n### cells[] 각 항목 — 격자 한 칸\n\n`cohortSummary.cells[]` · `classes[].cells[]` · `teams[].cells[]`가 공통으로 쓰는 구조입니다.\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID | 이 칸이 속한 회차. `rounds[].assessmentRoundId`와 짝. **칸을 열에 잇는 것은 이 값으로** |\n| `cohortRoundNo` | int | 기수 안의 회차 순번(`rounds[].cohortRoundNo`와 같은 값) |\n| `roundNo` | int | 프로젝트 안의 응시 번호. **프로젝트 안에서만 유일** |\n| `aggregationStatus` | enum | `NOT_STARTED` · `NOT_AGGREGATED` · `AGGREGATED` |\n| `eligibleCount` | long | 미집계를 제외한 **분모** |\n| `riskCount` | long | 위험 유형을 하나라도 가진 고유 교육생 수(**분자**) |\n| `riskRate` | decimal? | `riskCount / eligibleCount`. 집계 전이거나 분모가 0이면 `null` |\n| `comparisonToCohort` | enum? | `BETTER`(낮음) · `SAME` · `WORSE`(높음). 기준이 없으면 `null` |\n| `exclusion` | object | 이 칸의 미집계 내역. **ExclusionBreakdown** 참조 |\n\n### ExclusionBreakdown (object) — 미집계 내역\n\n`cells[].exclusion`과 각 행의 `exclusionRollup`이 공통으로 쓰는 구조입니다.\n세 값을 `eligibleCount`와 합치면 회차의 전체 수행 대상자가 됩니다.\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `notAttendedCount` | long | 미응시(`terminal_reason_code=NOT_ATTENDED`) |\n| `sessionIncompleteCount` | long | 중단(`terminal_reason_code=SESSION_INCOMPLETE`) |\n| `invalidAttemptCount` | long | 무효 응시(`validity_review_status=CONFIRMED_INVALID`) |\n\n### 분모 (`eligibleCount`)\n\n회차의 `INITIAL` 수행 대상 교육생에서 **ExclusionBreakdown의 3종**을 뺀 인원입니다.\n\n⚠️ **무효 확인 중(`validity_review_status=PENDING`)은 아직 확정되지 않아 분모에 남습니다.**\n확정(`CONFIRMED_INVALID`)된 것만 빠집니다.\n\n### 분자 (`riskCount`)\n\n위험 유형(단계 하락·지속 저점) 중 **하나 이상이 활성으로 일치한 고유 교육생 수**이며,\n한 교육생이 여러 유형에 해당해도 1명으로 셉니다.\n\n⚠️ **`INVALID_ATTEMPT`는 분자에 넣지 않습니다.** 해당 교육생이 무효 응시로 분모에서 이미\n빠졌기 때문입니다.\n\n⚠️ **집계 상태는 회차 생명주기가 아니라 발행된 리포트 유무로 판정합니다.** 발행본이 없으면\n`riskRate`는 0이 아니라 `null`이고 `aggregationStatus`로 원인을 구분합니다.\n\n## ⚠️ 회차 번호가 두 축입니다 (12차 R1)\n\n| 필드 | 무엇 | 어디서 유일한가 |\n| --- | --- | --- |\n| **`cohortRoundNo`** | **기수 안의 회차 순번** | 기수 안에서 유일 — **열 키로 쓰세요** |\n| `roundNo` | 프로젝트 안의 응시 번호 | 프로젝트 안에서만 유일 |\n\n**`cohortRoundNo`가 요청의 `fromRoundNo`·`toRoundNo`와 같은 축입니다.** 받은 값을 그대로\n범위 조건에 다시 넣을 수 있습니다 — 화면이 열 번호를 다시 셀 필요가 없습니다.\n\n`roundNo`는 `(project_id, round_no)` UNIQUE라 프로젝트마다 1부터 다시 시작하고,\n미니프로젝트는 프로젝트당 이해도 확인 회차가 1건뿐이라 **모든 열이 1**입니다.\n이것을 격자의 열 키로 쓰면 여섯 열이 전부 같은 키가 됩니다.\n\n두 축을 모두 남긴 이유는 실제로 둘 다 있는 값이기 때문입니다 — 한 프로젝트에 응시가\n여러 번 생기면 그때는 `roundNo`가 그 안에서 갈립니다. 칸을 열에 이을 때는\n`assessmentRoundId`를 쓰는 것이 가장 안전합니다.\n\n⚠️ **`rounds[]`와 각 행의 `cells[]`는 최근 프로젝트부터 내림차순입니다.** 두 배열의 순서와\n길이는 항상 같으므로 인덱스로 짝지어도 됩니다.\n\n⚠️ **`exclusionRollup`은 조회 범위 전체 회차를 유형별로 합산한 값입니다.** 특정 회차의\n미집계는 `cells[].exclusion`에서 봅니다. `EXCLUSION_COUNT` 정렬은 이 합계 기준입니다.\n\n💡 **`comparisonToCohort`는 서버가 계산해 내려주므로 클라이언트가 다시 계산할 필요가 없습니다.**\n반 행은 같은 회차의 **기수 전체** 비율과, 팀 행은 **소속 반(`classes[0]`) 전체** 비율과 견준\n방향이며 임계 구간 없이 단순 비교합니다 — 팀 번호는 반 안에서만 유일해 팀끼리는 소속 반\n안에서만 비교가 성립하기 때문입니다. 기수 전체 행이거나 두 비율 중 하나라도 없으면 `null`입니다.\n\n💡 **`classes[]`에 담기는 범위는 `level`에 따라 다릅니다.** `level=CLASS`이면 기수의 모든 반이,\n`level=TEAM`이면 **선택된 반 1건만** 담깁니다 — 화면 상단 `반 전체` 요약 행이자\n`teams[].cells[].comparisonToCohort`의 비교 기준으로 쓰입니다.\n\n💡 **팀당 인원이 4~5명이라 팀 행의 비율은 0%·25%·50% 같은 거친 값이 됩니다.**\n\n💡 **빅프로젝트는 위험 판정식이 달라 이 격자에 포함하지 않습니다.**\n",
         "operationId": "findCohortRiskTraineeRates",
         "parameters": [
           {
@@ -9192,7 +9229,7 @@
           {
             "name": "fromRoundNo",
             "in": "query",
-            "description": "조회 시작 차수이며 생략 시 1차부터 조회합니다.\n미니프로젝트는 프로젝트마다 이해도 확인 회차가 1건뿐이라 차수는 회차 번호가 아니라\n기수 안의 미니프로젝트 순서를 뜻합니다.\n",
+            "description": "조회 시작 차수이며 생략 시 1차부터 조회합니다.\n**응답의 `rounds[].cohortRoundNo`와 같은 축**이라 받은 값을 그대로 다시 넣을 수 있습니다.\n응답의 `roundNo`(프로젝트 안의 응시 번호)와는 다른 값이니 주의하세요(12차 R1).\n",
             "required": false,
             "schema": {
               "type": "integer",
@@ -9204,7 +9241,7 @@
           {
             "name": "toRoundNo",
             "in": "query",
-            "description": "조회 종료 차수이며 생략 시 마지막 차수까지 조회합니다.",
+            "description": "조회 종료 차수이며 생략 시 마지막 차수까지 조회합니다. `fromRoundNo`와 같이 `rounds[].cohortRoundNo` 축입니다.",
             "required": false,
             "schema": {
               "type": "integer",
@@ -9541,7 +9578,7 @@
           "Analytics"
         ],
         "summary": "두 기수의 검증 개념별 평균 도달 단계 비교 | ✅ 사용 가능",
-        "description": "같은 기관의 두 기수를 **검증 개념(`teaches_id`) 단위**로 맞대어 평균 도달 단계를 비교합니다.\n검증 개념이 기수마다 다르면 같은 프로젝트라도 비교할 수 없으므로 개념 단위로만 맞춥니다.\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n| --- | --- | --- | --- |\n| `cohortId` | 필수 | UUID | 이번 기수 |\n\n## 요청 (쿼리 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n| --- | --- | --- | --- |\n| `baselineCohortId` | 선택 | UUID | 비교할 지난 기수. 비우면 **후보 목록만** 반환 |\n| `sort` | 선택 | enum | `WORSENED`(나빠진 순, 기본) · `IMPROVED`(좋아진 순) · `CONCEPT`(검증 개념 순) |\n| `sameCurriculumOnly` | 선택 | boolean | 같은 교안 버전을 쓴 개념만. 기본 `false` |\n\n💡 **`sameCurriculumOnly=true`이면** 교안이 바뀐 개념을 걸러냅니다 — 평균 차이가 교육생\n변화인지 교안 변화인지 갈라 볼 수 없기 때문입니다. 한쪽 기수에 없던 개념도 함께 제외됩니다.\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `targetCohort` | object | 이번 기수 |\n| `baselineCohort` | object? | 지난 기수. 미지정이면 `null` |\n| `availableBaselineCohorts[]` | array | 드롭다운 후보 목록 |\n| `emptyStateCode` | enum? | `concepts`가 비었을 때의 사유 |\n| `levelScale` | object | 색 눈금 정의 |\n| `changeThreshold` | object | 변화 판정 임계값 |\n| `appliedSort` | enum | 실제 적용된 정렬 |\n| `sameCurriculumOnly` | boolean | 실제 적용 여부 |\n| `concepts[]` | array | 개념별 비교 행 |\n\n### targetCohort · baselineCohort (object)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `cohortId` | UUID | 기수 ID |\n| `cohortName` | string | 기수명 |\n\n### availableBaselineCohorts[] 각 항목\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `cohortId` | UUID | 후보 기수 ID |\n| `cohortName` | string | 후보 기수명 |\n| `comparable` | boolean | 비교 가능 여부. `false`면 드롭다운에서 비활성 |\n\n### levelScale (object)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `min` | int | 최소 단계(1) |\n| `max` | int | 최대 단계(4) |\n| `bandThresholds[]` | decimal[] | 밴드 경계값. 아래 **색 눈금** 표 참조 |\n\n### changeThreshold (object)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `worsened` | decimal | 나빠짐 판정 임계값(-0.3) |\n| `improved` | decimal | 좋아짐 판정 임계값(+0.3) |\n\n### concepts[] 각 항목\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `teachesId` | UUID | 검증 개념 ID |\n| `conceptName` | string | 검증 개념명 |\n| `source` | object | 개념이 나온 교안 위치 |\n| `target` | object | 이번 기수 값. **CohortConceptValue** 참조 |\n| `baseline` | object | 지난 기수 값. **CohortConceptValue** 참조 |\n| `change` | object | 지난 기수 대비 변화 |\n| `curriculumVersion` | object | 교안 버전 변화 |\n\n#### concepts[].source (object)\n\n이번 기수 기준이며, 이번 기수에 없으면 지난 기수 기준입니다.\n**개념이 교안에 매핑되지 않았으면 아래 값이 모두 `null`입니다.**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `curriculumTitle` | string? | 교안 이름 |\n| `sectionSequenceNo` | int? | 교안 장 순번. 화면의 `4장` |\n| `sectionTitle` | string? | 교안 장 제목 |\n| `pageStart` | int? | 개념이 시작되는 쪽수 |\n| `pageEnd` | int? | 개념이 끝나는 쪽수 |\n| `roundNo` | int? | 개념을 검증한 회차 번호. 여러 회차면 **가장 최근** |\n| `roundLabel` | string? | 회차 이름. 화면의 `미프 3차` |\n\n#### CohortConceptValue (object) — `target` · `baseline` 공통\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `averageReachedLevel` | decimal? | 평균 도달 단계. 개념이 없거나 분모가 0이면 `null` |\n| `levelBand` | int? | 평균이 속한 색 밴드(1~4). 값이 없으면 `null` |\n| `participantCount` | long | 평균의 분모가 된 인원 |\n| `missingCount` | long | 집계에서 빠진 인원 |\n| `presence` | enum | `PRESENT` · `ABSENT_IN_COHORT`(그 기수에 없던 개념) · `MERGED`(다른 개념으로 병합) |\n| `aggregationStatus` | string? | 발행 스냅샷의 집계 상태. 개념이 없으면 `null` |\n\n#### concepts[].change (object)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `direction` | enum | `WORSE` · `SIMILAR` · `BETTER` · `NOT_COMPARABLE` |\n| `delta` | decimal? | 이번 기수 평균 − 지난 기수 평균. 비교 불가면 `null` |\n| `notComparableReasonCode` | enum? | 비교할 수 없는 이유. 비교 가능하면 `null` |\n\n💡 **`delta`는 화면에 보이는 두 평균을 그대로 뺀 값이라 표시값과 항상 일치합니다.**\n\n#### concepts[].curriculumVersion (object)\n\n화면의 `v1 → v2` 또는 `v3 · 그대로`입니다.\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `baselineVersionNo` | int? | 지난 기수에서 쓴 교안 버전 |\n| `targetVersionNo` | int? | 이번 기수에서 쓴 교안 버전 |\n| `versionChanged` | boolean | 두 버전이 모두 있고 서로 다르면 `true` |\n\n### 평균 산식\n\n발행된 수업 진단 리포트의 **활성 스냅샷**에서 개념별 도달 단계 분포를 읽어\n`Σ(도달 단계 × 인원) / Σ인원`으로 계산합니다.\n\n⚠️ **응시 인원이 없으면 0이 아니라 `null`입니다.** 낮은 평균은 측정 결과이고,\n`null`은 측정 자체가 없다는 뜻이라 화면에서 구분해 그려야 합니다.\n\n### 색 눈금 (`levelBand`)\n\n회차별 위험 비율과 달리 **절대 눈금**이며 목업 색상표와 같은 값입니다. 평균은 연속값이므로\n정수 경계 미만을 **버림(floor)**해 밴드를 배정합니다.\n\n| 밴드 | 구간 |\n| --- | --- |\n| 1단 | 0 이상 2 미만 |\n| 2단 | 2 이상 3 미만 |\n| 3단 | 3 이상 4 미만 |\n| 4단 | 4 |\n\n💡 **서버가 `levelBand`와 밴드 경계를 함께 내려주므로 클라이언트가 다시 계산할 필요가 없습니다.**\n\n### 변화 (`change`)\n\n이번 기수 평균에서 지난 기수 평균을 뺀 값이며, **-0.3단 이하가 나빠짐 · +0.3단 이상이 좋아짐**입니다.\n\n⚠️ **다음은 뺄셈이 성립하지 않아 `NOT_COMPARABLE`로 내려갑니다.**\n한쪽 기수에 없는 개념, 다른 개념으로 병합된 개념(`teaches.status=MERGED`),\n반복 개념 집계 산식이 확정되지 않은 개념.\n\n💡 **`baselineCohortId`를 지정하지 않으면** 드롭다운 후보 목록(`availableBaselineCohorts`)만\n채워 돌려주고 `concepts`는 비어 있습니다.\n",
+        "description": "같은 기관의 두 기수를 **검증 개념(`teaches_id`) 단위**로 맞대어 평균 도달 단계를 비교합니다.\n검증 개념이 기수마다 다르면 같은 프로젝트라도 비교할 수 없으므로 개념 단위로만 맞춥니다.\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n| --- | --- | --- | --- |\n| `cohortId` | 필수 | UUID | 이번 기수. **경로 파라미터입니다** — 쿼리로 보내면 400 |\n\n⚠️ **`GET /curricula/comparable-cohorts`와 헷갈리기 쉽습니다**(12차 Q1). 그쪽은 `cohortId`를\n**쿼리**로 받는 다른 오퍼레이션이며, 비교 후보 기수 ID 배열만 돌려줍니다. 이 API는 개념별 비교\n격자를 돌려주고 `cohortId`를 **경로**로 받습니다.\n\n## 요청 (쿼리 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n| --- | --- | --- | --- |\n| `baselineCohortId` | 선택 | UUID | 비교할 지난 기수. 비우면 **후보 목록만** 반환 |\n| `sort` | 선택 | enum | `WORSENED`(나빠진 순, 기본) · `IMPROVED`(좋아진 순) · `CONCEPT`(검증 개념 순) |\n| `sameCurriculumOnly` | 선택 | boolean | 같은 교안 버전을 쓴 개념만. 기본 `false` |\n\n## `sameCurriculumOnly=true`의 판정 기준 (12차 R2)\n\n교안이 바뀌면 평균 차이가 교육생 변화인지 교안 변화인지 갈라 볼 수 없어 걸러냅니다.\n**남으려면 아래 셋을 모두** 만족해야 합니다.\n\n| | 조건 | 걸러지는 경우 |\n|---|---|---|\n| ① | 두 기수 모두에 그 개념이 있다 | 한쪽에만 있는 개념 |\n| ② | 양쪽 모두 **교안 버전이 확인된다** | 개념이 교안에 매핑되지 않아 버전을 알 수 없는 경우 |\n| ③ | 그 버전이 **같은 버전**이다 | 교안이 바뀐 개념 |\n\n⚠️ **③은 버전 번호가 아니라 버전 식별자로 봅니다.** 번호는 교안마다 1부터 다시 매겨져\n서로 다른 교안의 `v1`끼리도 같아 보이기 때문입니다. 그래서 `baselineVersionNo`와\n`targetVersionNo`가 둘 다 `1`인데 걸러질 수 있습니다 — 다른 교안이라는 뜻이며\n`baselineVersionId`·`targetVersionId`로 확인할 수 있습니다.\n\n⚠️ **②가 화면에서 가장 놀랍습니다** — 표에는 `v1 · 그대로`로 보이는데 한쪽 버전이\n확인되지 않아 빠지는 경우입니다. 결과가 갑자기 비면 이쪽을 먼저 보세요.\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `targetCohort` | object | 이번 기수 |\n| `baselineCohort` | object? | 지난 기수. 미지정이면 `null` |\n| `availableBaselineCohorts[]` | array | 드롭다운 후보 목록 |\n| `emptyStateCode` | enum? | `concepts`가 비었을 때의 사유 |\n| `levelScale` | object | 색 눈금 정의 |\n| `changeThreshold` | object | 변화 판정 임계값 |\n| `appliedSort` | enum | 실제 적용된 정렬 |\n| `sameCurriculumOnly` | boolean | 실제 적용 여부 |\n| `concepts[]` | array | 개념별 비교 행 |\n\n### targetCohort · baselineCohort (object)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `cohortId` | UUID | 기수 ID |\n| `cohortName` | string | 기수명 |\n\n### availableBaselineCohorts[] 각 항목\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `cohortId` | UUID | 후보 기수 ID |\n| `cohortName` | string | 후보 기수명 |\n| `comparable` | boolean | 비교 가능 여부. `false`면 드롭다운에서 비활성 |\n\n### levelScale (object)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `min` | int | 최소 단계(1) |\n| `max` | int | 최대 단계(4) |\n| `bandThresholds[]` | decimal[] | 밴드 경계값. 아래 **색 눈금** 표 참조 |\n\n### changeThreshold (object)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `worsened` | decimal | 나빠짐 판정 임계값(-0.3) |\n| `improved` | decimal | 좋아짐 판정 임계값(+0.3) |\n\n### concepts[] 각 항목\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `teachesId` | UUID | 검증 개념 ID |\n| `conceptName` | string | 검증 개념명 |\n| `source` | object | 개념이 나온 교안 위치 |\n| `target` | object | 이번 기수 값. **CohortConceptValue** 참조 |\n| `baseline` | object | 지난 기수 값. **CohortConceptValue** 참조 |\n| `change` | object | 지난 기수 대비 변화 |\n| `curriculumVersion` | object | 교안 버전 변화 |\n\n#### concepts[].source (object)\n\n이번 기수 기준이며, 이번 기수에 없으면 지난 기수 기준입니다.\n**개념이 교안에 매핑되지 않았으면 아래 값이 모두 `null`입니다.**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `curriculumTitle` | string? | 교안 이름 |\n| `sectionSequenceNo` | int? | 교안 장 순번. 화면의 `4장` |\n| `sectionTitle` | string? | 교안 장 제목 |\n| `pageStart` | int? | 개념이 시작되는 쪽수 |\n| `pageEnd` | int? | 개념이 끝나는 쪽수 |\n| `roundNo` | int? | 개념을 검증한 회차 번호. 여러 회차면 **가장 최근** |\n| `roundLabel` | string? | 회차 이름. 화면의 `미프 3차` |\n\n#### CohortConceptValue (object) — `target` · `baseline` 공통\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `averageReachedLevel` | decimal? | 평균 도달 단계. 개념이 없거나 분모가 0이면 `null` |\n| `levelBand` | int? | 평균이 속한 색 밴드(1~4). 값이 없으면 `null` |\n| `participantCount` | long | 평균의 분모가 된 인원 |\n| `missingCount` | long | 집계에서 빠진 인원 |\n| `presence` | enum | `PRESENT` · `ABSENT_IN_COHORT`(그 기수에 없던 개념) · `MERGED`(다른 개념으로 병합) |\n| `aggregationStatus` | string? | 발행 스냅샷의 집계 상태. 개념이 없으면 `null` |\n\n#### concepts[].change (object)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `direction` | enum | `WORSE` · `SIMILAR` · `BETTER` · `NOT_COMPARABLE` |\n| `delta` | decimal? | 이번 기수 평균 − 지난 기수 평균. 비교 불가면 `null` |\n| `notComparableReasonCode` | enum? | 비교할 수 없는 이유. 비교 가능하면 `null` |\n\n💡 **`delta`는 화면에 보이는 두 평균을 그대로 뺀 값이라 표시값과 항상 일치합니다.**\n\n#### concepts[].curriculumVersion (object)\n\n화면의 `v1 → v2` 또는 `v3 · 그대로`입니다.\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `baselineVersionNo` | int? | 지난 기수에서 쓴 교안 버전 |\n| `targetVersionNo` | int? | 이번 기수에서 쓴 교안 버전 |\n| `versionChanged` | boolean | 두 버전이 모두 있고 서로 다르면 `true` |\n\n### 평균 산식\n\n발행된 수업 진단 리포트의 **활성 스냅샷**에서 개념별 도달 단계 분포를 읽어\n`Σ(도달 단계 × 인원) / Σ인원`으로 계산합니다.\n\n⚠️ **응시 인원이 없으면 0이 아니라 `null`입니다.** 낮은 평균은 측정 결과이고,\n`null`은 측정 자체가 없다는 뜻이라 화면에서 구분해 그려야 합니다.\n\n### 색 눈금 (`levelBand`)\n\n회차별 위험 비율과 달리 **절대 눈금**이며 목업 색상표와 같은 값입니다. 평균은 연속값이므로\n정수 경계 미만을 **버림(floor)**해 밴드를 배정합니다.\n\n| 밴드 | 구간 |\n| --- | --- |\n| 1단 | 0 이상 2 미만 |\n| 2단 | 2 이상 3 미만 |\n| 3단 | 3 이상 4 미만 |\n| 4단 | 4 |\n\n💡 **서버가 `levelBand`와 밴드 경계를 함께 내려주므로 클라이언트가 다시 계산할 필요가 없습니다.**\n\n### 변화 (`change`)\n\n이번 기수 평균에서 지난 기수 평균을 뺀 값이며, **-0.3단 이하가 나빠짐 · +0.3단 이상이 좋아짐**입니다.\n\n⚠️ **다음은 뺄셈이 성립하지 않아 `NOT_COMPARABLE`로 내려갑니다.**\n한쪽 기수에 없는 개념, 다른 개념으로 병합된 개념(`teaches.status=MERGED`),\n반복 개념 집계 산식이 확정되지 않은 개념.\n\n💡 **`baselineCohortId`를 지정하지 않으면** 드롭다운 후보 목록(`availableBaselineCohorts`)만\n채워 돌려주고 `concepts`는 비어 있습니다.\n",
         "operationId": "findCohortComparison",
         "parameters": [
           {
@@ -9579,7 +9616,7 @@
           {
             "name": "sameCurriculumOnly",
             "in": "query",
-            "description": "같은 교안 버전을 쓴 개념만 남깁니다.\n교안이 바뀌면 평균 차이가 교육생 변화인지 교안 변화인지 갈라 볼 수 없어 걸러냅니다.\n한쪽 기수에 없던 개념도 함께 제외됩니다.\n",
+            "description": "같은 교안 버전을 쓴 개념만 남깁니다.\n교안이 바뀌면 평균 차이가 교육생 변화인지 교안 변화인지 갈라 볼 수 없어 걸러냅니다.\n\n남으려면 ① 두 기수 모두에 개념이 있고 ② 양쪽 교안 버전이 확인되며\n③ 그 버전이 같아야 합니다(12차 R2). ③은 버전 번호가 아니라 **버전 식별자** 기준입니다.\n",
             "required": false,
             "schema": {
               "type": "boolean",
@@ -11680,6 +11717,12 @@
             "description": "재적 교육생 수. 이 기수에 등록돼 있고 아직 나가지 않은 인원이다(10차 R3). 중도 이탈자는 빠지므로 교육생 명단 조회의 전체 건수보다 작을 수 있다.",
             "example": 208
           },
+          "classroomCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "이 기수의 반 개수이며 삭제된 반은 빠진다(13차 Q1). 화면의 `10반 250명`에서 앞 숫자다 — 이 값이 없어 기수마다 GET /cohorts/{cohortId}/classrooms를 한 번 더 부르던 자리다.",
+            "example": 10
+          },
           "managers": {
             "type": "array",
             "description": "⚠ 아직 채워지지 않는 값 — 항상 빈 배열이다. classroom 도메인 조인이 필요해 아직 연결되지 않았다. 담당 매니저가 필요하면 GET /cohorts/{cohortId}/classrooms를 함께 호출한다.",
@@ -11689,6 +11732,7 @@
           }
         },
         "required": [
+          "classroomCount",
           "cohortId",
           "endDate",
           "managers",
@@ -16242,13 +16286,19 @@
           "assessmentRoundId": {
             "type": "string",
             "format": "uuid",
-            "description": "이 칸이 속한 회차 ID이며 rounds[].assessmentRoundId와 짝을 이룹니다."
+            "description": "이 칸이 속한 회차 ID이며 rounds[].assessmentRoundId와 짝을 이룹니다. 칸을 열에 잇는 것은 이 값으로 하세요."
           },
           "roundNo": {
             "type": "integer",
             "format": "int32",
-            "description": "회차 번호이며 프로젝트 안에서만 유일합니다.",
-            "example": 2
+            "description": "프로젝트 안의 응시 번호이며 **프로젝트 안에서만 유일합니다**(rounds[].roundNo와 같은 값).",
+            "example": 1
+          },
+          "cohortRoundNo": {
+            "type": "integer",
+            "format": "int32",
+            "description": "**기수 안의 회차 순번**이며 rounds[].cohortRoundNo와 같은 값입니다(12차 R1).",
+            "example": 4
           },
           "aggregationStatus": {
             "$ref": "#/components/schemas/RoundAggregationStatus",
@@ -16293,6 +16343,7 @@
         "required": [
           "aggregationStatus",
           "assessmentRoundId",
+          "cohortRoundNo",
           "comparisonToCohort",
           "eligibleCount",
           "exclusion",
@@ -16387,7 +16438,7 @@
       },
       "RoundColumn": {
         "type": "object",
-        "description": "회차 열 정의.\n\nroundNo는 ProjectAssessmentRound.round_no이며 (project_id, round_no) UNIQUE라\n프로젝트마다 1부터 다시 시작합니다. 기수에 미니프로젝트가 여러 건이면 같은 roundNo가\n여러 열에 나타나므로 열을 구분할 때 projectId를 함께 보아야 합니다.\n",
+        "description": "회차 열 정의.\n\n## 회차 번호가 두 축입니다 (12차 R1)\n\n| 필드 | 무엇 | 어디서 유일한가 |\n|---|---|---|\n| `cohortRoundNo` | **기수 안의 회차 순번** | 기수 안에서 유일 — **열 키로 쓰세요** |\n| `roundNo` | 프로젝트 안의 응시 번호 | 프로젝트 안에서만 유일 |\n\n**`cohortRoundNo`가 요청의 `fromRoundNo`·`toRoundNo`와 같은 축입니다.**\n받은 값을 그대로 범위 조건에 다시 넣을 수 있습니다.\n\n`roundNo`는 `(project_id, round_no)` UNIQUE라 프로젝트마다 1부터 다시 시작하며,\n미니프로젝트는 프로젝트당 이해도 확인 회차가 1건뿐이라 **늘 1**입니다.\n그래서 이것을 격자의 열 키로 쓰면 여섯 열이 전부 같은 키가 됩니다.\n",
         "properties": {
           "assessmentRoundId": {
             "type": "string",
@@ -16397,8 +16448,14 @@
           "roundNo": {
             "type": "integer",
             "format": "int32",
-            "description": "회차 번호이며 프로젝트 안에서만 유일합니다.",
+            "description": "프로젝트 안의 응시 번호이며 **프로젝트 안에서만 유일합니다**. 미니프로젝트는 늘 1이라 열 키로 쓸 수 없습니다 — `cohortRoundNo`를 쓰세요.",
             "example": 1
+          },
+          "cohortRoundNo": {
+            "type": "integer",
+            "format": "int32",
+            "description": "**기수 안의 회차 순번.** 요청의 `fromRoundNo`·`toRoundNo`와 같은 축이라 받은 값을 그대로 범위 조건에 다시 넣을 수 있습니다. 격자의 열 키로 쓰기에 알맞습니다(12차 R1).",
+            "example": 4
           },
           "roundName": {
             "type": "string",
@@ -16423,6 +16480,7 @@
         "required": [
           "aggregationStatus",
           "assessmentRoundId",
+          "cohortRoundNo",
           "projectId",
           "projectName",
           "roundName",
@@ -16995,7 +17053,7 @@
       },
       "CurriculumVersionChange": {
         "type": "object",
-        "description": "교안 버전 변화이며 화면의 'v1 → v2' 또는 'v3 · 그대로'입니다.",
+        "description": "교안 버전 변화이며 화면의 'v1 → v2' 또는 'v3 · 그대로'입니다.\n\n⚠️ **`versionChanged`는 버전 번호가 아니라 버전 식별자로 판정합니다**(12차 R2).\n버전 번호는 교안마다 1부터 다시 매겨져 **서로 다른 교안의 v1끼리도 같아 보입니다**.\n그래서 `baselineVersionNo`와 `targetVersionNo`가 둘 다 `1`인데\n`versionChanged`가 `true`일 수 있습니다 — 번호는 같아도 다른 교안이라는 뜻입니다.\n두 교안을 구분해 보여줘야 하면 `baselineVersionId`·`targetVersionId`를 쓰세요.\n",
         "properties": {
           "baselineVersionNo": {
             "type": [
@@ -17015,13 +17073,31 @@
             "description": "이번 기수에서 쓴 교안 버전이며 이번 기수에 없던 개념이거나 교안에 매핑되지 않았으면 null입니다.",
             "example": 2
           },
+          "baselineVersionId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "지난 기수 교안 버전의 식별자입니다. `versionChanged` 판정의 실제 기준이며 확인할 수 없으면 null입니다(12차 R2)."
+          },
+          "targetVersionId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "이번 기수 교안 버전의 식별자입니다. `versionChanged` 판정의 실제 기준이며 확인할 수 없으면 null입니다(12차 R2)."
+          },
           "versionChanged": {
             "type": "boolean",
-            "description": "두 버전이 모두 있고 서로 다르면 true입니다."
+            "description": "두 버전 식별자가 모두 있고 서로 다르면 true입니다. **번호가 같아도 다른 교안이면 true입니다.**"
           }
         },
         "required": [
+          "baselineVersionId",
           "baselineVersionNo",
+          "targetVersionId",
           "targetVersionNo",
           "versionChanged"
         ]

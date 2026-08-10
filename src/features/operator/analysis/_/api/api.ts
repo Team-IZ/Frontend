@@ -81,23 +81,24 @@ function toCell(c: ServerCell, isBaseline: boolean, no: number): RoundCell {
 /**
  * 회차 열 — 서버가 최신순으로 주는 것을 **화면은 시간순으로** 읽는다(왼쪽이 먼저).
  *
- * ⚠ **`roundNo`를 열 번호로 쓰지 않는다.** 그 값은 **프로젝트 안의** 응시 회차 번호라
- * 지금은 전부 `1`이다 — 그대로 쓰면 열 키가 겹쳐 React가 행을 뭉갠다(실측: 중복 키
- * 경고 45건). 화면이 묻는 `3차`는 **기수 안 순번**이라 정렬 후 자리로 매긴다.
+ * ⚠ **`roundNo`는 열 번호가 아니다.** 그 값은 **프로젝트 안의** 응시 회차 번호라 미니
+ * 프로젝트에서는 전부 `1`이다 — 그대로 쓰면 열 키가 겹쳐 React가 행을 뭉갠다(실측:
+ * 중복 키 경고 45건). 화면이 묻는 `3차`는 **기수 안 순번**이고, 그것이 `cohortRoundNo`다
+ * (12차 R1). 요청의 `fromRoundNo`·`toRoundNo`와 같은 축이라 받은 값을 그대로 범위
+ * 조건에 되넣을 수 있다.
  *
- * 그런데 **요청 파라미터(`fromRoundNo`·`toRoundNo`)는 기수 순번으로 해석된다**
- * (실측: `2~4` → 3열). 같은 이름이 요청과 응답에서 다른 것을 가리킨다 — 11차에 물을
- * 것이고, 그때까지 이 자리가 두 체계를 잇는다.
+ * 한때 이 자리에서 **정렬 후 자리 번호**로 매겼다. 값이 없어서 지어낸 것이라, 범위를
+ * 좁히면 남은 열이 늘 `1차`부터 다시 세어져 같은 회차가 화면마다 다른 이름을 가졌다.
  */
 function toColumns(rounds: RiskRates['rounds']): RoundColumn[] {
   return [...rounds]
-    .sort((a, b) => a.projectName.localeCompare(b.projectName, 'ko', { numeric: true }))
-    .map((r, i) => ({
+    .sort((a, b) => a.cohortRoundNo - b.cohortRoundNo)
+    .map((r) => ({
       projectId: r.projectId,
       assessmentRoundId: r.assessmentRoundId,
-      no: i + 1,
+      no: r.cohortRoundNo,
       // 열 머리 1단은 짧게. 2단이 회차 이름을 그대로 쓰므로 여기서 반복하지 않는다
-      label: `${i + 1}차`,
+      label: `${r.cohortRoundNo}차`,
       projectName: r.projectName,
       published: r.aggregationStatus === 'AGGREGATED',
     }))
@@ -235,8 +236,9 @@ function toRow(
 /**
  * 셀을 **열 순서에 맞춘다** — 서버 배열 순서를 믿지 않는다.
  *
- * **`assessmentRoundId`로 잇는다.** `roundNo`는 프로젝트 안 번호라 전부 같아서
- * 열을 못 가른다(`toColumns` 주석).
+ * **`assessmentRoundId`로 잇는다.** `cohortRoundNo`도 기수 안에서 유일하지만, 번호는
+ * 회차를 지우고 다시 만들면 다시 매겨질 수 있고 ID는 그렇지 않다. `roundNo`는 프로젝트
+ * 안 번호라 전부 같아서 애초에 열을 못 가른다(`toColumns` 주석).
  */
 function byColumn(cells: ServerCell[], columns: RoundColumn[], baseline: boolean): RoundCell[] {
   const byId = new Map(cells.map((c) => [c.assessmentRoundId, c]))
@@ -278,6 +280,14 @@ const SORT: Record<
  *
  * **같은 검증 개념(`teachesId`)끼리만 맞댄다** — 회차가 달라도 같은 것을 물었으면
  * 값의 뜻이 같다. 회차 흐름 탭이 부호를 쓰는 것과 값의 성격이 다른 이유다.
+ *
+ * ⚠ **`sameCurriculumOnly`를 반드시 보낸다.** 서버 기본값이 `false`라 안 보내면 교안이
+ * 바뀐 개념까지 섞여 오는데, 이 탭은 머리글·표 머리·타입 주석 세 곳에서 *"같은 교안 ·
+ * 같은 개념"* 이라고 **단언한다.** 값의 차이가 교육생 것인지 교안 것인지 갈라지지 않으면
+ * 절대 눈금(1~4단)을 두 기수에 걸쳐 쓸 근거가 사라진다(`CohortCompareTable` 주석).
+ *
+ * 화면에 토글을 두지 않는 이유가 그것이다 — 끌 수 있는 것이었다면 표가 눈금을 바꿔야
+ * 한다. 12차 R2 전에는 `true`가 0건을 돌려줘서 켤 수 없었고, 지금은 켜진다.
  */
 export function useCohortCompare(q: CohortQuery | undefined) {
   return useQuery({
@@ -292,6 +302,7 @@ async function loadCohortCompare(q: CohortQuery): Promise<CohortCompare> {
     path: { cohortId: q.cohortId },
     query: {
       baselineCohortId: q.compareCohortId ?? undefined,
+      sameCurriculumOnly: true,
       sort: q.sort === 'WORSENED' ? 'WORSENED' : 'CONCEPT',
     },
   })

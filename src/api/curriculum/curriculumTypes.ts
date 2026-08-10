@@ -22,7 +22,11 @@ export type findOrganizationCurricula_Response =
   operations['findOrganizationCurricula']['responses'][200]['content']['application/json']
 export type findOrganizationCurricula_Item = findOrganizationCurricula_Response['content'][number]
 export type findOrganizationCurricula_Errors =
-  'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ORG_ACCESS_DENIED' | 'ACCESS_DENIED'
+  | 'VALIDATION_FAILED'
+  | 'CURRICULUM_FILTER_CONFLICT'
+  | 'UNAUTHENTICATED'
+  | 'ORG_ACCESS_DENIED'
+  | 'ACCESS_DENIED'
 
 // GET /api/v0/curricula/{materialId} — 교안 단건 상세
 export type findCurriculum_Path = operations['findCurriculum']['parameters']['path']
@@ -41,7 +45,7 @@ export type findSections_Errors =
 export type findUsedProjects_Path = operations['findUsedProjects']['parameters']['path']
 export type findUsedProjects_Response =
   operations['findUsedProjects']['responses'][200]['content']['application/json']
-export type findUsedProjects_Errors = 'UNAUTHENTICATED'
+export type findUsedProjects_Errors = 'UNAUTHENTICATED' | 'CURRICULUM_MATERIAL_NOT_FOUND'
 
 // GET /api/v0/curricula/comparable-cohorts — 비교 가능한 기수 목록
 export type findComparableCohorts_Query = NonNullable<

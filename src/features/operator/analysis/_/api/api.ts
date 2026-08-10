@@ -1,9 +1,22 @@
-// ─────────────────────────────────────────────────────────────
-// 분석 API 격리 모듈
-// 백엔드 준비 시 각 함수의 Mock 블록만 삭제하고 아래 주석의 fetch를 켜면 됩니다.
-// (화면·컴포넌트 코드는 수정 불필요 — 시그니처가 이미 실제 모양입니다)
-// ─────────────────────────────────────────────────────────────
+/*
+  분석 도메인 훅 — **생성 훅을 감싸 화면 어휘로 옮긴다.**
+
+  필터·정렬·집계·기준선 비교를 **전부 서버가 한다**(api-boundary §1-②). 여기서 하는
+  일은 **서버 모양을 화면 어휘로 옮기는 것**뿐이다 — 셀의 부호(`sign`)조차 서버가
+  판정해서 준다(`comparisonToCohort`).
+
+  **그런데도 감싸는 이유**는 변환이 실재하기 때문이다(api-layer-decisions A1):
+  셀을 열에 잇는 일(`assessmentRoundId`), 팀 계층 분기, 열 번호 재매김, 출처 문자열
+  조립. 화면이 하면 격자 컴포넌트가 서버 응답 구조를 알게 된다.
+*/
+import { useQuery } from '@tanstack/react-query'
+import { findCohortRiskTraineeRates, findCohortComparison } from '@/api/analytics/analyticsApi'
+import { analyticsKeys } from '@/api/analytics/analyticsKeys'
+import type { findCohortRiskTraineeRates_Response } from '@/api/analytics/analyticsTypes'
 import type {
+  CellState,
+  ChangeDirection,
+  ClassOption,
   CohortCompare,
   CohortQuery,
   GridRow,
@@ -12,294 +25,338 @@ import type {
   RoundGrid,
   RoundQuery,
   Sign,
+  Uncounted,
 } from './types'
 
-// ───────── Mock 전용 (백엔드 연동 시 이 블록 삭제) ─────────
-import { CLASSES, COHORT_TOTAL, ROUNDS } from '@/mocks/cohortRounds'
-import { AVAILABLE_COHORTS, CONCEPT_COMPARE, C_TEAMS, C_TEAM_UNCOUNTED } from './mockDb'
+type RiskRates = findCohortRiskTraineeRates_Response
+/** 서버 셀 하나 — 기수·반·팀이 같은 모양을 쓴다 */
+type ServerCell = RiskRates['cohortSummary']['cells'][number]
 
-const LATENCY_MS = 250
-const delay = <T>(value: T): Promise<T> =>
-  new Promise((resolve) => setTimeout(() => resolve(value), LATENCY_MS))
+/*
+  ─── 서버 → 화면 ────────────────────────────────────────────────
+*/
 
-const ratio = (risky: number, graded: number) =>
-  graded === 0 ? 0 : Math.round((risky / graded) * 100)
-
-/**
- * 목업 케이스를 실제로 열어보기 위한 스위치 — `?case=nocohort|fail`.
- *
- * 케이스 표의 상태를 전부 그렸는지는 **눈으로 봐야** 판정된다(git-convention §7).
- * 목 데이터가 한 벌뿐이면 정상 케이스만 렌더되고 나머지는 코드에만 존재한다 —
- * 대시보드가 이미 같은 스위치를 쓴다. 이 함수는 mockDb와 함께 사라진다.
- */
-type MockCase = 'normal' | 'nocohort' | 'fail'
-const CASES: MockCase[] = ['normal', 'nocohort', 'fail']
-function mockCase(): MockCase {
-  const q = new URLSearchParams(window.location.search).get('case')
-  return CASES.find((c) => c === q) ?? 'normal'
+/** 집계 상태 3값이 화면 상태와 1:1이다 — `집계 전`·`시작 전`·값이 전부 다르다(F3) */
+const CELL_STATE: Record<string, CellState> = {
+  AGGREGATED: 'VALUE',
+  NOT_AGGREGATED: 'PENDING',
+  NOT_STARTED: 'BEFORE',
 }
-// ──────────────────────────────────────────────────────────
+
+/** 서버는 0~1 소수로 준다. 화면은 정수 퍼센트를 쓴다 */
+const toPercent = (rate: number | null | undefined) =>
+  rate == null ? null : Math.round(rate * 100)
 
 /**
- * 셀 하나를 만든다. **값이 없으면 왜 없는지가 상태로 남는다** — `집계 전`(미발행)과
- * `시작 전`(미시작)은 뜻이 다르고 `0%`와도 색이 다르다(F3).
+ * 판정에서 빠진 사람 3종.
  *
- * `sign`은 **값이 아니라 기준선 대비 부호**다. 같은 회차를 모든 반이 보므로 기준선을
- * 빼면 **회차 난이도가 상쇄되고** 그 행에 대해서만 말할 수 있는 것이 남는다(OP-02 §3).
- * **폭을 정하지 않는다** — `N 이상 벌어지면 심각`은 기획에 그 숫자가 없다(E8).
+ * 이름이 서버와 다르다 — 화면은 *"왜 빠졌나"*(미응시·무효·중단)로 묶고 서버는
+ * 세는 대상으로 이름 붙였다. 뜻은 같다.
  */
-function makeCell(
-  col: RoundColumn,
-  risky: number | undefined,
-  size: number,
-  baselineRatio: number | null,
-  isBaseline: boolean,
-): RoundCell {
-  if (!col.published || risky === undefined) {
-    return {
-      round: col.no,
-      // 등록만 되고 시작 전인 회차와 진행 중인 회차를 가른다(OP-02 §4-2)
-      state: ROUNDS.find((r) => r.no === col.no)?.state === 'BEFORE' ? 'BEFORE' : 'PENDING',
-      ratio: null,
-      risky: null,
-      graded: null,
-      sign: 'SAME',
-    }
+function toUncounted(r: { exclusionRollup: ServerCell['exclusion'] }): Uncounted {
+  return {
+    absent: r.exclusionRollup.notAttendedCount,
+    invalid: r.exclusionRollup.invalidAttemptCount,
+    aborted: r.exclusionRollup.sessionIncompleteCount,
   }
-  const r = ratio(risky, size)
-  const sign: Sign = isBaseline
-    ? // 기준선 자신은 색이 없다 — 자기 자신과 비교할 수 없다
-      'BASELINE'
-    : baselineRatio === null || r === baselineRatio
-      ? 'SAME'
-      : r > baselineRatio
-        ? 'WORSE'
-        : 'BETTER'
-  return { round: col.no, state: 'VALUE', ratio: r, risky, graded: size, sign }
-}
-
-/** 정렬 키는 전부 **격자에 그대로 보인다**(E2) — 요약 열이 없어도 순서를 묻지 않는다 */
-function sortRows(rows: GridRow[], sort: RoundQuery['sort']): GridRow[] {
-  const latest = (r: GridRow) => [...r.cells].reverse().find((c) => c.ratio !== null)?.ratio ?? -1
-  const worseCount = (r: GridRow) => r.cells.filter((c) => c.sign === 'WORSE').length
-  const uncounted = (r: GridRow) => r.uncounted.absent + r.uncounted.invalid + r.uncounted.aborted
-  const by: Record<RoundQuery['sort'], (a: GridRow, b: GridRow) => number> = {
-    LATEST_WORST: (a, b) => latest(b) - latest(a) || a.name.localeCompare(b.name),
-    WORSE_COUNT: (a, b) => worseCount(b) - worseCount(a) || a.name.localeCompare(b.name),
-    UNCOUNTED: (a, b) => uncounted(b) - uncounted(a) || a.name.localeCompare(b.name),
-    NAME: (a, b) => a.name.localeCompare(b.name),
-  }
-  return [...rows].sort(by[sort])
 }
 
 /**
- * `GET /cohorts/{id}/analysis/rounds?level=&classes=&teams=&from=&to=&sort=`
+ * 셀 하나. **부호를 화면이 만들지 않는다** — 서버가 기준선과 비교해 준다.
  *
- * **필터·정렬·집계를 전부 서버가 한다**(api-boundary §1-②). 목에서도 이 자리에서 돈다 —
- * 화면에서 돌리면 연동이 재작성이 된다.
+ * 기준선 행 자신은 색이 없다(`BASELINE`) — 자기 자신과 비교할 수 없다.
  */
-export function getRoundGrid(q: RoundQuery): Promise<RoundGrid> {
-  // ===== Mock 버전 (현재 활성) =====
-  const view = mockCase()
-  // 케이스 표의 `ANALYSIS_UNAVAILABLE` — 0으로 그리지 않는다
-  if (view === 'fail') return Promise.reject({ code: 'ANALYSIS_UNAVAILABLE' })
+function toCell(c: ServerCell, isBaseline: boolean, no: number): RoundCell {
+  const state = CELL_STATE[c.aggregationStatus] ?? 'PENDING'
+  return {
+    round: no,
+    state,
+    ratio: state === 'VALUE' ? toPercent(c.riskRate) : null,
+    risky: state === 'VALUE' ? c.riskCount : null,
+    graded: state === 'VALUE' ? c.eligibleCount : null,
+    sign: isBaseline ? 'BASELINE' : ((c.comparisonToCohort as Sign) ?? 'SAME'),
+  }
+}
 
-  const allRounds: RoundColumn[] = ROUNDS.map((r) => ({
-    projectId: r.projectId,
-    no: r.no,
-    label: `${r.no}차`,
-    projectName: r.projectName,
-    published: r.state === 'PUBLISHED',
-  }))
+/**
+ * 회차 열 — 서버가 최신순으로 주는 것을 **화면은 시간순으로** 읽는다(왼쪽이 먼저).
+ *
+ * ⚠ **`roundNo`는 열 번호가 아니다.** 그 값은 **프로젝트 안의** 응시 회차 번호라 미니
+ * 프로젝트에서는 전부 `1`이다 — 그대로 쓰면 열 키가 겹쳐 React가 행을 뭉갠다(실측:
+ * 중복 키 경고 45건). 화면이 묻는 `3차`는 **기수 안 순번**이고, 그것이 `cohortRoundNo`다
+ * (12차 R1). 요청의 `fromRoundNo`·`toRoundNo`와 같은 축이라 받은 값을 그대로 범위
+ * 조건에 되넣을 수 있다.
+ *
+ * 한때 이 자리에서 **정렬 후 자리 번호**로 매겼다. 값이 없어서 지어낸 것이라, 범위를
+ * 좁히면 남은 열이 늘 `1차`부터 다시 세어져 같은 회차가 화면마다 다른 이름을 가졌다.
+ */
+function toColumns(rounds: RiskRates['rounds']): RoundColumn[] {
+  return [...rounds]
+    .sort((a, b) => a.cohortRoundNo - b.cohortRoundNo)
+    .map((r) => ({
+      projectId: r.projectId,
+      assessmentRoundId: r.assessmentRoundId,
+      no: r.cohortRoundNo,
+      // 열 머리 1단은 짧게. 2단이 회차 이름을 그대로 쓰므로 여기서 반복하지 않는다
+      label: `${r.cohortRoundNo}차`,
+      projectName: r.projectName,
+      published: r.aggregationStatus === 'AGGREGATED',
+    }))
+}
+
+/*
+  ─── ① 회차 흐름 ───────────────────────────────────────────────
+*/
+
+/**
+ * `GET /cohorts/{id}/analytics/risk-trainees`
+ *
+ * **정렬·범위·계층을 전부 서버가 처리한다.** 화면은 파라미터만 넘긴다.
+ *
+ * ⚠ **팀 계층은 회차 하나를 요구한다.** 서버가 `TEAM_LEVEL_PROJECT_REQUIRED`와
+ * `TEAM_LEVEL_SINGLE_CLASSROOM_REQUIRED`로 막는다 — 팀은 회차마다 재편성될 수 있어
+ * 회차를 가로질러 같은 팀을 추적하는 것이 성립하지 않는다. 둘 중 하나라도 없으면
+ * 조회하지 않고 **무엇이 빠졌는지**를 돌려준다.
+ */
+export function useRoundGrid(q: RoundQuery | undefined) {
+  return useQuery({
+    // 고른 조건이 곧 키다 — 계층·반·회차·범위·정렬을 바꾸면 그 조합의 캐시를 본다
+    queryKey: [...analyticsKeys.all, 'round-grid', q],
+    enabled: !!q,
+    queryFn: () => loadRoundGrid(q!),
+  })
+}
+
+async function loadRoundGrid(q: RoundQuery): Promise<RoundGrid> {
+  const isTeam = q.level === 'team'
+  const needs = isTeam ? missingForTeam(q) : undefined
 
   /*
-    **기본 범위 = 발행된 회차 전부 + 진행 중 1개.**
-
-    상수(`1–4차`)를 쓰면 발행 회차가 몇 개냐에 따라 빈칸 수가 널뛴다. 규칙으로 두면
-    회차가 6개든 8개든 **값 없는 열이 하나를 넘지 않는다.**
-
-    진행 중 회차를 하나 남기는 이유 — 그 열이 `집계 전`이라고 말해 주어야
-    *"곧 채워진다"* 를 알 수 있다. 아예 빼면 오퍼레이터가 다음 회차를 보려고
-    매번 범위를 늘려야 한다.
+    빠진 것이 있으면 **격자를 만들지 않는다.** 임의로 하나 골라 그리면 그것이 답인
+    줄 읽히고, 기준선이 그 반이라 반이 없으면 색의 뜻 자체가 정해지지 않는다.
+    다만 **선택지는 줘야 하므로** 반별 조회로 반 목록과 회차만 받아 온다.
   */
-  const lastPublished = [...allRounds].reverse().find((r) => r.published)?.no ?? 1
-  const running = allRounds.find((r) => r.no > lastPublished)
-  const from = q.fromRound ?? 1
-  const to = q.toRound ?? running?.no ?? lastPublished
-
-  // 범위 밖 회차는 **열이 없다** — 색도 그 구간에서만 읽힌다
-  const columns = allRounds.filter((c) => c.no >= from && c.no <= to)
-  const allClassNames = CLASSES.map((c) => c.className)
-
-  if (q.level === 'team') {
-    /*
-      **반을 안 골랐으면 표를 만들지 않는다.** 기준선이 그 반이라 반이 없으면 색의
-      뜻 자체가 정해지지 않는다 — 임의로 하나 골라 그리면 그것이 답인 줄 읽힌다.
-    */
-    if (!q.classNames[0]) {
-      return delay({
-        allRounds,
-        columns,
-        appliedFrom: from,
-        appliedTo: to,
-        rows: [],
-        baselineName: '',
-        allClassNames,
-        allTeamNames: C_TEAMS.map((t) => t.name),
-        needsClass: true,
-      })
+  if (needs) {
+    const base = await findCohortRiskTraineeRates({ path: { cohortId: q.cohortId } })
+    return {
+      allRounds: toColumns(base.rounds),
+      columns: [],
+      appliedFrom: 0,
+      appliedTo: 0,
+      rows: [],
+      baselineName: '',
+      allClasses: toClassOptions(base),
+      needs,
     }
-
-    /*
-      **기준선이 그 반이다.** 팀은 같은 반 안에서 비교해야 뜻이 있다(OP-02 §3) —
-      기준선이 바뀌면 축 라벨과 범례도 따라가야 한다(`baselineName`).
-    */
-    const className = q.classNames[0]
-    const cls = CLASSES.find((c) => c.className === className)
-    const baseRatios = new Map(
-      columns.map((col) => {
-        const cell = cls?.cells.find((x) => x.round === col.no)
-        return [col.no, cell ? ratio(cell.risky, cell.graded) : null]
-      }),
-    )
-
-    const baseRow: GridRow = {
-      name: `${className} 전체`,
-      size: cls?.trainees ?? 0,
-      baseline: true,
-      cells: columns.map((col) =>
-        makeCell(
-          col,
-          cls?.cells.find((x) => x.round === col.no)?.risky,
-          cls?.trainees ?? 0,
-          null,
-          true,
-        ),
-      ),
-      uncounted: cls?.uncounted ?? { absent: 0, invalid: 0, aborted: 0 },
-    }
-
-    const picked = q.teamNames?.length ? q.teamNames : C_TEAMS.map((t) => t.name)
-    const teamRows: GridRow[] = C_TEAMS.filter((t) => picked.includes(t.name)).map((t) => ({
-      name: t.name,
-      size: t.size,
-      baseline: false,
-      cells: columns.map((col) =>
-        makeCell(col, t.risky[col.no - 1], t.size, baseRatios.get(col.no) ?? null, false),
-      ),
-      uncounted: C_TEAM_UNCOUNTED[t.name] ?? { absent: 0, invalid: 0, aborted: 0 },
-    }))
-
-    return delay({
-      allRounds,
-      columns,
-      appliedFrom: from,
-      appliedTo: to,
-      // **기준선 행은 정렬에서 빠진다** — 위치가 움직이면 기준이 아니게 된다
-      rows: [baseRow, ...sortRows(teamRows, q.sort)],
-      baselineName: className,
-      allClassNames,
-      allTeamNames: C_TEAMS.map((t) => t.name),
-    })
   }
 
-  // 반별 — 기준선은 기수 전체다
-  const baseRatios = new Map(
-    columns.map((col) => {
-      const cell = COHORT_TOTAL.cells.find((x) => x.round === col.no)
-      return [col.no, cell ? ratio(cell.risky, cell.graded) : null]
+  /*
+    팀 계층은 **회차 목록을 따로 받는다.** 팀 조회는 고른 회차 하나만 돌려주므로
+    그 응답으로 선택지를 만들면 **고르는 순간 나머지 회차가 사라진다** — 다른 회차로
+    옮길 방법이 없어진다. 반별 조회 한 건이 회차 전체를 준다.
+  */
+  const [r, all] = await Promise.all([
+    findCohortRiskTraineeRates({
+      path: { cohortId: q.cohortId },
+      query: {
+        level: isTeam ? 'TEAM' : 'CLASS',
+        classroomId: q.classIds.length ? q.classIds : undefined,
+        projectId: isTeam ? q.projectId : undefined,
+        fromRoundNo: q.fromRound,
+        toRoundNo: q.toRound,
+        sort: SORT[q.sort],
+      },
     }),
-  )
+    isTeam ? findCohortRiskTraineeRates({ path: { cohortId: q.cohortId } }) : null,
+  ])
 
-  const baseRow: GridRow = {
-    name: '기수 전체',
-    size: COHORT_TOTAL.trainees,
-    baseline: true,
-    cells: columns.map((col) => {
-      const cell = COHORT_TOTAL.cells.find((x) => x.round === col.no)
-      return makeCell(col, cell?.risky, cell?.graded ?? COHORT_TOTAL.trainees, null, true)
-    }),
-    uncounted: COHORT_TOTAL.uncounted,
-  }
+  const columns = toColumns(r.rounds)
+  /** 선택지는 전체, 열은 조회 결과 — 팀 계층에서 둘이 갈린다 */
+  const allRounds = all ? toColumns(all.rounds) : columns
 
-  const picked = q.classNames.length ? q.classNames : allClassNames
-  const classRows: GridRow[] = CLASSES.filter((c) => picked.includes(c.className)).map((c) => ({
-    name: c.className,
-    size: c.trainees,
-    baseline: false,
-    cells: columns.map((col) => {
-      const cell = c.cells.find((x) => x.round === col.no)
-      return makeCell(
-        col,
-        cell?.risky,
-        cell?.graded ?? c.trainees,
-        baseRatios.get(col.no) ?? null,
-        false,
-      )
-    }),
-    uncounted: c.uncounted,
-  }))
+  /*
+    **기준선이 계층에 따라 바뀐다**(OP-02 §3) — 반별이면 기수 전체, 팀이면 **그 반**이다.
+    팀은 같은 반 안에서 비교해야 뜻이 있다. 축 라벨·범례가 이 이름을 쓴다.
+  */
+  const baselineRow: GridRow = isTeam
+    ? toRow(r.classes[0], columns, true, `${r.classes[0]?.className ?? ''} 전체`)
+    : {
+        name: '기수 전체',
+        size: r.cohortSummary.traineeCount,
+        baseline: true,
+        cells: byColumn(r.cohortSummary.cells, columns, true),
+        uncounted: toUncounted(r.cohortSummary),
+      }
 
-  return delay({
+  const rows = isTeam
+    ? r.teams.map((t) => toRow(t, columns, false, t.teamName))
+    : r.classes.map((c) => toRow(c, columns, false, c.className))
+
+  return {
     allRounds,
     columns,
-    appliedFrom: from,
-    appliedTo: to,
-    rows: [baseRow, ...sortRows(classRows, q.sort)],
-    baselineName: '기수',
-    allClassNames,
-  })
+    // 서버가 실제로 적용한 범위 — 안 보냈으면 서버가 정한 값이 여기서 나온다
+    appliedFrom: columns[0]?.no ?? 0,
+    appliedTo: columns[columns.length - 1]?.no ?? 0,
+    // **기준선 행은 정렬에서 빠진다** — 위치가 움직이면 기준이 아니게 된다
+    rows: [baselineRow, ...rows],
+    baselineName: isTeam ? (r.classes[0]?.className ?? '') : '기수 전체',
+    allClasses: toClassOptions(r),
+  }
+}
 
-  // ===== 실제 버전 (연동 시 위를 지우고 아래를 켠다) =====
-  // const params = new URLSearchParams({ level: q.level, from: String(q.fromRound), … })
-  // return http<RoundGrid>(`/cohorts/${q.cohortId}/analysis/rounds?${params}`)
+/** 팀 계층에서 무엇이 빠졌나 — 화면이 그 자리에 무엇을 고르라고 쓸지 정한다 */
+function missingForTeam(q: RoundQuery): 'CLASS' | 'ROUND' | 'BOTH' | undefined {
+  const noClass = q.classIds.length !== 1
+  const noRound = !q.projectId
+  if (noClass && noRound) return 'BOTH'
+  if (noClass) return 'CLASS'
+  if (noRound) return 'ROUND'
+  return undefined
+}
+
+/** 행 하나 — 반·팀·기수가 같은 모양이라 한 번만 만든다 */
+function toRow(
+  src: { memberCount?: number; traineeCount?: number; cells: ServerCell[] } & {
+    exclusionRollup: ServerCell['exclusion']
+  },
+  columns: RoundColumn[],
+  baseline: boolean,
+  name: string,
+): GridRow {
+  return {
+    name,
+    size: src.traineeCount ?? src.memberCount ?? 0,
+    baseline,
+    cells: byColumn(src.cells, columns, baseline),
+    uncounted: toUncounted(src),
+  }
 }
 
 /**
- * `GET /cohorts/{id}/analysis/cohorts?compare=&sort=`
+ * 셀을 **열 순서에 맞춘다** — 서버 배열 순서를 믿지 않는다.
  *
- * **같은 교안·같은 개념만** 내려온다. 커리큘럼이 같으면 같은 것을 물은 값이라 비교가
- * 성립한다(14번 61줄 — *"기수 끝나면 수업 진단"*).
+ * **`assessmentRoundId`로 잇는다.** `cohortRoundNo`도 기수 안에서 유일하지만, 번호는
+ * 회차를 지우고 다시 만들면 다시 매겨질 수 있고 ID는 그렇지 않다. `roundNo`는 프로젝트
+ * 안 번호라 전부 같아서 애초에 열을 못 가른다(`toColumns` 주석).
  */
-export function getCohortCompare(q: CohortQuery): Promise<CohortCompare> {
-  // ===== Mock 버전 (현재 활성) =====
-  const view = mockCase()
-  if (view === 'fail') return Promise.reject({ code: 'ANALYSIS_UNAVAILABLE' })
+function byColumn(cells: ServerCell[], columns: RoundColumn[], baseline: boolean): RoundCell[] {
+  const byId = new Map(cells.map((c) => [c.assessmentRoundId, c]))
+  return columns.map((col) => {
+    const c = byId.get(col.assessmentRoundId)
+    return c
+      ? toCell(c, baseline, col.no)
+      : {
+          round: col.no,
+          state: 'PENDING' as const,
+          ratio: null,
+          risky: null,
+          graded: null,
+          sign: 'SAME' as const,
+        }
+  })
+}
 
-  // `#nocohort` — 첫 기수라 비교 대상이 없다
-  const compare =
-    view === 'nocohort' ? undefined : AVAILABLE_COHORTS.find((c) => c.id === q.compareCohortId)
+const toClassOptions = (r: RiskRates): ClassOption[] =>
+  r.classes.map((c) => ({ classId: c.classId, className: c.className }))
 
-  /*
-    비교할 기수가 없으면 빈 상태다. **다른 기관 평균을 만들지 않는다** —
-    커리큘럼이 다른 값이라 비교가 성립하지 않는다.
-  */
-  if (!compare) {
-    return delay({
-      availableCohorts: view === 'nocohort' ? [] : AVAILABLE_COHORTS,
-      compareCohortLabel: null,
-      currentCohortLabel: '7기',
-      rows: [],
-    })
-  }
+/** 정렬 4종이 서버와 1:1이다 — 이름만 화면 쪽 것을 쓴다 */
+const SORT: Record<
+  RoundQuery['sort'],
+  'RECENT_ROUND_WORST' | 'WORSE_ROUND_COUNT' | 'EXCLUSION_COUNT' | 'NAME'
+> = {
+  LATEST_WORST: 'RECENT_ROUND_WORST',
+  WORSE_COUNT: 'WORSE_ROUND_COUNT',
+  UNCOUNTED: 'EXCLUSION_COUNT',
+  NAME: 'NAME',
+}
 
-  const rows = [...CONCEPT_COMPARE].sort((a, b) =>
-    q.sort === 'CONCEPT_NAME'
-      ? a.conceptName.localeCompare(b.conceptName)
-      : /*
-          나빠진 순 — **새 개념은 비교 대상이 아니므로 뒤로 보낸다.** 없는 값을 0으로 치면
-          맨 앞에 와서 *"가장 나빠진 것"* 으로 읽힌다.
-        */
-        (a.baseAvg === null ? 1 : 0) - (b.baseAvg === null ? 1 : 0) ||
-        a.currentAvg - (a.baseAvg ?? 0) - (b.currentAvg - (b.baseAvg ?? 0)),
-  )
+/*
+  ─── ② 기수 간 비교 ────────────────────────────────────────────
+*/
 
-  return delay({
-    availableCohorts: AVAILABLE_COHORTS,
-    compareCohortLabel: compare.label,
-    currentCohortLabel: '7기',
-    rows,
+/**
+ * `GET /cohorts/{id}/analytics/cohort-comparison`
+ *
+ * **같은 검증 개념(`teachesId`)끼리만 맞댄다** — 회차가 달라도 같은 것을 물었으면
+ * 값의 뜻이 같다. 회차 흐름 탭이 부호를 쓰는 것과 값의 성격이 다른 이유다.
+ *
+ * ⚠ **`sameCurriculumOnly`를 반드시 보낸다.** 서버 기본값이 `false`라 안 보내면 교안이
+ * 바뀐 개념까지 섞여 오는데, 이 탭은 머리글·표 머리·타입 주석 세 곳에서 *"같은 교안 ·
+ * 같은 개념"* 이라고 **단언한다.** 값의 차이가 교육생 것인지 교안 것인지 갈라지지 않으면
+ * 절대 눈금(1~4단)을 두 기수에 걸쳐 쓸 근거가 사라진다(`CohortCompareTable` 주석).
+ *
+ * 화면에 토글을 두지 않는 이유가 그것이다 — 끌 수 있는 것이었다면 표가 눈금을 바꿔야
+ * 한다. 12차 R2 전에는 `true`가 0건을 돌려줘서 켤 수 없었고, 지금은 켜진다.
+ */
+export function useCohortCompare(q: CohortQuery | undefined) {
+  return useQuery({
+    queryKey: [...analyticsKeys.all, 'cohort-compare', q],
+    enabled: !!q,
+    queryFn: () => loadCohortCompare(q!),
+  })
+}
+
+async function loadCohortCompare(q: CohortQuery): Promise<CohortCompare> {
+  const r = await findCohortComparison({
+    path: { cohortId: q.cohortId },
+    query: {
+      baselineCohortId: q.compareCohortId ?? undefined,
+      sameCurriculumOnly: true,
+      sort: q.sort === 'WORSENED' ? 'WORSENED' : 'CONCEPT',
+    },
   })
 
-  // return http<CohortCompare>(`/cohorts/${q.cohortId}/analysis/cohorts?compare=${q.compareCohortId}`)
+  return {
+    availableCohorts: r.availableBaselineCohorts.map((c) => ({
+      id: c.cohortId,
+      label: c.cohortName,
+      comparable: c.comparable,
+    })),
+    compareCohortLabel: r.baselineCohort?.cohortName ?? null,
+    currentCohortLabel: r.targetCohort.cohortName,
+    rows: r.concepts.map((c) => ({
+      conceptId: c.teachesId,
+      conceptName: c.conceptName,
+      source: formatSource(c.source),
+      baseAvg: c.baseline.averageReachedLevel,
+      currentAvg: c.target.averageReachedLevel,
+      baseVersion: version(c.curriculumVersion.baselineVersionNo),
+      currentVersion: version(c.curriculumVersion.targetVersionNo),
+      direction: c.change.direction as ChangeDirection,
+      delta: c.change.delta,
+    })),
+  }
 }
+
+/**
+ * `교안 Spring 백엔드 설계 · 3장 p.53–55 · 미프 3차`.
+ *
+ * **있는 조각만 잇는다.** 서버가 조각마다 `null`을 줄 수 있어서, 없는 것을 `미상`
+ * 같은 말로 채우면 화면이 없는 사실을 주장하게 된다.
+ */
+function formatSource(s: {
+  curriculumTitle: string | null
+  sectionSequenceNo: number | null
+  sectionTitle: string | null
+  pageStart: number | null
+  pageEnd: number | null
+  roundLabel: string | null
+}): string {
+  const section = [
+    s.sectionSequenceNo != null && `${s.sectionSequenceNo}장`,
+    s.pageStart != null &&
+      (s.pageEnd && s.pageEnd !== s.pageStart
+        ? `p.${s.pageStart}–${s.pageEnd}`
+        : `p.${s.pageStart}`),
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  return [s.curriculumTitle && `교안 ${s.curriculumTitle}`, section, s.roundLabel]
+    .filter(Boolean)
+    .join(' · ')
+}
+
+/** `v2`. 버전이 없으면 표에서 그 칸을 비운다 */
+const version = (no: number | null) => (no == null ? null : `v${no}`)

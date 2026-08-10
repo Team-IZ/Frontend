@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
 import { Card } from '@/components/ui/Card'
@@ -13,8 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select'
-import { useAsync } from '@/lib/useAsync'
-import { getCohortCompare, getRoundGrid } from './_/api/api'
+import { useCohortId } from '@/stores/cohortScope'
+import { useCohortCompare, useRoundGrid } from './_/api/api'
 import RoundToolbar from './_/components/RoundToolbar'
 import RoundGridTable from './_/components/RoundGridTable'
 import GridLegend from './_/components/GridLegend'
@@ -47,8 +47,6 @@ import type { AnalysisTab, Level, RoundSort } from './_/api/types'
   `RoundGridTable`이, 문구·색 매핑은 `_/labels`가 갖는다.
 */
 
-const COHORT_ID = '7'
-
 /*
   **기본 범위를 화면이 정하지 않는다.** 상수(`1–4차`)를 쓰면 발행 회차가 몇 개냐에 따라
   빈칸 수가 널뛴다 — 실측에서 표의 40%가 빈칸이었다. 서버가 `발행 전부 + 진행 중 1개`로
@@ -58,6 +56,8 @@ const COHORT_ID = '7'
 */
 
 export default function AnalysisScreen() {
+  /* 기수는 서버에 물어본다(`stores/cohortScope`) — 정해지기 전에는 조회가 안 나간다 */
+  const { cohortId, cohortName, failed: cohortFailed } = useCohortId()
   const [tab, setTab] = useState<AnalysisTab>('rounds')
   const [level, setLevel] = useState<Level>('class')
   /*
@@ -67,49 +67,56 @@ export default function AnalysisScreen() {
     정의서의 *"팀으로 바꾸면 반이 단일 선택이 된다"* 는 **팀 계층 안의 규칙**이지 반별
     선택을 바꾸라는 말이 아니다. 상위→하위 드릴다운에서 상위 상태가 유지되는 것이 기본이다.
   */
-  const [classNames, setClassNames] = useState<string[]>([])
+  const [classIds, setClassIds] = useState<string[]>([])
   /** 팀 계층에서 보고 있는 반. `null`이면 **아직 안 골랐다** */
-  const [teamClass, setTeamClass] = useState<string | null>(null)
-  const [teamNames, setTeamNames] = useState<string[]>([])
+  const [teamClassId, setTeamClassId] = useState<string | null>(null)
+  /**
+   * 팀 계층에서 보고 있는 회차. `null`이면 아직 안 골랐다.
+   *
+   * ⚠ **팀 계층은 회차 하나를 요구한다** — 서버가 막는다(`api.ts`). 팀은 회차마다
+   * 재편성될 수 있어 회차를 가로질러 같은 팀을 추적하는 것이 성립하지 않는다.
+   */
+  const [teamProjectId, setTeamProjectId] = useState<string | null>(null)
   const [fromRound, setFromRound] = useState<number | null>(null)
   const [toRound, setToRound] = useState<number | null>(null)
   const [sort, setSort] = useState<RoundSort>('LATEST_WORST')
-  const [compareId, setCompareId] = useState<string | null>('6')
-
-  const loadGrid = useCallback(
-    () =>
-      getRoundGrid({
-        cohortId: COHORT_ID,
-        level,
-        // 팀 계층에서는 그 반 하나만 보낸다 — 반별 선택은 건드리지 않는다
-        classNames: level === 'team' ? (teamClass ? [teamClass] : []) : classNames,
-        teamNames,
-        fromRound: fromRound ?? undefined,
-        toRound: toRound ?? undefined,
-        sort,
-      }),
-    [level, classNames, teamClass, teamNames, fromRound, toRound, sort],
-  )
-  const loadCompare = useCallback(
-    () => getCohortCompare({ cohortId: COHORT_ID, compareCohortId: compareId, sort: 'WORSENED' }),
-    [compareId],
-  )
+  /** 비교 대상 기수. `null`이면 **서버가 고른다** */
+  const [compareId, setCompareId] = useState<string | null>(null)
 
   /*
-    **안 보는 탭은 조회하지 않는다**(`enabled`). 마운트됐다고 데이터가 필요한 것은
-    아니다 — 실측에서 탭 하나 진입에 조회 8건 중 5건이 이것이었다(mock-first §6-1).
+    **안 보는 탭은 조회하지 않는다.** 마운트됐다고 데이터가 필요한 것은 아니다 —
+    실측에서 탭 하나 진입에 조회 8건 중 5건이 이것이었다(mock-first §6-1).
+    조건이 곧 캐시 키라 반·회차를 되돌리면 다시 부르지 않는다.
   */
-  const grid = useAsync(loadGrid, tab === 'rounds')
-  const compare = useAsync(loadCompare, tab === 'cohorts')
+  const grid = useRoundGrid(
+    tab === 'rounds' && cohortId
+      ? {
+          cohortId,
+          level,
+          // 팀 계층에서는 그 반 하나만 보낸다 — 반별 선택은 건드리지 않는다
+          classIds: level === 'team' ? (teamClassId ? [teamClassId] : []) : classIds,
+          projectId: teamProjectId ?? undefined,
+          fromRound: fromRound ?? undefined,
+          toRound: toRound ?? undefined,
+          sort,
+        }
+      : undefined,
+  )
+  const compare = useCohortCompare(
+    tab === 'cohorts' && cohortId
+      ? { cohortId, compareCohortId: compareId, sort: 'WORSENED' }
+      : undefined,
+  )
 
   const g = grid.data
+  const teamClassName = g?.allClasses.find((c) => c.classId === teamClassId)?.className
   const crumb =
-    level === 'team' && teamClass
-      ? `분석 › 7기 › ${teamClass} › 팀`
-      : `분석 › 7기 › ${tab === 'rounds' ? '회차 흐름' : '기수 간 비교'}`
+    level === 'team' && teamClassName
+      ? `분석 › ${cohortName ?? ''} › ${teamClassName} › 팀`
+      : `분석 › ${cohortName ?? ''} › ${tab === 'rounds' ? '회차 흐름' : '기수 간 비교'}`
 
   return (
-    <ConsoleShell role="operator">
+    <ConsoleShell role="operator" cohort={cohortName}>
       <PageHeader breadcrumb={crumb} title="분석" />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as AnalysisTab)}>
@@ -127,40 +134,59 @@ export default function AnalysisScreen() {
 
           <RoundToolbar
             level={level}
-            classNames={classNames}
-            teamClass={teamClass}
-            teamNames={teamNames}
-            allClassNames={g?.allClassNames ?? []}
-            allTeamNames={g?.allTeamNames ?? []}
+            classIds={classIds}
+            teamClassId={teamClassId}
+            teamProjectId={teamProjectId}
+            allClasses={g?.allClasses ?? []}
             allRounds={g?.allRounds ?? []}
             fromRound={fromRound ?? g?.appliedFrom ?? 1}
             toRound={toRound ?? g?.appliedTo ?? 1}
             sort={sort}
             onChange={(p) => {
               if (p.level !== undefined) setLevel(p.level)
-              if (p.classNames !== undefined) setClassNames(p.classNames)
-              if (p.teamClass !== undefined) setTeamClass(p.teamClass)
-              if (p.teamNames !== undefined) setTeamNames(p.teamNames)
+              if (p.classIds !== undefined) setClassIds(p.classIds)
+              if (p.teamClassId !== undefined) setTeamClassId(p.teamClassId)
+              if (p.teamProjectId !== undefined) setTeamProjectId(p.teamProjectId)
               if (p.fromRound !== undefined) setFromRound(p.fromRound)
               if (p.toRound !== undefined) setToRound(p.toRound)
               if (p.sort !== undefined) setSort(p.sort)
             }}
           />
 
-          {grid.loading ? (
+          {cohortFailed ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>기수가 없습니다</EmptyTitle>
+                <EmptyDescription>
+                  회차가 돌아야 견줄 값이 생깁니다 — 운영 관리에서 기수를 먼저 만드세요.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : grid.isPending ? (
             <Loading />
-          ) : grid.failed || !g ? (
-            <LoadFailed onRetry={grid.reload} />
-          ) : g.needsClass ? (
+          ) : grid.isError || !g ? (
+            <LoadFailed onRetry={() => grid.refetch()} />
+          ) : g.needs ? (
             /*
-              **팀 계층인데 반을 안 골랐다.** 빈 표가 아니라 **사용자가 할 일이 남은
+              **팀 계층인데 고를 것이 남았다.** 빈 표가 아니라 **사용자가 할 일이 남은
               것**이다 — 「없는 것」 3종 중 유형 1 `아직`(점선)이다(02-layout §4).
+
+              **무엇이 빠졌는지에 따라 문구가 갈린다.** 둘 다 없는데 반만 말하면
+              고르고 나서 또 빈 화면을 본다.
             */
             <Empty>
               <EmptyHeader>
-                <EmptyTitle>어느 반의 팀을 볼지 골라 주세요</EmptyTitle>
+                <EmptyTitle>
+                  {g.needs === 'ROUND'
+                    ? '어느 회차의 팀을 볼지 골라 주세요'
+                    : g.needs === 'CLASS'
+                      ? '어느 반의 팀을 볼지 골라 주세요'
+                      : '반과 회차를 골라 주세요'}
+                </EmptyTitle>
                 <EmptyDescription>
-                  팀 번호는 반 안에서만 유일해서, 반을 정해야 팀을 견줄 수 있습니다.
+                  팀 번호는 반 안에서만 유일하고,{' '}
+                  <b className="font-semibold">팀은 회차마다 다시 짜일 수 있어</b> 회차를 가로질러
+                  같은 팀으로 볼 수 없습니다.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -201,8 +227,16 @@ export default function AnalysisScreen() {
                 </SelectTrigger>
                 <SelectContent>
                   {(compare.data?.availableCohorts ?? []).map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
+                    /*
+                      **비교 불가한 기수도 목록에 두고 못 고르게 한다.** 빼 버리면
+                      *"왜 저 기수는 없지"* 가 되는데, 답은 "겹치는 교안이 없어서"라
+                      사용자가 알아야 할 사실이다.
+                    */
+                    <SelectItem key={c.id} value={c.id} disabled={!c.comparable}>
                       비교 · {c.label}
+                      {!c.comparable && (
+                        <span className="text-fg-subtle ml-1.5 text-2xs">겹치는 교안 없음</span>
+                      )}
                     </SelectItem>
                   ))}
                   <SelectItem value="none">비교 · 없음</SelectItem>
@@ -213,22 +247,32 @@ export default function AnalysisScreen() {
             <span className="text-fg-subtle text-2xs">같은 교안 · 같은 개념만</span>
           </div>
 
-          {compare.loading ? (
+          {compare.isPending ? (
             <Loading />
-          ) : compare.failed || !compare.data ? (
-            <LoadFailed onRetry={compare.reload} />
+          ) : compare.isError || !compare.data ? (
+            <LoadFailed onRetry={() => compare.refetch()} />
           ) : compare.data.rows.length === 0 ? (
             /*
-              **다른 기관 평균을 만들지 않는다** — 커리큘럼이 다른 값이라 비교가 성립하지
-              않는다. 「없는 것」 3종 중 **유형 1 `아직`**(점선)이다: 다음 기수가 생기면
-              채워지는 자리다.
+              **비어 있는 이유가 둘이고 할 일이 다르다.**
+
+                견줄 기수가 아예 없다 → 기다리는 수밖에 없다(유형 1 `아직`)
+                고르지 않았다        → **고르면 채워진다** — 그 말을 해야 한다
+
+              한때 둘을 한 문구로 묶어 *"이 기관의 첫 기수예요"* 라고만 썼는데, 실제로는
+              비교 가능한 기수가 있는데도 그렇게 말하고 있었다. **틀린 이유를 말하면
+              사용자가 없는 문제를 고치러 간다.**
             */
             <Empty>
               <EmptyHeader>
-                <EmptyTitle>비교할 기수가 없습니다</EmptyTitle>
+                <EmptyTitle>
+                  {compare.data.availableCohorts.some((c) => c.comparable)
+                    ? '견줄 기수를 골라 주세요'
+                    : '비교할 기수가 없습니다'}
+                </EmptyTitle>
                 <EmptyDescription>
-                  {compare.data.currentCohortLabel}가 이 기관의 첫 기수예요. 다음 기수가 같은
-                  교안으로 진행되면 같은 개념끼리 비교할 수 있습니다.
+                  {compare.data.availableCohorts.some((c) => c.comparable)
+                    ? '같은 교안을 쓴 기수와 같은 개념끼리 맞대어 봅니다.'
+                    : `${compare.data.currentCohortLabel}가 이 기관의 첫 기수예요. 다음 기수가 같은 교안으로 진행되면 같은 개념끼리 비교할 수 있습니다.`}
                 </EmptyDescription>
               </EmptyHeader>
               <Button variant="ghost" onClick={() => setTab('rounds')}>

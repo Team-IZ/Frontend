@@ -62,14 +62,12 @@ function line(t: Todo, upcomingRoundLabel: string | null) {
             <B>{t.classNames.join(' · ')}</B>에 담당 매니저가 없습니다
           </>
         ),
-        sub: [
-          `${t.trainees}명`,
-          '면담·독촉을 아무도 처리하지 않습니다',
-          // 왜 비었는지는 사실이라 남긴다 — 해석이 아니다
-          t.reason,
-        ]
-          .filter(Boolean)
-          .join(' · '),
+        /*
+          ⚠ **왜 비었는지를 쓰지 않는다.** 목업은 `박지현 매니저가 퇴사 처리된 뒤`를
+          붙였는데 서버가 그 사실을 주지 않는다(types `UNASSIGNED` 주석). 배정 이력을
+          봐야 아는 것이라 화면이 추측하면 틀린 이유를 그럴듯하게 쓰게 된다.
+        */
+        sub: `${t.trainees}명 · 면담·독촉을 아무도 처리하지 않습니다`,
         to: ADMIN_MANAGERS,
         go: GO_ADMIN,
         /** 회차와 무관하다 — 반이 생긴 뒤로 계속인 상태다 */
@@ -101,17 +99,16 @@ function line(t: Todo, upcomingRoundLabel: string | null) {
         when: t.roundLabel,
       }
 
+    /*
+      ⚠ **여러 반 케이스가 없어졌다.** 한때 `classNames`가 배열이라 *"3개 반에서 …"* 로
+      문구를 갈랐는데, 서버가 **유형별로 가장 나쁜 한 건씩만** 올린다(types `GROUP_MISS`).
+      여러 반에 걸친 판단은 분석(OP-02)의 집단 미달 목록이 맡는다.
+    */
     case 'GROUP_MISS': {
-      // 여러 반이면 반 문제가 아니다 — 개념 선택 자체를 다시 본다(OP-01 §6)
-      const many = t.classNames.length > 1
       return {
-        body: many ? (
+        body: (
           <>
-            <B>{t.classNames.length}개 반</B>에서 &ldquo;{t.conceptName}&rdquo;이 절반 이상 2단 이하
-          </>
-        ) : (
-          <>
-            <B>{t.classNames[0]}</B> · &ldquo;{t.conceptName}&rdquo;{' '}
+            <B>{t.className}</B> · &ldquo;{t.conceptName}&rdquo;{' '}
             <B>
               {t.below}/{t.total}
             </B>{' '}
@@ -123,10 +120,7 @@ function line(t: Todo, upcomingRoundLabel: string | null) {
           그것도 화면에 나가는 글로 읽힌다**(02-layout §8). 규칙의 내용(*"시스템은 표시까지만
           하고 이후 처리는 기관 판단"*)은 사용자가 알아야 하므로 남기고 번호만 지운다.
         */
-        // 이름에 이미 `반`이 들어 있다 — 뒤에 또 붙이면 `J반반`이 된다
-        sub: many
-          ? `${t.classNames.join('·')} · 한 반이 아니라 기수 전체라 교안 쪽을 봐야 합니다`
-          : '절반을 넘어 반 문제로 판정 — 개인 위험 사유에서 빠집니다. 시스템은 표시까지만 하고 이후 처리는 기관 판단입니다',
+        sub: '절반을 넘어 반 문제로 판정 — 개인 위험 사유에서 빠집니다. 시스템은 표시까지만 하고 이후 처리는 기관 판단입니다',
         to: ANALYSIS,
         go: GO_ANALYSIS,
         // 9-6 판정은 리포트 발행 시점에 켜진다 — 항상 직전 발행 회차다
@@ -142,13 +136,16 @@ function line(t: Todo, upcomingRoundLabel: string | null) {
           </>
         ),
         /*
-          **다른 반과의 비교를 함께 준다** — 11일이 긴 건지는 그것으로만 판단된다(OP-01 §3).
+          ⚠ **다른 반과의 비교가 없어졌다.** 목업의 `다른 반은 3~5일`을 담던 자리인데
+          서버가 주지 않는다(types `INTERVIEW_BACKLOG`). 화면이 모으려면 반 전량의 면담
+          상태를 받아야 하고 그건 서버 집계다.
 
-          목업에는 뒤에 `회차 경과 기준(등재일은 반마다 같음)`이 더 붙어 있는데 뺐다.
-          그건 **이 숫자를 어떻게 읽어야 하는지 가르치는 문장**이고(A7 ③), 정의서 §3이
-          제시한 예시에도 없다 — 거기는 두 줄로 끝난다.
+          **대신 아직 만들어지지도 않은 면담을 쓴다** — 잡혔는데 안 끝난 것(`pending`)과
+          아예 없는 것(`notCreated`)은 할 일이 다르다. 0이면 쓰지 않는다(F3).
         */
-        sub: `예정 ${t.pending}명 · 다른 반은 ${t.othersMinDays}~${t.othersMaxDays}일`,
+        sub: [`예정 ${t.pending}명`, t.notCreated > 0 && `미생성 ${t.notCreated}명`]
+          .filter(Boolean)
+          .join(' · '),
         to: ADMIN_MANAGERS,
         go: GO_ADMIN,
         // 면담은 리포트 발행과 함께 등재된다(10-2) — 직전 발행 회차 것이다

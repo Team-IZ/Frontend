@@ -1,3 +1,4 @@
+import { format, parseISO } from 'date-fns'
 import { Link } from 'react-router'
 import { GO_STATUS, projectPath } from '../labels'
 import type { RoundPipeline } from '../api/types'
@@ -17,10 +18,20 @@ import type { RoundPipeline } from '../api/types'
     아직 분석을 시작도 안 했다.
 */
 
-/** `2026-07-16T18:00` → `07-16 18:00`. 연도는 기수 안에서 안 바뀐다 */
+/**
+ * `07-16 18:00`. 연도는 기수 안에서 안 바뀐다.
+ *
+ * ⚠ **문자열을 자르지 않는다.** 한때 `iso.split('T')`로 잘랐는데, 서버 마감이
+ * **UTC**(`2027-02-26T14:59:00Z`)라 그대로 자르면 **KST 23:59가 14:59로 보인다** —
+ * 학생에게 알려주는 마감이 9시간 당겨진 채 표시된다. `Date`로 파싱해 보는 사람의
+ * 시간대로 그린다.
+ *
+ * **날짜만 오는 값도 받는다**(회차 시작 `2026-08-03`). 그때는 시각을 안 쓴다 —
+ * 없는 `00:00`을 지어내면 그 시각에 열리는 것처럼 읽힌다.
+ */
 function stamp(iso: string) {
-  const [date, time] = iso.split('T')
-  return `${date.slice(5)} ${time?.slice(0, 5) ?? ''}`.trim()
+  if (!iso.includes('T')) return format(parseISO(iso), 'MM-dd')
+  return format(parseISO(iso), 'MM-dd HH:mm')
 }
 
 /**
@@ -78,7 +89,8 @@ export default function PipelineBlock({ p, today }: { p: RoundPipeline; today: s
     사고다 — 지표판은 그 둘을 구분해서 말해야 한다. 지금까지는 마감 시각을 오른쪽 구석에
     회색으로만 써서, 사용자가 오늘 날짜와 비교해 판단해야 했다.
   */
-  const overdue = p.dueAt !== null && p.dueAt.slice(0, 10) < today
+  // 마감이 UTC라 날짜도 로컬로 옮겨 비교한다 — 자정 근처에서 하루가 어긋난다
+  const overdue = p.dueAt !== null && format(parseISO(p.dueAt), 'yyyy-MM-dd') < today
 
   /**
    * **각 단계에서 빠진 수를 명시한다.** 지표판인데 분수만 주면 `231/250`에서 19를

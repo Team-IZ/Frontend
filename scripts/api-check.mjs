@@ -145,22 +145,44 @@ export function isNullable(schema) {
 }
 
 /*
-  설명문이 "이 값은 null일 수 있다"고 **주장**하는가.
+  설명문이 "**이** 값은 null일 수 있다"고 주장하는가.
 
-  단순히 'null'이라는 단어를 찾으면 안 된다 — `null은 허용하지 않는다(빈 배열로 보낼 것)`
-  같은 문장이 걸린다. 실제로 걸렸다. 부정문을 먼저 걷어낸다.
+  단순히 'null'이라는 단어를 찾으면 안 된다. 세 번 밀렸고 그때마다 원인이 달랐다.
 
-  ⚠️ 부정문에 **마크다운을 허용해야 한다.** 9차에서 백엔드가 같은 문장을 <code>`null`은 허용하지
-  않는다</code>로 다시 쓰자 단어와 조사 사이에 백틱이 끼어 부정문 판정이 빗나갔고,
-  "null을 허용하지 않는다"는 필드가 "null이 온다"로 뒤집혀 잡혔다. 강조 표기는 뜻을 바꾸지
-  않으므로 걷어내고 본다.
+  | 걸린 문장 | 왜 오탐인가 |
+  |---|---|
+  | `null은 허용하지 않는다(빈 배열로 보낼 것)` | 부정문이다 |
+  | <code>`null`은 허용하지 않는다</code> | 같은 부정문인데 **백틱**이 끼어 패턴이 빗나갔다 |
+  | `항상 값이 있다 — 참조되는 동안 삭제되지 않는다` | null을 **부정하는 다른 표현**이다 |
+  | <code>`pendingInvitationTokenId`가 `null`이 아닌 행에서만</code> | **남의 필드** 이야기이자 부정문이다 |
+
+  그래서 판정을 **문장 단위**로 내린다 — 설명문 전체를 한 덩어리로 보면 어느 필드에 대한
+  말인지 알 수 없다. null이 나오는 문장만 골라, 그 문장이 (1) 부정문이 아니고 (2) 다른
+  필드를 지목하지 않을 때만 주장으로 본다.
+
+  @param field 이 설명이 붙은 필드 이름. 넘기면 남의 필드 이야기를 걸러낸다
 */
-export function assertsNull(description) {
+const DENIES_NULL =
+  /null(을|은|이|가)?\s*(아닌|아니면|아니라|허용하지\s*않|안\s*됨|불가|아니다|아님|보내지\s*(마|말|않))|항상\s*(값이\s*있|채워)/i
+
+export function assertsNull(description, field) {
   if (typeof description !== 'string' || !/\bnull\b/i.test(description)) return false
-  const plain = description.replace(/[`*_"']/g, '')
-  const denies =
-    /null(을|은|이|가)?\s*(허용하지\s*않|안\s*됨|불가|아니다|아님|보내지\s*(마|말|않))/i
-  return !denies.test(plain)
+
+  return description
+    .split(/(?<=[.。!?])\s|\n/)
+    .filter((sentence) => /\bnull\b/i.test(sentence))
+    .some((sentence) => {
+      // 강조 표기는 뜻을 바꾸지 않는다 — 부정문 판정 전에 걷어낸다
+      if (DENIES_NULL.test(sentence.replace(/[`*_"']/g, ''))) return false
+      /*
+        백틱으로 **다른** 필드를 지목하는 문장은 그 필드 이야기다. 자기 이름이 섞여 있으면
+        자기 얘기로 본다 — `foo`는 `bar`가 null이면 …처럼 둘 다 나오는 문장이 있다.
+      */
+      const named = [...sentence.matchAll(/`(\w+)`/g)].map((m) => m[1])
+      const mentionsOthers = named.length > 0 && !named.some((n) => n.toLowerCase() === 'null')
+      if (field && mentionsOthers && !named.includes(field)) return false
+      return true
+    })
 }
 
 // ── 스펙 훑기 ────────────────────────────────────────────────────────────────
@@ -228,7 +250,8 @@ export const rules = [
       const walk = (props, trail) => {
         for (const [key, value] of Object.entries(props ?? {})) {
           if (!value || typeof value !== 'object') continue
-          if (assertsNull(value.description) && !isNullable(value)) hits.push(`${trail}.${key}`)
+          if (assertsNull(value.description, key) && !isNullable(value))
+            hits.push(`${trail}.${key}`)
           walk(value.properties, `${trail}.${key}`)
           walk(value.items?.properties, `${trail}.${key}[]`)
         }

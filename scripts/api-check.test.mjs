@@ -54,6 +54,26 @@ test('assertsNull — 부정문의 마크다운 강조에 속지 않는다', () 
   assert.ok(assertsNull('배정 전이면 `null`'))
 })
 
+test('assertsNull — 부정을 다르게 쓴 문장도 잡는다', () => {
+  // 11차 반영본 실제 문장. `null`이라는 단어 없이 null을 부정한다
+  assert.ok(!assertsNull('종료일. 항상 값이 있다(생성·수정 모두 필수이며 DB도 NOT NULL이다)'))
+  assert.ok(!assertsNull('개념 이름. 항상 값이 있다 — 출처 매핑이 NOT NULL이다'))
+  assert.ok(!assertsNull('계정이 INACTIVE일 때만 값이 있으며 그때는 항상 채워져 있습니다'))
+})
+
+test('assertsNull — 남의 필드를 지목한 문장은 이 필드 얘기가 아니다', () => {
+  /*
+    실제로 걸렸다 — `traineeIds`(배열, null 불가) 설명이 **다른 필드**의 null 조건을
+    안내하고 있었다. 설명문 전체를 한 덩어리로 보면 어느 필드 얘기인지 알 수 없다.
+  */
+  const desc =
+    '재발송할 교육생 ID 목록입니다. 재발송 버튼은 `pendingInvitationTokenId`가 `null`이 아닌 행에서만 켜면 됩니다.'
+  assert.ok(!assertsNull(desc, 'traineeIds'))
+
+  // 자기 이름이 섞여 있으면 자기 얘기다
+  assert.ok(assertsNull('`className`은 반 배정이 없으면 null', 'className'))
+})
+
 test('assertsNull — null 언급이 없으면 대상이 아니다', () => {
   assert.ok(!assertsNull('기관명'))
   assert.ok(!assertsNull(undefined))

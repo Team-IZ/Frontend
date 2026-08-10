@@ -9,7 +9,7 @@ import {
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
-import { saveSchedule } from '../../api'
+import { useUpdateSchedule } from '@/api/projectExecution/useProjectExecutionMutations'
 import { canOnlyExtendDue, formatDue, toSchedule } from '../../rules'
 import SchedulePicker, { type ScheduleValue } from '../../components/SchedulePicker'
 import type { CohortScope, ProjectDetail } from '../../types'
@@ -43,7 +43,6 @@ type Props = {
   /** 다음 회차 제출 마감 — 재시험 창이 이 값을 참조한다(위 ⚠) */
   nextDueAt: string | null
   nextProjectName: string | null
-  onSaved: () => void
 }
 
 const EMPTY: ScheduleValue = { startAt: undefined, dueAt: undefined }
@@ -55,11 +54,10 @@ export default function EditScheduleDialog({
   cohort,
   nextDueAt,
   nextProjectName,
-  onSaved,
 }: Props) {
   const [schedule, setSchedule] = useState<ScheduleValue>(EMPTY)
-  const [submitting, setSubmitting] = useState(false)
   const [failed, setFailed] = useState(false)
+  const save = useUpdateSchedule()
 
   // 열 때마다 저장된 일정에서 시작한다. 미설정이면 빈 칸으로 연다
   useEffect(() => {
@@ -144,27 +142,26 @@ export default function EditScheduleDialog({
                   : '변경된 것이 없습니다'}
           </p>
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting}>
+            <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={save.isPending}>
               취소
             </Button>
             <Button
-              disabled={!changed || pulledIn || submitting}
+              disabled={!changed || pulledIn || save.isPending}
               onClick={async () => {
-                setSubmitting(true)
                 setFailed(false)
                 try {
-                  await saveSchedule(project.projectId, period!.startDate, period!.endDate)
-                  onSaved()
+                  await save.mutateAsync({
+                    path: { projectId: project.projectId },
+                    body: { startDate: period!.startDate, endDate: period!.endDate },
+                  })
                   onOpenChange(false)
                 } catch {
                   // 고른 날짜를 유지한다 — 저장 실패로 날아가면 처음부터 다시 골라야 한다(F5)
                   setFailed(true)
-                } finally {
-                  setSubmitting(false)
                 }
               }}
             >
-              {submitting && <Spinner className="size-3.5" />}
+              {save.isPending && <Spinner className="size-3.5" />}
               저장
             </Button>
           </div>

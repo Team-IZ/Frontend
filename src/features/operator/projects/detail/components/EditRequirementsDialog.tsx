@@ -9,7 +9,7 @@ import {
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
-import { saveRequirements } from '../../api'
+import { useReplaceRequirements } from '@/api/projectExecution/useProjectExecutionMutations'
 import RequirementsField from '../../components/RequirementsField'
 import type { ProjectDetail } from '../../types'
 
@@ -28,14 +28,12 @@ type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   project: ProjectDetail
-  /** 저장 성공 시 — 상세를 다시 부른다 */
-  onSaved: () => void
 }
 
-export default function EditRequirementsDialog({ open, onOpenChange, project, onSaved }: Props) {
+export default function EditRequirementsDialog({ open, onOpenChange, project }: Props) {
   const [items, setItems] = useState<string[]>([])
-  const [submitting, setSubmitting] = useState(false)
   const [failed, setFailed] = useState(false)
+  const save = useReplaceRequirements()
 
   // 열 때마다 저장된 원문에서 시작한다 — 편집하러 열었는데 비어 있으면 다시 쳐야 한다
   useEffect(() => {
@@ -80,27 +78,26 @@ export default function EditRequirementsDialog({ open, onOpenChange, project, on
             {items.length === 0 ? '비워 둘 수 있습니다' : `${items.length}건`}
           </p>
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting}>
+            <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={save.isPending}>
               취소
             </Button>
             <Button
-              disabled={!changed || submitting}
+              disabled={!changed || save.isPending}
               onClick={async () => {
-                setSubmitting(true)
                 setFailed(false)
                 try {
-                  await saveRequirements(project.projectId, items)
-                  onSaved()
+                  await save.mutateAsync({
+                    path: { projectId: project.projectId },
+                    body: { requirementTitles: items },
+                  })
                   onOpenChange(false)
                 } catch {
                   // 입력값을 유지한다 — 저장 실패로 친 것이 날아가면 처음부터 다시 해야 한다(F5)
                   setFailed(true)
-                } finally {
-                  setSubmitting(false)
                 }
               }}
             >
-              {submitting && <Spinner className="size-3.5" />}
+              {save.isPending && <Spinner className="size-3.5" />}
               저장
             </Button>
           </div>

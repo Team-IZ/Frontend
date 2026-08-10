@@ -9,7 +9,7 @@ import {
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
-import { saveConcepts } from '../../api'
+import { useConfirmConcepts } from '@/api/projectExecution/useProjectExecutionMutations'
 import { CONCEPT_COUNT, toggleConcept } from '../../rules'
 import ConceptPicker from '../../components/ConceptPicker'
 import type { ConceptCandidate, Curriculum, ProjectDetail } from '../../types'
@@ -39,7 +39,6 @@ type Props = {
   loadingCandidates: boolean
   /** 후보를 교안별로 묶을 때 쓰는 이름표 */
   curricula: Curriculum[]
-  onSaved: () => void
 }
 
 export default function PickConceptsDialog({
@@ -49,11 +48,10 @@ export default function PickConceptsDialog({
   candidates,
   loadingCandidates,
   curricula,
-  onSaved,
 }: Props) {
   const [picked, setPicked] = useState<string[]>([])
-  const [submitting, setSubmitting] = useState(false)
   const [failed, setFailed] = useState(false)
+  const save = useConfirmConcepts()
 
   // 열 때마다 현재 확정값에서 시작한다 — 변경하러 열었는데 빈 상태면 처음부터 다시 골라야 한다
   useEffect(() => {
@@ -70,17 +68,16 @@ export default function PickConceptsDialog({
   const toggle = (id: string) => setPicked((prev) => toggleConcept(prev, id))
 
   const submit = async () => {
-    setSubmitting(true)
     setFailed(false)
     try {
-      await saveConcepts(project.projectId, picked)
-      onSaved()
+      await save.mutateAsync({
+        path: { projectId: project.projectId },
+        body: { mappingIds: picked },
+      })
       onOpenChange(false)
     } catch {
       // 선택을 유지한다 — 저장 실패로 고른 것이 날아가면 처음부터 다시 해야 한다(F5)
       setFailed(true)
-    } finally {
-      setSubmitting(false)
     }
   }
 
@@ -146,11 +143,11 @@ export default function PickConceptsDialog({
               : `${CONCEPT_COUNT}건을 골라야 저장할 수 있습니다 · 지금 ${picked.length}건`}
           </p>
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting}>
+            <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={save.isPending}>
               취소
             </Button>
-            <Button disabled={picked.length !== CONCEPT_COUNT || submitting} onClick={submit}>
-              {submitting && <Spinner className="size-3.5" />}
+            <Button disabled={picked.length !== CONCEPT_COUNT || save.isPending} onClick={submit}>
+              {save.isPending && <Spinner className="size-3.5" />}
               저장
             </Button>
           </div>

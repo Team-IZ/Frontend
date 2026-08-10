@@ -9,7 +9,7 @@ import {
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
-import { deleteProject } from '../../api'
+import { useDeleteProject } from '@/api/projectExecution/useProjectExecutionMutations'
 import { formatDue } from '../../rules'
 import { withParticle } from '../../labels'
 import type { ProjectDetail } from '../../types'
@@ -35,8 +35,8 @@ type Props = {
 }
 
 export default function DeleteProjectDialog({ open, onOpenChange, project, onDeleted }: Props) {
-  const [submitting, setSubmitting] = useState(false)
   const [failed, setFailed] = useState(false)
+  const remove = useDeleteProject()
 
   useEffect(() => {
     if (open) setFailed(false)
@@ -107,28 +107,25 @@ export default function DeleteProjectDialog({ open, onOpenChange, project, onDel
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            disabled={submitting}
+            disabled={remove.isPending}
             autoFocus
           >
             취소
           </Button>
           <Button
             className="bg-danger hover:bg-danger/90 text-white"
-            disabled={submitting}
+            disabled={remove.isPending}
             onClick={async () => {
-              setSubmitting(true)
               setFailed(false)
               try {
-                await deleteProject(project.projectId)
+                await remove.mutateAsync({ path: { projectId: project.projectId } })
                 onDeleted()
               } catch {
                 setFailed(true)
-              } finally {
-                setSubmitting(false)
               }
             }}
           >
-            {submitting && <Spinner className="size-3.5" />}
+            {remove.isPending && <Spinner className="size-3.5" />}
             삭제
           </Button>
         </DialogFooter>

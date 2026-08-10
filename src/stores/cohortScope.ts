@@ -1,5 +1,4 @@
-import { useEffect, useState } from 'react'
-import { findCohorts } from '@/api/academic/academicApi'
+import { useFindCohorts } from '@/api/academic/useAcademicQueries'
 
 /**
  * 지금 보고 있는 기수 — **화면이 아니라 여기가 갖는다.**
@@ -26,6 +25,10 @@ import { findCohorts } from '@/api/academic/academicApi'
  * 지금은 서버에 물어보는 훅이지만 **묻는 질문이 앱 상태 그 자체**라("지금 어느 기수를
  * 보고 있나") 스위처가 붙으면 이 파일이 그대로 스토어가 된다. 화면은 안 바뀐다.
  *
+ * **조회는 react-query가 한다.** 손으로 `useEffect`를 돌렸더니 이 훅을 부르는 화면마다
+ * 요청이 따로 나갔다 — 목록과 상세를 오갈 때마다 기수를 다시 물었다. 같은 쿼리 키를
+ * 쓰면 한 번만 나가고 캐시된다.
+ *
  * `features/operator/admin/_/cohortScope.ts`가 아직 자기 상수를 갖고 있다 — **남의
  * 도메인 파일이라 건드리지 않는다.** 그쪽이 연동될 때 여기로 합친다.
  */
@@ -33,28 +36,16 @@ export function useCohortId(): {
   cohortId: string | undefined
   /** 표시명(`9기`). 상단 스위처가 이 값을 그린다 — 이름 때문에 조회를 더 하지 않는다 */
   cohortName: string | undefined
+  /** 기수가 하나도 없거나 조회가 실패했다 — 화면이 그 자리에 무엇을 그릴지 정한다 */
   failed: boolean
 } {
-  const [cohort, setCohort] = useState<{ cohortId: string; name: string }>()
-  const [failed, setFailed] = useState(false)
+  const { data, isError } = useFindCohorts({ query: { page: 0, size: 50 } })
+  const list = data?.content ?? []
+  const picked = list.find((c) => c.status === 'RUNNING') ?? list[0]
 
-  useEffect(() => {
-    let alive = true
-    findCohorts({ query: { page: 0, size: 50 } })
-      .then((page) => {
-        if (!alive) return
-        const list = page.content
-        const picked = list.find((c) => c.status === 'RUNNING') ?? list[0]
-        if (picked) setCohort({ cohortId: picked.cohortId, name: picked.name })
-        else setFailed(true)
-      })
-      .catch(() => {
-        if (alive) setFailed(true)
-      })
-    return () => {
-      alive = false
-    }
-  }, [])
-
-  return { cohortId: cohort?.cohortId, cohortName: cohort?.name, failed }
+  return {
+    cohortId: picked?.cohortId,
+    cohortName: picked?.name,
+    failed: isError || (!!data && list.length === 0),
+  }
 }

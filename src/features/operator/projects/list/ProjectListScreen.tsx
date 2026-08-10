@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
@@ -14,9 +14,8 @@ import {
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import { Spinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils/cn'
-import { getCohortScope, getToday, listCurricula, listProjects } from '../api'
+import { getToday, useCohortScope, useLinkableCurricula, useProjectList } from '../queries'
 import { CONCEPT_COUNT, dueLabel } from '../rules'
-import { useAsync } from '../useAsync'
 import { useCohortId } from '@/stores/cohortScope'
 import type { ProjectSort, ProjectStatus } from '../types'
 import ProjectStatusBadge from '../components/ProjectStatusBadge'
@@ -60,23 +59,23 @@ export default function ProjectListScreen() {
   */
   const { cohortId, cohortName, failed: cohortFailed } = useCohortId()
 
-  const loadProjects = useCallback(
-    () =>
-      listProjects({
-        cohortId: cohortId!,
-        search: filters.search || undefined,
-        curriculumId: filters.curriculumId === ALL ? undefined : filters.curriculumId,
-        status: filters.status === ALL ? undefined : (filters.status as ProjectStatus),
-        sort: filters.sort as ProjectSort,
-      }),
-    [filters, cohortId],
+  /*
+    **조회 셋이 각자 캐시된다.** 목록으로 돌아왔을 때 교안·스코프를 다시 묻지 않고,
+    회차를 만들면 쓰기 훅이 목록만 정확히 무효화한다(`queries.ts`).
+  */
+  const page = useProjectList(
+    cohortId
+      ? {
+          cohortId,
+          search: filters.search || undefined,
+          curriculumId: filters.curriculumId === ALL ? undefined : filters.curriculumId,
+          status: filters.status === ALL ? undefined : (filters.status as ProjectStatus),
+          sort: filters.sort as ProjectSort,
+        }
+      : undefined,
   )
-  const loadCurricula = useCallback(() => listCurricula(cohortId!), [cohortId])
-  const loadScope = useCallback(() => getCohortScope(cohortId!), [cohortId])
-
-  const page = useAsync(loadProjects, !!cohortId)
-  const curricula = useAsync(loadCurricula, !!cohortId)
-  const scope = useAsync(loadScope, !!cohortId)
+  const curricula = useLinkableCurricula(cohortId)
+  const scope = useCohortScope(cohortId)
 
   const curriculumList = curricula.data ?? []
   const counts = page.data?.counts
@@ -141,19 +140,19 @@ export default function ProjectListScreen() {
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
-      ) : page.loading ? (
+      ) : page.isPending ? (
         // Spinner가 이미 role="status"를 갖는다 — 래퍼에 또 붙이면 라이브 리전이 중첩된다.
         // 기본 aria-label이 영문("Loading")이라 화면 언어에 맞춰 덮어쓴다.
         <div className="flex justify-center py-16">
           <Spinner className="size-6" aria-label="목록을 불러오는 중" />
         </div>
-      ) : page.failed ? (
+      ) : page.isError ? (
         <Empty>
           <EmptyHeader>
             <EmptyTitle>목록을 불러오지 못했습니다</EmptyTitle>
             <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
           </EmptyHeader>
-          <Button variant="ghost" onClick={page.reload}>
+          <Button variant="ghost" onClick={() => page.refetch()}>
             다시 시도
           </Button>
         </Empty>
@@ -273,7 +272,7 @@ export default function ProjectListScreen() {
         cohortId={cohortId ?? ''}
         curricula={curriculumList}
         cohort={scope.data}
-        onCreated={page.reload}
+        /* 생성 훅이 이 도메인 조회를 무효화한다 — 목록을 손으로 다시 부르지 않는다 */
         /*
           부분 성공 — 회차는 만들어졌는데 교안·개념·요구사항 중 하나가 안 붙었다.
           **상세로 보낸다.** 목록에 남겨 두면 `준비 중` 행 하나만 늘고 무엇이 빠졌는지

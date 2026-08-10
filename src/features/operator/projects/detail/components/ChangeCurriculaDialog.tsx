@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/Button'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Spinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils/cn'
-import { saveCurricula } from '../../api'
+import { useSaveCurricula } from '../../queries'
 import { canUnlinkCurriculum } from '../../rules'
 import type { Curriculum, ProjectDetail } from '../../types'
 
@@ -38,20 +38,12 @@ type Props = {
   onOpenChange: (open: boolean) => void
   project: ProjectDetail
   curricula: Curriculum[]
-  /** 저장 성공 시 — 후보 수·상태를 서버가 다시 판정하므로 상세를 다시 부른다 */
-  onSaved: () => void
 }
 
-export default function ChangeCurriculaDialog({
-  open,
-  onOpenChange,
-  project,
-  curricula,
-  onSaved,
-}: Props) {
+export default function ChangeCurriculaDialog({ open, onOpenChange, project, curricula }: Props) {
   const [picked, setPicked] = useState<string[]>([])
-  const [submitting, setSubmitting] = useState(false)
   const [failed, setFailed] = useState(false)
+  const save = useSaveCurricula()
 
   // 열 때마다 현재 연결에서 시작한다 — 변경하러 열었는데 빈 상태면 처음부터 다시 골라야 한다
   useEffect(() => {
@@ -161,27 +153,27 @@ export default function ChangeCurriculaDialog({
                 : '변경된 것이 없습니다'}
           </p>
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting}>
+            <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={save.isPending}>
               취소
             </Button>
             <Button
-              disabled={picked.length === 0 || !changed || submitting}
+              disabled={picked.length === 0 || !changed || save.isPending}
               onClick={async () => {
-                setSubmitting(true)
                 setFailed(false)
                 try {
-                  await saveCurricula(project.projectId, project.curricula, picked)
-                  onSaved()
+                  await save.mutateAsync({
+                    projectId: project.projectId,
+                    current: project.curricula,
+                    nextVersionIds: picked,
+                  })
                   onOpenChange(false)
                 } catch {
                   // 선택을 유지한다 — 저장 실패로 고른 것이 날아가면 처음부터 다시 해야 한다(F5)
                   setFailed(true)
-                } finally {
-                  setSubmitting(false)
                 }
               }}
             >
-              {submitting && <Spinner className="size-3.5" />}
+              {save.isPending && <Spinner className="size-3.5" />}
               저장
             </Button>
           </div>

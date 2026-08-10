@@ -1,30 +1,50 @@
 /*
-  프로젝트 API 경계 — **화면이 유일하게 의존하는 곳.**
+  프로젝트 도메인 훅 — **생성 훅을 감싸 화면 어휘로 옮긴다.**
 
-  생성 훅(`@/api/projectExecution`)을 직접 부르지 않고 여기를 거치는 이유가 셋이다.
+  ─── 왜 감싸나 ──────────────────────────────────────────────────
+  **변환이 실재하기 때문이다**(api-layer-decisions A1). 슈퍼어드민은
+  `findOrganizations_Item`을 그대로 그려서 화면이 생성 훅을 직접 부르는데, 이 도메인은
+  그럴 수 없다.
+
     · 서버가 두 축(`status`+`readiness`)으로 주는 상태를 화면은 한 축으로 읽는다
-    · 서버 응답 이름이 화면 어휘와 다른 자리가 있다(`endDate` → 마감, `assessedCount` → 응시)
-    · 서버가 안 주는 것을 여기서 메운다(기수 반 개수는 조회 두 건을 합쳐야 나온다)
+    · 회차 생성이 **네 번의 호출**이다(후보 조회가 projectId를 요구한다)
+    · 교안 변경에 "이 목록으로 교체"가 없어 **차집합**을 계산해 link/unlink로 나눈다
+    · 기수 스코프는 조회 **두 건**을 합쳐야 나온다(반 개수를 서버가 안 준다)
 
-  **조회는 함수로 두고 훅으로 만들지 않았다.** 화면이 `useAsync(load, enabled)`를 쓰고
-  있고, react-query 훅으로 옮기면 15개 화면을 같이 뜯어야 한다. 캐시가 필요해지면 그때
-  옮긴다 — 지금 옮기면 연동과 리팩터링이 한 diff에 섞인다.
+  **그 변환을 화면으로 옮기면 사라지지 않고 흩어질 뿐이다** — 상태 합성은 배지·필터·
+  정렬 세 곳이 각자 갖게 되고, 생성 오케스트레이션은 모달이 알게 된다.
+
+  ─── 캐시·무효화는 react-query가 한다 ──────────────────────────
+  한때 `useAsync`로 직접 돌렸는데, 목록 → 상세 → 목록에 조회가 전부 다시 나갔고 쓰기
+  뒤에는 화면이 `reload()`를 손으로 불러야 했다. 생성 훅이 **성공 시 이 도메인의 조회를
+  자동으로 무효화**하므로 그 호출이 전부 없어진다.
+
+  **한 번의 호출로 끝나고 변환이 없는 쓰기는 여기 없다** — 화면이 생성 훅을 직접 쓴다.
 */
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
-  findProjects,
-  findProject,
-  findConceptCandidates,
-  findProjectClassProgress,
-  createProject as createProjectApi,
-  updateSchedule,
   confirmConcepts,
   linkCurriculum,
   unlinkCurriculum,
   replaceRequirements,
-  deleteProject as deleteProjectApi,
+  createProject as createProjectApi,
 } from '@/api/projectExecution/projectExecutionApi'
-import { findLinkableCurricula, findSections } from '@/api/curriculum/curriculumApi'
+import { projectExecutionKeys } from '@/api/projectExecution/projectExecutionKeys'
+import {
+  useFindProjects,
+  useFindProject,
+  useFindConceptCandidates,
+  useFindProjectClassProgress,
+} from '@/api/projectExecution/useProjectExecutionQueries'
+import { useFindLinkableCurricula } from '@/api/curriculum/useCurriculumQueries'
+import { findSections } from '@/api/curriculum/curriculumApi'
 import { findCohort, findClassrooms } from '@/api/academic/academicApi'
+import { academicKeys } from '@/api/academic/academicKeys'
+import { curriculumKeys } from '@/api/curriculum/curriculumKeys'
+import type {
+  findProjects_Response,
+  findProjectClassProgress_Response,
+} from '@/api/projectExecution/projectExecutionTypes'
 import type {
   CohortScope,
   ConceptCandidate,
@@ -114,17 +134,24 @@ function toProject(p: ServerProjectProjection): Project {
  * 보는 것이라 **집계가 아니다**(전량을 받아 거르는 것과 다르다 — 페이지가 나뉘어도
  * 이 좁히기는 그 페이지 안에서 정확하다).
  */
-export async function listProjects(q: ProjectQuery): Promise<ProjectPage> {
-  const res = await findProjects({
-    path: { cohortId: q.cohortId },
-    query: {
-      search: q.search,
-      curriculumId: q.curriculumId,
-      status: toServerStatus(q.status),
-      sort: q.sort ? SORT[q.sort] : undefined,
+export function useProjectList(q: ProjectQuery | undefined) {
+  const res = useFindProjects(
+    {
+      path: { cohortId: q?.cohortId ?? '' },
+      query: {
+        search: q?.search,
+        curriculumId: q?.curriculumId,
+        status: toServerStatus(q?.status),
+        sort: q?.sort ? SORT[q.sort] : undefined,
+      },
     },
-  })
+    { enabled: !!q },
+  )
 
+  return { ...res, data: res.data ? toPage(res.data, q!) : undefined }
+}
+
+function toPage(res: findProjects_Response, q: ProjectQuery): ProjectPage {
   let items = (res.projects as ServerProjectProjection[]).map(toProject)
   if (q.status === 'PREP' || q.status === 'READY') {
     items = items.filter((p) => p.status === q.status)
@@ -144,14 +171,18 @@ export async function listProjects(q: ProjectQuery): Promise<ProjectPage> {
 }
 
 /** `GET /projects/{projectId}` — 상세. 교안·개념·요구사항이 같이 온다(9차 R1) */
-export async function getProject(projectId: string): Promise<ProjectDetail> {
-  const p = await findProject({ path: { projectId } })
-  return {
-    ...toProject(p as unknown as ServerProjectProjection),
-    curricula: p.curricula,
-    concepts: p.concepts,
-    requirementTitles: p.requirementTitles,
-  }
+export function useProjectDetail(projectId: string) {
+  const res = useFindProject({ path: { projectId } }, { enabled: !!projectId })
+  const p = res.data
+  const data: ProjectDetail | undefined = p
+    ? {
+        ...toProject(p as unknown as ServerProjectProjection),
+        curricula: p.curricula,
+        concepts: p.concepts,
+        requirementTitles: p.requirementTitles,
+      }
+    : undefined
+  return { ...res, data }
 }
 
 /**
@@ -160,8 +191,12 @@ export async function getProject(projectId: string): Promise<ProjectDetail> {
  * 생성 모달의 선택지와 목록의 교안 필터가 쓴다. **후보(`teaches`)는 안 온다** —
  * 개념 후보는 `listConceptCandidates`(프로젝트 기준)나 `listSectionCandidates`(교안 기준)다.
  */
-export function listCurricula(cohortId: string): Promise<Curriculum[]> {
-  return findLinkableCurricula({ path: { cohortId } }) as Promise<Curriculum[]>
+export function useLinkableCurricula(cohortId: string | undefined, enabled = true) {
+  const res = useFindLinkableCurricula(
+    { path: { cohortId: cohortId ?? '' } },
+    { enabled: enabled && !!cohortId },
+  )
+  return { ...res, data: res.data as Curriculum[] | undefined }
 }
 
 /**
@@ -170,24 +205,35 @@ export function listCurricula(cohortId: string): Promise<Curriculum[]> {
  * ⚠ **조회가 둘인 이유:** 헤더가 `10반 250명`을 그리는데 `findCohort`에 반 개수가 없다.
  * 서버가 세어 주면 한 건으로 준다(9차 §7에 흡수하기로 적었다).
  */
-export async function getCohortScope(cohortId: string): Promise<CohortScope> {
-  const [cohort, rooms] = await Promise.all([
-    findCohort({ path: { cohortId } }),
-    findClassrooms({ path: { cohortId } }),
-  ])
-  return {
-    cohortId: cohort.cohortId,
-    name: cohort.name,
-    classes: rooms.classrooms.length,
-    trainees: cohort.traineeCount,
-    startDate: cohort.startDate,
-    endDate: cohort.endDate,
-  }
+export function useCohortScope(cohortId: string | undefined, enabled = true) {
+  return useQuery({
+    /*
+      **키를 손으로 짓지 않는다.** 두 조회를 합치는 자리라 생성된 키가 하나로 안 맞는데,
+      기수 도메인 아래에 두면 기수 관련 쓰기가 이것도 같이 무효화한다.
+    */
+    queryKey: [...academicKeys.all, 'scope', cohortId],
+    enabled: enabled && !!cohortId,
+    queryFn: async (): Promise<CohortScope> => {
+      const [cohort, rooms] = await Promise.all([
+        findCohort({ path: { cohortId: cohortId! } }),
+        findClassrooms({ path: { cohortId: cohortId! } }),
+      ])
+      return {
+        cohortId: cohort.cohortId,
+        name: cohort.name,
+        classes: rooms.classrooms.length,
+        trainees: cohort.traineeCount,
+        startDate: cohort.startDate,
+        endDate: cohort.endDate,
+      }
+    },
+  })
 }
 
 /** `GET /projects/{projectId}/concept-candidates` — 이 회차에 붙은 교안들의 승인된 매핑 전량 */
-export function listConceptCandidates(projectId: string): Promise<ConceptCandidate[]> {
-  return findConceptCandidates({ path: { projectId } }) as Promise<ConceptCandidate[]>
+export function useConceptCandidates(projectId: string, enabled = true) {
+  const res = useFindConceptCandidates({ path: { projectId } }, { enabled: enabled && !!projectId })
+  return { ...res, data: res.data as ConceptCandidate[] | undefined }
 }
 
 /**
@@ -197,26 +243,35 @@ export function listConceptCandidates(projectId: string): Promise<ConceptCandida
  * `projectId`를 요구한다. 섹션 조회가 같은 매핑을 주고 **겹치는 여섯 필드가 이름·타입·
  * 의미까지 같아서**(9차 R2 회신) 같은 컴포넌트로 그릴 수 있다.
  */
-export async function listSectionCandidates(
-  materialId: string,
-  curriculumVersionId: string,
-): Promise<ConceptCandidate[]> {
-  const sections = await findSections({ path: { materialId } })
-  return sections.flatMap((s) =>
-    s.items.map((it) => ({
-      mappingId: it.mappingId,
-      // 섹션 항목은 teachesId를 주지 않는다 — 확정은 mappingId로 하므로 화면에 필요 없다
-      teachesId: '',
-      extractedName: it.extractedName,
-      description: it.description,
-      definitionMissing: it.definitionMissing,
-      curriculumVersionId,
-      sectionId: s.sectionId,
-      sectionTitle: s.title,
-      pageStart: it.pageStart,
-      pageEnd: it.pageEnd,
-    })),
-  )
+export function useSectionCandidates(curricula: Curriculum[]) {
+  return useQuery({
+    // 고른 교안이 곧 키다 — 체크를 바꾸면 그 조합의 캐시를 본다
+    queryKey: [...curriculumKeys.all, 'section-candidates', curricula.map((c) => c.versionId)],
+    enabled: curricula.length > 0,
+    queryFn: async (): Promise<ConceptCandidate[]> => {
+      const lists = await Promise.all(
+        curricula.map(async (c) => {
+          const sections = await findSections({ path: { materialId: c.materialId } })
+          return sections.flatMap((s) =>
+            s.items.map((it) => ({
+              mappingId: it.mappingId,
+              // 섹션 항목은 teachesId를 주지 않는다 — 확정은 mappingId로 하므로 화면에 필요 없다
+              teachesId: '',
+              extractedName: it.extractedName,
+              description: it.description,
+              definitionMissing: it.definitionMissing,
+              curriculumVersionId: c.versionId,
+              sectionId: s.sectionId,
+              sectionTitle: s.title,
+              pageStart: it.pageStart,
+              pageEnd: it.pageEnd,
+            })),
+          )
+        }),
+      )
+      return lists.flat()
+    },
+  })
 }
 
 /**
@@ -225,8 +280,15 @@ export async function listSectionCandidates(
  * **개념이 확정되기 전에는 부르지 않는다** — 문항이 없어 집계할 대상이 없다. 화면이
  * `useAsync`의 `enabled`로 막고, 현황 탭은 그때 **왜 비었는지**를 대신 그린다.
  */
-export async function getProjectStatus(projectId: string): Promise<ProjectStatusReport> {
-  const r = await findProjectClassProgress({ path: { projectId } })
+export function useProjectStatus(projectId: string, enabled = true) {
+  const res = useFindProjectClassProgress(
+    { path: { projectId } },
+    { enabled: enabled && !!projectId },
+  )
+  return { ...res, data: res.data ? toStatusReport(res.data) : undefined }
+}
+
+function toStatusReport(r: findProjectClassProgress_Response): ProjectStatusReport {
   return {
     classes: r.classes.map((c) => ({
       classId: c.classId,
@@ -252,6 +314,9 @@ export async function getProjectStatus(projectId: string): Promise<ProjectStatus
 
 /*
   ─── 변경 ────────────────────────────────────────────────────────
+
+  **쓰기는 생성 훅을 화면이 직접 쓴다** — 무효화가 붙어 있고 변환할 것이 없다.
+  여기 남는 것은 **호출 하나로 안 끝나는 것**뿐이다: 생성(4콜)과 교안 변경(차집합).
 */
 
 /**
@@ -262,7 +327,15 @@ export async function getProjectStatus(projectId: string): Promise<ProjectStatus
  * 남는다 — 9차 회신 §10) 되돌리지 않고 **어디까지 됐는지를 돌려준다.** 화면은 상세로
  * 보내 이어서 채우게 한다.
  */
-export async function createProject(req: CreateProjectRequest): Promise<CreateProjectResult> {
+export function useCreateProjectFlow() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: createProjectFlow,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: projectExecutionKeys.all }),
+  })
+}
+
+async function createProjectFlow(req: CreateProjectRequest): Promise<CreateProjectResult> {
   const created = await createProjectApi({
     path: { cohortId: req.cohortId },
     body: {
@@ -321,62 +394,36 @@ export async function saveConcepts(projectId: string, mappingIds: string[]): Pro
  * 교안을 떼면 서버가 409 `CURRICULUM_IN_USE_BY_CONCEPTS`로 막는다 — 화면도 체크박스를
  * 잠그지만 클라이언트 검증만 있으면 우회된다(OP-04 §5).
  */
-export async function saveCurricula(
-  projectId: string,
-  current: { projectCurriculumId: string; curriculumVersionId: string }[],
-  nextVersionIds: string[],
-): Promise<void> {
-  const removed = current.filter((c) => !nextVersionIds.includes(c.curriculumVersionId))
-  const added = nextVersionIds.filter((id) => !current.some((c) => c.curriculumVersionId === id))
-  // 해제를 먼저 한다 — 붙이고 떼면 중간에 실패했을 때 안 고른 교안이 남는다
-  for (const c of removed) {
-    await unlinkCurriculum({ path: { projectId, projectCurriculumId: c.projectCurriculumId } })
-  }
-  for (const curriculumVersionId of added) {
-    await linkCurriculum({ path: { projectId }, body: { curriculumVersionId } })
-  }
+export function useSaveCurricula() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (vars: {
+      projectId: string
+      current: { projectCurriculumId: string; curriculumVersionId: string }[]
+      nextVersionIds: string[]
+    }) => {
+      const { projectId, current, nextVersionIds } = vars
+      const removed = current.filter((c) => !nextVersionIds.includes(c.curriculumVersionId))
+      const added = nextVersionIds.filter(
+        (id) => !current.some((c) => c.curriculumVersionId === id),
+      )
+      // 해제를 먼저 한다 — 붙이고 떼면 중간에 실패했을 때 안 고른 교안이 남는다
+      for (const c of removed) {
+        await unlinkCurriculum({ path: { projectId, projectCurriculumId: c.projectCurriculumId } })
+      }
+      for (const curriculumVersionId of added) {
+        await linkCurriculum({ path: { projectId }, body: { curriculumVersionId } })
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: projectExecutionKeys.all }),
+  })
 }
 
-/**
- * `PUT /projects/{id}/requirements` — 전체 교체.
- *
- * **항목 배열로 보낸다.** MG-08이 항목마다 P/F를 판정하므로 그 단위가 계약에 그대로
- * 있어야 한다. 공백·중복 정리는 입력 시점에 끝나 있다(`addRequirements`).
- */
-export async function saveRequirements(
-  projectId: string,
-  requirementTitles: string[],
-): Promise<void> {
-  await replaceRequirements({ path: { projectId }, body: { requirementTitles } })
-}
+/*
+  ─── 여기서 끝난다 ──────────────────────────────────────────────
 
-/**
- * `PATCH /projects/{id}` — 회차 기간 수정.
- *
- * ⚠ **날짜만 보낸다. 시각은 서버가 안 받는다.**
- * `project.end_date`는 `DATE`이고, 학생에게 나가는 실제 마감(`submission_due_at`)은
- * **다른 테이블이며 이 값과 연결돼 있지 않다**(9차 회신 §15). 그래서 화면이 `23:59`을
- * 붙여 마감이라고 쓰면 서버가 뒷받침하지 않는 시각을 주장하게 된다 — 시각 입력을 뺐다.
- * 결론(ⓐ/ⓑ/ⓒ)이 나오면 여기와 화면을 같이 바꾼다.
- */
-export async function saveSchedule(
-  projectId: string,
-  startDate: string,
-  endDate: string,
-): Promise<void> {
-  await updateSchedule({ path: { projectId }, body: { startDate, endDate } })
-}
-
-/**
- * `DELETE /projects/{id}` — 회차 삭제(소프트).
- *
- * **제출·응시가 붙은 회차는 서버가 막는다**(409 `PROJECT_NOT_DELETABLE`). 화면도 버튼을
- * 잠그지만 클라이언트 검증만 있으면 우회되고, 그때 사라지는 것은 학생이 실제로 한 제출·
- * 응시다.
- *
- * ⚠ **지운 회차의 이름·순번은 다시 못 쓴다**(9차 회신 §10) — 삭제 확인 문구가 그 사실을
- * 말해야 한다.
- */
-export async function deleteProject(projectId: string): Promise<void> {
-  await deleteProjectApi({ path: { projectId } })
-}
+  요구사항 저장·일정 수정·개념 확정·삭제는 **화면이 생성 훅을 직접 쓴다** —
+  `useReplaceRequirements` · `useUpdateSchedule` · `useConfirmConcepts` · `useDeleteProject`.
+  한 번의 호출이고 변환할 것이 없어서 감싸면 위임 한 줄만 늘어난다. 무효화도 그 훅이
+  이미 한다.
+*/

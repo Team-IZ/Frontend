@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation, useNavigate, useParams } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
@@ -7,16 +7,15 @@ import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/u
 import { Spinner } from '@/components/ui/Spinner'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import {
-  getCohortScope,
-  getProject,
-  getProjectStatus,
   getToday,
-  listConceptCandidates,
-  listCurricula,
-  listProjects,
-} from '../api'
+  useCohortScope,
+  useConceptCandidates,
+  useLinkableCurricula,
+  useProjectDetail,
+  useProjectList,
+  useProjectStatus,
+} from '../queries'
 import { CONCEPT_COUNT } from '../rules'
-import { useAsync } from '../useAsync'
 import { useCohortId } from '@/stores/cohortScope'
 import type { ProjectTab } from '../types'
 import DetailHeader from './components/DetailHeader'
@@ -74,23 +73,12 @@ export default function ProjectDetailScreen() {
   const [scheduleOpen, setScheduleOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
-  const loadProject = useCallback(() => getProject(id), [id])
-  const project = useAsync(loadProject)
+  const project = useProjectDetail(id)
   /*
-    조회 기준은 **응답이 알려준 기수**다. 상세를 받기 전에는 부를 수 없으므로 아래
-    `enabled`들이 `cohortId`를 함께 본다 — 그 순서가 이 화면의 조회 의존 관계 그대로다.
+    조회 기준은 **응답이 알려준 기수**다 — "지금 보고 있는 기수"로 부르면 주소로 직접
+    들어왔을 때 화면이 두 기수를 섞는다.
   */
   const cohortId = project.data?.cohortId
-  const loadCurricula = useCallback(() => listCurricula(cohortId!), [cohortId])
-  const loadCandidates = useCallback(() => listConceptCandidates(id), [id])
-  const loadStatus = useCallback(() => getProjectStatus(id), [id])
-  // 재시험 창이 다음 회차 제출일을 참조한다 — 목록에서 그 값을 찾는다
-  const loadSiblings = useCallback(
-    () => listProjects({ cohortId: cohortId!, sort: 'DUE' }),
-    [cohortId],
-  )
-  // 기수 기간은 일정 수정 달력만 쓴다 — 열기 전에는 부르지 않는다(#64 ②)
-  const loadCohort = useCallback(() => getCohortScope(cohortId!), [cohortId])
 
   const data = project.data
   const requested = TABS.find((t) => t.value === tab)?.value
@@ -108,13 +96,18 @@ export default function ProjectDetailScreen() {
     **교안 목록도 모달용이다.** 개요·구성 탭은 상세 응답이 준 교안 이름을 그리므로
     따로 조회할 필요가 없어졌다(9차 R1) — 후보를 교안별로 묶을 때만 이름표로 쓴다.
   */
-  const status = useAsync(loadStatus, active === 'status' && data?.conceptCount === CONCEPT_COUNT)
-  const siblings = useAsync(loadSiblings, active === 'overview' && !!data?.endDate && !!cohortId)
-  const candidates = useAsync(loadCandidates, pickOpen)
-  const curricula = useAsync(loadCurricula, pickOpen && !!cohortId)
-  const cohort = useAsync(loadCohort, scheduleOpen && !!cohortId)
-  // 교안 변경 모달은 **연결 가능한 교안 전량**이 필요하다 — 후보와 목적이 다르다
-  const linkable = useAsync(loadCurricula, curriculaOpen && !!cohortId)
+  const status = useProjectStatus(id, active === 'status' && data?.conceptCount === CONCEPT_COUNT)
+  const siblings = useProjectList(
+    active === 'overview' && data?.endDate && cohortId ? { cohortId, sort: 'DUE' } : undefined,
+  )
+  const candidates = useConceptCandidates(id, pickOpen)
+  /*
+    **교안 목록은 두 모달이 같은 조회를 쓴다.** 개념 선택은 후보를 묶을 이름표로,
+    교안 변경은 연결 가능한 전량으로 — 목적은 다르지만 응답이 같아서 캐시가 공유된다.
+    한때 둘을 따로 불렀는데 같은 요청이 두 번 나갔다.
+  */
+  const curricula = useLinkableCurricula(cohortId, pickOpen || curriculaOpen)
+  const cohort = useCohortScope(cohortId, scheduleOpen)
 
   /*
     모르는 탭으로 들어오면 **주소도** 되돌린다. 내용만 개요로 바꾸면 주소는 `/bogus`인데
@@ -131,7 +124,7 @@ export default function ProjectDetailScreen() {
     `enabled`로 실행 여부를 넘기고 반환은 그다음에 한다.
   */
   if (!data) {
-    if (project.failed) {
+    if (project.isError) {
       return (
         <ConsoleShell role="operator" cohort={cohortName}>
           <Empty>
@@ -197,9 +190,9 @@ export default function ProjectDetailScreen() {
           <StatusTab
             project={data}
             report={status.data}
-            loading={status.loading}
-            failed={status.failed}
-            onRetry={status.reload}
+            loading={status.isPending}
+            failed={status.isError}
+            onRetry={() => status.refetch()}
             onGoConfig={() => goTab('config')}
           />
         </TabsContent>
@@ -220,24 +213,21 @@ export default function ProjectDetailScreen() {
         onOpenChange={setPickOpen}
         project={data}
         candidates={candidates.data ?? []}
-        loadingCandidates={candidates.loading}
+        loadingCandidates={candidates.isPending}
         curricula={curricula.data ?? []}
-        onSaved={project.reload}
       />
 
       <ChangeCurriculaDialog
         open={curriculaOpen}
         onOpenChange={setCurriculaOpen}
         project={data}
-        curricula={linkable.data ?? []}
-        onSaved={project.reload}
+        curricula={curricula.data ?? []}
       />
 
       <EditRequirementsDialog
         open={requirementsOpen}
         onOpenChange={setRequirementsOpen}
         project={data}
-        onSaved={project.reload}
       />
 
       <DeleteProjectDialog
@@ -255,11 +245,6 @@ export default function ProjectDetailScreen() {
         cohort={cohort.data}
         nextDueAt={next?.endDate ?? null}
         nextProjectName={next?.name ?? null}
-        onSaved={() => {
-          project.reload()
-          // 마감이 바뀌면 다음 회차 판정(재시험 창)도 다시 계산해야 한다
-          siblings.reload()
-        }}
       />
     </ConsoleShell>
   )

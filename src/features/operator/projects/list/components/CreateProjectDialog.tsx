@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import { Field, FieldLabel } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils/cn'
-import { createProject, listSectionCandidates } from '../../api'
+import { useCreateProjectFlow, useSectionCandidates } from '../../queries'
 import {
   CONCEPT_COUNT,
   canCreate,
@@ -23,7 +23,7 @@ import {
 } from '../../rules'
 import ConceptPicker from '../../components/ConceptPicker'
 import RequirementsField from '../../components/RequirementsField'
-import type { CohortScope, ConceptCandidate, Curriculum } from '../../types'
+import type { CohortScope, Curriculum } from '../../types'
 import SchedulePicker, { type ScheduleValue } from '../../components/SchedulePicker'
 
 /*
@@ -57,8 +57,6 @@ type Props = {
   curricula: Curriculum[]
   /** 기수 기간 — 달력이 이 밖을 못 고르게 막는다 */
   cohort?: CohortScope
-  /** 생성 성공 시 — 목록을 다시 부르게 한다(서버가 정렬·집계를 다시 해야 한다) */
-  onCreated: () => void
   /**
    * 회차는 만들어졌는데 뒤 단계가 실패했다 — **상세로 보내 이어서 채우게 한다.**
    * 되돌리지 않는 이유는 지운 이름을 다시 못 쓰기 때문이다(9차 회신 §10).
@@ -72,7 +70,6 @@ export default function CreateProjectDialog({
   cohortId,
   curricula,
   cohort,
-  onCreated,
   onPartial,
 }: Props) {
   const [name, setName] = useState('')
@@ -83,45 +80,26 @@ export default function CreateProjectDialog({
     startAt: undefined,
     dueAt: undefined,
   })
-  const [submitting, setSubmitting] = useState(false)
   const [failed, setFailed] = useState(false)
-  const [candidates, setCandidates] = useState<ConceptCandidate[]>([])
-  const [loadingCandidates, setLoadingCandidates] = useState(false)
 
   const selected = useMemo(
     () => curricula.filter((c) => versionIds.includes(c.versionId)),
     [curricula, versionIds],
   )
 
+  const create = useCreateProjectFlow()
+  const submitting = create.isPending
+
   /*
     **후보를 교안 기준으로 조회한다.** 상세의 `findConceptCandidates`는 `projectId`를
-    요구하는데 여기는 아직 회차가 없다 — 섹션 조회(`findSections`)가 같은 매핑을 주고
-    겹치는 필드가 이름·타입까지 같아서(9차 R2 회신) 그대로 쓸 수 있다.
+    요구하는데 여기는 아직 회차가 없다 — 섹션 조회가 같은 매핑을 주고 겹치는 필드가
+    이름·타입까지 같아서(9차 R2 회신) 그대로 쓸 수 있다.
 
-    교안 하나에 조회 하나다. 고른 교안이 바뀔 때만 다시 부르고, **결과가 늦게 와도
-    지금 고른 교안 것만 반영한다**(`alive`) — 빠르게 체크를 바꾸면 순서가 뒤집힌다.
+    **고른 교안 조합이 캐시 키다** — 체크를 껐다 켜면 다시 부르지 않는다.
   */
-  useEffect(() => {
-    if (selected.length === 0) {
-      setCandidates([])
-      return
-    }
-    let alive = true
-    setLoadingCandidates(true)
-    Promise.all(selected.map((c) => listSectionCandidates(c.materialId, c.versionId)))
-      .then((lists) => {
-        if (alive) setCandidates(lists.flat())
-      })
-      .catch(() => {
-        if (alive) setCandidates([])
-      })
-      .finally(() => {
-        if (alive) setLoadingCandidates(false)
-      })
-    return () => {
-      alive = false
-    }
-  }, [selected])
+  const candidatesQuery = useSectionCandidates(selected)
+  const candidates = candidatesQuery.data ?? []
+  const loadingCandidates = candidatesQuery.isFetching
 
   /** 교안은 골랐는데 항목이 0 — 등록이 아니라 **분석 상태**를 봐야 한다 */
   const noTeachItem = versionIds.length > 0 && !loadingCandidates && candidates.length === 0
@@ -141,10 +119,9 @@ export default function CreateProjectDialog({
     name.trim().length > 0 && canCreate(versionIds, conceptIds) && !!period && !submitting
 
   const submit = async () => {
-    setSubmitting(true)
     setFailed(false)
     try {
-      const result = await createProject({
+      const result = await create.mutateAsync({
         cohortId,
         name,
         curriculumVersionIds: versionIds,
@@ -152,7 +129,6 @@ export default function CreateProjectDialog({
         requirementTitles: requirements,
         ...period!,
       })
-      onCreated()
       onOpenChange(false)
       reset()
       /*
@@ -165,8 +141,6 @@ export default function CreateProjectDialog({
     } catch {
       // 입력값을 유지한다 — 작업 중 저장 실패로 폼이 비면 처음부터 다시 해야 한다(F5)
       setFailed(true)
-    } finally {
-      setSubmitting(false)
     }
   }
 

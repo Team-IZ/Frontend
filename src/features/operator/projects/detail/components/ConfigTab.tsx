@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { canDelete, canEditConfig, lockedReason } from '../../rules'
-import type { Curriculum, Project } from '../../types'
+import type { ProjectDetail, VerificationConcept } from '../../types'
 
 /*
   구성 탭 — **고치는 자리**다. 무엇이 붙어 있는지는 헤더가 이미 말한다.
@@ -20,9 +20,14 @@ import type { Curriculum, Project } from '../../types'
   ▸ **요구사항은 교안과 별개다.** 과제 문서에서 나와 **구현 P/F에만** 쓴다(14번 6-3).
     같은 자리에 두면 이해도 측정과 섞인다.
 */
+/*
+  ─── 연동하며 바뀐 것 ───────────────────────────────────────────
+  **교안 목록을 따로 받지 않는다.** 목에서는 `curriculumIds`를 교안 목록과 조인해 이름을
+  찾았는데, 상세 응답이 연결된 교안을 **이름·버전과 함께** 준다(9차 R1). 개념도 출처
+  교안과 페이지를 달고 온다 — 조인이 사라지면서 `curricula` prop이 필요 없어졌다.
+*/
 type Props = {
-  project: Project
-  curricula: Curriculum[]
+  project: ProjectDetail
   onPickConcepts: () => void
   onChangeCurricula: () => void
   onEditRequirements: () => void
@@ -31,7 +36,6 @@ type Props = {
 
 export default function ConfigTab({
   project,
-  curricula,
   onPickConcepts,
   onChangeCurricula,
   onEditRequirements,
@@ -43,9 +47,9 @@ export default function ConfigTab({
   */
   const editable = canEditConfig(project.status)
   const locked = lockedReason(project.status)
-  const linked = curricula.filter((c) => project.curriculumIds.includes(c.id))
+  const linked = project.curricula
   const fixed = project.concepts.length > 0
-  const requirements = project.requirements
+  const requirements = project.requirementTitles
 
   return (
     <div className="flex flex-col gap-4">
@@ -82,12 +86,15 @@ export default function ConfigTab({
                 D1 중복이 아니다. 한 배열에서 그 자리에서 파생되므로 두 값이 갈릴 수 없고,
                 묻는 것이 다르다 — 저쪽은 *"이 개념이 어디서 왔나"*, 여기는 *"이 교안을 뺄 수 있나"*.
               */
-              const used = project.concepts.filter((x) => x.curriculumId === c.id).length
+              const used = project.concepts.filter(
+                (x) => x.curriculumVersionId === c.curriculumVersionId,
+              ).length
               return (
-                <Row key={c.id} index={i + 1}>
-                  <b className="font-semibold">{c.name}</b>{' '}
-                  <span className="text-fg-subtle">{c.version}</span>
-                  <span className="text-fg-subtle text-xs"> · 등록 {c.registeredAt}</span>
+                <Row key={c.projectCurriculumId} index={i + 1}>
+                  {/* 교안 버전 조회가 실패하면 이름이 없다 — 연결 자체는 있으므로 그 사실을 쓴다 */}
+                  <b className="font-semibold">{c.originalFileName ?? '(이름을 불러오지 못함)'}</b>
+                  {c.versionNo != null && <span className="text-fg-subtle"> v{c.versionNo}</span>}
+                  <span className="text-fg-subtle text-xs"> · 연결 {c.linkedAt.slice(0, 10)}</span>
                   {used > 0 && (
                     <span className="text-fg-subtle text-xs"> · 검증 개념 {used}건 사용 중</span>
                   )}
@@ -116,19 +123,18 @@ export default function ConfigTab({
         {fixed ? (
           <ol className="flex flex-col gap-2">
             {project.concepts.map((concept, i) => {
-              const owner = curricula.find((c) => c.id === concept.curriculumId)
-              const teach = owner?.teaches.find((t) => t.id === concept.id)
+              const owner = linked.find(
+                (c) => c.curriculumVersionId === concept.curriculumVersionId,
+              )
               return (
-                <Row key={concept.id} index={i + 1}>
-                  <b className="font-semibold">{concept.name}</b>
-                  {owner && (
-                    // 출처를 달고 다닌다 — 리포트·브리프가 이 값으로 교안 위치를 가리킨다
-                    <span className="text-fg-subtle">
-                      {' '}
-                      · {owner.name} {owner.version}
-                      {teach && ` · ${teach.page}`}
-                    </span>
-                  )}
+                <Row key={concept.mappingId} index={i + 1}>
+                  <b className="font-semibold">{concept.extractedName}</b>
+                  {/* 출처를 달고 다닌다 — 리포트·브리프가 이 값으로 교안 위치를 가리킨다 */}
+                  <span className="text-fg-subtle">
+                    {owner?.originalFileName && ` · ${owner.originalFileName}`}
+                    {owner?.versionNo != null && ` v${owner.versionNo}`}
+                    {concept.pageStart != null && ` · ${pageLabel(concept)}`}
+                  </span>
                 </Row>
               )
             })}
@@ -234,6 +240,13 @@ function Section({
       {children}
     </Card>
   )
+}
+
+/** `p.53` · `p.53–55`. 페이지가 없으면 부르지 않는다(호출부가 `null`을 먼저 본다) */
+function pageLabel(c: VerificationConcept): string {
+  return c.pageEnd && c.pageEnd !== c.pageStart
+    ? `p.${c.pageStart}–${c.pageEnd}`
+    : `p.${c.pageStart}`
 }
 
 /** 번호가 붙는 줄. 교안·개념·요구사항이 같은 모양이라 한 번만 만든다 */

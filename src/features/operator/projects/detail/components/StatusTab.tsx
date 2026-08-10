@@ -56,14 +56,14 @@ export default function StatusTab({
     개념 미확정 — **`없음`이지 `아직`이 아니다.** 기다린다고 문항이 만들어지지 않고
     오퍼레이터가 개념을 정해야 하므로, 실선 + 액션이다(02-layout §4 유형 2).
   */
-  if (!conceptsFixed(project.concepts.length)) {
+  if (!conceptsFixed(project.conceptCount)) {
     return (
       <Empty className="border-solid bg-surface">
         <EmptyHeader>
           <EmptyTitle>아직 집계할 것이 없습니다</EmptyTitle>
           <EmptyDescription>
             검증 개념 {CONCEPT_COUNT}건이 정해져야 학생에게 낼 문항이 만들어지고, 그때부터
-            제출·분석·응시가 집계됩니다. 지금은 {project.concepts.length}건입니다.
+            제출·분석·응시가 집계됩니다. 지금은 {project.conceptCount}건입니다.
           </EmptyDescription>
         </EmptyHeader>
         <Button onClick={onGoConfig}>구성 탭에서 개념 정하기</Button>
@@ -123,8 +123,8 @@ export default function StatusTab({
         <EmptyHeader>
           <EmptyTitle>아직 제출한 학생이 없습니다</EmptyTitle>
           <EmptyDescription>
-            {project.dueAt
-              ? `제출이 시작되면 반별 진행이 여기에 쌓입니다. 제출 마감은 ${formatDue(project.dueAt)}입니다.`
+            {project.endDate
+              ? `제출이 시작되면 반별 진행이 여기에 쌓입니다. 제출 마감은 ${formatDue(project.endDate)}입니다.`
               : '제출 마감이 정해지지 않아 학생에게 아직 열리지 않았습니다 — 개요 탭에서 일정을 정하세요.'}
           </EmptyDescription>
         </EmptyHeader>
@@ -155,22 +155,25 @@ export default function StatusTab({
               개념이 둘 이상이면 **각각 몇 팀인지**를 줄로 나눈다. 한 문장에 몰면 어느
               숫자가 어느 개념 것인지 읽어내야 한다.
             */}
+            {/*
+              ⚠ **팀 수(분모)를 못 쓴다.** 목은 `8개 팀 중 6개`라고 썼는데 서버 응답에
+              전체 팀 수가 없다(9차 §7에서 문구를 바꾸기로 했다). 분모를 지어내지 않고
+              **미매칭 팀 수만** 말한다 — 없는 값을 추정해 쓰면 그 숫자가 근거가 된다.
+            */}
             {gaps.length > 1 && (
               <ul className="mb-1.5 flex flex-col gap-0.5">
                 {gaps.map((g) => (
-                  <li key={g.conceptId}>
+                  <li key={g.teachesId}>
                     <b className="text-fg-muted font-semibold">{g.conceptName}</b> —{' '}
-                    {report.totalTeams}개 팀 중{' '}
-                    <b className="font-semibold">{g.unmatchedTeams}개</b>
+                    <b className="font-semibold">{g.unmatchedTeams}개 팀</b> 전원 미매칭
                   </li>
                 ))}
               </ul>
             )}
             {gaps.length === 1 && (
               <>
-                {report.totalTeams}개 팀 중{' '}
-                <b className="text-fg-muted font-semibold">{gaps[0].unmatchedTeams}개</b>
-                입니다.{' '}
+                <b className="text-fg-muted font-semibold">{gaps[0].unmatchedTeams}개 팀</b>이 전원
+                미매칭입니다.{' '}
               </>
             )}
             학생 문제가 아니라 개념 선택이 이 프로젝트와 맞지 않았을 수 있습니다.{' '}
@@ -233,7 +236,12 @@ export default function StatusTab({
                   {c.attended}/{c.attendable}
                 </TableCell>
                 <TableCell className="text-xs">
-                  {c.manager ?? <span className="text-warning font-semibold">담당 없음</span>}
+                  {/* 서버가 배열로 준다 — 한 반에 담당이 여럿일 수 있다(9차 §7) */}
+                  {c.managerNames.length > 0 ? (
+                    c.managerNames.join(' · ')
+                  ) : (
+                    <span className="text-warning font-semibold">담당 없음</span>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
@@ -257,7 +265,7 @@ export default function StatusTab({
                 줄바꿈되면서 오른쪽 900px가 통째로 비었다 — 표에서 서술 열이 흡수해야
                 하는 자리다(H13). 수치는 길이가 일정하므로 오른쪽 끝에 고정한다.
               */
-              <div key={m.conceptId} className="flex items-baseline gap-3 text-sm">
+              <div key={m.teachesId} className="flex items-baseline gap-3 text-sm">
                 <dt className="min-w-0 flex-1 text-xs font-semibold">{m.conceptName}</dt>
                 <dd className="shrink-0 text-right">
                   {m.total}명 중{' '}

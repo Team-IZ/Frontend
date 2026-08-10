@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { cn } from '@/lib/utils/cn'
 import { CONCEPT_COUNT, canEditSchedule, canOnlyExtendDue, dueLabel, formatDue } from '../../rules'
-import type { Curriculum, Project } from '../../types'
+import type { ProjectDetail } from '../../types'
 
 /*
   개요 탭 — **이 회차가 무엇인가.** 첫 탭이자 기본 탭이다.
@@ -30,9 +30,14 @@ import type { Curriculum, Project } from '../../types'
   ▸ **잠그지 않고 말한다.** 비어 있는 칸이 무엇을 기다리는지 그 자리에 쓴다(C1).
   ▸ **측정 규칙은 읽기 전용이다** — 입력 필드로 만들면 안 된다(목업 명시).
 */
+/*
+  ─── 연동하며 바뀐 것 ───────────────────────────────────────────
+  **교안 목록을 따로 받지 않는다** — 상세 응답이 연결 교안을 이름과 함께 준다(9차 R1).
+  **마감에 시각이 없다** — 서버 컬럼이 `date`이고, 화면이 붙이던 `23:59`을 서버가
+  뒷받침하지 않는다(`rules.ts` 상단). 그래서 타임라인도 날짜만 쓴다.
+*/
 type Props = {
-  project: Project
-  curricula: Curriculum[]
+  project: ProjectDetail
   /** 남은 일수 기준일. 화면이 넘긴다 */
   now: string
   /** 다음 회차 제출 마감 — 재시험 창이 이 값을 참조한다. 없으면 3일 규칙만 적용된다 */
@@ -43,25 +48,24 @@ type Props = {
 
 export default function OverviewTab({
   project,
-  curricula,
   now,
   nextDueAt,
   nextProjectName,
   onEditSchedule,
 }: Props) {
-  const due = project.dueAt ? dueLabel(project.dueAt, now) : null
+  const due = project.endDate ? dueLabel(project.endDate, now) : null
   const fixed = project.concepts.length === CONCEPT_COUNT
-  const linked = curricula.filter((c) => project.curriculumIds.includes(c.id))
+  const linked = project.curricula
 
   return (
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-3">
         <Stat
           label="제출 마감"
-          value={project.dueAt ? formatDue(project.dueAt) : '미설정'}
+          value={project.endDate ? formatDue(project.endDate) : '미설정'}
           // 색만으로 상태를 구분하지 않는다 — 남은 시간 텍스트가 같이 있다(F4)
-          note={due?.text ?? (project.dueAt ? undefined : '학생이 언제까지 낼지 정해집니다')}
-          tone={!project.dueAt ? 'warn' : due?.urgent ? 'danger' : undefined}
+          note={due?.text ?? (project.endDate ? undefined : '학생이 언제까지 낼지 정해집니다')}
+          tone={!project.endDate ? 'warn' : due?.urgent ? 'danger' : undefined}
         />
         <Stat
           label="검증 개념"
@@ -74,7 +78,7 @@ export default function OverviewTab({
           value={linked.length > 0 ? `${linked.length}개` : '없음'}
           note={
             linked.length > 0
-              ? linked.map((c) => c.name).join(' · ')
+              ? linked.map((c) => c.originalFileName ?? '이름 없음').join(' · ')
               : '검증 개념이 여기서 나옵니다'
           }
           tone={linked.length === 0 ? 'warn' : undefined}
@@ -85,12 +89,12 @@ export default function OverviewTab({
         <div className="border-border flex items-center justify-between border-b p-4">
           <h2 className="text-sm font-bold">일정</h2>
           <Button
-            variant={project.dueAt ? 'ghost' : 'primary'}
+            variant={project.endDate ? 'ghost' : 'primary'}
             size="sm"
             onClick={onEditSchedule}
             disabled={!canEditSchedule(project.status)}
           >
-            {project.dueAt ? '수정' : '일정 설정'}
+            {project.endDate ? '수정' : '일정 설정'}
           </Button>
         </div>
 
@@ -118,28 +122,28 @@ export default function OverviewTab({
         <ol className="flex flex-col p-4">
           <Node
             label="시작"
-            done={!!project.startAt}
-            value={project.startAt ? formatDue(project.startAt) : '미설정'}
+            done={!!project.startDate}
+            value={project.startDate ? formatDue(project.startDate) : '미설정'}
           />
           <Node
             label="제출 마감"
-            done={!!project.dueAt}
-            value={project.dueAt ? formatDue(project.dueAt) : '아직 정하지 않았습니다'}
+            done={!!project.endDate}
+            value={project.endDate ? formatDue(project.endDate) : '아직 정하지 않았습니다'}
             strong
           />
           <Node
             label="응시 창"
-            done={!!project.dueAt}
+            done={!!project.endDate}
             value="코드 분석 완료 시점부터 24시간"
             // 이 한 줄만 남긴 설명 — 실제 오해를 막는다(14번 10-1)
             note="제출 시점이 아닙니다. 분석이 끝나야 응시할 문항이 생깁니다"
           />
           <Node
             label="재시험 창"
-            done={!!project.dueAt}
+            done={!!project.endDate}
             value="3일 또는 다음 회차 제출일 중 빠른 쪽"
             note={
-              !project.dueAt
+              !project.endDate
                 ? undefined
                 : nextDueAt && nextProjectName
                   ? `${nextProjectName}(${formatDue(nextDueAt).slice(0, 5)})이 먼저면 그날 닫힙니다`
@@ -148,8 +152,8 @@ export default function OverviewTab({
           />
           <Node
             label="리포트 발행"
-            done={!!project.dueAt}
-            value={project.dueAt ? '제출 마감 후 일괄' : '마감이 정해지면 그 뒤 일괄'}
+            done={!!project.endDate}
+            value={project.endDate ? '제출 마감 후 일괄' : '마감이 정해지면 그 뒤 일괄'}
             last
           />
         </ol>

@@ -9,16 +9,10 @@ import {
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
-import { saveSchedule } from '../../api'
-import {
-  DEFAULT_DUE_TIME,
-  DEFAULT_START_TIME,
-  canOnlyExtendDue,
-  formatDue,
-  toSchedule,
-} from '../../rules'
+import { useUpdateSchedule } from '@/api/projectExecution/useProjectExecutionMutations'
+import { canOnlyExtendDue, formatDue, toSchedule } from '../../rules'
 import SchedulePicker, { type ScheduleValue } from '../../components/SchedulePicker'
-import type { CohortScope, Project } from '../../types'
+import type { CohortScope, ProjectDetail } from '../../types'
 
 /*
   일정 수정 — **사람이 정하는 것은 둘뿐이다**(시작 · 제출 마감). 각각 날짜와 시각을 받는다.
@@ -43,21 +37,15 @@ import type { CohortScope, Project } from '../../types'
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  project: Project
+  project: ProjectDetail
   /** 기수 기간 — 달력이 이 밖을 못 고르게 막는다. 아직 안 왔으면 상한 없이 연다 */
   cohort?: CohortScope
   /** 다음 회차 제출 마감 — 재시험 창이 이 값을 참조한다(위 ⚠) */
   nextDueAt: string | null
   nextProjectName: string | null
-  onSaved: () => void
 }
 
-const EMPTY: ScheduleValue = {
-  startAt: undefined,
-  startTime: DEFAULT_START_TIME,
-  dueAt: undefined,
-  dueTime: DEFAULT_DUE_TIME,
-}
+const EMPTY: ScheduleValue = { startAt: undefined, dueAt: undefined }
 
 export default function EditScheduleDialog({
   open,
@@ -66,35 +54,33 @@ export default function EditScheduleDialog({
   cohort,
   nextDueAt,
   nextProjectName,
-  onSaved,
 }: Props) {
   const [schedule, setSchedule] = useState<ScheduleValue>(EMPTY)
-  const [submitting, setSubmitting] = useState(false)
   const [failed, setFailed] = useState(false)
+  const save = useUpdateSchedule()
 
   // 열 때마다 저장된 일정에서 시작한다. 미설정이면 빈 칸으로 연다
   useEffect(() => {
     if (!open) return
     setSchedule({
-      startAt: project.startAt ? new Date(project.startAt.slice(0, 10)) : undefined,
-      startTime: project.startAt?.slice(11, 16) || DEFAULT_START_TIME,
-      dueAt: project.dueAt ? new Date(project.dueAt.slice(0, 10)) : undefined,
-      dueTime: project.dueAt?.slice(11, 16) || DEFAULT_DUE_TIME,
+      startAt: new Date(project.startDate),
+      dueAt: project.endDate ? new Date(project.endDate) : undefined,
     })
     setFailed(false)
-  }, [open, project.startAt, project.dueAt])
+  }, [open, project.startDate, project.endDate])
 
   /*
     **진행 중이면 마감을 앞당길 수 없다.** 달력의 하한을 현재 마감으로 올려 애초에 못
     고르게 하고(만들 수 없는 것은 검증할 필요가 없다), 같은 날 시각까지는 아래에서 막는다.
   */
   const extendOnly = canOnlyExtendDue(project.status)
-  const period = toSchedule(schedule.startAt, schedule.startTime, schedule.dueAt, schedule.dueTime)
-  const pulledIn = !!period && extendOnly && !!project.dueAt && period.dueAt < project.dueAt
-  const changed = !!period && (period.startAt !== project.startAt || period.dueAt !== project.dueAt)
+  const period = toSchedule(schedule.startAt, schedule.dueAt)
+  const pulledIn = !!period && extendOnly && !!project.endDate && period.endDate < project.endDate
+  const changed =
+    !!period && (period.startDate !== project.startDate || period.endDate !== project.endDate)
 
   /** 재시험 창이 열리지 않는 조합 — 판정이 아니라 두 날짜를 나란히 놓은 것이다 */
-  const afterNext = !!period && !!nextDueAt && period.dueAt > nextDueAt
+  const afterNext = !!period && !!nextDueAt && period.endDate > nextDueAt
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -113,8 +99,8 @@ export default function EditScheduleDialog({
           <SchedulePicker
             value={schedule}
             onChange={(patch) => setSchedule((prev) => ({ ...prev, ...patch }))}
-            min={extendOnly && project.dueAt ? project.dueAt.slice(0, 10) : cohort?.startAt}
-            max={cohort?.endAt}
+            min={extendOnly && project.endDate ? project.endDate : (cohort?.startDate ?? undefined)}
+            max={cohort?.endDate ?? undefined}
           />
 
           {extendOnly && (
@@ -147,7 +133,7 @@ export default function EditScheduleDialog({
           <p className="text-fg-subtle text-xs">
             {!period
               ? schedule.startAt && schedule.dueAt
-                ? '제출 마감이 시작보다 뒤여야 합니다'
+                ? '제출 마감이 시작보다 앞설 수 없습니다'
                 : '시작과 제출 마감을 모두 골라야 합니다'
               : pulledIn
                 ? '마감을 앞당길 수 없습니다 — 미루는 것만 됩니다'
@@ -156,27 +142,26 @@ export default function EditScheduleDialog({
                   : '변경된 것이 없습니다'}
           </p>
           <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting}>
+            <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={save.isPending}>
               취소
             </Button>
             <Button
-              disabled={!changed || pulledIn || submitting}
+              disabled={!changed || pulledIn || save.isPending}
               onClick={async () => {
-                setSubmitting(true)
                 setFailed(false)
                 try {
-                  await saveSchedule(project.id, period!.startAt, period!.dueAt)
-                  onSaved()
+                  await save.mutateAsync({
+                    path: { projectId: project.projectId },
+                    body: { startDate: period!.startDate, endDate: period!.endDate },
+                  })
                   onOpenChange(false)
                 } catch {
                   // 고른 날짜를 유지한다 — 저장 실패로 날아가면 처음부터 다시 골라야 한다(F5)
                   setFailed(true)
-                } finally {
-                  setSubmitting(false)
                 }
               }}
             >
-              {submitting && <Spinner className="size-3.5" />}
+              {save.isPending && <Spinner className="size-3.5" />}
               저장
             </Button>
           </div>

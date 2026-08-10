@@ -9,10 +9,10 @@ import {
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
-import { deleteProject } from '../../api'
+import { useDeleteProject } from '@/api/projectExecution/useProjectExecutionMutations'
 import { formatDue } from '../../rules'
 import { withParticle } from '../../labels'
-import type { Curriculum, Project } from '../../types'
+import type { ProjectDetail } from '../../types'
 
 /*
   회차 삭제 확인 — **되돌릴 수 없으므로 무엇이 사라지는지 먼저 센다.**
@@ -29,21 +29,14 @@ import type { Curriculum, Project } from '../../types'
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  project: Project
-  curricula: Curriculum[]
+  project: ProjectDetail
   /** 삭제 성공 시 — 이 회차는 더 이상 없으므로 화면이 목록으로 나간다 */
   onDeleted: () => void
 }
 
-export default function DeleteProjectDialog({
-  open,
-  onOpenChange,
-  project,
-  curricula,
-  onDeleted,
-}: Props) {
-  const [submitting, setSubmitting] = useState(false)
+export default function DeleteProjectDialog({ open, onOpenChange, project, onDeleted }: Props) {
   const [failed, setFailed] = useState(false)
+  const remove = useDeleteProject()
 
   useEffect(() => {
     if (open) setFailed(false)
@@ -51,13 +44,13 @@ export default function DeleteProjectDialog({
 
   /** 사라지는 것 — 0인 항목은 쓰지 않는다. `요구사항 0건`은 잃는 것이 아니다 */
   const losing = [
-    project.curriculumIds.length > 0 && `교안 ${project.curriculumIds.length}개 연결`,
+    project.curricula.length > 0 && `교안 ${project.curricula.length}개 연결`,
     project.concepts.length > 0 && `검증 개념 ${project.concepts.length}건`,
-    project.requirements.length > 0 && `요구사항 ${project.requirements.length}건`,
-    project.dueAt && `일정(마감 ${formatDue(project.dueAt)})`,
+    project.requirementTitles.length > 0 && `요구사항 ${project.requirementTitles.length}건`,
+    project.endDate && `일정(마감 ${formatDue(project.endDate)})`,
   ].filter(Boolean) as string[]
 
-  const linked = curricula.filter((c) => project.curriculumIds.includes(c.id))
+  const linked = project.curricula
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -97,7 +90,16 @@ export default function DeleteProjectDialog({
             </p>
           )}
 
-          <p className="text-fg-muted text-xs">되돌릴 수 없습니다.</p>
+          {/*
+            **이름과 순번을 다시 못 쓴다**(9차 회신 §10). 삭제된 행도 그 이름·순번을
+            점유해서, 같은 이름으로 다시 만들면 서버가 409로 막고 다음 회차 번호는
+            지운 번호를 건너뛴다. **지우고 다시 만들면 된다고 생각하고 누르는 것**을
+            막아야 하므로 여기서 미리 말한다.
+          */}
+          <p className="text-fg-muted text-xs">
+            되돌릴 수 없습니다. <b className="font-semibold">같은 이름으로 다시 만들 수 없고</b>,
+            다음 회차 번호는 이 회차의 번호를 건너뜁니다.
+          </p>
         </div>
 
         <DialogFooter>
@@ -105,28 +107,25 @@ export default function DeleteProjectDialog({
           <Button
             variant="ghost"
             onClick={() => onOpenChange(false)}
-            disabled={submitting}
+            disabled={remove.isPending}
             autoFocus
           >
             취소
           </Button>
           <Button
             className="bg-danger hover:bg-danger/90 text-white"
-            disabled={submitting}
+            disabled={remove.isPending}
             onClick={async () => {
-              setSubmitting(true)
               setFailed(false)
               try {
-                await deleteProject(project.id)
+                await remove.mutateAsync({ path: { projectId: project.projectId } })
                 onDeleted()
               } catch {
                 setFailed(true)
-              } finally {
-                setSubmitting(false)
               }
             }}
           >
-            {submitting && <Spinner className="size-3.5" />}
+            {remove.isPending && <Spinner className="size-3.5" />}
             삭제
           </Button>
         </DialogFooter>

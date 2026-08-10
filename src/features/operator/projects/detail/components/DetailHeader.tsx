@@ -25,7 +25,7 @@ export default function DetailHeader({
   /** 남은 일수 기준일. 화면이 넘긴다 */
   now: string
 }) {
-  const due = project.dueAt ? dueLabel(project.dueAt, now) : null
+  const due = project.endDate ? dueLabel(project.endDate, now) : null
 
   return (
     <div className="mb-4">
@@ -44,10 +44,10 @@ export default function DetailHeader({
         </h1>
         {/* 마감은 오른쪽 끝으로 — 제목과 같은 줄에 있되 읽는 순서는 나중이다 */}
         <span className="ml-auto text-sm">
-          {project.dueAt ? (
+          {project.endDate ? (
             <span className="flex items-baseline gap-1.5">
               <span className="text-fg-subtle text-xs">마감</span>
-              <b className="font-semibold tabular-nums">{formatDue(project.dueAt)}</b>
+              <b className="font-semibold tabular-nums">{formatDue(project.endDate)}</b>
               {due && (
                 // 색만으로 상태를 구분하지 않는다 — 남은 시간 텍스트가 같이 있다(F4)
                 <span

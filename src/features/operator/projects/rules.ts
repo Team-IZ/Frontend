@@ -49,10 +49,10 @@ export function toggleConcept(picked: string[], teachId: string): string[] {
  * **생성(OP-03)은 이 규칙을 쓰지 않는다** — 아래 `dropOrphanConcepts`를 본다.
  */
 export function canUnlinkCurriculum(
-  concepts: { curriculumId: string }[],
-  curriculumId: string,
+  concepts: { curriculumVersionId: string | null }[],
+  curriculumVersionId: string,
 ): boolean {
-  return !concepts.some((c) => c.curriculumId === curriculumId)
+  return !concepts.some((c) => c.curriculumVersionId === curriculumVersionId)
 }
 
 /**
@@ -64,13 +64,13 @@ export function canUnlinkCurriculum(
  */
 export function dropOrphanConcepts(
   picked: string[],
-  curricula: { id: string; teaches: { id: string }[] }[],
-  keptCurriculumIds: string[],
+  candidates: { mappingId: string; curriculumVersionId: string }[],
+  keptVersionIds: string[],
 ): string[] {
   const alive = new Set(
-    curricula
-      .filter((c) => keptCurriculumIds.includes(c.id))
-      .flatMap((c) => c.teaches.map((t) => t.id)),
+    candidates
+      .filter((c) => keptVersionIds.includes(c.curriculumVersionId))
+      .map((c) => c.mappingId),
   )
   return picked.filter((id) => alive.has(id))
 }
@@ -187,25 +187,22 @@ export const DUE_SOON_DAYS = 7
 
 const DAY_MS = 86_400_000
 
-/**
- * 시각 입력의 **초기값**일 뿐이다 — 회차마다 다르므로 사용자가 바꾼다.
- *
- * 한때 `DUE_TIME` 상수로 **고정**해 화면이 붙여서 보냈다. 목업의 `18:00`도 이 값도
- * 예시였을 뿐인데 상수로 두니 *"자정 마감이 규칙"* 인 것처럼 굳었다 — 실제로는 회차마다
- * 다르게 잡는다. **기준을 화면이 만들지 않는다**(E8).
- */
-export const DEFAULT_DUE_TIME = '23:59'
-/** 시작 시각 초기값. 하루의 시작이라 `00:00`이다 */
-export const DEFAULT_START_TIME = '00:00'
+/*
+  ⚠ **마감 시각을 화면이 정하지 않는다** — 입력 자체를 뺐다.
+
+  한때 `DEFAULT_DUE_TIME = '23:59'`을 붙여 `07-21 23:59`을 마감이라고 썼는데,
+  **서버가 그 시각을 뒷받침하지 않는다.** `project.end_date`는 `DATE`이고 학생에게
+  나가는 실제 마감(`project_assessment_round.submission_due_at`)은 다른 테이블이며
+  두 값이 연결돼 있지 않다(9차 회신 §15).
+
+  그대로 두면 일정을 수정하는 순간 **화면이 말한 마감과 실제 마감이 갈린다.** 되돌릴 수
+  없는 값이고 학생 화면에도 나가므로, 모르는 것을 아는 척하지 않고 **날짜만 다룬다.**
+  결론(ⓐ 서버가 파생 · ⓑ 운영자 입력 · ⓒ `submissionDueAt`만 표시)이 나오면 되살린다.
+*/
 
 /** 로컬 날짜를 `YYYY-MM-DD`로. `toISOString()`은 UTC로 밀려 하루가 어긋난다 */
 export function toIsoDate(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
-}
-
-/** 날짜 + 고정 시각을 `YYYY-MM-DDTHH:mm`으로 */
-export function toIsoDateTime(d: Date, time: string): string {
-  return `${toIsoDate(d)}T${time}`
 }
 
 const pad = (n: number) => String(n).padStart(2, '0')
@@ -244,29 +241,22 @@ function dateOnly(iso: string): number {
 }
 
 /**
- * 고른 날짜·시각을 저장 형식(`YYYY-MM-DDTHH:mm`)으로. 둘 중 하나라도 없으면 `null` —
- * 저장 가능 여부 판정이 이 반환값 하나로 끝난다.
+ * 고른 두 날짜를 저장 형식(`YYYY-MM-DD`)으로. 하나라도 없으면 `null` — 저장 가능
+ * 여부 판정이 이 반환값 하나로 끝난다.
  *
- * **시작에도 시각이 붙는다.** 한쪽만 시각을 받으면 왜 다른지를 화면이 설명해야 하고,
- * `09:00 시작 · 18:00 마감` 같은 운영이 실제로 있다.
- *
- * `시작 > 마감`은 달력·시각 입력이 서로 막아 애초에 만들어지지 않지만, **같은 날**이면
- * 시각까지 봐야 갈린다 — 날짜만 비교하던 때는 통과하던 조합이라 여기서 막는다.
+ * **같은 날은 허용한다.** 하루짜리 회차가 실제로 있고, 시각이 없으므로 `시작 = 마감`을
+ * 막을 근거가 없다. `시작 > 마감`은 달력이 서로를 막아 애초에 안 만들어지지만 서버도
+ * 검증하므로 여기서도 본다.
  */
-export function toSchedule(
-  startAt: Date | undefined,
-  startTime: string,
-  dueAt: Date | undefined,
-  dueTime: string,
-) {
-  if (!startAt || !dueAt || !startTime || !dueTime) return null
-  const start = toIsoDateTime(startAt, startTime)
-  const due = toIsoDateTime(dueAt, dueTime)
-  if (due <= start) return null
-  return { startAt: start, dueAt: due }
+export function toSchedule(startAt: Date | undefined, dueAt: Date | undefined) {
+  if (!startAt || !dueAt) return null
+  const startDate = toIsoDate(startAt)
+  const endDate = toIsoDate(dueAt)
+  if (endDate < startDate) return null
+  return { startDate, endDate }
 }
 
-/** 표시용 `07-21 18:00`. 저장·전송은 ISO로 두고 화면에서만 자른다 */
-export function formatDue(iso: string): string {
-  return `${iso.slice(5, 10)} ${iso.slice(11, 16)}`
+/** 표시용 `07-21`. 저장·전송은 `YYYY-MM-DD`로 두고 화면에서만 자른다 */
+export function formatDue(date: string): string {
+  return date.slice(5, 10)
 }

@@ -184,12 +184,24 @@ export default function RoundGridTable({ grid }: { grid: RoundGrid }) {
               </th>
 
               {row.cells.map((cell) => {
-                const label =
-                  cell.state === 'VALUE'
+                /*
+                  **집계가 끝났는데 비율이 없는 칸이 있다.** 채점 대상이 0명이면 서버가
+                  `riskRate`를 `null`로 준다(분모가 0이라 비율이 성립하지 않는다) —
+                  `state`는 그대로 `VALUE`다. 그 조합을 안 보고 `${cell.ratio}%`를 쓰다가
+                  **인원 0명인 반 행에 `null%`가 그려졌다**(실측: `1반 0명`).
+
+                  `집계 전`으로 낮춰 쓰지 않는다 — 집계는 실제로 끝났고, 셀 수 있는 사람이
+                  없었을 뿐이라 그렇게 쓰면 거짓이 된다. 값이 없다는 표시만 한다.
+                */
+                const empty = cell.state === 'VALUE' && cell.ratio == null
+                const label = empty
+                  ? '—'
+                  : cell.state === 'VALUE'
                     ? `${cell.ratio}%`
                     : CELL_STATE_LABEL[cell.state as 'PENDING' | 'BEFORE']
-                const hint =
-                  cell.state === 'VALUE'
+                const hint = empty
+                  ? '채점 대상이 없습니다'
+                  : cell.state === 'VALUE'
                     ? `위험자 ${cell.risky}명 / 채점 ${cell.graded}명${
                         cell.sign === 'BASELINE'
                           ? ''
@@ -218,7 +230,7 @@ export default function RoundGridTable({ grid }: { grid: RoundGrid }) {
                       title={hint}
                       aria-label={`${row.name} ${cell.round}차 · ${label} · ${hint}`}
                       className={`focus-visible:ring-primary block rounded-sm py-1.5 text-center text-sm tabular-nums focus-visible:ring-2 focus-visible:outline-none ${
-                        cell.state === 'VALUE'
+                        cell.state === 'VALUE' && !empty
                           ? `font-semibold ${SIGN_CLASS[cell.sign]}`
                           : /*
                               **값이 없는 칸에 면을 깔지 않는다.** `bg-surface-2`를 줬더니

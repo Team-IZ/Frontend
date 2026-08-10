@@ -3,7 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import ErrorState from '@/components/common/ErrorState'
 import { Spinner } from '@/components/ui/Spinner'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import {
@@ -125,17 +125,24 @@ export default function ProjectDetailScreen() {
   */
   if (!data) {
     if (project.isError) {
+      /*
+        **모든 실패를 "찾을 수 없습니다"로 쓰지 않는다.** 서버가 500을 주는 동안 주소가
+        틀렸다고 말하면 사용자가 **없는 문제를 고치러 간다**(async-states §3-1).
+        문구·재시도 여부는 `errorCopy`가 `status`·코드를 보고 정한다.
+      */
       return (
         <ConsoleShell role="operator" cohort={cohortName}>
-          <Empty>
-            <EmptyHeader>
-              <EmptyTitle>회차를 찾을 수 없습니다</EmptyTitle>
-              <EmptyDescription>지워졌거나 주소가 잘못됐을 수 있습니다.</EmptyDescription>
-            </EmptyHeader>
-            <Button variant="ghost" onClick={() => navigate('/operator/projects')}>
-              프로젝트 목록으로
-            </Button>
-          </Empty>
+          <ErrorState
+            error={project.error}
+            subject="회차"
+            onRetry={() => project.refetch()}
+            retrying={project.isFetching}
+            action={
+              <Button variant="ghost" onClick={() => navigate('/operator/projects')}>
+                프로젝트 목록으로
+              </Button>
+            }
+          />
         </ConsoleShell>
       )
     }

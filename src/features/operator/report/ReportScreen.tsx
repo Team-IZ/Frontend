@@ -10,7 +10,8 @@ import { getReport } from './_/api/api'
 import { COHORT_ID } from './_/cohortScope'
 import { useAsync } from './_/useAsync'
 import { exportReportCsv } from './_/labels'
-import { Loading, LoadFailed } from './_/components/AsyncState'
+import { Loading } from './_/components/AsyncState'
+import ErrorState from '@/components/common/ErrorState'
 import ReportHead from './_/components/ReportHead'
 import SectionHeading from './_/components/SectionHeading'
 import DiagnosisSummary from './_/components/DiagnosisSummary'
@@ -148,7 +149,12 @@ export default function ReportScreen() {
       {report.loading ? (
         <Loading label="리포트를 불러오는 중" />
       ) : report.failed ? (
-        <LoadFailed label="리포트를 불러오지 못했습니다" onRetry={report.reload} />
+        /*
+          **404가 늘 고장인 것은 아니다.** `COHORT_REPORT_NOT_FOUND`는 아직 진단이 확정되지
+          않은 것이라 「없는 것」 3종 중 **유형 1 `아직`** 이고, 다시 시도를 눌러도 리포트가
+          생기지 않는다 — `errorCopy`가 그 판정을 갖는다(async-states §3-1·3-2).
+        */
+        <ErrorState error={report.error} subject="리포트" onRetry={report.reload} />
       ) : (
         report.data && (
           <>

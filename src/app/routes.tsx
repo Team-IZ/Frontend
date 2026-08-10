@@ -1,8 +1,9 @@
-import { createBrowserRouter, Navigate } from 'react-router'
+import { createBrowserRouter, Navigate, Outlet } from 'react-router'
 import type { RouteObject } from 'react-router'
 import UiPreviewScreen from '@/app/UiPreviewScreen'
 import TraineeCaseIndex from '@/app/TraineeCaseIndex'
 import RouteNotFound from '@/app/RouteNotFound'
+import AppCrashed from '@/app/AppCrashed'
 
 /*
   각 화면이 자기 라우트를 옆 파일(`{X}Screen.route.tsx`)에 `route` export로
@@ -27,16 +28,30 @@ const routeModules = import.meta.glob<{ route: RouteObject }>('/src/features/**/
 })
 const featureRoutes = Object.values(routeModules).map((m) => m.route)
 
+/*
+  **경로 없는 부모 하나로 전부를 감싼다.** 자식 어디서 렌더가 터져도 예외가 여기까지
+  올라와 `AppCrashed`가 받는다 — 없으면 화면이 아니라 **앱이 사라진다**(흰 화면,
+  async-states §3-6). 라우트마다 `errorElement`를 달지 않아도 되는 이유다.
+
+  `element: <Outlet />`은 아무것도 안 그리고 자식만 통과시킨다 — 이 부모는 레이아웃이
+  아니라 **그물**이라 화면에 아무 영향이 없어야 한다.
+*/
 export const router = createBrowserRouter([
-  ...featureRoutes,
+  {
+    element: <Outlet />,
+    errorElement: <AppCrashed />,
+    children: [
+      ...featureRoutes,
 
-  // 진입점. 로그인 후 역할별 초기 화면은 서버가 판정하므로(명세 AUTH-03),
-  // 클라이언트는 역할→화면 매핑을 갖지 않는다.
-  { path: '/', element: <Navigate to="/shared/login" replace /> },
-  { path: '/ui-preview', element: <UiPreviewScreen /> },
-  { path: '/trainee/__cases', element: <TraineeCaseIndex /> },
+      // 진입점. 로그인 후 역할별 초기 화면은 서버가 판정하므로(명세 AUTH-03),
+      // 클라이언트는 역할→화면 매핑을 갖지 않는다.
+      { path: '/', element: <Navigate to="/shared/login" replace /> },
+      { path: '/ui-preview', element: <UiPreviewScreen /> },
+      { path: '/trainee/__cases', element: <TraineeCaseIndex /> },
 
-  // 없는 경로를 조용히 로그인으로 보내지 않는다. 그러면 "라우트를 등록 안 한 것"과
-  // "코드가 틀린 것"을 구분할 수 없어 개발 중에 시간을 잃는다.
-  { path: '*', element: <RouteNotFound /> },
+      // 없는 경로를 조용히 로그인으로 보내지 않는다. 그러면 "라우트를 등록 안 한 것"과
+      // "코드가 틀린 것"을 구분할 수 없어 개발 중에 시간을 잃는다.
+      { path: '*', element: <RouteNotFound /> },
+    ],
+  },
 ])

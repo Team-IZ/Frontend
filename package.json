@@ -28,7 +28,8 @@
     "doc:components": "node scripts/component-doc.mjs",
     "check:pagination": "node --experimental-strip-types scripts/check-pagination-range.mts",
     "check:project": "node --experimental-strip-types scripts/check-project-rules.mts",
-    "check:admin": "node --experimental-strip-types scripts/check-admin-rules.mts"
+    "check:admin": "node --experimental-strip-types scripts/check-admin-rules.mts",
+    "check:error-copy": "node --experimental-strip-types scripts/check-error-copy.mts"
   },
   "overrides": {
     "openapi-typescript": {

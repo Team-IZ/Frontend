@@ -10,20 +10,25 @@ import { useEffect, useState } from 'react'
 export function useAsync<T>(load: () => Promise<T>, enabled = true) {
   const [data, setData] = useState<T>()
   const [loading, setLoading] = useState(enabled)
-  const [failed, setFailed] = useState(false)
+  /*
+    **실패를 boolean으로만 들고 있으면 화면이 이유를 말할 수 없다.** `errorCopy`가
+    `status`·코드를 봐야 "아직 발행 전"과 "서버 문제"를 가른다(async-states §3-1).
+    이 훅은 react-query로 옮길 때 사라진다(async-states-plan 6단계).
+  */
+  const [error, setError] = useState<unknown>()
   const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     if (!enabled) return
     let alive = true
     setLoading(true)
-    setFailed(false)
+    setError(undefined)
     load()
       .then((v) => {
         if (alive) setData(v)
       })
-      .catch(() => {
-        if (alive) setFailed(true)
+      .catch((e) => {
+        if (alive) setError(e)
       })
       .finally(() => {
         if (alive) setLoading(false)
@@ -33,5 +38,11 @@ export function useAsync<T>(load: () => Promise<T>, enabled = true) {
     }
   }, [load, attempt, enabled])
 
-  return { data, loading, failed, reload: () => setAttempt((n) => n + 1) }
+  return {
+    data,
+    loading,
+    failed: error !== undefined,
+    error,
+    reload: () => setAttempt((n) => n + 1),
+  }
 }

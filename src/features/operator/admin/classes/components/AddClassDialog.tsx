@@ -12,8 +12,11 @@ import { Field, FieldLabel, FieldDescription } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
 import { useCreateClassroom } from '@/api/academic/useAcademicMutations'
+import { useFindManagers } from '@/api/member/useMemberQueries'
 import { DEFAULT_CLASS_CAPACITY } from '../../_/rules'
 import { useCohortScope } from '../../_/cohortScope'
+import { FilterSelect } from '../../_/components/AdminFilters'
+import { ALL } from '../../_/filterState'
 import RequiredMark from '../../_/components/RequiredMark'
 
 /*
@@ -28,13 +31,16 @@ import RequiredMark from '../../_/components/RequiredMark'
   고칠 수 있게 했다 — 17번이 스코프를 `250명 · 10반`으로 잡은 그 값이다.
   **정원 초과를 막지는 않는다** — 서버도 막지 않는다(스펙 명시 · 표시용 값이다).
 
-  ## ⚠ 담당 매니저 칸을 뺐다
-  목 단계에서는 여기서 담당을 같이 골랐다. 서버 스펙이 그 필드를 이렇게 적고 있다 —
-  *"`managerIds`: ⚠ 지금은 서버가 사용하지 않는다 — 담당 매니저 지정은
-  `PATCH .../managers`로 별도 호출."*
+  ## 담당 매니저는 **선택**이다
+  비우면 `담당 없음`으로 만들어지고 목록에 경고가 붙는다 — 반을 먼저 만들고 사람을
+  나중에 정하는 순서가 실제로 있다.
 
-  **보내도 아무 일이 안 일어나는 칸을 두면 화면이 거짓말을 한다** — 담당을 골라 만들었는데
-  목록에는 `담당 없음`으로 뜬다. 만든 뒤 목록에서 `담당 배정`을 누르는 길 하나로 모은다.
+  ⚠ 한때 이 칸을 지웠었다. 스펙이 `managerIds`를 *"지금은 서버가 사용하지 않는다"* 고
+  적고 있어서인데, **설명이 사실과 달랐다**(11차 Q3-② — 원래부터 동작했다). 반 생성과
+  **같은 트랜잭션**에서 배정되므로 "반만 있고 담당은 없는" 상태가 남지 않는다.
+
+  **가입 전 매니저는 후보에 없다** — 로그인을 못 해 그 반의 면담·독촉을 처리할 수 없는데
+  반에 id가 박히면 `담당 없음` 경고에 안 잡힌다. 그래서 `status=ACTIVE`만 받는다.
 */
 type Props = {
   open: boolean
@@ -44,10 +50,20 @@ type Props = {
 export default function AddClassDialog({ open, onOpenChange }: Props) {
   const [name, setName] = useState('')
   const [capacity, setCapacity] = useState(String(DEFAULT_CLASS_CAPACITY))
+  const [managerId, setManagerId] = useState(ALL)
   const [failed, setFailed] = useState(false)
 
   const scope = useCohortScope()
   const create = useCreateClassroom()
+  const managers = useFindManagers({ query: { status: 'ACTIVE', size: 100 } }, { enabled: open })
+
+  const options = [
+    { value: ALL, label: '나중에 배정' },
+    ...(managers.data?.content ?? []).map((m) => ({
+      value: m.managerId,
+      label: m.name ?? m.email,
+    })),
+  ]
 
   const size = Number(capacity)
   const submittable =
@@ -63,11 +79,17 @@ export default function AddClassDialog({ open, onOpenChange }: Props) {
     try {
       await create.mutateAsync({
         path: { cohortId: scope.cohortId },
-        body: { name: name.trim(), capacity: size },
+        body: {
+          name: name.trim(),
+          capacity: size,
+          // 안 고르면 키를 뺀다 — 빈 배열은 "담당 전체 해제"라 뜻이 다르다
+          ...(managerId !== ALL && { managerIds: [managerId] }),
+        },
       })
       onOpenChange(false)
       setName('')
       setCapacity(String(DEFAULT_CLASS_CAPACITY))
+      setManagerId(ALL)
     } catch {
       setFailed(true)
     }
@@ -122,14 +144,22 @@ export default function AddClassDialog({ open, onOpenChange }: Props) {
             </FieldDescription>
           </div>
 
-          {/*
-            **없는 칸은 눈에 안 띄므로 왜 없는지를 폼 안에서 밝힌다** — 안 그러면 "담당은
-            어디서 정하지?"를 계속 찾는다(매니저 초대 모달과 같은 처리).
-          */}
-          <FieldDescription>
-            담당 매니저를 고르는 칸이 없습니다. 만든 뒤 목록에서 담당 배정을 누르세요 — 배정은
-            기간형 이력이라 나중에 바꿔도 지난 기수의 담당 기록은 남습니다.
-          </FieldDescription>
+          <Field>
+            <FieldLabel>
+              담당 매니저 <span className="text-fg-subtle text-xs font-normal">· 선택</span>
+            </FieldLabel>
+            <FilterSelect
+              label="담당"
+              value={managerId}
+              options={options}
+              onChange={setManagerId}
+              className="w-full"
+            />
+            <FieldDescription>
+              비우면 담당 없음으로 만들어지고 목록에 경고가 붙습니다. 나중에 목록에서 배정할 수
+              있고, 배정은 기간형 이력이라 바꿔도 지난 기록은 남습니다.
+            </FieldDescription>
+          </Field>
         </div>
 
         <DialogFooter>

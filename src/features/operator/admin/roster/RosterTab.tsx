@@ -15,7 +15,7 @@ import { useDebounced } from '@/lib/useDebounced'
 import { cn } from '@/lib/utils/cn'
 import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useFindTraineeRoster } from '@/api/member/useMemberQueries'
-import { useResendAccountInvitation } from '@/api/auth/useAuthMutations'
+import { useResendTraineeInvitations } from '@/api/member/useMemberMutations'
 import type { findTraineeRoster_Item, findTraineeRoster_Query } from '@/api/member/memberTypes'
 import { ACCOUNT_STATUS_LABEL } from '../_/labels'
 import { ROSTER_PAGE_SIZE } from '../_/rules'
@@ -147,7 +147,7 @@ export default function RosterTab({ onCount }: Props) {
   const classrooms = useFindClassrooms({ path: { cohortId: cohortId! } }, { enabled: !!cohortId })
   const rooms = classrooms.data?.classrooms ?? []
 
-  const resend = useResendAccountInvitation()
+  const resend = useResendTraineeInvitations()
 
   /** 필터를 바꾸면 1쪽으로 돌아간다 — 3쪽을 보다 검색하면 결과가 1쪽뿐이라 빈 화면이 된다 */
   const narrow = (fn: () => void) => {
@@ -304,27 +304,28 @@ export default function RosterTab({ onCount }: Props) {
             variant="ghost"
             size="sm"
             onClick={async () => {
+              if (!cohortId) return
               /*
-                ⚠ **운영자용 재발송 API가 없다.** `POST /auth/invitations/resend`는
-                **받는 사람용**이라 인증 없이 부르고, 계정 존재 여부를 숨기려 **항상 같은
-                202**로 답한다 — 실제로 나갔는지 알 수 없고 쿨다운에 걸리면 조용히 안 나간다.
-                이메일 하나씩 받으므로 고른 사람 수만큼 호출한다.
+                **운영자용 일괄 재발송 API다**(11차 R2로 신설). 인증을 거치고 **실제로
+                나간 수**(`invitationSentCount`)를 돌려준다 — 그 전에는 받는 사람용
+                API(무인증·항상 202)뿐이라 나갔는지 알 수 없어 `요청했어요`라고 썼다.
 
-                오퍼레이터 쪽에는 `resendOperatorInvitation`(인증·토큰 기반)이 있다.
-                매니저도 9차 R7로 생겼다 — **교육생만 남았다**(10차 요청).
-
-                그래서 문구가 `보냈어요`가 아니라 `요청했어요`다. 서버가 확인해 주지 않는
-                것을 화면이 단정하면 거짓말이 된다.
+                **행별 부분 성공이다.** 20명 중 하나가 이미 활성이라고 나머지 19명을
+                막지 않으므로, 200이어도 `failures`를 봐야 한다.
               */
               const targets = rows.filter(
-                (t) => selected.has(t.traineeId) && t.status === 'INVITED',
+                (t) => selected.has(t.traineeId) && t.pendingInvitationTokenId !== null,
               )
               const done = await action.run(
                 () =>
-                  Promise.all(targets.map((t) => resend.mutateAsync({ body: { email: t.email } }))),
-                () =>
-                  targets.length > 0
-                    ? `${targets.length}명에게 활성화 초대를 다시 요청했어요 — 메일 도착까지 시간이 걸릴 수 있습니다`
+                  resend.mutateAsync({
+                    path: { cohortId },
+                    body: { traineeIds: targets.map((t) => t.traineeId) },
+                  }),
+                (r) =>
+                  r.invitationSentCount > 0
+                    ? `${r.invitationSentCount}명에게 활성화 초대를 다시 보냈어요` +
+                      (r.failures.length > 0 ? ` · ${r.failures.length}명은 보내지 못했어요` : '')
                     : '초대 대기 중인 사람이 없어 아무것도 보내지 않았어요',
                 '초대를 보내지 못했습니다',
               )

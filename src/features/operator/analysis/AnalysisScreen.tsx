@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
 import { Card } from '@/components/ui/Card'
@@ -13,9 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select'
-import { useAsync } from '@/lib/useAsync'
 import { useCohortId } from '@/stores/cohortScope'
-import { getCohortCompare, getRoundGrid } from './_/api/api'
+import { useCohortCompare, useRoundGrid } from './_/api/api'
 import RoundToolbar from './_/components/RoundToolbar'
 import RoundGridTable from './_/components/RoundGridTable'
 import GridLegend from './_/components/GridLegend'
@@ -84,31 +83,30 @@ export default function AnalysisScreen() {
   /** 비교 대상 기수. `null`이면 **서버가 고른다** */
   const [compareId, setCompareId] = useState<string | null>(null)
 
-  const loadGrid = useCallback(
-    () =>
-      getRoundGrid({
-        cohortId: cohortId!,
-        level,
-        // 팀 계층에서는 그 반 하나만 보낸다 — 반별 선택은 건드리지 않는다
-        classIds: level === 'team' ? (teamClassId ? [teamClassId] : []) : classIds,
-        projectId: teamProjectId ?? undefined,
-        fromRound: fromRound ?? undefined,
-        toRound: toRound ?? undefined,
-        sort,
-      }),
-    [cohortId, level, classIds, teamClassId, teamProjectId, fromRound, toRound, sort],
-  )
-  const loadCompare = useCallback(
-    () => getCohortCompare({ cohortId: cohortId!, compareCohortId: compareId, sort: 'WORSENED' }),
-    [cohortId, compareId],
-  )
-
   /*
-    **안 보는 탭은 조회하지 않는다**(`enabled`). 마운트됐다고 데이터가 필요한 것은
-    아니다 — 실측에서 탭 하나 진입에 조회 8건 중 5건이 이것이었다(mock-first §6-1).
+    **안 보는 탭은 조회하지 않는다.** 마운트됐다고 데이터가 필요한 것은 아니다 —
+    실측에서 탭 하나 진입에 조회 8건 중 5건이 이것이었다(mock-first §6-1).
+    조건이 곧 캐시 키라 반·회차를 되돌리면 다시 부르지 않는다.
   */
-  const grid = useAsync(loadGrid, tab === 'rounds' && !!cohortId)
-  const compare = useAsync(loadCompare, tab === 'cohorts' && !!cohortId)
+  const grid = useRoundGrid(
+    tab === 'rounds' && cohortId
+      ? {
+          cohortId,
+          level,
+          // 팀 계층에서는 그 반 하나만 보낸다 — 반별 선택은 건드리지 않는다
+          classIds: level === 'team' ? (teamClassId ? [teamClassId] : []) : classIds,
+          projectId: teamProjectId ?? undefined,
+          fromRound: fromRound ?? undefined,
+          toRound: toRound ?? undefined,
+          sort,
+        }
+      : undefined,
+  )
+  const compare = useCohortCompare(
+    tab === 'cohorts' && cohortId
+      ? { cohortId, compareCohortId: compareId, sort: 'WORSENED' }
+      : undefined,
+  )
 
   const g = grid.data
   const teamClassName = g?.allClasses.find((c) => c.classId === teamClassId)?.className
@@ -164,10 +162,10 @@ export default function AnalysisScreen() {
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
-          ) : grid.loading ? (
+          ) : grid.isPending ? (
             <Loading />
-          ) : grid.failed || !g ? (
-            <LoadFailed onRetry={grid.reload} />
+          ) : grid.isError || !g ? (
+            <LoadFailed onRetry={() => grid.refetch()} />
           ) : g.needs ? (
             /*
               **팀 계층인데 고를 것이 남았다.** 빈 표가 아니라 **사용자가 할 일이 남은
@@ -249,10 +247,10 @@ export default function AnalysisScreen() {
             <span className="text-fg-subtle text-2xs">같은 교안 · 같은 개념만</span>
           </div>
 
-          {compare.loading ? (
+          {compare.isPending ? (
             <Loading />
-          ) : compare.failed || !compare.data ? (
-            <LoadFailed onRetry={compare.reload} />
+          ) : compare.isError || !compare.data ? (
+            <LoadFailed onRetry={() => compare.refetch()} />
           ) : compare.data.rows.length === 0 ? (
             /*
               **비어 있는 이유가 둘이고 할 일이 다르다.**

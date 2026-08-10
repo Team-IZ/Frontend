@@ -1,11 +1,17 @@
 /*
-  분석 API 경계 — **화면이 유일하게 의존하는 곳.**
+  분석 도메인 훅 — **생성 훅을 감싸 화면 어휘로 옮긴다.**
 
   필터·정렬·집계·기준선 비교를 **전부 서버가 한다**(api-boundary §1-②). 여기서 하는
   일은 **서버 모양을 화면 어휘로 옮기는 것**뿐이다 — 셀의 부호(`sign`)조차 서버가
   판정해서 준다(`comparisonToCohort`).
+
+  **그런데도 감싸는 이유**는 변환이 실재하기 때문이다(api-layer-decisions A1):
+  셀을 열에 잇는 일(`assessmentRoundId`), 팀 계층 분기, 열 번호 재매김, 출처 문자열
+  조립. 화면이 하면 격자 컴포넌트가 서버 응답 구조를 알게 된다.
 */
+import { useQuery } from '@tanstack/react-query'
 import { findCohortRiskTraineeRates, findCohortComparison } from '@/api/analytics/analyticsApi'
+import { analyticsKeys } from '@/api/analytics/analyticsKeys'
 import type { findCohortRiskTraineeRates_Response } from '@/api/analytics/analyticsTypes'
 import type {
   CellState,
@@ -111,7 +117,16 @@ function toColumns(rounds: RiskRates['rounds']): RoundColumn[] {
  * 회차를 가로질러 같은 팀을 추적하는 것이 성립하지 않는다. 둘 중 하나라도 없으면
  * 조회하지 않고 **무엇이 빠졌는지**를 돌려준다.
  */
-export async function getRoundGrid(q: RoundQuery): Promise<RoundGrid> {
+export function useRoundGrid(q: RoundQuery | undefined) {
+  return useQuery({
+    // 고른 조건이 곧 키다 — 계층·반·회차·범위·정렬을 바꾸면 그 조합의 캐시를 본다
+    queryKey: [...analyticsKeys.all, 'round-grid', q],
+    enabled: !!q,
+    queryFn: () => loadRoundGrid(q!),
+  })
+}
+
+async function loadRoundGrid(q: RoundQuery): Promise<RoundGrid> {
   const isTeam = q.level === 'team'
   const needs = isTeam ? missingForTeam(q) : undefined
 
@@ -264,7 +279,15 @@ const SORT: Record<
  * **같은 검증 개념(`teachesId`)끼리만 맞댄다** — 회차가 달라도 같은 것을 물었으면
  * 값의 뜻이 같다. 회차 흐름 탭이 부호를 쓰는 것과 값의 성격이 다른 이유다.
  */
-export async function getCohortCompare(q: CohortQuery): Promise<CohortCompare> {
+export function useCohortCompare(q: CohortQuery | undefined) {
+  return useQuery({
+    queryKey: [...analyticsKeys.all, 'cohort-compare', q],
+    enabled: !!q,
+    queryFn: () => loadCohortCompare(q!),
+  })
+}
+
+async function loadCohortCompare(q: CohortQuery): Promise<CohortCompare> {
   const r = await findCohortComparison({
     path: { cohortId: q.cohortId },
     query: {

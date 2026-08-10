@@ -89,26 +89,47 @@ export default function CurriculaTab({ onCount }: Props) {
 
   const items = page.data?.content ?? []
   /*
-    **헤더 수는 필터와 무관한 전체여야 하는데 서버가 그 값을 안 준다.**
+    **헤더 수는 필터와 무관한 전체다**(11차 R7). `statusCounts`가 매니저와 같은 모양으로
+    오고, 상태 자체가 없는 교안(`분석 전`)은 `notAnalyzedCount`로 따로 온다.
 
-    다른 탭은 `counts`(기수)·`statusCounts`(매니저)로 모집단을 따로 받는데 교안 응답에는
-    `totalElements` 하나뿐이고 그건 **필터 적용 후** 수다. 그래서 상태별 내역을 그리지
-    않는다 — 걸러 보는 동안 헤더가 필터 결과를 반복하면 그게 전체인 줄 읽힌다(10차 요청).
+    ⚠ **둘을 합쳐 하나로 만들면 안 된다** — 합치면 "분석 완료 + 실패"가 전체와 안 맞는
+    이유를 화면이 알 수 없다.
   */
+  const counts = page.data?.statusCounts
+  const notAnalyzed = page.data?.notAnalyzedCount ?? 0
+  const totalAll = counts ? Object.values(counts).reduce((sum, n) => sum + n, 0) + notAnalyzed : 0
+  /** 필터 적용 **후** 수 — 푸터가 쓴다. 헤더의 `totalAll`과 다른 값이다 */
   const total = page.data?.totalElements ?? 0
   const narrowed = query.trim().length > 0 || status !== ALL
 
   useEffect(() => {
-    // 필터를 안 건 상태의 수만 배지로 올린다 — 검색어를 쳐도 탭 배지가 흔들리면 안 된다
-    if (page.data && !narrowed) onCount(total)
-  }, [page.data, narrowed, total, onCount])
+    // 필터와 무관한 전체를 배지로 올린다 — 검색어를 쳐도 탭 배지가 흔들리면 안 된다
+    if (counts) onCount(totalAll)
+  }, [counts, totalAll, onCount])
 
   return (
     <>
       <SectionHeader
         title="교안"
-        count={page.data ? `${total}개` : undefined}
-        breakdown="기관 전체 · 여러 기수가 같이 씁니다"
+        count={counts ? `${totalAll}개` : undefined}
+        breakdown={
+          counts && (
+            <>
+              기관 전체 · 분석 완료{' '}
+              <b className="text-fg-muted font-semibold">{counts.SUCCEEDED ?? 0}</b>
+              {/* 대기·진행을 한 라벨로 묶는다 — 운영자가 그 둘로 할 일이 같다(labels.ts) */}
+              {(counts.PENDING ?? 0) + (counts.RUNNING ?? 0) > 0 &&
+                ` · 분석 중 ${(counts.PENDING ?? 0) + (counts.RUNNING ?? 0)}`}
+              {(counts.FAILED ?? 0) > 0 && (
+                <>
+                  {' · '}
+                  <b className="text-danger font-semibold">실패 {counts.FAILED}</b>
+                </>
+              )}
+              {notAnalyzed > 0 && ` · 분석 전 ${notAnalyzed}`}
+            </>
+          )
+        }
         action={<Button onClick={() => setRegisterOpen(true)}>+ 교안 등록</Button>}
       />
 
@@ -147,7 +168,7 @@ export default function CurriculaTab({ onCount }: Props) {
               <EmptyTitle>
                 {query ? `"${query}"와 맞는 교안이 없습니다` : '조건에 맞는 교안이 없습니다'}
               </EmptyTitle>
-              <EmptyDescription>조건을 지우면 전체가 보입니다.</EmptyDescription>
+              <EmptyDescription>전체 {totalAll}개에서 찾았습니다.</EmptyDescription>
             </EmptyHeader>
             <Button
               variant="ghost"

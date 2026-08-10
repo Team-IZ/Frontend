@@ -39,6 +39,25 @@ export default function BrandPanel({
         <p className="mt-5 text-sm leading-relaxed text-white/70">{description}</p>
 
         <p className="mt-10 text-xs text-white/45">{meta}</p>
+
+        {/*
+          개인정보 처리방침 링크 — 감사 문서(pipa-secure-coding-audit.md ④) 대응, 이슈 168.
+          별도 푸터를 새로 만들지 않고 기존 meta 줄 아래에 얹었다 — 로그인·초대·비밀번호
+          재설정 3개 화면이 이 컴포넌트를 공유하므로 한 곳만 고치면 전부 적용된다.
+        */}
+        <button
+          type="button"
+          className="mt-2 text-xs text-white/45 underline decoration-white/30 underline-offset-2 hover:text-white/70"
+          onClick={() =>
+            window.open(
+              '/shared/privacy-policy',
+              'privacy-policy',
+              'width=520,height=680,noopener,noreferrer',
+            )
+          }
+        >
+          개인정보 처리방침
+        </button>
       </div>
     </div>
   )

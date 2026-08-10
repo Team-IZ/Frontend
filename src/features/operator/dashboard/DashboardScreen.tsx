@@ -1,12 +1,10 @@
-import { useCallback } from 'react'
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
 import { Spinner } from '@/components/ui/Spinner'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
-import { useAsync } from '@/lib/useAsync'
 import { useCohortId } from '@/stores/cohortScope'
-import { getDashboard, getToday } from './_/api/api'
+import { getToday, useDashboard } from './_/api/api'
 import { ANALYSIS, GO_ANALYSIS, GO_PROJECT, projectPath } from './_/labels'
 import { Section, BlockBody } from './_/components/Section'
 import PipelineBlock from './_/components/PipelineBlock'
@@ -46,8 +44,7 @@ export default function DashboardScreen() {
     실서버에서 안 통한다. **정해지기 전에는 조회가 안 나간다.**
   */
   const { cohortId, cohortName, failed: cohortFailed } = useCohortId()
-  const load = useCallback(() => getDashboard(cohortId!), [cohortId])
-  const page = useAsync(load, !!cohortId)
+  const page = useDashboard(cohortId)
   const d = page.data
 
   return (
@@ -72,11 +69,11 @@ export default function DashboardScreen() {
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
-      ) : page.loading ? (
+      ) : page.isPending ? (
         <div className="flex justify-center py-16">
           <Spinner className="size-6" aria-label="대시보드를 불러오는 중" />
         </div>
-      ) : page.failed || !d ? (
+      ) : page.isError || !d ? (
         /*
           전체 조회 실패(`DASHBOARD_UNAVAILABLE`). **0으로 그리지 않는다** — 케이스 표가
           *"그림 없음"* 으로 정했다. 여기는 카드가 없는 자리라 박스를 쓴다
@@ -87,7 +84,7 @@ export default function DashboardScreen() {
             <EmptyTitle>대시보드를 불러오지 못했습니다</EmptyTitle>
             <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
           </EmptyHeader>
-          <Button variant="ghost" onClick={page.reload}>
+          <Button variant="ghost" onClick={() => page.refetch()}>
             다시 시도
           </Button>
         </Empty>
@@ -105,7 +102,7 @@ export default function DashboardScreen() {
             <BlockBody
               block={d.pipeline}
               failedLabel="이번 회차 진행 상황을 불러오지 못했습니다"
-              onRetry={page.reload}
+              onRetry={() => page.refetch()}
             >
               {(p) => <PipelineBlock p={p} today={getToday()} />}
             </BlockBody>
@@ -116,7 +113,7 @@ export default function DashboardScreen() {
             <BlockBody
               block={d.todos}
               failedLabel="조치 항목을 불러오지 못했습니다"
-              onRetry={page.reload}
+              onRetry={() => page.refetch()}
             >
               {(todos) => (
                 <TodoBlock
@@ -148,7 +145,7 @@ export default function DashboardScreen() {
             <BlockBody
               block={d.compare}
               failedLabel="반별 위험 비율을 불러오지 못했습니다"
-              onRetry={page.reload}
+              onRetry={() => page.refetch()}
             >
               {(c) => <ClassCompareBlock c={c} />}
             </BlockBody>

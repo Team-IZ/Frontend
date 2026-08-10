@@ -1,13 +1,17 @@
 /*
-  대시보드 API 경계 — **화면이 유일하게 의존하는 곳.**
+  대시보드 도메인 훅 — **생성 훅을 감싸 화면 어휘로 옮긴다.**
 
   ⚠ **한 호출이 아니라 셋이다.** 목일 때는 `GET /operator/dashboard` 하나를 가정했는데
   서버에 그런 엔드포인트가 없다(types `DashboardResponse` 주석). 셋을 **동시에** 부르고
   각각의 성패를 `Block<T>`로 갈라 담는다 — 하나가 죽어도 나머지는 그린다(F2).
 
+  **감싸는 이유가 바로 그 합성이다**(api-layer-decisions A1). 세 응답을 블록으로 갈라
+  담는 일을 화면이 하면 화면이 조회 순서와 실패 조합을 알아야 한다.
+
   블록별 판정·정렬·기준선은 **전부 서버가 한다**(api-boundary §1-②). 여기서 하는 일은
   **서버 모양을 화면 어휘로 옮기는 것**뿐이다.
 */
+import { useQuery } from '@tanstack/react-query'
 import { findCohortActionsRequired, findCohortRiskTraineeRates } from '@/api/analytics/analyticsApi'
 import { findProjects, findProjectClassProgress } from '@/api/projectExecution/projectExecutionApi'
 import type { findCohortRiskTraineeRates_Response } from '@/api/analytics/analyticsTypes'
@@ -38,7 +42,20 @@ async function block<T>(load: () => Promise<T>): Promise<Block<T>> {
  * 순차로 부르면 셋의 지연이 더해진다. 서로를 참조하지 않으므로(파이프라인만 목록을
  * 먼저 봐야 한다) 병렬이 맞다.
  */
-export async function getDashboard(cohortId: string): Promise<DashboardResponse> {
+export function useDashboard(cohortId: string | undefined) {
+  return useQuery({
+    /*
+      **키를 손으로 짓는다.** 세 도메인을 합치는 자리라 생성된 키 하나에 안 맞는다.
+      대시보드는 읽기 전용이라 무효화 대상이 아니고, 화면을 떠났다 오면 다시 읽는 것이
+      맞다(진행 상황이 계속 바뀐다).
+    */
+    queryKey: ['operator-dashboard', cohortId],
+    enabled: !!cohortId,
+    queryFn: () => loadDashboard(cohortId!),
+  })
+}
+
+async function loadDashboard(cohortId: string): Promise<DashboardResponse> {
   /*
     **조회는 셋이다.** 반 비교 응답 하나가 머리글(인원·반 수)까지 담고 있어서 스코프를
     따로 부르지 않는다 — `findCohort`를 부르면 조회가 하나 늘고, 무엇보다 **그쪽

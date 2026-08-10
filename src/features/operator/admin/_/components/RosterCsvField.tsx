@@ -18,7 +18,12 @@ import { parseRosterCsv, type ParsedRoster } from '../rules'
 */
 type Props = {
   domain: string
-  onChange: (parsed: ParsedRoster | null, fileName: string | null) => void
+  /**
+   * 고른 결과. **파일 자체도 같이 준다** — 화면은 파싱 결과로 판정하고, 서버에는
+   * **원본 파일을 그대로** 보낸다(등록이 multipart다). 파싱한 결과를 다시 CSV로 만들어
+   * 보내면 판정 규칙이 두 벌이 된다.
+   */
+  onChange: (parsed: ParsedRoster | null, fileName: string | null, file: File | null) => void
 }
 
 const TEMPLATE = '이름,이메일\n홍길동,gildong@example.com\n'
@@ -32,7 +37,7 @@ export default function RosterCsvField({ domain, onChange }: Props) {
     if (!file) return
     const text = await file.text()
     setFileName(file.name)
-    onChange(parseRosterCsv(text, domain), file.name)
+    onChange(parseRosterCsv(text, domain), file.name, file)
   }
 
   return (

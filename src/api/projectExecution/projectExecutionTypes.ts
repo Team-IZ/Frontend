@@ -44,9 +44,11 @@ export type linkCurriculum_Errors =
 
 // GET /api/v0/cohorts/{cohortId}/projects — 기수 프로젝트 목록
 export type findProjects_Path = operations['findProjects']['parameters']['path']
+export type findProjects_Query = NonNullable<operations['findProjects']['parameters']['query']>
 export type findProjects_Response =
   operations['findProjects']['responses'][200]['content']['application/json']
-export type findProjects_Errors = 'UNAUTHENTICATED'
+export type findProjects_Item = findProjects_Response['projects'][number]
+export type findProjects_Errors = 'VALIDATION_FAILED' | 'UNAUTHENTICATED'
 
 // POST /api/v0/cohorts/{cohortId}/projects — 프로젝트 생성
 export type createProject_Path = operations['createProject']['parameters']['path']
@@ -63,6 +65,11 @@ export type findProject_Path = operations['findProject']['parameters']['path']
 export type findProject_Response =
   operations['findProject']['responses'][200]['content']['application/json']
 export type findProject_Errors = 'UNAUTHENTICATED' | 'PROJECT_NOT_FOUND'
+
+// DELETE /api/v0/projects/{projectId} — 프로젝트(회차) 삭제
+export type deleteProject_Path = operations['deleteProject']['parameters']['path']
+export type deleteProject_Response = void
+export type deleteProject_Errors = 'UNAUTHENTICATED' | 'PROJECT_NOT_FOUND' | 'PROJECT_NOT_DELETABLE'
 
 // PATCH /api/v0/projects/{projectId} — 프로젝트 일정 수정
 export type updateSchedule_Path = operations['updateSchedule']['parameters']['path']
@@ -113,3 +120,12 @@ export type findProjectClassProgress_Errors =
   | 'PROJECT_CROSS_ORGANIZATION'
   | 'ACCESS_DENIED'
   | 'PROJECT_ROUND_NOT_FOUND'
+
+// DELETE /api/v0/projects/{projectId}/curricula/{projectCurriculumId} — 프로젝트 교안 연결 해제
+export type unlinkCurriculum_Path = operations['unlinkCurriculum']['parameters']['path']
+export type unlinkCurriculum_Response = void
+export type unlinkCurriculum_Errors =
+  | 'UNAUTHENTICATED'
+  | 'PROJECT_NOT_FOUND'
+  | 'CURRICULUM_LINK_NOT_FOUND'
+  | 'CURRICULUM_IN_USE_BY_CONCEPTS'

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { CheckIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
@@ -11,13 +11,15 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/Table'
-import { useAsync } from '@/lib/useAsync'
 import { useDebounced } from '@/lib/useDebounced'
 import { cn } from '@/lib/utils/cn'
-import { assignClass, listClasses, listRoster, undoAssign } from '../_/api/api'
-import { ROSTER_PAGE_SIZE, capacityPreview, needsManager, type CapacityPreview } from '../_/rules'
-import type { AssignResult, ClassRoom, RosterScope, Trainee } from '../_/api/types'
-import { COHORT_ID } from '../_/cohortScope'
+import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
+import { useFindTraineeRoster } from '@/api/member/useMemberQueries'
+import { useAssignTrainees, useRollbackAssignment } from '@/api/academic/useAcademicMutations'
+import type { findClassrooms_Item } from '@/api/academic/academicTypes'
+import type { findTraineeRoster_Item } from '@/api/member/memberTypes'
+import { ROSTER_PAGE_SIZE, capacityPreview, type CapacityPreview } from '../_/rules'
+import { useCohortScope } from '../_/cohortScope'
 import TableFooterBar from '../_/components/TableFooterBar'
 import ResultBanner from '../_/components/ResultBanner'
 import { Loading, LoadFailed } from '../_/components/AsyncState'
@@ -55,16 +57,38 @@ const SCOPE_OPTIONS = [
   { value: 'ALL', label: '전체' },
 ]
 
+type ClassRoom = findClassrooms_Item
+type Trainee = findTraineeRoster_Item
+type RosterScope = 'ALL' | 'UNASSIGNED'
+
+/**
+ * 방금 넣은 것 — 되돌리기에 필요한 것만 들고 있는다.
+ *
+ * **화면이 만든다.** 서버 응답(`AssignTraineesResponse`)은 `classroomId`·`assignedCount`·
+ * `assignedTraineeIds`뿐이라 이름도 원래 반도 없다 — 그 값들은 보낼 때 화면이 이미 알고
+ * 있으므로 응답을 기다릴 이유가 없다.
+ */
+type Assigned = {
+  classroomId: string
+  className: string
+  /** 옮긴 사람들. **옮기기 전 소속을 같이 들고 있다** — 배너 문구가 그 값을 쓴다 */
+  moved: { traineeId: string; name: string; fromClassName: string | null }[]
+}
+
 /** 배너 문구 — **이름을 적는다.** `2명`만 쓰면 누구를 되돌리는지 모른 채 누른다 */
-const names = (r: AssignResult) => r.moved.map((m) => m.name)
+const names = (r: Assigned) => r.moved.map((m) => m.name)
 
 /**
  * 넣은 결과 한 줄.
  *
- * **옮겨온 사람이 있으면 어디서 왔는지 적는다** — 되돌리기가 *미배정*이 아니라 **원래
- * 반으로** 돌려놓기 때문이다(OP06-6). 어디로 돌아가는지 모르면 되돌리기를 못 누른다.
+ * ⚠ **되돌리기가 원래 반으로 돌려놓지 않는다.** 서버의 `rollbackAssignment`는 배정을
+ * **해제만** 한다(스펙 명시 · 사유 `IMMEDIATE_ROLLBACK`) — 되돌린 사람은 어느 반에도
+ * 속하지 않는 상태가 된다. 목은 `fromClassId`로 원래 자리에 돌려놓고 있었다.
+ *
+ * 그래서 **어디서 왔는지를 여전히 적되**, 되돌리면 미배정이 된다는 것을 버튼 옆에
+ * 밝힌다 — B반에서 온 사람이 B반으로 돌아갈 것처럼 읽히면 안 된다.
  */
-function assignedText(r: AssignResult): string {
+function assignedText(r: Assigned): string {
   const head = `${r.moved.length}명을 ${r.className}에 넣었어요 — ${names(r).join(' · ')}`
 
   /*
@@ -81,6 +105,9 @@ function assignedText(r: AssignResult): string {
   const from = [...byFrom].map(([room, who]) => `${room} → ${who.join(' · ')}`).join(' / ')
   return `${head} · 옮겨온 사람 ${from}`
 }
+
+/** 담당이 비어 있는 반인가 — **서버가 판정해 준 값을 쓴다** */
+const needsManager = (room: ClassRoom) => room.managerAssignmentRequired
 
 export default function AssignModeScreen() {
   const navigate = useNavigate()
@@ -117,43 +144,58 @@ export default function AssignModeScreen() {
     상태를 둘로 두면 "되돌리기와 실패가 같이 떠 있는" 상태가 만들어진다.
   */
   const [banner, setBanner] = useState<
-    | { kind: 'assigned'; result: AssignResult }
+    | { kind: 'assigned'; result: Assigned }
     | { kind: 'failed'; text: string; retry: () => void }
     | null
   >(null)
   const last = banner?.kind === 'assigned' ? banner.result : null
-  const [saving, setSaving] = useState(false)
 
-  const loadClasses = useCallback(() => listClasses(COHORT_ID), [])
-  const loadRoster = useCallback(
-    () => listRoster({ cohortId: COHORT_ID, search: query || undefined, scope, page }),
-    [query, scope, page],
+  const cohortScope = useCohortScope()
+  const cohortId = cohortScope.cohortId
+  const classes = useFindClassrooms({ path: { cohortId: cohortId! } }, { enabled: !!cohortId })
+  const roster = useFindTraineeRoster(
+    {
+      path: { cohortId: cohortId! },
+      query: {
+        query: query.trim() || undefined,
+        unassignedOnly: scope === 'UNASSIGNED' ? true : undefined,
+        page: page - 1,
+        size: ROSTER_PAGE_SIZE,
+      },
+    },
+    { enabled: !!cohortId },
   )
-  const classes = useAsync(loadClasses)
-  const roster = useAsync(loadRoster)
+  const assign = useAssignTrainees()
+  const rollback = useRollbackAssignment()
+  const saving = assign.isPending
 
-  const rows = roster.data?.items ?? []
-  const total = roster.data?.total ?? 0
-  const unassigned = roster.data?.unassigned ?? 0
-  const totalPages = Math.max(1, Math.ceil(total / ROSTER_PAGE_SIZE))
-  const target = (classes.data ?? []).find((c) => c.id === room) ?? null
-  const preview = target ? capacityPreview(target, picked.size) : null
-
-  const refresh = () => {
-    classes.reload()
-    roster.reload()
-  }
+  const rows = roster.data?.content ?? []
+  const total = roster.data?.totalElements ?? 0
+  const unassigned = roster.data?.unassignedCount ?? 0
+  const totalPages = Math.max(1, roster.data?.totalPages ?? 1)
+  const target = (classes.data?.classrooms ?? []).find((c) => c.classroomId === room) ?? null
+  const preview = target
+    ? capacityPreview({ capacity: target.capacity, size: target.traineeCount }, picked.size)
+    : null
 
   const run = async () => {
-    if (!target) return
-    setSaving(true)
+    if (!target || !cohortId) return
+    /*
+      **보내기 전에 누구를 옮기는지 적어 둔다.** 응답은 id 목록뿐이라 이름도 원래 반도
+      없고, 배정 뒤에는 목록이 갱신되어 그 사람들이 표에서 빠진다 — 그때 찾으면 늦다.
+    */
+    const moved = rows
+      .filter((t) => picked.has(t.traineeId))
+      .map((t) => ({ traineeId: t.traineeId, name: t.name, fromClassName: t.className }))
     try {
-      const result = await assignClass({
-        cohortId: COHORT_ID,
-        classId: target.id,
-        traineeIds: [...picked],
+      await assign.mutateAsync({
+        path: { cohortId },
+        body: { classroomId: target.classroomId, traineeIds: [...picked] },
       })
-      setBanner({ kind: 'assigned', result })
+      setBanner({
+        kind: 'assigned',
+        result: { classroomId: target.classroomId, className: target.name, moved },
+      })
       setPicked(new Set())
       /*
         **고른 반은 그대로 둔다.** 넣을 때마다 초기화하고 있었는데, 이 화면이 전제하는
@@ -161,7 +203,6 @@ export default function AssignModeScreen() {
         이라고 말한다). 매번 다시 고르게 하면 스무 번 넣는 동안 스무 번 더 누른다.
         다른 반으로 옮길 때는 그 반을 누르면 된다 — 한 번이면 바뀐다.
       */
-      refresh()
     } catch {
       /*
         **실패하면 선택을 남긴다.** 고른 사람과 반이 그대로 있어야 다시 누를 수 있다 —
@@ -172,8 +213,6 @@ export default function AssignModeScreen() {
         text: `${picked.size}명을 ${target.name}에 넣지 못했습니다`,
         retry: run,
       })
-    } finally {
-      setSaving(false)
     }
   }
 
@@ -181,11 +220,14 @@ export default function AssignModeScreen() {
    * 되돌리기 — **실패가 가장 위험한 자리다.** 조용히 실패하면 되돌렸다고 믿고 넘어가서,
    * 그 학생들이 엉뚱한 반에서 회차를 시작한다.
    */
-  const undo = async (result: AssignResult) => {
+  const undo = async (result: Assigned) => {
+    if (!cohortId) return
     try {
-      await undoAssign(result)
+      await rollback.mutateAsync({
+        path: { cohortId },
+        body: { traineeIds: result.moved.map((m) => m.traineeId) },
+      })
       setBanner(null)
-      refresh()
     } catch {
       setBanner({
         kind: 'failed',
@@ -202,7 +244,7 @@ export default function AssignModeScreen() {
    * 0인 기수에서 명단의 `반 변경`을 누르면 **`모두 반에 들어갔습니다`만 뜨고 표가 아예
    * 안 그려졌다** — 전원 배정이 끝난 기수에서는 사람을 옮길 방법이 없었다.
    */
-  const finished = !moving && scope === 'UNASSIGNED' && unassigned === 0 && !roster.loading
+  const finished = !moving && scope === 'UNASSIGNED' && unassigned === 0 && !roster.isPending
 
   return (
     <div className="bg-canvas flex h-svh flex-col overflow-hidden">
@@ -212,7 +254,8 @@ export default function AssignModeScreen() {
       */}
       <header className="bg-surface border-border flex h-14 shrink-0 items-center gap-3 border-b px-6">
         <h1 className="text-base font-bold">
-          반 배정 <span className="text-fg-subtle text-xs font-normal">· 7기</span>
+          반 배정{' '}
+          <span className="text-fg-subtle text-xs font-normal">· {cohortScope.current?.name}</span>
         </h1>
         {!finished && (
           <span className="text-fg-muted text-xs">
@@ -313,14 +356,14 @@ export default function AssignModeScreen() {
                   }
                   onToggleAll={() =>
                     setPicked(
-                      rows.every((t) => picked.has(t.id))
+                      rows.every((t) => picked.has(t.traineeId))
                         ? new Set()
-                        : new Set(rows.map((t) => t.id)),
+                        : new Set(rows.map((t) => t.traineeId)),
                     )
                   }
-                  loading={roster.loading}
-                  failed={roster.failed}
-                  onRetry={roster.reload}
+                  loading={roster.isPending}
+                  failed={roster.isError}
+                  onRetry={() => void roster.refetch()}
                 />
 
                 {rows.length > 0 && (
@@ -336,7 +379,7 @@ export default function AssignModeScreen() {
               </section>
 
               <ClassRail
-                rooms={classes.data ?? []}
+                rooms={classes.data?.classrooms ?? []}
                 picked={room}
                 onPick={setRoom}
                 adding={picked.size}
@@ -344,9 +387,9 @@ export default function AssignModeScreen() {
                 preview={preview}
                 onRun={run}
                 saving={saving}
-                loading={classes.loading}
-                failed={classes.failed}
-                onRetry={classes.reload}
+                loading={classes.isPending}
+                failed={classes.isError}
+                onRetry={() => void classes.refetch()}
                 justAdded={last}
               />
             </div>
@@ -398,7 +441,7 @@ function ClassRail({
   loading: boolean
   failed: boolean
   onRetry: () => void
-  justAdded: AssignResult | null
+  justAdded: Assigned | null
 }) {
   return (
     /*
@@ -415,14 +458,14 @@ function ClassRail({
       ) : (
         <div className="space-y-0.5">
           {rooms.map((room) => {
-            const selected = picked === room.id
-            const added = justAdded?.classId === room.id
+            const selected = picked === room.classroomId
+            const added = justAdded?.classroomId === room.classroomId
             return (
               <button
-                key={room.id}
+                key={room.classroomId}
                 type="button"
                 aria-pressed={selected}
-                onClick={() => onPick(room.id)}
+                onClick={() => onPick(room.classroomId)}
                 className={cn(
                   'flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left',
                   // 패널 안이라 칸마다 테두리를 두르지 않는다 — 상자 안의 상자가 된다
@@ -433,7 +476,7 @@ function ClassRail({
                 <span
                   className={cn('text-2xs', needsManager(room) ? 'text-warning' : 'text-fg-subtle')}
                 >
-                  {room.managerName ?? '담당 없음'}
+                  {room.managers.map((m) => m.name ?? m.email).join(' · ') ?? '담당 없음'}
                 </span>
                 {/*
                   **미리보기(`22 → 24`)를 여기 두지 않는다.** 고른 반에만 뜨는 값이라
@@ -441,7 +484,7 @@ function ClassRail({
                   목록은 **고를 때 필요한 것**(지금 인원·정원)만 말한다.
                 */}
                 <span className="text-fg-muted ml-auto text-xs tabular-nums">
-                  {room.size} <span className="text-fg-subtle">/ {room.capacity}</span>
+                  {room.traineeCount} <span className="text-fg-subtle">/ {room.capacity}</span>
                 </span>
                 {/* ③ 배정 직후 — 어느 반에 방금 넣었는지가 레일에도 남는다 */}
                 {added && (
@@ -469,8 +512,8 @@ function ClassRail({
               preview.over ? 'text-warning' : 'text-fg-muted',
             )}
           >
-            {target.size} → <b className="font-semibold">{preview.next}</b> / {target.capacity} ·{' '}
-            {/* **정원 초과를 막지 않는다** — 넘는다는 사실만 알린다(§3) */}
+            {target.traineeCount} → <b className="font-semibold">{preview.next}</b> /{' '}
+            {target.capacity} · {/* **정원 초과를 막지 않는다** — 넘는다는 사실만 알린다(§3) */}
             {preview.over ? `${-preview.remaining}명 초과` : `${preview.remaining}자리 남음`}
           </p>
         )}
@@ -516,7 +559,7 @@ function RosterPanel({
       </div>
     )
 
-  const allOnPage = rows.every((t) => picked.has(t.id))
+  const allOnPage = rows.every((t) => picked.has(t.traineeId))
 
   return (
     <Table className="table-fixed">
@@ -544,14 +587,14 @@ function RosterPanel({
       </TableHeader>
       <TableBody>
         {rows.map((t) => {
-          const checked = picked.has(t.id)
+          const checked = picked.has(t.traineeId)
           return (
-            <TableRow key={t.id} className={cn(checked && 'bg-primary-soft')}>
+            <TableRow key={t.traineeId} className={cn(checked && 'bg-primary-soft')}>
               <TableCell>
                 <Checkbox
                   checked={checked}
                   aria-label={`${t.name} 선택`}
-                  onCheckedChange={() => onToggle(t.id)}
+                  onCheckedChange={() => onToggle(t.traineeId)}
                 />
               </TableCell>
               <TableCell className="font-semibold">{t.name}</TableCell>
@@ -560,7 +603,7 @@ function RosterPanel({
                 <TableCell className="text-fg-muted text-xs">{t.className ?? '미배정'}</TableCell>
               )}
               <TableCell>
-                <AccountStatusBadge status={t.account} />
+                <AccountStatusBadge status={t.status} />
               </TableCell>
             </TableRow>
           )

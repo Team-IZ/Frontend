@@ -33,6 +33,11 @@
 - [백엔드 API — 6차 요청](backend/backend-api-requests-6.md) — **요청 1건**: 운영 설정 수정을 부분 수정(`PATCH`)으로. 모달이 2~4개를 바꾸는데 13개를 다 보내야 해서 **이력이 쓸모없어지고 남의 수정을 되돌린다**
 - [백엔드 API — 7차 요청](backend/backend-api-requests-7.md) — **막힘 1건**: `Operator` 스키마에 필드 6개 누락(서버는 다 준다). 두 응답이 같은 스키마를 공유해 좁은 쪽에 맞춰졌다 · `period` 형식 확인 요청
 - [백엔드 API — 8차 요청](backend/backend-api-requests-8.md) — 새 API 24개(프로젝트 실행·교안)에서 나온 **요청 3건**: `description`이 설명은 null인데 타입이 아님(런타임에 터진다) · `required` 누락 · 도메인 에러 코드 16건 · **5·6·7차 전부 반영 확인**
+- [백엔드 API — 9차 요청](backend/backend-api-requests-9.md) — OP-03·OP-04(프로젝트)와 OP-06(운영 관리)을 붙이며 나온 **요청 8건 + 확인 3건**. 최우선은 **R5** — 같은 매니저인데 `Manager.memberId`만 정수고 나머지는 UUID라 **반 담당을 되읽어 다시 보낼 수가 없다**(스키마 한 줄)
+- [백엔드 API — 10차 요청](backend/backend-api-requests-10.md) — OP-03·OP-04를 붙이며 나온 것. **검증 개념을 한 번 정하면 못 바꾼다(409)** · 프록시가 병렬 요청에서 502 · `traineeCount`가 항상 0
+- [백엔드 API — 11차 요청](backend/backend-api-requests-11.md) — OP-06 여섯 탭을 붙이며 나온 **요청 8건 + 확인 3건**. 최우선은 **R1** — 교안 섹션 조회가 90초를 넘겨 상세가 안 열린다 · **9차 반영본 전수 검증 통과**
+- [백엔드 API — 12차 요청](backend/backend-api-requests-12.md) — OP-02 분석을 붙이며 나온 것. `roundNo`가 요청·응답에서 다른 것을 가리킨다 · `sameCurriculumOnly=true`면 결과 0건
+- [백엔드 API — 13차 요청](backend/backend-api-requests-13.md) — 11차 반영본으로 OP-06을 다시 돌려보며 나온 **요청 2건 + 확인 1건**. **같은 교안을 목록은 24개 회차가 쓴다 하고 상세는 0건**이라 한다 · **11차 열한 건 전부 반영 확인**
 - [인증·세션 설계](api/auth-design.md) — 토큰을 어디에 두나 · 왜 Context가 아니라 스토어인가 · 401 재발급의 함정 셋 · 실무 정석과 우리 절충
 - [연동 계획 — Auth·슈퍼어드민](api/integration-plan-auth-superadmin.md) — **지금 붙일 수 있는 6화면** · 타입 불일치 · 순서와 완료 판정
 - [API 계층 결정 지점](api/api-layer-decisions.md) — 층·훅·쿼리 키·타입·에러를 왜 이렇게 했나 · **알려진 결함 3건**

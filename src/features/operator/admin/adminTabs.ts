@@ -1,5 +1,4 @@
 import type { ComponentType } from 'react'
-import type { AdminCounts } from './_/api/types'
 import CohortsTab from './cohorts/CohortsTab'
 import ClassesTab from './classes/ClassesTab'
 import RosterTab from './roster/RosterTab'
@@ -27,21 +26,22 @@ import CostTab from './cost/CostTab'
   성격이 다르다.
 */
 
-/** 탭이 알아야 하는 것 — 개수는 이 화면이 한 번에 받아 나눠 준다 */
+/*
+  탭이 알아야 하는 것 — **자기 개수를 스스로 알린다.**
+
+  전에는 `getAdminCounts` 하나가 여섯 개를 한 번에 주고 이 레지스트리가 `badge(counts)`로
+  나눠 읽었다. **서버에 그 API가 없다** — 개수는 각 목록 응답의 `totalElements`에 들어
+  있으므로, 목록을 받은 탭이 그 김에 알린다(AdminScreen 주석).
+*/
 type TabProps = {
-  /** 목록이 바뀌어 탭 개수를 다시 받아야 한다. 개수를 안 쓰는 탭은 무시한다 */
-  onCountsChange: () => void
+  /** 탭 이름 옆에 쓸 개수. **필터와 무관한 전체 기준**이고, 셀 것이 없으면 `null` */
+  onCount: (count: number | null) => void
 }
 
 type AdminTabDef = {
   value: string
   label: string
   Panel: ComponentType<TabProps>
-  /**
-   * 탭 이름 옆 개수. **아직 안 왔으면 `null`** — `0`으로 쓰면 없는 사실을 주장한다.
-   * 비용 탭처럼 셀 것이 없으면 아예 `null`을 돌려준다.
-   */
-  badge: (counts: AdminCounts | undefined) => string | null
 }
 
 export const ADMIN_TABS = [
@@ -49,13 +49,11 @@ export const ADMIN_TABS = [
     value: 'cohorts',
     label: '기수',
     Panel: CohortsTab,
-    badge: (n) => (n ? `${n.cohorts}` : null),
   },
   {
     value: 'classes',
     label: '반',
     Panel: ClassesTab,
-    badge: (n) => (n ? `${n.classes}` : null),
   },
   {
     /*
@@ -65,26 +63,22 @@ export const ADMIN_TABS = [
     value: 'roster',
     label: '명단',
     Panel: RosterTab,
-    badge: (n) => (n ? `${n.trainees}` : null),
   },
   {
     value: 'managers',
     label: '매니저',
     Panel: ManagersTab,
-    badge: (n) => (n ? `${n.managers}` : null),
   },
   {
     value: 'curricula',
     label: '교안',
     Panel: CurriculaTab,
-    badge: (n) => (n ? `${n.curricula}` : null),
   },
   {
     // 비용은 목록이 아니라 금액이라 셀 것이 없다
     value: 'cost',
     label: '비용',
     Panel: CostTab,
-    badge: () => null,
   },
 ] as const satisfies readonly AdminTabDef[]
 

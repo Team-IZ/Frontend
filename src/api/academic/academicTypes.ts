@@ -50,6 +50,42 @@ export type createClassroom_Item = createClassroom_Response['managers'][number]
 export type createClassroom_Errors =
   'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND'
 
+// GET /api/v0/cohorts/{cohortId} — 기수 상세 조회
+export type findCohort_Path = operations['findCohort']['parameters']['path']
+export type findCohort_Response =
+  operations['findCohort']['responses'][200]['content']['application/json']
+export type findCohort_Item = findCohort_Response['managers'][number]
+export type findCohort_Errors =
+  'UNAUTHENTICATED' | 'COHORT_NOT_FOUND' | 'ORGANIZATION_CONTEXT_MISSING'
+
+// DELETE /api/v0/cohorts/{cohortId} — 기수 삭제
+export type deleteCohort_Path = operations['deleteCohort']['parameters']['path']
+export type deleteCohort_Response = void
+export type deleteCohort_Errors =
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'COHORT_NOT_FOUND'
+  | 'COHORT_NOT_DELETABLE'
+  | 'ORGANIZATION_CONTEXT_MISSING'
+
+// PATCH /api/v0/cohorts/{cohortId} — 기수 수정
+export type updateCohort_Path = operations['updateCohort']['parameters']['path']
+export type updateCohort_Body = NonNullable<
+  operations['updateCohort']['requestBody']
+>['content']['application/json']
+export type updateCohort_Response =
+  operations['updateCohort']['responses'][200]['content']['application/json']
+export type updateCohort_Item = updateCohort_Response['managers'][number]
+export type updateCohort_Errors =
+  | 'COHORT_UPDATE_EMPTY'
+  | 'COHORT_PERIOD_INVALID'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'COHORT_NOT_FOUND'
+  | 'COHORT_NOT_MUTABLE'
+  | 'COHORT_NAME_TAKEN'
+  | 'ORGANIZATION_CONTEXT_MISSING'
+
 // PATCH /api/v0/cohorts/{cohortId}/end — 기수 종료
 export type endCohort_Path = operations['endCohort']['parameters']['path']
 export type endCohort_Body = NonNullable<
@@ -60,6 +96,28 @@ export type endCohort_Response =
 export type endCohort_Item = endCohort_Response['managers'][number]
 export type endCohort_Errors =
   'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND'
+
+// DELETE /api/v0/cohorts/{cohortId}/classrooms/{classroomId} — 반 삭제
+export type deleteClassroom_Path = operations['deleteClassroom']['parameters']['path']
+export type deleteClassroom_Response = void
+export type deleteClassroom_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'CLASSROOM_NOT_FOUND' | 'CLASSROOM_NOT_DELETABLE'
+
+// PATCH /api/v0/cohorts/{cohortId}/classrooms/{classroomId} — 반 수정
+export type updateClassroom_Path = operations['updateClassroom']['parameters']['path']
+export type updateClassroom_Body = NonNullable<
+  operations['updateClassroom']['requestBody']
+>['content']['application/json']
+export type updateClassroom_Response =
+  operations['updateClassroom']['responses'][200]['content']['application/json']
+export type updateClassroom_Item = updateClassroom_Response['managers'][number]
+export type updateClassroom_Errors =
+  | 'CLASSROOM_UPDATE_EMPTY'
+  | 'VALIDATION_FAILED'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'CLASSROOM_NOT_FOUND'
+  | 'CLASSROOM_NAME_TAKEN'
 
 // PATCH /api/v0/cohorts/{cohortId}/classrooms/{classroomId}/managers — 반 담당 매니저 변경
 export type updateManagers_Path = operations['updateManagers']['parameters']['path']
@@ -108,11 +166,3 @@ export type findMyEnrollments_Response =
   operations['findMyEnrollments']['responses'][200]['content']['application/json']
 export type findMyEnrollments_Item = findMyEnrollments_Response['enrollments'][number]
 export type findMyEnrollments_Errors = 'UNAUTHENTICATED' | 'ORGANIZATION_CONTEXT_MISSING'
-
-// GET /api/v0/cohorts/{cohortId} — 기수 상세 조회
-export type findCohort_Path = operations['findCohort']['parameters']['path']
-export type findCohort_Response =
-  operations['findCohort']['responses'][200]['content']['application/json']
-export type findCohort_Item = findCohort_Response['managers'][number]
-export type findCohort_Errors =
-  'UNAUTHENTICATED' | 'COHORT_NOT_FOUND' | 'ORGANIZATION_CONTEXT_MISSING'

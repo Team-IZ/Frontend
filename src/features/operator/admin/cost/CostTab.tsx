@@ -1,4 +1,5 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import {
   Table,
   TableHeader,
@@ -8,12 +9,12 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { Progress } from '@/components/ui/Progress'
-import { useAsync } from '@/lib/useAsync'
 import { cn } from '@/lib/utils/cn'
-import { getCost } from '../_/api/api'
-import type { ClassCostSort } from '../_/api/types'
-import { formatUsd } from '../_/rules'
-import { COHORT_ID } from '../_/cohortScope'
+import { useFindCohortCost } from '@/api/usage/useUsageQueries'
+import { useGetCurrentMember } from '@/api/member/useMemberQueries'
+import type { findCohortCost_Query } from '@/api/usage/usageTypes'
+import { formatPeriod, formatUsd } from '../_/rules'
+import { useCohortScope } from '../_/cohortScope'
 import SectionHeader from '../_/components/SectionHeader'
 import { FilterSelect } from '../_/components/AdminFilters'
 import { Loading, LoadFailed } from '../_/components/AsyncState'
@@ -32,7 +33,7 @@ import { Loading, LoadFailed } from '../_/components/AsyncState'
   있으므로 각 제목에 그것을 쓴다(스코프 표기 규칙).
 */
 /*
-  `onCountsChange`를 받지 않는다 — 이 탭은 **목록이 아니라 금액**이라 셀 것이 없고,
+  `onCount`를 쓰지 않는다 — 이 탭은 **목록이 아니라 금액**이라 셀 것이 없고,
   여기서 바꾸는 것도 없다(읽기 전용). 레지스트리가 넘겨도 무시된다.
 */
 /*
@@ -57,16 +58,52 @@ const SORT_OPTIONS = [
   { value: 'COHORT_AMOUNT', label: '누적 많은 순' },
 ]
 
-export default function CostTab() {
-  const [sort, setSort] = useState<ClassCostSort>('NAME')
-  const load = useCallback(() => getCost(COHORT_ID, sort), [sort])
-  const cost = useAsync(load)
+type ClassCostSort = NonNullable<findCohortCost_Query['sort']>
 
-  if (cost.loading) return <Loading label="비용을 불러오는 중" />
-  if (cost.failed || !cost.data)
-    return <LoadFailed label="비용을 불러오지 못했습니다" onRetry={cost.reload} />
+export default function CostTab(_: { onCount: (count: number | null) => void }) {
+  const [sort, setSort] = useState<ClassCostSort>('NAME')
+  const scope = useCohortScope()
+  const { data: me } = useGetCurrentMember()
+
+  /*
+    **기관과 기수 둘 다 필요하다.** 기관은 세션이(`/members/me`), 기수는 스코프가 안다 —
+    둘 중 하나라도 아직 없으면 조회를 보내지 않는다(`enabled`). 안 막으면 빈 문자열로
+    경로를 만들어 404를 한 번 받고 나서야 값이 채워진다.
+  */
+  const organizationId = me?.organizationId
+  const cohortId = scope.cohortId
+  const cost = useFindCohortCost(
+    { path: { organizationId: organizationId! }, query: { cohortId: cohortId!, sort } },
+    { enabled: !!organizationId && !!cohortId },
+  )
+
+  if (!organizationId || !cohortId || cost.isPending) return <Loading label="비용을 불러오는 중" />
+  if (cost.isError || !cost.data)
+    return <LoadFailed label="비용을 불러오지 못했습니다" onRetry={() => void cost.refetch()} />
 
   const { summary, classes } = cost.data
+  /*
+    **기수 이름·기간은 스코프에서 읽는다.** 응답의 `summary.cohorts`를 쓰고 있었는데,
+    그건 *"그달에 실제로 비용이 발생한 기수"* 라 **금액이 0이면 빈 배열로 온다**(실호출로
+    확인). 제목이 지금 보고 있는 기수를 말해야 하는데 비용 유무에 따라 사라지면 안 된다.
+  */
+  const cohortName = scope.current?.name ?? ''
+  const cohortPeriod = formatPeriod(
+    scope.current?.startDate ?? null,
+    scope.current?.endDate ?? null,
+  )
+
+  /*
+    ⚠ **세션은 집계됐는데 금액이 0인 상태가 실제로 온다.**
+    실호출에서 세션 804건에 `amount`가 전부 0이었다 — 모델 단가가 아직 설정되지 않은
+    것으로 보인다. 그대로 `$0`만 그리면 **안 썼다는 뜻으로 읽힌다.**
+
+    SA-02 사용량 탭은 서버가 `costComplete`·`unpricedCallCount`를 줘서 *"일부 단가
+    미설정"* 을 정확히 말한다. **이 응답에는 그 필드가 없다**(10차 요청). 그때까지는
+    관측한 사실만 쓴다 — 임계값을 정하는 것이 아니라 "세션은 있는데 금액이 0"이다.
+  */
+  const totalSessions = summary.monthly.reduce((sum, m) => sum + m.sessions, 0)
+  const pricingMissing = totalSessions > 0 && summary.cohortTotal === 0
   /*
     예산 대비 — **기수 누적 기준**(OP06-17). 이번 달을 기수 전체 예산으로 나누고 있었다면
     늘 작게 나와 안심하게 된다. 예산이 없으면 비율을 안 그린다 — 분모 없는 퍼센트는
@@ -108,8 +145,18 @@ export default function CostTab() {
       */}
       <SectionHeader
         title="비용"
-        breakdown={`${summary.cohorts[0]?.name ?? ''} · ${summary.month.replace('-', '년 ')}월 기준`}
+        breakdown={`${cohortName} · ${summary.month.replace('-', '년 ')}월 기준`}
       />
+
+      {pricingMissing && (
+        <Alert variant="warning" className="mb-4">
+          <AlertTitle>세션은 집계됐지만 금액이 $0입니다</AlertTitle>
+          <AlertDescription>
+            세션 {totalSessions}건이 기록됐는데 비용이 0으로 옵니다. 모델 단가가 아직 설정되지
+            않았을 수 있습니다 — 플랫폼 관리자에게 확인해 주세요.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/*
         요약 — 카드 하나 안에 기관 총량과 기수별을 나란히 둔다. **카드를 셋으로 나누지
@@ -175,9 +222,12 @@ export default function CostTab() {
           */}
           <p className="text-fg-subtle text-xs">남은 기간</p>
           <p className="mt-1 text-2xl font-bold tabular-nums">{summary.monthsLeft}개월</p>
-          <p className="text-fg-muted mt-2 text-xs">
-            {summary.cohorts[0]?.period ?? ''} · {summary.cohorts[0]?.trainees ?? 0}명
-          </p>
+          {/*
+            **교육생 수를 뺐다.** `CohortResponse.traineeCount`가 항상 0으로 오고(스펙에
+            명시 · 실호출 확인) `summary.cohorts`도 비용이 0이면 빈 배열이다 —
+            `0명`이라고 쓰면 사람이 없다는 거짓말이 된다. 10차 요청에 올렸다.
+          */}
+          <p className="text-fg-muted mt-2 text-xs">{cohortPeriod}</p>
         </div>
       </div>
 
@@ -192,7 +242,7 @@ export default function CostTab() {
       <SectionHeader
         title="월별"
         count={`${summary.monthly.length}개월`}
-        breakdown={`${summary.cohorts[0]?.name ?? ''} · 개강부터 이번 달까지`}
+        breakdown={`${cohortName} · 개강부터 이번 달까지`}
       />
 
       <Table className="mb-8 table-fixed">
@@ -249,7 +299,7 @@ export default function CostTab() {
       <SectionHeader
         title="반별"
         count={`${classes.length}개`}
-        breakdown={`${summary.cohorts[0]?.name ?? ''} · 개강부터 이번 달까지`}
+        breakdown={`${cohortName} · 개강부터 이번 달까지`}
       />
 
       {/* 툴바 — 정렬은 왼쪽(E3). 이 표에는 검색·필터가 없다(10행이라 좁힐 일이 없다) */}

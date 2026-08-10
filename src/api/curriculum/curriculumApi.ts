@@ -4,6 +4,11 @@ import { izClient, unwrap, type RequestOptions } from '@/api/_contract'
 import type {
   requestAnalysis_Path,
   requestAnalysis_Response,
+  findOrganizationCurricula_Path,
+  findOrganizationCurricula_Query,
+  findOrganizationCurricula_Response,
+  findCurriculum_Path,
+  findCurriculum_Response,
   findSections_Path,
   findSections_Response,
   findUsedProjects_Path,
@@ -18,6 +23,29 @@ import type {
 export const requestAnalysis = (params: { path: requestAnalysis_Path } & RequestOptions) =>
   unwrap<requestAnalysis_Response>(
     izClient.POST('/api/v0/curricula/{materialId}/analyses', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 기관 교안 목록 — `GET /api/v0/organizations/{organizationId}/curricula` */
+export const findOrganizationCurricula = (
+  params: {
+    path: findOrganizationCurricula_Path
+    query?: findOrganizationCurricula_Query
+  } & RequestOptions,
+) =>
+  unwrap<findOrganizationCurricula_Response>(
+    izClient.GET('/api/v0/organizations/{organizationId}/curricula', {
+      params: { path: params.path, query: params.query ?? {} },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 교안 단건 상세 — `GET /api/v0/curricula/{materialId}` */
+export const findCurriculum = (params: { path: findCurriculum_Path } & RequestOptions) =>
+  unwrap<findCurriculum_Response>(
+    izClient.GET('/api/v0/curricula/{materialId}', {
       params: { path: params.path },
       signal: params.signal,
     }) as never,

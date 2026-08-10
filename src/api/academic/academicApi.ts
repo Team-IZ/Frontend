@@ -11,9 +11,21 @@ import type {
   createClassroom_Path,
   createClassroom_Body,
   createClassroom_Response,
+  findCohort_Path,
+  findCohort_Response,
+  deleteCohort_Path,
+  deleteCohort_Response,
+  updateCohort_Path,
+  updateCohort_Body,
+  updateCohort_Response,
   endCohort_Path,
   endCohort_Body,
   endCohort_Response,
+  deleteClassroom_Path,
+  deleteClassroom_Response,
+  updateClassroom_Path,
+  updateClassroom_Body,
+  updateClassroom_Response,
   updateManagers_Path,
   updateManagers_Body,
   updateManagers_Response,
@@ -24,8 +36,6 @@ import type {
   rollbackAssignment_Body,
   rollbackAssignment_Response,
   findMyEnrollments_Response,
-  findCohort_Path,
-  findCohort_Response,
 } from './academicTypes'
 
 /** 기관 기수 목록 조회 — `GET /api/v0/cohorts` */
@@ -64,12 +74,63 @@ export const createClassroom = (
     }) as never,
   )
 
+/** 기수 상세 조회 — `GET /api/v0/cohorts/{cohortId}` */
+export const findCohort = (params: { path: findCohort_Path } & RequestOptions) =>
+  unwrap<findCohort_Response>(
+    izClient.GET('/api/v0/cohorts/{cohortId}', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 기수 삭제 — `DELETE /api/v0/cohorts/{cohortId}` */
+export const deleteCohort = (params: { path: deleteCohort_Path } & RequestOptions) =>
+  unwrap<deleteCohort_Response>(
+    izClient.DELETE('/api/v0/cohorts/{cohortId}', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 기수 수정 — `PATCH /api/v0/cohorts/{cohortId}` */
+export const updateCohort = (
+  params: { path: updateCohort_Path; body: updateCohort_Body } & RequestOptions,
+) =>
+  unwrap<updateCohort_Response>(
+    izClient.PATCH('/api/v0/cohorts/{cohortId}', {
+      params: { path: params.path },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
 /** 기수 종료 — `PATCH /api/v0/cohorts/{cohortId}/end` */
 export const endCohort = (
   params: { path: endCohort_Path; body: endCohort_Body } & RequestOptions,
 ) =>
   unwrap<endCohort_Response>(
     izClient.PATCH('/api/v0/cohorts/{cohortId}/end', {
+      params: { path: params.path },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 반 삭제 — `DELETE /api/v0/cohorts/{cohortId}/classrooms/{classroomId}` */
+export const deleteClassroom = (params: { path: deleteClassroom_Path } & RequestOptions) =>
+  unwrap<deleteClassroom_Response>(
+    izClient.DELETE('/api/v0/cohorts/{cohortId}/classrooms/{classroomId}', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 반 수정 — `PATCH /api/v0/cohorts/{cohortId}/classrooms/{classroomId}` */
+export const updateClassroom = (
+  params: { path: updateClassroom_Path; body: updateClassroom_Body } & RequestOptions,
+) =>
+  unwrap<updateClassroom_Response>(
+    izClient.PATCH('/api/v0/cohorts/{cohortId}/classrooms/{classroomId}', {
       params: { path: params.path },
       body: params.body,
       signal: params.signal,
@@ -116,13 +177,4 @@ export const rollbackAssignment = (
 export const findMyEnrollments = (params: RequestOptions = {}) =>
   unwrap<findMyEnrollments_Response>(
     izClient.GET('/api/v0/members/me/enrollments', { signal: params.signal }) as never,
-  )
-
-/** 기수 상세 조회 — `GET /api/v0/cohorts/{cohortId}` */
-export const findCohort = (params: { path: findCohort_Path } & RequestOptions) =>
-  unwrap<findCohort_Response>(
-    izClient.GET('/api/v0/cohorts/{cohortId}', {
-      params: { path: params.path },
-      signal: params.signal,
-    }) as never,
   )

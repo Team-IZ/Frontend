@@ -52,7 +52,11 @@ const PLACEHOLDER_COHORT = '7기'
 type Props = {
   role: Role
   user?: { name: string; role: string }
+  /** 헤더 스코프에 보일 지금 기수 이름. 빈 문자열이면 스코프 자리를 그리지 않는다 */
   cohort?: string
+  /** 고를 수 있는 기수 전부. 주면 헤더 스위처가 **실제로 동작한다** */
+  cohorts?: readonly { value: string; label: string }[]
+  onCohortChange?: (cohortId: string) => void
   children: ReactNode
 }
 
@@ -60,11 +64,15 @@ export default function ConsoleShell({
   role,
   user = PLACEHOLDER_USER,
   cohort = PLACEHOLDER_COHORT,
+  cohorts,
+  onCohortChange,
   children,
 }: Props) {
   const sidebar = SIDEBAR_BY_ROLE[role]
   const scope =
-    COHORT_SCOPED_ROLES.includes(role) && cohort ? { label: '기수', value: cohort } : undefined
+    COHORT_SCOPED_ROLES.includes(role) && cohort
+      ? { label: '기수', value: cohort, options: cohorts, onChange: onCohortChange }
+      : undefined
 
   return (
     // print:h-auto print:overflow-visible — 화면에서는 뷰포트 안에 가두지만

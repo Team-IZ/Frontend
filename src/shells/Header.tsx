@@ -90,11 +90,32 @@ function DevRoleSwitcher() {
 */
 type Props = {
   user: { name: string; role: string }
-  scope?: { label: string; value: string }
+  scope?: {
+    label: string
+    /**
+     * 지금 값. `options`를 주면 그 `value`들 중 하나여야 한다 — 안 맞으면 목록에서
+     * 어느 것이 골라져 있는지 표시되지 않는다.
+     * `options`가 없으면 이 문자열이 곧 표시 문구다(자리만 잡는 상태).
+     */
+    value: string
+    /**
+     * 고를 수 있는 것 전부. **화면이 실제 목록을 받으면 여기로 넘긴다** — 그 전까지는
+     * 현재 값 하나뿐이라 눌러도 바뀌지 않는다.
+     */
+    options?: readonly { value: string; label: string; detail?: string }[]
+    /** 고른 값을 화면이 받는다. 없으면 헤더가 자기 상태로만 들고 있는다 */
+    onChange?: (value: string) => void
+  }
 }
 
 export default function Header({ user, scope }: Props) {
-  const [value, setValue] = useState(scope?.value)
+  /*
+    선택은 **화면이 갖는 것이 맞다** — 기수는 URL에 실려 새로고침·공유를 견뎌야 한다
+    (`features/operator/admin/_/cohortScope.ts`). `onChange`를 준 화면은 그쪽이 주인이고,
+    안 준 화면(아직 목)은 헤더가 눌린 값이라도 보여 준다.
+  */
+  const [local, setLocal] = useState(scope?.value)
+  const value = scope?.onChange ? scope.value : local
 
   return (
     <header className="bg-surface border-border flex h-[54px] w-full shrink-0 items-center justify-between overflow-x-auto border-b px-6">
@@ -102,7 +123,16 @@ export default function Header({ user, scope }: Props) {
         <Wordmark />
 
         {scope && (
-          <Select value={value} onValueChange={(v) => setValue(v ?? scope.value)}>
+          <Select
+            value={value}
+            onValueChange={(v) => (scope.onChange ?? setLocal)((v as string | null) ?? scope.value)}
+            items={Object.fromEntries(
+              (scope.options ?? [{ value: scope.value, label: scope.value }]).map((o) => [
+                o.value,
+                o.label,
+              ]),
+            )}
+          >
             <SelectTrigger
               className="rounded-full bg-surface-2 py-[5px] text-sm"
               aria-label={scope.label}
@@ -111,7 +141,15 @@ export default function Header({ user, scope }: Props) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value={scope.value}>{scope.value}</SelectItem>
+              {(scope.options ?? [{ value: scope.value, label: scope.value }]).map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
+                  {/* 닫힌 트리거는 이름만 쓴다 — 목록에서만 상태를 붙여 무엇을 고르는지 돕는다 */}
+                  {'detail' in o && o.detail && (
+                    <span className="text-fg-subtle text-xs"> · {o.detail}</span>
+                  )}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         )}

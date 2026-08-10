@@ -3,16 +3,9 @@ import {
   ACCOUNT_STATUS_LABEL,
   COHORT_STATUS_LABEL,
   CURRICULUM_STATUS_LABEL,
-  LINKED_PROJECT_STATUS_LABEL,
   MANAGER_STATUS_LABEL,
 } from '../labels'
-import type {
-  AccountStatus,
-  CohortStatus,
-  CurriculumStatus,
-  LinkedProjectStatus,
-  ManagerStatus,
-} from '../api/types'
+import type { AccountStatus, CohortStatus, CurriculumStatus } from '../api/types'
 
 /*
   상태 배지 다섯 벌.
@@ -29,6 +22,8 @@ import type {
 type Variant = 'success' | 'warning' | 'danger' | 'info' | 'neutral'
 
 const COHORT: Record<CohortStatus, Variant> = {
+  // 개강 전은 **아직**이다 — 할 일이 남았다는 뜻이라 안내색을 쓴다(경고는 아니다)
+  PLANNED: 'info',
   RUNNING: 'success',
   // 종료는 나쁜 것이 아니라 **끝난 것**이다 — 의미 색을 쓰지 않는다
   CLOSED: 'neutral',
@@ -40,25 +35,19 @@ const ACCOUNT: Record<AccountStatus, Variant> = {
   INACTIVE: 'neutral',
 }
 
-const MANAGER: Record<ManagerStatus, Variant> = {
+const MANAGER: Record<AccountStatus, Variant> = {
   ACTIVE: 'success',
   INVITED: 'info',
   // 정지는 되돌릴 수 있고(재활성) 사고가 아니다 — danger가 아니라 회색이다
-  SUSPENDED: 'neutral',
+  INACTIVE: 'neutral',
 }
 
 const CURRICULUM: Record<CurriculumStatus, Variant> = {
-  DONE: 'success',
-  ANALYZING: 'info',
+  SUCCEEDED: 'success',
+  PENDING: 'info',
+  RUNNING: 'info',
   // 실패한 교안은 **프로젝트에 연결할 수 없다** — 조치가 필요한 상태라 danger다
   FAILED: 'danger',
-}
-
-const LINKED_PROJECT: Record<LinkedProjectStatus, Variant> = {
-  PREP: 'warning',
-  READY: 'info',
-  RUNNING: 'success',
-  DONE: 'neutral',
 }
 
 export const CohortStatusBadge = ({ status }: { status: CohortStatus }) => (
@@ -69,16 +58,12 @@ export const AccountStatusBadge = ({ status }: { status: AccountStatus }) => (
   <Badge variant={ACCOUNT[status]}>{ACCOUNT_STATUS_LABEL[status]}</Badge>
 )
 
-export const ManagerStatusBadge = ({ status }: { status: ManagerStatus }) => (
+export const ManagerStatusBadge = ({ status }: { status: AccountStatus }) => (
   <Badge variant={MANAGER[status]}>{MANAGER_STATUS_LABEL[status]}</Badge>
 )
 
 export const CurriculumStatusBadge = ({ status }: { status: CurriculumStatus }) => (
   <Badge variant={CURRICULUM[status]}>{CURRICULUM_STATUS_LABEL[status]}</Badge>
-)
-
-export const LinkedProjectStatusBadge = ({ status }: { status: LinkedProjectStatus }) => (
-  <Badge variant={LINKED_PROJECT[status]}>{LINKED_PROJECT_STATUS_LABEL[status]}</Badge>
 )
 
 /**

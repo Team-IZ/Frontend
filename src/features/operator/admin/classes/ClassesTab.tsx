@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
+import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import {
@@ -10,22 +11,23 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/Table'
-import { useAsync } from '@/lib/useAsync'
 import { useDebounced } from '@/lib/useDebounced'
 import { cn } from '@/lib/utils/cn'
-import { deleteClass, getAdminCounts, getCohort, getNow, listClasses } from '../_/api/api'
-import { canEditClasses, needsManager } from '../_/rules'
-import type { ClassRoom, ClassStaffing } from '../_/api/types'
-import { COHORT_ID } from '../_/cohortScope'
+import { isApiError } from '@/api/_contract'
+import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
+import { useDeleteClassroom } from '@/api/academic/useAcademicMutations'
+import type { findClassrooms_Item } from '@/api/academic/academicTypes'
+import { canEditClasses } from '../_/rules'
+import { useCohortScope } from '../_/cohortScope'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
 import { Loading, LoadFailed } from '../_/components/AsyncState'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
-import { ALL, asQuery } from '../_/filterState'
-import AssignManagerDialog from '../_/components/AssignManagerDialog'
+import { ALL } from '../_/filterState'
 import ConfirmDialog from '../_/components/ConfirmDialog'
 import AddClassDialog from './components/AddClassDialog'
 import EditClassDialog from './components/EditClassDialog'
+import ClassManagersDialog from './components/ClassManagersDialog'
 
 /*
   ② 반 — 기수를 반으로 나누고 담당 매니저를 맡긴다. 범위는 **선택 기수**다.
@@ -36,75 +38,102 @@ import EditClassDialog from './components/EditClassDialog'
   합친 이유 자체가 사라진다. 근거는 op-06-admin.md OP06-1.
 
   **동선은 링크로 잇는다** — 반을 만든 뒤 명단으로 가는 것은 탭 하나 누르는 일이다.
+
+  ## ⚠ 검색·필터를 화면이 한다
+  `findClassrooms`는 `cohortId` 하나만 받는다 — 검색어도 담당 유무 필터도 서버에 없다.
+  한 기수에 6~10반이라 전량이 한 페이지에 들어오므로 **여기서 거른다.**
+
+  반이 그보다 많아지는 기수가 나오면 서버로 옮겨야 한다(10차 요청) — 페이지가 나뉘는
+  순간 클라이언트 필터는 현재 페이지 안에서만 맞기 때문이다.
+
+  ## ⚠ 담당이 여러 명일 수 있다
+  `ClassroomResponse.managers`가 **배열**이다. 목은 `managerId`·`managerName` 한 쌍이라
+  한 명을 전제했는데, 서버는 반 하나에 여럿을 허용한다 — 담당 열이 이름을 `·`로 잇는다.
 */
 type Props = {
-  /** 반이 바뀌었다 — 탭 이름 옆 개수 갱신 */
-  onCountsChange: () => void
+  /** 반 개수 — 탭 이름 옆 배지 */
+  onCount: (count: number | null) => void
 }
 
-export default function ClassesTab({ onCountsChange }: Props) {
+type ClassRoom = findClassrooms_Item
+
+/** 담당이 비어 있는 반인가 — **서버가 판정해 준 값을 쓴다**(화면이 배열 길이를 세지 않는다) */
+const needsManager = (room: ClassRoom) => room.managerAssignmentRequired
+
+/** 담당자 표기. 여럿이면 `·`로 잇는다 — 가입 전이면 이름이 없어 이메일이 그 자리를 대신한다 */
+const managerNames = (room: ClassRoom) => room.managers.map((m) => m.name ?? m.email).join(' · ')
+
+export default function ClassesTab({ onCount }: Props) {
   const [search, setSearch] = useState('')
-  /** 입력칸은 `search`(즉시 반응), 조회는 `query`(멈춘 뒤) — 한 글자마다 요청하지 않는다 */
+  /** 입력칸은 `search`(즉시 반응), 조회는 `query`(멈춘 뒤) — 한 글자마다 다시 거르지 않는다 */
   const query = useDebounced(search)
   const [staffing, setStaffing] = useState(ALL)
   const [addOpen, setAddOpen] = useState(false)
   const [assigning, setAssigning] = useState<ClassRoom | null>(null)
   const [editing, setEditing] = useState<ClassRoom | null>(null)
   const [deleting, setDeleting] = useState<ClassRoom | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
-  const load = useCallback(
-    () =>
-      listClasses({
-        cohortId: COHORT_ID,
-        search: query || undefined,
-        staffing: asQuery<ClassStaffing>(staffing),
-      }),
-    [query, staffing],
-  )
-  const classes = useAsync(load)
+  const scope = useCohortScope()
+  const cohortId = scope.cohortId
+  const classes = useFindClassrooms({ path: { cohortId: cohortId! } }, { enabled: !!cohortId })
+  const removeClass = useDeleteClassroom()
+
+  const all = useMemo(() => classes.data?.classrooms ?? [], [classes.data])
 
   /*
-    **헤더 수는 필터와 무관한 전체 기준이다.** 목록에서 세면 `담당 없음`으로 걸러 보는
-    동안 헤더가 그 수를 그대로 반복한다 — 다른 탭이 `counts`를 따로 받는 것과 같은 이유
-    (api-boundary §1-②). 탭 배지가 이미 받는 값이라 조회가 늘지 않는다.
+    **헤더 수는 필터와 무관한 전체 기준이다** — `담당 없음`으로 걸러 보는 동안 헤더가 그
+    수를 그대로 반복하면 안 된다. 전량을 이미 받았으므로 여기서 센다(조회가 늘지 않는다).
   */
-  const loadCounts = useCallback(() => getAdminCounts(COHORT_ID), [])
-  const countsAsync = useAsync(loadCounts)
-  const counts = countsAsync.data
+  const total = all.length
+  const unstaffed = all.filter(needsManager).length
+
+  const rooms = useMemo(() => {
+    const needle = query.trim().toLowerCase()
+    return all.filter((room) => {
+      // 담당자 이름으로도 찾는다 — `이도윤이 어느 반을 맡았지`가 실제 질문이다
+      if (needle && !`${room.name} ${managerNames(room)}`.toLowerCase().includes(needle))
+        return false
+      if (staffing === 'UNSTAFFED' && !needsManager(room)) return false
+      if (staffing === 'STAFFED' && needsManager(room)) return false
+      return true
+    })
+  }, [all, query, staffing])
+
+  useEffect(() => {
+    if (classes.data) onCount(total)
+  }, [classes.data, total, onCount])
 
   /*
-    **반을 고칠 수 있는 기수인가**(OP06-7-② — 개강 전에만). 시작일이 필요해서 기수 한 건을
-    받는다. 판정은 `rules.canEditClasses`가 하고 서버도 같은 규칙을 다시 검증한다 —
-    화면만 막으면 우회된다.
-  */
-  const loadCohort = useCallback(() => getCohort(COHORT_ID), [])
-  const cohort = useAsync(loadCohort).data
-  const editable = cohort ? canEditClasses(cohort.startAt, getNow().slice(0, 10)) : false
+    **반을 고칠 수 있는 기수인가**(OP06-7-② — 개강 전에만). 판정은 `rules.canEditClasses`가
+    하고 서버도 삭제를 다시 검증한다 — 화면만 막으면 우회된다.
 
-  const rooms = classes.data
+    ⚠ **서버는 수정을 개강 이후에도 연다**(9차 R6 회신 — 오타 정정은 되돌릴 수 없는 값이
+    아니라서다). 화면 쪽이 더 좁은 것이고, 충돌하지 않으므로 그대로 둔다.
+
+    시작일이 없는 기수는 아직 일정이 안 잡힌 것이라 **개강 전으로 본다.**
+  */
+  const cohort = scope.current
+  const editable = cohort
+    ? canEditClasses(cohort.startDate ?? '9999-12-31', new Date().toISOString().slice(0, 10))
+    : false
+
   /** 빈 결과가 "아직 없음"인지 "필터에 안 걸림"인지 — 문구가 갈린다 */
   const narrowed = query.trim().length > 0 || staffing !== ALL
-
-  const changed = () => {
-    classes.reload()
-    // 이 탭의 헤더와 상단 탭 배지가 같은 값을 읽으므로 둘 다 새로 받는다
-    countsAsync.reload()
-    onCountsChange()
-  }
 
   return (
     <>
       <SectionHeader
         title="반"
-        count={counts ? `${counts.classes}개` : undefined}
+        count={classes.data ? `${total}개` : undefined}
         breakdown={
-          counts && (
+          classes.data && (
             <>
-              7기
-              {counts.unstaffedClasses > 0 && (
+              {cohort?.name}
+              {unstaffed > 0 && (
                 <>
                   {' · '}
-                  <b className="text-warning font-semibold">담당 없음 {counts.unstaffedClasses}</b>
+                  <b className="text-warning font-semibold">담당 없음 {unstaffed}</b>
                 </>
               )}
               {/*
@@ -146,11 +175,17 @@ export default function ClassesTab({ onCountsChange }: Props) {
         />
       </div>
 
-      {classes.loading ? (
+      {deleteError && (
+        <Alert variant="danger" className="mb-4">
+          <AlertTitle>{deleteError}</AlertTitle>
+        </Alert>
+      )}
+
+      {!cohortId || classes.isPending ? (
         <Loading label="반을 불러오는 중" />
-      ) : classes.failed ? (
-        <LoadFailed label="반을 불러오지 못했습니다" onRetry={classes.reload} />
-      ) : rooms?.length === 0 ? (
+      ) : classes.isError ? (
+        <LoadFailed label="반을 불러오지 못했습니다" onRetry={() => void classes.refetch()} />
+      ) : rooms.length === 0 ? (
         narrowed ? (
           <Empty>
             <EmptyHeader>
@@ -195,13 +230,13 @@ export default function ClassesTab({ onCountsChange }: Props) {
                 <TableHead className="w-24">반</TableHead>
                 <TableHead className="w-40">담당 매니저</TableHead>
                 {/*
-                  **지금 담당 구간이 언제 열렸나.** `상태`를 빼고 남은 자리에 이것을 넣었다 —
-                  배정이 기간형 이력이라(OP-06 §3) 담당은 기수 중간에도 바뀌고, 목록에서
-                  실제로 눈에 걸리는 것이 *"D반이 6월에 손이 바뀌었네"* 다.
-                  **누가 바꿨는지는 여기 안 적는다**(E11 — 한 칸에 값 하나). 그 이름은
-                  바꾸는 자리, 곧 담당 배정 모달에 있다.
+                  ⚠ **`담당 시작` 열을 뺐다.** 배정이 기간형 이력이라 *"D반이 6월에 손이
+                  바뀌었네"* 가 목록에서 눈에 걸리는 값인데, `ClassroomResponse`에 그
+                  필드가 없다 — 서버는 구간을 닫고 열지만 그 시각을 내려주지 않는다.
+
+                  빈 칸으로 두지 않고 열째 없앤다. 기수 탭의 `반`·`교육생` 열과 같은
+                  판단이다(10차 요청 — 오면 되살린다).
                 */}
-                <TableHead className="w-36">담당 시작</TableHead>
                 <TableHead className="w-28 text-right">인원</TableHead>
                 {/*
                   **`상태` 열을 뺐다**(D1 — 한 사실은 한 곳에서). `담당 없음 / 편성 완료`가
@@ -216,17 +251,16 @@ export default function ClassesTab({ onCountsChange }: Props) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {(rooms ?? []).map((room) => (
-                <TableRow key={room.id}>
+              {rooms.map((room) => (
+                <TableRow key={room.classroomId}>
                   <TableCell className="font-semibold">{room.name}</TableCell>
                   <TableCell
-                    className={cn('text-xs', room.managerName ? 'text-fg-muted' : 'text-warning')}
+                    className={cn(
+                      'truncate text-xs',
+                      needsManager(room) ? 'text-warning' : 'text-fg-muted',
+                    )}
                   >
-                    {room.managerName ?? '담당 없음'}
-                  </TableCell>
-                  {/* 배정된 적이 없으면 `—` — 0이 아니라 **없음**이다(F3) */}
-                  <TableCell className="text-fg-muted text-xs tabular-nums">
-                    {room.assignedAt ?? <span className="text-fg-subtle">—</span>}
+                    {needsManager(room) ? '담당 없음' : managerNames(room)}
                   </TableCell>
                   {/*
                    **정원을 같이 적는다.** `25명`만 있으면 더 넣어도 되는지 판단할 수 없다(§3).
@@ -237,10 +271,10 @@ export default function ClassesTab({ onCountsChange }: Props) {
                   */}
                   <TableCell className="text-right tabular-nums">
                     <Link
-                      to={`/operator/admin/roster?class=${room.id}`}
+                      to={`/operator/admin/roster?class=${room.classroomId}`}
                       className="hover:text-primary hover:underline"
                     >
-                      {room.size}
+                      {room.traineeCount}
                       <span className="text-fg-subtle"> / {room.capacity}</span>
                     </Link>
                   </TableCell>
@@ -274,7 +308,7 @@ export default function ClassesTab({ onCountsChange }: Props) {
           들어가므로 페이저는 `1`만 그려진다(E7 — 누를 수 없는 화살표는 장식이다).
         */}
           <TableFooterBar
-            range={`1–${rooms?.length ?? 0} / ${rooms?.length ?? 0}개`} /* 필터 결과 기준 */
+            range={`1–${rooms.length} / ${rooms.length}개`} /* 필터 결과 기준 */
             page={1}
             totalPages={1}
             onPageChange={() => {}}
@@ -282,41 +316,51 @@ export default function ClassesTab({ onCountsChange }: Props) {
         </>
       )}
 
-      <AddClassDialog open={addOpen} onOpenChange={setAddOpen} onCreated={changed} />
+      <AddClassDialog open={addOpen} onOpenChange={setAddOpen} />
 
-      <EditClassDialog
-        target={editing}
-        onOpenChange={(v) => !v && setEditing(null)}
-        onSaved={changed}
-      />
+      <EditClassDialog target={editing} onOpenChange={(v) => !v && setEditing(null)} />
 
       <ConfirmDialog
         open={deleting !== null}
         onOpenChange={(v) => !v && setDeleting(null)}
         title={`반을 삭제할까요? — ${deleting?.name ?? ''}`}
         description={
-          (deleting?.size ?? 0) > 0
-            ? `이 반의 ${deleting?.size}명은 미배정으로 돌아갑니다. 명단에서 지워지지는 않습니다. 개강 후에는 삭제할 수 없습니다.`
-            : '빈 반이라 되돌릴 것이 없습니다. 개강 후에는 삭제할 수 없습니다.'
+          (deleting?.traineeCount ?? 0) > 0
+            ? `이 반의 ${deleting?.traineeCount}명은 미배정으로 돌아갑니다. 명단에서 지워지지는 않습니다. 담당 매니저 배정도 함께 풀립니다.`
+            : '빈 반이라 되돌릴 것이 없습니다. 담당 매니저 배정은 함께 풀립니다.'
         }
         confirmLabel="반 삭제"
         destructive
         onConfirm={async () => {
-          if (deleting) await deleteClass(deleting.id)
-          setDeleting(null)
-          changed()
+          if (!deleting || !cohortId) return
+          setDeleteError(null)
+          try {
+            await removeClass.mutateAsync({
+              path: { cohortId, classroomId: deleting.classroomId },
+            })
+            setDeleting(null)
+          } catch (e) {
+            /*
+              **삭제 가능 여부는 서버가 판정한다**(9차 R6). 팀이 편성됐거나 리포트가
+              발행된 반은 409 `CLASSROOM_NOT_DELETABLE`이고, 무엇이 걸렸는지는 서버
+              메시지에 있다 — 화면이 `개강 전`으로만 막으면 우회된다.
+            */
+            setDeleteError(
+              isApiError(e) && e.code === 'CLASSROOM_NOT_DELETABLE'
+                ? e.message
+                : '반을 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+            )
+            setDeleting(null)
+          }
         }}
       />
 
-      {assigning && (
-        <AssignManagerDialog
-          open
+      {cohortId && (
+        <ClassManagersDialog
+          room={assigning}
+          cohortId={cohortId}
           onOpenChange={(v) => !v && setAssigning(null)}
-          fixed={{ kind: 'class', room: assigning }}
-          onSaved={() => {
-            setAssigning(null)
-            changed()
-          }}
+          onSaved={() => setAssigning(null)}
         />
       )}
     </>

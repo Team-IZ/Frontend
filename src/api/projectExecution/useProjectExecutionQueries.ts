@@ -12,6 +12,7 @@ import {
 import { projectExecutionKeys } from './projectExecutionKeys'
 import type {
   findProjects_Path,
+  findProjects_Query,
   findProjects_Response,
   findProject_Path,
   findProject_Response,
@@ -26,7 +27,7 @@ import type {
 
 /** 기수 프로젝트 목록 */
 export function useFindProjects(
-  params: { path: findProjects_Path },
+  params: { path: findProjects_Path; query?: findProjects_Query },
   options?: QueryOptions<findProjects_Response>,
 ) {
   return useQuery({

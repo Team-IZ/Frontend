@@ -7,16 +7,17 @@
   **한 곳에 모은 이유** — 같은 상태를 배지와 필터 드롭다운이 같이 쓴다. 각자 갖게 두면
   `초대 대기`를 고칠 때 한 곳만 바뀌고 같은 상태가 화면 안에서 두 이름으로 보인다.
 */
-import type {
-  AccountStatus,
-  CohortStatus,
-  CurriculumStatus,
-  LinkedProjectStatus,
-  ManagerStatus,
-  RosterIssueReason,
-} from './api/types'
+import type { AccountStatus, CohortStatus, CurriculumStatus, RosterIssueReason } from './api/types'
 
+/**
+ * 기수 상태 — **서버가 셋을 준다**(`PLANNED`·`RUNNING`·`CLOSED`).
+ *
+ * 목일 때는 둘(진행·종료)이었다. 개강 전 기수를 진행 중으로 그리면 **아직 시작 안 한
+ * 기수에 사람을 넣어도 되는지**가 화면에서 안 갈린다 — 반 편성을 고칠 수 있는 구간이
+ * 바로 여기다(개강 후에는 잠근다).
+ */
 export const COHORT_STATUS_LABEL: Record<CohortStatus, string> = {
+  PLANNED: '개강 전',
   RUNNING: '진행 중',
   CLOSED: '종료',
 }
@@ -39,23 +40,30 @@ export const ACCOUNT_STATUS_LABEL: Record<AccountStatus, string> = {
   INACTIVE: '비활성',
 }
 
-export const MANAGER_STATUS_LABEL: Record<ManagerStatus, string> = {
+/**
+ * 매니저 계정 상태 — **교육생과 같은 `AccountStatus`인데 라벨이 하나 다르다.**
+ *
+ * 서버는 둘 다 `INVITED`·`ACTIVE`·`INACTIVE`를 쓴다. 그런데 교육생의 `INACTIVE`는
+ * *중도 이탈*이고 매니저의 것은 *운영자가 막은 것*이라, 교육생은 `비활성`이고 매니저는
+ * **`정지`** 다 — 목일 때 `SUSPENDED`라는 별도 값으로 갈라 두었던 그 차이가 라벨로 남는다.
+ */
+export const MANAGER_STATUS_LABEL: Record<AccountStatus, string> = {
   ACTIVE: '활성',
   INVITED: '초대 대기',
-  SUSPENDED: '정지',
+  INACTIVE: '정지',
 }
 
+/**
+ * 교안 분석 상태 — **대기와 진행을 한 라벨로 묶는다.**
+ *
+ * 서버는 `PENDING`(큐에 들어감)과 `RUNNING`(돌고 있음)을 가르는데, 운영자가 그 둘로
+ * 할 일이 같다 — 기다리는 것뿐이다. 스펙 설명도 *"둘 다 화면의 `분석 중`"* 이라 적고 있다.
+ */
 export const CURRICULUM_STATUS_LABEL: Record<CurriculumStatus, string> = {
-  DONE: '완료',
-  ANALYZING: '분석 중',
+  SUCCEEDED: '완료',
+  PENDING: '분석 중',
+  RUNNING: '분석 중',
   FAILED: '분석 실패',
-}
-
-export const LINKED_PROJECT_STATUS_LABEL: Record<LinkedProjectStatus, string> = {
-  PREP: '준비 중',
-  READY: '예정',
-  RUNNING: '진행 중',
-  DONE: '종료',
 }
 
 /**

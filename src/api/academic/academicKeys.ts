@@ -13,7 +13,7 @@ export const academicKeys = {
     [...academicKeys.all, 'findCohorts', params.query ?? null] as const,
   findClassrooms: (params: { path: findClassrooms_Path }) =>
     [...academicKeys.all, 'findClassrooms', params.path ?? null] as const,
-  findMyEnrollments: () => [...academicKeys.all, 'findMyEnrollments'] as const,
   findCohort: (params: { path: findCohort_Path }) =>
     [...academicKeys.all, 'findCohort', params.path ?? null] as const,
+  findMyEnrollments: () => [...academicKeys.all, 'findMyEnrollments'] as const,
 }

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
@@ -10,11 +10,11 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/Table'
-import { useAsync } from '@/lib/useAsync'
 import { useDebounced } from '@/lib/useDebounced'
-import { listCurricula } from '../_/api/api'
+import { useGetCurrentMember } from '@/api/member/useMemberQueries'
+import { useFindOrganizationCurricula } from '@/api/curriculum/useCurriculumQueries'
+import type { findOrganizationCurricula_Query } from '@/api/curriculum/curriculumTypes'
 import { CURRICULUM_STATUS_LABEL } from '../_/labels'
-import type { CurriculumStatus } from '../_/api/types'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
 import { Loading, LoadFailed } from '../_/components/AsyncState'
@@ -37,12 +37,28 @@ import RegisterCurriculumDialog from './components/RegisterCurriculumDialog'
 */
 const detailPath = (id: string) => `/operator/admin/curricula/${id}`
 
+/** 한 페이지에 받는 수. 서버 상한이 100이다 */
+const PAGE_SIZE = 100
+
+type CurriculumStatus = NonNullable<findOrganizationCurricula_Query['status']>
+
+/*
+  정렬 — 서버가 셋을 준다. **`USAGE`를 넣었다**: 목에는 없던 축인데, 이 목록의 실제
+  질문이 *"이 교안 지워도 되나"* 라서 사용 회차가 많은 것부터 보는 편이 그 답에 가깝다.
+*/
+const SORT_OPTIONS = [
+  { value: 'RECENT', label: '최근 등록순' },
+  { value: 'NAME', label: '이름순' },
+  { value: 'USAGE', label: '사용 많은 순' },
+]
+type CurriculumSort = NonNullable<findOrganizationCurricula_Query['sort']>
+
 type Props = {
-  /** 교안을 등록하면 탭 이름 옆 개수가 바뀐다 */
-  onCountsChange: () => void
+  /** 교안 수 — 탭 이름 옆 배지 */
+  onCount: (count: number | null) => void
 }
 
-export default function CurriculaTab({ onCountsChange }: Props) {
+export default function CurriculaTab({ onCount }: Props) {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   /*
@@ -51,28 +67,69 @@ export default function CurriculaTab({ onCountsChange }: Props) {
   */
   const query = useDebounced(search)
   const [status, setStatus] = useState(ALL)
+  const [sort, setSort] = useState<CurriculumSort>('RECENT')
   const [registerOpen, setRegisterOpen] = useState(false)
 
-  const load = useCallback(
-    () =>
-      listCurricula({
-        search: query || undefined,
-        status: asQuery<CurriculumStatus>(status),
-      }),
-    [query, status],
-  )
-  const page = useAsync(load)
+  /** 범위가 기관 전체다 — 기수 스위처와 무관하고, 기관 id는 세션이 안다 */
+  const { data: me } = useGetCurrentMember()
+  const organizationId = me?.organizationId
 
-  const counts = page.data?.counts
-  const totalAll = counts ? counts.DONE + counts.ANALYZING + counts.FAILED : 0
+  const page = useFindOrganizationCurricula(
+    {
+      path: { organizationId: organizationId! },
+      query: {
+        query: query.trim() || undefined,
+        status: asQuery<CurriculumStatus>(status),
+        sort,
+        size: PAGE_SIZE,
+      },
+    },
+    { enabled: !!organizationId },
+  )
+
+  const items = page.data?.content ?? []
+  /*
+    **헤더 수는 필터와 무관한 전체다**(11차 R7). `statusCounts`가 매니저와 같은 모양으로
+    오고, 상태 자체가 없는 교안(`분석 전`)은 `notAnalyzedCount`로 따로 온다.
+
+    ⚠ **둘을 합쳐 하나로 만들면 안 된다** — 합치면 "분석 완료 + 실패"가 전체와 안 맞는
+    이유를 화면이 알 수 없다.
+  */
+  const counts = page.data?.statusCounts
+  const notAnalyzed = page.data?.notAnalyzedCount ?? 0
+  const totalAll = counts ? Object.values(counts).reduce((sum, n) => sum + n, 0) + notAnalyzed : 0
+  /** 필터 적용 **후** 수 — 푸터가 쓴다. 헤더의 `totalAll`과 다른 값이다 */
+  const total = page.data?.totalElements ?? 0
   const narrowed = query.trim().length > 0 || status !== ALL
+
+  useEffect(() => {
+    // 필터와 무관한 전체를 배지로 올린다 — 검색어를 쳐도 탭 배지가 흔들리면 안 된다
+    if (counts) onCount(totalAll)
+  }, [counts, totalAll, onCount])
 
   return (
     <>
       <SectionHeader
         title="교안"
         count={counts ? `${totalAll}개` : undefined}
-        breakdown="기관 전체 · 여러 기수가 같이 씁니다"
+        breakdown={
+          counts && (
+            <>
+              기관 전체 · 분석 완료{' '}
+              <b className="text-fg-muted font-semibold">{counts.SUCCEEDED ?? 0}</b>
+              {/* 대기·진행을 한 라벨로 묶는다 — 운영자가 그 둘로 할 일이 같다(labels.ts) */}
+              {(counts.PENDING ?? 0) + (counts.RUNNING ?? 0) > 0 &&
+                ` · 분석 중 ${(counts.PENDING ?? 0) + (counts.RUNNING ?? 0)}`}
+              {(counts.FAILED ?? 0) > 0 && (
+                <>
+                  {' · '}
+                  <b className="text-danger font-semibold">실패 {counts.FAILED}</b>
+                </>
+              )}
+              {notAnalyzed > 0 && ` · 분석 전 ${notAnalyzed}`}
+            </>
+          )
+        }
         action={<Button onClick={() => setRegisterOpen(true)}>+ 교안 등록</Button>}
       />
 
@@ -91,13 +148,20 @@ export default function CurriculaTab({ onCountsChange }: Props) {
           onChange={setStatus}
           className="min-w-32"
         />
+        <FilterSelect
+          label="정렬"
+          value={sort}
+          options={SORT_OPTIONS}
+          onChange={(v) => setSort(v as CurriculumSort)}
+          className="min-w-36"
+        />
       </div>
 
-      {page.loading ? (
+      {!organizationId || page.isPending ? (
         <Loading label="교안을 불러오는 중" />
-      ) : page.failed ? (
-        <LoadFailed label="교안을 불러오지 못했습니다" onRetry={page.reload} />
-      ) : page.data?.items.length === 0 ? (
+      ) : page.isError ? (
+        <LoadFailed label="교안을 불러오지 못했습니다" onRetry={() => void page.refetch()} />
+      ) : items.length === 0 ? (
         narrowed ? (
           <Empty>
             <EmptyHeader>
@@ -130,30 +194,35 @@ export default function CurriculaTab({ onCountsChange }: Props) {
           </Empty>
         )
       ) : (
-        page.data && (
-          <>
-            <Table className="table-fixed">
-              <TableHeader>
-                <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-52">교안</TableHead>
-                  <TableHead className="w-20">버전</TableHead>
-                  <TableHead className="w-20 text-right">섹션</TableHead>
-                  <TableHead className="w-28 text-right">가르친 항목</TableHead>
-                  {/*
+        <>
+          <Table className="table-fixed">
+            <TableHeader>
+              <TableRow className="hover:bg-transparent">
+                <TableHead className="w-52">교안</TableHead>
+                <TableHead className="w-20">버전</TableHead>
+                <TableHead className="w-20 text-right">섹션</TableHead>
+                <TableHead className="w-28 text-right">가르친 항목</TableHead>
+                {/*
                     흡수 열은 **서술 열이 가장 좋다**(표 열 폭 표준). 여기서는 마지막이
                     아니라 5번째지만, 폭 없는 열이 하나뿐이면 `table-fixed`가 남는 폭을
                     전부 이 칸에 준다 — 목업 열 순서를 지키면서 규칙도 지킨다.
                   */}
-                  <TableHead>연결된 프로젝트</TableHead>
-                  <TableHead className="w-28">분석</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {page.data.items.map((c) => (
+                <TableHead>연결된 프로젝트</TableHead>
+                <TableHead className="w-28">분석</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map((c) => {
+                /*
+                  **분석을 한 번도 안 한 교안은 `analysisStatus`가 `null`이다**(스펙 명시) —
+                  실패와 다르다. 배지를 못 그리는 자리라 `분석 전`이라고 쓴다.
+                */
+                const analyzed = c.analysisStatus !== null
+                return (
                   <TableRow
-                    key={c.id}
+                    key={c.materialId}
                     className="hover:bg-surface-2 cursor-pointer"
-                    onClick={() => navigate(detailPath(c.id))}
+                    onClick={() => navigate(detailPath(c.materialId))}
                   >
                     <TableCell>
                       {/*
@@ -161,46 +230,53 @@ export default function CurriculaTab({ onCountsChange }: Props) {
                         하나 두면 Tab·Enter로 닿고 새 탭·주소 복사도 따라온다.
                       */}
                       <Link
-                        to={detailPath(c.id)}
-                        className="text-fg hover:text-primary font-semibold hover:underline"
+                        to={detailPath(c.materialId)}
+                        className="text-fg hover:text-primary truncate font-semibold hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {c.name}
+                        {/* 제목이 비면 파일명이 그 자리를 대신한다 — 둘 다 서버가 준다 */}
+                        {c.title ?? c.originalFileName}
                       </Link>
                     </TableCell>
-                    <TableCell className="text-fg-muted text-xs">{c.version}</TableCell>
-                    {/* 분석 전·실패면 `—`다. **0과 다르다**(F3) */}
-                    <TableCell className="text-right tabular-nums">{c.sections ?? '—'}</TableCell>
-                    <TableCell className="text-right tabular-nums">{c.teachItems ?? '—'}</TableCell>
+                    <TableCell className="text-fg-muted text-xs">v{c.versionNo}</TableCell>
+                    {/* 분석 전이면 `—`다. **0과 다르다**(F3) */}
+                    <TableCell className="text-right tabular-nums">
+                      {analyzed ? c.sectionCount : '—'}
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {analyzed ? c.conceptCount : '—'}
+                    </TableCell>
+                    {/*
+                      ⚠ **회차 이름이 아니라 수다.** 목록 응답이 `usedProjectCount`만 주고
+                      이름은 교안별 조회(`GET /curricula/{materialId}/projects`)에 있다 —
+                      목록에서 행마다 부르면 조회가 20건 나간다. 이름은 상세에서 본다.
+                    */}
                     <TableCell className="text-fg-muted text-xs">
-                      {c.linkedProjectNames.length > 0 ? c.linkedProjectNames.join(' · ') : '—'}
+                      {c.usedProjectCount > 0 ? `${c.usedProjectCount}개 회차에서 사용 중` : '—'}
                     </TableCell>
                     <TableCell>
-                      <CurriculumStatusBadge status={c.status} />
+                      {analyzed ? (
+                        <CurriculumStatusBadge status={c.analysisStatus!} />
+                      ) : (
+                        <span className="text-fg-subtle text-xs">분석 전</span>
+                      )}
                     </TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                )
+              })}
+            </TableBody>
+          </Table>
 
-            <TableFooterBar
-              range={`1–${page.data.items.length} / ${page.data.total}개`}
-              page={1}
-              totalPages={1}
-              onPageChange={() => {}}
-            />
-          </>
-        )
+          <TableFooterBar
+            range={`1–${items.length} / ${total}개`}
+            page={1}
+            totalPages={1}
+            onPageChange={() => {}}
+          />
+        </>
       )}
 
-      <RegisterCurriculumDialog
-        open={registerOpen}
-        onOpenChange={setRegisterOpen}
-        onRegistered={() => {
-          page.reload()
-          onCountsChange()
-        }}
-      />
+      <RegisterCurriculumDialog open={registerOpen} onOpenChange={setRegisterOpen} />
     </>
   )
 }

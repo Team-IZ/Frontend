@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import {
   Dialog,
   DialogContent,
@@ -11,10 +11,11 @@ import { Button } from '@/components/ui/Button'
 import { Field, FieldLabel, FieldDescription } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
-import { useAsync } from '@/lib/useAsync'
-import { getOrg, inviteManager } from '../../_/api/api'
+import { isApiError } from '@/api/_contract'
+import { useInviteManager } from '@/api/member/useMemberMutations'
+import { useGetCurrentMember } from '@/api/member/useMemberQueries'
 import { checkEmail } from '../../_/rules'
-import { COHORT_ID } from '../../_/cohortScope'
+import { useCohortScope } from '../../_/cohortScope'
 import RequiredMark from '../../_/components/RequiredMark'
 
 /*
@@ -32,18 +33,25 @@ import RequiredMark from '../../_/components/RequiredMark'
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onInvited: () => void
 }
 
-export default function InviteManagerDialog({ open, onOpenChange, onInvited }: Props) {
+export default function InviteManagerDialog({ open, onOpenChange }: Props) {
   const [email, setEmail] = useState('')
-  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const loadOrg = useCallback(() => getOrg(), [])
-  const org = useAsync(loadOrg, open)
+  /*
+    **기관 도메인은 세션이 준다**(9차 Q3-④로 `/members/me`에 `emailDomain`이 들어왔다).
+    전에는 `getOrg()`를 따로 불렀는데, 오퍼레이터는 `GET /organizations/{id}`가 403이라
+    그 길이 애초에 없었다 — 프론트 상수로 두면 기관이 둘이 되는 순간 틀린다.
 
-  const domain = org.data?.domain
+    **`null`일 수 있다**(기관에 도메인을 안 정한 경우) — 그때는 도메인 제한을 걸지 않는다.
+  */
+  const { data: me } = useGetCurrentMember()
+  const scope = useCohortScope()
+  const invite = useInviteManager()
+
+  const organizationId = me?.organizationId
+  const domain = me?.emailDomain ?? undefined
   /** `@`를 치기 전에는 판정하지 않는다 — 다 치기 전에 붉어지면 타이핑을 방해한다 */
   const domainProblem =
     domain !== undefined &&
@@ -64,21 +72,27 @@ export default function InviteManagerDialog({ open, onOpenChange, onInvited }: P
   }
 
   const submit = async () => {
-    setSubmitting(true)
+    if (!organizationId) return
     setError(null)
     try {
-      await inviteManager({ email: email.trim(), cohortId: COHORT_ID })
-      onInvited()
+      /*
+        **`cohortId`를 같이 보낸다.** 목록이 기수로 걸러지므로(스위처 범위) 안 보내면
+        방금 초대한 사람이 어느 기수에도 안 잡혀 목록에서 사라진다.
+      */
+      await invite.mutateAsync({
+        path: { organizationId },
+        body: { email: email.trim(), cohortId: scope.cohortId ?? null },
+      })
       close(false) // 닫기가 비우는 일까지 한다 — 성공·취소가 같은 길로 나간다
     } catch (e) {
-      const code = (e as { code?: string })?.code
+      const code = isApiError(e) ? e.code : undefined
       setError(
         code === 'DOMAIN_NOT_ALLOWED'
           ? `${domain ?? '기관'} 주소로만 초대할 수 있습니다.`
-          : '초대를 보내지 못했습니다. 이미 등록된 주소인지 확인해 주세요.',
+          : code === 'ALREADY_INVITED'
+            ? '이미 초대한 주소입니다. 목록에서 재발송할 수 있습니다.'
+            : '초대를 보내지 못했습니다. 이미 등록된 주소인지 확인해 주세요.',
       )
-    } finally {
-      setSubmitting(false)
     }
   }
 
@@ -88,8 +102,8 @@ export default function InviteManagerDialog({ open, onOpenChange, onInvited }: P
         <DialogHeader>
           <DialogTitle>
             매니저 초대
-            {org.data && (
-              <span className="text-fg-subtle text-xs font-normal"> · {org.data.name}</span>
+            {scope.current && (
+              <span className="text-fg-subtle text-xs font-normal"> · {scope.current.name}</span>
             )}
           </DialogTitle>
         </DialogHeader>
@@ -140,14 +154,16 @@ export default function InviteManagerDialog({ open, onOpenChange, onInvited }: P
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => close(false)} disabled={submitting}>
+          <Button variant="ghost" onClick={() => close(false)} disabled={invite.isPending}>
             취소
           </Button>
           <Button
-            disabled={submitting || email.trim().length === 0 || domainProblem}
-            onClick={submit}
+            disabled={
+              invite.isPending || email.trim().length === 0 || domainProblem || !organizationId
+            }
+            onClick={() => void submit()}
           >
-            {submitting && <Spinner className="size-3.5" />}
+            {invite.isPending && <Spinner className="size-3.5" />}
             초대 발송
           </Button>
         </DialogFooter>

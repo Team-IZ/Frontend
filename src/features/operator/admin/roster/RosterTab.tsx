@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { Checkbox } from '@/components/ui/Checkbox'
@@ -11,14 +11,16 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/Table'
-import { useAsync } from '@/lib/useAsync'
 import { useDebounced } from '@/lib/useDebounced'
 import { cn } from '@/lib/utils/cn'
-import { listClasses, listRoster, resendTraineeInvites } from '../_/api/api'
+import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
+import { useFindTraineeRoster } from '@/api/member/useMemberQueries'
+import { useResendTraineeInvitations } from '@/api/member/useMemberMutations'
+import type { findTraineeRoster_Item, findTraineeRoster_Query } from '@/api/member/memberTypes'
 import { ACCOUNT_STATUS_LABEL } from '../_/labels'
 import { ROSTER_PAGE_SIZE } from '../_/rules'
-import type { AccountStatus, RosterSort, Trainee } from '../_/api/types'
-import { COHORT_ID } from '../_/cohortScope'
+import { useCohortScope } from '../_/cohortScope'
+import type { AccountStatus } from '../_/api/types'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
 import ResultBanner from '../_/components/ResultBanner'
@@ -45,15 +47,47 @@ import DeactivateTraineeDialog from './components/DeactivateTraineeDialog'
 */
 const SORT_OPTIONS = [
   { value: 'NAME', label: '이름순' },
-  { value: 'RECENT', label: '최근 등록순' },
+  { value: 'RECENT_ENROLLED', label: '최근 등록순' },
 ]
 
 type Props = {
-  /** 명단이 바뀌었다 — 탭 이름 옆 개수 갱신 */
-  onCountsChange: () => void
+  /** 기수 전체 인원 — 탭 이름 옆 배지 */
+  onCount: (count: number | null) => void
 }
 
-export default function RosterTab({ onCountsChange }: Props) {
+type Trainee = findTraineeRoster_Item
+type RosterSort = NonNullable<findTraineeRoster_Query['sort']>
+
+/*
+  비활성 사유 표기 — 목은 `statusNote` 한 줄이었는데 서버는 넷으로 나눠 준다
+  (`inactivatedReasonCode`·`inactivatedReason`·`inactivatedAt`·`inactivatedByName`).
+
+  **나뉜 것이 맞다** — 코드는 분류이고 사유는 자유 입력이라 한 칸에 섞으면 나중에 못
+  가른다. 화면이 조립한다.
+
+  ⚠ **스펙 설명에 적힌 코드가 전부가 아니다.** 설명은 넷을 예로 들지만(`RESIGNED` ·
+  `ADMIN_SUSPENDED` · `CONTRACT_ENDED` · `SECURITY`) 실제로는 `OTHER`·`SECURITY_ACTION`이
+  더 온다(실호출로 확인). 타입이 `string`이라 컴파일러가 못 잡으므로 **모르는 코드는
+  그대로 보여준다** — 빈칸으로 삼키면 사유가 사라진다. 10차 요청으로 enum을 청한다.
+*/
+const INACTIVE_REASON_LABEL: Record<string, string> = {
+  RESIGNED: '퇴사',
+  ADMIN_SUSPENDED: '운영자 조치',
+  CONTRACT_ENDED: '계약 종료',
+  SECURITY_ACTION: '보안 조치',
+  OTHER: '기타',
+}
+
+function statusNote(t: Trainee): string {
+  if (t.status !== 'INACTIVE') return ''
+  const label = t.inactivatedReasonCode
+    ? (INACTIVE_REASON_LABEL[t.inactivatedReasonCode] ?? t.inactivatedReasonCode)
+    : null
+  // 사유 코드는 없어도 상세 사유만 있을 수 있다(스펙 명시) — 있는 것부터 이어 붙인다
+  return [label, t.inactivatedReason, t.inactivatedAt?.slice(0, 10)].filter(Boolean).join(' · ')
+}
+
+export default function RosterTab({ onCount }: Props) {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   /*
@@ -62,7 +96,7 @@ export default function RosterTab({ onCountsChange }: Props) {
   */
   const query = useDebounced(search)
   /*
-    **반 탭에서 인원을 누르고 들어올 수 있다**(`?class=c-a`). 탭이 갈린 뒤 반 → 명단으로
+    **반 탭에서 인원을 누르고 들어올 수 있다**(`?class=…`). 탭이 갈린 뒤 반 → 명단으로
     가는 유일한 길이라, 들어오자마자 그 반으로 좁혀져 있어야 한다.
 
     처음 한 번만 읽는다 — 그 뒤 드롭다운을 바꾸는 것은 사용자이고, 주소를 따라 되돌리면
@@ -72,6 +106,7 @@ export default function RosterTab({ onCountsChange }: Props) {
   const [classId, setClassId] = useState(params.get('class') ?? ALL)
   const [account, setAccount] = useState(ALL)
   const [sort, setSort] = useState<RosterSort>('NAME')
+  /** 서버는 0부터 센다 — 화면은 1부터라 넘길 때 하나 뺀다 */
   const [page, setPage] = useState(1)
   /*
     **선택은 `Set`이다.** 표를 그릴 때마다 행마다 `includes`를 돌면 O(n²)가 된다 —
@@ -84,25 +119,35 @@ export default function RosterTab({ onCountsChange }: Props) {
   /** 벌크 액션·명단 추가 결과 — 성공·실패가 같은 배너 자리를 쓴다 */
   const action = useActionResult()
 
-  const load = useCallback(
-    () =>
-      listRoster({
-        cohortId: COHORT_ID,
-        search: query || undefined,
-        // `미배정`은 반 하나가 아니라 조건이다 — 같은 드롭다운에서 왔지만 쿼리가 갈린다
-        classId: classId === UNASSIGNED ? undefined : asQuery(classId),
-        scope: classId === UNASSIGNED ? 'UNASSIGNED' : undefined,
-        account: asQuery<AccountStatus>(account),
+  const scope = useCohortScope()
+  const cohortId = scope.cohortId
+
+  const roster = useFindTraineeRoster(
+    {
+      path: { cohortId: cohortId! },
+      query: {
+        query: query.trim() || undefined,
+        /*
+          `미배정`은 반 하나가 아니라 조건이다 — 같은 드롭다운에서 왔지만 쿼리가 갈린다.
+          **둘을 같이 보내면 안 된다**(스펙: *"classroomId는 unassignedOnly와 함께 지정할
+          수 없다"*).
+        */
+        classroomId: classId === UNASSIGNED ? undefined : asQuery(classId),
+        unassignedOnly: classId === UNASSIGNED ? true : undefined,
+        accountStatus: asQuery<AccountStatus>(account),
         sort,
-        page,
-      }),
-    [query, classId, account, sort, page],
+        page: page - 1,
+        size: ROSTER_PAGE_SIZE,
+      },
+    },
+    { enabled: !!cohortId },
   )
-  const roster = useAsync(load)
 
   /** 필터 드롭다운용 반 목록 — 명단과 달리 필터·페이지에 안 걸리므로 따로 조회한다 */
-  const loadRooms = useCallback(() => listClasses(COHORT_ID), [])
-  const rooms = useAsync(loadRooms).data ?? []
+  const classrooms = useFindClassrooms({ path: { cohortId: cohortId! } }, { enabled: !!cohortId })
+  const rooms = classrooms.data?.classrooms ?? []
+
+  const resend = useResendTraineeInvitations()
 
   /** 필터를 바꾸면 1쪽으로 돌아간다 — 3쪽을 보다 검색하면 결과가 1쪽뿐이라 빈 화면이 된다 */
   const narrow = (fn: () => void) => {
@@ -111,13 +156,19 @@ export default function RosterTab({ onCountsChange }: Props) {
     setSelected(new Set())
   }
 
-  const rows = roster.data?.items ?? []
-  const total = roster.data?.total ?? 0
-  const totalPages = Math.max(1, Math.ceil(total / ROSTER_PAGE_SIZE))
+  const rows = roster.data?.content ?? []
+  const total = roster.data?.totalElements ?? 0
+  const totalPages = Math.max(1, roster.data?.totalPages ?? 1)
+  const cohortTotal = roster.data?.cohortTotal ?? 0
+  const unassigned = roster.data?.unassignedCount ?? 0
   const narrowed = query.trim().length > 0 || classId !== ALL || account !== ALL
 
+  useEffect(() => {
+    if (roster.data) onCount(cohortTotal)
+  }, [roster.data, cohortTotal, onCount])
+
   /** 지금 쪽 전체 선택 — 250명 전체가 아니다. 보이지 않는 것을 고르게 하지 않는다 */
-  const allOnPage = rows.length > 0 && rows.every((t) => selected.has(t.id))
+  const allOnPage = rows.length > 0 && rows.every((t) => selected.has(t.traineeId))
 
   const toggle = (id: string) =>
     setSelected((prev) => {
@@ -125,12 +176,6 @@ export default function RosterTab({ onCountsChange }: Props) {
       if (!next.delete(id)) next.add(id)
       return next
     })
-
-  const refresh = () => {
-    roster.reload()
-    onCountsChange()
-    setSelected(new Set())
-  }
 
   return (
     <>
@@ -148,15 +193,15 @@ export default function RosterTab({ onCountsChange }: Props) {
         title="명단"
         /* 헤더는 **필터와 무관한 기수 전체**다 — 걸러 보는 동안 이 수가 따라 움직이면
            지금 보는 것이 전체인지 일부인지 알 수 없다. 필터 결과는 푸터에 있다 */
-        count={roster.data ? `${roster.data.cohortTotal}명` : undefined}
+        count={roster.data ? `${cohortTotal}명` : undefined}
         breakdown={
           roster.data && (
             <>
-              7기
-              {roster.data.unassigned > 0 && (
+              {scope.current?.name}
+              {unassigned > 0 && (
                 <>
                   {' · '}
-                  <b className="text-warning font-semibold">미배정 {roster.data.unassigned}</b>
+                  <b className="text-warning font-semibold">미배정 {unassigned}</b>
                 </>
               )}
             </>
@@ -168,7 +213,7 @@ export default function RosterTab({ onCountsChange }: Props) {
               미배정이 있을 때만 모드로 가는 문을 둔다 — 배정할 사람이 없는데 버튼이 있으면
               눌러 보고 완료 화면만 만난다(C6).
             */}
-            {(roster.data?.unassigned ?? 0) > 0 && (
+            {unassigned > 0 && (
               <Button variant="ghost" onClick={() => navigate('/operator/admin/assign')}>
                 반 배정하기 →
               </Button>
@@ -218,7 +263,7 @@ export default function RosterTab({ onCountsChange }: Props) {
             options={[
               { value: ALL, label: '전체' },
               { value: UNASSIGNED, label: '미배정' },
-              ...rooms.map((c) => ({ value: c.id, label: c.name })),
+              ...rooms.map((c) => ({ value: c.classroomId, label: c.name })),
             ]}
             onChange={(v) => narrow(() => setClassId(v))}
           />
@@ -259,17 +304,33 @@ export default function RosterTab({ onCountsChange }: Props) {
             variant="ghost"
             size="sm"
             onClick={async () => {
-              const sent = await action.run(
-                () => resendTraineeInvites([...selected]),
-                // 실제로 나간 수를 쓴다 — 활성 계정에는 초대가 나가지 않는다
-                (n) =>
-                  n > 0
-                    ? `${n}명에게 활성화 초대를 다시 보냈어요`
+              if (!cohortId) return
+              /*
+                **운영자용 일괄 재발송 API다**(11차 R2로 신설). 인증을 거치고 **실제로
+                나간 수**(`invitationSentCount`)를 돌려준다 — 그 전에는 받는 사람용
+                API(무인증·항상 202)뿐이라 나갔는지 알 수 없어 `요청했어요`라고 썼다.
+
+                **행별 부분 성공이다.** 20명 중 하나가 이미 활성이라고 나머지 19명을
+                막지 않으므로, 200이어도 `failures`를 봐야 한다.
+              */
+              const targets = rows.filter(
+                (t) => selected.has(t.traineeId) && t.pendingInvitationTokenId !== null,
+              )
+              const done = await action.run(
+                () =>
+                  resend.mutateAsync({
+                    path: { cohortId },
+                    body: { traineeIds: targets.map((t) => t.traineeId) },
+                  }),
+                (r) =>
+                  r.invitationSentCount > 0
+                    ? `${r.invitationSentCount}명에게 활성화 초대를 다시 보냈어요` +
+                      (r.failures.length > 0 ? ` · ${r.failures.length}명은 보내지 못했어요` : '')
                     : '초대 대기 중인 사람이 없어 아무것도 보내지 않았어요',
                 '초대를 보내지 못했습니다',
               )
               // 실패하면 선택을 남긴다 — 다시 시도할 대상이 그것이다
-              if (sent !== undefined) setSelected(new Set())
+              if (done !== undefined) setSelected(new Set())
             }}
           >
             초대 재발송
@@ -285,10 +346,10 @@ export default function RosterTab({ onCountsChange }: Props) {
         </div>
       </div>
 
-      {roster.loading ? (
+      {!cohortId || roster.isPending ? (
         <Loading label="명단을 불러오는 중" />
-      ) : roster.failed ? (
-        <LoadFailed label="명단을 불러오지 못했습니다" onRetry={roster.reload} />
+      ) : roster.isError ? (
+        <LoadFailed label="명단을 불러오지 못했습니다" onRetry={() => void roster.refetch()} />
       ) : rows.length === 0 ? (
         narrowed ? (
           <Empty>
@@ -298,7 +359,7 @@ export default function RosterTab({ onCountsChange }: Props) {
               </EmptyTitle>
               {/* **필터 전 모집단**을 적는다 — `total`을 쓰면 `0명에서 찾았습니다`가 된다 */}
               <EmptyDescription>
-                7기 {roster.data?.cohortTotal ?? 0}명에서 찾았습니다.
+                {scope.current?.name} {cohortTotal}명에서 찾았습니다.
               </EmptyDescription>
             </EmptyHeader>
             <Button
@@ -335,7 +396,7 @@ export default function RosterTab({ onCountsChange }: Props) {
                     checked={allOnPage}
                     aria-label="이 쪽 전체 선택"
                     onCheckedChange={() =>
-                      setSelected(allOnPage ? new Set() : new Set(rows.map((t) => t.id)))
+                      setSelected(allOnPage ? new Set() : new Set(rows.map((t) => t.traineeId)))
                     }
                   />
                 </TableHead>
@@ -369,14 +430,14 @@ export default function RosterTab({ onCountsChange }: Props) {
             </TableHeader>
             <TableBody>
               {rows.map((t) => {
-                const checked = selected.has(t.id)
+                const checked = selected.has(t.traineeId)
                 return (
-                  <TableRow key={t.id} className={cn(checked && 'bg-primary-soft')}>
+                  <TableRow key={t.traineeId} className={cn(checked && 'bg-primary-soft')}>
                     <TableCell>
                       <Checkbox
                         checked={checked}
                         aria-label={`${t.name} 선택`}
-                        onCheckedChange={() => toggle(t.id)}
+                        onCheckedChange={() => toggle(t.traineeId)}
                       />
                     </TableCell>
                     <TableCell className="font-semibold">{t.name}</TableCell>
@@ -393,13 +454,13 @@ export default function RosterTab({ onCountsChange }: Props) {
                       {t.className ?? '미배정'}
                     </TableCell>
                     <TableCell>
-                      <AccountStatusBadge status={t.account} />
+                      <AccountStatusBadge status={t.status} />
                     </TableCell>
                     <TableCell className="text-fg-muted text-xs tabular-nums">
-                      {t.registeredAt}
+                      {t.joinedAt.slice(0, 10)}
                     </TableCell>
                     <TableCell className="text-fg-muted truncate text-xs">
-                      {t.statusNote ?? ''}
+                      {statusNote(t)}
                     </TableCell>
                     {/*
                       **비활성 하나만 남겼다.** 반 이동은 여러 명을 한 번에 하는 일이라
@@ -413,7 +474,7 @@ export default function RosterTab({ onCountsChange }: Props) {
                         높이를 버튼이 아니라 **칸이** 정하게 한다.
                       */}
                       <div className="flex h-[30px] items-center justify-end">
-                        {t.account !== 'INACTIVE' && (
+                        {t.status !== 'INACTIVE' && (
                           <Button variant="ghost" size="sm" onClick={() => setDeactivating(t)}>
                             비활성
                           </Button>
@@ -440,11 +501,12 @@ export default function RosterTab({ onCountsChange }: Props) {
 
       <DeactivateTraineeDialog
         target={deactivating}
+        cohortId={cohortId ?? ''}
         onOpenChange={(v) => !v && setDeactivating(null)}
         onDone={(t, reason) => {
           // 이름 뒤에 조사를 붙이지 않는다 — `을(를)`도 읽기 나쁘다(OP06-6와 같은 이유)
           action.setResult({ text: `비활성 처리했어요 — ${t.name} · ${reason}` })
-          refresh()
+          setSelected(new Set())
         }}
       />
 
@@ -452,12 +514,21 @@ export default function RosterTab({ onCountsChange }: Props) {
         open={addOpen}
         onOpenChange={setAddOpen}
         onAdded={(result) => {
+          /*
+            **서버가 세 수를 따로 준다** — 받은 행 수 · 등록된 수 · **메일이 실제로 나간 수**.
+            목은 `added`·`skipped` 둘이라 "등록했으니 초대도 나갔다"를 전제했는데,
+            초대 발송은 따로 실패할 수 있다(스펙: *"계정 활성화 수가 아닙니다"*).
+          */
+          const skipped = result.requestedCount - result.registeredCount
           action.setResult({
             text:
-              `${result.added}명을 등록하고 활성화 초대를 보냈어요` +
-              (result.skipped > 0 ? ` · 이미 등록된 ${result.skipped}명은 건너뛰었어요` : ''),
+              `${result.registeredCount}명을 등록했어요` +
+              (result.invitationSentCount < result.registeredCount
+                ? ` · 초대 메일은 ${result.invitationSentCount}명에게 나갔어요`
+                : ' · 활성화 초대를 보냈어요') +
+              (skipped > 0 ? ` · ${skipped}명은 건너뛰었어요` : ''),
           })
-          refresh()
+          setSelected(new Set())
         }}
       />
     </>

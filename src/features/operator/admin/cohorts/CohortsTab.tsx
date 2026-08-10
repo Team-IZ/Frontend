@@ -44,9 +44,8 @@ import ConfirmDialog from '../_/components/ConfirmDialog'
   ⚠ **정의가 "재적"이다** — 등록돼 있고 아직 나가지 않은 인원이라 **명단 전체 건수보다
   작다**(9기 기준 208 vs 223 · 중도 이탈 15명). 명단 탭 헤더의 수와 다른 것이 정상이다.
 
-  ## ⚠ `반` 열은 아직 없다
-  `CohortResponse`에 반 개수가 없다. 세려면 기수마다 `findClassrooms`를 불러야 하는데
-  목록에 기수가 넷이면 조회가 넷 더 나간다 — **열을 그리지 않는다.**
+  `반` 열도 같이 왔다(13차 Q1) — 세려면 기수마다 `findClassrooms`를 불러야 했던 값이라
+  조회가 넷 늘던 자리였다.
 */
 
 /*
@@ -218,6 +217,7 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
               <TableRow className="hover:bg-transparent">
                 <TableHead className="w-44">기수</TableHead>
                 <TableHead className="w-28">상태</TableHead>
+                <TableHead className="w-20 text-right">반</TableHead>
                 {/* 재적 기준이라 명단 탭 헤더(전체 등록)와 다를 수 있다 — 위 주석 */}
                 <TableHead className="w-24 text-right">교육생</TableHead>
                 {/*
@@ -249,6 +249,7 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
                   <TableCell>
                     <CohortStatusBadge status={c.status} />
                   </TableCell>
+                  <TableCell className="text-right tabular-nums">{c.classroomCount}</TableCell>
                   <TableCell className="text-right tabular-nums">{c.traineeCount}</TableCell>
                   <TableCell className="text-fg-muted text-xs">
                     {formatPeriod(c.startDate, c.endDate)}

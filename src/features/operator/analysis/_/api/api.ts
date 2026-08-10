@@ -10,6 +10,7 @@
   조립. 화면이 하면 격자 컴포넌트가 서버 응답 구조를 알게 된다.
 */
 import { useQuery } from '@tanstack/react-query'
+import { listQueryOptions } from '../../../_shared/listQuery'
 import { findCohortRiskTraineeRates, findCohortComparison } from '@/api/analytics/analyticsApi'
 import { analyticsKeys } from '@/api/analytics/analyticsKeys'
 import type { findCohortRiskTraineeRates_Response } from '@/api/analytics/analyticsTypes'
@@ -124,6 +125,11 @@ export function useRoundGrid(q: RoundQuery | undefined) {
     queryKey: [...analyticsKeys.all, 'round-grid', q],
     enabled: !!q,
     queryFn: () => loadRoundGrid(q!),
+    /*
+      **툴바를 만져도 격자를 비우지 않는다.** 조건이 곧 키라 바뀌는 순간 캐시가 없어져
+      화면이 통째로 비었다 — 반 하나를 더 고를 때마다 표가 사라졌다(`_shared/listQuery`).
+    */
+    ...listQueryOptions,
   })
 }
 
@@ -294,6 +300,8 @@ export function useCohortCompare(q: CohortQuery | undefined) {
     queryKey: [...analyticsKeys.all, 'cohort-compare', q],
     enabled: !!q,
     queryFn: () => loadCohortCompare(q!),
+    /* 비교 기수를 바꿔도 표를 비우지 않는다 — `_shared/listQuery` 주석 참고 */
+    ...listQueryOptions,
   })
 }
 

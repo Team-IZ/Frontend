@@ -1,7 +1,7 @@
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
+import ErrorState from '@/components/common/ErrorState'
 import { Spinner } from '@/components/ui/Spinner'
-import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import { useCohortId } from '@/stores/cohortScope'
 import { getToday, useDashboard } from './_/api/api'
@@ -49,16 +49,19 @@ export default function DashboardScreen() {
 
   return (
     <ConsoleShell role="operator" cohort={cohortName}>
-      {d && (
-        /*
-          기수 이름은 스코프가 안다 — 대시보드 응답에는 없다(`api.ts` `loadScope`).
-          인원·반 수는 반 비교 응답에서 나온다.
-        */
-        <PageHeader
-          breadcrumb={`대시보드 › ${cohortName ?? ''} › ${d.trainees}명 · ${d.classes}반`}
-          title="대시보드"
-        />
-      )}
+      {/*
+        **제목 줄은 조회를 기다리지 않는다**(async-states §1-3) — 통째로 없다가 생기면
+        도착 순간 페이지 전체가 아래로 밀린다. 기수 이름은 스코프가 알고(`loadScope`),
+        인원·반 수만 반 비교 응답에서 오므로 **그 조각만 늦게 채운다.**
+      */}
+      <PageHeader
+        breadcrumb={
+          cohortName
+            ? `대시보드 › ${cohortName}${d ? ` › ${d.trainees}명 · ${d.classes}반` : ''}`
+            : '대시보드'
+        }
+        title="대시보드"
+      />
 
       {cohortFailed ? (
         <Empty>
@@ -69,25 +72,21 @@ export default function DashboardScreen() {
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
-      ) : page.isPending ? (
+      ) : page.isLoading ? (
         <div className="flex justify-center py-16">
           <Spinner className="size-6" aria-label="대시보드를 불러오는 중" />
         </div>
       ) : page.isError || !d ? (
         /*
-          전체 조회 실패(`DASHBOARD_UNAVAILABLE`). **0으로 그리지 않는다** — 케이스 표가
-          *"그림 없음"* 으로 정했다. 여기는 카드가 없는 자리라 박스를 쓴다
-          (02-layout §4 — 유형 3 `실패`: 실선 + danger).
+          전체 조회 실패. **0으로 그리지 않는다** — 케이스 표가 *"그림 없음"* 으로 정했다.
+          문구·재시도 여부는 `errorCopy`가 status·코드를 보고 정한다(async-states §3-1).
         */
-        <Empty className="bg-danger-soft border-danger-border border-solid">
-          <EmptyHeader>
-            <EmptyTitle>대시보드를 불러오지 못했습니다</EmptyTitle>
-            <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
-          </EmptyHeader>
-          <Button variant="ghost" onClick={() => page.refetch()}>
-            다시 시도
-          </Button>
-        </Empty>
+        <ErrorState
+          error={page.error}
+          subject="대시보드"
+          onRetry={() => page.refetch()}
+          retrying={page.isFetching}
+        />
       ) : (
         <>
           <Section

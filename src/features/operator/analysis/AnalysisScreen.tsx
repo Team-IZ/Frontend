@@ -15,6 +15,8 @@ import {
 } from '@/components/ui/Select'
 import { useCohortId } from '@/stores/cohortScope'
 import { useCohortCompare, useRoundGrid } from './_/api/api'
+import ErrorState from '@/components/common/ErrorState'
+import { staleProps } from '../_shared/listQuery'
 import RoundToolbar from './_/components/RoundToolbar'
 import RoundGridTable from './_/components/RoundGridTable'
 import GridLegend from './_/components/GridLegend'
@@ -139,6 +141,8 @@ export default function AnalysisScreen() {
             teamProjectId={teamProjectId}
             allClasses={g?.allClasses ?? []}
             allRounds={g?.allRounds ?? []}
+            /* 고를 것이 아직 없다 — 빈 목록으로 열리게 두지 않는다(async-states §1-6) */
+            loading={grid.isLoading}
             fromRound={fromRound ?? g?.appliedFrom ?? 1}
             toRound={toRound ?? g?.appliedTo ?? 1}
             sort={sort}
@@ -162,10 +166,16 @@ export default function AnalysisScreen() {
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
-          ) : grid.isPending ? (
+          ) : grid.isLoading ? (
             <Loading />
           ) : grid.isError || !g ? (
-            <LoadFailed onRetry={() => grid.refetch()} />
+            /* 실패 문구·재시도 여부는 `errorCopy`가 status·코드를 보고 정한다 */
+            <ErrorState
+              error={grid.error}
+              subject="분석 결과"
+              onRetry={() => grid.refetch()}
+              retrying={grid.isFetching}
+            />
           ) : g.needs ? (
             /*
               **팀 계층인데 고를 것이 남았다.** 빈 표가 아니라 **사용자가 할 일이 남은
@@ -191,12 +201,13 @@ export default function AnalysisScreen() {
               </EmptyHeader>
             </Empty>
           ) : (
-            <>
+            /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
+            <div {...staleProps(grid.isPlaceholderData)}>
               <Card className="px-5 py-4">
                 <RoundGridTable grid={g} />
               </Card>
               <GridLegend baselineName={g.baselineName} />
-            </>
+            </div>
           )}
         </TabsContent>
 
@@ -247,10 +258,15 @@ export default function AnalysisScreen() {
             <span className="text-fg-subtle text-2xs">같은 교안 · 같은 개념만</span>
           </div>
 
-          {compare.isPending ? (
+          {compare.isLoading ? (
             <Loading />
           ) : compare.isError || !compare.data ? (
-            <LoadFailed onRetry={() => compare.refetch()} />
+            <ErrorState
+              error={compare.error}
+              subject="기수 간 비교"
+              onRetry={() => compare.refetch()}
+              retrying={compare.isFetching}
+            />
           ) : compare.data.rows.length === 0 ? (
             /*
               **비어 있는 이유가 둘이고 할 일이 다르다.**
@@ -280,7 +296,8 @@ export default function AnalysisScreen() {
               </Button>
             </Empty>
           ) : (
-            <>
+            /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
+            <div {...staleProps(compare.isPlaceholderData)}>
               <Card className="px-5 py-4">
                 <CohortCompareTable data={compare.data} />
               </Card>
@@ -321,7 +338,7 @@ export default function AnalysisScreen() {
                   <span className="block">그 아래면 처방 대상입니다</span>
                 </span>
               </div>
-            </>
+            </div>
           )}
         </TabsContent>
       </Tabs>
@@ -333,17 +350,4 @@ const Loading = () => (
   <div className="flex justify-center py-16">
     <Spinner className="size-6" aria-label="분석 결과를 불러오는 중" />
   </div>
-)
-
-/** 못 가져온 것 — **0으로 그리지 않는다**(케이스 표 `ANALYSIS_UNAVAILABLE`) */
-const LoadFailed = ({ onRetry }: { onRetry: () => void }) => (
-  <Empty className="bg-danger-soft border-danger-border border-solid">
-    <EmptyHeader>
-      <EmptyTitle>분석 결과를 불러오지 못했습니다</EmptyTitle>
-      <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
-    </EmptyHeader>
-    <Button variant="ghost" onClick={onRetry}>
-      다시 시도
-    </Button>
-  </Empty>
 )

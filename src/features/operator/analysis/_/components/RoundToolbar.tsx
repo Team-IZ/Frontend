@@ -38,17 +38,30 @@ import type { ClassOption, Level, RoundColumn, RoundSort } from '../api/types'
 */
 
 /** 칩에 고른 이름을 나열하고 개수 배지를 붙인다 — 무엇을 보고 있는지가 툴바에 남는다 */
-function pickLabel(all: string[], picked: string[], unit: string) {
+function pickLabel(all: string[], picked: string[], unit: string, loading?: boolean) {
+  /*
+   **모르는 것을 0으로 쓰지 않는다**(F3). 목록이 아직 안 왔을 때 `전체 0반`이라고 하면
+   *"이 기수엔 반이 없다"* 는 없는 사실을 주장하게 된다 — 개수 없이 `전체`만 쓴다.
+   */
+  if (loading) return '전체'
   if (picked.length === 0 || picked.length === all.length) return `전체 ${all.length}${unit}`
   if (picked.length <= 2) return picked.join(' · ')
   return `${picked.slice(0, 2).join(' · ')} 외 ${picked.length - 2}`
 }
 
-function FilterTrigger({ k, children }: { k: string; children: React.ReactNode }) {
+function FilterTrigger({
+  k,
+  children,
+  disabled,
+}: {
+  k: string
+  children: React.ReactNode
+  disabled?: boolean
+}) {
   return (
     <PopoverTrigger
       render={
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" disabled={disabled}>
           <span className="text-fg-subtle text-2xs">{k}</span>
           {children}
           <ChevronDownIcon className="size-3" />
@@ -65,6 +78,7 @@ export default function RoundToolbar({
   teamProjectId,
   allClasses,
   allRounds,
+  loading,
   fromRound,
   toRound,
   sort,
@@ -78,6 +92,12 @@ export default function RoundToolbar({
   teamProjectId: string | null
   allClasses: ClassOption[]
   allRounds: RoundColumn[]
+  /**
+   * 아직 고를 것이 안 왔다. **빈 목록으로 열리게 두지 않는다** — 열어도 아무것도 없는
+   * 컨트롤은 실패보다 나쁘고, *"누를 수 없는 컨트롤은 장식이다"*(E7)의 같은 자리다
+   * (async-states §1-6).
+   */
+  loading?: boolean
   fromRound: number
   toRound: number
   sort: RoundSort
@@ -98,7 +118,7 @@ export default function RoundToolbar({
   const nameOf = (id: string) => allClasses.find((c) => c.classId === id)?.className ?? ''
 
   /** 팀 계층인데 반이 없다 — 고를 때까지 팝오버가 열려 있다 */
-  const needsClass = level === 'team' && teamClassId === null
+  const needsClass = level === 'team' && teamClassId === null && !loading
   const [classOpen, setClassOpen] = useState(false)
 
   return (
@@ -148,12 +168,13 @@ export default function RoundToolbar({
           else setClassOpen(o)
         }}
       >
-        <FilterTrigger k="반">
+        <FilterTrigger k="반" disabled={loading}>
           {level === 'class' ? (
             pickLabel(
               allClasses.map((c) => c.className),
               picked.map(nameOf),
               '반',
+              loading,
             )
           ) : teamClassId ? (
             nameOf(teamClassId)
@@ -215,6 +236,7 @@ export default function RoundToolbar({
         <span className="text-fg-subtle flex items-center gap-1.5 text-2xs">
           회차
           <RoundSelect
+            disabled={loading}
             value={allRounds.find((r) => r.projectId === teamProjectId)?.no ?? null}
             rounds={allRounds}
             onChange={(no) =>
@@ -239,17 +261,20 @@ export default function RoundToolbar({
         <span className="text-fg-subtle flex items-center gap-1.5 text-2xs">
           회차
           <RoundSelect
+            disabled={loading}
             value={fromRound}
             rounds={allRounds}
             onChange={(v) => onChange({ fromRound: v, toRound: Math.max(v, toRound) })}
           />
           –
           <RoundSelect
+            disabled={loading}
             value={toRound}
             rounds={allRounds}
             onChange={(v) => onChange({ toRound: v, fromRound: Math.min(v, fromRound) })}
           />
-          <span className="text-fg-subtle/70">등록 {allRounds.length}회</span>
+          {/* 회차 수도 아직 모른다 — `등록 0회`는 없는 사실이다 */}
+          {!loading && <span className="text-fg-subtle/70">등록 {allRounds.length}회</span>}
         </span>
       )}
 
@@ -262,7 +287,7 @@ export default function RoundToolbar({
         onValueChange={(v) => onChange({ sort: v as RoundSort })}
         items={ROUND_SORTS.map((s) => ({ value: s, label: `정렬 · ${ROUND_SORT_LABEL[s]}` }))}
       >
-        <SelectTrigger size="sm" className="w-56" aria-label="정렬">
+        <SelectTrigger size="sm" className="w-56" aria-label="정렬" disabled={loading}>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -282,11 +307,14 @@ function RoundSelect({
   value,
   rounds,
   onChange,
+  disabled,
 }: {
   /** `null`이면 아직 안 고른 상태 — 트리거에 `고르세요`가 뜬다 */
   value: number | null
   rounds: RoundColumn[]
   onChange: (v: number) => void
+  /** 회차 목록이 아직 안 왔다 — 빈 목록으로 열리게 두지 않는다(async-states §1-6) */
+  disabled?: boolean
 }) {
   return (
     <Select
@@ -304,7 +332,7 @@ function RoundSelect({
       }}
       items={rounds.map((r) => ({ value: String(r.no), label: r.label }))}
     >
-      <SelectTrigger size="sm" className="w-24" aria-label="회차">
+      <SelectTrigger size="sm" className="w-24" aria-label="회차" disabled={disabled}>
         <SelectValue placeholder="고르세요" />
       </SelectTrigger>
       <SelectContent>

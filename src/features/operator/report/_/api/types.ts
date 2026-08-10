@@ -10,15 +10,26 @@
   필터·드릴다운이 없는 **고정 스냅샷**이라(§4) 쿼리 파라미터는 `cohortId` 하나뿐이다.
 */
 
-/** 도달 단계. 검증 개념 하나에 대한 응답 깊이 — 기획에 정의된 절대 눈금이다 */
-export type ReachLevel = 1 | 2 | 3 | 4
+/**
+ * 도달 단계. 검증 개념 하나에 대한 응답 깊이 — 기획에 정의된 절대 눈금이다.
+ *
+ * ⚠ 0단이 있다 — "통과한 축이 하나도 없음"(물었는데 못한 것). `unasked`("묻지 못함",
+ * 문항 자체가 없던 것)와 다르다. 실제 서버 연동 전엔 4단(1~4)만 있는 줄 알았는데,
+ * 서버 스펙(`CohortDiagnosisResponse.ReachDistribution`)이 0단을 계속 보낸다 —
+ * 디자인 토큰도 `--color-reach-0`~`--color-reach-4` 5단계였다(D21류 실측 대조).
+ */
+export type ReachLevel = 0 | 1 | 2 | 3 | 4
 
 /**
  * 도달 단계 분포 — 개념 하나(또는 회차 하나)를 채점한 인원이 각 단계에 몇 명씩
  * 있는지. `unasked`는 "묻지 못함"(그 학생 코드에 개념이 없어 문항이 안 만들어짐) —
  * 채점 실패가 아니라 **애초에 못 물은 것**이라 분포와 별도로 센다(F3).
+ *
+ * `belowLevel2Count`(위험 판정선)는 **level0 + level1 + level2**다. level0을
+ * 빠뜨리면 막대 비율과 이 숫자가 서로 다른 모집단을 말하게 된다.
  */
 export type ReachDistribution = {
+  level0: number
   level1: number
   level2: number
   level3: number

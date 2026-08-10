@@ -2,9 +2,10 @@ import { cn } from '@/lib/utils/cn'
 import type { ReachDistribution } from '../api/types'
 import { REACH_LEVEL_LABEL, UNASKED_LABEL } from '../labels'
 
-const SEGMENT_COLOR: Record<1 | 2 | 3 | 4, string> = {
-  1: 'bg-reach-0 text-white',
-  2: 'bg-reach-1 text-reach-fg',
+const SEGMENT_COLOR: Record<0 | 1 | 2 | 3 | 4, string> = {
+  0: 'bg-reach-0 text-white',
+  1: 'bg-reach-1 text-reach-fg',
+  2: 'bg-reach-2 text-reach-fg',
   3: 'bg-reach-3 text-reach-fg',
   4: 'bg-reach-4 text-white',
 }
@@ -24,6 +25,7 @@ export default function DistributionBar({
   className?: string
 }) {
   const total =
+    distribution.level0 +
     distribution.level1 +
     distribution.level2 +
     distribution.level3 +
@@ -32,6 +34,7 @@ export default function DistributionBar({
   if (total === 0) return null
 
   const segments = [
+    { level: 0 as const, count: distribution.level0 },
     { level: 1 as const, count: distribution.level1 },
     { level: 2 as const, count: distribution.level2 },
     { level: 3 as const, count: distribution.level3 },
@@ -83,7 +86,7 @@ export default function DistributionBar({
 export function DistributionLegend() {
   return (
     <div className="text-fg-subtle flex flex-wrap items-center gap-x-3 gap-y-1.5 text-2xs">
-      {([1, 2, 3, 4] as const).map((level) => (
+      {([0, 1, 2, 3, 4] as const).map((level) => (
         <span key={level} className="flex items-center gap-1">
           <i className={cn('inline-block h-[9px] w-[11px] rounded-sm', SEGMENT_COLOR[level])} />
           {level}단 {REACH_LEVEL_LABEL[level]}

@@ -6,6 +6,7 @@ import type { ReachLevel, Report } from './api/types'
 import { sectionQuestion, type ReportSectionKey } from './sections'
 
 export const REACH_LEVEL_LABEL: Record<ReachLevel, string> = {
+  0: '통과 못함',
   1: '무엇을 하는지',
   2: '왜 그렇게 했는지',
   3: '다른 방법과 비교',
@@ -16,14 +17,14 @@ export const REACH_LEVEL_LABEL: Record<ReachLevel, string> = {
  * 도달 단계 색. 기획에 정의된 절대 눈금이라(02-layout-system §7) 값에 직접 칠한다 —
  * OP-02 반 비교처럼 "기준선 대비 부호"만 쓰는 상대 색과 다르다.
  *
- * ⚠ 실제 디자인 토큰은 `--color-reach-0`~`--color-reach-4`(5단계)인데, OP-05
- * 목업(`operator/report.html`)의 범례는 4단계(1~4단)만 정의하고 가운데 노랑
- * 토큰(`reach-2`)을 건너뛴다. 목업 문구를 그대로 따라 4단계로 구현했다 — MG-02·
- * OP-02가 실제로 붙으면 도달 단계가 4단인지 5단인지 실측 대조가 필요하다(PR에 남김).
+ * 실제 연동 시점에 실측 대조 완료(위 §7에서 예고했던 그 대조) — 도달 단계는
+ * 5단(0~4)이었다. 목업 4단계(1~4단, `reach-2` 건너뜀)를 따라 만들었던 과거 매핑을
+ * 걷어내고 `reach-0`~`reach-4`를 단계 숫자와 1:1로 맞췄다.
  */
 export const REACH_LEVEL_COLOR: Record<ReachLevel, string> = {
-  1: 'bg-reach-0 text-white',
-  2: 'bg-reach-1 text-reach-fg',
+  0: 'bg-reach-0 text-white',
+  1: 'bg-reach-1 text-reach-fg',
+  2: 'bg-reach-2 text-reach-fg',
   3: 'bg-reach-3 text-reach-fg',
   4: 'bg-reach-4 text-white',
 }
@@ -87,6 +88,7 @@ export function exportReportCsv(report: Report) {
       headers: [
         '회차',
         '검증 개념',
+        '0단(명)',
         '1단(명)',
         '2단(명)',
         '3단(명)',
@@ -99,6 +101,7 @@ export function exportReportCsv(report: Report) {
       rows: report.rounds.map((r) => [
         r.name,
         r.conceptNames.join(' · '),
+        r.distribution.level0,
         r.distribution.level1,
         r.distribution.level2,
         r.distribution.level3,
@@ -117,6 +120,7 @@ export function exportReportCsv(report: Report) {
         '검증 개념',
         '출처',
         '쓰인 회차',
+        '0단(명)',
         '1단(명)',
         '2단(명)',
         '3단(명)',
@@ -131,6 +135,7 @@ export function exportReportCsv(report: Report) {
         c.name,
         c.section,
         c.rounds.join(' · '),
+        c.distribution.level0,
         c.distribution.level1,
         c.distribution.level2,
         c.distribution.level3,
@@ -156,21 +161,14 @@ export function exportReportCsv(report: Report) {
     {
       key: 'ops',
       title: '집단 미달',
-      headers: [
-        '교안',
-        '검증 개념',
-        '출처',
-        '회차',
-        '반',
-        '미달(명)',
-        '전체 인원(명)',
-        '미달 비율',
-      ],
+      // '회차' 열은 뺐다 — 이 지표의 grain이 반×개념이라 회차 축이 없고, 서버가
+      // groupShortfalls[].round를 항상 빈 문자열로 준다(백엔드 DTO 확인). 빈 열을
+      // 그대로 내보내면 외부 문서에 뜻 없는 칸이 남는다.
+      headers: ['교안', '검증 개념', '출처', '반', '미달(명)', '전체 인원(명)', '미달 비율'],
       rows: report.groupShortfalls.map((g) => [
         g.curriculumName,
         g.conceptName,
         g.section,
-        g.round,
         g.className,
         g.shortfallCount,
         g.totalCount,

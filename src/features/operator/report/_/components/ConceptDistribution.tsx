@@ -21,8 +21,9 @@ const ALL = '__all__'
 type Group = { key: string; label: string; rows: ConceptDiagnosis[] }
 
 /**
- * 교안 묶음. 순서는 `mockDb`가 이미 교안·개념 모두 심각도 내림차순으로 내려준 그대로다 —
- * 여기서 다시 정렬하지 않는다(정렬이 곧 순위라는 규칙이 한 곳에만 있어야 한다).
+ * 교안 묶음. 서버가 교안·섹션 순으로 내려준 그대로 묶는다 — 여기서 다시 정렬하지
+ * 않는다. 심각도 순은 요약 탭(`DiagnosisSummary.tsx`)만 쓰는 별도 정렬이다(백엔드
+ * DTO: "개념별 탭은 교안 순서가 맞고, 요약 탭만 심각도 순이 필요하다").
  */
 function byCurriculum(concepts: ConceptDiagnosis[]): Group[] {
   const map = new Map<string, ConceptDiagnosis[]>()
@@ -117,7 +118,7 @@ export default function ConceptDistribution({ concepts }: { concepts: ConceptDia
         {/*
           옵션은 **이름만** 쓴다. 한때 `· 5건 · 2단 이하 최대 57%`를 뒤에 달았는데,
           고르는 자리에서 읽을 것이 아니었다 — 건수·최악 비율은 고른 뒤 표에 다 있고,
-          목록 순서가 이미 심각한 교안부터다(`mockDb`가 그 순으로 내려준다). 라벨에
+          목록 순서는 서버가 준 교안·섹션 순이다(심각도 순이 아니다 — 위 `byCurriculum` 참고). 라벨에
           숫자를 붙이면 드롭다운이 또 하나의 표가 된다.
         */}
         <ToolbarSelect
@@ -223,7 +224,8 @@ function GroupTable({
                 <TableCell className="text-right align-middle tabular-nums">
                   {/*
                     색으로 위험을 표시하지 않는다 — 몇 %부터 "심각"인지 기획에 없다(E8).
-                    정렬(mockDb — 심각도 내림차순)이 이미 순위를 말한다(E2).
+                    이 탭은 교안·섹션 순이라 순위를 정렬로 말하지 않는다 — 순위가
+                    필요하면 요약 탭(심각도 내림차순 정렬)을 본다.
                   */}
                   <b>{Math.round((c.belowLevel2Count / c.gradedCount) * 100)}%</b>
                   <small className="text-fg-subtle mt-0.5 block text-2xs">

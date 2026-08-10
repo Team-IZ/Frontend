@@ -27,8 +27,16 @@ function Stat({
 export default function DiagnosisSummary({ report }: { report: Report }) {
   const { excluded } = report
   const overallRisk = report.classRisk.find((c) => c.className === '기수 전체')
-  // 이미 심각도 내림차순으로 온다(mockDb `buildConcepts`) — 여기서 다시 정렬하지 않는다
-  const worstConcepts = report.concepts.slice(0, 3)
+  /*
+   * 서버는 심각도 순이 아니라 교안·섹션 순으로 준다(백엔드 DTO 확인: "개념별 탭은
+   * 교안을 고칠 자리를 찾는 화면이라 교안 순서가 맞고, 요약 탭만 심각도 순이
+   * 필요하다"). 그래서 이 화면에서만 belowLevel2Count/gradedCount 내림차순으로
+   * 다시 정렬한 뒤 앞 3개를 자른다 — ConceptDistribution.tsx(개념별 탭)는 서버가
+   * 준 교안 순서를 그대로 쓴다.
+   */
+  const worstConcepts = [...report.concepts]
+    .sort((a, b) => b.belowLevel2Count / b.gradedCount - a.belowLevel2Count / a.gradedCount)
+    .slice(0, 3)
   return (
     <div>
       <div className="mb-4 grid grid-cols-4 gap-3">
@@ -102,8 +110,8 @@ export default function DiagnosisSummary({ report }: { report: Report }) {
         나가는 문서에서 그건 한 장을 버리는 것이다. 그래서 나머지 섹션의 헤드라인만
         올린다.
 
-        해석이 아니라 **이미 정렬된 데이터의 앞 세 줄**이다(mockDb가 심각도 내림차순으로
-        내려준다) — 집단 미달 표가 색 임계값 없이 정렬만으로 순위를 전달하는 것과 같은
+        해석이 아니라 **정렬된 데이터의 앞 세 줄**이다(이 화면에서 심각도 내림차순으로
+        직접 정렬한다 — 위 `worstConcepts` 참고) — 집단 미달 표가 색 임계값 없이 정렬만으로 순위를 전달하는 것과 같은
         논리라 §4("값·라벨·범례·분모만")에 걸리지 않는다. "심각"·"주의" 같은 라벨도,
         색 임계값도 붙이지 않는다.
       */}

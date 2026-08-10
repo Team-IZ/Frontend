@@ -12,8 +12,11 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import ErrorState from '@/components/common/ErrorState'
 import { Spinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils/cn'
+import { useDebounced } from '@/lib/useDebounced'
+import { staleProps } from '../../_shared/listQuery'
 import { getToday, useCohortScope, useLinkableCurricula, useProjectList } from '../queries'
 import { CONCEPT_COUNT, dueLabel } from '../rules'
 import { useCohortId } from '@/stores/cohortScope'
@@ -63,11 +66,18 @@ export default function ProjectListScreen() {
     **조회 셋이 각자 캐시된다.** 목록으로 돌아왔을 때 교안·스코프를 다시 묻지 않고,
     회차를 만들면 쓰기 훅이 목록만 정확히 무효화한다(`queries.ts`).
   */
+  /*
+    **입력값과 조회값을 가른다.** 그대로 조회 키에 실으면 한 글자마다 요청이 나가고,
+    한글은 자모가 조합되는 중에도 `input`이 떠서 실제로는 더 나간다(`lib/useDebounced`).
+    입력칸은 원본을 그려야 타이핑이 안 끊긴다.
+  */
+  const search = useDebounced(filters.search)
+
   const page = useProjectList(
     cohortId
       ? {
           cohortId,
-          search: filters.search || undefined,
+          search: search || undefined,
           curriculumId: filters.curriculumId === ALL ? undefined : filters.curriculumId,
           status: filters.status === ALL ? undefined : (filters.status as ProjectStatus),
           sort: filters.sort as ProjectSort,
@@ -85,8 +95,12 @@ export default function ProjectListScreen() {
   */
   const totalAll = page.data?.population ?? 0
   const today = getToday()
-  /** 빈 결과가 "아직 없음"인지 "필터에 안 걸림"인지 — 문구가 갈린다 */
-  const narrowed = isNarrowed(filters)
+  /*
+    빈 결과가 "아직 없음"인지 "필터에 안 걸림"인지 — 문구가 갈린다.
+    **판정은 조회에 실제로 나간 검색어로 한다** — 입력 원본으로 하면 타이핑 첫 글자에
+    아직 안 좁혀진 결과를 두고 *"조건에 맞는 회차가 없습니다"* 라고 말한다.
+  */
+  const narrowed = isNarrowed({ ...filters, search })
 
   return (
     <ConsoleShell role="operator" cohort={cohortName}>
@@ -146,23 +160,19 @@ export default function ProjectListScreen() {
           <Spinner className="size-6" aria-label="목록을 불러오는 중" />
         </div>
       ) : page.isError ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>목록을 불러오지 못했습니다</EmptyTitle>
-            <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
-          </EmptyHeader>
-          <Button variant="ghost" onClick={() => page.refetch()}>
-            다시 시도
-          </Button>
-        </Empty>
+        <ErrorState
+          error={page.error}
+          subject="목록"
+          onRetry={() => page.refetch()}
+          retrying={page.isFetching}
+        />
       ) : page.data?.items.length === 0 ? (
         narrowed ? (
           <Empty>
             <EmptyHeader>
               <EmptyTitle>
-                {filters.search
-                  ? `"${filters.search}"와 맞는 회차가 없습니다`
-                  : '조건에 맞는 회차가 없습니다'}
+                {/* 조회에 나간 검색어를 쓴다 — 입력 원본이면 아직 안 걸린 글자를 인용한다 */}
+                {search ? `"${search}"와 맞는 회차가 없습니다` : '조건에 맞는 회차가 없습니다'}
               </EmptyTitle>
               <EmptyDescription>전체 {totalAll}개에서 찾았습니다.</EmptyDescription>
             </EmptyHeader>
@@ -181,7 +191,12 @@ export default function ProjectListScreen() {
         )
       ) : (
         page.data && (
-          <>
+          /*
+            **값이 옛 것인 동안 그 사실을 숨기지 않는다.** 표는 남기되 흐리게 —
+            비우는 것(깜빡임)과 그냥 두는 것(거짓말) 사이의 답이다(async-states §1-4).
+            `aria-busy`가 보조 기술에도 같은 것을 알린다.
+          */
+          <div {...staleProps(page.isPlaceholderData)}>
             <Table className="table-fixed">
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
@@ -261,7 +276,7 @@ export default function ProjectListScreen() {
               <div />
               <div />
             </div>
-          </>
+          </div>
         )
       )}
 

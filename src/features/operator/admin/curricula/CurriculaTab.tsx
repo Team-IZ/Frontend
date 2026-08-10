@@ -11,6 +11,7 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { useDebounced } from '@/lib/useDebounced'
+import { listQueryOptions, staleProps } from '../../_shared/listQuery'
 import { useGetCurrentMember } from '@/api/member/useMemberQueries'
 import { useFindOrganizationCurricula } from '@/api/curriculum/useCurriculumQueries'
 import type { findOrganizationCurricula_Query } from '@/api/curriculum/curriculumTypes'
@@ -93,7 +94,8 @@ export default function CurriculaTab({ onCount }: Props) {
         size: PAGE_SIZE,
       },
     },
-    { enabled: !!organizationId },
+    /* 조건·페이지를 바꿔도 표를 비우지 않는다 — `_shared/listQuery` 주석 참고 */
+    { enabled: !!organizationId, ...listQueryOptions },
   )
 
   const items = page.data?.content ?? []
@@ -222,7 +224,8 @@ export default function CurriculaTab({ onCount }: Props) {
           </Empty>
         )
       ) : (
-        <>
+        /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
+        <div {...staleProps(page.isPlaceholderData)}>
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -301,7 +304,7 @@ export default function CurriculaTab({ onCount }: Props) {
             totalPages={1}
             onPageChange={() => {}}
           />
-        </>
+        </div>
       )}
 
       <RegisterCurriculumDialog open={registerOpen} onOpenChange={setRegisterOpen} />

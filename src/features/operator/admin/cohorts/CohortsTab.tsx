@@ -11,6 +11,7 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { useDebounced } from '@/lib/useDebounced'
+import { listQueryOptions, staleProps } from '../../_shared/listQuery'
 import { useFindCohorts } from '@/api/academic/useAcademicQueries'
 import { useDeleteCohort, useEndCohort } from '@/api/academic/useAcademicMutations'
 import { isApiError } from '@/api/_contract'
@@ -92,13 +93,17 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
     스위처의 전량 목록을 쓴다(같은 쿼리 키라 캐시에서 나온다).
   */
   const scope = useCohortScope()
-  const page = useFindCohorts({
-    query: {
-      query: query.trim() || undefined,
-      status: asQuery<CohortStatus>(status),
-      size: PAGE_SIZE,
+  const page = useFindCohorts(
+    {
+      query: {
+        query: query.trim() || undefined,
+        status: asQuery<CohortStatus>(status),
+        size: PAGE_SIZE,
+      },
     },
-  })
+    /* 조건·페이지를 바꿔도 표를 비우지 않는다 — `_shared/listQuery` 주석 참고 */
+    listQueryOptions,
+  )
 
   const counts = useMemo(() => {
     const base: Record<CohortStatus, number> = { PLANNED: 0, RUNNING: 0, CLOSED: 0 }
@@ -211,7 +216,8 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
           </Empty>
         )
       ) : (
-        <>
+        /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
+        <div {...staleProps(page.isPlaceholderData)}>
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -302,7 +308,7 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
             totalPages={1}
             onPageChange={() => {}}
           />
-        </>
+        </div>
       )}
 
       <CreateCohortDialog open={createOpen} onOpenChange={setCreateOpen} />

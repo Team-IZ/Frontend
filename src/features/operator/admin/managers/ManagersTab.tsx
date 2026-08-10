@@ -12,6 +12,7 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { useDebounced } from '@/lib/useDebounced'
+import { listQueryOptions, staleProps } from '../../_shared/listQuery'
 import { useFindManagers } from '@/api/member/useMemberQueries'
 import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useGetCurrentMember } from '@/api/member/useMemberQueries'
@@ -112,16 +113,20 @@ export default function ManagersTab({ onCount }: Props) {
   const { data: me } = useGetCurrentMember()
   const organizationId = me?.organizationId
 
-  const page = useFindManagers({
-    query: {
-      // **화면이 늘 기수를 보낸다** — 상단 스위처가 가리키는 기수가 이 목록의 범위다
-      cohortId: scope.cohortId,
-      query: query.trim() || undefined,
-      status: asQuery<AccountStatus>(status),
-      sort,
-      size: PAGE_SIZE,
+  const page = useFindManagers(
+    {
+      query: {
+        // **화면이 늘 기수를 보낸다** — 상단 스위처가 가리키는 기수가 이 목록의 범위다
+        cohortId: scope.cohortId,
+        query: query.trim() || undefined,
+        status: asQuery<AccountStatus>(status),
+        sort,
+        size: PAGE_SIZE,
+      },
     },
-  })
+    /* 조건·페이지를 바꿔도 표를 비우지 않는다 — `_shared/listQuery` 주석 참고 */
+    listQueryOptions,
+  )
 
   /*
     **담당 없는 반은 반 목록이 안다.** 목에서는 매니저 응답이 `unstaffedClasses`를 실어
@@ -290,7 +295,8 @@ export default function ManagersTab({ onCount }: Props) {
           </Empty>
         )
       ) : (
-        <>
+        /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
+        <div {...staleProps(page.isPlaceholderData)}>
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -413,7 +419,7 @@ export default function ManagersTab({ onCount }: Props) {
             totalPages={1}
             onPageChange={() => {}}
           />
-        </>
+        </div>
       )}
 
       <InviteManagerDialog open={inviteOpen} onOpenChange={setInviteOpen} />

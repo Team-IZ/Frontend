@@ -12,6 +12,7 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { useDebounced } from '@/lib/useDebounced'
+import { listQueryOptions, staleProps } from '../../_shared/listQuery'
 import { cn } from '@/lib/utils/cn'
 import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useFindTraineeRoster } from '@/api/member/useMemberQueries'
@@ -140,7 +141,8 @@ export default function RosterTab({ onCount }: Props) {
         size: ROSTER_PAGE_SIZE,
       },
     },
-    { enabled: !!cohortId },
+    /* 조건·페이지를 바꿔도 표를 비우지 않는다 — `_shared/listQuery` 주석 참고 */
+    { enabled: !!cohortId, ...listQueryOptions },
   )
 
   /** 필터 드롭다운용 반 목록 — 명단과 달리 필터·페이지에 안 걸리므로 따로 조회한다 */
@@ -157,6 +159,8 @@ export default function RosterTab({ onCount }: Props) {
   }
 
   const rows = roster.data?.content ?? []
+  /** 지금 화면에 있는 행이 **어느 쪽의 것인지**. 옛 값을 그리는 동안 `page`와 갈린다 */
+  const shownPage = roster.data?.page ?? page - 1
   const total = roster.data?.totalElements ?? 0
   const totalPages = Math.max(1, roster.data?.totalPages ?? 1)
   const cohortTotal = roster.data?.cohortTotal ?? 0
@@ -387,7 +391,8 @@ export default function RosterTab({ onCount }: Props) {
           </Empty>
         )
       ) : (
-        <>
+        /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
+        <div {...staleProps(roster.isPlaceholderData)}>
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -487,16 +492,23 @@ export default function RosterTab({ onCount }: Props) {
             </TableBody>
           </Table>
 
+          {/*
+            **범위는 응답이 알려준 쪽으로 센다** — 화면이 든 `page`로 세면 옛 값을 그리는
+            동안 푸터만 앞서 간다(1쪽 열 줄을 보여주면서 `21–30`이라고 썼다). 쪽 번호가
+            바뀌는 시점과 그 쪽 데이터가 오는 시점이 다르기 때문이다.
+
+            페이저 자체는 `page`를 쓴다 — 누른 쪽이 바로 눌린 것으로 보여야 한다.
+          */}
           <TableFooterBar
-            range={`${(page - 1) * ROSTER_PAGE_SIZE + 1}–${
-              (page - 1) * ROSTER_PAGE_SIZE + rows.length
+            range={`${shownPage * ROSTER_PAGE_SIZE + 1}–${
+              shownPage * ROSTER_PAGE_SIZE + rows.length
             } / ${total}명${selected.size > 0 ? ` · ${selected.size}명 선택` : ''}`}
             page={page}
             totalPages={totalPages}
             // 쪽을 넘겨도 선택은 남긴다 — 여러 쪽에서 골라 한 번에 배정하는 동선이 있다
             onPageChange={setPage}
           />
-        </>
+        </div>
       )}
 
       <DeactivateTraineeDialog

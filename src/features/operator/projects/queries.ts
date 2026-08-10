@@ -41,6 +41,7 @@ import { findSections } from '@/api/curriculum/curriculumApi'
 import { findCohort, findClassrooms } from '@/api/academic/academicApi'
 import { academicKeys } from '@/api/academic/academicKeys'
 import { curriculumKeys } from '@/api/curriculum/curriculumKeys'
+import { listQueryOptions } from '../_shared/listQuery'
 import type {
   findProjects_Response,
   findProjectClassProgress_Response,
@@ -145,7 +146,11 @@ export function useProjectList(q: ProjectQuery | undefined) {
         sort: q?.sort ? SORT[q.sort] : undefined,
       },
     },
-    { enabled: !!q },
+    /*
+      **조건을 바꿔도 표를 비우지 않는다**(`listQueryOptions`). 조건이 곧 쿼리 키라
+      바뀌는 순간 캐시가 없어져 화면이 통째로 비었다 — 검색어 한 글자마다 그랬다.
+    */
+    { enabled: !!q, ...listQueryOptions },
   )
 
   return { ...res, data: res.data ? toPage(res.data, q!) : undefined }

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import {
@@ -11,7 +12,8 @@ import {
 } from '@/components/ui/Table'
 import { useDebounced } from '@/lib/useDebounced'
 import { useFindCohorts } from '@/api/academic/useAcademicQueries'
-import { useEndCohort } from '@/api/academic/useAcademicMutations'
+import { useDeleteCohort, useEndCohort } from '@/api/academic/useAcademicMutations'
+import { isApiError } from '@/api/_contract'
 import { COHORT_STATUS_LABEL } from '../_/labels'
 import { formatPeriod } from '../_/rules'
 import { useCohortScope, type Cohort } from '../_/cohortScope'
@@ -23,7 +25,9 @@ import { CohortStatusBadge } from '../_/components/StatusBadges'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
 import { ALL, asQuery, withAll } from '../_/filterState'
 import CreateCohortDialog from './components/CreateCohortDialog'
+import EditCohortDialog from './components/EditCohortDialog'
 import EndCohortDialog from './components/EndCohortDialog'
+import ConfirmDialog from '../_/components/ConfirmDialog'
 
 /*
   ① 기수 — **여기가 시작점이다.** 기수가 있어야 반을 나누고 명단을 넣을 수 있다.
@@ -33,17 +37,16 @@ import EndCohortDialog from './components/EndCohortDialog'
 
   행을 누르면 그 기수로 스위처를 옮긴다 — 기수를 만든 다음 실제로 하는 일이 그것이다.
 
-  ## ⚠ 서버가 아직 못 주는 열 둘을 뺐다
-  목업에 `반`·`교육생` 열이 있었는데 지금은 그릴 수 없다.
+  ## 교육생 수가 채워졌다 (10차 R3)
+  한때 `traineeCount`가 항상 0이라 열을 통째로 뺐다 — 0을 그리면 "이 기수엔 아무도 없다"는
+  거짓말이 된다. 지금은 실제 인원이 온다.
 
-  | | 왜 |
-  |---|---|
-  | 반 수 | `CohortResponse`에 필드 자체가 없다 |
-  | 교육생 수 | **필드는 있는데 값이 항상 0이다.** 스펙 설명에 *"content[].traineeCount는 항상 0, managers는 항상 빈 배열"* 이라고 적혀 있고 실호출로도 확인했다(반 8개·교육생 200여 명인 기수가 0으로 온다) |
+  ⚠ **정의가 "재적"이다** — 등록돼 있고 아직 나가지 않은 인원이라 **명단 전체 건수보다
+  작다**(9기 기준 208 vs 223 · 중도 이탈 15명). 명단 탭 헤더의 수와 다른 것이 정상이다.
 
-  **`—`로 두지 않고 열을 없앴다.** 값이 0으로 오면 화면은 "이 기수엔 아무도 없다"고
-  **거짓말**을 하고, `—`는 "값이 없는 기수"로 읽힌다 — 둘 다 사실이 아니다. 열이 없으면
-  최소한 아무 주장도 하지 않는다. 10차 요청에 올렸고, 오면 열을 되살린다.
+  ## ⚠ `반` 열은 아직 없다
+  `CohortResponse`에 반 개수가 없다. 세려면 기수마다 `findClassrooms`를 불러야 하는데
+  목록에 기수가 넷이면 조회가 넷 더 나간다 — **열을 그리지 않는다.**
 */
 
 /*
@@ -119,6 +122,11 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
   const narrowed = query.trim().length > 0 || status !== ALL
 
   const endCohort = useEndCohort()
+  const removeCohort = useDeleteCohort()
+  /** 수정할 기수. 개강 전에만 연다 */
+  const [editing, setEditing] = useState<Cohort | null>(null)
+  const [deleting, setDeleting] = useState<Cohort | null>(null)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   return (
     <>
@@ -158,6 +166,12 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
           className="min-w-32"
         />
       </div>
+
+      {deleteError && (
+        <Alert variant="danger" className="mb-4">
+          <AlertTitle>{deleteError}</AlertTitle>
+        </Alert>
+      )}
 
       {page.isPending ? (
         <Loading label="기수를 불러오는 중" />
@@ -204,6 +218,8 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
               <TableRow className="hover:bg-transparent">
                 <TableHead className="w-44">기수</TableHead>
                 <TableHead className="w-28">상태</TableHead>
+                {/* 재적 기준이라 명단 탭 헤더(전체 등록)와 다를 수 있다 — 위 주석 */}
+                <TableHead className="w-24 text-right">교육생</TableHead>
                 {/*
                   **정렬 키가 열 이름에 있어야 한다**(E2). 기본이 `최신순`이고 그 키는
                   시작일인데, 열 이름이 `기간`이면 `8기 · 7기 · 6기` 순서가 왜 그런지
@@ -233,6 +249,7 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
                   <TableCell>
                     <CohortStatusBadge status={c.status} />
                   </TableCell>
+                  <TableCell className="text-right tabular-nums">{c.traineeCount}</TableCell>
                   <TableCell className="text-fg-muted text-xs">
                     {formatPeriod(c.startDate, c.endDate)}
                   </TableCell>
@@ -256,6 +273,21 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
                         종료
                       </Button>
                     )}
+                    {/*
+                      **개강 전에만 고치고 지운다**(11차 Q2). 서버가 `PLANNED`가 아니면
+                      거절하고, 삭제 가능 여부는 명단·반·회차를 보고 **서버가 판정한다** —
+                      상태는 운영자가 손으로 바꾸는 값이라 되돌려 두고 지울 수 있다.
+                    */}
+                    {c.status === 'PLANNED' && (
+                      <>
+                        <Button variant="ghost" size="sm" onClick={() => setEditing(c)}>
+                          수정
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => setDeleting(c)}>
+                          삭제
+                        </Button>
+                      </>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -273,6 +305,36 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
       )}
 
       <CreateCohortDialog open={createOpen} onOpenChange={setCreateOpen} />
+
+      <EditCohortDialog target={editing} onOpenChange={(v) => !v && setEditing(null)} />
+
+      <ConfirmDialog
+        open={deleting !== null}
+        onOpenChange={(v) => !v && setDeleting(null)}
+        title={`${deleting?.name ?? ''}를 삭제할까요?`}
+        description="개강 전 기수라 되돌릴 것이 없습니다. 명단·반·회차가 하나라도 만들어졌으면 서버가 막습니다."
+        confirmLabel="기수 삭제"
+        destructive
+        onConfirm={async () => {
+          if (!deleting) return
+          setDeleteError(null)
+          try {
+            await removeCohort.mutateAsync({ path: { cohortId: deleting.cohortId } })
+            setDeleting(null)
+          } catch (e) {
+            /*
+              **무엇이 걸렸는지는 서버 메시지에 있다**(11차 Q2 — 코드는 하나로 답한다).
+              화면이 조건을 다시 세지 않는다 — 명단·반·회차를 전부 조회해야 알 수 있다.
+            */
+            setDeleteError(
+              isApiError(e) && e.code === 'COHORT_NOT_DELETABLE'
+                ? e.message
+                : '기수를 삭제하지 못했습니다. 잠시 후 다시 시도해 주세요.',
+            )
+            setDeleting(null)
+          }
+        }}
+      />
 
       <EndCohortDialog
         cohort={ending}

@@ -2,16 +2,16 @@
 
 import { useQuery } from '@tanstack/react-query'
 import type { QueryOptions } from '@/api/_contract'
-import { findCohorts, findClassrooms, findMyEnrollments, findCohort } from './academicApi'
+import { findCohorts, findClassrooms, findCohort, findMyEnrollments } from './academicApi'
 import { academicKeys } from './academicKeys'
 import type {
   findCohorts_Query,
   findCohorts_Response,
   findClassrooms_Path,
   findClassrooms_Response,
-  findMyEnrollments_Response,
   findCohort_Path,
   findCohort_Response,
+  findMyEnrollments_Response,
 } from './academicTypes'
 
 /** 기관 기수 목록 조회 */
@@ -38,15 +38,6 @@ export function useFindClassrooms(
   })
 }
 
-/** 내 소속 기수·반 조회 */
-export function useFindMyEnrollments(options?: QueryOptions<findMyEnrollments_Response>) {
-  return useQuery({
-    queryKey: academicKeys.findMyEnrollments(),
-    queryFn: ({ signal }) => findMyEnrollments({ signal }),
-    ...options,
-  })
-}
-
 /** 기수 상세 조회 */
 export function useFindCohort(
   params: { path: findCohort_Path },
@@ -55,6 +46,15 @@ export function useFindCohort(
   return useQuery({
     queryKey: academicKeys.findCohort(params),
     queryFn: ({ signal }) => findCohort({ ...params, signal }),
+    ...options,
+  })
+}
+
+/** 내 소속 기수·반 조회 */
+export function useFindMyEnrollments(options?: QueryOptions<findMyEnrollments_Response>) {
+  return useQuery({
+    queryKey: academicKeys.findMyEnrollments(),
+    queryFn: ({ signal }) => findMyEnrollments({ signal }),
     ...options,
   })
 }

@@ -1085,8 +1085,11 @@ export interface paths {
      *     - totalElements: 조건에 맞는 전체 기수 수
      *     - totalPages: 전체 페이지 수
      *
-     *     **아직 채워지지 않는 값** — content[].traineeCount는 항상 0, content[].managers는 항상 빈 배열이다.
-     *     교육생 수와 담당 매니저는 member·classroom 도메인 조인이 필요해 아직 연결되지 않았다.
+     *     content[].traineeCount는 **재적 교육생 수**다 — 이 기수에 등록돼 있고 아직 나가지 않은 인원이며,
+     *     중도 이탈자는 빠진다(10차 R3). 그래서 교육생 명단 조회의 전체 건수보다 작을 수 있다.
+     *
+     *     **아직 채워지지 않는 값** — content[].managers는 항상 빈 배열이다.
+     *     담당 매니저는 classroom 도메인 조인이 필요해 아직 연결되지 않았다.
      *     반 목록·담당 매니저가 필요하면 `GET /cohorts/{cohortId}/classrooms`를 함께 호출한다.
      */
     get: operations['findCohorts']
@@ -1105,8 +1108,10 @@ export interface paths {
      *     **응답 (201)**
      *     - 생성된 기수 정보(응답 필드는 "기수 상세 조회"와 동일). status는 PLANNED로 시작한다
      *
-     *     ⚠️ `initialTrainees`를 요청에 넣어도 저장되지 않는다. 스키마에는 남아 있지만 서버가 사용하지 않으며,
-     *     교육생 등록은 `POST /cohorts/{cohortId}/trainees`(CSV) 또는 `.../trainees/invitations`(직접 입력)로 한다.
+     *     ⚠️ **11차 Q3 — `initialTrainees`를 요청 스키마에서 뺐다.** 저장되지 않는 필드를 남겨 두면
+     *     화면이 "보내도 아무 일이 안 일어나는 칸"을 그리게 된다. 교육생 등록은
+     *     `POST /cohorts/{cohortId}/trainees`(CSV) 또는 `.../trainees/invitations`(직접 입력)로 한다 —
+     *     행별 실패를 돌려줘야 해서 기수 생성 응답에 얹기에 맞지 않는다.
      */
     post: operations['createCohort']
     delete?: never
@@ -1329,6 +1334,66 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v0/cohorts/{cohortId}/trainees/invitations/resend': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * 교육생 초대 재발송 | ✅ 사용 가능
+     * @description OP-06 `명단` 탭의 `초대 재발송` 액션. **고른 여러 명에게 한 번에** 다시 보낸다(11차 R2).
+     *
+     *     ## 받는 사람용 API와 다르다
+     *
+     *     지금까지 교육생만 `POST /auth/invitations/resend`를 써야 했다. 그쪽은 **받는 사람용**이라
+     *     계정 존재 여부를 숨기려 **항상 같은 202**를 주고, 쿨다운에 걸리면 202를 받고도 메일이 안 나간다 —
+     *     오퍼레이터가 눌러도 나갔는지 알 수 없었다.
+     *
+     *     이 API는 **운영자용**이다. 이미 인증으로 기관·권한을 확인했으므로 숨길 것이 없고,
+     *     `invitationSentCount`로 **실제로 나간 수**를 답한다. 쿨다운도 없다.
+     *     오퍼레이터·매니저 재발송과 같은 성격의 경로다.
+     *
+     *     ## 요청
+     *
+     *     | 변수 | 필수 | 타입 | 설명 |
+     *     |---|---|---|---|
+     *     | `cohortId` | **필수** | UUID | 경로. 기수 식별자 |
+     *     | `traineeIds` | **필수** | UUID[] | 본문. 1~200명. 명단 응답의 `traineeId` |
+     *
+     *     **헤더 (선택)** — `X-Request-Id: {문자열}` 추적용. 생략하면 서버가 만든다.
+     *
+     *     재발송 버튼은 명단 응답의 **`pendingInvitationTokenId`가 `null`이 아닌 행**에서만 켜면 된다
+     *     (같은 차수에 추가한 필드다). 예전처럼 `status === 'INVITED'`로 유추하지 않아도 된다.
+     *
+     *     ## 동작
+     *
+     *     - **이전 토큰을 무효화하고 새로 발급한다** — 재발송 뒤에도 옛 링크가 살아 있으면 유효한 가입 링크가 둘이 된다
+     *     - **초대 원장은 새로 만들지 않는다** — 재발송 횟수가 정확히 쌓인다
+     *     - **만료된 초대도 대상이다** — 만료야말로 재발송이 필요한 주된 상황이다
+     *
+     *     ## 응답 (200) — 행별 부분 성공
+     *
+     *     | 필드 | 설명 |
+     *     |---|---|
+     *     | `requestedCount` | 요청에 담긴 수 |
+     *     | `invitationSentCount` | **실제로 메일이 나간 수** |
+     *     | `failures[]` | 재발송하지 못한 행만. 전부 성공하면 빈 배열 |
+     *
+     *     20명 중 하나가 이미 활성이라고 나머지 19명을 막지 않는다. **실패가 있어도 200**이므로
+     *     `failures`를 확인해야 한다 — `NOT_FOUND`(명단이 낡음) · `NOT_PENDING`(이미 활성/취소됨) ·
+     *     `NO_INVITATION`(초대 원장 없음).
+     */
+    post: operations['resendTraineeInvitations']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v0/cohorts/{cohortId}/trainees/invitations/preview': {
     parameters: {
       query?: never
@@ -1513,14 +1578,17 @@ export interface paths {
      *     - cohortId (경로): 반을 만들 기수 ID
      *     - name (필수): 반 이름. 같은 기수 안에서 중복되면 409
      *     - capacity (필수, 1 이상): 정원
-     *     - managerIds (선택): ⚠ 요청에 넣어도 적용되지 않는다(아래 참고)
+     *     - managerIds (선택): 담당 매니저로 지정할 사용자 ID 목록. **반 생성과 같은 트랜잭션에서 배정된다**
      *
      *     **응답 (201)**
      *     - 생성된 반 정보(응답 필드는 "기수 반 목록 조회"의 classrooms[] 항목과 동일).
-     *       갓 만든 반이므로 traineeCount=0, managers=[], managerAssignmentRequired=true로 내려온다
+     *       `managerIds`를 보냈으면 `managers[]`가 채워져 오고 `managerAssignmentRequired=false`다.
+     *       갓 만든 반이라 `traineeCount`는 항상 0이다
      *
-     *     ⚠️ `managerIds`를 요청에 넣어도 적용되지 않는다. 스키마에는 남아 있지만 서버가 사용하지 않으며,
-     *     담당 매니저 지정은 `PATCH /cohorts/{cohortId}/classrooms/{classroomId}/managers`로 따로 호출해야 한다.
+     *     ✅ **11차 Q3 — `managerIds`는 실제로 적용된다.** 예전 설명이 "서버가 사용하지 않는다"고
+     *     적고 있었는데 사실과 달랐다(그 문장을 보고 화면이 입력 칸을 지웠다). 반 생성과 매니저 배정이
+     *     **한 트랜잭션**이라 중간에 실패해도 "반만 있고 담당은 없는" 상태가 남지 않는다.
+     *     `PATCH .../managers`는 이미 만든 반의 담당을 <b>나중에 바꿀 때</b> 쓴다.
      */
     post: operations['createClassroom']
     delete?: never
@@ -2583,6 +2651,90 @@ export interface paths {
     patch: operations['updateManagerStatus']
     trace?: never
   }
+  '/api/v0/cohorts/{cohortId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 기수 상세 조회 | ✅ 사용 가능
+     * @description 기수 하나의 상세 정보를 조회한다. 조회 범위인 기관은 액세스 토큰에서 가져오며,
+     *     다른 기관의 기수를 요청하면 404다(존재 여부 자체를 알려주지 않기 위해 403이 아니라 404로 응답한다).
+     *     삭제된 기수도 404다.
+     *
+     *     **요청**
+     *     - cohortId (경로): 조회할 기수 ID
+     *
+     *     **응답 (200)**
+     *     - cohortId: 기수 ID
+     *     - organizationId: 소속 기관 ID
+     *     - name: 기수명
+     *     - status: PLANNED(개설 예정) / RUNNING(진행 중) / CLOSED(종료)
+     *     - startDate / endDate: 기수 기간
+     *     - traineeCount: 재적 교육생 수(등록돼 있고 아직 나가지 않은 인원. 중도 이탈자 제외)
+     *     - managers[]: 담당 매니저 목록
+     *
+     *     **아직 채워지지 않는 값** — managers는 항상 빈 배열이다(목록 조회와 동일).
+     */
+    get: operations['findCohort']
+    put?: never
+    post?: never
+    /**
+     * 기수 삭제 | ✅ 사용 가능
+     * @description 잘못 만든 기수를 되돌린다(11차 Q2). **개강 전이고 아무것도 붙지 않은 기수만** 지운다.
+     *
+     *     운영 중인 기수를 정리하는 수단이 아니다 — 그쪽은 `PATCH /cohorts/{cohortId}/end`(종료)다.
+     *
+     *     ## 서버가 판정한다
+     *
+     *     반 삭제(9차 R6)와 같은 방식이다. 화면도 `PLANNED`에서만 버튼을 열겠지만
+     *     **클라이언트 검증만 있으면 우회된다.** 상태만 보고 열어 주지도 않는다 — 상태는 운영자가
+     *     손으로 바꾸는 값이라 개강 전으로 되돌려 두고 지울 수 있기 때문이다.
+     *
+     *     | 막는 조건 | 이유 |
+     *     |---|---|
+     *     | 상태가 `PLANNED`가 아님 | 개강했거나 종료된 기수다 |
+     *     | 등록된 교육생이 있음 | **이탈자도 센다** — 지나간 등록도 사실이다 |
+     *     | 만들어진 반이 있음 | 지운 기수를 가리키는 반이 남는다 |
+     *     | 만들어진 회차가 있음 | 회차·제출·리포트가 끊긴다 |
+     *
+     *     전부 409 `COHORT_NOT_DELETABLE` 하나로 답한다 — 어느 쪽이든 화면이 할 일은
+     *     "지울 수 없습니다"를 보여주고 버튼을 잠그는 것 하나다. **무엇이 걸렸는지는 `message`에 담는다**
+     *     (예: `등록된 교육생·만들어진 반이(가) 있어 삭제할 수 없습니다`).
+     *
+     *     **소프트 삭제다.** 행은 남고 목록·조회에서만 빠진다.
+     *
+     *     **응답 (204)** — 본문 없음.
+     */
+    delete: operations['deleteCohort']
+    options?: never
+    head?: never
+    /**
+     * 기수 수정 | ✅ 사용 가능
+     * @description 기수의 이름·기간을 고친다(11차 Q2). **개강 전(`PLANNED`)에만 열려 있다.**
+     *
+     *     지금까지 기수는 만들고 종료하는 것만 있어서 **기수명 오타 하나를 고칠 수 없었다.**
+     *     반은 9차 R6로 수정·삭제가 생겼는데 기수에는 없던 자리다.
+     *
+     *     **요청** — 세 필드 모두 선택이며 **보낸 것만 바뀐다**(반 수정과 같은 규칙).
+     *     - name (선택): 새 기수명. 같은 기관 안에서 중복되면 409. 공백만 보내면 "안 바꾼다"로 본다
+     *     - startDate / endDate (선택): 새 기간
+     *
+     *     **셋 다 생략하면 400** `COHORT_UPDATE_EMPTY`다 — 아무 일도 하지 않는 요청이 200으로
+     *     돌아오면 화면은 저장됐다고 오해한다.
+     *
+     *     ## 개강 후를 막는 이유
+     *
+     *     기간은 이미 발행된 리포트와 회차 일정의 기준이다. 개강 후에 바꾸면 그것들이 가리키는
+     *     기간과 어긋난다. 진행 중·종료된 기수는 409 `COHORT_NOT_MUTABLE`이다.
+     *
+     *     **응답 (200)** — 수정 후의 기수 한 건(상세 조회와 같은 모양).
+     */
+    patch: operations['updateCohort']
+    trace?: never
+  }
   '/api/v0/cohorts/{cohortId}/trainees/{traineeId}/status': {
     parameters: {
       query?: never
@@ -3103,7 +3255,7 @@ export interface paths {
       cookie?: never
     }
     /**
-     * 수업 진단 리포트 조회 | ⚠️ 사용 불가
+     * 수업 진단 리포트 조회 | ✅ 사용 가능
      * @description OP-05 `리포트` 화면 전체를 이 응답 하나로 그린다. **섹션 5개가 한 문서**다 —
      *     ① 요약 · ② 회차별 · ③ 개념별 도달 분포 · ④ 반별 위험자·집단 미달 · ⑤ 우수 교육생.
      *
@@ -4268,13 +4420,38 @@ export interface paths {
     }
     /**
      * 쓰인 회차 | ✅ 사용 가능
-     * @description 이 교안 버전을 연결한 프로젝트(회차)들의 "미프 N차" 라벨 목록을 조회한다.
+     * @description 이 교안 버전을 연결한 회차 목록을 조회한다. **재분석 경고를 좁히는 데 쓴다.**
+     *
+     *     ⚠️ **11차 R3 — 응답이 문자열 배열에서 객체 배열로 바뀌었습니다.**
+     *     예전에는 `["미니프로젝트 4차", …]` 였습니다.
      *
      *     **요청**
      *     - materialId (경로): 교안 버전 ID
      *
-     *     **응답 (200)**
-     *     - 문자열 배열. 연결된 프로젝트가 없으면 빈 배열
+     *     **응답 (200)** — 연결된 회차가 없으면 빈 배열
+     *
+     *     | 필드 | 설명 |
+     *     |---|---|
+     *     | `projectId` | 회차 ID. 이름을 눌러 프로젝트 화면으로 보낼 때 쓴다 |
+     *     | `name` | 기수 안에서 붙인 회차 이름 (`미니프로젝트 4차`) |
+     *     | `roundLabel` | 기수를 포함한 라벨 (`9기 미프 4차`) |
+     *     | `cohortId` \ `cohortName` | 기수 |
+     *     | **`attendedCount`** | **응시를 시작한 인원.** 재분석 경고의 문턱 |
+     *     | `conceptNames` | 이 회차가 쓰는 확정 검증 개념 이름 |
+     *
+     *     ## `attendedCount`가 경고를 정한다
+     *
+     *     `0`이면 아직 아무도 응시하지 않은 회차라 **다시 분석해도 발행된 리포트가 어긋나지 않는다.**
+     *     1 이상이면 이미 문항을 받은 학생이 있으므로, 재분석으로 섹션·쪽 번호가 달라지면
+     *     리포트가 가리키는 교안 위치가 실제와 어긋난다.
+     *
+     *     **완료가 아니라 시작 기준이다.** 완료만 세면 진행 중인 응시가 빠져 경고를 놓친다.
+     *
+     *     ## 빅프로젝트는 라벨이 없다
+     *
+     *     예전에는 연결된 회차 중 빅프로젝트가 하나라도 있으면 400으로 <b>조회 전체가 실패</b>했다.
+     *     지금은 `roundLabel`만 `null`로 두고 나머지는 그대로 준다 — 목록 하나 때문에
+     *     화면이 통째로 비는 편이 더 나쁘다.
      */
     get: operations['findUsedProjects']
     put?: never
@@ -4339,42 +4516,6 @@ export interface paths {
      *     항목 구성은 서버가 정하므로 화면에 항목을 하드코딩하지 않는다.
      */
     get: operations['findConsents']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/api/v0/cohorts/{cohortId}': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * 기수 상세 조회 | ✅ 사용 가능
-     * @description 기수 하나의 상세 정보를 조회한다. 조회 범위인 기관은 액세스 토큰에서 가져오며,
-     *     다른 기관의 기수를 요청하면 404다(존재 여부 자체를 알려주지 않기 위해 403이 아니라 404로 응답한다).
-     *     삭제된 기수도 404다.
-     *
-     *     **요청**
-     *     - cohortId (경로): 조회할 기수 ID
-     *
-     *     **응답 (200)**
-     *     - cohortId: 기수 ID
-     *     - organizationId: 소속 기관 ID
-     *     - name: 기수명
-     *     - status: PLANNED(개설 예정) / RUNNING(진행 중) / CLOSED(종료)
-     *     - startDate / endDate: 기수 기간
-     *     - traineeCount: 소속 교육생 수
-     *     - managers[]: 담당 매니저 목록
-     *
-     *     **아직 채워지지 않는 값** — traineeCount는 항상 0, managers는 항상 빈 배열이다(목록 조회와 동일).
-     */
-    get: operations['findCohort']
     put?: never
     post?: never
     delete?: never
@@ -5451,10 +5592,19 @@ export interface components {
       status: components['schemas']['AccountStatus']
       /**
        * Format: uuid
-       * @description 담당할 기수 ID. 가장 최근 매니저 초대의 target_cohort_id 기준
+       * @description 소속 기수입니다. **① 지금 맡고 있는 반의 기수**, 그것이 없으면 **② 초대받은 기수**로 채웁니다(11차 R4).
+       *
+       *     목록을 `cohortId`로 거를 때 쓰는 조건과 같은 순서라, 걸러 나온 행의 이 값이 비는 일이 없습니다 —
+       *     예전에는 초대의 `target_cohort_id`만 봐서 초대 이력 없이 만들어진 계정은 담당 반이 멀쩡해도
+       *     `null`이었습니다.
+       *
+       *     여러 기수의 반을 맡고 있으면 최근 기수 하나가 옵니다. `cohortId`로 걸러 조회하면
+       *     **그 기수**가 오므로 화면이 보고 있는 기수와 어긋나지 않습니다.
+       *
+       *     담당 반도 없고 초대 이력도 없으면 여전히 `null`입니다.
        */
       cohortId: string | null
-      /** @description 담당할 기수명 */
+      /** @description 소속 기수명. `cohortId`와 같은 규칙으로 채웁니다 */
       cohortName: string | null
       /** @description 현재 담당 반 이름 목록. 담당이 없으면 빈 배열(화면에서는 `미배정`) */
       classroomNames: string[]
@@ -5891,18 +6041,6 @@ export interface components {
        * @example 2026-08-28
        */
       endDate: string
-      /** @description ⚠ 요청에 넣어도 저장되지 않는다. 교육생 등록은 POST /cohorts/{cohortId}/trainees(CSV) 또는 .../trainees/invitations(직접 입력)로 별도 처리한다. */
-      initialTrainees?: components['schemas']['InitialTrainee'][] | null
-    }
-    /** @description 초기 교육생 한 명(⚠ 현재 서버가 사용하지 않음) */
-    InitialTrainee: {
-      /** @description 교육생 이름 */
-      name: string
-      /**
-       * Format: email
-       * @description 교육생 이메일
-       */
-      email: string
     }
     /** @description 기수 정보 */
     CohortResponse: {
@@ -5934,8 +6072,8 @@ export interface components {
       endDate: string | null
       /**
        * Format: int32
-       * @description ⚠ 아직 채워지지 않는 값 — 항상 0이다. member 도메인 조인이 필요해 아직 연결되지 않았다.
-       * @example 0
+       * @description 재적 교육생 수. 이 기수에 등록돼 있고 아직 나가지 않은 인원이다(10차 R3). 중도 이탈자는 빠지므로 교육생 명단 조회의 전체 건수보다 작을 수 있다.
+       * @example 208
        */
       traineeCount: number
       /** @description ⚠ 아직 채워지지 않는 값 — 항상 빈 배열이다. classroom 도메인 조인이 필요해 아직 연결되지 않았다. 담당 매니저가 필요하면 GET /cohorts/{cohortId}/classrooms를 함께 호출한다. */
@@ -5954,14 +6092,14 @@ export interface components {
        *     `UpdateClassroomManagersRequest.managerIds[]`와 **같은 값·같은 타입**이라
        *     목록에서 읽은 담당자를 그대로 다시 보낼 수 있다.
        */
-      memberId?: string
+      memberId: string
       /** @description 이름. 초대만 되고 아직 가입하지 않았으면 null(화면에서는 `가입 대기`) */
-      name?: string | null
+      name: string | null
       /**
        * @description 이메일. 반 카드가 `이도윤 · lee@…`로 담당자를 표시하는데, 이름만으로는 동명이인을 가를 수 없다
        * @example lee@example.com
        */
-      email?: string
+      email: string
     }
     /** @description 입력 행별 실패 정보 */
     Failure: {
@@ -6022,6 +6160,58 @@ export interface components {
        * @example trainee@example.com
        */
       email?: string | null
+    }
+    /** @description 교육생 초대 재발송 요청 */
+    ResendTraineeInvitationsRequest: {
+      /**
+       * @description 재발송할 교육생 사용자 ID 목록입니다. 명단 응답의 `traineeId`를 그대로 넣습니다.
+       *
+       *     재발송 버튼은 `pendingInvitationTokenId`가 `null`이 아닌 행에서만 켜면 됩니다 —
+       *     이미 활성화됐거나 초대가 취소된 계정을 넣으면 그 행만 `failures`로 돌아옵니다.
+       */
+      traineeIds: string[]
+    }
+    /** @description 교육생 초대 재발송 결과 */
+    ResendTraineeInvitationsResponse: {
+      /**
+       * Format: int32
+       * @description 요청에 담긴 교육생 수
+       * @example 3
+       */
+      requestedCount: number
+      /**
+       * Format: int32
+       * @description **실제로 초대 메일이 나간 수**입니다. `registerTrainees`의 같은 이름 필드와 같은 뜻입니다.
+       *
+       *     화면이 '3명에게 활성화 초대를 다시 보냈어요'라고 쓸 수 있는 근거가 이 값입니다 —
+       *     받는 사람용 API(`POST /auth/invitations/resend`)는 계정 존재 여부를 숨기려 항상 같은 202를 주므로
+       *     이 수를 알 수 없었습니다.
+       * @example 3
+       */
+      invitationSentCount: number
+      /** @description 재발송하지 못한 행만 담깁니다. 전부 성공하면 빈 배열입니다 */
+      failures: components['schemas']['TraineeInvitationResendFailure'][]
+    }
+    /** @description 재발송이 걸린 교육생 한 명 */
+    TraineeInvitationResendFailure: {
+      /**
+       * Format: uuid
+       * @description 요청에 넣은 교육생 사용자 ID
+       */
+      traineeId: string
+      /** @description 그 교육생의 이메일. 명단에 없는 ID였으면 null */
+      email: string | null
+      /**
+       * @description 걸린 이유입니다.
+       *
+       *     | 값 | 뜻 | 화면이 할 일 |
+       *     |---|---|---|
+       *     | `NOT_FOUND` | 이 기수에 없는 교육생 | 명단이 낡았다 — 목록을 다시 읽는다 |
+       *     | `NOT_PENDING` | 이미 활성화됐거나 초대가 취소됨 | 재발송 버튼을 끈다 |
+       *     | `NO_INVITATION` | 초대 원장이 없다 | 재발송이 아니라 **초대**를 새로 보내야 한다 |
+       * @enum {string}
+       */
+      status: 'NOT_FOUND' | 'NOT_PENDING' | 'NO_INVITATION'
     }
     /** @description 프로젝트 생성 요청 */
     CreateProjectRequest: {
@@ -6088,9 +6278,9 @@ export interface components {
       startDate: string
       /**
        * Format: date
-       * @description 종료일. **날짜만이며 시각 의미가 없다** — 9차 Q2 참고
+       * @description 종료일. **날짜만이며 시각 의미가 없다** — 9차 Q2 참고. 항상 값이 있다(생성·수정 모두 필수이며 DB도 NOT NULL이다)
        */
-      endDate: string | null
+      endDate: string
       /**
        * Format: int32
        * @description 연결된 교안 수. 0이면 화면의 `교안 연결 안 됨`
@@ -6128,7 +6318,7 @@ export interface components {
        * @example 20
        */
       capacity: number
-      /** @description 담당 매니저로 지정할 사용자 ID 목록. ⚠ 지금은 서버가 사용하지 않는다 — 담당 매니저 지정은 PATCH .../managers로 별도 호출해야 한다. 생략하거나 빈 배열을 보내도 무방하다. */
+      /** @description 담당 매니저로 지정할 사용자 ID 목록이며 **반 생성과 같은 트랜잭션에서 배정된다**(11차 Q3). 생략하거나 빈 배열을 보내면 담당 없이 만들어지고, 나중에 PATCH .../managers로 바꿀 수 있다. 값은 ManagerRosterEntry.managerId와 같은 UUID다. */
       managerIds?: string[] | null
     }
     /** @description 반 정보 */
@@ -6582,6 +6772,26 @@ export interface components {
       reason?: string | null
       mutableStatus?: boolean
     }
+    /** @description 기수 수정 요청(부분 수정) */
+    UpdateCohortRequest: {
+      /**
+       * @description 새 기수명. 같은 기관 안에서 중복되면 409. 생략하면 안 바꾼다
+       * @example 7기
+       */
+      name?: string | null
+      /**
+       * Format: date
+       * @description 새 시작일. 생략하면 안 바꾼다
+       * @example 2026-03-02
+       */
+      startDate?: string | null
+      /**
+       * Format: date
+       * @description 새 종료일. 생략하면 안 바꾼다. 결과가 시작일보다 빠르면 400
+       * @example 2026-08-28
+       */
+      endDate?: string | null
+    }
     /**
      * @description 교육생 계정 상태 변경 대상. ACTIVE(활성화) · INACTIVE(비활성화)
      * @enum {string}
@@ -6638,9 +6848,14 @@ export interface components {
        *     CONTRACT_ENDED(계약 종료) · SECURITY_ACTION(보안 조치) · OTHER(기타).
        *     계정이 INACTIVE일 때만 값이 있으며 그때는 **항상 채워져 있습니다** —
        *     ck_app_user_status_3이 INACTIVE인 행에 이 값을 NOT NULL로 강제하기 때문입니다.
+       *
+       *     11차 R6 — 타입이 `string`에서 **enum**으로 바뀌었습니다. 다섯 값은 DB의
+       *     `ck_app_user_inactivated_reason_code`가 못 박고 있는 것과 같습니다.
        * @example ADMIN_SUSPENDED
+       * @enum {string|null}
        */
-      inactivatedReasonCode: string | null
+      inactivatedReasonCode:
+        'RESIGNED' | 'ADMIN_SUSPENDED' | 'CONTRACT_ENDED' | 'SECURITY_ACTION' | 'OTHER' | null
       /**
        * @description 비활성화 상세 사유이며 상태 변경 요청의 reason이 그대로 들어갑니다.
        *     사유 코드와 달리 **INACTIVE여도 null일 수 있습니다**(요청에서 생략 가능).
@@ -6664,6 +6879,15 @@ export interface components {
        * @description 계정이 비활성화된 시각. 활성이면 null
        */
       inactivatedAt: string | null
+      /**
+       * Format: uuid
+       * @description 아직 수락·취소되지 않은 초대 토큰입니다(11차 R2). `null`이 아닐 때만 **재발송 버튼을 켭니다** —
+       *     매니저·오퍼레이터 목록의 `pendingInvitationTokenId`와 같은 규칙입니다.
+       *
+       *     예전에는 이 값이 없어 화면이 `status === 'INVITED'`로 유추해야 했습니다.
+       *     이미 활성화됐거나 초대가 취소된 계정은 넘길 토큰이 없어 `null`입니다.
+       */
+      pendingInvitationTokenId: string | null
     }
     /** @description 기수 종료 요청 */
     EndCohortRequest: {
@@ -6746,6 +6970,7 @@ export interface components {
       after: number
     }
     ConceptReportResponse: {
+      problemId?: string
       name?: string
       /** Format: int32 */
       level?: number
@@ -6773,11 +6998,13 @@ export interface components {
     }
     RoundReportResponse: {
       id?: string
+      reportId?: string
       label?: string
       status?: string
       publishAfter?: string
       publishedAt?: string
       curriculum?: string
+      disclosureScope?: components['schemas']['DisclosureScope']
       concepts?: components['schemas']['ConceptReportResponse'][]
       retryState?: string
       retryDueAt?: string
@@ -6907,15 +7134,48 @@ export interface components {
       conceptName: string
       curriculumName: string
       section: string
+      /**
+       * @description ⚠️ **항상 빈 문자열(`""`)이다.** 값이 안 채워진 게 아니라 **애초에 없는 축**이다 —
+       *     이 지표의 grain이 `CLASS_CONCEPT`(반 × 개념)라 회차로 나뉘지 않는다.
+       *     회차별 분해가 필요하면 지표 grain 자체를 늘려야 한다(리포트 재생성이 따른다).
+       *
+       *     🔴 **프론트엔드 확인 필요 — CSV에 빈 열이 나간다.**
+       *     화면(`ClassOps.tsx`)은 이 필드를 쓰지 않아 지장이 없지만,
+       *     CSV 내보내기(`labels.ts`의 `exportReportCsv`)는 집단 미달 블록에 `회차` 열을
+       *     그대로 넣어 **외부로 나가는 파일에 빈 열이 통째로 실린다.**
+       *     데이터가 없는 열이므로 **CSV에서 그 열을 빼는 편**이 맞다.
+       */
       round: string
       className: string
-      /** Format: int32 */
+      /**
+       * Format: int32
+       * @description 2단 이하 인원(반 × 개념 기준). `totalCount`와 같은 단위라 둘을 나누면 미달 비율이 된다
+       */
       shortfallCount: number
-      /** Format: int32 */
+      /**
+       * Format: int32
+       * @description 그 반에서 이 개념을 채점한 인원. `shortfallCount`와 같은 단위다
+       */
       totalCount: number
     }
     ReachDistribution: {
-      /** Format: int32 */
+      /**
+       * Format: int32
+       * @description **통과한 축이 하나도 없는 인원(0단).** "안 물어본 것"(`unasked`)이 아니라 **물었는데 못한 것**이다.
+       *
+       *     🔴 **프론트엔드 확인 필요 — 도달 단계는 4단이 아니라 5단(0~4)이다.**
+       *     `operator/report/_/api/types.ts`의 손으로 쓴 `ReachDistribution`에 이 필드가 없어
+       *     `DistributionBar.tsx`가 `level1+level2+level3+level4+unasked`로만 합계를 낸다.
+       *     그러면 0단 인원이 막대 어디에도 안 들어가 **비율이 전부 부풀려지고**,
+       *     같은 행의 `2단 이하` 숫자는 0단을 포함한 `belowLevel2Count`를 쓰므로
+       *     **막대와 숫자가 서로 다른 모집단**을 말하게 된다. `labels.ts`의 CSV에도 0단 열이 없다.
+       *
+       *     ⚠️ **지금은 값이 0이라 증상이 안 보인다.** 0단 인원이 한 명이라도 생기는 기수에서
+       *     비로소 틀리기 시작한다 — 데이터가 조용해서 더 늦게 발견된다.
+       *
+       *     자동 생성 타입(`src/api/schema.d.ts`의 `ReachDistribution`)에는 이 필드가 이미 있다.
+       *     손으로 쓴 타입을 생성 타입에 맞추면 된다.
+       */
       level0: number
       /** Format: int32 */
       level1: number
@@ -6925,7 +7185,13 @@ export interface components {
       level3: number
       /** Format: int32 */
       level4: number
-      /** Format: int32 */
+      /**
+       * Format: int32
+       * @description 묻지 못한 인원. 그 학생 코드에 개념이 없어 **문항이 아예 만들어지지 않은** 경우다.
+       *
+       *     🔴 `level0`과 합치면 안 된다 — "못한 것"과 "안 물어본 것"은 다르다.
+       *     `belowLevel2Count`(= 0단+1단+2단)에도 포함되지 않는다.
+       */
       unasked: number
     }
     RoundDiagnosis: {
@@ -6933,11 +7199,34 @@ export interface components {
       name: string
       conceptNames: string[]
       distribution: components['schemas']['ReachDistribution']
-      /** Format: int32 */
+      /**
+       * Format: int32
+       * @description 채점된 **(인원 × 개념)** 수. 회차 하나가 개념 3개를 물으므로 인원의 약 3배다
+       *     (예: 194명 → 582). `distribution`의 여섯 값을 더한 것과 같다.
+       *
+       *     ⚠️ **`totalCount`와 단위가 다르다** — 아래 설명 참고.
+       * @example 582
+       */
       gradedCount: number
-      /** Format: int32 */
+      /**
+       * Format: int32
+       * @description 이 회차의 대상 **인원** 수(예: 194).
+       *
+       *     ⚠️ **`gradedCount`와 단위가 다르다.** 이쪽은 *사람*, `gradedCount`는 *사람 × 개념*이라
+       *     **두 값을 비율로 쓰면 안 된다**(582/194 = 300%). 회차의 달성률을 그리려면
+       *     `belowLevel2Count / gradedCount`처럼 **같은 단위끼리** 나눠야 한다
+       *     (화면 `RoundBreakdown.tsx`가 그렇게 쓰고 있다).
+       *
+       *     개념 단위(`ConceptDiagnosis`)에서는 둘 다 *사람*이라 단위가 같다 — 회차 단위만 다르다.
+       * @example 194
+       */
       totalCount: number
-      /** Format: int32 */
+      /**
+       * Format: int32
+       * @description 2단 이하 **(인원 × 개념)** 수. **0·1·2단의 합**이며 `unasked`는 빠진다.
+       *     `gradedCount`와 같은 단위라 둘을 나누면 회차의 미달 비율이 된다.
+       * @example 355
+       */
       belowLevel2Count: number
     }
     TopStudent: {
@@ -6961,25 +7250,25 @@ export interface components {
        */
       teachesId: string
       /**
-       * @description 개념 이름
+       * @description 개념 이름. 항상 값이 있다 — 출처 매핑이 NOT NULL이고 참조되는 동안 삭제되지 않는다
        * @example 트랜잭션 경계 설정
        */
-      extractedName: string | null
+      extractedName: string
       /**
        * Format: uuid
-       * @description 출처 교안 버전 ID. 없으면 교안 위치를 가리킬 수 없다
+       * @description 출처 교안 버전 ID. 항상 값이 있다
        */
-      curriculumVersionId: string | null
+      curriculumVersionId: string
       /**
        * Format: int32
        * @description 출처 시작 페이지. 구성 탭의 `· spring_backend_v1 v1 · p.53`
        */
-      pageStart: number | null
+      pageStart: number
       /**
        * Format: int32
        * @description 출처 끝 페이지
        */
-      pageEnd: number | null
+      pageEnd: number
     }
     /** @description 프로젝트 상세 정보 */
     ProjectDetailResponse: {
@@ -7010,9 +7299,9 @@ export interface components {
       startDate: string
       /**
        * Format: date
-       * @description 종료일. **날짜만이며 시각 의미가 없다** — 9차 Q2 참고
+       * @description 종료일. **날짜만이며 시각 의미가 없다** — 9차 Q2 참고. 항상 값이 있다(생성·수정 모두 필수이며 DB도 NOT NULL이다)
        */
-      endDate: string | null
+      endDate: string
       /**
        * Format: int32
        * @description 연결된 교안 수 = curricula의 길이
@@ -7808,6 +8097,31 @@ export interface components {
        * @example 1
        */
       totalPages: number
+      /**
+       * @description 분석 상태별 교안 수이며 **필터를 적용하지 않은 기관 전체 모집단**이라 `totalElements`와 다릅니다(11차 R7).
+       *     교안 탭 헤더의 '12개 · 분석 완료 9 · 실패 1'이 이 값이며, 상태 칩이 자기 자신을 필터링하면
+       *     안 되므로 걸러진 목록으로는 만들 수 없습니다.
+       *
+       *     `SUCCEEDED` · `FAILED` 등 **분석 상태 값마다 키가 항상 있고**, 0건이면 0으로 옵니다 —
+       *     키가 빠지는 것과 0건인 것은 다릅니다.
+       *
+       *     ⚠️ **여기에 `notAnalyzedCount`를 더해야 전체가 됩니다.** 한 번도 분석하지 않은 교안은
+       *     상태 자체가 없어 어느 키에도 들어가지 않습니다.
+       * @example {
+       *       "SUCCEEDED": 9,
+       *       "FAILED": 1
+       *     }
+       */
+      statusCounts: {
+        [key: string]: number
+      }
+      /**
+       * Format: int64
+       * @description 한 번도 분석하지 않은 교안 수입니다. `statusCounts`의 어느 키에도 들어가지 않으므로
+       *     **`statusCounts`의 합 + 이 값 = 기관 전체 교안 수**입니다.
+       * @example 2
+       */
+      notAnalyzedCount: number
     }
     /** @description 기수 요약 */
     Cohort: {
@@ -8096,6 +8410,46 @@ export interface components {
       /** @description 섹션 안 항목 목록 */
       items: components['schemas']['SectionItemResponse'][]
     }
+    /** @description 교안을 사용 중인 회차 */
+    CurriculumUsingProjectResponse: {
+      /**
+       * Format: uuid
+       * @description 회차 ID. 회차 이름을 눌러 프로젝트 화면으로 보낼 때 쓴다
+       */
+      projectId: string
+      /**
+       * @description 회차 이름(기수 안에서 붙인 이름)
+       * @example 미니프로젝트 4차
+       */
+      name: string
+      /**
+       * @description 기수를 포함한 회차 라벨. 같은 교안이 여러 기수에 쓰이면 `미프 4차`만으로는 구분되지 않아 기수를 붙인다
+       * @example 9기 미프 4차
+       */
+      roundLabel: string | null
+      /**
+       * Format: uuid
+       * @description 기수 ID
+       */
+      cohortId: string
+      /**
+       * @description 기수 이름
+       * @example 9기
+       */
+      cohortName: string | null
+      /**
+       * Format: int32
+       * @description **응시를 시작한 인원.** 재분석 경고의 문턱이다 — 0이면 아직 아무도 응시하지 않아
+       *     다시 분석해도 발행된 리포트가 어긋나지 않는다.
+       *
+       *     완료한 인원이 아니라 **시작한 인원**이다. 완료만 세면 진행 중인 응시가 빠져
+       *     이미 문항을 받은 학생이 있는 회차를 경고 없이 지나가게 된다.
+       * @example 24
+       */
+      attendedCount: number
+      /** @description 이 회차가 지금 쓰고 있는 확정 검증 개념 이름. 재분석하면 교안 위치가 어긋날 개념들이다. 확정 전이면 빈 배열 */
+      conceptNames: string[]
+    }
     /** @description 가입 화면에 표시할 동의 항목 */
     ConsentItemResponse: {
       /**
@@ -8226,6 +8580,26 @@ export interface components {
        *     }
        */
       counts: {
+        [key: string]: number
+      }
+      /**
+       * @description `counts`의 **PLANNED만** 준비 상태로 다시 가른 개수입니다(10차 Q1).
+       *     화면의 상태 필터는 4값(`준비 중`·`준비됨`·`진행 중`·`종료`)인데 `counts`는 3키라
+       *     앞의 둘만 개수를 쓸 수 없었습니다 — 그 두 칩이 쓸 값입니다.
+       *
+       *     `PREP`·`READY` 두 키가 **항상 모두 있고**, 0건이면 0으로 옵니다.
+       *     **`PREP + READY == counts.PLANNED`** 이며, 따라서
+       *     `PREP + READY + counts.RUNNING + counts.CLOSED`가 이 기수의 전체 회차 수입니다.
+       *     `counts`와 더해서 세면 PLANNED를 두 번 세게 되니 주의하세요.
+       *
+       *     RUNNING·CLOSED는 준비 상태를 가르지 않습니다 — 화면이
+       *     `status === 'PLANNED' ? readiness : status`로 겹치는 것과 같은 이유입니다.
+       * @example {
+       *       "PREP": 1,
+       *       "READY": 1
+       *     }
+       */
+      readinessCounts: {
         [key: string]: number
       }
     }
@@ -10556,6 +10930,96 @@ export interface operations {
       }
     }
   }
+  resendTraineeInvitations: {
+    parameters: {
+      query?: never
+      header?: {
+        /**
+         * @description 재발송 요청 추적용 식별자이며 생략 시 서버가 생성합니다.
+         * @example resend-trainee-001
+         */
+        'X-Request-Id'?: string
+      }
+      path: {
+        /**
+         * @description 대상 교육생이 속한 기수 ID
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        cohortId: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ResendTraineeInvitationsRequest']
+      }
+    }
+    responses: {
+      /** @description 재발송 처리 완료(행별 실패는 failures 참고) */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ResendTraineeInvitationsResponse']
+        }
+      }
+      /** @description VALIDATION_FAILED traineeIds가 비었거나 200명을 넘음 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED 오퍼레이터 권한이 아님 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description COHORT_NOT_FOUND 기수를 찾을 수 없거나 다른 기관의 기수 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ORGANIZATION_CONTEXT_MISSING 인증 정보에서 기관을 확인할 수 없음 */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description INVITE_MAIL_FAILED 메일 발송 실패 */
+      502: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
   previewTrainees: {
     parameters: {
       query?: never
@@ -11898,6 +12362,206 @@ export interface operations {
       }
     }
   }
+  findCohort: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /**
+         * @description 조회할 기수 ID
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        cohortId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 기수 상세 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CohortResponse']
+        }
+      }
+      /** @description 액세스 토큰이 없거나 유효하지 않음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description COHORT_NOT_FOUND 기수를 찾을 수 없음(다른 기관의 기수·삭제된 기수 포함) */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ORGANIZATION_CONTEXT_MISSING 인증 정보에서 organizationId를 확인할 수 없음 */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  deleteCohort: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description 삭제할 기수 ID */
+        cohortId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 삭제 성공 */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description 액세스 토큰이 없거나 유효하지 않음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED 오퍼레이터 권한이 아님 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description COHORT_NOT_FOUND 기수를 찾을 수 없거나 다른 기관의 기수 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description COHORT_NOT_DELETABLE 개강했거나 명단·반·회차가 붙어 있음 */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ORGANIZATION_CONTEXT_MISSING 인증 정보에서 organizationId를 확인할 수 없음 */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  updateCohort: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description 수정할 기수 ID */
+        cohortId: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateCohortRequest']
+      }
+    }
+    responses: {
+      /** @description 수정 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CohortResponse']
+        }
+      }
+      /** @description COHORT_UPDATE_EMPTY 바꿀 값이 없음 · COHORT_PERIOD_INVALID 종료일이 시작일보다 빠름 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description 액세스 토큰이 없거나 유효하지 않음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED 오퍼레이터 권한이 아님 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description COHORT_NOT_FOUND 기수를 찾을 수 없거나 다른 기관의 기수 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description COHORT_NOT_MUTABLE 개강한 기수 · COHORT_NAME_TAKEN 이미 있는 기수명 */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ORGANIZATION_CONTEXT_MISSING 인증 정보에서 organizationId를 확인할 수 없음 */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
   updateTraineeStatus: {
     parameters: {
       query?: never
@@ -13156,29 +13820,11 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          'application/json': string[]
-        }
-      }
-      /** @description BIG_PROJECT_HAS_NO_ROUND_LABEL 연결된 프로젝트가 빅프로젝트라 회차 라벨이 없음 */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
+          'application/json': components['schemas']['CurriculumUsingProjectResponse'][]
         }
       }
       /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
       401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description PROJECT_NOT_FOUND 연결된 프로젝트를 찾을 수 없음 */
-      404: {
         headers: {
           [name: string]: unknown
         }
@@ -13243,59 +13889,6 @@ export interface operations {
       }
       /** @description 지원하지 않는 role 값 */
       400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  findCohort: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        /**
-         * @description 조회할 기수 ID
-         * @example 123e4567-e89b-12d3-a456-426614174000
-         */
-        cohortId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description 기수 상세 조회 성공 */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['CohortResponse']
-        }
-      }
-      /** @description 액세스 토큰이 없거나 유효하지 않음 */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description COHORT_NOT_FOUND 기수를 찾을 수 없음(다른 기관의 기수·삭제된 기수 포함) */
-      404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description ORGANIZATION_CONTEXT_MISSING 인증 정보에서 organizationId를 확인할 수 없음 */
-      500: {
         headers: {
           [name: string]: unknown
         }

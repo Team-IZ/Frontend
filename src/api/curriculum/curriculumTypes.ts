@@ -41,8 +41,7 @@ export type findSections_Errors =
 export type findUsedProjects_Path = operations['findUsedProjects']['parameters']['path']
 export type findUsedProjects_Response =
   operations['findUsedProjects']['responses'][200]['content']['application/json']
-export type findUsedProjects_Errors =
-  'BIG_PROJECT_HAS_NO_ROUND_LABEL' | 'UNAUTHENTICATED' | 'PROJECT_NOT_FOUND'
+export type findUsedProjects_Errors = 'UNAUTHENTICATED'
 
 // GET /api/v0/curricula/comparable-cohorts — 비교 가능한 기수 목록
 export type findComparableCohorts_Query = NonNullable<

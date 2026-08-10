@@ -50,6 +50,42 @@ export type createClassroom_Item = createClassroom_Response['managers'][number]
 export type createClassroom_Errors =
   'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND'
 
+// GET /api/v0/cohorts/{cohortId} — 기수 상세 조회
+export type findCohort_Path = operations['findCohort']['parameters']['path']
+export type findCohort_Response =
+  operations['findCohort']['responses'][200]['content']['application/json']
+export type findCohort_Item = findCohort_Response['managers'][number]
+export type findCohort_Errors =
+  'UNAUTHENTICATED' | 'COHORT_NOT_FOUND' | 'ORGANIZATION_CONTEXT_MISSING'
+
+// DELETE /api/v0/cohorts/{cohortId} — 기수 삭제
+export type deleteCohort_Path = operations['deleteCohort']['parameters']['path']
+export type deleteCohort_Response = void
+export type deleteCohort_Errors =
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'COHORT_NOT_FOUND'
+  | 'COHORT_NOT_DELETABLE'
+  | 'ORGANIZATION_CONTEXT_MISSING'
+
+// PATCH /api/v0/cohorts/{cohortId} — 기수 수정
+export type updateCohort_Path = operations['updateCohort']['parameters']['path']
+export type updateCohort_Body = NonNullable<
+  operations['updateCohort']['requestBody']
+>['content']['application/json']
+export type updateCohort_Response =
+  operations['updateCohort']['responses'][200]['content']['application/json']
+export type updateCohort_Item = updateCohort_Response['managers'][number]
+export type updateCohort_Errors =
+  | 'COHORT_UPDATE_EMPTY'
+  | 'COHORT_PERIOD_INVALID'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'COHORT_NOT_FOUND'
+  | 'COHORT_NOT_MUTABLE'
+  | 'COHORT_NAME_TAKEN'
+  | 'ORGANIZATION_CONTEXT_MISSING'
+
 // PATCH /api/v0/cohorts/{cohortId}/end — 기수 종료
 export type endCohort_Path = operations['endCohort']['parameters']['path']
 export type endCohort_Body = NonNullable<
@@ -130,11 +166,3 @@ export type findMyEnrollments_Response =
   operations['findMyEnrollments']['responses'][200]['content']['application/json']
 export type findMyEnrollments_Item = findMyEnrollments_Response['enrollments'][number]
 export type findMyEnrollments_Errors = 'UNAUTHENTICATED' | 'ORGANIZATION_CONTEXT_MISSING'
-
-// GET /api/v0/cohorts/{cohortId} — 기수 상세 조회
-export type findCohort_Path = operations['findCohort']['parameters']['path']
-export type findCohort_Response =
-  operations['findCohort']['responses'][200]['content']['application/json']
-export type findCohort_Item = findCohort_Response['managers'][number]
-export type findCohort_Errors =
-  'UNAUTHENTICATED' | 'COHORT_NOT_FOUND' | 'ORGANIZATION_CONTEXT_MISSING'

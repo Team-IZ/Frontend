@@ -99,6 +99,23 @@ export type registerTrainees_Errors =
   | 'ACCESS_DENIED'
   | 'COHORT_NOT_INVITABLE'
 
+// POST /api/v0/cohorts/{cohortId}/trainees/invitations/resend — 교육생 초대 재발송
+export type resendTraineeInvitations_Path =
+  operations['resendTraineeInvitations']['parameters']['path']
+export type resendTraineeInvitations_Body = NonNullable<
+  operations['resendTraineeInvitations']['requestBody']
+>['content']['application/json']
+export type resendTraineeInvitations_Response =
+  operations['resendTraineeInvitations']['responses'][200]['content']['application/json']
+export type resendTraineeInvitations_Item = resendTraineeInvitations_Response['failures'][number]
+export type resendTraineeInvitations_Errors =
+  | 'VALIDATION_FAILED'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'COHORT_NOT_FOUND'
+  | 'ORGANIZATION_CONTEXT_MISSING'
+  | 'INVITE_MAIL_FAILED'
+
 // POST /api/v0/cohorts/{cohortId}/trainees/invitations/preview — 직접 입력 교육생 명단 사전 검증(드라이런)
 export type previewTrainees_Path = operations['previewTrainees']['parameters']['path']
 export type previewTrainees_Body = NonNullable<

@@ -14,7 +14,6 @@
 | `unavailable` | GET /api/v0/reports | 내 리포트 전량 조회 |
 | `unavailable` | GET /api/v0/reports/{reportId} | 리포트 단건 조회 |
 | `unavailable` | GET /api/v0/reports/managed | 담당 반 리포트 목록 조회 (매니저) |
-| `unavailable` | GET /api/v0/reports/class-diagnosis | 수업 진단 리포트 조회 |
 
 ## 손으로 쓰는 것 — multipart
 

@@ -5,6 +5,8 @@ import type { MutationOptions } from '@/api/_contract'
 import {
   createCohort,
   createClassroom,
+  deleteCohort,
+  updateCohort,
   endCohort,
   deleteClassroom,
   updateClassroom,
@@ -19,6 +21,11 @@ import type {
   createClassroom_Path,
   createClassroom_Body,
   createClassroom_Response,
+  deleteCohort_Path,
+  deleteCohort_Response,
+  updateCohort_Path,
+  updateCohort_Body,
+  updateCohort_Response,
   endCohort_Path,
   endCohort_Body,
   endCohort_Response,
@@ -70,6 +77,41 @@ export function useCreateClassroom(
   return useMutation({
     mutationFn: (vars: { path: createClassroom_Path; body: createClassroom_Body }) =>
       createClassroom(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: academicKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 기수 삭제 */
+export function useDeleteCohort(
+  options?: MutationOptions<deleteCohort_Response, { path: deleteCohort_Path }>,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: deleteCohort_Path }) => deleteCohort(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: academicKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 기수 수정 */
+export function useUpdateCohort(
+  options?: MutationOptions<
+    updateCohort_Response,
+    { path: updateCohort_Path; body: updateCohort_Body }
+  >,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: updateCohort_Path; body: updateCohort_Body }) => updateCohort(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다

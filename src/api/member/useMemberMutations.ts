@@ -7,6 +7,7 @@ import {
   inviteManager,
   resendManagerInvitation,
   registerTrainees,
+  resendTraineeInvitations,
   previewTrainees,
   updateManagerStatus,
   updateTraineeStatus,
@@ -25,6 +26,9 @@ import type {
   registerTrainees_Path,
   registerTrainees_Body,
   registerTrainees_Response,
+  resendTraineeInvitations_Path,
+  resendTraineeInvitations_Body,
+  resendTraineeInvitations_Response,
   previewTrainees_Path,
   previewTrainees_Body,
   previewTrainees_Response,
@@ -115,6 +119,28 @@ export function useRegisterTrainees(
   return useMutation({
     mutationFn: (vars: { path: registerTrainees_Path; body: registerTrainees_Body }) =>
       registerTrainees(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: memberKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 교육생 초대 재발송 */
+export function useResendTraineeInvitations(
+  options?: MutationOptions<
+    resendTraineeInvitations_Response,
+    { path: resendTraineeInvitations_Path; body: resendTraineeInvitations_Body }
+  >,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      path: resendTraineeInvitations_Path
+      body: resendTraineeInvitations_Body
+    }) => resendTraineeInvitations(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다

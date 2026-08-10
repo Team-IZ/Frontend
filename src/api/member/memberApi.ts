@@ -16,6 +16,9 @@ import type {
   registerTrainees_Path,
   registerTrainees_Body,
   registerTrainees_Response,
+  resendTraineeInvitations_Path,
+  resendTraineeInvitations_Body,
+  resendTraineeInvitations_Response,
   previewTrainees_Path,
   previewTrainees_Body,
   previewTrainees_Response,
@@ -87,6 +90,21 @@ export const registerTrainees = (
 ) =>
   unwrap<registerTrainees_Response>(
     izClient.POST('/api/v0/cohorts/{cohortId}/trainees/invitations', {
+      params: { path: params.path },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 교육생 초대 재발송 — `POST /api/v0/cohorts/{cohortId}/trainees/invitations/resend` */
+export const resendTraineeInvitations = (
+  params: {
+    path: resendTraineeInvitations_Path
+    body: resendTraineeInvitations_Body
+  } & RequestOptions,
+) =>
+  unwrap<resendTraineeInvitations_Response>(
+    izClient.POST('/api/v0/cohorts/{cohortId}/trainees/invitations/resend', {
       params: { path: params.path },
       body: params.body,
       signal: params.signal,

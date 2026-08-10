@@ -58,8 +58,8 @@ type Props = FilterValues & {
    * 고른 조건에 따라 줄어들면 *"고르면 몇 개가 되나"* 를 미리 알 수 없다.
    * 아직 안 왔으면 개수 없이 라벨만 그린다 — `0`으로 쓰면 없는 사실을 주장한다.
    */
-  counts?: Partial<Record<ProjectStatus, number>>
-  /** 전체 회차 수. `counts`에 구멍이 있어 더해서 만들 수 없다(`ProjectPage.population`) */
+  counts?: Record<ProjectStatus, number>
+  /** 전체 회차 수. `counts`를 더하면 PLANNED를 두 번 센다(`ProjectPage.population`) */
   population?: number
   onChange: (patch: Partial<FilterValues>) => void
 }
@@ -79,11 +79,10 @@ export default function ProjectFilters({
   onChange,
 }: Props) {
   /*
-    상태 선택지 — 개수를 라벨에 싣는다. `전체`는 합이므로 같이 센다.
+    상태 선택지 — 개수를 라벨에 싣는다. `전체`는 모집단이라 `population`을 따로 받는다.
 
-    ⚠ **준비 중·준비됨은 개수가 없다.** 서버 `counts`가 `PLANNED`·`RUNNING`·`CLOSED`
-    세 값이라 `PLANNED`를 그 둘로 가를 수 없다(`ProjectPage.counts`). **`0`으로 채우지
-    않는다** — 없는 사실을 주장하게 되고, 개수가 0인 상태와 구분이 안 된다.
+    네 값이 전부 온다(10차 Q1의 `readinessCounts`). **아직 안 왔을 때만 라벨만 그린다** —
+    `0`으로 채우면 없는 사실을 주장하게 되고, 개수가 0인 상태와 구분이 안 된다.
   */
   const statusOptions = [
     { value: ALL, label: population != null ? `전체 (${population})` : '전체' },

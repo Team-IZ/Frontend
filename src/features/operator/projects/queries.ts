@@ -158,14 +158,16 @@ function toPage(res: findProjects_Response, q: ProjectQuery): ProjectPage {
   }
 
   /*
-    `counts`는 서버가 필터와 무관한 전체 모집단으로 준다. 세 키뿐이라 `PLANNED`를
-    준비 중·준비됨으로 못 가른다 — **그 둘은 비워 둔다**(types `ProjectPage.counts`).
+    `counts`는 서버가 필터와 무관한 전체 모집단으로 준다. 세 키(`PLANNED`·`RUNNING`·`CLOSED`)
+    뿐이라 준비 중·준비됨을 못 갈랐는데, 10차 Q1 회신의 `readinessCounts`가 `PLANNED`를
+    그 둘로 나눠 준다 — `PREP + READY == PLANNED`이므로 **모집단은 여전히 세 키의 합이다.**
   */
   const c = res.counts as Record<string, number>
+  const r = res.readinessCounts as Record<string, number>
   return {
     items,
     total: q.status === 'PREP' || q.status === 'READY' ? items.length : res.total,
-    counts: { RUNNING: c.RUNNING, DONE: c.CLOSED },
+    counts: { PREP: r.PREP, READY: r.READY, RUNNING: c.RUNNING, DONE: c.CLOSED },
     population: (c.PLANNED ?? 0) + (c.RUNNING ?? 0) + (c.CLOSED ?? 0),
   }
 }

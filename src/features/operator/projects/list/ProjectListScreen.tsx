@@ -81,8 +81,7 @@ export default function ProjectListScreen() {
   const counts = page.data?.counts
   /*
     전체 회차 수는 **서버가 준 세 값의 합**이다(`ProjectPage.population`).
-    한때 `counts`를 더해 만들었는데, 서버가 `PLANNED`를 준비 중·준비됨으로 갈라 주지
-    않으면서 `counts`에 구멍이 생겨 합이 모자라게 됐다.
+    `counts` 네 값을 더하면 안 된다 — `PREP + READY`가 곧 `PLANNED`라 두 번 세게 된다.
   */
   const totalAll = page.data?.population ?? 0
   const today = getToday()

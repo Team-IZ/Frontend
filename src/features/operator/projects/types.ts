@@ -210,15 +210,16 @@ export type ProjectPage = {
   /**
    * 상태별 개수. **필터와 무관한 전체 모집단 기준**이다.
    *
-   * ⚠ **`PREP`·`READY`는 `undefined`다.** 서버 `counts`가 `PLANNED`·`RUNNING`·`CLOSED`
-   * 세 키뿐이라 `PLANNED`를 준비 중·준비됨으로 가를 수 없다. 화면은 그 둘을 **개수 없이
-   * 라벨만** 그린다 — `0`으로 채우면 없는 사실을 주장하게 된다. (10차 요청 후보)
+   * 네 값이 **모두 채워진다.** 서버 `counts`는 `PLANNED`·`RUNNING`·`CLOSED` 세 키뿐이라
+   * 준비 중·준비됨을 가를 수 없었는데, 10차 Q1 회신으로 `readinessCounts`(`PREP`·`READY`)가
+   * 생겨 `PLANNED`를 그 둘로 나눠 받는다.
    */
-  counts: Partial<Record<ProjectStatus, number>>
+  counts: Record<ProjectStatus, number>
   /**
    * 이 기수의 전체 회차 수 — 화면 제목의 `총 7개`.
    *
-   * **`counts`를 더해서 만들지 않는다.** 위 사정으로 `counts`에 구멍이 있어 합이 모자란다.
+   * `PREP + READY == counts.PLANNED`라 **`counts` 네 값을 더하면 PLANNED를 두 번 센다.**
+   * 서버의 세 키 합으로만 만든다.
    */
   population: number
 }

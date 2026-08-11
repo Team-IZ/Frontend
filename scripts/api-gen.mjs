@@ -423,7 +423,8 @@ function main() {
   execFileSync(
     'npx',
     ['openapi-typescript', cfg.spec.file, '-o', `${sharedDir}/${cfg.files.schema}`],
-    { stdio: 'inherit' },
+    // Windows에서 npx는 npx.cmd라 shell 없이 execFileSync로 못 찾는다(ENOENT) — 크로스플랫폼 안전.
+    { stdio: 'inherit', shell: true },
   )
 
   const spec = JSON.parse(readFileSync(cfg.spec.file, 'utf8'))
@@ -477,7 +478,8 @@ function main() {
       `${sharedDir}/*.d.ts`,
       ...written.map((w) => `${w.dir}/*.ts`),
     ],
-    { stdio: 'inherit' },
+    // Windows에서 npx는 npx.cmd라 shell 없이 execFileSync로 못 찾는다(ENOENT) — 크로스플랫폼 안전.
+    { stdio: 'inherit', shell: true },
   )
 
   console.log(`\n생성`)

@@ -202,4 +202,4 @@ errorCopy(error, { subject: '회차' })
 | 3 | ✅ | expand·migrate 완료 · contract는 IZ-frontend 39곳 이관 뒤 |
 | 4 | ✅ | 완료 |
 | 5 | ✅ | 완료 |
-| 6 | 대기 | `Header.tsx` 조율 필요 |
+| 6 | ✅ | 생성 훅·스코프 완료. **URL 스코프는 헤더 스위처와 함께** — `Header.tsx` 조율 필요 |

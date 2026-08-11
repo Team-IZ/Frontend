@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/Button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import type { Report } from './_/api/types'
 import { REPORT_SECTIONS, type ReportSectionKey } from './_/sections'
-import { getReport } from './_/api/api'
-import { COHORT_ID } from './_/cohortScope'
-import { useAsync } from './_/useAsync'
+import { useReport } from './_/api/api'
+import { useCohortId } from '@/stores/cohortScope'
 import { exportReportCsv } from './_/labels'
 import Loading from '@/components/common/Loading'
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import ErrorState from '@/components/common/ErrorState'
 import ReportHead from './_/components/ReportHead'
 import SectionHeading from './_/components/SectionHeading'
@@ -114,9 +114,14 @@ export default function ReportScreen() {
   const navigate = useNavigate()
   const [section, setSection] = useState<Section>('summary')
 
-  const load = useCallback(() => getReport(COHORT_ID), [])
-  const report = useAsync(load)
-  const cohortName = report.data?.cohortName
+  /*
+    **기수는 스코프가 정한다**(`stores/cohortScope`) — 이 화면만 상수 UUID를 들고 있었다.
+    그러면 다른 화면과 **서로 다른 기수를 보고 있어도** 화면이 아무 경고를 안 낸다.
+  */
+  const { cohortId, cohortName: scopeName, failed: cohortFailed } = useCohortId()
+  const report = useReport(cohortId)
+  /* 표지·빵부스러기는 리포트가 준 이름을 먼저 쓴다 — 얼린 시점의 기수 이름이다 */
+  const cohortName = report.data?.cohortName ?? scopeName
 
   /**
    * 인쇄창의 기본 파일명이 "IZ-Get"이 아니라 실제 문서 제목이 되도록 인쇄
@@ -130,8 +135,9 @@ export default function ReportScreen() {
     document.title = original
   }
 
+  /* 기수를 셸에 넘긴다 — 안 넘기면 헤더가 자리표시자(`7기`)를 그려 본문과 다른 기수를 말한다 */
   return (
-    <ConsoleShell role="operator">
+    <ConsoleShell role="operator" cohort={cohortName}>
       {/*
         cohortName이 로딩 중엔 없다 — 조건 없이 이어 붙이면 데이터가 오기 전 "리포트 ›"
         만 매달린 채로 250ms(목 지연) 동안 보인다. `PageHeader`는 `breadcrumb`이
@@ -146,15 +152,29 @@ export default function ReportScreen() {
         <PageHeader breadcrumb={cohortName ? `리포트 › ${cohortName}` : undefined} title="리포트" />
       </div>
 
-      {report.loading ? (
+      {cohortFailed ? (
+        <Empty variant="empty">
+          <EmptyHeader>
+            <EmptyTitle>기수가 없습니다</EmptyTitle>
+            <EmptyDescription>
+              운영 관리에서 기수를 먼저 만들면 회차가 끝난 뒤 리포트가 발행됩니다.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : report.isLoading ? (
         <Loading label="리포트를 불러오는 중" />
-      ) : report.failed ? (
+      ) : report.isError ? (
         /*
           **404가 늘 고장인 것은 아니다.** `COHORT_REPORT_NOT_FOUND`는 아직 진단이 확정되지
           않은 것이라 「없는 것」 3종 중 **유형 1 `아직`** 이고, 다시 시도를 눌러도 리포트가
           생기지 않는다 — `errorCopy`가 그 판정을 갖는다(async-states §3-1·3-2).
         */
-        <ErrorState error={report.error} subject="리포트" onRetry={report.reload} />
+        <ErrorState
+          error={report.error}
+          subject="리포트"
+          onRetry={() => void report.refetch()}
+          retrying={report.isFetching}
+        />
       ) : (
         report.data && (
           <>

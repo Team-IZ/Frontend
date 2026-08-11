@@ -449,6 +449,82 @@ if (status.isLoading) return <StatusSkeleton />`}
   )
 }
 
+/* ─── 6단계 — 한 화면만 다른 길을 쓰지 않는다 ──────────────────── */
+
+function Step6() {
+  return (
+    <>
+      <Case
+        title="OP-05만 생성물의 아래층만 쓰고 있었다"
+        note="생성기는 호출 함수와 조회 훅 두 층을 만든다. 다른 화면은 훅을 쓰는데 리포트만 호출 함수를 로컬 useAsync로 감쌌다 — 층 하나를 건너뛴 것이라 이 화면만 캐시·무효화·isFetching이 없었다."
+      >
+        <Card className="p-4">
+          <pre className="text-fg-muted overflow-x-auto text-xs leading-relaxed">
+            {`전  OP-01~04·06   화면 → 생성 훅(useFindX)           → react-query
+    OP-05         화면 → 로컬 useAsync → 생성 호출함수  → react-query 밖
+
+후  전부          화면 → 생성 훅(useFindX)           → react-query`}
+          </pre>
+        </Card>
+        <p className="text-fg-subtle mt-2 text-xs">
+          재시도 버튼이 자기 대기(<code className="bg-surface-2 rounded px-1">isFetching</code>)를
+          못 보여준 것도 그래서다. 지우고 나니 이 도메인에 남은 일은 타입 좁히기 한 줄뿐이다.
+        </p>
+      </Case>
+
+      <Case
+        title="기수를 하드코딩하고 있었다"
+        note="리포트만 상수 UUID(8기)를 들고 있어 다른 화면과 서로 다른 기수를 보고 있었다 — 화면은 아무 경고도 안 낸다. 스코프(stores/cohortScope)로 맞췄다."
+      >
+        <div className="grid gap-3 md:grid-cols-2">
+          <div>
+            <p className="text-danger mb-1.5 text-2xs font-medium">전 · 헤더와 본문이 다른 기수</p>
+            <Card className="p-4">
+              <p className="text-fg-subtle text-xs">헤더 스위처 7기 · 본문 «리포트 · 8기»</p>
+            </Card>
+          </div>
+          <div>
+            <p className="text-primary mb-1.5 text-2xs font-medium">후 · 같은 기수</p>
+            <Card className="p-4">
+              <p className="text-fg-subtle text-xs">헤더 스위처 9기 · 본문 «리포트 · 9기»</p>
+            </Card>
+          </div>
+        </div>
+        <p className="text-fg-subtle mt-2 text-xs">
+          스코프를 셸에도 넘긴다 — 안 넘기면 헤더가 자리표시자(<b>7기</b>)를 그려 본문과 다른 기수를
+          말한다. 실제로 그러고 있었다.
+        </p>
+      </Case>
+
+      <Case
+        title="캐시가 생겼다"
+        note="리포트를 보다 프로젝트로 갔다 돌아와도 다시 부르지 않는다 — 실측 재요청 0건. useAsync였을 때는 매번 다시 불렀다."
+      >
+        <Card className="p-4">
+          <p className="text-fg-muted text-xs">
+            리포트 → 프로젝트 → 리포트 ·{' '}
+            <b className="text-fg font-semibold">class-diagnosis 재요청 0건</b>
+          </p>
+        </Card>
+      </Case>
+
+      <Case
+        title="남은 것 — 기수 스위처"
+        note="스코프는 지금 «진행 중인 기수»를 서버가 고른다. 표준(§5)은 «URL이 갖는다»인데, 주소만 바꾸고 헤더 스위처가 없으면 사용자에게 바꿀 수단이 없어진다. 둘은 같이 가야 한다."
+      >
+        <Empty variant="pending">
+          <EmptyHeader>
+            <EmptyTitle>기수 스위처가 붙을 때 함께 한다</EmptyTitle>
+            <EmptyDescription>
+              shells/Header.tsx는 공용이라 IZ-frontend와 조율이 필요한 유일한 파일입니다.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      </Case>
+    </>
+  )
+}
+
 /* ─── 3단계 — 「없는 것」 3종을 갈라 쓴다 ──────────────────────── */
 
 function Step3() {
@@ -595,7 +671,13 @@ const STEPS: Step[] = [
     done: true,
     render: () => <Step5 />,
   },
-  { no: 6, title: 'OP-05 react-query 이관 · 기수 URL 통일', fixed: '', done: false },
+  {
+    no: 6,
+    title: '한 화면만 다른 길을 쓰지 않는다',
+    fixed: 'OP-05를 생성 훅으로 · 기수를 스코프로',
+    done: true,
+    render: () => <Step6 />,
+  },
 ]
 
 export default function AsyncStatesPreview() {

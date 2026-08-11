@@ -58,7 +58,7 @@ type Props = FilterValues & {
    * 고른 조건에 따라 줄어들면 *"고르면 몇 개가 되나"* 를 미리 알 수 없다.
    * 아직 안 왔으면 개수 없이 라벨만 그린다 — `0`으로 쓰면 없는 사실을 주장한다.
    */
-  counts?: Record<ProjectStatus, number>
+  counts?: Partial<Record<ProjectStatus, number>>
   /** 전체 회차 수. `counts`를 더하면 PLANNED를 두 번 센다(`ProjectPage.population`) */
   population?: number
   onChange: (patch: Partial<FilterValues>) => void

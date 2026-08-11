@@ -41,6 +41,7 @@
 - [백엔드 API — 11차 요청](backend/backend-api-requests-11.md) — OP-06 여섯 탭을 붙이며 나온 **요청 8건 + 확인 3건**. 최우선은 **R1** — 교안 섹션 조회가 90초를 넘겨 상세가 안 열린다 · **9차 반영본 전수 검증 통과**
 - [백엔드 API — 12차 요청](backend/backend-api-requests-12.md) — OP-02 분석을 붙이며 나온 것. `roundNo`가 요청·응답에서 다른 것을 가리킨다 · `sameCurriculumOnly=true`면 결과 0건
 - [백엔드 API — 13차 요청](backend/backend-api-requests-13.md) — 11차 반영본으로 OP-06을 다시 돌려보며 나온 **요청 2건 + 확인 1건**. **같은 교안을 목록은 24개 회차가 쓴다 하고 상세는 0건**이라 한다 · **11차 열한 건 전부 반영 확인**
+- [백엔드 API — 14차 요청](backend/backend-api-requests-14.md) — **요청 1건**: `readinessCounts`가 **스펙엔 `required`인데 응답에 없어** 프로젝트 목록이 흰 화면이 됐다. 스펙과 서버가 다른 말을 하는 상태
 - [인증·세션 설계](api/auth-design.md) — 토큰을 어디에 두나 · 왜 Context가 아니라 스토어인가 · 401 재발급의 함정 셋 · 실무 정석과 우리 절충
 - [연동 계획 — Auth·슈퍼어드민](api/integration-plan-auth-superadmin.md) — **지금 붙일 수 있는 6화면** · 타입 불일치 · 순서와 완료 판정
 - [API 계층 결정 지점](api/api-layer-decisions.md) — 층·훅·쿼리 키·타입·에러를 왜 이렇게 했나 · **알려진 결함 3건**

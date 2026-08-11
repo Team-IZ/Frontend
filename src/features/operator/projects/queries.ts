@@ -168,7 +168,12 @@ function toPage(res: findProjects_Response, q: ProjectQuery): ProjectPage {
     그 둘로 나눠 준다 — `PREP + READY == PLANNED`이므로 **모집단은 여전히 세 키의 합이다.**
   */
   const c = res.counts as Record<string, number>
-  const r = res.readinessCounts as Record<string, number>
+  /*
+    ⚠ **스펙은 `required`인데 서버가 안 보낸다**(실측). 그대로 읽으면 `undefined.PREP`으로
+    **화면이 아니라 앱이 터진다** — 실제로 목록 진입이 통째로 막혔다. 없으면 없는 대로
+    두고(개수 없이 라벨만), `0`으로 채우지 않는다 — `0`은 없는 사실을 주장하는 것이다.
+  */
+  const r = (res.readinessCounts ?? {}) as Partial<Record<string, number>>
   return {
     items,
     total: q.status === 'PREP' || q.status === 'READY' ? items.length : res.total,

@@ -210,11 +210,15 @@ export type ProjectPage = {
   /**
    * 상태별 개수. **필터와 무관한 전체 모집단 기준**이다.
    *
-   * 네 값이 **모두 채워진다.** 서버 `counts`는 `PLANNED`·`RUNNING`·`CLOSED` 세 키뿐이라
-   * 준비 중·준비됨을 가를 수 없었는데, 10차 Q1 회신으로 `readinessCounts`(`PREP`·`READY`)가
-   * 생겨 `PLANNED`를 그 둘로 나눠 받는다.
+   * 서버 `counts`는 `PLANNED`·`RUNNING`·`CLOSED` 세 키뿐이라 준비 중·준비됨을 가를 수
+   * 없다. 10차 Q1 회신의 `readinessCounts`(`PREP`·`READY`)가 `PLANNED`를 그 둘로 나눠
+   * 주기로 했고 **스펙에는 `required`로 들어가 있다.**
+   *
+   * ⚠ **그런데 배포된 서버가 그 필드를 안 보낸다**(실측: 응답 키가 `projects`·`total`·
+   * `counts` 셋뿐). 그래서 `PREP`·`READY`는 **없을 수 있다** — `undefined`를 허용하는
+   * 이유다. 필터 라벨은 개수가 없으면 라벨만 그린다(`0`으로 채우면 없는 사실을 주장한다).
    */
-  counts: Record<ProjectStatus, number>
+  counts: Partial<Record<ProjectStatus, number>>
   /**
    * 이 기수의 전체 회차 수 — 화면 제목의 `총 7개`.
    *

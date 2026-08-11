@@ -1,6 +1,7 @@
 // ─────────────────────────────────────────────────────────────
-// ⚠️ Mock 전용 계정 저장소 — 백엔드 연동 시 이 파일을 통째로 삭제하세요.
-// 로그인(authApi)과 가입·활성화(inviteApi)가 같은 데이터를 보도록 하는 임시 DB입니다.
+// ⚠️ Mock 전용 계정 저장소 — 초대·가입(inviteApi)이 아직 이 파일을 본다.
+// 로그인(authApi)·비밀번호 재설정(passwordResetApi)은 실서버로 옮겨서 더 이상 안 쓴다
+// (이슈 178). 초대·가입까지 연동되면 이 파일을 통째로 삭제한다.
 // 실제로는 서버 DB의 accounts 테이블이 이 역할을 합니다.
 // ─────────────────────────────────────────────────────────────
 import type { Role } from './authTypes'
@@ -67,11 +68,4 @@ export function activateTraineeAccount(email: string, password: string) {
   if (!account) return
   account.password = password
   account.active = true
-}
-
-/** 비밀번호 재설정 → 비밀번호만 교체 (AU-03) */
-export function resetAccountPassword(email: string, password: string) {
-  const account = accounts[email]
-  if (!account) return
-  account.password = password
 }

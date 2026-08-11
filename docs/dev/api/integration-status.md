@@ -1,6 +1,6 @@
 # API 연동 현황 — 역할·화면별 스냅샷
 
-> 기준: `origin/develop` 05fd785(PR #177 머지, 2026-08-11 02:13)까지, 코드 직접 확인(각 화면의 `_/api`·`mockData.ts`·`mockDb.ts` 존재 여부와 실제 import 대상).
+> 기준: `origin/develop` c393791(PR #179 머지, 2026-08-11)까지, 코드 직접 확인(각 화면의 `_/api`·`mockData.ts`·`mockDb.ts` 존재 여부와 실제 import 대상).
 > "연동 완료"는 화면이 mock 파일 대신 `src/api/{domain}` 생성 훅(`useFind*`/`use*Mutation` 등)을 직접 호출하는 상태를 뜻한다. 자동 갱신 문서가 아니라 이 시점의 수동 스냅샷 — 다음에 다시 확인하려면 각 화면 폴더에 `mockData.ts`/`mockDb.ts`가 남아 있는지부터 보면 된다.
 
 ---
@@ -13,7 +13,7 @@
 | 오퍼레이터 | 8 | 8 | 전체 완료 |
 | 매니저 | 10 | 0 | 전체 미착수(전부 mock) |
 | 교육생 | 4 | 0 | 전체 미착수(전부 mock) |
-| 공통(인증) | 4 | 2 | 로그인·세션만 완료, 초대·비번재설정 미착수 |
+| 공통(인증) | 4 | 3 | 로그인·비번재설정 완료, 초대·가입만 미착수 |
 
 ---
 
@@ -74,20 +74,19 @@
 
 ---
 
-## 공통(인증) — 로그인만 완료
+## 공통(인증) — 로그인·비밀번호 재설정 완료, 초대·가입만 남음
 
 | 기능 | 경로 | 상태 | 비고 |
 |---|---|---|---|
 | 로그인·퀵로그인 | `/shared/login` | 완료 | `login()`(`@/api/auth/authApi`) |
 | 세션 조회·로그아웃·리프레시 | (전역) | 완료 | `useSession`(`GET /members/me`), `logout`, `/auth/refresh` |
+| 비밀번호 재설정 | `/shared/password-reset` | 완료 | 이슈 #178 → PR #179(2026-08-11 머지). `passwordResetApi.ts`가 `@/api/auth/authApi` 실호출 |
 | 초대·가입(회원가입) | `/invite/:token` | mock | `inviteApi.ts`가 여전히 `mockDb.ts` 사용 |
-| 비밀번호 재설정 | `/shared/password-reset` | mock | `passwordResetApi.ts`가 여전히 `mockDb.ts` 사용 |
 | 개인정보 처리방침 | `/shared/privacy-policy` | N/A | 정적 콘텐츠 페이지, API 없음 |
 
-⚠ **초대·비번재설정은 다른 미착수 항목과 성격이 다르다.** `api/openapi.json` 기준 Auth 태그 10개 엔드포인트가 **전부 `available`**이고(초대 재발송·초대 토큰 해석·매니저 가입·교육생 활성화·비밀번호 재설정 3종 포함), 생성 함수(`resolveInvitation`·`signupManager`·`activateTrainee`·`requestPasswordReset`·`confirmPasswordReset`·`validatePasswordResetToken`)도 `src/api/auth/authApi.ts`에 이미 있다. 백엔드가 막고 있는 게 아니라 **아직 손을 안 댄 것** — 우선순위에 올리면 바로 연동 가능.
+⚠ **비밀번호 재설정은 연동됐지만 렌더 확인이 절반만 됐다.** 위변조 토큰(에러 경로)은 실제 렌더로 확인했지만, 정상 진입·확정 성공·`SAME_AS_CURRENT`·만료·이미사용(성공 경로 대부분)은 **유효한 토큰이 있는 계정이 있어야 확인 가능**한데 시드 계정 이메일이 전부 가짜 도메인(`org.com` 등)이라 아직 못 봤다 — 백엔드에 실제 이메일로 받을 수 있는 테스트 계정을 요청해 둔 상태(상세: `docs/dev/handoff.md` 최신 항목).
 
-**진행 순서(2026-08-11 확정):** 비밀번호 재설정부터(이슈 초안 작성, 매핑이 거의 1:1이라 리스크 낮음) → 초대·가입은 뒤로.
-초대·가입을 미룬 이유: `resolveInvitation`(초대 토큰 검증) 실패가 스펙상 `INVITATION_INVALID` 코드 하나로만 오고 만료/이미가입/무효/명단외 4가지를 구분할 필드가 없어서(화면은 지금 4가지를 각각 다른 카드로 보여줌 — §"매니저" 화면 참고), 그대로 연동하면 UX가 퇴화한다. **백엔드 팀원이 이 4가지를 구분되는 코드로 분리하겠다고 확답함(2026-08-11)** — 스펙이 갱신되면 `npm run api:pull && npm run api:gen`으로 반영 여부 확인 후 착수.
+⚠ **초대·가입은 다른 미착수 항목과 성격이 다르다.** `api/openapi.json` 기준 Auth 태그 10개 엔드포인트가 **전부 `available`**이고(초대 재발송·초대 토큰 해석·매니저 가입·교육생 활성화 포함), 생성 함수(`resolveInvitation`·`signupManager`·`activateTrainee`)도 `src/api/auth/authApi.ts`에 이미 있다. 백엔드가 막고 있는 게 아니라 **아직 손을 안 댄 것**이지만, `resolveInvitation`(초대 토큰 검증) 실패가 스펙상 `INVITATION_INVALID` 코드 하나로만 오고 만료/이미가입/무효/명단외 4가지를 구분할 필드가 없어서(화면은 지금 4가지를 각각 다른 카드로 보여줌 — §"매니저" 화면 참고) 그대로 연동하면 UX가 퇴화한다. **백엔드 팀원이 이 4가지를 구분되는 코드로 분리하겠다고 확답함(2026-08-11)** — 스펙이 갱신되면 `npm run api:pull && npm run api:gen`으로 반영 여부 확인 후 착수.
 
 ---
 

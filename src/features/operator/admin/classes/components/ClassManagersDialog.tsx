@@ -15,7 +15,7 @@ import { useFindManagers } from '@/api/member/useMemberQueries'
 import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useUpdateManagers } from '@/api/academic/useAcademicMutations'
 import type { findClassrooms_Item } from '@/api/academic/academicTypes'
-import { Loading } from '../../_/components/AsyncState'
+import Loading from '@/components/common/Loading'
 
 /*
   이 반을 누가 맡나 — **반 하나에 매니저 여럿**이라 체크박스다.

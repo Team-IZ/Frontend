@@ -405,11 +405,11 @@ const m = () => ({ rows: document.querySelectorAll('tbody tr').length,
 | 🟠 | OP-04 상세 | 모든 실패가 "회차를 찾을 수 없습니다" — 500·오프라인에도 같은 말 | 3-1 |
 | 🟠 | OP-02 분석 | 로딩 중 툴바 셀렉트가 **빈 목록**으로 열린다 | 1-6 |
 | 🟠 | OP-01 · OP-04 · OP-05 | 로딩 중 헤더(·탭)가 통째로 없다 → 도착 시 페이지가 밀린다 | 1-3 |
-| 🟠 | OP-01~06 전부 | 첫 진입이 스피너 — 슈퍼어드민 화면들과 다르다 | 1-2 |
+| 🟠 | OP-01·02·03·04·05 | 첫 진입이 스피너 — 운영 관리 5탭은 스켈레톤으로 옮겼다 | 1-2 |
 | 🟡 | OP-01~06 전부 | 재시도 버튼에 대기 표시 없음 → 연타 | 3-3 |
 | 🟡 | 전역 | `isPending` 116 : `isLoading` 4 | 1-9 |
 | 🟡 | OP-05 리포트 | 연동된 화면인데 혼자 `useAsync`(캐시·무효화 없음)를 쓴다 — 나머지는 react-query | — |
-| 🟡 | `admin/_` · `report/_` | `AsyncState`(Loading·LoadFailed)가 **두 벌 복붙** + 화면 4곳이 같은 것을 인라인 | 8 |
+
 
 **건드리지 않는 것** — 2-4의 빈 상태 이유 분기, OP-01 블록 단위 실패 격리(`BlockBody`),
 OP-03 부분 성공 안내, 안 보는 탭 조회 안 함(`enabled`), OP-05 확정 전 내보내기 잠금 +
@@ -426,8 +426,8 @@ OP-03 부분 성공 안내, 안 보는 탭 조회 안 함(`enabled`), OP-05 확�
 
 | 무엇 | 지금 | 언제 |
 |---|---|---|
-| `AsyncState`(Loading·LoadFailed) | **2벌 + 인라인 4곳** | **지금 올린다** — `components/common/`으로 |
+| ~~`AsyncState`(Loading·LoadFailed)~~ | ✅ `common/Loading` 한 벌 · `LoadFailed`는 `ErrorState`로 흡수해 삭제 | 완료 |
 | `errorCopy(error)` — 3-1 매핑 | 없음 | **두 번째 화면에서 올린다.** 문구가 갈리면 표준이 깨진다 |
-| `TableSkeleton` | 슈퍼어드민이 인라인 | 표 스켈레톤이 **세 화면**에 생기면 |
+| ~~`TableSkeleton`~~ | ✅ `common/TableSkeleton` — 운영 관리 5탭이 쓴다 | 완료 |
 | `useAsync` | `lib/` · `report/_/` 2벌 | OP-05를 react-query로 옮길 때 **`report/_` 쪽을 지운다** |
 | `QueryBoundary` 같은 래퍼 | — | **만들지 않는다.** 화면마다 「없는 것」의 이유가 달라 래퍼가 그 분기를 대신 못 한다(OP-01은 블록 단위로 실패가 갈린다) |

@@ -30,7 +30,8 @@ import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
 import ResultBanner from '../_/components/ResultBanner'
 import { useActionResult } from '../_/actionResult'
-import { Loading, LoadFailed } from '../_/components/AsyncState'
+import TableSkeleton from '@/components/common/TableSkeleton'
+import ErrorState from '@/components/common/ErrorState'
 import { ManagerStatusBadge } from '../_/components/StatusBadges'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
 import { ALL, asQuery, withAll } from '../_/filterState'
@@ -259,11 +260,19 @@ export default function ManagersTab({ onCount }: Props) {
         />
       </div>
 
-      {page.isPending ? (
-        <Loading label="매니저를 불러오는 중" />
+      {page.isLoading ? (
+        <TableSkeleton
+          rows={PAGE_SIZE}
+          cols={['w-28', 'w-52', 'w-20', 'w-36', 'w-24', 'w-24', 'w-32', 'w-40']}
+        />
       ) : page.isError ? (
-        <LoadFailed label="매니저를 불러오지 못했습니다" onRetry={() => void page.refetch()} />
-      ) : page.data.content.length === 0 ? (
+        <ErrorState
+          error={page.error}
+          subject="매니저"
+          onRetry={() => void page.refetch()}
+          retrying={page.isFetching}
+        />
+      ) : !page.data || page.data.content.length === 0 ? (
         narrowed ? (
           <Empty variant="empty">
             <EmptyHeader>

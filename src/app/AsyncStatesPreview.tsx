@@ -6,6 +6,8 @@ import ErrorState from '@/components/common/ErrorState'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import Loading from '@/components/common/Loading'
+import TableSkeleton from '@/components/common/TableSkeleton'
 import { Spinner } from '@/components/ui/Spinner'
 import {
   Table,
@@ -314,6 +316,75 @@ function Step2() {
   )
 }
 
+/* ─── 4단계 — 첫 진입은 스켈레톤 ──────────────────────────────── */
+
+function Step4() {
+  return (
+    <>
+      <Case
+        title="첫 진입 — 스피너 vs 스켈레톤"
+        note="스피너는 «기다려»만 말하고 스켈레톤은 «이런 것이 올 것이다»까지 말한다. 차이는 높이에서 난다 — 아래 숫자는 명단 탭에서 실제로 잰 것이다."
+      >
+        <BeforeAfter
+          before={
+            <Card className="p-0">
+              <Loading label="명단을 불러오는 중" />
+            </Card>
+          }
+          after={
+            <Card className="p-0">
+              <TableSkeleton rows={4} cols={['w-10', 'w-32', 'w-56', 'w-32', 'w-28']} />
+            </Card>
+          }
+        />
+        <div className="text-fg-subtle mt-2 flex flex-wrap gap-x-6 gap-y-1 text-xs">
+          <span>
+            스피너 → 표: <b className="text-danger font-semibold">61px 점프</b>
+          </span>
+          <span>
+            스켈레톤 → 표: <b className="text-fg font-semibold">9px</b>
+          </span>
+        </div>
+      </Case>
+
+      <Case
+        title="행 수·열 폭을 실제 표에서 가져온다"
+        note="10행짜리 목록에 3행을 그리면 도착할 때 또 점프한다 — 스켈레톤을 쓰는 이유 자체가 없어진다. 높이도 눈대중이 아니라 잰 값(헤더 38.5px · 본문 53px)을 박았다. 처음엔 눈대중으로 만들었다가 133px이 어긋났다."
+      >
+        <Card className="p-0">
+          <TableSkeleton
+            rows={10}
+            cols={['w-10', 'w-32', 'w-56', 'w-32', 'w-28', 'w-32', 'w-44']}
+          />
+        </Card>
+      </Case>
+
+      <Case
+        title="스피너가 남는 자리 — 모양을 모르는 것"
+        note="응답에 따라 구조가 갈리는 것(모달 안 목록·비용 매트릭스)은 그릴 모양을 미리 알 수 없다. 거기서만 스피너를 쓴다."
+      >
+        <Card className="p-0">
+          <Loading label="매니저를 불러오는 중" />
+        </Card>
+      </Case>
+
+      <Case
+        title="복붙 두 벌을 없앴다"
+        note="admin/_/AsyncState 와 report/_/AsyncState 가 같은 Loading·LoadFailed 를 각각 갖고 있었고, 화면 넷이 또 인라인으로 적고 있었다."
+      >
+        <Card className="p-4">
+          <p className="text-fg-muted text-xs leading-relaxed">
+            <b className="text-fg font-semibold">Loading</b> → `components/common/Loading` 한 벌 ·{' '}
+            <b className="text-fg font-semibold">LoadFailed</b> → 삭제하고 전부{' '}
+            <b className="text-fg font-semibold">ErrorState</b>로. 옮기면서 문구가 status·코드에
+            맞게 갈리는 것을 10곳이 공짜로 얻었다 — 전에는 전부 «…를 불러오지 못했습니다» 하나였다.
+          </p>
+        </Card>
+      </Case>
+    </>
+  )
+}
+
 /* ─── 3단계 — 「없는 것」 3종을 갈라 쓴다 ──────────────────────── */
 
 function Step3() {
@@ -446,7 +517,13 @@ const STEPS: Step[] = [
     done: true,
     render: () => <Step3 />,
   },
-  { no: 4, title: 'AsyncState 공용화 + TableSkeleton', fixed: '', done: false },
+  {
+    no: 4,
+    title: '첫 진입은 스켈레톤',
+    fixed: 'TableSkeleton · Loading 공용화 · LoadFailed 삭제',
+    done: true,
+    render: () => <Step4 />,
+  },
   { no: 5, title: 'isLoading 일괄 + CI 스캐너', fixed: '', done: false },
   { no: 6, title: 'OP-05 react-query 이관 · 기수 URL 통일', fixed: '', done: false },
 ]

@@ -22,7 +22,8 @@ import { ROSTER_PAGE_SIZE, capacityPreview, type CapacityPreview } from '../_/ru
 import { useCohortScope } from '../_/cohortScope'
 import TableFooterBar from '../_/components/TableFooterBar'
 import ResultBanner from '../_/components/ResultBanner'
-import { Loading, LoadFailed } from '../_/components/AsyncState'
+import Loading from '@/components/common/Loading'
+import ErrorState from '@/components/common/ErrorState'
 import { AccountStatusBadge } from '../_/components/StatusBadges'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
 
@@ -361,8 +362,8 @@ export default function AssignModeScreen() {
                         : new Set(rows.map((t) => t.traineeId)),
                     )
                   }
-                  loading={roster.isPending}
-                  failed={roster.isError}
+                  loading={roster.isLoading}
+                  error={roster.error}
                   onRetry={() => void roster.refetch()}
                 />
 
@@ -387,8 +388,8 @@ export default function AssignModeScreen() {
                 preview={preview}
                 onRun={run}
                 saving={saving}
-                loading={classes.isPending}
-                failed={classes.isError}
+                loading={classes.isLoading}
+                error={classes.error}
                 onRetry={() => void classes.refetch()}
                 justAdded={last}
               />
@@ -426,7 +427,7 @@ function ClassRail({
   onRun,
   saving,
   loading,
-  failed,
+  error,
   onRetry,
   justAdded,
 }: {
@@ -439,7 +440,8 @@ function ClassRail({
   onRun: () => void
   saving: boolean
   loading: boolean
-  failed: boolean
+  /** 실패했으면 그 원인. `errorCopy`가 status·코드를 보고 문구를 정한다 */
+  error: unknown
   onRetry: () => void
   justAdded: Assigned | null
 }) {
@@ -453,8 +455,8 @@ function ClassRail({
 
       {loading ? (
         <Loading label="반을 불러오는 중" />
-      ) : failed ? (
-        <LoadFailed label="반을 불러오지 못했습니다" onRetry={onRetry} />
+      ) : error ? (
+        <ErrorState error={error} subject="반" onRetry={onRetry} />
       ) : (
         <div className="space-y-0.5">
           {rooms.map((room) => {
@@ -538,7 +540,7 @@ function RosterPanel({
   onToggle,
   onToggleAll,
   loading,
-  failed,
+  error,
   onRetry,
 }: {
   rows: Trainee[]
@@ -547,11 +549,12 @@ function RosterPanel({
   onToggle: (id: string) => void
   onToggleAll: () => void
   loading: boolean
-  failed: boolean
+  /** 실패했으면 그 원인 — `errorCopy`가 문구를 정한다 */
+  error: unknown
   onRetry: () => void
 }) {
   if (loading) return <Loading label="명단을 불러오는 중" />
-  if (failed) return <LoadFailed label="명단을 불러오지 못했습니다" onRetry={onRetry} />
+  if (error) return <ErrorState error={error} subject="명단" onRetry={onRetry} />
   if (rows.length === 0)
     return (
       <div className="border-border-strong bg-surface-2 text-fg-muted rounded-md border border-dashed p-8 text-center text-sm">

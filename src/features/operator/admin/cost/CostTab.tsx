@@ -17,7 +17,8 @@ import { formatPeriod, formatUsd } from '../_/rules'
 import { useCohortScope } from '../_/cohortScope'
 import SectionHeader from '../_/components/SectionHeader'
 import { FilterSelect } from '../_/components/AdminFilters'
-import { Loading, LoadFailed } from '../_/components/AsyncState'
+import Loading from '@/components/common/Loading'
+import ErrorState from '@/components/common/ErrorState'
 
 /*
   ⑤ 비용 — **기관 총량 + 기수/반.**
@@ -79,7 +80,14 @@ export default function CostTab(_: { onCount: (count: number | null) => void }) 
 
   if (!organizationId || !cohortId || cost.isPending) return <Loading label="비용을 불러오는 중" />
   if (cost.isError || !cost.data)
-    return <LoadFailed label="비용을 불러오지 못했습니다" onRetry={() => void cost.refetch()} />
+    return (
+      <ErrorState
+        error={cost.error}
+        subject="비용"
+        onRetry={() => void cost.refetch()}
+        retrying={cost.isFetching}
+      />
+    )
 
   const { summary, classes } = cost.data
   /*

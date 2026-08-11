@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils/cn'
 import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useReplaceManagerClassrooms } from '@/api/member/useMemberMutations'
 import type { findManagers_Item } from '@/api/member/memberTypes'
-import { Loading } from '../../_/components/AsyncState'
+import Loading from '@/components/common/Loading'
 
 /*
   이 매니저가 맡을 반을 정한다 — **매니저 하나 = 반 여럿**이라 체크박스다.

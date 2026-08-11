@@ -21,7 +21,8 @@ import { useCohortScope, type Cohort } from '../_/cohortScope'
 import type { CohortStatus } from '../_/api/types'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
-import { Loading, LoadFailed } from '../_/components/AsyncState'
+import TableSkeleton from '@/components/common/TableSkeleton'
+import ErrorState from '@/components/common/ErrorState'
 import { CohortStatusBadge } from '../_/components/StatusBadges'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
 import { ALL, asQuery, withAll } from '../_/filterState'
@@ -177,10 +178,15 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
         </Alert>
       )}
 
-      {page.isPending ? (
-        <Loading label="기수를 불러오는 중" />
+      {page.isLoading ? (
+        <TableSkeleton rows={5} cols={['w-44', 'w-28', 'w-20', 'w-24', 'w-48', null]} />
       ) : page.isError ? (
-        <LoadFailed label="기수를 불러오지 못했습니다" onRetry={() => void page.refetch()} />
+        <ErrorState
+          error={page.error}
+          subject="기수"
+          onRetry={() => void page.refetch()}
+          retrying={page.isFetching}
+        />
       ) : items.length === 0 ? (
         narrowed ? (
           <Empty variant="empty">

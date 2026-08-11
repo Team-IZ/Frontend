@@ -26,7 +26,8 @@ import type {
   findSections_Response,
   findUsedProjects_Response,
 } from '@/api/curriculum/curriculumTypes'
-import { Loading, LoadFailed } from '../_/components/AsyncState'
+import Loading from '@/components/common/Loading'
+import ErrorState from '@/components/common/ErrorState'
 import { CurriculumStatusBadge } from '../_/components/StatusBadges'
 import ReanalyzeDialog from './components/ReanalyzeDialog'
 
@@ -79,7 +80,12 @@ export default function CurriculumDetailScreen() {
   if (curriculum.isError || !curriculum.data)
     return (
       <ConsoleShell role="operator">
-        <LoadFailed label="교안을 찾을 수 없습니다" onRetry={() => void curriculum.refetch()} />
+        <ErrorState
+          error={curriculum.error}
+          subject="교안"
+          onRetry={() => void curriculum.refetch()}
+          retrying={curriculum.isFetching}
+        />
         <Button
           variant="ghost"
           className="mt-3"
@@ -158,9 +164,11 @@ export default function CurriculumDetailScreen() {
             {sections.isPending ? (
               <Loading label="섹션을 불러오는 중" />
             ) : sections.isError ? (
-              <LoadFailed
-                label="섹션을 불러오지 못했습니다"
+              <ErrorState
+                error={sections.error}
+                subject="섹션"
                 onRetry={() => void sections.refetch()}
+                retrying={sections.isFetching}
               />
             ) : (
               <SectionsTab

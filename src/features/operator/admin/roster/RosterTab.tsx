@@ -26,7 +26,8 @@ import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
 import ResultBanner from '../_/components/ResultBanner'
 import { useActionResult } from '../_/actionResult'
-import { Loading, LoadFailed } from '../_/components/AsyncState'
+import TableSkeleton from '@/components/common/TableSkeleton'
+import ErrorState from '@/components/common/ErrorState'
 import { AccountStatusBadge } from '../_/components/StatusBadges'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
 import { ALL, UNASSIGNED, asQuery, withAll } from '../_/filterState'
@@ -350,10 +351,18 @@ export default function RosterTab({ onCount }: Props) {
         </div>
       </div>
 
-      {!cohortId || roster.isPending ? (
-        <Loading label="명단을 불러오는 중" />
+      {!cohortId || roster.isLoading ? (
+        <TableSkeleton
+          rows={ROSTER_PAGE_SIZE}
+          cols={['w-10', 'w-32', 'w-56', 'w-32', 'w-28', 'w-32', 'w-44']}
+        />
       ) : roster.isError ? (
-        <LoadFailed label="명단을 불러오지 못했습니다" onRetry={() => void roster.refetch()} />
+        <ErrorState
+          error={roster.error}
+          subject="명단"
+          onRetry={() => void roster.refetch()}
+          retrying={roster.isFetching}
+        />
       ) : rows.length === 0 ? (
         narrowed ? (
           <Empty variant="empty">

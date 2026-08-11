@@ -18,7 +18,8 @@ import type { findOrganizationCurricula_Query } from '@/api/curriculum/curriculu
 import { CURRICULUM_STATUS_LABEL } from '../_/labels'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
-import { Loading, LoadFailed } from '../_/components/AsyncState'
+import TableSkeleton from '@/components/common/TableSkeleton'
+import ErrorState from '@/components/common/ErrorState'
 import { CurriculumStatusBadge } from '../_/components/StatusBadges'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
 import { ALL, asQuery } from '../_/filterState'
@@ -187,10 +188,15 @@ export default function CurriculaTab({ onCount }: Props) {
         />
       </div>
 
-      {!organizationId || page.isPending ? (
-        <Loading label="교안을 불러오는 중" />
+      {!organizationId || page.isLoading ? (
+        <TableSkeleton rows={PAGE_SIZE} cols={['w-52', 'w-20', 'w-20', 'w-28', null, 'w-28']} />
       ) : page.isError ? (
-        <LoadFailed label="교안을 불러오지 못했습니다" onRetry={() => void page.refetch()} />
+        <ErrorState
+          error={page.error}
+          subject="교안"
+          onRetry={() => void page.refetch()}
+          retrying={page.isFetching}
+        />
       ) : items.length === 0 ? (
         narrowed ? (
           <Empty variant="empty">

@@ -4,10 +4,11 @@ import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import { useCohortId } from '@/stores/cohortScope'
 import type { Report } from './_/api/types'
 import { REPORT_SECTIONS, type ReportSectionKey } from './_/sections'
 import { getReport } from './_/api/api'
-import { COHORT_ID } from './_/cohortScope'
 import { useAsync } from './_/useAsync'
 import { exportReportCsv } from './_/labels'
 import { Loading, LoadFailed } from './_/components/AsyncState'
@@ -113,8 +114,15 @@ export default function ReportScreen() {
   const navigate = useNavigate()
   const [section, setSection] = useState<Section>('summary')
 
-  const load = useCallback(() => getReport(COHORT_ID), [])
-  const report = useAsync(load)
+  /*
+    기수는 서버에 물어본다(`stores/cohortScope`) — 대시보드·프로젝트와 같은 훅이다.
+    예전엔 이 화면만 하드코딩 상수(`_/cohortScope.ts`)를 따로 갖고 있어서, 다른 화면에서
+    기수를 바꿔도 리포트는 그 상수가 가리키는 기수에 그대로 고정돼 있었다.
+    **정해지기 전에는 조회가 안 나간다**(`useAsync`의 `enabled`).
+  */
+  const { cohortId, cohortName: scopeCohortName, failed: cohortFailed } = useCohortId()
+  const load = useCallback(() => getReport(cohortId!), [cohortId])
+  const report = useAsync(load, cohortId !== undefined)
   const cohortName = report.data?.cohortName
 
   /**
@@ -130,7 +138,7 @@ export default function ReportScreen() {
   }
 
   return (
-    <ConsoleShell role="operator">
+    <ConsoleShell role="operator" cohort={scopeCohortName}>
       {/*
         cohortName이 로딩 중엔 없다 — 조건 없이 이어 붙이면 데이터가 오기 전 "리포트 ›"
         만 매달린 채로 250ms(목 지연) 동안 보인다. `PageHeader`는 `breadcrumb`이
@@ -145,7 +153,16 @@ export default function ReportScreen() {
         <PageHeader breadcrumb={cohortName ? `리포트 › ${cohortName}` : undefined} title="리포트" />
       </div>
 
-      {report.loading ? (
+      {cohortFailed ? (
+        <Empty>
+          <EmptyHeader>
+            <EmptyTitle>기수가 없습니다</EmptyTitle>
+            <EmptyDescription>
+              운영 관리에서 기수를 먼저 만들면 여기에 리포트가 쌓입니다.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : report.loading ? (
         <Loading label="리포트를 불러오는 중" />
       ) : report.failed ? (
         <LoadFailed label="리포트를 불러오지 못했습니다" onRetry={report.reload} />

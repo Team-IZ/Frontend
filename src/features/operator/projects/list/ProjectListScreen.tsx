@@ -135,7 +135,9 @@ export default function ProjectListScreen() {
           <EmptyHeader>
             <EmptyTitle>기수가 없습니다</EmptyTitle>
             <EmptyDescription>
-              프로젝트는 기수 안에 만듭니다 — 운영 관리에서 기수를 먼저 만드세요.
+              프로젝트는 기수 안에 만듭니다.
+              <br />
+              운영 관리에서 기수를 먼저 만드세요.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>

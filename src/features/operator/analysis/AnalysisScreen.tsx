@@ -158,7 +158,9 @@ export default function AnalysisScreen() {
               <EmptyHeader>
                 <EmptyTitle>기수가 없습니다</EmptyTitle>
                 <EmptyDescription>
-                  회차가 돌아야 견줄 값이 생깁니다 — 운영 관리에서 기수를 먼저 만드세요.
+                  회차가 돌아야 견줄 값이 생깁니다.
+                  <br />
+                  운영 관리에서 기수를 먼저 만드세요.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>

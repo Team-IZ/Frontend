@@ -15,7 +15,7 @@ import { useQuery } from '@tanstack/react-query'
 import { findCohortActionsRequired, findCohortRiskTraineeRates } from '@/api/analytics/analyticsApi'
 import { findProjects, findProjectClassProgress } from '@/api/projectExecution/projectExecutionApi'
 import type { findCohortRiskTraineeRates_Response } from '@/api/analytics/analyticsTypes'
-import type { Block, ClassCompare, DashboardResponse, RoundPipeline, Todo } from './types'
+import type { Block, ClassCompare, RoundPipeline, Todo } from './types'
 
 type RiskRates = findCohortRiskTraineeRates_Response
 
@@ -27,61 +27,117 @@ export function getToday(): string {
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
-/** 성공하면 값, 실패하면 `{ ok: false }` — 블록 하나가 죽어도 화면 전체를 비우지 않는다 */
-async function block<T>(load: () => Promise<T>): Promise<Block<T>> {
-  try {
-    return { ok: true, value: await load() }
-  } catch {
-    return { ok: false }
-  }
+/**
+ * 조회 결과를 블록 셋 중 하나로 옮긴다.
+ *
+ * **`pending`이 이 함수의 존재 이유다.** 조회가 성공해도 그릴 것이 아직 없는 경우가
+ * 있는데(집계 전 기수·회차 0개), 그것을 `failed`로 떨어뜨리면 화면이 *"불러오지
+ * 못했습니다"* 라고 **거짓말**을 한다(op-01-situations §2-3).
+ *
+ * @param empty 값이 왔지만 아직 그릴 것이 없을 때의 사유. `null`이면 정상값이다.
+ */
+function toBlock<T>(
+  q: { isLoading: boolean; isError: boolean; error: unknown; data: T | null | undefined },
+  empty?: string,
+): Block<T> | undefined {
+  // 아직 조회 중 — 블록을 그리지 않는다(호출부가 그 자리에 스켈레톤을 그린다)
+  if (q.isLoading) return undefined
+  if (q.isError) return { state: 'failed', error: q.error }
+  if (q.data === undefined) return { state: 'failed', error: undefined }
+  // `null`은 **조회는 됐는데 아직 그릴 것이 없다**는 뜻이다 — 실패가 아니다
+  if (q.data === null) return { state: 'pending', reason: empty ?? '' }
+  return { state: 'ok', value: q.data }
 }
 
-/**
- * 대시보드 한 장 — 조회 셋을 **동시에** 부른다.
- *
- * 순차로 부르면 셋의 지연이 더해진다. 서로를 참조하지 않으므로(파이프라인만 목록을
- * 먼저 봐야 한다) 병렬이 맞다.
- */
-export function useDashboard(cohortId: string | undefined) {
+/*
+  ─── 조회 셋을 **따로** 건다 ────────────────────────────────────
+
+  전에는 `Promise.all` 하나였다. 블록마다 실패는 갈라 놨는데 **도착이 안 갈라져** 있어서,
+  1.5초에 온 조치 필요가 가장 느린 조회(`/projects` 5.2초)를 기다렸다 — 화면 전체가
+  8.1초 동안 스피너 하나였다(op-01-situations §2-1 실측).
+
+  쿼리를 셋으로 나누면 셋이 각자 도착한다. **재시도도 그 블록만** 다시 나간다 —
+  한 덩어리일 때는 블록 하나를 재시도하면 조회 다섯이 전부 다시 나갔다(§2-5).
+*/
+
+/** ① 반별 위험 비율 — 머리글(인원·반 수)과 반 비교가 이 응답 하나에서 나온다 */
+function useRisk(cohortId: string | undefined) {
   return useQuery({
-    /*
-      **키를 손으로 짓는다.** 세 도메인을 합치는 자리라 생성된 키 하나에 안 맞는다.
-      대시보드는 읽기 전용이라 무효화 대상이 아니고, 화면을 떠났다 오면 다시 읽는 것이
-      맞다(진행 상황이 계속 바뀐다).
-    */
-    queryKey: ['operator-dashboard', cohortId],
+    queryKey: ['operator-dashboard', 'risk', cohortId],
     enabled: !!cohortId,
-    queryFn: () => loadDashboard(cohortId!),
+    queryFn: ({ signal }) => findCohortRiskTraineeRates({ path: { cohortId: cohortId! }, signal }),
   })
 }
 
-async function loadDashboard(cohortId: string): Promise<DashboardResponse> {
+/** ② 이번 회차 파이프라인 — 목록을 먼저 봐야 대상 회차를 고를 수 있어 안에서 순차다 */
+function usePipeline(cohortId: string | undefined) {
+  return useQuery({
+    queryKey: ['operator-dashboard', 'pipeline', cohortId],
+    enabled: !!cohortId,
+    queryFn: ({ signal }) => loadPipeline(cohortId!, signal),
+  })
+}
+
+/** ③ 조치 필요 — 이 화면의 주인공이고 **가장 빨리 온다**(실측 1.5초) */
+function useTodos(cohortId: string | undefined) {
+  return useQuery({
+    queryKey: ['operator-dashboard', 'todos', cohortId],
+    enabled: !!cohortId,
+    queryFn: ({ signal }) => loadTodos(cohortId!, signal),
+  })
+}
+
+/**
+ * 대시보드 한 장 — **블록마다 자기 조회를 갖는다.**
+ *
+ * 각 블록은 `undefined`(아직 조회 중) · `ok` · `pending` · `failed` 넷 중 하나다.
+ * 화면은 그 넷만 보고 그린다.
+ */
+export function useDashboard(cohortId: string | undefined) {
+  const risk = useRisk(cohortId)
+  const pipeline = usePipeline(cohortId)
+  const todos = useTodos(cohortId)
+
   /*
-    **조회는 셋이다.** 반 비교 응답 하나가 머리글(인원·반 수)까지 담고 있어서 스코프를
-    따로 부르지 않는다 — `findCohort`를 부르면 조회가 하나 늘고, 무엇보다 **그쪽
-    `traineeCount`는 지금 항상 0이다**(10차 R3).
+    머리글은 **실패해도 화면을 막지 않는다.** 스코프 한 줄 때문에 대시보드 전체를 에러로
+    덮으면 정작 볼 수 있는 조치 필요까지 사라진다.
+
+    ⚠ `traineeCount`는 이 응답의 정의(등록 인원)이고 파이프라인 분모(`targetTraineeCount`)
+    · 명단 총원(`cohortTotal`)과 **값이 다르다** — 실측 196 / 208 / 224. 정의를 백엔드에
+    확인하기 전까지 화면이 임의로 맞추지 않는다(op-01-situations §2-2).
   */
-  const [risk, pipeline, todos] = await Promise.all([
-    block(() => findCohortRiskTraineeRates({ path: { cohortId } })),
-    block(() => loadPipeline(cohortId)),
-    block(() => loadTodos(cohortId)),
-  ])
+  const head = risk.data
+    ? { trainees: risk.data.cohortSummary.traineeCount, classes: risk.data.classes.length }
+    : undefined
 
   return {
+    head,
     /*
-      머리글은 **실패해도 화면을 막지 않는다.** 스코프 한 줄 때문에 대시보드 전체를
-      에러로 덮으면, 정작 볼 수 있는 조치 필요까지 사라진다.
+      **반 비교가 비는 이유는 둘이고 뜻이 다르다.**
+        집계된 회차가 없다 → 회차가 돌면 채워진다(`pending`)
+        조회가 실패했다    → 다시 시도가 의미 있다(`failed`)
     */
-    trainees: risk.ok ? risk.value.cohortSummary.traineeCount : 0,
-    classes: risk.ok ? risk.value.classes.length : 0,
-    pipeline,
-    /*
-      **같은 응답에서 나오지만 실패는 따로 본다.** 조회가 성공해도 집계된 회차가 하나도
-      없으면(전 회차 진행 전) 반 비교는 그릴 것이 없다 — 그때 0%를 사실처럼 보여주지
-      않으려고 `toCompare`가 `null`을 돌려주고 이 자리가 실패로 떨어진다.
-    */
-    compare: risk.ok ? (toCompare(risk.value) ?? { ok: false }) : { ok: false },
-    todos,
+    compare: toBlock<ClassCompare>(
+      { ...risk, data: risk.data === undefined ? undefined : toCompare(risk.data) },
+      '아직 집계된 회차가 없습니다 — 회차가 끝나고 집계되면 반별 위험 비율이 여기에 쌓입니다',
+    ),
+    pipeline: toBlock<RoundPipeline>(
+      pipeline,
+      '아직 회차가 없습니다 — 프로젝트를 만들면 이번 회차 진행이 여기에 보입니다',
+    ),
+    todos: toBlock<Todo[]>(todos),
+    /** 블록마다 자기 것만 다시 부른다 — 전에는 하나를 누르면 다섯이 다시 나갔다 */
+    retry: {
+      compare: () => void risk.refetch(),
+      pipeline: () => void pipeline.refetch(),
+      todos: () => void todos.refetch(),
+    },
+    /** 재시도 버튼이 자기 대기를 보여준다(async-states §3-3) */
+    fetching: {
+      compare: risk.isFetching,
+      pipeline: pipeline.isFetching,
+      todos: todos.isFetching,
+    },
   }
 }
 
@@ -95,10 +151,15 @@ async function loadDashboard(cohortId: string): Promise<DashboardResponse> {
  * **회차를 먼저 고른다** — 진행 중(`RUNNING`)이 있으면 그것, 없으면 **가장 이른 예정**
  * 회차다(다음에 열릴 것이 지금 준비할 대상이다). 종료만 남았으면 마지막 회차를 쓴다.
  */
-async function loadPipeline(cohortId: string): Promise<RoundPipeline> {
-  const list = await findProjects({ path: { cohortId } })
+async function loadPipeline(cohortId: string, signal: AbortSignal): Promise<RoundPipeline | null> {
+  const list = await findProjects({ path: { cohortId }, signal })
   const projects = list.projects
-  if (projects.length === 0) throw new Error('no projects')
+  /*
+    **회차가 0개면 실패가 아니다.** 전에는 `throw`라 *"이번 회차 진행 상황을 불러오지
+    못했습니다 + 다시 시도"* 가 떴는데, 조회는 200이고 만들면 채워진다 — `null`을
+    돌려주면 호출부가 「없는 것」 유형 1(`pending`)로 그린다(op-01-situations §2-3).
+  */
+  if (projects.length === 0) return null
 
   const running = projects.find((p) => p.status === 'RUNNING')
   const planned = projects
@@ -106,7 +167,7 @@ async function loadPipeline(cohortId: string): Promise<RoundPipeline> {
     .sort((a, b) => a.startDate.localeCompare(b.startDate))[0]
   const target = running ?? planned ?? projects[projects.length - 1]
 
-  const r = await findProjectClassProgress({ path: { projectId: target.projectId } })
+  const r = await findProjectClassProgress({ path: { projectId: target.projectId }, signal })
 
   /*
     **분석 실패는 팀 수다**(제출이 팀 단위이므로 — OP-01 §4). 서버는 인원
@@ -148,7 +209,7 @@ async function loadPipeline(cohortId: string): Promise<RoundPipeline> {
  * `rounds`가 최신순이라 첫 `AGGREGATED`가 그 회차다. 집계 전 회차의 값을 쓰면 화면이
  * 0%를 사실처럼 보여준다 — **집계된 회차가 없으면 `null`** 이고 블록이 실패로 떨어진다.
  */
-function toCompare(r: RiskRates): Block<ClassCompare> | null {
+function toCompare(r: RiskRates): ClassCompare | null {
   const basis = r.rounds.find((x) => x.aggregationStatus === 'AGGREGATED')
   if (!basis) return null
 
@@ -160,28 +221,25 @@ function toCompare(r: RiskRates): Block<ClassCompare> | null {
   )
 
   return {
-    ok: true,
-    value: {
-      basisRoundLabel: basis.projectName,
-      cohortRatio: toPercent(cohortCell?.riskRate),
-      currentRoundLabel: current.projectName,
-      currentNotStarted: current.aggregationStatus === 'NOT_STARTED',
-      /*
+    basisRoundLabel: basis.projectName,
+    cohortRatio: toPercent(cohortCell?.riskRate),
+    currentRoundLabel: current.projectName,
+    currentNotStarted: current.aggregationStatus === 'NOT_STARTED',
+    /*
       **정렬하지 않는다.** 서버가 `RECENT_ROUND_WORST`(최근 회차 나쁜 순)로 주고,
       그 순서가 OP-02 격자의 기본 정렬과 같다 — 화면이 다시 정렬하면 두 화면이 갈린다.
     */
-      classes: r.classes.map((c) => {
-        const cell = c.cells.find((x) => x.assessmentRoundId === basis.assessmentRoundId)
-        return {
-          className: c.className,
-          ratio: toPercent(cell?.riskRate),
-          risky: cell?.riskCount ?? 0,
-          // 채점된 사람이다. 명부 수가 아니다(14-1 · 9-4)
-          graded: cell?.eligibleCount ?? 0,
-          hasManager: c.managerNames.length > 0,
-        }
-      }),
-    },
+    classes: r.classes.map((c) => {
+      const cell = c.cells.find((x) => x.assessmentRoundId === basis.assessmentRoundId)
+      return {
+        className: c.className,
+        ratio: toPercent(cell?.riskRate),
+        risky: cell?.riskCount ?? 0,
+        // 채점된 사람이다. 명부 수가 아니다(14-1 · 9-4)
+        graded: cell?.eligibleCount ?? 0,
+        hasManager: c.managerNames.length > 0,
+      }
+    }),
   }
 }
 
@@ -199,8 +257,8 @@ const toPercent = (rate: number | null | undefined) => (rate == null ? 0 : Math.
  * 순서는 되돌리기 어려운 순(미배정 → 개념 공백 → 집단 미달 → 면담 적체)이고, 여기서
  * 그 순서대로 담으므로 화면은 받은 순서로 그리기만 한다.
  */
-async function loadTodos(cohortId: string): Promise<Todo[]> {
-  const r = await findCohortActionsRequired({ path: { cohortId } })
+async function loadTodos(cohortId: string, signal: AbortSignal): Promise<Todo[]> {
+  const r = await findCohortActionsRequired({ path: { cohortId }, signal })
   const todos: Todo[] = []
 
   if (r.managerUnassigned) {

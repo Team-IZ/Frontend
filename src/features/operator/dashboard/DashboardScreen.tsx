@@ -1,7 +1,5 @@
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
-import ErrorState from '@/components/common/ErrorState'
-import { Spinner } from '@/components/ui/Spinner'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import { useCohortId } from '@/stores/cohortScope'
 import { getToday, useDashboard } from './_/api/api'
@@ -45,7 +43,10 @@ export default function DashboardScreen() {
   */
   const { cohortId, cohortName, failed: cohortFailed } = useCohortId()
   const page = useDashboard(cohortId)
-  const d = page.data
+  /** 값이 온 블록만 꺼낸다 — 다른 블록의 문구가 이 값을 참조한다 */
+  const pipe = page.pipeline?.state === 'ok' ? page.pipeline.value : null
+  const compare = page.compare?.state === 'ok' ? page.compare.value : null
+  const todos = page.todos?.state === 'ok' ? page.todos.value : null
 
   return (
     <ConsoleShell role="operator" cohort={cohortName}>
@@ -57,12 +58,17 @@ export default function DashboardScreen() {
       <PageHeader
         breadcrumb={
           cohortName
-            ? `대시보드 › ${cohortName}${d ? ` › ${d.trainees}명 · ${d.classes}반` : ''}`
+            ? `대시보드 › ${cohortName}${page.head ? ` › ${page.head.trainees}명 · ${page.head.classes}반` : ''}`
             : '대시보드'
         }
         title="대시보드"
       />
 
+      {/*
+        **화면 전체를 막는 것은 기수가 없을 때뿐이다.** 조회 셋은 각자 도착하고 각자
+        실패하므로(§2-1) 여기에 전역 로딩·전역 실패 분기가 없다 — 전에는 가장 느린
+        조회(5.2초) 때문에 화면이 8.1초 동안 스피너 하나였다.
+      */}
       {cohortFailed ? (
         <Empty variant="empty">
           <EmptyHeader>
@@ -72,56 +78,35 @@ export default function DashboardScreen() {
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
-      ) : page.isLoading ? (
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" aria-label="대시보드를 불러오는 중" />
-        </div>
-      ) : page.isError || !d ? (
-        /*
-          전체 조회 실패. **0으로 그리지 않는다** — 케이스 표가 *"그림 없음"* 으로 정했다.
-          문구·재시도 여부는 `errorCopy`가 status·코드를 보고 정한다(async-states §3-1).
-        */
-        <ErrorState
-          error={page.error}
-          subject="대시보드"
-          onRetry={() => page.refetch()}
-          retrying={page.isFetching}
-        />
       ) : (
         <>
           <Section
             title="이번 회차"
-            note={d.pipeline.ok && `· ${d.pipeline.value.roundLabel}`}
-            link={
-              d.pipeline.ok
-                ? { to: projectPath(d.pipeline.value.projectId), label: GO_PROJECT }
-                : undefined
-            }
+            note={pipe && `· ${pipe.roundLabel}`}
+            link={pipe ? { to: projectPath(pipe.projectId), label: GO_PROJECT } : undefined}
           >
             <BlockBody
-              block={d.pipeline}
-              failedLabel="이번 회차 진행 상황을 불러오지 못했습니다"
-              onRetry={() => page.refetch()}
+              block={page.pipeline}
+              subject="이번 회차 진행 상황"
+              onRetry={page.retry.pipeline}
+              retrying={page.fetching.pipeline}
             >
               {(p) => <PipelineBlock p={p} today={getToday()} />}
             </BlockBody>
           </Section>
 
           {/* 이 화면의 주인공 — 나머지 셋은 이 네 줄을 읽기 위한 배경이다 */}
-          <Section title="조치 필요" note={d.todos.ok && `· ${d.todos.value.length}건`} lead>
+          <Section title="조치 필요" note={todos && `· ${todos.length}건`} lead>
             <BlockBody
-              block={d.todos}
-              failedLabel="조치 항목을 불러오지 못했습니다"
-              onRetry={() => page.refetch()}
+              block={page.todos}
+              subject="조치 항목"
+              onRetry={page.retry.todos}
+              retrying={page.fetching.todos}
             >
-              {(todos) => (
+              {(list) => (
                 <TodoBlock
-                  todos={todos}
-                  upcomingRoundLabel={
-                    d.pipeline.ok && d.pipeline.value.notStarted
-                      ? d.pipeline.value.roundLabel
-                      : null
-                  }
+                  todos={list}
+                  upcomingRoundLabel={pipe?.notStarted ? pipe.roundLabel : null}
                 />
               )}
             </BlockBody>
@@ -134,17 +119,18 @@ export default function DashboardScreen() {
               파이프라인이 `0/250`인데 여기 숫자가 차 있으면 특히 그렇다.
             */
             note={
-              d.compare.ok &&
-              `· ${d.compare.value.basisRoundLabel} 기준 — ${d.compare.value.currentRoundLabel}는 ${
-                d.compare.value.currentNotStarted ? '아직 결과 없음' : '미발행'
+              compare &&
+              `· ${compare.basisRoundLabel} 기준 — ${compare.currentRoundLabel}는 ${
+                compare.currentNotStarted ? '아직 결과 없음' : '미발행'
               }`
             }
             link={{ to: ANALYSIS, label: GO_ANALYSIS }}
           >
             <BlockBody
-              block={d.compare}
-              failedLabel="반별 위험 비율을 불러오지 못했습니다"
-              onRetry={() => page.refetch()}
+              block={page.compare}
+              subject="반별 위험 비율"
+              onRetry={page.retry.compare}
+              retrying={page.fetching.compare}
             >
               {(c) => <ClassCompareBlock c={c} />}
             </BlockBody>

@@ -17,7 +17,10 @@ export type activateTrainee_Errors =
   | 'INVITATION_INVALID'
   | 'PASSWORD_CONFIRMATION_MISMATCH'
   | 'REQUIRED_CONSENT_MISSING'
+  | 'INVITATION_NOT_IN_ROSTER'
+  | 'INVITATION_ALREADY_ACCEPTED'
   | 'ACTIVATION_STATE_CHANGED'
+  | 'INVITATION_EXPIRED'
   | 'WEAK_PASSWORD'
 
 // POST /api/v0/auth/refresh — 액세스 토큰 재발급
@@ -74,7 +77,9 @@ export type signupManager_Errors =
   | 'INVITATION_INVALID'
   | 'PASSWORD_CONFIRMATION_MISMATCH'
   | 'REQUIRED_CONSENT_MISSING'
+  | 'INVITATION_ALREADY_ACCEPTED'
   | 'ACTIVATION_STATE_CHANGED'
+  | 'INVITATION_EXPIRED'
   | 'WEAK_PASSWORD'
 
 // POST /api/v0/auth/logout — 로그아웃
@@ -101,7 +106,11 @@ export type resolveInvitation_Body = NonNullable<
 >['content']['application/json']
 export type resolveInvitation_Response =
   operations['resolveInvitation']['responses'][200]['content']['application/json']
-export type resolveInvitation_Errors = 'INVITATION_INVALID'
+export type resolveInvitation_Errors =
+  | 'INVITATION_INVALID'
+  | 'INVITATION_NOT_IN_ROSTER'
+  | 'INVITATION_ALREADY_ACCEPTED'
+  | 'INVITATION_EXPIRED'
 
 // POST /api/v0/auth/invitations/resend — 초대 메일 재발송
 export type resendAccountInvitation_Body = NonNullable<

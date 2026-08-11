@@ -6,7 +6,7 @@ import { requestPasswordReset, verifyResetToken, confirmPasswordReset } from './
 import { resolvePasswordResetState } from './passwordResetStates'
 import type { PasswordResetState } from './passwordResetStates'
 import { checkPasswordPolicy } from './passwordPolicy'
-import type { PasswordResetApiError } from './passwordResetTypes'
+import { ApiError } from '@/api/_contract'
 import { useCapsLockWarning } from './useCapsLockWarning'
 import BrandPanel from './components/BrandPanel'
 import AuthForm from './components/AuthForm'
@@ -128,7 +128,7 @@ function SetPasswordStage({ token }: { token: string }) {
   const [verifying, setVerifying] = useState(true)
   const [tokenAlert, setTokenAlert] = useState<PasswordResetState | null>(null)
   const [submitAlert, setSubmitAlert] = useState<string | null>(null)
-  const [done, setDone] = useState<'full' | 'partial' | null>(null)
+  const [done, setDone] = useState(false)
 
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
@@ -166,22 +166,25 @@ function SetPasswordStage({ token }: { token: string }) {
   // 진입 시 토큰 검증 — 만료·사용됨·위변조면 폼을 렌더하지 않는다. 계정 활성 상태는 보지 않는다
   useEffect(() => {
     verifyResetToken(token)
-      .catch((err: PasswordResetApiError) => setTokenAlert(resolvePasswordResetState(err.code)))
+      .catch((err: unknown) => setTokenAlert(resolvePasswordResetState(err)))
       .finally(() => setVerifying(false))
   }, [token])
 
   async function onSubmit(values: SetPasswordFormValues) {
     setSubmitAlert(null)
     try {
-      const res = await confirmPasswordReset({ token, password: values.password })
-      setDone(res.revokeFailed ? 'partial' : 'full')
+      await confirmPasswordReset({
+        token,
+        password: values.password,
+        passwordConfirm: values.passwordConfirm,
+      })
+      setDone(true)
     } catch (err) {
-      const { code } = err as PasswordResetApiError
-      if (code === 'SAME_AS_CURRENT') {
+      if (err instanceof ApiError && err.code === 'SAME_AS_CURRENT') {
         setError('password', { type: 'manual', message: '지금 쓰는 비밀번호와 달라야 합니다' })
         return
       }
-      setSubmitAlert(resolvePasswordResetState(code).message)
+      setSubmitAlert(resolvePasswordResetState(err).message)
     }
   }
 
@@ -231,15 +234,11 @@ function SetPasswordStage({ token }: { token: string }) {
   if (done) {
     return (
       <AuthStatusCard
-        variant={done === 'full' ? 'success' : 'warning'}
-        icon={done === 'full' ? '✓' : '!'}
+        variant="success"
+        icon="✓"
         title="비밀번호가 바뀌었습니다"
         description="새 비밀번호로 다시 로그인해 주세요."
-        aux={
-          done === 'full'
-            ? '보안을 위해 다른 기기에서는 모두 로그아웃되었어요.'
-            : '다른 기기는 아직 로그아웃되지 않았을 수 있어요. 계속 시도하고 있습니다 — 공용 기기를 쓰셨다면 직접 로그아웃해 주세요.'
-        }
+        aux="보안을 위해 다른 기기에서는 모두 로그아웃되었어요."
         actions={
           <Button onClick={() => navigate('/shared/login', { replace: true })}>로그인</Button>
         }

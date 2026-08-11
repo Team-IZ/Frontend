@@ -50,6 +50,12 @@ export type RoundPipeline = {
   roundNo: number
   /** 등록된 미프 회차 수. `8` 같은 상수가 아니다(OP-02 §4-2) */
   roundTotal: number
+  /**
+   * **왜 이 회차를 고르나.** 진행 중인 회차가 하나면 자명하지만(`RUNNING`), 없어서
+   * 예정 회차를 집거나 끝난 회차를 집을 때는 화면이 그 사실을 말해야 한다 —
+   * 안 그러면 *"왜 3차를 보여주지"* 에 답이 없다(op-01-situations §2-7).
+   */
+  pick: 'RUNNING' | 'PLANNED' | 'CLOSED'
   submitted: number
   /** 명부 전체 — `231/250`의 분모 */
   total: number

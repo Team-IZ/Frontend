@@ -5,6 +5,7 @@ import { useCohortId } from '@/stores/cohortScope'
 import { getToday, useDashboard } from './_/api/api'
 import { ANALYSIS, GO_ANALYSIS, GO_PROJECT, projectPath } from './_/labels'
 import { Section, BlockBody } from './_/components/Section'
+import { ClassCompareSkeleton, PipelineSkeleton, TodoSkeleton } from './_/components/BlockSkeleton'
 import PipelineBlock from './_/components/PipelineBlock'
 import ClassCompareBlock from './_/components/ClassCompareBlock'
 import TodoBlock from './_/components/TodoBlock'
@@ -82,11 +83,26 @@ export default function DashboardScreen() {
         <>
           <Section
             title="이번 회차"
-            note={pipe && `· ${pipe.roundLabel}`}
+            /*
+              **진행 중인 회차가 아닐 때만 근거를 밝힌다.** 하나뿐인 RUNNING을 골랐다는
+              것은 자명해서 쓰면 잔소리가 되고, 예정·종료를 집었을 때는 그 사실이 없으면
+              사용자가 *"왜 이 회차지"* 에 답을 못 얻는다(§2-7).
+            */
+            note={
+              pipe &&
+              `· ${pipe.roundLabel}${
+                pipe.pick === 'RUNNING'
+                  ? ''
+                  : pipe.pick === 'PLANNED'
+                    ? ' · 다음 예정 회차'
+                    : ' · 마지막으로 끝난 회차'
+              }`
+            }
             link={pipe ? { to: projectPath(pipe.projectId), label: GO_PROJECT } : undefined}
           >
             <BlockBody
               block={page.pipeline}
+              skeleton={<PipelineSkeleton />}
               subject="이번 회차 진행 상황"
               onRetry={page.retry.pipeline}
               retrying={page.fetching.pipeline}
@@ -99,6 +115,7 @@ export default function DashboardScreen() {
           <Section title="조치 필요" note={todos && `· ${todos.length}건`} lead>
             <BlockBody
               block={page.todos}
+              skeleton={<TodoSkeleton />}
               subject="조치 항목"
               onRetry={page.retry.todos}
               retrying={page.fetching.todos}
@@ -124,10 +141,19 @@ export default function DashboardScreen() {
                 compare.currentNotStarted ? '아직 결과 없음' : '미발행'
               }`
             }
-            link={{ to: ANALYSIS, label: GO_ANALYSIS }}
+            /*
+              **값이 있을 때만 나가는 길을 준다.** 조회 중·집계 전·실패에도 링크가 떠
+              있으면, 아무것도 없는 화면에서 «분석에서 보기»를 눌러 또 아무것도 없는
+              화면으로 간다 — 나가는 길은 **데이터에 붙어 있는 것**이지 자리에 붙어
+              있는 것이 아니다(OP-01 §5). 다른 두 블록은 이미 그렇게 하고 있었다.
+            */
+            link={compare ? { to: ANALYSIS, label: GO_ANALYSIS } : undefined}
           >
             <BlockBody
               block={page.compare}
+              /* 반 수는 이 블록과 **같은 응답**에서 온다 — 캐시가 있는 재진입에서만
+                 정확하고, 첫 진입은 기본값으로 자리를 잡는다 */
+              skeleton={<ClassCompareSkeleton rows={page.head?.classes} />}
               subject="반별 위험 비율"
               onRetry={page.retry.compare}
               retrying={page.fetching.compare}

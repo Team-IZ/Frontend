@@ -1,7 +1,6 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Card } from '@/components/ui/Card'
-import { Skeleton } from '@/components/ui/Skeleton'
 import { errorCopy } from '@/lib/errorCopy'
 import type { Block } from '../api/types'
 
@@ -90,24 +89,26 @@ function BlockNote({
  */
 export function BlockBody<T>({
   block,
+  skeleton,
   subject,
   onRetry,
   retrying,
   children,
 }: {
   block: Block<T> | undefined
+  /**
+   * 조회 중에 그릴 자리표시자. **회색 막대 하나를 기본값으로 두지 않는다** — 기본값이
+   * 있으면 새 블록이 그걸 그대로 쓰고 다시 레이아웃이 밀린다. 모양을 정하게 강제한다.
+   */
+  skeleton: ReactNode
   /** 실패 문구에 들어갈 대상 — `errorCopy`가 조사와 함께 쓴다 */
   subject: string
   onRetry: () => void
   retrying?: boolean
   children: (value: T) => ReactNode
 }) {
-  if (block === undefined)
-    return (
-      <div className="px-6 py-3">
-        <Skeleton className="h-9 w-full" />
-      </div>
-    )
+  // 아직 조회 중 — **그 블록 모양으로** 자리를 잡는다(`BlockSkeleton`)
+  if (block === undefined) return <>{skeleton}</>
 
   if (block.state === 'pending') return <BlockNote icon="·">{block.reason}</BlockNote>
 

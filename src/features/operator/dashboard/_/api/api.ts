@@ -34,16 +34,23 @@ const pad = (n: number) => String(n).padStart(2, '0')
  * 있는데(집계 전 기수·회차 0개), 그것을 `failed`로 떨어뜨리면 화면이 *"불러오지
  * 못했습니다"* 라고 **거짓말**을 한다(op-01-situations §2-3).
  *
- * @param empty 값이 왔지만 아직 그릴 것이 없을 때의 사유. `null`이면 정상값이다.
+ * ⚠ **`isLoading`으로 «아직»을 판정하지 않는다.** 기수가 정해지기 전에는 이 조회들이
+ * `enabled: false`라 `isFetching`이 거짓이고, 그래서 `isLoading`도 거짓이다 — 그걸로
+ * 갈랐더니 **진입 직후 1.3초 동안 블록 셋이 전부 «불러오지 못했습니다»** 였다(실측).
+ * 상류 값을 기다리는 것은 실패가 아니다.
+ *
+ * 그래서 **값이 있나로 판정한다.** 없으면 아직인 것이고(조회 중이든 상류 대기든),
+ * 실패는 `isError`가 따로 말한다.
+ *
+ * @param empty 조회는 됐는데 그릴 것이 없을 때(`null`)의 사유.
  */
 function toBlock<T>(
-  q: { isLoading: boolean; isError: boolean; error: unknown; data: T | null | undefined },
+  q: { isError: boolean; error: unknown; data: T | null | undefined },
   empty?: string,
 ): Block<T> | undefined {
-  // 아직 조회 중 — 블록을 그리지 않는다(호출부가 그 자리에 스켈레톤을 그린다)
-  if (q.isLoading) return undefined
   if (q.isError) return { state: 'failed', error: q.error }
-  if (q.data === undefined) return { state: 'failed', error: undefined }
+  // 아직 값이 없다 — 블록을 그리지 않는다(호출부가 그 자리에 스켈레톤을 그린다)
+  if (q.data === undefined) return undefined
   // `null`은 **조회는 됐는데 아직 그릴 것이 없다**는 뜻이다 — 실패가 아니다
   if (q.data === null) return { state: 'pending', reason: empty ?? '' }
   return { state: 'ok', value: q.data }
@@ -60,12 +67,26 @@ function toBlock<T>(
   한 덩어리일 때는 블록 하나를 재시도하면 조회 다섯이 전부 다시 나갔다(§2-5).
 */
 
+/*
+  **탭에 돌아오면 다시 읽는다**(`refetchOnWindowFocus`). 전역 기본값은 `false`이고
+  (`main.tsx`) 그게 맞다 — 폼을 만지다 탭을 옮겼다 오면 입력 중인 값이 흔들린다.
+
+  **이 화면만 예외인 이유** — 지표판이라 조작이 없고, 무엇보다 **켜 둔 채 방치되는
+  화면**이다. 자정을 넘기면 `getToday()`가 마운트 시점에 고정돼 마감 판정(`overdue`)이
+  하루 틀리는데(op-01-situations T1), 날짜만 다시 계산하면 *"날짜는 맞고 데이터는 어제
+  것"* 이 되어 더 헷갈린다. 돌아왔을 때 **둘을 같이** 새로 읽는 것이 맞다.
+
+  타이머를 두지 않는 이유이기도 하다 — 보지 않는 탭에서 도는 폴링은 서버만 때린다.
+*/
+const REFRESH_ON_RETURN = { refetchOnWindowFocus: true } as const
+
 /** ① 반별 위험 비율 — 머리글(인원·반 수)과 반 비교가 이 응답 하나에서 나온다 */
 function useRisk(cohortId: string | undefined) {
   return useQuery({
     queryKey: ['operator-dashboard', 'risk', cohortId],
     enabled: !!cohortId,
     queryFn: ({ signal }) => findCohortRiskTraineeRates({ path: { cohortId: cohortId! }, signal }),
+    ...REFRESH_ON_RETURN,
   })
 }
 
@@ -75,6 +96,7 @@ function usePipeline(cohortId: string | undefined) {
     queryKey: ['operator-dashboard', 'pipeline', cohortId],
     enabled: !!cohortId,
     queryFn: ({ signal }) => loadPipeline(cohortId!, signal),
+    ...REFRESH_ON_RETURN,
   })
 }
 
@@ -84,6 +106,7 @@ function useTodos(cohortId: string | undefined) {
     queryKey: ['operator-dashboard', 'todos', cohortId],
     enabled: !!cohortId,
     queryFn: ({ signal }) => loadTodos(cohortId!, signal),
+    ...REFRESH_ON_RETURN,
   })
 }
 
@@ -166,6 +189,8 @@ async function loadPipeline(cohortId: string, signal: AbortSignal): Promise<Roun
     .filter((p) => p.status === 'PLANNED')
     .sort((a, b) => a.startDate.localeCompare(b.startDate))[0]
   const target = running ?? planned ?? projects[projects.length - 1]
+  /* 무엇을 근거로 골랐는지 — 화면이 자명하지 않을 때만 밝힌다 */
+  const pick = running ? 'RUNNING' : planned ? 'PLANNED' : 'CLOSED'
 
   const r = await findProjectClassProgress({ path: { projectId: target.projectId }, signal })
 
@@ -184,6 +209,7 @@ async function loadPipeline(cohortId: string, signal: AbortSignal): Promise<Roun
      **기수 안 순번**이다. `class-progress`의 `roundNo`·`totalRoundCount`는 프로젝트
      **안의** 응시 회차라 지금은 전부 `1 / 1`이다 — 화면이 묻는 `3차 / 6회`가 아니다.
      */
+    pick,
     roundNo: target.sequenceNo,
     roundTotal: projects.length,
     submitted: r.summary.submittedCount,

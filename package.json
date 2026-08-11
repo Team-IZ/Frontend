@@ -29,7 +29,8 @@
     "check:pagination": "node --experimental-strip-types scripts/check-pagination-range.mts",
     "check:project": "node --experimental-strip-types scripts/check-project-rules.mts",
     "check:admin": "node --experimental-strip-types scripts/check-admin-rules.mts",
-    "check:error-copy": "node --experimental-strip-types scripts/check-error-copy.mts"
+    "check:error-copy": "node --experimental-strip-types scripts/check-error-copy.mts",
+    "check:async": "node scripts/check-async-states.mjs"
   },
   "overrides": {
     "openapi-typescript": {

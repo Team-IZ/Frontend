@@ -197,7 +197,7 @@ export default function ProjectDetailScreen() {
           <StatusTab
             project={data}
             report={status.data}
-            loading={status.isPending}
+            loading={status.isLoading}
             failed={status.isError}
             onRetry={() => status.refetch()}
             onGoConfig={() => goTab('config')}
@@ -220,7 +220,7 @@ export default function ProjectDetailScreen() {
         onOpenChange={setPickOpen}
         project={data}
         candidates={candidates.data ?? []}
-        loadingCandidates={candidates.isPending}
+        loadingCandidates={candidates.isLoading}
         curricula={curricula.data ?? []}
       />
 

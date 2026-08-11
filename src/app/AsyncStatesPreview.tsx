@@ -385,6 +385,70 @@ function Step4() {
   )
 }
 
+/* ─── 5단계 — 규칙을 CI가 지킨다 ──────────────────────────────── */
+
+function Step5() {
+  return (
+    <>
+      <Case
+        title="isPending은 «불러오는 중»이 아니다"
+        note="«데이터가 없다»는 뜻이라, enabled:false로 꺼 둔 조회는 요청이 나가지도 않았는데 영원히 참이다 — 그대로 그리면 끝나지 않는 스피너가 된다."
+      >
+        <Card className="p-4">
+          <pre className="text-fg-muted overflow-x-auto text-xs leading-relaxed">
+            {`// ✗ 꺼 둔 조회가 로딩으로 보인다
+const status = useProjectStatus(id, active === 'status')
+if (status.isPending) return <Spinner />
+
+// ○ isLoading = isPending && isFetching — 요청이 실제로 떠 있을 때만 참
+if (status.isLoading) return <StatusSkeleton />`}
+          </pre>
+        </Card>
+        <p className="text-fg-subtle mt-2 text-xs">
+          사고가 안 났던 건 가드 순서가 우연히 막아주고 있어서였다 — 순서를 바꾸는 순간 터진다.
+          조회를 그리는 자리 전부를 옮겼다.
+        </p>
+      </Case>
+
+      <Case
+        title="쓰기의 isPending은 그대로 둔다"
+        note="useMutation에서는 «요청이 떠 있다»가 맞는 뜻이다. 저장 버튼이 자기 대기를 보여주는 자리 — 여기까지 바꾸면 오히려 틀린다."
+      >
+        <Card className="flex-row items-center justify-end gap-2 p-4">
+          <Button variant="ghost" disabled>
+            취소
+          </Button>
+          <Button disabled>
+            <Spinner className="size-3.5" />
+            저장
+          </Button>
+        </Card>
+      </Case>
+
+      <Case
+        title="문서는 지켜지지 않는다 — CI가 지킨다"
+        note="npm run check:async. 되돌아가면 아픈 두 가지만 막는다. 실제로 규칙을 되돌려 보고 둘 다 걸리는 것을 확인했다."
+      >
+        <Card className="p-4">
+          <pre className="text-danger overflow-x-auto text-xs leading-relaxed">
+            {`✗ 조회 분기에 isPending을 썼습니다
+    isPending은 "데이터가 없다"이지 "불러오는 중"이 아닙니다 …
+    src/features/operator/report/ReportScreen.tsx:149  {report.isPending ? (
+
+✗ <Empty>에 variant가 없습니다
+    기본값이 pending(점선)이라 "기다리면 채워집니다"라고 말하게 됩니다 …
+    src/features/operator/dashboard/DashboardScreen.tsx:67  <Empty>`}
+          </pre>
+        </Card>
+        <p className="text-fg-subtle mt-2 text-xs">
+          검사 대상은 <code className="bg-surface-2 rounded px-1">src/features/operator</code>
+          뿐이다 — 남의 화면을 우리 규칙으로 막으면 그쪽 작업이 이유 없이 멈춘다.
+        </p>
+      </Case>
+    </>
+  )
+}
+
 /* ─── 3단계 — 「없는 것」 3종을 갈라 쓴다 ──────────────────────── */
 
 function Step3() {
@@ -524,7 +588,13 @@ const STEPS: Step[] = [
     done: true,
     render: () => <Step4 />,
   },
-  { no: 5, title: 'isLoading 일괄 + CI 스캐너', fixed: '', done: false },
+  {
+    no: 5,
+    title: '규칙을 CI가 지킨다',
+    fixed: 'isLoading 일괄 · check:async 스캐너',
+    done: true,
+    render: () => <Step5 />,
+  },
   { no: 6, title: 'OP-05 react-query 이관 · 기수 URL 통일', fixed: '', done: false },
 ]
 

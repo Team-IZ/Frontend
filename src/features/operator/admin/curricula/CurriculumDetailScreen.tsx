@@ -70,7 +70,7 @@ export default function CurriculumDetailScreen() {
   const sections = useFindSections({ path: { materialId: id } }, { enabled: !!id })
   const usedProjects = useFindUsedProjects({ path: { materialId: id } }, { enabled: !!id })
 
-  if (curriculum.isPending)
+  if (curriculum.isLoading)
     return (
       <ConsoleShell role="operator">
         <Loading label="교안을 불러오는 중" />
@@ -161,7 +161,7 @@ export default function CurriculumDetailScreen() {
           </TabsList>
 
           <TabsContent value="sections">
-            {sections.isPending ? (
+            {sections.isLoading ? (
               <Loading label="섹션을 불러오는 중" />
             ) : sections.isError ? (
               <ErrorState

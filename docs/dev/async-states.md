@@ -407,7 +407,7 @@ const m = () => ({ rows: document.querySelectorAll('tbody tr').length,
 | 🟠 | OP-01 · OP-04 · OP-05 | 로딩 중 헤더(·탭)가 통째로 없다 → 도착 시 페이지가 밀린다 | 1-3 |
 | 🟠 | OP-01·02·03·04·05 | 첫 진입이 스피너 — 운영 관리 5탭은 스켈레톤으로 옮겼다 | 1-2 |
 | 🟡 | OP-01~06 전부 | 재시도 버튼에 대기 표시 없음 → 연타 | 3-3 |
-| 🟡 | 전역 | `isPending` 116 : `isLoading` 4 | 1-9 |
+| ~~🟡~~ | ~~전역~~ | ✅ 조회 분기는 전부 `isLoading`. 쓰기(`useMutation`)의 `isPending`은 맞는 뜻이라 그대로 둔다 — `npm run check:async`가 되돌아가는 것을 막는다 | 1-9 |
 | 🟡 | OP-05 리포트 | 연동된 화면인데 혼자 `useAsync`(캐시·무효화 없음)를 쓴다 — 나머지는 react-query | — |
 
 
@@ -429,5 +429,6 @@ OP-03 부분 성공 안내, 안 보는 탭 조회 안 함(`enabled`), OP-05 확�
 | ~~`AsyncState`(Loading·LoadFailed)~~ | ✅ `common/Loading` 한 벌 · `LoadFailed`는 `ErrorState`로 흡수해 삭제 | 완료 |
 | `errorCopy(error)` — 3-1 매핑 | 없음 | **두 번째 화면에서 올린다.** 문구가 갈리면 표준이 깨진다 |
 | ~~`TableSkeleton`~~ | ✅ `common/TableSkeleton` — 운영 관리 5탭이 쓴다 | 완료 |
+| `check:async` | ✅ CI에 들어갔다 — 조회 분기 `isPending` · 무인자 `<Empty>` | 완료 |
 | `useAsync` | `lib/` · `report/_/` 2벌 | OP-05를 react-query로 옮길 때 **`report/_` 쪽을 지운다** |
 | `QueryBoundary` 같은 래퍼 | — | **만들지 않는다.** 화면마다 「없는 것」의 이유가 달라 래퍼가 그 분기를 대신 못 한다(OP-01은 블록 단위로 실패가 갈린다) |

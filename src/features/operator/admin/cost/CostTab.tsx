@@ -78,7 +78,7 @@ export default function CostTab(_: { onCount: (count: number | null) => void }) 
     { enabled: !!organizationId && !!cohortId },
   )
 
-  if (!organizationId || !cohortId || cost.isPending) return <Loading label="비용을 불러오는 중" />
+  if (!organizationId || !cohortId || cost.isLoading) return <Loading label="비용을 불러오는 중" />
   if (cost.isError || !cost.data)
     return (
       <ErrorState

@@ -153,7 +153,7 @@ export default function ProjectListScreen() {
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
-      ) : page.isPending ? (
+      ) : page.isLoading ? (
         // Spinner가 이미 role="status"를 갖는다 — 래퍼에 또 붙이면 라이브 리전이 중첩된다.
         // 기본 aria-label이 영문("Loading")이라 화면 언어에 맞춰 덮어쓴다.
         <div className="flex justify-center py-16">

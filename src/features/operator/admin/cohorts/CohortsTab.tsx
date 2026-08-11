@@ -120,8 +120,8 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
     렌더 중에 부모 상태를 바꾸면 렌더가 렌더를 부른다 — 커밋된 뒤에 알린다.
   */
   useEffect(() => {
-    if (!scope.isPending) onCount(totalAll)
-  }, [scope.isPending, totalAll, onCount])
+    if (!scope.isLoading) onCount(totalAll)
+  }, [scope.isLoading, totalAll, onCount])
 
   /** 빈 결과가 "아직 없음"인지 "필터에 안 걸림"인지 — 문구가 갈린다 */
   const narrowed = query.trim().length > 0 || status !== ALL
@@ -137,9 +137,9 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
     <>
       <SectionHeader
         title="기수"
-        count={scope.isPending ? undefined : `${totalAll}개`}
+        count={scope.isLoading ? undefined : `${totalAll}개`}
         breakdown={
-          !scope.isPending && (
+          !scope.isLoading && (
             <>
               기관 전체 · 개강 전 {counts.PLANNED} · 진행{' '}
               <b className="text-fg-muted font-semibold">{counts.RUNNING}</b> · 종료 {counts.CLOSED}

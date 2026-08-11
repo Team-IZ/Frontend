@@ -137,7 +137,7 @@ export default function ClassManagersDialog({
             </Alert>
           )}
 
-          {managers.isPending ? (
+          {managers.isLoading ? (
             <Loading label="매니저를 불러오는 중" />
           ) : (
             <div className="border-border divide-border divide-y rounded-md border">

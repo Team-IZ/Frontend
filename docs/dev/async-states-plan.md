@@ -197,9 +197,9 @@ errorCopy(error, { subject: '회차' })
 
 | # | 상태 | 비고 |
 |---|---|---|
-| 1 | 대기 | |
-| 2 | 대기 | |
-| 3 | 대기 | expand 시작 시 `IZ-frontend` 쪽에 공지 |
-| 4 | 대기 | |
-| 5 | 대기 | |
+| 1 | ✅ | 완료 |
+| 2 | ✅ | 완료 |
+| 3 | ✅ | expand·migrate 완료 · contract는 IZ-frontend 39곳 이관 뒤 |
+| 4 | ✅ | 완료 |
+| 5 | ✅ | 완료 |
 | 6 | 대기 | `Header.tsx` 조율 필요 |

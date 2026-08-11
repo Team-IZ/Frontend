@@ -125,7 +125,7 @@ export default function ManagerClassroomsDialog({
             </Alert>
           )}
 
-          {classes.isPending ? (
+          {classes.isLoading ? (
             <Loading label="반을 불러오는 중" />
           ) : (
             <div className="border-border divide-border divide-y rounded-md border">

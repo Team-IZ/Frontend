@@ -187,7 +187,7 @@ export default function ClassesTab({ onCount }: Props) {
         <LoadFailed label="반을 불러오지 못했습니다" onRetry={() => void classes.refetch()} />
       ) : rooms.length === 0 ? (
         narrowed ? (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
                 {query ? `"${query}"와 맞는 반이 없습니다` : '조건에 맞는 반이 없습니다'}
@@ -207,7 +207,7 @@ export default function ClassesTab({ onCount }: Props) {
             </Button>
           </Empty>
         ) : (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>아직 반이 없습니다</EmptyTitle>
               <EmptyDescription>

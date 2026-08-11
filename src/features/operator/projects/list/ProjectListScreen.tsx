@@ -145,7 +145,7 @@ export default function ProjectListScreen() {
           기수가 없으면 이 화면이 답할 질문 자체가 없다 — 회차는 기수 하위다(OP-03 3-1).
           다음 행동(기수 만들기)은 운영 관리 소관이라 링크를 걸지 않는다(C4).
         */
-        <Empty>
+        <Empty variant="empty">
           <EmptyHeader>
             <EmptyTitle>기수가 없습니다</EmptyTitle>
             <EmptyDescription>
@@ -168,7 +168,7 @@ export default function ProjectListScreen() {
         />
       ) : page.data?.items.length === 0 ? (
         narrowed ? (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
                 {/* 조회에 나간 검색어를 쓴다 — 입력 원본이면 아직 안 걸린 글자를 인용한다 */}
@@ -179,7 +179,7 @@ export default function ProjectListScreen() {
           </Empty>
         ) : (
           // 빈 상태에 생성을 권한다 — 매니저 화면과 반대다. 오퍼레이터는 만들 권한이 있다
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>아직 프로젝트가 없습니다</EmptyTitle>
               <EmptyDescription>

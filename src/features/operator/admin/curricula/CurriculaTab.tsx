@@ -193,7 +193,7 @@ export default function CurriculaTab({ onCount }: Props) {
         <LoadFailed label="교안을 불러오지 못했습니다" onRetry={() => void page.refetch()} />
       ) : items.length === 0 ? (
         narrowed ? (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
                 {query ? `"${query}"와 맞는 교안이 없습니다` : '조건에 맞는 교안이 없습니다'}
@@ -211,7 +211,7 @@ export default function CurriculaTab({ onCount }: Props) {
             </Button>
           </Empty>
         ) : (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>아직 등록된 교안이 없습니다</EmptyTitle>
               {/* 왜 필요한지를 쓴다 — 이것이 없으면 프로젝트를 만들 수 없다 */}

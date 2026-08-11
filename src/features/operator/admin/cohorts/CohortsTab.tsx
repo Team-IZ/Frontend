@@ -183,7 +183,7 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
         <LoadFailed label="기수를 불러오지 못했습니다" onRetry={() => void page.refetch()} />
       ) : items.length === 0 ? (
         narrowed ? (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
                 {query ? `"${query}"와 맞는 기수가 없습니다` : '조건에 맞는 기수가 없습니다'}
@@ -205,7 +205,7 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
             기수 0 — 신규 기관이다. **생성을 권한다**: 오퍼레이터는 만들 권한이 있고,
             여기가 시작점이라 다른 탭은 아직 아무것도 담을 수 없다.
           */
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>첫 기수를 만드세요</EmptyTitle>
               <EmptyDescription>

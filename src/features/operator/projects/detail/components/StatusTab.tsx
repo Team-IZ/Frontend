@@ -58,7 +58,7 @@ export default function StatusTab({
   */
   if (!conceptsFixed(project.conceptCount)) {
     return (
-      <Empty className="border-solid bg-surface">
+      <Empty variant="empty">
         <EmptyHeader>
           <EmptyTitle>아직 집계할 것이 없습니다</EmptyTitle>
           <EmptyDescription>
@@ -81,7 +81,7 @@ export default function StatusTab({
 
   if (failed || !report) {
     return (
-      <Empty className="bg-danger-soft border-solid">
+      <Empty variant="failed">
         <EmptyHeader>
           <EmptyTitle>현황을 불러오지 못했습니다</EmptyTitle>
         </EmptyHeader>
@@ -102,7 +102,7 @@ export default function StatusTab({
   */
   if (report.classes.length === 0) {
     return (
-      <Empty className="border-solid bg-surface">
+      <Empty variant="empty">
         <EmptyHeader>
           <EmptyTitle>이 기수에 반이 없습니다</EmptyTitle>
           <EmptyDescription>
@@ -115,11 +115,11 @@ export default function StatusTab({
 
   /*
     개념은 정해졌는데 아직 아무도 안 냈다 — **`아직`이다.** 마감까지 기다리면 채워지므로
-    액션이 없고, **언제 채워지는지**를 쓴다(유형 1 · 점선이 기본값).
+    액션이 없고, **언제 채워지는지**를 쓴다 — 오퍼레이터가 할 일이 없는 유일한 자리다(유형 1 · 점선).
   */
   if (report.classes.every((c) => c.submitted === 0)) {
     return (
-      <Empty>
+      <Empty variant="pending">
         <EmptyHeader>
           <EmptyTitle>아직 제출한 학생이 없습니다</EmptyTitle>
           <EmptyDescription>

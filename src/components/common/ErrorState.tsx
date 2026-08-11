@@ -28,9 +28,7 @@ export default function ErrorState({ error, subject, onRetry, retrying, action }
   const copy = errorCopy(error, { subject })
 
   return (
-    <Empty
-      className={copy.tone === 'failed' ? 'bg-danger-soft border-danger-border border-solid' : ''}
-    >
+    <Empty variant={copy.tone}>
       <EmptyHeader>
         <EmptyTitle>{copy.title}</EmptyTitle>
         <EmptyDescription>{copy.description}</EmptyDescription>

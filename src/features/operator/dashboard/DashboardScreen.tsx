@@ -64,7 +64,7 @@ export default function DashboardScreen() {
       />
 
       {cohortFailed ? (
-        <Empty>
+        <Empty variant="empty">
           <EmptyHeader>
             <EmptyTitle>기수가 없습니다</EmptyTitle>
             <EmptyDescription>

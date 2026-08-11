@@ -265,7 +265,7 @@ export default function ManagersTab({ onCount }: Props) {
         <LoadFailed label="매니저를 불러오지 못했습니다" onRetry={() => void page.refetch()} />
       ) : page.data.content.length === 0 ? (
         narrowed ? (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
                 {query ? `"${query}"와 맞는 매니저가 없습니다` : '조건에 맞는 매니저가 없습니다'}
@@ -283,7 +283,7 @@ export default function ManagersTab({ onCount }: Props) {
             </Button>
           </Empty>
         ) : (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>아직 매니저가 없습니다</EmptyTitle>
               <EmptyDescription>

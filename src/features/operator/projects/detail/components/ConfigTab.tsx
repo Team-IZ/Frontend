@@ -1,3 +1,4 @@
+import { cn } from '@/lib/utils/cn'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { canDelete, canEditConfig, lockedReason } from '../../rules'
@@ -74,7 +75,7 @@ export default function ConfigTab({
         }
       >
         {linked.length === 0 ? (
-          <Empty>연결된 교안이 없습니다</Empty>
+          <Empty variant="empty">연결된 교안이 없습니다</Empty>
         ) : (
           <ol className="flex flex-col gap-2">
             {linked.map((c, i) => {
@@ -140,7 +141,7 @@ export default function ConfigTab({
             })}
           </ol>
         ) : (
-          <Empty>
+          <Empty variant="empty">
             {linked.length === 0 ? (
               '교안을 먼저 연결해야 후보가 나옵니다'
             ) : (
@@ -170,11 +171,15 @@ export default function ConfigTab({
       >
         {requirements.length === 0 ? (
           /*
-            **`아직`이다**(02-layout §4). 요구사항은 회차를 만든 뒤에 적는 값이라
-            0건은 결함이 아니라 **안 적은 상태**다 — 그래서 "무슨 뜻인지"가 아니라
-            **누가 언제 채우는지**를 쓴다.
+            **`없음`이다**(02-layout §4). 0건은 결함이 아니라 **안 적은 상태**지만,
+            기다린다고 채워지지 않는다 — **오퍼레이터가 적어야** 생긴다. 판정 기준이
+            *"기다리면 되나"* 라서 `아직`이 아니라 `없음`이고, 그래서 실선이다.
+
+            한때 `아직`으로 그렸는데 그러면 화면이 *"두면 채워집니다"* 라고 잘못 말한다.
           */
-          <Empty>아직 요구사항을 적지 않았습니다 — 편집에서 추가하면 구현 P/F로 판정합니다</Empty>
+          <Empty variant="empty">
+            아직 요구사항을 적지 않았습니다 — 편집에서 추가하면 구현 P/F로 판정합니다
+          </Empty>
         ) : (
           <ol className="flex flex-col gap-2">
             {requirements.map((line, i) => (
@@ -261,9 +266,27 @@ function Row({ index, children }: { index: number; children: React.ReactNode }) 
   )
 }
 
-function Empty({ children }: { children: React.ReactNode }) {
+/*
+  줄 하나짜리 빈 자리 — `ui/Empty`(큰 박스)와 이름만 같고 다른 것이다. 구성 탭은 항목이
+  여럿이라 각 자리에 큰 박스를 놓으면 탭이 빈 박스 넷이 된다.
+
+  **테두리 뜻은 같다**(02-layout §4) — 점선은 `아직`(기다리면 채워진다), 실선은 `없음`
+  (사용자가 해야 채워진다). 여기 셋은 전부 오퍼레이터가 직접 채우는 것이라 실선이다.
+*/
+function Empty({
+  children,
+  variant = 'pending',
+}: {
+  children: React.ReactNode
+  variant?: 'pending' | 'empty'
+}) {
   return (
-    <p className="border-border-strong text-fg-subtle rounded-md border border-dashed p-4 text-center text-xs">
+    <p
+      className={cn(
+        'border-border-strong text-fg-subtle rounded-md border p-4 text-center text-xs',
+        variant === 'empty' ? 'border-solid' : 'border-dashed',
+      )}
+    >
       {children}
     </p>
   )

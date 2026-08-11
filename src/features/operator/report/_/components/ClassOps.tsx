@@ -89,7 +89,7 @@ export default function ClassOps({
       {groupShortfalls.length === 0 ? (
         // 「없음」(다 봤고 0건) 유형이라 실선이다 — `Empty`의 기본값(점선)은 「아직」(대기)
         // 유형이라 여기 쓰면 "결과를 기다리는 중"으로 읽힌다(02-layout-system §4)
-        <Empty className="border-solid bg-surface">
+        <Empty variant="empty">
           <EmptyHeader>
             <EmptyTitle>반 절반 이상이 미달한 회차가 없습니다</EmptyTitle>
             <EmptyDescription>위험 판정이 모두 개인 사유로 남았습니다.</EmptyDescription>

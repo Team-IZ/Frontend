@@ -356,7 +356,7 @@ export default function RosterTab({ onCount }: Props) {
         <LoadFailed label="명단을 불러오지 못했습니다" onRetry={() => void roster.refetch()} />
       ) : rows.length === 0 ? (
         narrowed ? (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
                 {query ? `"${query}"와 맞는 사람이 없습니다` : '조건에 맞는 사람이 없습니다'}
@@ -380,7 +380,7 @@ export default function RosterTab({ onCount }: Props) {
             </Button>
           </Empty>
         ) : (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>아직 등록된 교육생이 없습니다</EmptyTitle>
               <EmptyDescription>

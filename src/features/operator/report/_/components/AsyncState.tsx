@@ -16,7 +16,7 @@ export function Loading({ label }: { label: string }) {
 
 export function LoadFailed({ label, onRetry }: { label: string; onRetry: () => void }) {
   return (
-    <Empty className="border-danger-border border-solid bg-danger-soft">
+    <Empty variant="failed">
       <EmptyHeader>
         <EmptyTitle>{label}</EmptyTitle>
         <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>

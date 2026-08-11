@@ -196,7 +196,7 @@ export default function TopStudents({
     <div>
       {students.length === 0 ? (
         // 「없음」(다 봤고 0건) — 아무도 반 상위 1~2명에 못 들었다는 것도 사실이다
-        <Empty className="border-solid bg-surface">
+        <Empty variant="empty">
           <EmptyHeader>
             <EmptyTitle>이번 기수엔 우수 교육생이 없습니다</EmptyTitle>
             <EmptyDescription>

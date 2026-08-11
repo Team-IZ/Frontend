@@ -158,7 +158,7 @@ export default function AnalysisScreen() {
           />
 
           {cohortFailed ? (
-            <Empty>
+            <Empty variant="empty">
               <EmptyHeader>
                 <EmptyTitle>기수가 없습니다</EmptyTitle>
                 <EmptyDescription>
@@ -184,7 +184,7 @@ export default function AnalysisScreen() {
               **무엇이 빠졌는지에 따라 문구가 갈린다.** 둘 다 없는데 반만 말하면
               고르고 나서 또 빈 화면을 본다.
             */
-            <Empty>
+            <Empty variant="empty">
               <EmptyHeader>
                 <EmptyTitle>
                   {g.needs === 'ROUND'
@@ -278,7 +278,16 @@ export default function AnalysisScreen() {
               비교 가능한 기수가 있는데도 그렇게 말하고 있었다. **틀린 이유를 말하면
               사용자가 없는 문제를 고치러 간다.**
             */
-            <Empty>
+            /*
+              **테두리도 문구와 같이 갈린다.** 고를 기수가 있으면 고르면 채워지고(`없음`,
+              실선), 없으면 다음 기수가 돌기를 기다리는 수밖에 없다(`아직`, 점선).
+              한쪽으로 통일하면 문구가 갈라 놓은 것을 테두리가 도로 뭉갠다.
+            */
+            <Empty
+              variant={
+                compare.data.availableCohorts.some((c) => c.comparable) ? 'empty' : 'pending'
+              }
+            >
               <EmptyHeader>
                 <EmptyTitle>
                   {compare.data.availableCohorts.some((c) => c.comparable)

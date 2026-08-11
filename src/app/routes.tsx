@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router'
 import type { RouteObject } from 'react-router'
 import UiPreviewScreen from '@/app/UiPreviewScreen'
 import TraineeCaseIndex from '@/app/TraineeCaseIndex'
+import AsyncStatesPreview from '@/app/AsyncStatesPreview'
 import RouteNotFound from '@/app/RouteNotFound'
 import AppCrashed from '@/app/AppCrashed'
 
@@ -48,6 +49,8 @@ export const router = createBrowserRouter([
       { path: '/', element: <Navigate to="/shared/login" replace /> },
       { path: '/ui-preview', element: <UiPreviewScreen /> },
       { path: '/trainee/__cases', element: <TraineeCaseIndex /> },
+      // 비동기 상태 표준을 눈으로 보는 자리(dev) — docs/dev/async-states.md
+      { path: '/operator/__async', element: <AsyncStatesPreview /> },
 
       // 없는 경로를 조용히 로그인으로 보내지 않는다. 그러면 "라우트를 등록 안 한 것"과
       // "코드가 틀린 것"을 구분할 수 없어 개발 중에 시간을 잃는다.

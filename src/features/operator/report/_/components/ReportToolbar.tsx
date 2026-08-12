@@ -1,3 +1,4 @@
+import ControlLabel from '@/components/common/ControlLabel'
 import {
   Select,
   SelectContent,
@@ -17,9 +18,7 @@ import {
 
   **칩 나열이 아니라 드롭다운이다.** 칩은 개수만큼 줄이 늘어나(교안 20종이면 20개)
   컨트롤이 콘텐츠보다 커진다. 드롭다운은 닫혀 있을 때 한 칸이고, 닫힌 상태에 **고른
-  값이 라벨과 함께 남아**(`교안 · 전체`) 무엇으로 거른 건지가 계속 보인다 —
-  `admin/_/components/AdminFilters.tsx`의 `FilterSelect`와 같은 규칙이다(도메인 경계상
-  import는 못 하지만 형태는 그대로 따른다).
+  값이 이름표와 함께 남아** 무엇으로 거른 건지가 계속 보인다.
 
   전부 **왼쪽**에 둔다(E3 표 3단 배치) — 이 섹션들엔 주 액션이 없으므로 오른쪽은 비운다.
   인쇄에는 나가지 않는다(`print:hidden`) — 종이엔 조작할 것이 없다.
@@ -41,16 +40,19 @@ export default function ReportToolbar({
 }
 
 /**
- * 필터 드롭다운 하나. **라벨 접두사를 값에도 붙인다**(`반 · 전체`) — 닫힌 상태에서
- * 무엇으로 거른 건지가 보여야 한다. 사용법 문장은 쓰지 않는다(E10) — 컨트롤 모양이
- * 이미 그 말이다.
+ * 필터 드롭다운 하나. 사용법 문장은 쓰지 않는다(E10) — 컨트롤 모양이 이미 그 말이다.
+ *
+ * **이름표는 컨트롤 안 왼쪽이다**(`ControlLabel`). 한때 값에 접두사를 붙여
+ * `교안 · Spring 백엔드 설계 v1`로 썼는데, OP-02·03에서 같은 형태를 걷어냈다 —
+ * 값에 점이 들어간 이름이 오면 어디까지가 이름표인지 못 읽고, 드롭다운 항목마다
+ * 같은 접두사가 반복된다. **한 콘솔 안에서 컨트롤 모양이 화면마다 다를 이유가 없다.**
  */
 export function ToolbarSelect({
   label,
   value,
   options,
   onChange,
-  className = 'min-w-32',
+  className = 'w-56',
 }: {
   label: string
   value: string
@@ -58,20 +60,27 @@ export function ToolbarSelect({
   onChange: (value: string) => void
   className?: string
 }) {
-  const items = Object.fromEntries(options.map((o) => [o.value, `${label} · ${o.label}`]))
+  const items = Object.fromEntries(options.map((o) => [o.value, o.label]))
   return (
     <Select
       value={value}
       onValueChange={(v) => onChange((v as string | null) ?? options[0].value)}
       items={items}
     >
-      <SelectTrigger className={`h-8 ${className}`} aria-label={`${label} 필터`}>
-        <SelectValue />
+      <SelectTrigger
+        className={`h-9 ${className}`}
+        aria-label={`${label} 필터`}
+        title={options.find((o) => o.value === value)?.label}
+      >
+        <ControlLabel>{label}</ControlLabel>
+        {/* 긴 이름은 자른다 — 교안 이름은 업로드한 파일명이라 길이를 우리가 못 정한다 */}
+        <SelectValue className="truncate" />
       </SelectTrigger>
-      <SelectContent>
+      {/* 팝업은 트리거 폭을 안 따른다 — 좁히면 열어도 어떤 교안인지 모른다(OP-03 §2-2b) */}
+      <SelectContent className="w-auto max-w-[min(620px,calc(100vw-2rem))] min-w-(--anchor-width)">
         {options.map((o) => (
           <SelectItem key={o.value} value={o.value}>
-            {label} · {o.label}
+            {o.label}
           </SelectItem>
         ))}
       </SelectContent>

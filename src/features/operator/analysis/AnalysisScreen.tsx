@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import ControlLabel from '@/components/common/ControlLabel'
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
 import { Card } from '@/components/ui/Card'
@@ -15,7 +16,7 @@ import {
 import { useCohortId } from '@/stores/cohortScope'
 import { useCohortCompare, useRoundGrid } from './_/api/api'
 import ErrorState from '@/components/common/ErrorState'
-import { staleProps } from '../_shared/listQuery'
+import StaleBlock from '../_shared/StaleBlock'
 import GridSkeleton, { CompareSkeleton } from './_/components/GridSkeleton'
 import RoundToolbar from './_/components/RoundToolbar'
 import RoundGridTable from './_/components/RoundGridTable'
@@ -264,12 +265,12 @@ export default function AnalysisScreen() {
             </Empty>
           ) : (
             /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
-            <div {...staleProps(grid.isPlaceholderData)}>
+            <StaleBlock stale={grid.isPlaceholderData} label="격자를 불러오는 중">
               <Card className="px-5 py-4">
                 <RoundGridTable grid={g} />
               </Card>
               <GridLegend baselineName={g.baselineName} />
-            </div>
+            </StaleBlock>
           )}
         </TabsContent>
 
@@ -308,7 +309,7 @@ export default function AnalysisScreen() {
               >
                 {/* 회차 흐름 탭 툴바와 같은 형태 — 라벨을 칩 안에 두고 세로선으로 가른다 */}
                 <SelectTrigger className="w-40" aria-label="비교 기수">
-                  <span className="text-fg-subtle border-border mr-1 border-r pr-2.5">비교</span>
+                  <ControlLabel>비교</ControlLabel>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -398,7 +399,7 @@ export default function AnalysisScreen() {
             </Empty>
           ) : (
             /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
-            <div {...staleProps(compare.isPlaceholderData)}>
+            <StaleBlock stale={compare.isPlaceholderData} label="비교를 불러오는 중">
               <Card className="px-5 py-4">
                 <CohortCompareTable data={compare.data} />
               </Card>
@@ -439,7 +440,7 @@ export default function AnalysisScreen() {
                   <span className="block">그 아래면 처방 대상입니다</span>
                 </span>
               </div>
-            </div>
+            </StaleBlock>
           )}
         </TabsContent>
       </Tabs>

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ChevronDownIcon } from 'lucide-react'
+import ControlLabel from '@/components/common/ControlLabel'
 import { Button } from '@/components/ui/Button'
 import { ButtonGroup } from '@/components/ui/ButtonGroup'
 import { Checkbox } from '@/components/ui/Checkbox'
@@ -59,10 +60,6 @@ function pickLabel(all: string[], picked: string[], unit: string, loading?: bool
   ▸ **크기는 값과 같게, 색만 옅게.** 라벨을 작게 하면 한 칩 안에 글자 크기가 둘이 되어
     칩끼리 높이가 안 맞는다 — 가르는 일은 선과 색이 한다.
 */
-function ChipLabel({ children }: { children: React.ReactNode }) {
-  return <span className="text-fg-subtle border-border mr-1 border-r pr-2.5">{children}</span>
-}
-
 function FilterTrigger({
   k,
   children,
@@ -85,7 +82,7 @@ function FilterTrigger({
           className="border-input text-fg h-9 gap-1.5 py-2 pr-2 pl-3 text-sm font-normal"
           disabled={disabled}
         >
-          <ChipLabel>{k}</ChipLabel>
+          <ControlLabel>{k}</ControlLabel>
           {children}
           <ChevronDownIcon className="size-4 opacity-50" />
         </Button>
@@ -364,7 +361,7 @@ export default function RoundToolbar({
         items={ROUND_SORTS.map((s) => ({ value: s, label: ROUND_SORT_LABEL[s] }))}
       >
         <SelectTrigger className="w-60" aria-label="정렬" disabled={loading}>
-          <ChipLabel>정렬</ChipLabel>
+          <ControlLabel>정렬</ControlLabel>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
@@ -423,7 +420,7 @@ function RoundSelect({
     >
       {/* 폭은 가장 긴 문구(`불러오는 중`)에 맞춘다 — 라벨이 붙는 쪽이 더 넓다 */}
       <SelectTrigger className={label ? 'w-36' : 'w-24'} aria-label="회차" disabled={disabled}>
-        {label && <ChipLabel>{label}</ChipLabel>}
+        {label && <ControlLabel>{label}</ControlLabel>}
         <SelectValue placeholder={loading ? '불러오는 중' : '고르세요'} />
       </SelectTrigger>
       <SelectContent>

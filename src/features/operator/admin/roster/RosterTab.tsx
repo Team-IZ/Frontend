@@ -1,3 +1,4 @@
+import StaleBlock from '../../_shared/StaleBlock'
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Button } from '@/components/ui/Button'
@@ -12,7 +13,7 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { useDebounced } from '@/lib/useDebounced'
-import { listQueryOptions, staleProps } from '../../_shared/listQuery'
+import { listQueryOptions } from '../../_shared/listQuery'
 import { cn } from '@/lib/utils/cn'
 import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useFindTraineeRoster } from '@/api/member/useMemberQueries'
@@ -401,7 +402,7 @@ export default function RosterTab({ onCount }: Props) {
         )
       ) : (
         /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
-        <div {...staleProps(roster.isPlaceholderData)}>
+        <StaleBlock stale={roster.isPlaceholderData} label="명단을 불러오는 중">
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -517,7 +518,7 @@ export default function RosterTab({ onCount }: Props) {
             // 쪽을 넘겨도 선택은 남긴다 — 여러 쪽에서 골라 한 번에 배정하는 동선이 있다
             onPageChange={setPage}
           />
-        </div>
+        </StaleBlock>
       )}
 
       <DeactivateTraineeDialog

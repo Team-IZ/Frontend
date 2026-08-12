@@ -1,3 +1,4 @@
+import StaleBlock from '../../_shared/StaleBlock'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Button } from '@/components/ui/Button'
@@ -11,7 +12,7 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { useDebounced } from '@/lib/useDebounced'
-import { listQueryOptions, staleProps } from '../../_shared/listQuery'
+import { listQueryOptions } from '../../_shared/listQuery'
 import { useGetCurrentMember } from '@/api/member/useMemberQueries'
 import { useFindOrganizationCurricula } from '@/api/curriculum/useCurriculumQueries'
 import type { findOrganizationCurricula_Query } from '@/api/curriculum/curriculumTypes'
@@ -231,7 +232,7 @@ export default function CurriculaTab({ onCount }: Props) {
         )
       ) : (
         /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
-        <div {...staleProps(page.isPlaceholderData)}>
+        <StaleBlock stale={page.isPlaceholderData} label="교안을 불러오는 중">
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -310,7 +311,7 @@ export default function CurriculaTab({ onCount }: Props) {
             totalPages={1}
             onPageChange={() => {}}
           />
-        </div>
+        </StaleBlock>
       )}
 
       <RegisterCurriculumDialog open={registerOpen} onOpenChange={setRegisterOpen} />

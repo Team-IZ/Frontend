@@ -1,3 +1,4 @@
+import StaleBlock from '../../_shared/StaleBlock'
 import { useEffect, useMemo, useState } from 'react'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
@@ -11,7 +12,7 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { useDebounced } from '@/lib/useDebounced'
-import { listQueryOptions, staleProps } from '../../_shared/listQuery'
+import { listQueryOptions } from '../../_shared/listQuery'
 import { useFindCohorts } from '@/api/academic/useAcademicQueries'
 import { useDeleteCohort, useEndCohort } from '@/api/academic/useAcademicMutations'
 import { isApiError } from '@/api/_contract'
@@ -223,7 +224,7 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
         )
       ) : (
         /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
-        <div {...staleProps(page.isPlaceholderData)}>
+        <StaleBlock stale={page.isPlaceholderData} label="기수를 불러오는 중">
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -314,7 +315,7 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
             totalPages={1}
             onPageChange={() => {}}
           />
-        </div>
+        </StaleBlock>
       )}
 
       <CreateCohortDialog open={createOpen} onOpenChange={setCreateOpen} />

@@ -1,3 +1,4 @@
+import StaleBlock from '../../_shared/StaleBlock'
 import { useEffect, useState } from 'react'
 import { TriangleAlertIcon } from 'lucide-react'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
@@ -12,7 +13,7 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { useDebounced } from '@/lib/useDebounced'
-import { listQueryOptions, staleProps } from '../../_shared/listQuery'
+import { listQueryOptions } from '../../_shared/listQuery'
 import { useFindManagers } from '@/api/member/useMemberQueries'
 import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useGetCurrentMember } from '@/api/member/useMemberQueries'
@@ -305,7 +306,7 @@ export default function ManagersTab({ onCount }: Props) {
         )
       ) : (
         /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
-        <div {...staleProps(page.isPlaceholderData)}>
+        <StaleBlock stale={page.isPlaceholderData} label="매니저를 불러오는 중">
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -428,7 +429,7 @@ export default function ManagersTab({ onCount }: Props) {
             totalPages={1}
             onPageChange={() => {}}
           />
-        </div>
+        </StaleBlock>
       )}
 
       <InviteManagerDialog open={inviteOpen} onOpenChange={setInviteOpen} />

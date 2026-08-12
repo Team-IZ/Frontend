@@ -43,9 +43,9 @@ A3·A4는 같은 "0건"인데 문구·액션이 다르다(`hasFilter`로 분기)
 
 | | |
 |---|---|
-| B1 | pending — `summary.data &&` 조건이라 **카드 자리 자체가 없다**(스켈레톤 없음) |
+| B1 | pending — `summary.data &&` 조건이라 **카드 자리 자체가 없다**(스켈레톤 없음) *(3차 라운드에서 고침 → 5단계)* |
 | B2 | success |
-| B3 | isError — `isError`를 아예 안 읽는다. 실패해도 그냥 안 뜬다, 재시도 버튼도 없다 |
+| B3 | isError — `isError`를 아예 안 읽는다. 실패해도 그냥 안 뜬다, 재시도 버튼도 없다 *(3차 라운드에서 고침 → 5단계)* |
 
 조합 후보: 목록은 이미 떴는데(A5) 요약은 아직(B1) → **표가 먼저 자리 잡고 카드 4개가 위에서
 불쑥 나타나며 표를 밀어낸다**(레이아웃 시프트 후보, 4단계에서 CLS로 확인). 반대로 요약이
@@ -436,3 +436,55 @@ Playwright `page.route(url, r => r.abort('internetdisconnected'))`로 **진짜 �
 백엔드를 실제로 건드릴 이유가 없다 — `GET /organizations` 응답을 라우트 가로채기로
 부풀려(`totalPages` > 1이 되도록 `rows`·`total` 조작) E2–E5를 재현한다. G8·DELETION_PENDING과
 같은 방식이라 도구 하나로 묶어 처리 가능.
+
+## 5단계 · 3차 라운드 — B3·B1 하드닝 (2026-08-12, 이슈 #185)
+
+이슈 #185의 마지막 남은 범위. 대상: `OrgListScreen.tsx`(208행)·`OrgMetrics.tsx`.
+
+### B3 · summary 실패 시 무대응 — 🔴 확정된 결함 · ✅ 고침·렌더 확인 완료
+
+`summary.isError`를 읽어 `OrgMetricsFailed`(`Alert variant="danger"` + `AlertAction`의
+"다시 시도" 버튼)를 카드 자리에 그린다. 4칸 dashed `Empty`는 이 좁은 높이에서 어색해
+쓰지 않고, `manager/dashboard/DashboardScreen.tsx`가 밴드 실패 줄에 쓰는 것과 같은
+Alert+AlertAction 조합을 그대로 따랐다(레이어 린트 때문에 import는 못 하고 패턴만 재현).
+
+Playwright `page.route('**/organizations/summary', ...)`로 500을 강제해 렌더 확인:
+실패 배너 노출 → "다시 시도" 클릭 → 라우트 가로채기 해제 후 정상 카드로 회복하는 것까지
+스크린샷으로 확인함(성공 상태 B2도 함께 회귀 확인, 깨지지 않음).
+
+### B1 · pending 시 카드 자리 없음(CLS) — ✅ 같이 고침·렌더 확인 완료
+
+`summary.isPending`일 때 `OrgMetricsSkeleton`(카드 4장과 같은 `grid-cols-4 gap-4 mb-5`,
+`MetricCard`와 같은 `Card size="sm" gap-1.5 px-4` 래퍼)을 그린다. B3와 같은 조건문의
+나머지 분기라 어차피 손대는 자리였고, 4단계에서 실측한 CLS 0.0550(B1+A5 조합, 위 "실제
+렌더에서만 잡힌 것" 참고)의 직접 원인이라 함께 처리.
+
+Playwright `PerformanceObserver`(`layout-shift`)로 재측정 — summary 응답을 2.5초
+지연시켜 pending→success 전환을 강제로 관찰:
+
+| | 카드 그리드 높이 | 비고 |
+|---|---|---|
+| 스켈레톤(초안) | 94px | label+value+sub 3줄만 |
+| 스켈레톤(보정) | 130px | AI 비용 카드의 진행바(Progress) 자리까지 4번째 줄로 반영 |
+| 실제 로드 완료 | 124.66px | AI 비용 카드의 2줄 sub + 진행바 때문에 grid stretch로 4장 다 이만큼 늘어남 |
+
+첫 스켈레톤은 sub 한 줄만 반영해 94px — 실제(124.66px)와 30px 넘게 차이 나 CLS가
+여전히 남았다(측정 안 함, 시각적으로 부족해 보정 먼저 함). `sub` 자리를 2줄 높이로,
+진행바 자리를 4번째 줄로 추가해 130px로 보정한 뒤 재측정: **CLS 0.0550 → 0.0021**
+(96% 감소). 4장 중 AI 비용 카드 하나만 진행바가 있지만 CSS Grid의 `align-items: stretch`
+기본값 때문에 4장이 항상 같은 높이로 늘어난다 — 그래서 스켈레톤도 4장 전부에 진행바
+자리를 넣어야 실제 높이에 맞는다(카드별로 다르게 그리면 오히려 더 어긋난다).
+
+남은 0.0021은 실제 카드 텍스트 줄바꿈(통화 포맷·퍼센트 문자열 길이가 기관마다 달라
+sub 텍스트가 1~2줄 사이를 오간다)에서 오는 잔차라 완전히 0으로 맞추려면 콘텐츠별로
+스켈레톤을 다르게 그려야 하는데, 그 정밀도는 이번 범위에서 과함 — 임계 0.1의 2% 수준이라
+여기서 멈춤.
+
+### 검증
+
+`typecheck`·`build`·`lint`·`format:check`·`check:design`·`check:admin` 전부 통과(로컬
+실행 결과 직접 확인). 렌더 확인은 Playwright(`page.route()` 가로채기, 2차 라운드와 같은
+이유로 claude-in-chrome 대신 사용)로 B2(회귀)·B3(실패→재시도 회복)·B1(스켈레톤, CLS
+실측)까지 전부 스크린샷·수치로 확인.
+
+**이슈 #185, 이걸로 축 B 잔여 범위 전부 종료.**

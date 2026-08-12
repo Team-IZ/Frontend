@@ -83,11 +83,18 @@ export function TodoSkeleton() {
 export function ClassCompareSkeleton({ rows = 8 }: { rows?: number }) {
   return (
     <div aria-hidden className="px-6 py-3">
-      {/* 기준선 라벨 줄 — 실제 블록에도 있어서 빼면 그만큼 어긋난다 */}
-      <p className="mb-2 flex h-4 items-end gap-3">
+      {/*
+        기준선 라벨 줄 — 실제 블록에도 있어서 빼면 그만큼 어긋난다.
+
+        ⚠ **`<p>`가 아니라 `<div>`다.** `Skeleton`이 `div`라 `<p>` 안에 넣으면
+        **HTML이 허용하지 않는 중첩**이고, 브라우저가 `<p>`를 강제로 닫아 버려
+        React가 하이드레이션 경고를 낸다(실측 — 대시보드 진입 300ms 시점).
+        자리표시자에는 문단이 필요 없다.
+      */}
+      <div className="mb-2 flex h-4 items-end gap-3">
         <span className="w-[42px] shrink-0" />
         <Skeleton className="h-2.5 w-24" />
-      </p>
+      </div>
       {Array.from({ length: rows }, (_, i) => (
         /* 실제 행 높이 — 9행 + 머리줄이 325px이므로 31px */
         <div key={i} className="flex h-[31px] items-center gap-3">

@@ -29,6 +29,18 @@ export const REACH_LEVEL_COLOR: Record<ReachLevel, string> = {
   4: 'bg-reach-4 text-white',
 }
 
+/**
+ * 발행 시각을 **날짜만**으로. 서버가 ISO 타임스탬프를 주는데 그대로 그리면
+ * 표지에 `2026-03-05T00:00:00Z 미니프로젝트 전체 6회 완료 시점으로 고정`이 찍힌다
+ * (실측 — 8기). 시각이 `00:00:00Z`라 뜻도 없다.
+ *
+ * `periodStart`·`periodEnd`는 이미 날짜(`2025-09-01`)라 이 함수를 안 거친다 —
+ * **같은 문서 안에서 두 형식이 섞여 있었다.**
+ */
+export function reportDate(iso: string | null): string | null {
+  return iso ? iso.slice(0, 10) : null
+}
+
 export const UNASKED_LABEL = '묻지 못함'
 export const UNASKED_HINT = '코드에 없어서'
 
@@ -209,7 +221,7 @@ export function exportReportCsv(report: Report) {
 
   const head = [
     line(['리포트', report.cohortName]),
-    line(['발행 시점', report.publishedAt ?? '확정 전']),
+    line(['발행 시점', reportDate(report.publishedAt) ?? '확정 전']),
     line(['상태', report.status === 'CONFIRMED' ? '확정' : '진행 중']),
     line(['범위', `${report.periodStart} – ${report.periodEnd ?? '진행 중'}`]),
   ].join('\n')
@@ -220,7 +232,7 @@ export function exportReportCsv(report: Report) {
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
   a.href = url
-  a.download = `리포트-${report.cohortName}-${report.publishedAt ?? '진행중'}.csv`
+  a.download = `리포트-${report.cohortName}-${reportDate(report.publishedAt) ?? '진행중'}.csv`
   a.click()
   URL.revokeObjectURL(url)
 }

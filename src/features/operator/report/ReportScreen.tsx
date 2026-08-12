@@ -8,11 +8,12 @@ import type { Report } from './_/api/types'
 import { REPORT_SECTIONS, type ReportSectionKey } from './_/sections'
 import { useReport } from './_/api/api'
 import { useCohortId } from '@/stores/cohortScope'
-import { exportReportCsv } from './_/labels'
-import Loading from '@/components/common/Loading'
+import { exportReportCsv, reportDate } from './_/labels'
+import { SlowNotice } from '@/components/common/Loading'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import ErrorState from '@/components/common/ErrorState'
 import ReportHead from './_/components/ReportHead'
+import ReportSkeleton from './_/components/ReportSkeleton'
 import SectionHeading from './_/components/SectionHeading'
 import DiagnosisSummary from './_/components/DiagnosisSummary'
 import ConceptDistribution from './_/components/ConceptDistribution'
@@ -118,7 +119,13 @@ export default function ReportScreen() {
     **기수는 스코프가 정한다**(`stores/cohortScope`) — 이 화면만 상수 UUID를 들고 있었다.
     그러면 다른 화면과 **서로 다른 기수를 보고 있어도** 화면이 아무 경고를 안 낸다.
   */
-  const { cohortId, cohortName: scopeName, failed: cohortFailed } = useCohortId()
+  const {
+    cohortId,
+    cohortName: scopeName,
+    failed: cohortFailed,
+    cohorts,
+    selectCohort,
+  } = useCohortId()
   const report = useReport(cohortId)
   /* 표지·빵부스러기는 리포트가 준 이름을 먼저 쓴다 — 얼린 시점의 기수 이름이다 */
   const cohortName = report.data?.cohortName ?? scopeName
@@ -137,7 +144,12 @@ export default function ReportScreen() {
 
   /* 기수를 셸에 넘긴다 — 안 넘기면 헤더가 자리표시자(`7기`)를 그려 본문과 다른 기수를 말한다 */
   return (
-    <ConsoleShell role="operator" cohort={cohortName ?? ''}>
+    <ConsoleShell
+      role="operator"
+      cohort={cohortName ?? ''}
+      cohorts={cohorts}
+      onCohortChange={selectCohort}
+    >
       {/*
         cohortName이 로딩 중엔 없다 — 조건 없이 이어 붙이면 데이터가 오기 전 "리포트 ›"
         만 매달린 채로 250ms(목 지연) 동안 보인다. `PageHeader`는 `breadcrumb`이
@@ -161,8 +173,20 @@ export default function ReportScreen() {
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
-      ) : report.isLoading ? (
-        <Loading label="리포트를 불러오는 중" />
+      ) : /*
+        ⚠ **`isLoading`으로 가르면 안 된다.** 기수가 정해지기 전에는 `enabled: false`라
+        조회가 시작조차 안 하고, 그때 `isLoading`은 **`false`** 다 — 어느 분기도 안 타서
+        **진입 후 2.25초 동안 제목만 있고 본문이 비었다**(실측). OP-03에서 6초 백지를
+        만든 것과 같은 뿌리다(async-states §1-9).
+
+        판정은 **데이터가 있나**로 한다. 그리고 스피너가 아니라 문서 모양으로 자리를
+        잡는다 — OP-01~04와 같다.
+      */
+      !report.data && !report.isError ? (
+        <>
+          <ReportSkeleton />
+          <SlowNotice />
+        </>
       ) : report.isError ? (
         /*
           **404가 늘 고장인 것은 아니다.** `COHORT_REPORT_NOT_FOUND`는 아직 진단이 확정되지
@@ -185,12 +209,14 @@ export default function ReportScreen() {
                 // 안 보인다 — "전체 N회 완료"로 써서 completedRounds가 곧
                 // totalRounds라는 사실(=더 남은 회차가 없다)을 문구가 직접 말하게 한다.
                 report.data.status === 'CONFIRMED'
-                  ? `${report.data.publishedAt} 미니프로젝트 전체 ${report.data.completedRounds}회 완료 시점으로 고정`
+                  ? `${reportDate(report.data.publishedAt)} 미니프로젝트 전체 ${report.data.completedRounds}회 완료 시점으로 고정`
                   : `미니프로젝트 ${report.data.completedRounds} / ${report.data.totalRounds}회 진행 중 · 아직 확정 전`
               }
               exportDisabled={report.data.status !== 'CONFIRMED'}
               onExport={() =>
-                handlePrint(`리포트 · ${report.data!.cohortName} · ${report.data!.publishedAt}`)
+                handlePrint(
+                  `리포트 · ${report.data!.cohortName} · ${reportDate(report.data!.publishedAt)}`,
+                )
               }
               onExportCsv={() => exportReportCsv(report.data!)}
             />

@@ -5,6 +5,9 @@ import type {
   replaceManagerClassrooms_Path,
   replaceManagerClassrooms_Body,
   replaceManagerClassrooms_Response,
+  getMyCommitEmail_Response,
+  updateMyCommitEmail_Body,
+  updateMyCommitEmail_Response,
   inviteManager_Path,
   inviteManager_Body,
   inviteManager_Response,
@@ -45,6 +48,21 @@ export const replaceManagerClassrooms = (
   unwrap<replaceManagerClassrooms_Response>(
     izClient.PUT('/api/v0/members/organizations/{organizationId}/managers/{managerId}/classrooms', {
       params: { path: params.path },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 내 커밋 이메일 조회 — `GET /api/v0/members/me/commit-email` */
+export const getMyCommitEmail = (params: RequestOptions = {}) =>
+  unwrap<getMyCommitEmail_Response>(
+    izClient.GET('/api/v0/members/me/commit-email', { signal: params.signal }) as never,
+  )
+
+/** 내 커밋 이메일 등록·변경 — `PUT /api/v0/members/me/commit-email` */
+export const updateMyCommitEmail = (params: { body: updateMyCommitEmail_Body } & RequestOptions) =>
+  unwrap<updateMyCommitEmail_Response>(
+    izClient.PUT('/api/v0/members/me/commit-email', {
       body: params.body,
       signal: params.signal,
     }) as never,

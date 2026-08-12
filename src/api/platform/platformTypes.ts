@@ -49,13 +49,15 @@ export type updateSuperAdminStatus_Body = NonNullable<
 >['content']['application/json']
 export type updateSuperAdminStatus_Response =
   operations['updateSuperAdminStatus']['responses'][200]['content']['application/json']
-export type updateSuperAdminStatus_Item = updateSuperAdminStatus_Response['content'][number]
+export type updateSuperAdminStatus_Item = NonNullable<
+  updateSuperAdminStatus_Response['content']
+>[number]
 export type updateSuperAdminStatus_Errors = 'SUPER_ADMIN_NOT_FOUND' | 'LAST_SUPER_ADMIN'
 
 // GET /api/v0/platform/operations/super-admins — 슈퍼어드민 계정 목록
 export type findSuperAdmins_Response =
   operations['findSuperAdmins']['responses'][200]['content']['application/json']
-export type findSuperAdmins_Item = findSuperAdmins_Response['content'][number]
+export type findSuperAdmins_Item = NonNullable<findSuperAdmins_Response['content']>[number]
 
 // GET /api/v0/platform/operations/model-settings — 플랫폼 모델·단가 설정 조회
 export type findModelSettings_Response =

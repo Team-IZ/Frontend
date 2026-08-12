@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import type { QueryOptions } from '@/api/_contract'
 import {
   findCohortRiskTraineeRates,
+  findManagerHeatmap,
   findCohortGroupGaps,
   findCohortComparison,
   findCohortActionsRequired,
@@ -13,6 +14,9 @@ import type {
   findCohortRiskTraineeRates_Path,
   findCohortRiskTraineeRates_Query,
   findCohortRiskTraineeRates_Response,
+  findManagerHeatmap_Path,
+  findManagerHeatmap_Query,
+  findManagerHeatmap_Response,
   findCohortGroupGaps_Path,
   findCohortGroupGaps_Response,
   findCohortComparison_Path,
@@ -30,6 +34,18 @@ export function useFindCohortRiskTraineeRates(
   return useQuery({
     queryKey: analyticsKeys.findCohortRiskTraineeRates(params),
     queryFn: ({ signal }) => findCohortRiskTraineeRates({ ...params, signal }),
+    ...options,
+  })
+}
+
+/** 매니저 히트맵 조회 */
+export function useFindManagerHeatmap(
+  params: { path: findManagerHeatmap_Path; query: findManagerHeatmap_Query },
+  options?: QueryOptions<findManagerHeatmap_Response>,
+) {
+  return useQuery({
+    queryKey: analyticsKeys.findManagerHeatmap(params),
+    queryFn: ({ signal }) => findManagerHeatmap({ ...params, signal }),
     ...options,
   })
 }

@@ -1,6 +1,6 @@
 /* 자동 생성 — 손으로 고치지 마세요. 다시 만들려면: npm run api:gen */
 
-import type { findClassDiagnosis_Query } from './reportingTypes'
+import type { findMyReport_Path, findClassDiagnosis_Query } from './reportingTypes'
 
 /*
   `all`이 이 도메인 전체를 가리킨다 — 쓰기 훅이 성공하면 이 접두어로 한 번에 무효화한다.
@@ -9,6 +9,9 @@ import type { findClassDiagnosis_Query } from './reportingTypes'
 */
 export const reportingKeys = {
   all: ['reporting'] as const,
+  findMyReports: () => [...reportingKeys.all, 'findMyReports'] as const,
+  findMyReport: (params: { path: findMyReport_Path }) =>
+    [...reportingKeys.all, 'findMyReport', params.path ?? null] as const,
   findClassDiagnosis: (params: { query?: findClassDiagnosis_Query }) =>
     [...reportingKeys.all, 'findClassDiagnosis', params.query ?? null] as const,
 }

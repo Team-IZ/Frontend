@@ -11,7 +11,7 @@ import type { operations } from '@/api/schema'
 export type findCohorts_Query = NonNullable<operations['findCohorts']['parameters']['query']>
 export type findCohorts_Response =
   operations['findCohorts']['responses'][200]['content']['application/json']
-export type findCohorts_Item = findCohorts_Response['content'][number]
+export type findCohorts_Item = NonNullable<findCohorts_Response['content']>[number]
 export type findCohorts_Errors =
   'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ORGANIZATION_CONTEXT_MISSING'
 
@@ -21,7 +21,7 @@ export type createCohort_Body = NonNullable<
 >['content']['application/json']
 export type createCohort_Response =
   operations['createCohort']['responses'][201]['content']['application/json']
-export type createCohort_Item = createCohort_Response['managers'][number]
+export type createCohort_Item = NonNullable<createCohort_Response['managers']>[number]
 export type createCohort_Errors =
   | 'VALIDATION_FAILED'
   | 'COHORT_PERIOD_INVALID'
@@ -35,7 +35,7 @@ export type createCohort_Errors =
 export type findClassrooms_Path = operations['findClassrooms']['parameters']['path']
 export type findClassrooms_Response =
   operations['findClassrooms']['responses'][200]['content']['application/json']
-export type findClassrooms_Item = findClassrooms_Response['classrooms'][number]
+export type findClassrooms_Item = NonNullable<findClassrooms_Response['classrooms']>[number]
 export type findClassrooms_Errors =
   'UNAUTHENTICATED' | 'COHORT_NOT_FOUND' | 'ORGANIZATION_CONTEXT_MISSING'
 
@@ -46,7 +46,7 @@ export type createClassroom_Body = NonNullable<
 >['content']['application/json']
 export type createClassroom_Response =
   operations['createClassroom']['responses'][201]['content']['application/json']
-export type createClassroom_Item = createClassroom_Response['managers'][number]
+export type createClassroom_Item = NonNullable<createClassroom_Response['managers']>[number]
 export type createClassroom_Errors =
   'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND'
 
@@ -54,7 +54,7 @@ export type createClassroom_Errors =
 export type findCohort_Path = operations['findCohort']['parameters']['path']
 export type findCohort_Response =
   operations['findCohort']['responses'][200]['content']['application/json']
-export type findCohort_Item = findCohort_Response['managers'][number]
+export type findCohort_Item = NonNullable<findCohort_Response['managers']>[number]
 export type findCohort_Errors =
   'UNAUTHENTICATED' | 'COHORT_NOT_FOUND' | 'ORGANIZATION_CONTEXT_MISSING'
 
@@ -75,7 +75,7 @@ export type updateCohort_Body = NonNullable<
 >['content']['application/json']
 export type updateCohort_Response =
   operations['updateCohort']['responses'][200]['content']['application/json']
-export type updateCohort_Item = updateCohort_Response['managers'][number]
+export type updateCohort_Item = NonNullable<updateCohort_Response['managers']>[number]
 export type updateCohort_Errors =
   | 'COHORT_UPDATE_EMPTY'
   | 'COHORT_PERIOD_INVALID'
@@ -93,7 +93,7 @@ export type endCohort_Body = NonNullable<
 >['content']['application/json']
 export type endCohort_Response =
   operations['endCohort']['responses'][200]['content']['application/json']
-export type endCohort_Item = endCohort_Response['managers'][number]
+export type endCohort_Item = NonNullable<endCohort_Response['managers']>[number]
 export type endCohort_Errors =
   'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND'
 
@@ -110,7 +110,7 @@ export type updateClassroom_Body = NonNullable<
 >['content']['application/json']
 export type updateClassroom_Response =
   operations['updateClassroom']['responses'][200]['content']['application/json']
-export type updateClassroom_Item = updateClassroom_Response['managers'][number]
+export type updateClassroom_Item = NonNullable<updateClassroom_Response['managers']>[number]
 export type updateClassroom_Errors =
   | 'CLASSROOM_UPDATE_EMPTY'
   | 'VALIDATION_FAILED'
@@ -126,7 +126,7 @@ export type updateManagers_Body = NonNullable<
 >['content']['application/json']
 export type updateManagers_Response =
   operations['updateManagers']['responses'][200]['content']['application/json']
-export type updateManagers_Item = updateManagers_Response['managers'][number]
+export type updateManagers_Item = NonNullable<updateManagers_Response['managers']>[number]
 export type updateManagers_Errors =
   'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'CLASSROOM_NOT_FOUND'
 
@@ -137,7 +137,7 @@ export type assignTrainees_Body = NonNullable<
 >['content']['application/json']
 export type assignTrainees_Response =
   operations['assignTrainees']['responses'][200]['content']['application/json']
-export type assignTrainees_Item = assignTrainees_Response['assignedTraineeIds'][number]
+export type assignTrainees_Item = NonNullable<assignTrainees_Response['assignedTraineeIds']>[number]
 export type assignTrainees_Errors =
   | 'VALIDATION_FAILED'
   | 'TRAINEE_NOT_IN_COHORT'
@@ -152,7 +152,9 @@ export type rollbackAssignment_Body = NonNullable<
 >['content']['application/json']
 export type rollbackAssignment_Response =
   operations['rollbackAssignment']['responses'][200]['content']['application/json']
-export type rollbackAssignment_Item = rollbackAssignment_Response['rolledBackTraineeIds'][number]
+export type rollbackAssignment_Item = NonNullable<
+  rollbackAssignment_Response['rolledBackTraineeIds']
+>[number]
 export type rollbackAssignment_Errors =
   | 'VALIDATION_FAILED'
   | 'TRAINEE_NOT_IN_COHORT'
@@ -164,5 +166,5 @@ export type rollbackAssignment_Errors =
 // GET /api/v0/members/me/enrollments — 내 소속 기수·반 조회
 export type findMyEnrollments_Response =
   operations['findMyEnrollments']['responses'][200]['content']['application/json']
-export type findMyEnrollments_Item = findMyEnrollments_Response['enrollments'][number]
+export type findMyEnrollments_Item = NonNullable<findMyEnrollments_Response['enrollments']>[number]
 export type findMyEnrollments_Errors = 'UNAUTHENTICATED' | 'ORGANIZATION_CONTEXT_MISSING'

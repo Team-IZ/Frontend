@@ -33,4 +33,4 @@ export type findCohortCost_Path = operations['findCohortCost']['parameters']['pa
 export type findCohortCost_Query = NonNullable<operations['findCohortCost']['parameters']['query']>
 export type findCohortCost_Response =
   operations['findCohortCost']['responses'][200]['content']['application/json']
-export type findCohortCost_Item = findCohortCost_Response['classes'][number]
+export type findCohortCost_Item = NonNullable<findCohortCost_Response['classes']>[number]

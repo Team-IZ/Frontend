@@ -2,9 +2,36 @@
 
 import { useQuery } from '@tanstack/react-query'
 import type { QueryOptions } from '@/api/_contract'
-import { findClassDiagnosis } from './reportingApi'
+import { findMyReports, findMyReport, findClassDiagnosis } from './reportingApi'
 import { reportingKeys } from './reportingKeys'
-import type { findClassDiagnosis_Query, findClassDiagnosis_Response } from './reportingTypes'
+import type {
+  findMyReports_Response,
+  findMyReport_Path,
+  findMyReport_Response,
+  findClassDiagnosis_Query,
+  findClassDiagnosis_Response,
+} from './reportingTypes'
+
+/** 내 리포트 전량 조회 */
+export function useFindMyReports(options?: QueryOptions<findMyReports_Response>) {
+  return useQuery({
+    queryKey: reportingKeys.findMyReports(),
+    queryFn: ({ signal }) => findMyReports({ signal }),
+    ...options,
+  })
+}
+
+/** 리포트 단건 조회 */
+export function useFindMyReport(
+  params: { path: findMyReport_Path },
+  options?: QueryOptions<findMyReport_Response>,
+) {
+  return useQuery({
+    queryKey: reportingKeys.findMyReport(params),
+    queryFn: ({ signal }) => findMyReport({ ...params, signal }),
+    ...options,
+  })
+}
 
 /** 수업 진단 리포트 조회 */
 export function useFindClassDiagnosis(

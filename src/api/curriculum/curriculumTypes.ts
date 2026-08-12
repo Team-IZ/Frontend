@@ -20,7 +20,9 @@ export type findOrganizationCurricula_Query = NonNullable<
 >
 export type findOrganizationCurricula_Response =
   operations['findOrganizationCurricula']['responses'][200]['content']['application/json']
-export type findOrganizationCurricula_Item = findOrganizationCurricula_Response['content'][number]
+export type findOrganizationCurricula_Item = NonNullable<
+  findOrganizationCurricula_Response['content']
+>[number]
 export type findOrganizationCurricula_Errors =
   | 'VALIDATION_FAILED'
   | 'CURRICULUM_FILTER_CONFLICT'

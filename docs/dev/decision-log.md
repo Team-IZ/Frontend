@@ -505,3 +505,11 @@ git에는 `pre-stash`·`pre-reset` 훅이 없다. 그래서 Claude Code의 `PreT
   5. 프로젝트는 애초에 회차(round) 개념이 목록 필터에 없어(각 행 자체가 회차) 이 항목은 해당 없음.
 - **검산:** `/tmp` 격리 재검증 — `tsc --noEmit`(app·node) 통과, `prettier --check`에서 `TraineeListScreen.tsx` 포맷 어긋남 1건 발견 → `--write`로 고쳐 원본에 반영 후 재검증 전부 통과, `check-design.mjs` 통과(디자인 토큰 41개·대비 21쌍 그대로).
 - **목적·효과:** 세 목록 화면(면담·교육생·프로젝트) 모두 상세→목록 왕복 시 필터가 안 사라지는 동작으로 통일. 회차 전환 시 필터 초기화 여부만 화면 성격에 따라 갈린다(면담: 초기화 / 교육생: 유지 / 프로젝트: 해당 없음).
+
+## D28 · SA-01 summary 카드 B3(실패)·B1(로딩) 하드닝 — 컴팩트 Alert + Card 스켈레톤
+
+- **배경:** 이슈 #185 3차 라운드. `sa-01-org-list-situations.md` 축 B — `OrgListScreen.tsx`(208행)가 `summary.data &&` 조건만 보고 `isPending`·`isError`를 안 읽어 로딩 중엔 카드 자리가 없고(레이아웃 시프트, 4단계 CLS 실측 0.0550), 실패 시엔 재시도 수단 없이 그냥 안 뜬다. 지시서가 B3는 필수, B1은 "같이 처리 권장"(같은 조건문의 나머지 분기라 어차피 손댈 자리이고 CLS의 직접 원인)으로 못 박아 둬서 둘 다 처리.
+- **판단(전문가 제안, 반대하면 되돌림) — 실패 UI 모양:** 4칸짜리 dashed `Empty`(목록 자체의 isError가 쓰는 것과 같은 모양)는 쓰지 않았다. 카드 행 높이(약 90~130px)에 비해 `Empty`는 아이콘·헤더·설명까지 들어가 세로로 너무 길어 이 자리에서 어색하다. 대신 `manager/dashboard/DashboardScreen.tsx`가 밴드별 실패 줄에 이미 쓰고 있는 `Alert variant="danger"` + `AlertAction`(다시 시도 버튼) 조합을 그대로 재현했다(레이어 린트가 features 간 import를 막아 패턴만 따르고 새로 작성 — `OrgMetrics.tsx`에 `OrgMetricsFailed`로 추가). 한 줄짜리 인라인 배너라 4칸 그리드 높이와 자연스럽게 어울린다.
+- **판단 — 로딩 스켈레톤 높이:** 처음엔 `MetricCard`의 label·value·sub 3줄만 반영한 스켈레톤(94px)을 만들었는데, Playwright `PerformanceObserver`로 실측하니 실제 로드 완료 높이(124.66px)와 30px 넘게 차이 나 CLS가 남았다. 원인: 4장 중 "이번 달 AI 비용" 카드만 예산 진행바(Progress)가 있는데, CSS Grid `align-items: stretch` 기본값 때문에 나머지 3장도 그 카드 높이에 맞춰 함께 늘어난다. 스켈레톤에도 진행바 자리(4번째 줄)를 4장 전부에 추가해 130px로 보정 → 재측정 결과 **CLS 0.0550 → 0.0021(96% 감소)**. 남은 0.0021은 sub 텍스트가 콘텐츠 길이에 따라 1~2줄을 오가는 잔차로, 콘텐츠별로 스켈레톤을 다르게 그려야 없앨 수 있는데 임계(0.1)의 2% 수준이라 이번 범위에서는 멈췄다.
+- **검산:** `typecheck`·`build`·`lint`·`format:check`·`check:design`·`check:admin` 전부 로컬 실행 통과. 렌더은 Playwright(`page.route()` 가로채기 — 2차 라운드와 같은 이유로 claude-in-chrome 대신 사용, 사용자 로그인 없이 `.env.local`의 dev 전용 슈퍼어드민 quick-login 계정으로 진행)로 B2(회귀, 안 깨짐)·B3(500 강제 → 실패 배너 → 다시 시도 클릭 → 정상 회복)·B1(2.5초 지연 → 스켈레톤 → CLS 수치) 전부 스크린샷·수치로 확인.
+- **목적·효과:** SA-01 축 B(summary 조회 상태) 3종(B1/B2/B3) 전부 명시적으로 처리됨 — 이슈 #185의 마지막 남은 범위 종료. summary 실패가 더 이상 "무대응"이 아니고, 로딩 중 레이아웃 시프트가 실질적으로 사라짐.

@@ -111,7 +111,26 @@ const SPEC = {
       },
     },
   },
-  components: { schemas: {} },
+  /*
+    `_Item`은 성공 응답이 `$ref`이고 그 스키마에 **배열 속성이 정확히 하나**일 때만 나온다 —
+    그래서 스키마가 비어 있으면 그 렌더 경로가 아예 안 돈다(실제로 그래서 아래 TS2537
+    버그를 오래 못 잡았다).
+
+    `ThingList.content`를 **`required`에 넣지 않는다.** 백엔드가 상태별로 키를 빼는 응답을
+    내면 생성 타입이 `T[] | undefined`가 되는데, 거기 `[number]`를 붙이면 컴파일이 깨진다.
+    그 조건을 고정 스펙으로 박아 둔다.
+  */
+  components: {
+    schemas: {
+      ThingList: {
+        type: 'object',
+        properties: {
+          content: { type: 'array', items: { type: 'object' } },
+          total: { type: 'integer' },
+        },
+      },
+    },
+  },
 }
 
 /** 실제 설정과 같은 모양. 렌더러가 경로를 하드코딩하지 않는다는 것도 여기서 검증된다 */
@@ -160,6 +179,18 @@ test('인자 모양 — 필수가 없으면 인자 없이 부를 수 있다', ()
   assert.match(code, /checkThing = \(params: \{ query: checkThing_Query \} & RequestOptions\)/)
   assert.match(code, /findThing = \(params: \{ path: findThing_Path \} & RequestOptions\)/)
   assert.match(code, /createThing = \(params: \{ body: createThing_Body \} & RequestOptions\)/)
+})
+
+test('_Item은 옵셔널 배열도 인덱싱할 수 있어야 한다 (TS2537 회귀)', () => {
+  const types = renderDomainTypes(callable, CFG)
+  // 배열 속성이 하나뿐이라 _Item이 나온다
+  assert.match(types, /export type findThings_Item = /)
+  // NonNullable 없이 인덱싱하면 required가 아닌 속성에서 컴파일이 깨진다
+  assert.match(
+    types,
+    /findThings_Item = NonNullable<findThings_Response\['content'\]>\[number\]/,
+    '옵셔널 배열 속성을 NonNullable로 벗기지 않으면 tsc가 TS2537로 죽는다',
+  )
 })
 
 test('경로는 스펙 문자열 그대로 — 뭉개지 않는다', () => {

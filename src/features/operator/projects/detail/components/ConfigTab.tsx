@@ -1,4 +1,5 @@
 import { cn } from '@/lib/utils/cn'
+import { Link } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { canDelete, canEditConfig, lockedReason } from '../../rules'
@@ -92,8 +93,21 @@ export default function ConfigTab({
               ).length
               return (
                 <Row key={c.projectCurriculumId} index={i + 1}>
-                  {/* 교안 버전 조회가 실패하면 이름이 없다 — 연결 자체는 있으므로 그 사실을 쓴다 */}
-                  <b className="font-semibold">{c.originalFileName ?? '(이름을 불러오지 못함)'}</b>
+                  {/*
+                    **교안 이름은 원본으로 가는 링크다.** 이 화면에는 교안을 볼 자리가
+                    없어서(파일·쪽수·분석 상태는 운영 관리가 갖는다) 이름만 읽고 끝났다.
+                    교안 버전 조회가 실패하면 이름이 없다 — 연결 자체는 있으므로 그 사실을 쓴다.
+                  */}
+                  {c.originalFileName ? (
+                    <Link
+                      to="/operator/admin/curricula"
+                      className="hover:text-primary font-semibold hover:underline"
+                    >
+                      {c.originalFileName}
+                    </Link>
+                  ) : (
+                    <b className="font-semibold">(이름을 불러오지 못함)</b>
+                  )}
                   {c.versionNo != null && <span className="text-fg-subtle"> v{c.versionNo}</span>}
                   <span className="text-fg-subtle text-xs"> · 연결 {c.linkedAt.slice(0, 10)}</span>
                   {used > 0 && (
@@ -130,9 +144,22 @@ export default function ConfigTab({
               return (
                 <Row key={concept.mappingId} index={i + 1}>
                   <b className="font-semibold">{concept.extractedName}</b>
-                  {/* 출처를 달고 다닌다 — 리포트·브리프가 이 값으로 교안 위치를 가리킨다 */}
+                  {/*
+                    출처를 달고 다닌다 — 리포트·브리프가 이 값으로 교안 위치를 가리킨다.
+                    **출처 교안 이름도 링크다** — 「이 개념이 어디서 왔나」를 눌러서 확인한다.
+                  */}
                   <span className="text-fg-subtle">
-                    {owner?.originalFileName && ` · ${owner.originalFileName}`}
+                    {owner?.originalFileName && (
+                      <>
+                        {' · '}
+                        <Link
+                          to="/operator/admin/curricula"
+                          className="hover:text-primary hover:underline"
+                        >
+                          {owner.originalFileName}
+                        </Link>
+                      </>
+                    )}
                     {owner?.versionNo != null && ` v${owner.versionNo}`}
                     {concept.pageStart != null && ` · ${pageLabel(concept)}`}
                   </span>

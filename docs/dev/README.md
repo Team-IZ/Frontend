@@ -48,6 +48,7 @@
 - [백엔드 API — 12차 요청](backend/backend-api-requests-12.md) — OP-02 분석을 붙이며 나온 것. `roundNo`가 요청·응답에서 다른 것을 가리킨다 · `sameCurriculumOnly=true`면 결과 0건
 - [백엔드 API — 13차 요청](backend/backend-api-requests-13.md) — 11차 반영본으로 OP-06을 다시 돌려보며 나온 **요청 2건 + 확인 1건**. **같은 교안을 목록은 24개 회차가 쓴다 하고 상세는 0건**이라 한다 · **11차 열한 건 전부 반영 확인**
 - [백엔드 API — 14차 요청](backend/backend-api-requests-14.md) — **요청 1건**: `readinessCounts`가 **스펙엔 `required`인데 응답에 없어** 프로젝트 목록이 흰 화면이 됐다. 스펙과 서버가 다른 말을 하는 상태
+- [백엔드 API — 18차 요청](backend/backend-api-requests-18.md) — **OP-03·회차 생성.** 최우선은 **R1** — 분석 전 교안의 `/sections`가 **응답조차 안 해** 회차 생성이 막힌다(교안 7종 중 5종). 그 밖에 목록에 교안·개념 **이름이 없고**, 정렬 셋이 사실상 같으며 **종료가 맨 앞**이다
 - [백엔드 API — 16차 요청](backend/backend-api-requests-16.md) — **교육생 도메인 계약 제안.** 결함 보고가 아니라 *만들어지기 전에* 보내는 것 — 홈 상태 8종 · 제출 6종 · 세션 채점/힌트(기획 변경) · 리포트 공개 정책. 화면 4개는 목으로 이미 완성
 - [인증·세션 설계](api/auth-design.md) — 토큰을 어디에 두나 · 왜 Context가 아니라 스토어인가 · 401 재발급의 함정 셋 · 실무 정석과 우리 절충
 - [연동 계획 — Auth·슈퍼어드민](api/integration-plan-auth-superadmin.md) — **지금 붙일 수 있는 6화면** · 타입 불일치 · 순서와 완료 판정

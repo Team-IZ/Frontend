@@ -17,7 +17,7 @@ import { useFindOrganizationOperationSettings } from '@/api/usage/useUsageQuerie
 import { useRestoreOrganization } from '@/api/organization/useOrganizationMutations'
 import type { findOrganizationOperationSettings_Response } from '@/api/usage/usageTypes'
 import type { findOrganization_Response } from '@/api/organization/organizationTypes'
-import { purgeDateOf } from '../../labels'
+import { isDeletionLocked, purgeDateOf } from '../../labels'
 import SettingEditDialog, { type SettingsPatch } from './SettingEditDialog'
 import DeleteOrgDialog from './DeleteOrgDialog'
 
@@ -140,24 +140,26 @@ export default function SettingsTab({ org }: { org: Org }) {
   const purgeAt = purgeDateOf(org)
   const close = () => setOpen(null)
 
+  /*
+    운영 설정 모달들은 초안을 `s.organizationStatus`(이 API 필드) 등으로 채운다 — 이 필드는
+    삭제 대기 여부를 모른다(ACTIVE/SUSPENDED 2값뿐). 그래서 삭제 대기 중에 "기관 상태" 모달을
+    열어 저장하면 화면은 안 막고 서버가 저장 시점에야 거부해 범용 에러만 떴다(K2). 헤더 배지가
+    쓰는 `org.status`로 여기서 한 번만 판정해 5개 변경 버튼 전부에 재사용한다 — "기관 삭제"
+    버튼도 같은 조건을 이미 쓰고 있었다.
+  */
+  const settingsLocked = isDeletionLocked(org.status)
+  const lockedTitle = settingsLocked
+    ? '삭제 대기 상태인 기관은 설정을 변경할 수 없습니다.'
+    : undefined
+  // labels.ts의 orgStatusBadge가 DELETION_PENDING·DELETED를 이미 같은 "삭제 대기"
+  // 배지로 합쳤다(D31) — 여기 문구도 상태별로 가르지 않고 그 표시에 맞춘다.
+  const deleteLockedTitle = settingsLocked ? '이미 삭제 대기 중입니다.' : undefined
+
   return (
     <div className="flex flex-col gap-4">
-      {org.status === 'DELETION_PENDING' && (
+      {settingsLocked && (
         <Alert variant="danger">
           <AlertTitle>삭제 대기 중입니다</AlertTitle>
-          <AlertDescription className="flex items-center justify-between gap-4">
-            <span>
-              {purgeAt ? `${purgeAt}에 파기됩니다.` : '보존기간이 지나면 파기됩니다.'} 그전까지는
-              복구할 수 있습니다.
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={restore.isPending}
-              onClick={() => void restore.mutateAsync({ path: { organizationId } })}
-            >
-              복구
-            </Button>
           <AlertDescription className="flex flex-col gap-2">
             <div className="flex items-center justify-between gap-4">
               <span>
@@ -186,6 +188,8 @@ export default function SettingsTab({ org }: { org: Org }) {
           <ChangeButton
             value={s.organizationStatus === 'ACTIVE' ? '활성' : '정지'}
             onClick={() => setOpen('status')}
+            disabled={settingsLocked}
+            title={lockedTitle}
           />
         </SettingRow>
 
@@ -196,6 +200,8 @@ export default function SettingsTab({ org }: { org: Org }) {
           <ChangeButton
             value={`예산 ${s.monthlyAiBudget.toLocaleString()} ${s.currencyCode}`}
             onClick={() => setOpen('limits')}
+            disabled={settingsLocked}
+            title={lockedTitle}
           />
         </SettingRow>
 
@@ -206,17 +212,26 @@ export default function SettingsTab({ org }: { org: Org }) {
           <ChangeButton
             value={`${s.dataRetentionDays}일 · ${DISCLOSURE_ITEMS[s.defaultDisclosureScope] ?? s.defaultDisclosureScope}`}
             onClick={() => setOpen('data')}
+            disabled={settingsLocked}
+            title={lockedTitle}
           />
         </SettingRow>
 
         <SettingRow title="기능 허용" description="이 기관에서 쓸 수 있는 기능을 켜고 끕니다">
-          <ChangeButton value={`${countEnabled(s)}/4 사용`} onClick={() => setOpen('features')} />
+          <ChangeButton
+            value={`${countEnabled(s)}/4 사용`}
+            onClick={() => setOpen('features')}
+            disabled={settingsLocked}
+            title={lockedTitle}
+          />
         </SettingRow>
 
         <SettingRow title="코드 세션 AI 등급" description="정확도를 높일수록 비용이 오릅니다">
           <ChangeButton
             value={TIER_ITEMS[s.codeSessionTierCode] ?? s.codeSessionTierCode}
             onClick={() => setOpen('tier')}
+            disabled={settingsLocked}
+            title={lockedTitle}
           />
         </SettingRow>
 
@@ -224,7 +239,8 @@ export default function SettingsTab({ org }: { org: Org }) {
           <Button
             variant="ghost"
             className="text-danger border-danger-border"
-            disabled={org.status === 'DELETION_PENDING' || org.status === 'DELETED'}
+            disabled={settingsLocked}
+            title={deleteLockedTitle}
             onClick={() => setDeleteOpen(true)}
           >
             기관 삭제
@@ -414,11 +430,21 @@ export default function SettingsTab({ org }: { org: Org }) {
   )
 }
 
-function ChangeButton({ value, onClick }: { value: string; onClick: () => void }) {
+function ChangeButton({
+  value,
+  onClick,
+  disabled,
+  title,
+}: {
+  value: string
+  onClick: () => void
+  disabled?: boolean
+  title?: string
+}) {
   return (
     <div className="flex items-center gap-3">
       <span className="text-fg-muted text-sm font-medium tabular-nums">{value}</span>
-      <Button variant="ghost" size="sm" onClick={onClick}>
+      <Button variant="ghost" size="sm" disabled={disabled} title={title} onClick={onClick}>
         변경
       </Button>
     </div>

@@ -20,14 +20,17 @@ export type OrgBadge = { variant: 'success' | 'warning' | 'neutral' | 'danger'; 
  * 두 화면이 각자 판정하면 우선순위가 갈린다.
  *
  * ```
- * 삭제됨 > 삭제 대기 > 정지 > 오퍼레이터 미배정 > 예산 초과 > 활성
+ * 삭제 대기 > 정지 > 오퍼레이터 미배정 > 예산 초과 > 활성
  * ```
  * **되돌릴 수 없는 것과 서비스가 멈춘 것이 위로 온다.** `operatorUnassigned`·`budgetExceeded`는
  * 서버가 주는 파생 값이라(저장 상태가 아니다) 화면이 `operators.length === 0`으로 유추하지 않는다.
+ *
+ * `DELETION_PENDING`·`DELETED`는 enum 값은 다르지만 **이 백엔드에서 화면에 관측되는
+ * 한 같은 실제 상태**다(팀장 확인, decision-log D30·D31) — 진짜로 파기가 끝난 기관은
+ * 애초에 어떤 조회 결과에도 나타나지 않는다. 그래서 여기서부터 한 분기로 합친다.
  */
 export function orgStatusBadge(org: Org): OrgBadge {
-  if (org.status === 'DELETED') return { variant: 'neutral', label: '삭제됨' }
-  if (org.status === 'DELETION_PENDING') {
+  if (isDeletionLocked(org.status)) {
     const purge = purgeDateOf(org)
     return { variant: 'danger', label: purge ? `삭제 대기 · ${purge} 파기` : '삭제 대기' }
   }
@@ -36,6 +39,15 @@ export function orgStatusBadge(org: Org): OrgBadge {
   if (org.budgetExceeded) return { variant: 'warning', label: '예산 초과' }
   return { variant: 'success', label: '활성' }
 }
+
+/**
+ * 삭제 대기 판정 — SA-02 축 J6 정책(사용자 지시): 기관이 이 상태면 탭 전환·재조회 같은
+ * 읽기와 "복구"만 허용하고 나머지 쓰기 액션은 전부 잠근다. `SettingsTab.tsx`(5개 설정
+ * 변경 + 기관 삭제)·`OperatorsTab.tsx`(초대 + 행 액션 4종)가 이 함수 하나로 판정을
+ * 공유한다 — 각자 조건을 들고 있으면 한쪽만 고치고 잊는 사고가 난다.
+ */
+export const isDeletionLocked = (status: Org['status']) =>
+  status === 'DELETION_PENDING' || status === 'DELETED'
 
 /**
  * 파기 예정일 — **서버가 안 준다.** 삭제 시각 + 보존기간으로 계산한다.

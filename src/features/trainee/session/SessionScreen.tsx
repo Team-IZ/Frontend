@@ -214,17 +214,21 @@ function SessionRunner({ initial }: { initial: SessionState }) {
             current={state.current}
             waiting={state.phase === 'WAITING_NEXT'}
           />
-          {currentQuestion && (
-            <ComposeBar
-              draftKey={`tr03-draft-${state.mode}-${state.conceptIndex}-${questionIndex}`}
-              mode={state.mode}
-              hintsLeft={MAX_HINTS - hintsUsed(state.current)}
-              isLastTurnOfSession={isLastOfSession}
-              submitting={submitting}
-              onRequestHint={handleRequestHint}
-              onSubmit={handleSubmit}
-            />
-          )}
+          {/*
+            **대기 중에도 입력 영역을 남긴다.** 예전에는 `currentQuestion &&`으로 감싸서
+            채점 중에 통째로 사라졌는데, 그러면 대화 패널 높이가 튀어 답을 낸 직후
+            화면이 무너지는 것처럼 보였다(실사용 피드백). 잠그기만 한다.
+          */}
+          <ComposeBar
+            draftKey={`tr03-draft-${state.mode}-${state.conceptIndex}-${questionIndex}`}
+            mode={state.mode}
+            hintsLeft={MAX_HINTS - hintsUsed(state.current)}
+            isLastTurnOfSession={isLastOfSession}
+            submitting={submitting}
+            waiting={state.phase === 'WAITING_NEXT'}
+            onRequestHint={handleRequestHint}
+            onSubmit={handleSubmit}
+          />
         </ResizablePanel>
       </ResizablePanelGroup>
 

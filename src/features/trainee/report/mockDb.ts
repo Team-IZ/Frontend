@@ -286,11 +286,21 @@ export function buildReportsFixture(now: number, previewStatus?: string): Report
       }
       break
     case 'zero':
-      // 0단 — L1조차 통과 못했다. `문항 없음`과 나란히 두면 차이가 보인다
+      // 0단 — L1조차 통과 못했다. `문항 없음`과 나란히 두면 차이가 보인다.
+      // 서술도 0단에 맞게 새로 쓴다 — 스프레드로 단계만 바꾸면 "무엇을 하는지는
+      // 설명했어요"라는 1단 문장이 0단 배지 밑에 남아 화면이 모순된 말을 한다.
       mif3Report = {
         ...mif3(now),
         concepts: [
-          { ...DTO_CONCEPT, name: 'REST 설계', reachedLevel: 0 },
+          {
+            asked: true,
+            name: 'REST 설계',
+            reachedLevel: 0,
+            scope: 'SUMMARY',
+            said: '이 코드가 무엇을 하는지부터 이야기가 닿지 않았어요. 어떤 요청을 받고 무엇을 돌려주는지 먼저 짚어 보면 좋겠습니다.',
+            isRetryTarget: true,
+            curriculumRef: { chapter: '2장', pages: '24~38쪽', title: '컨트롤러가 하는 일' },
+          },
           { asked: false, name: '예외처리' },
           DTO_CONCEPT,
         ],

@@ -71,27 +71,30 @@ export default function ConceptCard({ concept, isLast }: Props) {
 }
 
 /*
-  묻지 않은 개념 — **못한 것과 반대로 읽히게 만든다.**
+  묻지 않은 개념 — **잠금 카드와 정반대로 보여야 한다.**
 
-  0단(bg-reach-0, 빨강)과 나란히 놓이는 자리라 색을 쓰면 "나쁜 결과"로 읽힌다.
-  중립 회색 + 점선으로 "판정 자체가 없다"를 형태로 말한다(해설 잠금 박스가 쓰는
-  것과 같은 어법).
+  둘 다 회색 점선 박스였더니 구분이 안 됐다(실사용 피드백으로 발견). 뜻이 반대인데
+  같은 옷을 입고 있었던 것이다.
+
+    잠금(SUMMARY) — 안에 내용이 **있는데** 아직 못 본다. 다시 보기를 마치면 열린다
+    문항 없음      — 안에 내용이 **없다.** 열릴 것도, 학생이 할 일도 없다
+
+  그래서 **박스를 아예 그리지 않는다.** 박스가 있으면 "여기 뭔가 담겨 있다"로 읽히고,
+  그게 잠금과 헷갈린 원인이다. 대신 카드 전체를 한 톤 죽이고(제목까지 fg-subtle)
+  설명을 평문 한 줄로 둔다 — 이 자리는 결과가 아니라 각주다.
 */
 function UnaskedBody({ name }: { name: string }) {
   return (
     <>
-      <div className="mb-2 flex items-baseline justify-between gap-3">
-        <span className="text-lg font-bold text-fg-muted">{name}</span>
-        <span className="shrink-0 rounded-full border border-dashed border-border-strong px-2.5 py-1 text-xs font-medium text-fg-subtle">
-          문항 없음
-        </span>
+      <div className="mb-1 flex items-baseline justify-between gap-3">
+        <span className="text-lg font-bold text-fg-subtle">{name}</span>
+        <span className="shrink-0 text-xs text-fg-subtle">문항 없음</span>
       </div>
-      <div className="flex items-start gap-2 rounded-md border border-dashed border-border-strong bg-surface-2 p-3 text-sm">
-        <CircleSlashIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-fg-subtle" />
-        <div>
-          <b className="text-fg">{UNASKED_TITLE}</b>
-          <p className="mt-0.5 text-fg-muted">{UNASKED_BODY}</p>
-        </div>
+      <div className="flex items-start gap-2 text-sm text-fg-subtle">
+        <CircleSlashIcon aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+        <p>
+          <b className="font-medium">{UNASKED_TITLE}</b> {UNASKED_BODY}
+        </p>
       </div>
     </>
   )
@@ -136,9 +139,14 @@ function AskedBody({ concept }: { concept: Extract<ConceptReport, { asked: true 
       <p className="text-sm leading-relaxed text-fg-muted">{concept.said}</p>
 
       {locked ? (
-        // 잠김 — 중립 회색 + 점선. "아직 못 본다"는 상태 자체가 신호라 색을 안 쓴다.
-        <div className="mt-3 flex items-center gap-2 rounded-md border border-dashed border-border-strong bg-surface-2 p-3 text-sm">
-          <LockIcon className="size-4 shrink-0 text-fg-subtle" />
+        /*
+          잠김 — **회색으로 확실히 채운다.** 예전엔 `bg-surface-2`였는데 그 토큰은
+          캔버스보다 **더 밝아서**(거의 흰색) 여백과 구분되지 않았다(실사용 피드백으로
+          발견). `neutral-soft`가 이 화면에서 유일하게 뚜렷한 회색 면이라, 색을 쓰지
+          않고도 "닫혀 있다"가 형태로 읽힌다.
+        */
+        <div className="mt-3 flex items-center gap-2 rounded-md bg-neutral-soft p-3 text-sm">
+          <LockIcon className="size-4 shrink-0 text-fg-muted" />
           <b className="text-fg">자세한 해설은 다시 보기를 마치면 열려요</b>
         </div>
       ) : (
@@ -160,8 +168,14 @@ function AskedBody({ concept }: { concept: Extract<ConceptReport, { asked: true 
         )
       )}
 
+      {/*
+        교안 위치 — **안내 정보**다. 아래 [내 답변] 토글과 둘 다 회색 알약이라 형제처럼
+        보였는데(실사용 피드백), 하나는 *읽는 것*이고 하나는 *누르는 것*이라 같은 옷을
+        입으면 안 된다. info 톤(파랑)으로 "참고하세요"라고 말하고, 누르는 것은 아래처럼
+        흰 면 + 테두리로 남긴다 — 색이 아니라 **역할**로 갈린다.
+      */}
       {concept.curriculumRef && (
-        <div className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-2.5 py-1 text-xs text-fg-subtle">
+        <div className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-info-border bg-info-soft px-2.5 py-1 text-xs text-info">
           <BookOpenIcon aria-hidden="true" className="size-3.5 shrink-0" />
           <span>
             교안 {concept.curriculumRef.chapter} · {concept.curriculumRef.pages} ·{' '}

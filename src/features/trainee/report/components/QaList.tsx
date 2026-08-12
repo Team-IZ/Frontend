@@ -33,7 +33,11 @@ export default function QaList({
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex w-full items-center gap-2 rounded-md border border-border bg-surface-2 px-3 py-2 text-sm text-fg-subtle transition-colors hover:border-border-strong hover:bg-canvas hover:text-fg"
+        /*
+          **누르는 것**이라 흰 면 + 테두리로 둔다. 위의 교안 알약(info 톤)과 색으로도
+          형태로도 갈린다 — 예전엔 둘 다 회색 면이라 형제처럼 보였다(실사용 피드백).
+        */
+        className="flex w-full items-center gap-2 rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg-muted transition-colors hover:border-border-strong hover:bg-surface-2 hover:text-fg"
       >
         <ChevronRightIcon
           aria-hidden="true"

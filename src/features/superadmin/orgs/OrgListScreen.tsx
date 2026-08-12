@@ -58,7 +58,7 @@ import {
   type OrgSortDirection,
   type OrgSortKey,
 } from './labels'
-import OrgMetrics from './components/OrgMetrics'
+import OrgMetrics, { OrgMetricsSkeleton, OrgMetricsFailed } from './components/OrgMetrics'
 import OrgCreateDialog from './components/OrgCreateDialog'
 import { useDebounced } from '@/lib/useDebounced'
 import { cn } from '@/lib/utils/cn'
@@ -205,7 +205,13 @@ export default function OrgListScreen() {
         }
       />
 
-      {summary.data && <OrgMetrics summary={summary.data} />}
+      {summary.isError ? (
+        <OrgMetricsFailed onRetry={() => summary.refetch()} />
+      ) : summary.isPending ? (
+        <OrgMetricsSkeleton />
+      ) : summary.data ? (
+        <OrgMetrics summary={summary.data} />
+      ) : null}
 
       {isError ? (
         <Empty>

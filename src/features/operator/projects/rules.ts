@@ -256,7 +256,19 @@ export function toSchedule(startAt: Date | undefined, dueAt: Date | undefined) {
   return { startDate, endDate }
 }
 
-/** 표시용 `07-21`. 저장·전송은 `YYYY-MM-DD`로 두고 화면에서만 자른다 */
-export function formatDue(date: string): string {
-  return date.slice(5, 10)
+/**
+ * 표시용 `2026-07-21`. 저장·전송은 `YYYY-MM-DD` 그대로다.
+ *
+ * ⚠ **연도를 자르지 않는다.** `07-21`만 쓰면 **어느 해 7월인지 알 수 없다** — 기수는
+ * 해를 넘겨 이어지고 종료 회차는 몇 달 전 것이라, 목록·상세·타임라인이 전부 연도 없이
+ * 같은 `07-21`을 말하고 있었다.
+ *
+ * ⚠ **시각은 아직 못 쓴다.** 서버 컬럼이 `DATE`라 마감 시각이 존재하지 않는다
+ * (18차 R5 — `submissionDueAt`을 요청해 두었다). 없는 값을 `23:59`로 지어내지 않는다 —
+ * 화면이 그렇게 말하면 학생은 그 시각까지 낼 수 있다고 믿는데 서버는 그 약속을 모른다.
+ *
+ * @param compact 목록 표처럼 폭이 좁은 자리에서 `07-21`로 줄인다. **기본은 전체 표기다.**
+ */
+export function formatDue(date: string, compact = false): string {
+  return compact ? date.slice(5, 10) : date
 }

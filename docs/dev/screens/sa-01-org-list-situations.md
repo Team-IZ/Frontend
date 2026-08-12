@@ -394,6 +394,9 @@ URL이 `?q=테크`로 바뀜 → 상세 진입 → 뒤로가기 → URL이 `?q=�
   (`deletedAt: 2026-07-01` + `dataRetentionDays: 90` = 파기일 계산 정확).
 - G5(삭제 대기인데 `deletedAt` 없음) → `삭제 대기`만, 파기일 없이. 크래시 없음.
 - `DELETED` → `삭제됨`(neutral 배지). 정상.
+  (stale — 이슈 #195에서 `orgStatusBadge`가 `DELETED`를 `DELETION_PENDING`과 같은
+  "삭제 대기"(danger) 배지로 합쳤다. 로직 변경이 아니라 공유 함수의 표시값 정정이라
+  이슈 #185는 재오픈하지 않는다. 판단 근거: `docs/dev/decision-log.md` D31.)
 
 ### F5 · checkNameAvailability 네트워크 실패 — ✅ 정상, 버그 없음(1차 고침 렌더 확인 완료)
 

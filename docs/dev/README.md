@@ -16,6 +16,8 @@
 - [**MG-02 히트맵**](screens/mg-02-heatmap.md) — 목 설계 · 정의서 밖 빈틈 판단 · 드릴 계층
 - [**MG-04 면담 브리프**](screens/mg-04-brief.md) — 정의서·와이어에 없던 빈틈 5건 · 종결 후 재오픈 · 무효 응시 증거
 - [**MG-08 프로젝트**](screens/mg-08-projects.md) — 재응시 판정·발송 · 독촉 모달 · 제출 현황 표 · `bigp` 제거(MG-07 목록 포함)
+- [**TR-03 검증 세션**](screens/tr-03-session.md) — **기획 변경(2026-08-11)** · 힌트가 당김에서 밀기로 · 점수 0~5·0단~4단 · 단계 보정 · **API 없음**
+- [**TR-04 내 리포트**](screens/tr-04-report.md) — **기획 변경(2026-08-11)** · 공개 기본값 '공개' · `release_status` 3종 · `SUMMARY`/`FULL` 기준 · **API 전부 `unavailable`**
 
 ## 아키텍처 · 결정 기록
 
@@ -46,6 +48,7 @@
 - [백엔드 API — 12차 요청](backend/backend-api-requests-12.md) — OP-02 분석을 붙이며 나온 것. `roundNo`가 요청·응답에서 다른 것을 가리킨다 · `sameCurriculumOnly=true`면 결과 0건
 - [백엔드 API — 13차 요청](backend/backend-api-requests-13.md) — 11차 반영본으로 OP-06을 다시 돌려보며 나온 **요청 2건 + 확인 1건**. **같은 교안을 목록은 24개 회차가 쓴다 하고 상세는 0건**이라 한다 · **11차 열한 건 전부 반영 확인**
 - [백엔드 API — 14차 요청](backend/backend-api-requests-14.md) — **요청 1건**: `readinessCounts`가 **스펙엔 `required`인데 응답에 없어** 프로젝트 목록이 흰 화면이 됐다. 스펙과 서버가 다른 말을 하는 상태
+- [백엔드 API — 16차 요청](backend/backend-api-requests-16.md) — **교육생 도메인 계약 제안.** 결함 보고가 아니라 *만들어지기 전에* 보내는 것 — 홈 상태 8종 · 제출 6종 · 세션 채점/힌트(기획 변경) · 리포트 공개 정책. 화면 4개는 목으로 이미 완성
 - [인증·세션 설계](api/auth-design.md) — 토큰을 어디에 두나 · 왜 Context가 아니라 스토어인가 · 401 재발급의 함정 셋 · 실무 정석과 우리 절충
 - [연동 계획 — Auth·슈퍼어드민](api/integration-plan-auth-superadmin.md) — **지금 붙일 수 있는 6화면** · 타입 불일치 · 순서와 완료 판정
 - [API 계층 결정 지점](api/api-layer-decisions.md) — 층·훅·쿼리 키·타입·에러를 왜 이렇게 했나 · **알려진 결함 3건**

@@ -10,9 +10,16 @@
  * 검사 대상이 아닌 것: 정적 목업(docs/)은 설계 산출물이라 건드리지 않는다.
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { join, extname } from 'node:path'
+import { join, extname, sep } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const ROOT = new URL('..', import.meta.url).pathname
+/*
+  `new URL('..', import.meta.url).pathname`이 아니라 `fileURLToPath`를 쓴다 — Windows에서
+  `.pathname`은 드라이브 문자 앞에 슬래시가 남고(`/C:/Users/...`) 퍼센트 인코딩(한글 경로 등)도
+  안 풀린다. 그 값을 그대로 `path.join`에 넘기면 `C:\C:\Users\...`처럼 겹쳐서 `readdirSync`가
+  ENOENT로 죽는다(실제로 겪음). `fileURLToPath`는 두 문제 다 없는 네이티브 경로를 돌려준다.
+*/
+const ROOT = fileURLToPath(new URL('..', import.meta.url))
 const TOKEN_FILE = 'src/index.css' // 토큰이 정의되는 유일한 곳
 const SCAN_DIR = join(ROOT, 'src')
 const SCAN_EXT = new Set(['.ts', '.tsx', '.css'])
@@ -40,7 +47,8 @@ const ALLOW = 'design-token-allow'
 
 const hardcoded = []
 for (const file of walk(SCAN_DIR)) {
-  const rel = file.slice(ROOT.length)
+  // Windows는 path.join이 `\`로 붙인다 — TOKEN_FILE·리포트 문구는 `/` 기준이라 맞춰 정규화
+  const rel = file.slice(ROOT.length).split(sep).join('/')
   if (rel === TOKEN_FILE) continue
   readFileSync(file, 'utf8')
     .split('\n')

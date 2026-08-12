@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useNavigate, useParams } from 'react-router'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
+import { ApiError } from '@/api/_contract'
 import { getInvite, signup, activate, resendInvite } from './inviteApi'
 import { consentsFor } from './consents'
 import type { ConsentItem } from './consents'
 import { resolveInviteState } from './inviteStates'
 import type { InviteState } from './inviteStates'
+import type { InviteErrorCode, InviteInfo } from './inviteTypes'
 import { checkPasswordPolicy } from './passwordPolicy'
-import type { InviteApiError, InviteInfo } from './inviteTypes'
 import { useCapsLockWarning } from './useCapsLockWarning'
 import BrandPanel from './components/BrandPanel'
 import AuthForm from './components/AuthForm'
@@ -156,7 +157,7 @@ function ConsentList({
 
 /**
  * AU-02 · 회원가입 · 계정 활성화
- * 한 화면에서 초대 토큰이 변형을 결정 (매니저=변형 A / 교육생=변형 B)
+ * 한 화면에서 초대 토큰이 변형을 결정 (매니저·오퍼레이터=변형 A / 교육생=변형 B)
  * 자유 가입 없음 — 초대 링크로만 진입
  */
 export default function InviteScreen() {
@@ -166,13 +167,19 @@ export default function InviteScreen() {
   const [verifying, setVerifying] = useState(true)
   const [invite, setInvite] = useState<InviteInfo | null>(null)
   /** 토큰 검증 실패 — 폼 대신 상태 카드로 화면 전체를 대체 */
-  const [verifyError, setVerifyError] = useState<InviteApiError | null>(null)
+  const [verifyError, setVerifyError] = useState<unknown>(null)
   /** 제출 실패(저장 실패 등) — 폼은 유지한 채 인라인 알림 */
   const [submitAlert, setSubmitAlert] = useState<InviteState | null>(null)
 
   const [consents, setConsents] = useState<string[]>([])
   const [showMissingConsents, setShowMissingConsents] = useState(false)
+  /** 검증 단계(만료 카드)·제출 단계(인라인 알림) 재발송 완료 표시 — 동시에 하나만 보이므로 공유 */
   const [resendDone, setResendDone] = useState(false)
+
+  // 검증 단계 재발송 전용 — 이 시점엔 invite.email을 모르므로 사용자가 직접 입력한다
+  const [resendEmailInput, setResendEmailInput] = useState('')
+  const [resendPending, setResendPending] = useState(false)
+  const [resendInputError, setResendInputError] = useState<string | null>(null)
 
   const [showPassword, setShowPassword] = useState(false)
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false)
@@ -213,7 +220,7 @@ export default function InviteScreen() {
   useEffect(() => {
     getInvite(token)
       .then(setInvite)
-      .catch((err: InviteApiError) => setVerifyError(err))
+      .catch((err: unknown) => setVerifyError(err))
       .finally(() => setVerifying(false))
   }, [token])
 
@@ -234,44 +241,103 @@ export default function InviteScreen() {
 
     try {
       if (invite.inviteType === 'MANAGER') {
-        await signup({ token, name: values.name, password: values.password, consents })
+        await signup({
+          token,
+          userId: invite.userId,
+          name: values.name,
+          password: values.password,
+          passwordConfirm: values.passwordConfirm,
+          consents,
+        })
       } else {
-        await activate({ token, password: values.password, consents })
+        await activate({
+          token,
+          userId: invite.userId,
+          password: values.password,
+          passwordConfirm: values.passwordConfirm,
+          consents,
+        })
       }
       navigate('/shared/login', { replace: true })
     } catch (err) {
-      setSubmitAlert(resolveInviteState((err as InviteApiError).code))
+      setSubmitAlert(resolveInviteState(err))
     }
   }
 
+  /** 제출 단계 재발송 — 폼을 이미 연 상태라 invite.email을 안다(검증 단계와 다른 점) */
   async function handleResend() {
-    await resendInvite(token)
+    if (!invite) return
+    await resendInvite(invite.email)
     setResendDone(true)
+  }
+
+  /** 검증 단계 재발송 — invite.email을 모르므로 사용자가 입력한 주소로 보낸다 */
+  async function handleResendToTypedEmail(email: string) {
+    setResendInputError(null)
+    setResendPending(true)
+    try {
+      await resendInvite(email)
+      setResendDone(true)
+    } catch {
+      setResendInputError('메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.')
+    } finally {
+      setResendPending(false)
+    }
   }
 
   const copy = invite ? COPY[invite.inviteType] : COPY.MANAGER
 
   /** signup-activation.html #expired·#invalid·#already·#notlisted — 토큰 검증 실패 상태 카드 */
-  function renderVerifyStatusCard(error: InviteApiError) {
-    switch (error.code) {
-      case 'INVITE_EXPIRED':
+  function renderVerifyStatusCard(error: unknown) {
+    const apiError = error instanceof ApiError ? error : null
+
+    switch (apiError?.code as InviteErrorCode | undefined) {
+      case 'INVITATION_EXPIRED':
+        // 검증 단계라 invite.email이 없다 — 재발송하려면 사용자가 직접 이메일을 입력해야 한다
+        // (resendAccountInvitation은 토큰이 아니라 email을 받는다). inviteTypes.ts 주석 참고.
         return (
           <AuthStatusCard
             variant="warning"
             icon="◷"
             title="초대 링크가 만료되었습니다"
             description="보안을 위해 초대 링크는 일정 시간이 지나면 쓸 수 없어요."
-            aux={`새 링크를 같은 주소(${error.email})로 보내드립니다.`}
+            aux={
+              resendDone
+                ? undefined
+                : '이메일 주소를 입력하면 새 초대 링크를 다시 보내드립니다. 등록된 주소가 아니어도 같은 안내가 뜹니다.'
+            }
             actions={
               resendDone ? (
                 <span className="text-[13px] text-fg-subtle">초대 메일을 다시 보냈습니다.</span>
               ) : (
-                <Button onClick={handleResend}>초대 메일 다시 받기</Button>
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault()
+                    void handleResendToTypedEmail(resendEmailInput)
+                  }}
+                  className="flex w-full flex-col items-center gap-2"
+                >
+                  <div className="flex w-full items-center gap-2">
+                    <Input
+                      type="email"
+                      required
+                      placeholder="가입 시 사용한 이메일"
+                      value={resendEmailInput}
+                      onChange={(event) => setResendEmailInput(event.target.value)}
+                      disabled={resendPending}
+                      className="h-9 text-[13px]"
+                    />
+                    <Button type="submit" size="sm" disabled={resendPending}>
+                      {resendPending ? '보내는 중…' : '다시 받기'}
+                    </Button>
+                  </div>
+                  {resendInputError && <p className="text-xs text-danger">{resendInputError}</p>}
+                </form>
               )
             }
           />
         )
-      case 'INVITE_INVALID':
+      case 'INVITATION_INVALID':
         return (
           <AuthStatusCard
             variant="danger"
@@ -286,19 +352,19 @@ export default function InviteScreen() {
             }
           />
         )
-      case 'INVITE_USED':
-      case 'ACCOUNT_EXISTS':
+      case 'INVITATION_ALREADY_ACCEPTED':
+        // 재수강생 재활성화도 여기로 온다 — 그림은 같고 백엔드만 다르다(AU-02 §"재수강생")
         return (
           <AuthStatusCard
             variant="success"
             icon="✓"
             title="이미 활성화된 계정입니다"
-            description={`${error.email}으로 바로 로그인하면 돼요.`}
+            description="바로 로그인하면 돼요."
             aux="이전 기수에서 쓰던 계정이면 그대로 로그인하면 새 기수가 보입니다. 비밀번호가 기억나지 않으면 로그인 화면에서 재설정할 수 있어요."
             actions={<Button onClick={() => navigate('/shared/login')}>로그인</Button>}
           />
         )
-      case 'NOT_IN_ROSTER':
+      case 'INVITATION_NOT_IN_ROSTER':
         return (
           <AuthStatusCard
             variant="danger"
@@ -317,9 +383,29 @@ export default function InviteScreen() {
             }
           />
         )
-      // getInvite는 SIGNUP_FAILED를 내려주지 않는다 — 도달 불가
-      case 'SIGNUP_FAILED':
-        return null
+      // 스펙에 없는 코드·네트워크 오류 — 화면이 흰 채로 남는 것이 가장 나쁘므로 폴백 카드를 둔다
+      default:
+        return (
+          <AuthStatusCard
+            variant="danger"
+            icon="!"
+            title={apiError?.isNetwork ? '서버에 연결하지 못했습니다' : '문제가 발생했어요'}
+            description={
+              apiError?.isNetwork
+                ? '연결을 확인한 뒤 링크를 다시 열어 주세요.'
+                : '잠시 후 링크를 다시 열어 주세요. 계속 같으면 담당자에게 문의해 주세요.'
+            }
+            actions={
+              <Button
+                variant="ghost"
+                nativeButton={false}
+                render={<a href="mailto:support@iz-get.com" />}
+              >
+                문의하기
+              </Button>
+            }
+          />
+        )
     }
   }
 
@@ -332,12 +418,12 @@ export default function InviteScreen() {
           {verifying && <p className="text-[13px] text-fg-subtle">초대 링크를 확인하는 중…</p>}
 
           {/* 토큰 검증 실패 — 폼 대신 상태 카드로 화면 전체를 대체 */}
-          {!verifying && verifyError && renderVerifyStatusCard(verifyError)}
+          {!verifying && !!verifyError && renderVerifyStatusCard(verifyError)}
 
           {/* 정상 토큰 → 변형별 폼 */}
           {!verifying && invite && (
             <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
-              {/* 저장 실패 등 제출 단계 오류 — 폼은 유지, 인라인 알림 (case7 SIGNUP_FAILED) */}
+              {/* 저장 실패 등 제출 단계 오류 — 폼은 유지, 인라인 알림 */}
               {submitAlert && (
                 <Alert variant={submitAlert.variant}>
                   {submitAlert.message}

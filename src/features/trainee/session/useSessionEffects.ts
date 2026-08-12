@@ -84,12 +84,46 @@ export function useOnlineStatus(): boolean {
   return online
 }
 
-const HARD_LIMIT_MS = 70 * 60_000
-const WARN_THRESHOLD_MS = 60 * 60_000
+/** 세션 전체 상한 — 개념 3개 × 20분과 맞물린다(tr-03-session.md §2-4) */
+const HARD_LIMIT_MS = 60 * 60_000
+const WARN_THRESHOLD_MS = 50 * 60_000
+/** 개념(문제) 하나에 주어지는 시간 */
+export const CONCEPT_LIMIT_MS = 20 * 60_000
+
+/**
+ * 개념 하나에 남은 시간. 0에 닿으면 `onTimeout`을 **한 번만** 부른다 —
+ * 그 개념은 거기서 닫히고 도달 단계가 그때까지 통과한 만큼으로 확정된다.
+ *
+ * `startedAt`이 바뀌면(다음 개념으로 넘어가면) 처음부터 다시 센다.
+ */
+export function useConceptTimer(startedAt: number, onTimeout: () => void, enabled: boolean) {
+  const [remainingMs, setRemainingMs] = useState(() => CONCEPT_LIMIT_MS - (Date.now() - startedAt))
+  const firedRef = useRef(false)
+  const onTimeoutRef = useRef(onTimeout)
+  onTimeoutRef.current = onTimeout
+
+  useEffect(() => {
+    if (!enabled) return
+    firedRef.current = false
+    const tick = () => {
+      const next = CONCEPT_LIMIT_MS - (Date.now() - startedAt)
+      setRemainingMs(next)
+      if (next <= 0 && !firedRef.current) {
+        firedRef.current = true
+        onTimeoutRef.current()
+      }
+    }
+    tick()
+    const id = setInterval(tick, 1000)
+    return () => clearInterval(id)
+  }, [startedAt, enabled])
+
+  return Math.max(0, remainingMs)
+}
 
 /*
-  세션 시작부터 70분 하드 상한. 경과 시간은 안내만 하고 강제로 끊지 않다가, 70분에 딱
-  한 번 종료시킨다. 60분을 넘기면 onNearLimit을 딱 한 번 더 불러 "곧 마무리된다"는
+  세션 시작부터 60분 하드 상한. 경과 시간은 안내만 하고 강제로 끊지 않다가, 60분에 딱
+  한 번 종료시킨다. 50분을 넘기면 onNearLimit을 딱 한 번 더 불러 "곧 마무리된다"는
   조용한 예고를 준다 — 카운트다운 없이 진행하다가 아무 예고 없이 강제종료되는 것도
   나쁜 UX라, AwayToast와 같은 1회성 토스트 패턴으로 균형을 맞춘다.
 */

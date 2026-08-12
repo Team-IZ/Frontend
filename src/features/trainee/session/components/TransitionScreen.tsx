@@ -2,12 +2,12 @@ import { ArrowRightIcon, PlayIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import StatusMessageCard from '@/components/common/StatusMessageCard'
-import type { ProblemScript, SessionMode } from '../types'
+import type { Concept, SessionMode } from '../types'
 
 type Props = {
   reason: 'STOP' | 'NEXT'
   mode: SessionMode
-  nextProblem: ProblemScript
+  nextProblem: Concept
   isNextLast: boolean
   onContinue: () => void
 }
@@ -46,10 +46,14 @@ export default function TransitionScreen({
 
   const title =
     mode === 'RETRY' ? '다음 문제로 갈게요' : isNextLast ? '마지막 문제예요' : '다음 문제로 갈게요'
+  /*
+    다시 보기는 **막혔던 질문 하나만 보는 게 아니라 그 개념을 처음부터 전부** 다시 본다
+    (tr-03-session.md §2-5). 예전 문구가 정반대였다.
+  */
   const sub =
     mode === 'RETRY'
-      ? '지난번에 막혔던 질문 하나씩만 봐요 · 더 깊은 질문으로 이어지지 않아요'
-      : '앞 문제는 닫혔어요 · 다시 열 수 없습니다'
+      ? '처음 단계부터 다시 봐요 · 이번 결과는 기록에만 남습니다'
+      : '앞 개념은 닫혔어요 · 다시 열 수 없습니다'
 
   return (
     <Center>
@@ -59,7 +63,7 @@ export default function TransitionScreen({
         title={title}
         description={
           <>
-            <b className="text-fg">{nextProblem.title}</b>에 대해 이야기해요.{' '}
+            <b className="text-fg">{nextProblem.name}</b>에 대해 이야기해요.{' '}
             <span className="text-fg-subtle">{nextProblem.file}</span>
           </>
         }

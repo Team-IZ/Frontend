@@ -11,6 +11,12 @@
             "type": "command",
             "command": "jq -r '.tool_input.command // empty' | sh \"$CLAUDE_PROJECT_DIR/.claude/guard-worktree.sh\"",
             "timeout": 5
+          },
+          {
+            "type": "command",
+            "command": "jq -r '.tool_input.command // empty' | sh \"$CLAUDE_PROJECT_DIR/.claude/check-gh-template.sh\"",
+            "if": "Bash(gh *)",
+            "timeout": 5
           }
         ]
       }

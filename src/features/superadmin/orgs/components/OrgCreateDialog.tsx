@@ -74,7 +74,7 @@ function submitErrorMessage(error: unknown): string {
   return SUBMIT_ERROR_FALLBACK
 }
 
-type NameCheckState = 'idle' | 'checking' | 'available' | 'taken'
+type NameCheckState = 'idle' | 'checking' | 'available' | 'taken' | 'unknown'
 
 export default function OrgCreateDialog({
   open,
@@ -124,8 +124,10 @@ export default function OrgCreateDialog({
           if (!cancelled) setNameCheck(available ? 'available' : 'taken')
         })
         // 중복 확인 실패는 막지 않는다 — 최종 판정은 생성 요청이 한다(409)
+        // 'idle'로 되돌리면 "아직 안 물어봄"과 "물어봤는데 실패함"이 같은 값이 된다 —
+        // 사용자가 구분할 방법이 없어(F5) 따로 상태를 둔다
         .catch(() => {
-          if (!cancelled) setNameCheck('idle')
+          if (!cancelled) setNameCheck('unknown')
         })
     }, 400)
     return () => {
@@ -204,6 +206,10 @@ export default function OrgCreateDialog({
               <p className="text-success text-xs font-medium">사용 가능한 이름입니다</p>
             ) : nameCheck === 'checking' ? (
               <p className="text-fg-subtle text-xs">확인하는 중…</p>
+            ) : nameCheck === 'unknown' ? (
+              <p className="text-fg-subtle text-xs">
+                중복 확인에 실패했습니다. 제출 시 다시 확인합니다.
+              </p>
             ) : (
               <FieldDescription>다른 기관과 겹치지 않는 이름이어야 합니다</FieldDescription>
             )}

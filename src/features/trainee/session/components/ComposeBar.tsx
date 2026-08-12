@@ -8,7 +8,8 @@ const SHORT_ANSWER_THRESHOLD = 15
 type Props = {
   draftKey: string
   mode: SessionMode
-  hintUsed: 0 | 1 | 2
+  /** 남은 힌트 — **서버가 센 값**이다. 요청분·지급분 합산이라 화면이 세면 지급분이 빠진다 */
+  hintsLeft: number
   isLastTurnOfSession: boolean
   submitting: boolean
   onRequestHint: () => void
@@ -26,7 +27,7 @@ type Props = {
 export default function ComposeBar({
   draftKey,
   mode,
-  hintUsed,
+  hintsLeft,
   isLastTurnOfSession,
   submitting,
   onRequestHint,
@@ -73,7 +74,7 @@ export default function ComposeBar({
       <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-3">
         <div className="flex flex-wrap items-center gap-2">
           {mode === 'FIRST' &&
-            (hintUsed < 2 ? (
+            (hintsLeft > 0 ? (
               <>
                 {/* Button은 shrink-0 + whitespace-nowrap이 기본값(공용 컴포넌트, 전역
                     변경 안 함) — 남은 횟수는 버튼 밖 형제 요소로 뺀다 */}
@@ -86,7 +87,7 @@ export default function ComposeBar({
                 >
                   다시 설명해 주세요
                 </Button>
-                <span className="text-fg-subtle">{2 - hintUsed}번 남음</span>
+                <span className="text-fg-subtle">{hintsLeft}번 남음</span>
               </>
             ) : (
               // ponytail: 힌트 소진은 인트로가 예고하지 못하는 상태 변화라 유일하게 남긴다

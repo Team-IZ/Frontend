@@ -240,9 +240,11 @@ export default function LoginScreen() {
           {/*
             개발용 안내 — 실제 배포 시 제거.
 
-            로그인은 **실서버에 붙어 있다.** 계정은 위 「발표용 · 역할별 바로 입장」 버튼이
-            들고 있으므로 여기 다시 적지 않는다 — 두 곳에 적으면 한쪽이 반드시 낡는다.
-            아래에 남긴 것은 **아직 목으로 도는 흐름**(AU-02 초대 · AU-03 재설정)뿐이다.
+            로그인·비밀번호 재설정은 **실서버에 붙어 있다.** 계정은 위 「발표용 · 역할별
+            바로 입장」 버튼이 들고 있으므로 여기 다시 적지 않는다 — 두 곳에 적으면 한쪽이
+            반드시 낡는다. 재설정은 토큰이 실제 메일로만 오므로(이슈 178로 mock 토큰
+            제거) 여기서 케이스별 딥링크를 못 남긴다 — 요청 단계만 아래에서 바로 시도할 수
+            있다. 아래에 남긴 것은 **아직 목으로 도는 흐름**(AU-02 초대)뿐이다.
           */}
           <div className="mt-8 rounded-md bg-canvas px-3 py-2.5 text-[11px] leading-relaxed text-fg-subtle">
             <b className="text-fg-muted">로그인</b> · 실서버 연동됨. 위 버튼으로 역할별 입장
@@ -258,51 +260,11 @@ export default function LoginScreen() {
               교육생 활성화
             </Link>
             <br />
-            <b className="text-fg-muted">비밀번호 재설정(AU-03)</b> · <span>아직 목</span> ·{' '}
-            <Link
-              to="/shared/password-reset?token=reset-valid"
-              className="text-primary hover:underline"
-            >
-              정상
+            <b className="text-fg-muted">비밀번호 재설정(AU-03)</b> · 실서버 연동됨 ·{' '}
+            <Link to="/shared/password-reset" className="text-primary hover:underline">
+              요청 화면 열기
             </Link>{' '}
-            ·{' '}
-            <Link
-              to="/shared/password-reset?token=reset-expired"
-              className="text-primary hover:underline"
-            >
-              만료
-            </Link>{' '}
-            ·{' '}
-            <Link
-              to="/shared/password-reset?token=reset-used"
-              className="text-primary hover:underline"
-            >
-              사용됨
-            </Link>{' '}
-            ·{' '}
-            <Link
-              to="/shared/password-reset?token=reset-tampered"
-              className="text-primary hover:underline"
-            >
-              위변조
-            </Link>{' '}
-            ·{' '}
-            <Link
-              to="/shared/password-reset?token=reset-revokefail"
-              className="text-primary hover:underline"
-            >
-              세션폐기실패
-            </Link>{' '}
-            ·{' '}
-            <Link
-              to="/shared/password-reset?token=reset-failing"
-              className="text-primary hover:underline"
-            >
-              저장실패
-            </Link>
-            <br />
-            <span className="text-fg-muted">정상</span> 링크에서 현재 비밀번호(<code>pass1234</code>
-            )를 그대로 넣으면 &quot;이전과 같은 비밀번호&quot; 케이스가 나온다
+            — 토큰은 실제 메일로만 오므로 케이스별 딥링크는 없다
           </div>
         </AuthForm>
       </div>

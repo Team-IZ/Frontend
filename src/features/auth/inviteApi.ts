@@ -1,138 +1,98 @@
 // ─────────────────────────────────────────────────────────────
-// 초대 가입·활성화 API 격리 모듈 (signup-activation.html#cases · mockup c6911c0)
-// 백엔드 준비 시 각 함수의 Mock 블록만 지우고 아래 fetch를 켜면 됩니다.
+// 초대 가입·활성화 API 격리 모듈 — 실서버 연동 완료
+// 화면 어휘(동의 코드 배열 등)를 서버 어휘(개별 동의 불리언)로 여기서만 바꾼다 —
+// passwordResetApi.ts·report 도메인(`operator/report/_/api/api.ts`)과 같은 경계 원칙.
 // ─────────────────────────────────────────────────────────────
-import type { ActivateRequest, InviteApiError, InviteInfo, SignupRequest } from './inviteTypes'
-import { accounts, createManagerAccount, activateTraineeAccount } from './mockDb'
+import { ApiError } from '@/api/_contract'
+import {
+  resolveInvitation,
+  signupManager,
+  activateTrainee,
+  resendAccountInvitation,
+} from '@/api/auth/authApi'
+import { inviteTypeForRole } from './inviteTypes'
+import type { ActivateRequest, InviteInfo, SignupRequest } from './inviteTypes'
 
-// ───────── Mock 초대 토큰 (백엔드 연동 시 이 블록 전체 삭제) ─────────
-/** 정상 토큰 — 유형과 초대 이메일을 결정 */
-const MOCK_INVITES: Record<string, InviteInfo> = {
-  'mgr-8f3a': { inviteType: 'MANAGER', email: 'newmanager@org.com' },
-  'stu-4c19': { inviteType: 'TRAINEE', email: 'newtrainee@org.com' },
-  // 제출 단계 오류 시연용 (폼은 정상 렌더 → 제출 시 실패)
-  'mgr-rollback': { inviteType: 'MANAGER', email: 'rollback@org.com' },
-  'stu-consent': { inviteType: 'TRAINEE', email: 'newtrainee@org.com' },
+/**
+ * 메일 링크의 토큰엔 역할 접두사가 붙어 온다(백엔드 확인, 2026-08-11):
+ *   `sa-<token>`(슈퍼어드민) · `op-<token>`(오퍼레이터·매니저 공용) · `stu-<token>`(교육생)
+ * 첫 `-` 앞부분은 라우팅용 힌트일 뿐 실제 일회성 토큰이 아니다 — 서버엔 그 뒤만 보낸다.
+ * (역할 자체는 이 접두사가 아니라 `resolveInvitation` 응답의 `role`로 판정한다 — inviteTypes.ts.)
+ */
+function stripRolePrefix(rawToken: string): string {
+  const i = rawToken.indexOf('-')
+  return i === -1 ? rawToken : rawToken.slice(i + 1)
 }
 
-/** 토큰 검증 단계에서 바로 실패하는 시연용 토큰 */
-const MOCK_INVITE_ERRORS: Record<string, InviteApiError> = {
-  'mgr-expired': { code: 'INVITE_EXPIRED', email: 'kim@green.com' },
-  'mgr-used': { code: 'INVITE_USED', email: 'kim@green.com' },
-  'mgr-invalid': { code: 'INVITE_INVALID' },
-  'stu-expired': { code: 'INVITE_EXPIRED', email: 'lee@student.com' },
-  'stu-noroster': { code: 'NOT_IN_ROSTER' },
-  'stu-existing': { code: 'ACCOUNT_EXISTS', email: 'lee@student.com' }, // 재수강생 — 그림은 INVITE_USED와 동일
-  'stu-badorg': { code: 'INVITE_INVALID' },
+/** 동의 코드 배열 → 서버가 원하는 개별 불리언. 화면에 없는 코드는 자연히 false(=미동의) */
+function consentBooleans(codes: string[]) {
+  const has = (code: string) => codes.includes(code)
+  return {
+    serviceTermsAgreed: has('TERMS'),
+    privacyCollectionAgreed: has('PRIVACY'),
+    aiAnalysisAgreed: has('AI_ANALYSIS'),
+    organizationSharingAgreed: has('ORG_SHARE'),
+    anonymousImprovementAgreed: has('ANON_IMPROVE'),
+  }
 }
 
-/** 제출 단계에서 강제로 실패시킬 토큰 */
-const MOCK_SUBMIT_ERRORS: Record<string, InviteApiError> = {
-  'mgr-rollback': { code: 'SIGNUP_FAILED' },
-  'stu-consent': { code: 'SIGNUP_FAILED' },
+/** `POST /auth/invitations/resolve` — 토큰 검증 후 폼 변형 결정 */
+export async function getInvite(token: string): Promise<InviteInfo> {
+  const res = await resolveInvitation({ body: { invitationToken: stripRolePrefix(token) } })
+  const inviteType = inviteTypeForRole(res.role)
+
+  // 슈퍼어드민(가입 API 없음) · user_id 없는 응답(스펙상 optional) — 둘 다 이 화면이
+  // 진행할 수 없다는 점에서 사용자에게는 동일하다. INVITATION_INVALID와 같은 카드로 처리.
+  if (!inviteType || !res.user_id) {
+    throw new ApiError({
+      status: 400,
+      code: 'INVITATION_INVALID',
+      message: '이 초대는 이 화면에서 처리할 수 없습니다.',
+    })
+  }
+
+  return { inviteType, email: res.email, userId: res.user_id }
 }
 
-function delay<T>(value: T, ms = 500): Promise<T> {
-  return new Promise((resolve) => setTimeout(() => resolve(value), ms))
-}
-// ──────────────────────────────────────────────────────────────
-
-/** GET /auth/invite/{token} — 토큰 검증 후 폼 변형 결정 */
-export function getInvite(token: string): Promise<InviteInfo> {
-  // ===== Mock 버전 =====
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const failure = MOCK_INVITE_ERRORS[token]
-      if (failure) {
-        reject(failure)
-        return
-      }
-      const invite = MOCK_INVITES[token]
-      if (!invite) {
-        reject({ code: 'INVITE_INVALID' } satisfies InviteApiError)
-        return
-      }
-      resolve(invite)
-    }, 400)
+/** `POST /auth/manager-signup` — 오퍼레이터·매니저 가입 (변형 A) */
+export async function signup(req: SignupRequest): Promise<void> {
+  const c = consentBooleans(req.consents)
+  await signupManager({
+    body: {
+      user_id: req.userId,
+      invitationToken: stripRolePrefix(req.token),
+      name: req.name,
+      password: req.password,
+      passwordConfirmation: req.passwordConfirm,
+      serviceTermsAgreed: c.serviceTermsAgreed,
+      privacyCollectionAgreed: c.privacyCollectionAgreed,
+    },
   })
-
-  // ===== 실제 백엔드 버전 =====
-  // const res = await fetch(`/auth/invite/${token}`)
-  // if (!res.ok) return Promise.reject(await res.json())
-  // return res.json() // { inviteType, email }
 }
 
-/** POST /auth/signup — 오퍼레이터·매니저 회원가입 (변형 A) */
-export function signup(req: SignupRequest): Promise<void> {
-  // ===== Mock 버전 =====
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const forced = MOCK_SUBMIT_ERRORS[req.token]
-      if (forced) {
-        reject(forced)
-        return
-      }
-      const invite = MOCK_INVITES[req.token]
-      if (!invite) {
-        reject({ code: 'INVITE_INVALID' } satisfies InviteApiError)
-        return
-      }
-      // 이미 가입된 이메일 (같은 토큰으로 두 번 가입 시 재현됨)
-      if (accounts[invite.email]) {
-        reject({ code: 'INVITE_USED' } satisfies InviteApiError)
-        return
-      }
-      createManagerAccount(invite.email, req.name, req.password)
-      resolve()
-    }, 600)
+/** `POST /auth/trainee-activation` — 교육생 활성화 (변형 B) */
+export async function activate(req: ActivateRequest): Promise<void> {
+  const c = consentBooleans(req.consents)
+  await activateTrainee({
+    body: {
+      user_id: req.userId,
+      invitationToken: stripRolePrefix(req.token),
+      password: req.password,
+      passwordConfirmation: req.passwordConfirm,
+      serviceTermsAgreed: c.serviceTermsAgreed,
+      privacyCollectionAgreed: c.privacyCollectionAgreed,
+      aiAnalysisAgreed: c.aiAnalysisAgreed,
+      organizationSharingAgreed: c.organizationSharingAgreed,
+      anonymousImprovementAgreed: c.anonymousImprovementAgreed,
+    },
   })
-
-  // ===== 실제 백엔드 버전 =====
-  // const res = await fetch('/auth/signup', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(req), // { token, name, password, consents }
-  // })
-  // if (!res.ok) return Promise.reject(await res.json())
 }
 
-/** POST /auth/activate — 교육생 계정 활성화 (변형 B) */
-export function activate(req: ActivateRequest): Promise<void> {
-  // ===== Mock 버전 =====
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const forced = MOCK_SUBMIT_ERRORS[req.token]
-      if (forced) {
-        reject(forced)
-        return
-      }
-      const invite = MOCK_INVITES[req.token]
-      if (!invite) {
-        reject({ code: 'INVITE_INVALID' } satisfies InviteApiError)
-        return
-      }
-      const account = accounts[invite.email]
-      // 명단에 없는 계정
-      if (!account) {
-        reject({ code: 'NOT_IN_ROSTER' } satisfies InviteApiError)
-        return
-      }
-      // 이미 활성화된 계정 (두 번째 활성화 시 재현됨)
-      if (account.active) {
-        reject({ code: 'INVITE_USED' } satisfies InviteApiError)
-        return
-      }
-      activateTraineeAccount(invite.email, req.password)
-      resolve()
-    }, 600)
-  })
-
-  // ===== 실제 백엔드 버전 =====
-  // const res = await fetch('/auth/activate', { ... })
-  // if (!res.ok) return Promise.reject(await res.json())
-}
-
-/** POST /auth/resend-invite — 계정 유무 무관 동일 응답 */
-export function resendInvite(_token: string): Promise<void> {
-  return delay(undefined, 400)
+/**
+ * `POST /auth/invitations/resend` — **토큰이 아니라 이메일**로 재발송한다(계정 유무·
+ * 초대 존재 여부와 무관하게 항상 같은 응답 — 계정 열거 방지). 호출부(`InviteScreen.tsx`)가
+ * 검증 단계 실패면 사용자가 입력한 이메일을, 제출 단계 실패면 이미 아는 `invite.email`을 넘긴다.
+ */
+export async function resendInvite(email: string): Promise<void> {
+  await resendAccountInvitation({ body: { email } })
 }

@@ -122,7 +122,8 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         conceptIndex: state.conceptIndex + 1,
         answered: [],
         current: [],
-        callersExpanded: false,
+        // 개념이 바뀌면 다시 열린 상태로 시작한다(baseState와 같은 기본값)
+        callersExpanded: true,
         transitionReason: null,
         // 제한시간은 개념마다 새로 센다
         conceptStartedAt: action.now,

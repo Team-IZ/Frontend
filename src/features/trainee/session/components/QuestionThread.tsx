@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { cn } from '@/lib/utils/cn'
 import type { AnsweredQuestion, Question, SessionMode, ThreadItem } from '../types'
 
@@ -33,8 +34,30 @@ export default function QuestionThread({
   current,
   waiting,
 }: Props) {
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  /*
+    새 질문·답변·힌트가 붙으면 **맨 아래로 따라간다.** 대화가 길어지면 새로 온 것이
+    보이는 영역 밖으로 밀려나는데, 이 화면은 스크롤바가 코드 패널·대화 패널 두 곳이라
+    학생이 어느 쪽을 내려야 하는지도 바로 안 보인다(실사용 피드백으로 발견).
+
+    **앵커에 `scrollIntoView`를 쓰지 않는다.** 그 방식은 ① 컨테이너의 아래쪽 padding
+    만큼 덜 내려가고(실측 15px) ② 조상 스크롤 컨테이너까지 함께 움직일 수 있다 —
+    전체화면 레이아웃에서는 그게 화면 전체를 밀어 버린다. 이 패널만 직접 내린다.
+
+    `behavior: 'smooth'`도 안 쓴다 — 답변 직후 눈이 입력칸으로 돌아가야 하는데 화면이
+    천천히 흐르면 그 시선을 붙잡는다.
+
+    의존성이 셋인 이유: 답이 끝난 질문(answered)·지금 질문의 타임라인(current)·
+    대기 인디케이터(waiting)가 각각 따로 늘어난다.
+  */
+  useEffect(() => {
+    const el = scrollRef.current
+    if (el) el.scrollTop = el.scrollHeight
+  }, [answered.length, current.length, waiting])
+
   return (
-    <div className="flex-1 overflow-auto p-4">
+    <div ref={scrollRef} className="flex-1 overflow-auto p-4">
       <div className="flex flex-col gap-4">
         {answered.map((q, i) => (
           <div key={i} className="flex flex-col gap-2">

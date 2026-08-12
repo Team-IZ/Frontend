@@ -43,6 +43,23 @@ import type { CurrentRound } from './types'
   왜 그렇게 결정했는가"가 아니다(실사용 피드백으로 발견).
 */
 
+/*
+  세션 규칙(tr-03-session.md) 중 **홈이 미리 말해 주는 값**만 여기 둔다.
+
+  ⚠️ 세션 화면(`features/trainee/session/`)에 같은 값이 또 있다 — features 간 교차
+  import를 린트가 막아서(oxlintrc) 상수 셋을 복제한다. **한쪽만 고치면 홈과 세션이
+  다른 시간을 말하게 된다.** 실제로 그랬다 — 세션을 1시간으로 고친 뒤에도 홈은
+  "보통 30~40분"이라고 해서, 학생이 홈을 보고 시작하면 인트로에서 다른 숫자를 봤다.
+
+  ponytail: 값이 하나 더 늘거나 세 번째 화면이 같은 것을 말하게 되면 `lib/`로 올린다.
+  지금은 두 곳뿐이라 복제가 싸고, 서버가 이 값을 주기 시작하면 어차피 둘 다 지운다.
+*/
+const CONCEPT_COUNT = 3
+const CONCEPT_LIMIT_MIN = 20
+const SESSION_LIMIT_MIN = 60
+/** 문구용 — 세션 인트로가 "전체 1시간"이라고 하므로 홈도 같은 말을 쓴다("60분" ✗) */
+const SESSION_LIMIT_LABEL = '1시간'
+
 export type GuideLine = { icon: LucideIcon; text: string }
 export type StepState = 'done' | 'now' | 'pending'
 export type StripTone = 'warn' | 'go' | 'stop'
@@ -121,7 +138,7 @@ export function buildStatusContent(round: CurrentRound, now: number): StatusCont
       // ponytail: "지금 시작하면 새벽 3시 전에 끝나요"의 새벽/오전 같은 한국어 하루 표현은
       // 만들지 않는다 — 24시간제 시각만 보여줘도 같은 정보를 준다. 하루 구간 이름이
       // 필요해지면 그때 넣는다.
-      const finishBy = new Date(now + 40 * 60_000)
+      const finishBy = new Date(now + SESSION_LIMIT_MIN * 60_000)
       return {
         title: '이해도 확인을 시작할 차례예요',
         steps: ['done', 'done', 'now', 'pending'],
@@ -133,11 +150,11 @@ export function buildStatusContent(round: CurrentRound, now: number): StatusCont
         guide: [
           {
             icon: MessageCircleIcon,
-            text: '내가 쓴 코드 3군데에 대해 왜 그렇게 했는지 이야기하는 시간이에요.',
+            text: `내가 쓴 코드 ${CONCEPT_COUNT}군데에 대해 왜 그렇게 했는지 이야기하는 시간이에요.`,
           },
           {
             icon: ClockIcon,
-            text: '보통 30~40분, 잘 답할수록 길어질 수 있어요. 시작하면 중간에 나갈 수 없으니 시간이 되는 때에 시작하세요.',
+            text: `문제마다 ${CONCEPT_LIMIT_MIN}분, 전체 ${SESSION_LIMIT_LABEL}까지 쓸 수 있어요. 시작하면 중간에 나갈 수 없으니 시간이 되는 때에 시작하세요.`,
           },
           {
             icon: EyeOffIcon,
@@ -148,7 +165,8 @@ export function buildStatusContent(round: CurrentRound, now: number): StatusCont
           label: '이해도 확인 시작하기 →',
           to: '/trainee/session',
           variant: 'primary',
-          aside: `지금 시작하면 ${String(finishBy.getHours()).padStart(2, '0')}:${String(finishBy.getMinutes()).padStart(2, '0')}까지 끝나요`,
+          // 최대치 기준이다 — 일찍 끝날 수는 있어도 이 시각을 넘지는 않는다
+          aside: `늦어도 ${String(finishBy.getHours()).padStart(2, '0')}:${String(finishBy.getMinutes()).padStart(2, '0')}까지 끝나요`,
         },
       }
     }
@@ -175,6 +193,11 @@ export function buildStatusContent(round: CurrentRound, now: number): StatusCont
         },
       }
 
+    /*
+      `retryConcepts`는 **도달 2단 미만인 개념**만 담는다(tr-03-session.md §2-5).
+      문항 없음은 못한 것이 아니라 안 물어본 것이라 여기 안 들어간다 — TR-04의
+      `다시 볼 문제 N개`와 같은 기준이어야 두 화면의 숫자가 안 갈린다.
+    */
     case 'RETRY_AVAILABLE':
       return {
         title: `다시 볼 수 있는 문제가 ${round.retryConcepts.length}개 있어요`,
@@ -187,9 +210,13 @@ export function buildStatusContent(round: CurrentRound, now: number): StatusCont
         guide: [
           {
             icon: RotateCcwIcon,
-            text: `${round.retryConcepts.join(' · ')} — 리포트에서 안내한 교안을 보고 오면 돼요.`,
+            text: `${round.retryConcepts.join(' · ')} — 처음 단계부터 다시 봐요. 리포트에서 안내한 교안을 보고 오면 됩니다.`,
           },
-          { icon: InfoIcon, text: '기존 결과는 그대로예요. 다시 본 것은 기록에만 남아요.' },
+          {
+            icon: InfoIcon,
+            // "한 번뿐"은 되돌릴 수 없는 사실이라 누르기 전에 말한다(체크리스트 B5)
+            text: '기회는 한 번이에요. 기존 결과는 그대로이고 다시 본 것은 기록에만 남아요.',
+          },
         ],
         cta: {
           label: '다시 보기',

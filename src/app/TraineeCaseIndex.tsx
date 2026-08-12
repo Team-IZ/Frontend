@@ -81,7 +81,9 @@ const SECTIONS: ScreenSection[] = [
     liveFlowTo: '/trainee/report',
     cases: [
       { label: '발행 · 다시 볼 문제 있음', to: '/trainee/report?state=locked' },
-      { label: '다시 보기 마친 뒤', to: '/trainee/report?state=after' },
+      { label: '다시 보기 마친 뒤(FULL 승격)', to: '/trainee/report?state=after' },
+      { label: '문항 없음(코드에 개념 없음)', to: '/trainee/report?state=unasked' },
+      { label: '0단(설명이 닿지 않음)', to: '/trainee/report?state=zero' },
       { label: '발행 전', to: '/trainee/report?state=pre' },
       { label: '공개 범위 미지정', to: '/trainee/report?state=private' },
       { label: '미응시', to: '/trainee/report?state=missed' },
@@ -91,7 +93,8 @@ const SECTIONS: ScreenSection[] = [
       { label: '리포트 하나도 없음', to: '/trainee/report?state=empty' },
     ],
     manual: [
-      '다시 볼 문제 없음(클리어) · 개념별 문답 펼치기는 locked 상태에서 레일의 미프 1·2차를 클릭',
+      '재시험 병기 — 레일의 미프 2차 › Repository 계층 › [내 답변 5개] 펼치기. 처음/다시가 갈려 쌓이고 배지는 원점수(1단)를 유지한다',
+      'SUMMARY는 문답 버튼 자체가 없다(서버가 안 보낸다) — unasked 케이스의 DTO 분리에서 확인',
     ],
   },
 ]

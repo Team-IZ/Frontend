@@ -50,14 +50,19 @@ export default function IntroScreen({ mode, onStart }: { mode: SessionMode; onSt
           {
             label: '꼭 알아두세요',
             rows: [
+              /*
+                다섯 줄이던 것을 셋으로 줄였다(실사용 피드백 — "너무 많다").
+                한 줄 = 한 가지 되돌릴 수 없는 사실로 묶는다:
+                  ① 얼마나 걸리나  ② 나갈 수 있나·고칠 수 있나(둘 다 "앞으로만")
+                  ③ 무엇이 기록되나
+                "문제 3개를 봐요"는 바로 위 제목 문장이 이미 말하므로 지웠다.
+              */
               {
                 icon: ClockIcon,
                 body: (
                   <>
-                    문제 3개를 봐요. 질문에 잘 답할수록 더 깊은 질문으로 이어집니다.{' '}
-                    <b className="text-fg">
-                      문제마다 20분, 전체 1시간까지 쓸 수 있고 시작하면 중간에 나갈 수 없어요.
-                    </b>
+                    <b className="text-fg">문제마다 20분, 전체 1시간</b>까지 쓸 수 있어요. 잘
+                    답할수록 더 깊은 질문으로 이어집니다.
                   </>
                 ),
               },
@@ -65,7 +70,8 @@ export default function IntroScreen({ mode, onStart }: { mode: SessionMode; onSt
                 icon: ArrowRightIcon,
                 body: (
                   <>
-                    <b className="text-fg">답을 제출하면 고칠 수 없어요.</b> 앞으로만 갑니다.
+                    <b className="text-fg">시작하면 나갈 수 없고, 낸 답은 고칠 수 없어요.</b>{' '}
+                    앞으로만 갑니다.
                   </>
                 ),
               },
@@ -73,8 +79,7 @@ export default function IntroScreen({ mode, onStart }: { mode: SessionMode; onSt
                 icon: Maximize2Icon,
                 body: (
                   <>
-                    화면이 전체화면으로 바뀌어요.{' '}
-                    <b className="text-fg">다른 창을 열면 기록에 남습니다.</b>
+                    전체화면으로 바뀌고, <b className="text-fg">다른 창을 열면 기록에 남습니다.</b>
                   </>
                 ),
               },

@@ -119,6 +119,16 @@ function toColumns(rounds: RiskRates['rounds']): RoundColumn[] {
  * 회차를 가로질러 같은 팀을 추적하는 것이 성립하지 않는다. 둘 중 하나라도 없으면
  * 조회하지 않고 **무엇이 빠졌는지**를 돌려준다.
  */
+/*
+  **탭에 돌아오면 다시 읽는다.** 전역 기본값은 `false`이고(`main.tsx`) 그게 맞다 — 폼을
+  만지다 돌아오면 입력 중인 값이 흔들린다.
+
+  **이 화면이 예외인 이유는 OP-01 대시보드와 같다** — 조작이 없는 지표판이고, 켜 둔 채
+  방치되는 화면이다. 집계는 회차가 끝나면 바뀌는데, 돌아왔을 때 옛 값을 그대로 두면
+  화면이 조용히 낡는다(op-02-situations T1).
+*/
+const REFRESH_ON_RETURN = { refetchOnWindowFocus: true } as const
+
 export function useRoundGrid(q: RoundQuery | undefined) {
   return useQuery({
     // 고른 조건이 곧 키다 — 계층·반·회차·범위·정렬을 바꾸면 그 조합의 캐시를 본다
@@ -128,8 +138,14 @@ export function useRoundGrid(q: RoundQuery | undefined) {
     /*
       **툴바를 만져도 격자를 비우지 않는다.** 조건이 곧 키라 바뀌는 순간 캐시가 없어져
       화면이 통째로 비었다 — 반 하나를 더 고를 때마다 표가 사라졌다(`_shared/listQuery`).
+
+      ⚠ **다만 계층이 바뀌면 유지하지 않는다.** `_shared/listQuery`의 규칙 그대로다 —
+      *"같은 것의 다른 조각"* 은 유지하고 *"다른 것"* 은 유지하지 않는다. 반별 격자와 팀
+      격자는 **행도 열도 기준선도 다른 표**라, 그대로 두면 팀을 고르는 동안 반별 표가
+      보이고 반별로 돌아와도 팀 표가 남는다(실측).
     */
-    ...listQueryOptions,
+    placeholderData: (prev: RoundGrid | undefined) => (prev?.level === q?.level ? prev : undefined),
+    ...REFRESH_ON_RETURN,
   })
 }
 
@@ -147,10 +163,12 @@ async function loadRoundGrid(q: RoundQuery): Promise<RoundGrid> {
     return {
       allRounds: toColumns(base.rounds),
       columns: [],
-      appliedFrom: 0,
-      appliedTo: 0,
+      /* 고를 회차가 없으면 **범위를 지어내지 않는다** — `0 – 0`은 0차가 있는 것처럼 읽힌다 */
+      appliedFrom: null,
+      appliedTo: null,
       rows: [],
       baselineName: '',
+      level: q.level,
       allClasses: toClassOptions(base),
       needs,
     }
@@ -201,13 +219,22 @@ async function loadRoundGrid(q: RoundQuery): Promise<RoundGrid> {
   return {
     allRounds,
     columns,
-    // 서버가 실제로 적용한 범위 — 안 보냈으면 서버가 정한 값이 여기서 나온다
-    appliedFrom: columns[0]?.no ?? 0,
-    appliedTo: columns[columns.length - 1]?.no ?? 0,
+    /*
+      서버가 실제로 적용한 범위 — 안 보냈으면 서버가 정한 값이 여기서 나온다.
+      **열이 없으면 `null`이다** — `0`으로 채우면 화면이 `0 – 0`을 그려 0차가 있는 것처럼 읽힌다.
+    */
+    appliedFrom: columns[0]?.no ?? null,
+    appliedTo: columns[columns.length - 1]?.no ?? null,
     // **기준선 행은 정렬에서 빠진다** — 위치가 움직이면 기준이 아니게 된다
     rows: [baselineRow, ...rows],
     baselineName: isTeam ? (r.classes[0]?.className ?? '') : '기수 전체',
-    allClasses: toClassOptions(r),
+    level: q.level,
+    /*
+      **반 목록은 전량이어야 한다.** 팀 조회 응답(`r`)은 **고른 반 하나만** 담고 있어서
+      그것으로 선택지를 만들면 툴바가 `전체 1반`이 되고 **다른 반으로 옮길 수가 없다**
+      (실측). 회차 목록을 따로 받는 것과 같은 이유다.
+    */
+    allClasses: toClassOptions(all ?? r),
   }
 }
 
@@ -302,25 +329,48 @@ export function useCohortCompare(q: CohortQuery | undefined) {
     queryFn: () => loadCohortCompare(q!),
     /* 비교 기수를 바꿔도 표를 비우지 않는다 — `_shared/listQuery` 주석 참고 */
     ...listQueryOptions,
+    ...REFRESH_ON_RETURN,
   })
 }
 
 async function loadCohortCompare(q: CohortQuery): Promise<CohortCompare> {
-  const r = await findCohortComparison({
-    path: { cohortId: q.cohortId },
-    query: {
-      baselineCohortId: q.compareCohortId ?? undefined,
-      sameCurriculumOnly: true,
-      sort: q.sort === 'WORSENED' ? 'WORSENED' : 'CONCEPT',
-    },
-  })
+  const call = (baselineCohortId?: string) =>
+    findCohortComparison({
+      path: { cohortId: q.cohortId },
+      query: {
+        baselineCohortId,
+        sameCurriculumOnly: true,
+        sort: q.sort === 'WORSENED' ? 'WORSENED' : 'CONCEPT',
+      },
+    })
+
+  let r = await call(q.compareCohortId ?? undefined)
+
+  /*
+    **비교 대상을 안 고르면 서버가 대신 고르지 않는다.** 견줄 수 있는 기수가 실제로 있는데도
+    `baselineCohortId`를 생략하면 `concepts`가 0건으로 온다(실측 · op-02-situations §2-1) —
+    그래서 이 탭은 **사용자가 셀렉트를 만지기 전까지 늘 비어 있었다.**
+
+    **한 번 더 부른다.** 사용자가 안 골랐고 견줄 수 있는 기수가 있으면, 서버가 준 목록의
+    **첫 번째 `comparable`** 로 다시 조회한다.
+
+    ⚠ **우리가 정렬하지 않는다.** 「어느 기수가 기본인가」는 도메인 판단이라(가장 최근?
+    같은 교안을 가장 많이 쓴?) 화면이 정하면 근거 없는 규칙이 코드에 박힌다 — 서버가 준
+    순서를 그대로 믿는다. **서버가 기본값을 고르게 되면 이 블록을 지운다**(15차 요청 대상).
+  */
+  if (!q.compareCohortId && r.concepts.length === 0) {
+    const fallback = r.availableBaselineCohorts.find((c) => c.comparable)
+    if (fallback) r = await call(fallback.cohortId)
+  }
 
   return {
+    sameCurriculumOnly: r.sameCurriculumOnly,
     availableCohorts: r.availableBaselineCohorts.map((c) => ({
       id: c.cohortId,
       label: c.cohortName,
       comparable: c.comparable,
     })),
+    compareCohortId: r.baselineCohort?.cohortId ?? null,
     compareCohortLabel: r.baselineCohort?.cohortName ?? null,
     currentCohortLabel: r.targetCohort.cohortName,
     rows: r.concepts.map((c) => ({

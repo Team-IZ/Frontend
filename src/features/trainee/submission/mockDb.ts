@@ -11,7 +11,9 @@ const DAY = 86_400_000
 const CONTENT = {
   repoUrl: 'github.com/team-a/miniproject-3',
   branch: 'main',
-  lastCommit: { sha: 'a3f9c21', message: 'feat: HITL 재시도 상한 추가', at: '07-13 22:12' },
+  // 커밋 메시지도 TR-03·TR-04와 같은 시나리오(Spring)를 따른다 — 제출한 코드가
+  // 세션에서 그대로 질문 대상이 되므로 화면끼리 다른 프로젝트를 말하면 안 된다
+  lastCommit: { sha: 'a3f9c21', message: 'feat: 회원 삭제 API 추가', at: '07-13 22:12' },
 }
 
 export function buildSubmissionFixture(

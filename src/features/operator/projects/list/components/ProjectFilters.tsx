@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select'
+import ControlLabel from '@/components/common/ControlLabel'
 import { STATUS_LABEL } from '../../labels'
 import type { Curriculum, ProjectSort, ProjectStatus } from '../../types'
 import { ALL, type FilterValues } from '../filterState'
@@ -61,12 +62,29 @@ type Props = FilterValues & {
   counts?: Partial<Record<ProjectStatus, number>>
   /** 전체 회차 수. `counts`를 더하면 PLANNED를 두 번 센다(`ProjectPage.population`) */
   population?: number
+  /**
+   * 교안 목록이 **아직 오는 중인가.** 모르면 셀렉트가 「전체」 하나로 열려 교안이
+   * 0개인 것처럼 보인다 — 열어 보고 빈 목록을 만나는 것이 이 화면에서 가장 흔한
+   * 헛걸음이다(OP-02에서 회차 셀렉트에 같은 것을 했다).
+   */
+  curriculaLoading?: boolean
+  /** 교안 목록 조회가 **실패**했나. 실패를 감추면 필터가 고장난 줄 모른다(§2-7) */
+  curriculaFailed?: boolean
+  /**
+   * 검색어만 따로 받는다 — **입력칸은 로컬 값을 그린다.** 주소값을 그리면 글자마다
+   * 히스토리가 바뀌며 한글 조합이 끊긴다(`ProjectListScreen`).
+   */
+  onSearchChange: (value: string) => void
   onChange: (patch: Partial<FilterValues>) => void
 }
 
-/** 라벨 접두사를 붙인 선택지 맵 — Select가 닫힌 상태에서 무엇으로 거른 건지 읽히게 */
-const items = (prefix: string, options: { value: string; label: string }[]) =>
-  Object.fromEntries(options.map((o) => [o.value, `${prefix} · ${o.label}`]))
+/**
+ * 트리거에 그릴 값 맵. **이름표를 값에 섞지 않는다** — 이름표는 컨트롤 안 왼쪽
+ * (`ControlLabel`)이 갖는다. 한때 `교안 · <값>`이었는데, 파일명이 그대로 들어가는
+ * 교안에서 트리거가 580px까지 늘어나 **툴바가 두 줄로 접히고 표가 44px 내려갔다**.
+ */
+const items = (options: { value: string; label: string }[]) =>
+  Object.fromEntries(options.map((o) => [o.value, o.label]))
 
 export default function ProjectFilters({
   search,
@@ -76,6 +94,9 @@ export default function ProjectFilters({
   curricula,
   counts,
   population,
+  curriculaLoading,
+  curriculaFailed,
+  onSearchChange,
   onChange,
 }: Props) {
   /*
@@ -92,8 +113,15 @@ export default function ProjectFilters({
     })),
   ]
 
+  /*
+    교안 선택지 — **아직 못 고르는 이유를 「전체」 자리에 쓴다.** 셀렉트를 잠그면
+    왜 잠겼는지 말할 곳이 없어서, 잠그는 대신 트리거가 상태를 말하게 한다.
+  */
   const curriculumOptions = [
-    { value: ALL, label: '전체' },
+    {
+      value: ALL,
+      label: curriculaLoading ? '불러오는 중' : curriculaFailed ? '불러오지 못했습니다' : '전체',
+    },
     ...curricula.map((c) => ({
       value: c.versionId,
       label: `${c.originalFileName} v${c.versionNo}`,
@@ -108,7 +136,7 @@ export default function ProjectFilters({
         </InputGroupAddon>
         <InputGroupInput
           value={search}
-          onChange={(e) => onChange({ search: e.target.value })}
+          onChange={(e) => onSearchChange(e.target.value)}
           placeholder="프로젝트명 검색"
           aria-label="프로젝트 검색"
         />
@@ -117,7 +145,7 @@ export default function ProjectFilters({
             <InputGroupButton
               size="icon-xs"
               aria-label="검색어 지우기"
-              onClick={() => onChange({ search: '' })}
+              onClick={() => onSearchChange('')}
             >
               <XIcon />
             </InputGroupButton>
@@ -130,7 +158,7 @@ export default function ProjectFilters({
         value={status}
         options={statusOptions}
         onChange={(v) => onChange({ status: v })}
-        className="min-w-36"
+        className="w-40"
       />
       {/*
         교안 필터 — 매니저에게는 없는 필요다. 교안을 **재분석하면 `teaches`가 바뀌므로**
@@ -139,9 +167,15 @@ export default function ProjectFilters({
       <FilterSelect
         label="교안"
         value={curriculumId}
+        disabled={curriculaLoading || curriculaFailed}
         options={curriculumOptions}
         onChange={(v) => onChange({ curriculumId: v })}
-        className="min-w-32"
+        /*
+          **늘어나지 않게 폭을 박는다.** 교안 이름은 업로드한 파일명이라 길이를 우리가
+          정하지 못한다 — `min-w`면 그 길이만큼 자라 툴바가 접힌다(§2-2). 넘치는 이름은
+          말줄임으로 자르고, 전체는 열어서 본다.
+        */
+        className="w-56"
       />
 
       {/* 정렬과 필터 사이 구분선 — 줄이는 것과 순서를 바꾸는 것은 다른 일이다 */}
@@ -152,7 +186,7 @@ export default function ProjectFilters({
         value={sort}
         options={SORT_OPTIONS}
         onChange={(v) => onChange({ sort: v as ProjectSort })}
-        className="min-w-36"
+        className="w-48"
       />
     </div>
   )
@@ -164,27 +198,42 @@ function FilterSelect({
   value,
   options,
   onChange,
-  className = 'min-w-28',
+  disabled,
+  className = 'w-40',
 }: {
   label: string
   value: string
   options: { value: string; label: string }[]
   onChange: (value: string) => void
+  disabled?: boolean
   className?: string
 }) {
   return (
     <Select
+      disabled={disabled}
       value={value}
       onValueChange={(v) => onChange(v ?? options[0].value)}
-      items={items(label, options)}
+      items={items(options)}
     >
-      <SelectTrigger className={`h-9 ${className}`} aria-label={`${label} 필터`}>
-        <SelectValue />
+      {/* 잘린 이름은 hover로 전체를 본다 — 교안 파일명이 대개 트리거 폭을 넘는다 */}
+      <SelectTrigger
+        className={`h-9 ${className}`}
+        aria-label={`${label} 필터`}
+        title={options.find((o) => o.value === value)?.label}
+      >
+        <ControlLabel>{label}</ControlLabel>
+        {/* 긴 이름은 자른다 — 트리거가 자라면 툴바가 접힌다(§2-2) */}
+        <SelectValue className="truncate" />
       </SelectTrigger>
-      <SelectContent>
+      {/*
+        **팝업은 트리거 폭을 따르지 않는다.** 트리거를 좁힌 것은 툴바가 접히지 않게
+        하려는 것인데(§2-2), 팝업까지 좁아지면 **열어 봐도 어떤 교안인지 모른다** —
+        폭을 박은 직후 실제로 그랬다. 팝업은 떠 있는 것이라 넓어도 아무것도 안 민다.
+      */}
+      <SelectContent className="w-auto max-w-[min(620px,calc(100vw-2rem))] min-w-(--anchor-width)">
         {options.map((o) => (
           <SelectItem key={o.value} value={o.value}>
-            {label} · {o.label}
+            {o.label}
           </SelectItem>
         ))}
       </SelectContent>

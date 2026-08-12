@@ -153,7 +153,17 @@ export function useProjectList(q: ProjectQuery | undefined) {
     { enabled: !!q, ...listQueryOptions },
   )
 
-  return { ...res, data: res.data ? toPage(res.data, q!) : undefined }
+  /*
+    ⚠ **`q`가 없으면 변환도 안 한다.** `q!`로 단언했다가 **화면이 통째로 죽었다** —
+    조회를 끄면(`enabled: false`) 캐시의 `res.data`는 **그대로 남는데** `q`만 `undefined`가
+    되어 `toPage`가 `q.status`를 읽었다.
+
+    실제로 난 자리 — OP-04 상세에서 개요 탭(형제 회차를 부른다)을 보다가 **현황·구성 탭을
+    누르는 순간.** `active !== 'overview'`라 `q`가 `undefined`가 되고, 캐시는 살아 있어
+    `res.data`가 참이었다. 주소로 직접 들어가면 캐시가 없어 안 났다 — **탭을 눌러야만**
+    나는 사고였다.
+  */
+  return { ...res, data: q && res.data ? toPage(res.data, q) : undefined }
 }
 
 function toPage(res: findProjects_Response, q: ProjectQuery): ProjectPage {

@@ -81,7 +81,7 @@
 | 로그인·퀵로그인 | `/shared/login` | 완료 | `login()`(`@/api/auth/authApi`) |
 | 세션 조회·로그아웃·리프레시 | (전역) | 완료 | `useSession`(`GET /members/me`), `logout`, `/auth/refresh` |
 | 비밀번호 재설정 | `/shared/password-reset` | 완료 | 이슈 #178 → PR #179(2026-08-11 머지). `passwordResetApi.ts`가 `@/api/auth/authApi` 실호출 |
-| 초대·가입(회원가입) | `/invite/:token` | 완료(렌더 확인 2/6) | `inviteApi.ts`가 `resolveInvitation`·`signupManager`·`activateTrainee`·`resendAccountInvitation` 실호출로 교체됨. `mockDb.ts` 삭제 완료 |
+| 초대·가입(회원가입) | `/invite/:token` | 완료(렌더 확인 3/6) | 이슈 #183 → PR #184(2026-08-11 머지). `inviteApi.ts`가 `resolveInvitation`·`signupManager`·`activateTrainee`·`resendAccountInvitation` 실호출로 교체됨. `mockDb.ts` 삭제 완료 |
 | 개인정보 처리방침 | `/shared/privacy-policy` | N/A | 정적 콘텐츠 페이지, API 없음 |
 
 ⚠ **비밀번호 재설정은 연동됐지만 렌더 확인이 절반만 됐다.** 위변조 토큰(에러 경로)은 실제 렌더로 확인했지만, 정상 진입·확정 성공·`SAME_AS_CURRENT`·만료·이미사용(성공 경로 대부분)은 **유효한 토큰이 있는 계정이 있어야 확인 가능**한데 시드 계정 이메일이 전부 가짜 도메인(`org.com` 등)이라 아직 못 봤다 — 백엔드에 실제 이메일로 받을 수 있는 테스트 계정을 요청해 둔 상태(상세: `docs/dev/handoff.md` 최신 항목).

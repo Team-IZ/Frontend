@@ -136,9 +136,14 @@ export default function OrgListScreen() {
     "기관이 하나도 없다"와 "조건에 맞는 게 없다"는 다른 화면이다. 전자는 만들라고 권하고
     후자는 조건을 바꾸라고 한다. **조건이 걸려 있으면 전자로 판정하지 않는다** — 검색어
     때문에 0건인데 "아직 등록된 기관이 없습니다"를 띄우면 거짓말이 된다.
+
+    **로딩 중에도 판정하지 않는다** — `isPending`일 땐 `data`가 아직 없어 `total`이
+    구조상 0이다. `isPending`을 안 보면 첫 진입마다(응답이 오기 전) 실제로 15개가 있어도
+    "아직 등록된 기관이 없습니다"가 잠깐 뜬다(2026-08-12 실측: 새로고침 시 2~3초간 노출,
+    스켈레톤 대신 빈 상태를 보여준 것 — screenhardening.md 2단계에서 렌더로 잡음).
   */
   const hasFilter = Boolean(searchQuery.trim()) || statusFilter !== 'ALL'
-  const isPlatformEmpty = !hasFilter && total === 0
+  const isPlatformEmpty = !isPending && !hasFilter && total === 0
 
   function changeSort(key: OrgSortKey) {
     setSort((prev) =>
@@ -291,10 +296,18 @@ export default function OrgListScreen() {
                         <TableRow
                           key={org.organizationId}
                           className={cn(
-                            'hover:bg-surface-2 cursor-pointer',
+                            'hover:bg-surface-2 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
                             unassigned && 'bg-warning-soft hover:bg-warning-soft',
                           )}
                           onClick={() => navigate(`/superadmin/orgs/${org.organizationId}`)}
+                          role="button"
+                          tabIndex={0}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              navigate(`/superadmin/orgs/${org.organizationId}`)
+                            }
+                          }}
                         >
                           <TableCell
                             className={cn('w-56 font-bold', dimmed && 'text-fg-muted font-normal')}

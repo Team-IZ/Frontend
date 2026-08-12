@@ -137,7 +137,7 @@ export default function ReportScreen() {
 
   /* 기수를 셸에 넘긴다 — 안 넘기면 헤더가 자리표시자(`7기`)를 그려 본문과 다른 기수를 말한다 */
   return (
-    <ConsoleShell role="operator" cohort={cohortName}>
+    <ConsoleShell role="operator" cohort={cohortName ?? ''}>
       {/*
         cohortName이 로딩 중엔 없다 — 조건 없이 이어 붙이면 데이터가 오기 전 "리포트 ›"
         만 매달린 채로 250ms(목 지연) 동안 보인다. `PageHeader`는 `breadcrumb`이

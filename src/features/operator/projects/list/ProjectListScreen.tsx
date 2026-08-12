@@ -103,7 +103,7 @@ export default function ProjectListScreen() {
   const narrowed = isNarrowed({ ...filters, search })
 
   return (
-    <ConsoleShell role="operator" cohort={cohortName}>
+    <ConsoleShell role="operator" cohort={cohortName ?? ''}>
       <PageHeader
         // 기수 이름을 하드코딩했었다 — 기수를 바꾸면 빵부스러기만 옛 기수를 가리킨다
         breadcrumb={cohortName ? `프로젝트 › ${cohortName}` : '프로젝트'}

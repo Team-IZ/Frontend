@@ -131,7 +131,7 @@ export default function ProjectDetailScreen() {
         문구·재시도 여부는 `errorCopy`가 `status`·코드를 보고 정한다.
       */
       return (
-        <ConsoleShell role="operator" cohort={cohortName}>
+        <ConsoleShell role="operator" cohort={cohortName ?? ''}>
           <ErrorState
             error={project.error}
             subject="회차"
@@ -147,7 +147,7 @@ export default function ProjectDetailScreen() {
       )
     }
     return (
-      <ConsoleShell role="operator" cohort={cohortName}>
+      <ConsoleShell role="operator" cohort={cohortName ?? ''}>
         <div className="flex justify-center py-16">
           <Spinner className="size-6" aria-label="회차를 불러오는 중" />
         </div>
@@ -165,7 +165,7 @@ export default function ProjectDetailScreen() {
   const goTab = (t: ProjectTab) => navigate(`/operator/projects/${id}/${t}`, { replace: true })
 
   return (
-    <ConsoleShell role="operator" cohort={cohortName}>
+    <ConsoleShell role="operator" cohort={cohortName ?? ''}>
       <DetailHeader project={data} now={getToday()} />
 
       {notice && (

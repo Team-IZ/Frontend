@@ -50,7 +50,7 @@ export default function DashboardScreen() {
   const todos = page.todos?.state === 'ok' ? page.todos.value : null
 
   return (
-    <ConsoleShell role="operator" cohort={cohortName}>
+    <ConsoleShell role="operator" cohort={cohortName ?? ''}>
       {/*
         **제목 줄은 조회를 기다리지 않는다**(async-states §1-3) — 통째로 없다가 생기면
         도착 순간 페이지 전체가 아래로 밀린다. 기수 이름은 스코프가 알고(`loadScope`),

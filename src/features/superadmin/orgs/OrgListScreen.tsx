@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router'
+import { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router'
 import { PlusIcon, SearchIcon, XIcon } from 'lucide-react'
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
@@ -104,17 +104,43 @@ function OrgStatusBadge({ org }: { org: findOrganizations_Item }) {
 export default function OrgListScreen() {
   const navigate = useNavigate()
 
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL')
-  const [sort, setSort] = useState<{ key: OrgSortKey; direction: OrgSortDirection }>({
-    key: 'createdAt',
-    direction: 'desc', // 최근 생성된 기관이 맨 위
+  /*
+    SA-02 갔다가 뒤로가기 — 이 화면은 라우트가 바뀌면 언마운트된다(`useState`뿐이면
+    검색어·필터·정렬·쪽 번호가 전부 초기화). URL을 진짜 저장소로 쓴다 — 브라우저가
+    뒤로가기에서 URL을 그대로 복원해 주므로 마운트 시 거기서 읽으면 된다
+    (2026-08-12 렌더 실측으로 초기화 확인 — screenhardening.md 5단계).
+  */
+  const [searchParams, setSearchParams] = useSearchParams()
+
+  const [search, setSearch] = useState(() => searchParams.get('q') ?? '')
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>(
+    () => (searchParams.get('status') as StatusFilter | null) ?? 'ALL',
+  )
+  const [sort, setSort] = useState<{ key: OrgSortKey; direction: OrgSortDirection }>(() => {
+    const key = (searchParams.get('sortKey') as OrgSortKey | null) ?? 'createdAt'
+    return {
+      key,
+      direction:
+        (searchParams.get('sortDir') as OrgSortDirection | null) ?? ORG_SORT_DEFAULT_DIRECTION[key],
+    }
   })
-  const [page, setPage] = useState(1)
+  const [page, setPage] = useState(() => Number(searchParams.get('page')) || 1)
   const [createOpen, setCreateOpen] = useState(false)
 
   // 입력은 즉시, 조회는 멈춘 뒤 — 안 그러면 한 글자마다 요청이 나간다
   const searchQuery = useDebounced(search)
+
+  // 확정된(디바운스 끝난) 조건만 URL에 남긴다 — 타이핑 중간값으로 히스토리를 어지르지 않는다
+  useEffect(() => {
+    const next = new URLSearchParams()
+    if (searchQuery.trim()) next.set('q', searchQuery.trim())
+    if (statusFilter !== 'ALL') next.set('status', statusFilter)
+    if (sort.key !== 'createdAt') next.set('sortKey', sort.key)
+    if (sort.direction !== ORG_SORT_DEFAULT_DIRECTION[sort.key]) next.set('sortDir', sort.direction)
+    if (page !== 1) next.set('page', String(page))
+    setSearchParams(next, { replace: true })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, statusFilter, sort, page])
 
   const query: findOrganizations_Query = {
     query: searchQuery.trim() || undefined,
@@ -290,8 +316,13 @@ export default function OrgListScreen() {
                   <TableBody>
                     {rows.map((org) => {
                       // 파생 배지는 **서버가 판정한다** — 화면이 operators.length로 유추하면 규칙이 두 곳에 생긴다
-                      const unassigned = org.operatorUnassigned
                       const dimmed = org.status !== 'ACTIVE'
+                      /*
+                        orgStatusBadge(labels.ts)의 우선순위(정지 > 미배정)를 행 강조에도 그대로
+                        맞춘다 — 안 그러면 정지(회색 배지)인데 행만 경고색(orange)으로 남아 서로
+                        다른 말을 한다(G8, 2026-08-12 Playwright 렌더 실측으로 재현·확인).
+                      */
+                      const unassigned = !dimmed && org.operatorUnassigned
                       return (
                         <TableRow
                           key={org.organizationId}

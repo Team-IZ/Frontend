@@ -5,7 +5,6 @@ import { Card } from '@/components/ui/Card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
-import { Spinner } from '@/components/ui/Spinner'
 import {
   Select,
   SelectContent,
@@ -17,6 +16,7 @@ import { useCohortId } from '@/stores/cohortScope'
 import { useCohortCompare, useRoundGrid } from './_/api/api'
 import ErrorState from '@/components/common/ErrorState'
 import { staleProps } from '../_shared/listQuery'
+import GridSkeleton, { CompareSkeleton } from './_/components/GridSkeleton'
 import RoundToolbar from './_/components/RoundToolbar'
 import RoundGridTable from './_/components/RoundGridTable'
 import GridLegend from './_/components/GridLegend'
@@ -111,14 +111,46 @@ export default function AnalysisScreen() {
   )
 
   const g = grid.data
-  const teamClassName = g?.allClasses.find((c) => c.classId === teamClassId)?.className
-  const crumb =
-    level === 'team' && teamClassName
-      ? `분석 › ${cohortName ?? ''} › ${teamClassName} › 팀`
-      : `분석 › ${cohortName ?? ''} › ${tab === 'rounds' ? '회차 흐름' : '기수 간 비교'}`
+  /*
+    **「무엇이 빠졌나」는 화면이 안다 — 서버에 물을 일이 아니다.**
 
+    전에는 이 판정이 응답(`g.needs`)에 실려 왔다. 그래서 반·회차를 다 고른 뒤에도
+    **응답이 올 때까지(팀 계층은 9초) «골라 주세요»가 그대로 남아** 클릭이 안 먹은 것처럼
+    보였다 — 이전 값 유지(`listQueryOptions`)가 그 옛 안내를 계속 그렸기 때문이다.
+
+    판정에 쓰는 값이 **둘 다 화면 상태**(고른 반·고른 회차)라 왕복이 필요 없다.
+  */
+  const needs: 'CLASS' | 'ROUND' | 'BOTH' | undefined =
+    level !== 'team'
+      ? undefined
+      : !teamProjectId && !teamClassId
+        ? 'BOTH'
+        : !teamProjectId
+          ? 'ROUND'
+          : !teamClassId
+            ? 'CLASS'
+            : undefined
+  const teamClassName = g?.allClasses.find((c) => c.classId === teamClassId)?.className
+  /*
+    **기수를 모르는 동안 빈 조각을 만들지 않는다.** `분석 › › 회차 흐름`처럼 구분자가 둘
+    붙어 나온다 — 있는 조각만 잇는다(§2-9).
+  */
+  const crumb = [
+    '분석',
+    cohortName,
+    level === 'team' && teamClassName ? teamClassName : null,
+    level === 'team' && teamClassName ? '팀' : tab === 'rounds' ? '회차 흐름' : '기수 간 비교',
+  ]
+    .filter(Boolean)
+    .join(' › ')
+
+  /*
+    기수를 모르는 동안 **자리표시자 `7기`를 그리지 않는다.** 셸 기본값이 `'7기'`라 실제로는
+    9기인데 헤더만 7기라고 말했다 — `''`가 「스코프 자리를 그리지 않는다」의 계약값이다
+    (`ConsoleShell` prop 주석). 오퍼레이터 5화면이 같다.
+  */
   return (
-    <ConsoleShell role="operator" cohort={cohortName}>
+    <ConsoleShell role="operator" cohort={cohortName ?? ''}>
       <PageHeader breadcrumb={crumb} title="분석" />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as AnalysisTab)}>
@@ -143,8 +175,12 @@ export default function AnalysisScreen() {
             allRounds={g?.allRounds ?? []}
             /* 고를 것이 아직 없다 — 빈 목록으로 열리게 두지 않는다(async-states §1-6) */
             loading={grid.isLoading}
-            fromRound={fromRound ?? g?.appliedFrom ?? 1}
-            toRound={toRound ?? g?.appliedTo ?? 1}
+            /*
+              **없으면 `1`을 지어내지 않는다.** 회차가 하나도 없을 때 `1 – 1`이라고 쓰면
+              1차가 있는 것처럼 읽힌다 — `null`이면 셀렉트가 `고르세요`를 그린다(§2-5).
+            */
+            fromRound={fromRound ?? g?.appliedFrom ?? null}
+            toRound={toRound ?? g?.appliedTo ?? null}
             sort={sort}
             onChange={(p) => {
               if (p.level !== undefined) setLevel(p.level)
@@ -166,9 +202,7 @@ export default function AnalysisScreen() {
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
-          ) : grid.isLoading ? (
-            <Loading />
-          ) : grid.isError || !g ? (
+          ) : grid.isError ? (
             /* 실패 문구·재시도 여부는 `errorCopy`가 status·코드를 보고 정한다 */
             <ErrorState
               error={grid.error}
@@ -176,7 +210,7 @@ export default function AnalysisScreen() {
               onRetry={() => grid.refetch()}
               retrying={grid.isFetching}
             />
-          ) : g.needs ? (
+          ) : needs ? (
             /*
               **팀 계층인데 고를 것이 남았다.** 빈 표가 아니라 **사용자가 할 일이 남은
               것**이다 — 「없는 것」 3종 중 유형 1 `아직`(점선)이다(02-layout §4).
@@ -187,16 +221,42 @@ export default function AnalysisScreen() {
             <Empty variant="empty">
               <EmptyHeader>
                 <EmptyTitle>
-                  {g.needs === 'ROUND'
+                  {needs === 'ROUND'
                     ? '어느 회차의 팀을 볼지 골라 주세요'
-                    : g.needs === 'CLASS'
+                    : needs === 'CLASS'
                       ? '어느 반의 팀을 볼지 골라 주세요'
-                      : '반과 회차를 골라 주세요'}
+                      : '회차와 반을 골라 주세요'}
                 </EmptyTitle>
                 <EmptyDescription>
                   팀 번호는 반 안에서만 유일하고,{' '}
                   <b className="font-semibold">팀은 회차마다 다시 짜일 수 있어</b> 회차를 가로질러
                   같은 팀으로 볼 수 없습니다.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : !g || g.needs ? (
+            /*
+              ⚠ **값이 아직 없는 것은 실패가 아니다.** 전에는 `grid.isError || !g`로 갈랐는데,
+              기수가 정해지기 전에는 이 조회가 `enabled: false`라 `isLoading`도 거짓이다 —
+              그래서 **진입 직후 1.8초 동안 «분석 결과가 표시되지 않았습니다»라는 빨간 화면**이
+              떴다(플로우 관찰 · §2-9). 상류를 기다리는 것을 실패로 그린 것이다.
+
+              `g.needs`도 여기서 받는다 — 화면은 다 골랐는데 **응답이 아직 「고르세요」 시절
+              것**이면 그것은 격자가 아니라 **아직 안 온 것**이다. 격자 모양으로 자리를 잡는다.
+            */
+            <GridSkeleton />
+          ) : g.columns.length === 0 ? (
+            /*
+              **회차가 하나도 없다.** 조회는 200인데 그릴 열이 없다 — 열 없는 격자를
+              그리면 표 머리와 빈 행만 남아 사용자가 *"왜 안 나오지"* 를 묻게 된다
+              (op-02-situations §2-3). 회차가 돌면 채워지므로 「없는 것」 유형 1 `아직`이고,
+              **다시 시도를 붙이지 않는다** — 눌러도 회차가 생기지 않는다.
+            */
+            <Empty variant="pending">
+              <EmptyHeader>
+                <EmptyTitle>아직 볼 회차가 없습니다</EmptyTitle>
+                <EmptyDescription>
+                  프로젝트를 만들고 회차가 끝나면 그 결과가 여기에 쌓입니다.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -222,18 +282,31 @@ export default function AnalysisScreen() {
             */}
             {(compare.data?.availableCohorts.length ?? 0) > 0 && (
               <Select
-                value={compareId ?? 'none'}
-                onValueChange={(v) => setCompareId(v === 'none' ? null : (v as string))}
-                /* `items`가 없으면 트리거에 내부 값(`6`)이 그대로 뜬다 */
-                items={[
-                  ...(compare.data?.availableCohorts ?? []).map((c) => ({
-                    value: c.id,
-                    label: `비교 · ${c.label}`,
-                  })),
-                  { value: 'none', label: '비교 · 없음' },
-                ]}
+                /*
+                  **실제로 견준 기수를 보여준다.** 사용자가 안 골랐을 때 서버 목록의 첫
+                  `comparable`로 조회하므로(`api.ts`), 화면 state만 보면 표는 8기를 그리는데
+                  셀렉트는 `없음`이 되어 둘이 다른 말을 한다.
+                */
+                /*
+                  ⚠ **「비교 · 없음」을 뺐다.** 이 탭은 **견주는 것이 목적**이라 「안 견줌」은
+                  화면을 비우는 것 말고 뜻이 없고, 무엇보다 골라도 **아무 일도 안 일어났다** —
+                  `null`이 되면 서버가 비교를 안 하고, 그러면 폴백이 첫 `comparable`을 다시
+                  고른다(`api.ts`). **누를 수는 있는데 아무것도 안 바뀌는 선택지**였다.
+                */
+                value={compareId ?? compare.data?.compareCohortId ?? ''}
+                onValueChange={(v) => v && setCompareId(v as string)}
+                /*
+                  `items`가 없으면 트리거에 내부 값(`6`)이 그대로 뜬다.
+                  **값에 `비교 ·`를 붙이지 않는다** — 이름은 칩 안 라벨이 말한다(회차 흐름 탭과 같다).
+                */
+                items={(compare.data?.availableCohorts ?? []).map((c) => ({
+                  value: c.id,
+                  label: c.label,
+                }))}
               >
-                <SelectTrigger size="sm" className="w-40" aria-label="비교 기수">
+                {/* 회차 흐름 탭 툴바와 같은 형태 — 라벨을 칩 안에 두고 세로선으로 가른다 */}
+                <SelectTrigger className="w-40" aria-label="비교 기수">
+                  <span className="text-fg-subtle border-border mr-1 border-r pr-2.5">비교</span>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -244,29 +317,46 @@ export default function AnalysisScreen() {
                       사용자가 알아야 할 사실이다.
                     */
                     <SelectItem key={c.id} value={c.id} disabled={!c.comparable}>
-                      비교 · {c.label}
+                      {c.label}
                       {!c.comparable && (
-                        <span className="text-fg-subtle ml-1.5 text-2xs">겹치는 교안 없음</span>
+                        <span className="text-fg-subtle ml-1.5 text-xs">겹치는 교안 없음</span>
                       )}
                     </SelectItem>
                   ))}
-                  <SelectItem value="none">비교 · 없음</SelectItem>
                 </SelectContent>
               </Select>
             )}
             {/* 조건이 아니라 **이 표가 무엇인지**를 말한다 — 누를 수 있는 필터가 아니다 */}
-            <span className="text-fg-subtle text-2xs">같은 교안 · 같은 개념만</span>
+            {/*
+              **서버가 그렇다고 할 때만 단언한다.** 이 표는 절대 눈금(1~4단)을 두 기수에
+              걸쳐 쓰는데, 그 근거가 *"교안이 같아서 값의 차이가 교육생 것"* 이다. 필터가
+              실제로 안 걸렸다면 그 근거가 없으므로 **말을 낮춘다**(§2-2).
+            */}
+            <span className="text-fg-subtle text-2xs">
+              {/*
+                ⚠ **견줄 것이 있을 때만 낮춘다.** 비교 대상이 없으면 서버가 응답을 기본값으로
+                채워 `sameCurriculumOnly: false`가 오는데(§2-2), 그때 «교안이 바뀐 개념도
+                섞여 있다»고 쓰면 **하지도 않은 비교를 설명**하게 된다.
+              */}
+              {compare.data && compare.data.rows.length > 0 && !compare.data.sameCurriculumOnly
+                ? '교안이 바뀐 개념도 섞여 있을 수 있습니다'
+                : '같은 교안 · 같은 개념만'}
+            </span>
           </div>
 
-          {compare.isLoading ? (
-            <Loading />
-          ) : compare.isError || !compare.data ? (
+          {compare.isError ? (
             <ErrorState
               error={compare.error}
               subject="기수 간 비교"
               onRetry={() => compare.refetch()}
               retrying={compare.isFetching}
             />
+          ) : !compare.data ? (
+            /*
+              ⚠ **값이 아직 없는 것은 실패가 아니다** — 회차 흐름 탭과 같은 버그가 여기에도
+              있었다(§2-9). 기수가 정해지기 전에는 `enabled: false`라 `isLoading`도 거짓이다.
+            */
+            <CompareSkeleton />
           ) : compare.data.rows.length === 0 ? (
             /*
               **비어 있는 이유가 둘이고 할 일이 다르다.**
@@ -355,8 +445,8 @@ export default function AnalysisScreen() {
   )
 }
 
-const Loading = () => (
-  <div className="flex justify-center py-16">
-    <Spinner className="size-6" aria-label="분석 결과를 불러오는 중" />
-  </div>
-)
+/*
+  ⚠ **로컬 `Loading`(스피너)을 지웠다.** 두 탭 모두 표 모양을 알아서 스켈레톤으로 자리를
+  잡는다(`GridSkeleton` · `CompareSkeleton`) — 스피너는 «기다려»만 말하고 도착할 때 화면이
+  튄다(op-02-situations §2-10).
+*/

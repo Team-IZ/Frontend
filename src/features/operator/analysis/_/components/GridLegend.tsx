@@ -28,7 +28,7 @@ export default function GridLegend({ baselineName }: { baselineName: string }) {
           tabIndex={0}
           title={RISK_DEFINITION}
           aria-label={`위험자 — ${RISK_DEFINITION}`}
-          className="border-border-strong text-fg-subtle focus-visible:ring-primary flex size-3.5 cursor-help items-center justify-center rounded-full border text-[9px] focus-visible:ring-2 focus-visible:outline-none"
+          className="border-border-strong text-fg-subtle focus-visible:ring-primary flex size-3.5 cursor-help items-center justify-center rounded-full border text-[9px] focus-visible:ring-2 focus-visible:outline-none pt-1"
         >
           ?
         </span>

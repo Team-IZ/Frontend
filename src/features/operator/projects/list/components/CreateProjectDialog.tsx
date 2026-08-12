@@ -55,6 +55,12 @@ type Props = {
   onOpenChange: (open: boolean) => void
   cohortId: string
   curricula: Curriculum[]
+  /**
+   * 교안 목록이 **아직 오는 중인가.** 모르면 목록 자리에 「등록된 교안이 없습니다」가
+   * 떠서 **운영 관리로 보내는 안내까지 그린다** — 잠깐 뒤에 도착할 것을 두고
+   * 없다고 단정하는 셈이다(op-03-situations §2-7).
+   */
+  curriculaLoading?: boolean
   /** 기수 기간 — 달력이 이 밖을 못 고르게 막는다 */
   cohort?: CohortScope
   /**
@@ -69,6 +75,7 @@ export default function CreateProjectDialog({
   onOpenChange,
   cohortId,
   curricula,
+  curriculaLoading,
   cohort,
   onPartial,
 }: Props) {
@@ -211,31 +218,62 @@ export default function CreateProjectDialog({
               </span>
             </FieldLabel>
             <div className="border-border divide-border divide-y rounded-md border">
-              {curricula.length === 0 ? (
+              {curriculaLoading ? (
+                <p className="text-fg-subtle p-4 text-center text-xs">교안을 불러오는 중</p>
+              ) : curricula.length === 0 ? (
                 <p className="text-fg-subtle p-4 text-center text-xs">
                   등록된 교안이 없습니다 —{' '}
                   <b className="text-fg-muted font-semibold">운영 관리 › 교안</b>에서 먼저
                   등록하세요
                 </p>
               ) : (
-                curricula.map((c) => (
-                  <label
-                    key={c.versionId}
-                    className={cn(
-                      'flex cursor-pointer items-center gap-2 p-2.5 text-sm',
-                      versionIds.includes(c.versionId) && 'bg-primary-soft',
-                    )}
-                  >
-                    <Checkbox
-                      checked={versionIds.includes(c.versionId)}
-                      onCheckedChange={() => toggleCurriculum(c.versionId)}
-                    />
-                    <span className="font-medium">{c.originalFileName}</span>
-                    <span className="text-fg-subtle text-xs">v{c.versionNo}</span>
-                    {/* 항목 수는 이 목록에 없다 — 고르면 아래 후보 목록이 채워진다 */}
-                    <span className="text-fg-subtle ml-auto text-xs">{c.pageCount}쪽</span>
-                  </label>
-                ))
+                curricula.map((c) => {
+                  /*
+                    ⚠ **분석이 안 끝난 교안은 고를 수 없다.** 고르면 후보 조회
+                    (`GET /curricula/{id}/sections`)가 **응답하지 않는다** — 에러도
+                    아니고 60초를 넘겨도 안 온다(실측). 화면에는 무한 로딩으로 보이고,
+                    그 회차는 개념을 못 골라 **생성 자체가 막힌다**(18차 R1).
+
+                    분석 여부를 서버가 따로 주지 않아 `pageCount`로 판정한다 —
+                    스펙이 *"분석 전이거나 확정되지 않았으면 null"* 이라고 말하는 값이고,
+                    실측에서도 `null`인 교안만 정확히 행업했다. 상태 필드가 생기면
+                    그것으로 바꾼다(18차 R2).
+                  */
+                  const analyzing = c.pageCount == null
+                  return (
+                    <label
+                      key={c.versionId}
+                      className={cn(
+                        'flex items-center gap-2 p-2.5 text-sm',
+                        analyzing ? 'cursor-not-allowed' : 'cursor-pointer',
+                        versionIds.includes(c.versionId) && 'bg-primary-soft',
+                      )}
+                    >
+                      <Checkbox
+                        checked={versionIds.includes(c.versionId)}
+                        disabled={analyzing}
+                        onCheckedChange={() => toggleCurriculum(c.versionId)}
+                      />
+                      <span className={cn('font-medium', analyzing && 'text-fg-subtle')}>
+                        {c.originalFileName}
+                      </span>
+                      <span className="text-fg-subtle text-xs">v{c.versionNo}</span>
+                      {/* 왜 못 고르는지 그 자리에서 말한다 — 잠긴 이유가 없으면 고장으로 읽힌다 */}
+                      {analyzing && (
+                        <span className="border-border text-fg-subtle rounded-full border px-1.5 py-px text-xs">
+                          분석 중 · 아직 못 고름
+                        </span>
+                      )}
+                      {/*
+                      항목 수는 이 목록에 없다 — 고르면 아래 후보 목록이 채워진다.
+                      **쪽수를 모르면 단위도 안 쓴다** — `쪽`만 남으면 0쪽처럼 읽힌다.
+                    */}
+                      {c.pageCount != null && (
+                        <span className="text-fg-subtle ml-auto text-xs">{c.pageCount}쪽</span>
+                      )}
+                    </label>
+                  )
+                })
               )}
             </div>
           </Field>

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
 import { Button } from '@/components/ui/Button'
@@ -13,17 +13,17 @@ import {
 } from '@/components/ui/Table'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import ErrorState from '@/components/common/ErrorState'
-import { Spinner } from '@/components/ui/Spinner'
+import TableSkeleton from '@/components/common/TableSkeleton'
 import { cn } from '@/lib/utils/cn'
 import { useDebounced } from '@/lib/useDebounced'
-import { staleProps } from '../../_shared/listQuery'
+import StaleBlock from '../../_shared/StaleBlock'
 import { getToday, useCohortScope, useLinkableCurricula, useProjectList } from '../queries'
 import { CONCEPT_COUNT, dueLabel } from '../rules'
 import { useCohortId } from '@/stores/cohortScope'
 import type { ProjectSort, ProjectStatus } from '../types'
 import ProjectStatusBadge from '../components/ProjectStatusBadge'
 import ProjectFilters from './components/ProjectFilters'
-import { ALL, INITIAL_FILTERS, isNarrowed, type FilterValues } from './filterState'
+import { ALL, fromSearchParams, isNarrowed, toSearchParams, type FilterValues } from './filterState'
 import { ConceptCell, CurriculumCell, PeriodCell } from './components/ProjectRowCells'
 import CreateProjectDialog from './components/CreateProjectDialog'
 
@@ -53,7 +53,41 @@ const detailPath = (id: string) => `/operator/projects/${id}`
 
 export default function ProjectListScreen() {
   const navigate = useNavigate()
-  const [filters, setFilters] = useState<FilterValues>(INITIAL_FILTERS)
+  /*
+    **조건은 주소가 갖는다**(`filterState`) — `useState`면 상세를 갔다 뒤로 오는 순간
+    전부 초기화됐다(§2-6). `replace`로 쓴다: 검색은 글자마다 바뀌는데 그때마다
+    히스토리가 쌓이면 뒤로가기 한 번이 한 글자를 지운다.
+  */
+  const [params, setParams] = useSearchParams()
+  const filters = fromSearchParams(params)
+  const patchFilters = (patch: Partial<FilterValues>) =>
+    setParams(toSearchParams({ ...filters, ...patch }), { replace: true })
+
+  /*
+    ⚠ **검색어만 입력칸이 직접 든다.** 글자마다 `setParams`를 부르면 라우터가 히스토리를
+    건드리는데, **그 순간 한글 IME 조합이 끊긴다** — 조합 중이던 자모가 확정 문자로 남아
+    `미니` 대신 **`ㅁㅣㄴㅣ미니`** 가 됐다(실측).
+
+    그래서 순서를 뒤집는다: **입력칸 → 로컬 → (멈춤) → 주소 → 조회.**
+    타이핑하는 동안은 아무도 리렌더를 강요하지 않는다.
+
+    주소가 먼저 바뀌는 경우도 있다(뒤로가기·링크). 그때는 로컬을 주소에 맞춘다 —
+    `key`가 아니라 값 비교로 하는 이유는, 타이핑 중에 되돌려 놓으면 같은 문제가 되기
+    때문이다. **주소가 나와 다를 때만** 따라간다.
+  */
+  const [typed, setTyped] = useState(filters.search)
+  const urlSearch = filters.search
+  const lastUrlSearch = useRef(urlSearch)
+  if (lastUrlSearch.current !== urlSearch) {
+    lastUrlSearch.current = urlSearch
+    if (typed !== urlSearch) setTyped(urlSearch)
+  }
+  const settled = useDebounced(typed).trim()
+  useEffect(() => {
+    if (settled !== urlSearch) patchFilters({ search: settled })
+    // 조건이 곧 주소라 `patchFilters`는 매번 새 함수다 — 값만 본다
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settled, urlSearch])
   const [createOpen, setCreateOpen] = useState(false)
   /*
     기수는 서버에 물어본다 — 목일 때 쓰던 상수 `'7'`은 UUID가 아니라 실서버에서 안 통한다
@@ -71,7 +105,9 @@ export default function ProjectListScreen() {
     한글은 자모가 조합되는 중에도 `input`이 떠서 실제로는 더 나간다(`lib/useDebounced`).
     입력칸은 원본을 그려야 타이핑이 안 끊긴다.
   */
-  const search = useDebounced(filters.search)
+  /* 공백만 친 것은 검색이 아니다 — `?search=%20%20%20`이 그대로 나갔다(§2-4).
+   **여기서 한 번만 다듬는다** — 조회·빈 상태 판정·인용 문구가 같은 값을 봐야 한다 */
+  const search = useDebounced(filters.search).trim()
 
   const page = useProjectList(
     cohortId
@@ -134,10 +170,20 @@ export default function ProjectListScreen() {
 
       <ProjectFilters
         {...filters}
+        /* 입력칸은 로컬 값을 그린다 — 주소값을 그리면 타이핑이 한 박자 늦는다 */
+        search={typed}
+        onSearchChange={setTyped}
         curricula={curriculumList}
         counts={counts}
         population={page.data?.population}
-        onChange={(patch) => setFilters((f) => ({ ...f, ...patch }))}
+        /*
+          **교안 조회의 상태를 필터가 말한다.** 목록만 `ErrorState`를 갖고 있어서, 교안
+          조회가 실패해도 셀렉트는 「전체」 하나로 멀쩡해 보였다 — 교안이 0개인 것과
+          구분이 안 됐다(§2-7).
+        */
+        curriculaLoading={!curricula.data && !curricula.isError}
+        curriculaFailed={curricula.isError}
+        onChange={patchFilters}
       />
 
       {cohortFailed ? (
@@ -155,12 +201,25 @@ export default function ProjectListScreen() {
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
-      ) : page.isLoading ? (
-        // Spinner가 이미 role="status"를 갖는다 — 래퍼에 또 붙이면 라이브 리전이 중첩된다.
-        // 기본 aria-label이 영문("Loading")이라 화면 언어에 맞춰 덮어쓴다.
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" aria-label="목록을 불러오는 중" />
-        </div>
+      ) : !page.data && !page.isError ? (
+        /*
+          ⚠ **`isLoading`으로 가르면 안 된다.** 기수가 정해지기 전에는 `enabled: false`라
+          조회가 시작조차 안 하고, 그때 `isLoading`은 **`false`** 다 — 아래 어느 분기도
+          안 타서 **본문이 통째로 비었다**(실측 6.0초 백지, §2-1). OP-01·OP-02에서 고친
+          것과 같은 뿌리다(async-states §1-9).
+
+          **판정은 「데이터가 있나」로 한다.** 기다리는 중이든 아직 안 시작했든 사용자에게는
+          같은 일이다 — 표가 올 자리를 잡아 둔다.
+
+          행 수는 **7**. 이 기수의 실제 회차 수(실측)이고, 한 기수의 회차는 열 몇 개를
+          넘지 않는다. 높이는 실제 표에서 쟀다 — 머리 38.5 · 본문 55.7 · 푸터 28.
+        */
+        <TableSkeleton
+          rows={7}
+          rowH={55.7}
+          footerH={28}
+          cols={['w-[200px]', 'w-[108px]', 'w-[168px]', 'w-[200px]', null]}
+        />
       ) : page.isError ? (
         <ErrorState
           error={page.error}
@@ -198,7 +257,7 @@ export default function ProjectListScreen() {
             비우는 것(깜빡임)과 그냥 두는 것(거짓말) 사이의 답이다(async-states §1-4).
             `aria-busy`가 보조 기술에도 같은 것을 알린다.
           */
-          <div {...staleProps(page.isPlaceholderData)}>
+          <StaleBlock stale={page.isPlaceholderData} label="목록을 불러오는 중">
             <Table className="table-fixed">
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
@@ -278,7 +337,7 @@ export default function ProjectListScreen() {
               <div />
               <div />
             </div>
-          </div>
+          </StaleBlock>
         )
       )}
 
@@ -287,6 +346,7 @@ export default function ProjectListScreen() {
         onOpenChange={setCreateOpen}
         cohortId={cohortId ?? ''}
         curricula={curriculumList}
+        curriculaLoading={!curricula.data && !curricula.isError}
         cohort={scope.data}
         /* 생성 훅이 이 도메인 조회를 무효화한다 — 목록을 손으로 다시 부르지 않는다 */
         /*

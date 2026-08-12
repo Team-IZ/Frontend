@@ -41,6 +41,7 @@
 - [백엔드 API — 12차 요청](backend/backend-api-requests-12.md) — OP-02 분석을 붙이며 나온 것. `roundNo`가 요청·응답에서 다른 것을 가리킨다 · `sameCurriculumOnly=true`면 결과 0건
 - [백엔드 API — 13차 요청](backend/backend-api-requests-13.md) — 11차 반영본으로 OP-06을 다시 돌려보며 나온 **요청 2건 + 확인 1건**. **같은 교안을 목록은 24개 회차가 쓴다 하고 상세는 0건**이라 한다 · **11차 열한 건 전부 반영 확인**
 - [백엔드 API — 16차 요청](backend/backend-api-requests-16.md) — **교육생 도메인 계약 제안.** 결함 보고가 아니라 *만들어지기 전에* 보내는 것 — 홈 상태 8종 · 제출 6종 · 세션 채점/힌트(기획 변경) · 리포트 공개 정책. 화면 4개는 목으로 이미 완성
+- [백엔드 API — 17차 요청](backend/backend-api-requests-17.md) — **16차 반영본 검수**(오퍼레이션 96→118). 대부분 반영됨 ✅ · **막힘: `api:check` error 37건** — 설명문엔 `enum`인데 스키마에 제약이 없다(홈 35필드) · `required` 9 · `nullable` 28
 - [인증·세션 설계](api/auth-design.md) — 토큰을 어디에 두나 · 왜 Context가 아니라 스토어인가 · 401 재발급의 함정 셋 · 실무 정석과 우리 절충
 - [연동 계획 — Auth·슈퍼어드민](api/integration-plan-auth-superadmin.md) — **지금 붙일 수 있는 6화면** · 타입 불일치 · 순서와 완료 판정
 - [API 계층 결정 지점](api/api-layer-decisions.md) — 층·훅·쿼리 키·타입·에러를 왜 이렇게 했나 · **알려진 결함 3건**

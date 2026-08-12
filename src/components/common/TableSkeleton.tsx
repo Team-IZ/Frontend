@@ -16,6 +16,8 @@ import { cn } from '@/lib/utils/cn'
 export default function TableSkeleton({
   rows,
   cols,
+  rowH = 53,
+  footerH = 57,
   className,
 }: {
   /**
@@ -28,6 +30,16 @@ export default function TableSkeleton({
    * 가져가는 흡수 열이다.
    */
   cols: (string | null)[]
+  /**
+   * 본문 행 높이(px) — **그 화면의 표에서 잰 값**을 넘긴다. 기본값은 `admin/roster`
+   * 기준 53px인데, 셀 안에 두 줄이 들어가는 표는 더 크다(OP-03 목록 55.7px).
+   */
+  rowH?: number
+  /**
+   * 푸터 높이(px). 페이저가 없는 표는 범위 개수 한 줄뿐이라 더 낮다
+   * (OP-03: `mt-3` 12 + 한 줄 16 = 28px).
+   */
+  footerH?: number
   className?: string
 }) {
   return (
@@ -43,14 +55,18 @@ export default function TableSkeleton({
         ))}
       </div>
       {Array.from({ length: rows }, (_, r) => (
-        <div key={r} className="border-border flex h-[53px] items-center gap-4 border-b px-3">
+        <div
+          key={r}
+          className="border-border flex items-center gap-4 border-b px-3"
+          style={{ height: rowH }}
+        >
           {cols.map((w, i) => (
             <Skeleton key={i} className={cn('h-4', w ?? 'flex-1')} />
           ))}
         </div>
       ))}
       {/* 푸터(범위 개수 + 페이저) 자리 — 빼면 그만큼 도착할 때 아래가 밀린다 */}
-      <div className="h-[57px]" />
+      <div style={{ height: footerH }} />
     </div>
   )
 }

@@ -213,6 +213,38 @@ export type QueryOptions<TData> = Omit<UseQueryOptions<TData, ApiError, TData>, 
 **판단: query·mutation 훅을 생성한다. 무효화는 태그 루트를 기본으로 넣고 덮어쓸 수 있게 한다.**
 45개 오퍼레이션을 손으로 감싸는 것은 낭비이고, 그 손 코드가 **화면마다 미묘하게 달라진다.**
 
+## ★ C1-1. 생성 훅을 쓸 것인가, 호출 함수를 직접 쓸 것인가
+
+**기본은 생성 훅이다.** 어댑터(`_/api/api.ts`)도 예외가 아니다 — 감싸는 이유는
+*변환*이지 *다시 짜기*가 아니다.
+
+```tsx
+// ✗ 어댑터 안에서 손으로 — 키·queryFn·signal이 두 벌이 된다
+useQuery({ queryKey: assessmentKeys.getMyAssessmentRounds(), queryFn: ({signal}) => … })
+
+// ⭕ 생성 훅 위에 변환만 얹는다
+const query = useGetMyAssessmentRounds()
+const data = useMemo(() => query.data && toHomeView(query.data), [query.data])
+```
+
+**손으로 짜면 키가 갈릴 수 있다는 게 핵심이다.** 생성기가 키를 정하는 이유가 D1이고,
+어댑터가 그 키를 다시 적는 순간 그 보장이 사라진다. 지금은 같아 보여도 생성기가 키
+모양을 바꾸면 어댑터만 옛 키에 남는다 — 그리고 **아무도 모른다.**
+
+### 직접 써도 되는 자리
+
+| | 예 |
+|---|---|
+| 여러 응답을 합칠 때 | OP-01 — 3콜을 `Promise.all`로 부르고 블록별 부분 실패를 담는다 |
+| 순서가 있는 오케스트레이션 | OP-03 — 회차 생성이 4콜이고 뒤 호출이 앞의 id를 쓴다 |
+| 훅을 못 쓰는 자리 | `authStore`의 재발급 — React 밖이다 |
+
+**공통점은 "훅 하나로 표현이 안 된다"이다.** 변환만 필요하면 위 예처럼 생성 훅 위에
+얹으면 되고, 그때는 직접 쓸 이유가 없다.
+
+> **직접 쓸 때는 주석으로 이유를 남긴다.** 안 남기면 다음 사람이 "여기선 이렇게 하는구나"로
+> 읽고 복제한다 — 실제로 TR-01 홈을 붙이면서 그렇게 짰다가 되돌렸다.
+
 ## ☆ C2. 훅 시그니처 — `(params, options)`
 
 ```ts

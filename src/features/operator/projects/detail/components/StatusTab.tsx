@@ -2,7 +2,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
-import { Spinner } from '@/components/ui/Spinner'
+import { SlowNotice } from '@/components/common/Loading'
+import { StatusSkeleton } from './DetailSkeleton'
 import {
   Table,
   TableHeader,
@@ -71,13 +72,20 @@ export default function StatusTab({
     )
   }
 
-  if (loading) {
+  /*
+    ⚠ **여기가 끝나지 않을 수 있다.** 개념 3건이 확정됐는데 아직 아무도 제출하지 않은
+    회차에서 `class-progress`가 **응답하지 않는다**(18차 R8 — 실측 35초 스피너, 요청은
+    나가고 응답만 안 온다). 인라인 스피너를 쓰던 자리라 「오래 걸린다」는 말조차 없었다.
+
+    `SlowNotice`가 12초 뒤 그 사실을 말한다 — 끊지는 않는다(잠든 서버는 깨는 데 76초).
+  */
+  if (loading)
     return (
-      <div className="flex justify-center py-16">
-        <Spinner className="size-6" aria-label="현황을 불러오는 중" />
-      </div>
+      <>
+        <StatusSkeleton />
+        <SlowNotice />
+      </>
     )
-  }
 
   if (failed || !report) {
     return (

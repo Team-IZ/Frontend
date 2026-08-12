@@ -4,7 +4,9 @@ import ConsoleShell from '@/shells/ConsoleShell'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import ErrorState from '@/components/common/ErrorState'
-import { Spinner } from '@/components/ui/Spinner'
+import { SlowNotice } from '@/components/common/Loading'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { ConfigSkeleton, OverviewSkeleton, StatusSkeleton } from './components/DetailSkeleton'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import {
   getToday,
@@ -146,11 +148,32 @@ export default function ProjectDetailScreen() {
         </ConsoleShell>
       )
     }
+    /*
+      **OP-01·02·03과 같이 스켈레톤이다.** 여기만 스피너로 남아 있었다 — 같은 콘솔
+      안에서 기다리는 모양이 화면마다 다를 이유가 없다(async-states §1-2).
+
+      **주소가 가리키는 탭의 모양으로** 그린다. 개요 자리에 현황 모양을 그리면 도착 순간
+      구조가 통째로 바뀌어 스피너와 다를 것이 없다.
+
+      **스피너를 같이 두지 않는다.** 스켈레톤이 이미 「기다려」를 말하고 있어서 밑에
+      스피너가 또 돌면 어수선하기만 하다. 다만 12초를 넘기면 그 사실은 말해야 한다 —
+      없는 회차는 서버가 404 대신 매단다(18차 R7).
+    */
+    const TabSkeleton =
+      active === 'status' ? StatusSkeleton : active === 'config' ? ConfigSkeleton : OverviewSkeleton
     return (
       <ConsoleShell role="operator" cohort={cohortName ?? ''}>
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" aria-label="회차를 불러오는 중" />
+        <div aria-hidden className="mb-4">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="mt-3 h-7 w-52" />
+          <div className="mt-5 flex gap-5">
+            {TABS.map((t) => (
+              <Skeleton key={t.value} className="h-4 w-9" />
+            ))}
+          </div>
         </div>
+        <TabSkeleton />
+        <SlowNotice />
       </ConsoleShell>
     )
   }
@@ -190,6 +213,7 @@ export default function ProjectDetailScreen() {
             nextDueAt={next?.endDate ?? null}
             nextProjectName={next?.name ?? null}
             onEditSchedule={() => setScheduleOpen(true)}
+            onGoConfig={() => goTab('config')}
           />
         </TabsContent>
 
@@ -197,7 +221,12 @@ export default function ProjectDetailScreen() {
           <StatusTab
             project={data}
             report={status.data}
-            loading={status.isLoading}
+            /*
+              데이터 유무로 판정한다 — `enabled`가 조건부라 `isLoading`은 조회가 시작되기
+              전에도 `false`다. 개념 미확정이면 `StatusTab`이 그 앞에서 반환하므로
+              「영원히 로딩」이 되지 않는다.
+            */
+            loading={!status.data && !status.isError}
             failed={status.isError}
             onRetry={() => status.refetch()}
             onGoConfig={() => goTab('config')}
@@ -220,7 +249,12 @@ export default function ProjectDetailScreen() {
         onOpenChange={setPickOpen}
         project={data}
         candidates={candidates.data ?? []}
-        loadingCandidates={candidates.isLoading}
+        /*
+          ⚠ `isLoading`은 **모달을 열기 전에도 false**다(`enabled: pickOpen`) — 조회가
+          시작조차 안 했기 때문이다. 그러면 여는 순간 한 프레임 동안 「후보가 없습니다」가
+          스친다. 판정은 **데이터 유무**로 한다(async-states §1-9).
+        */
+        loadingCandidates={!candidates.data && !candidates.isError}
         curricula={curricula.data ?? []}
       />
 
@@ -229,6 +263,7 @@ export default function ProjectDetailScreen() {
         onOpenChange={setCurriculaOpen}
         project={data}
         curricula={curricula.data ?? []}
+        loading={!curricula.data && !curricula.isError}
       />
 
       <EditRequirementsDialog

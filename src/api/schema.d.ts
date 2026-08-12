@@ -1636,11 +1636,11 @@ export interface paths {
      *     **응답**
      *     - user_id / email / name / role (TRAINEE) / activated
      *
-     *     계정 활성화와 **기수 소속(cohort_member) 활성화**가 함께 확정된다 — 초대 상태로 남아 있던
+     *     계정 활성화와 **기수 소속(cohort_member ACTIVE) 생성**이 함께 확정된다 — 초대 원장에 있던
      *     명단 항목이 이 시점에 실제 수강생이 된다.
      *
-     *     **명단에 자리가 없으면 403 `INVITATION_NOT_IN_ROSTER`로 먼저 막는다.** 초대가 취소됐거나
-     *     기수에서 빠진 경우이며, 비밀번호를 쓰기 전에 판정한다. 전에는 이 상황이 멤버십 갱신 단계에서
+     *     **유효한 기수 명단 범위가 아니면 403 `INVITATION_NOT_IN_ROSTER`로 먼저 막는다.** 초대가 취소됐거나
+     *     대상 기수가 종료·삭제된 경우이며, 비밀번호를 쓰기 전에 판정한다. 전에는 이 상황이 멤버십 생성 단계에서
      *     터져 "다시 시도해 주세요"(409)로 나갔는데, 다시 시도해도 결과가 같은 상황이라 오답이었다.
      *
      *     나머지 초대 링크 상태 코드는 `/auth/invitations/resolve`와 같다 — 만료 410, 이미 활성화 409
@@ -1988,7 +1988,7 @@ export interface paths {
      *     | 400 `INVITATION_INVALID` | 토큰 누락·위변조, 계정·기관이 링크를 받을 수 없는 상태 | 문의 |
      *     | 409 `INVITATION_ALREADY_ACCEPTED` | 이미 수락·활성화된 초대 | 로그인 |
      *     | 410 `INVITATION_EXPIRED` | 기한 경과, 또는 재발송으로 교체된 이전 링크 | 재발송 요청 |
-     *     | 403 `INVITATION_NOT_IN_ROSTER` | 교육생인데 명단에 자리가 없음(초대 취소·기수 이탈) | 문의 |
+     *     | 403 `INVITATION_NOT_IN_ROSTER` | 교육생 초대가 취소됐거나 대상 기수가 종료·삭제됨 | 문의 |
      *
      *     **판정 순서가 정해져 있다.** 한 토큰이 여러 조건에 동시에 걸리므로 먼저 보는 것이 답이 된다 —
      *     구조적 무효 → 이미 수락 → 만료 → 명단 외 순이다. 수락된 초대는 시간이 지나면 만료 조건에도
@@ -11495,7 +11495,7 @@ export interface operations {
       }
     }
     responses: {
-      /** @description TRAINEE 계정·기수 소속 활성화와 초대 ACCEPTED 전환 성공 */
+      /** @description TRAINEE 계정 활성화·기수 소속 생성과 초대 ACCEPTED 전환 성공 */
       200: {
         headers: {
           [name: string]: unknown
@@ -11513,7 +11513,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description INVITATION_NOT_IN_ROSTER 명단에 살아 있는 자리가 없음(초대 취소·기수 이탈) */
+      /** @description INVITATION_NOT_IN_ROSTER 초대 취소 또는 대상 기수 종료·삭제 */
       403: {
         headers: {
           [name: string]: unknown
@@ -11974,7 +11974,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description INVITATION_NOT_IN_ROSTER 교육생 명단에 살아 있는 자리가 없음 */
+      /** @description INVITATION_NOT_IN_ROSTER 교육생 초대가 취소됐거나 대상 기수가 종료·삭제됨 */
       403: {
         headers: {
           [name: string]: unknown

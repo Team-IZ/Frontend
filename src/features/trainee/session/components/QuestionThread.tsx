@@ -1,58 +1,58 @@
 import { cn } from '@/lib/utils/cn'
-import type { AnsweredTurn, SessionMode, TurnScript } from '../types'
+import type { AnsweredQuestion, Question, SessionMode, ThreadItem } from '../types'
 
 type Props = {
   mode: SessionMode
-  answeredTurns: AnsweredTurn[]
-  /** null이면 문제가 끝났다 — 대기 인디케이터만 그린다(WAITING_NEXT) */
-  currentTurn: TurnScript | null
+  /** 이 개념에서 답이 끝난 질문들 */
+  answered: AnsweredQuestion[]
+  /** null이면 채점 대기 중이다 */
+  currentQuestion: Question | null
+  /** 지금 질문의 타임라인 — 답변·힌트가 섞여 있다 */
+  current: ThreadItem[]
   waiting: boolean
-  /** 지금까지 쓴 힌트 횟수 — 힌트마다 자기 버블을 갖는다(하나로 갈아끼우지 않는다) */
-  hintUsed: 0 | 1 | 2
 }
 
 /*
-  질문·답변이 누적되는 대화 스레드 — 실제 채팅처럼 좌(시스템 질문)/우(내 답변)로
-  갈라야 한다는 지적을 반영해 목업 `.qb`/`.ab`/`.again` 색·모양을 그대로 옮긴다.
+  질문·답변이 누적되는 대화 스레드.
 
-  - 질문(.qb): 흰 배경 · 얇은 테두리 · 좌상단만 각짐(rounded-tl-sm) · 왼쪽 정렬
-  - 내 답변(.ab): primary-soft 배경 · primary 테두리 · 우상단만 각짐 · 오른쪽 정렬(ml-auto)
-  - 힌트(.again): info-soft 배경 · info 테두리 · 질문 바로 아래, 힌트 2회를 쓰면
-    같은 자리를 갈아끼우는 게 아니라 각 힌트가 자기 버블로 쌓인다.
+  - 질문(.qb): 흰 배경 · 얇은 테두리 · 좌상단만 각짐 · 왼쪽 정렬
+  - 내 답변(.ab): primary-soft · 우상단만 각짐 · 오른쪽 정렬
+  - 힌트(.again): info-soft · 왼쪽 정렬
 
-  문제가 끝날 때까지 지워지지 않는다(정의서 §3 "코드는 문제 내내 고정, 대화만 아래로
-  흐른다"). 다시 보기는 1차 답변을 보여주지 않으므로 애초에 answeredTurns가 비어
-  있는 채로 들어온다.
+  **한 질문 아래 답변이 여러 개 쌓인다.** 한 단계에서 최대 세 번 답하고 그 사이에 힌트가
+  끼기 때문이다(types.ts `ThreadItem` 주석). 답변 배열과 힌트 배열을 따로 두지 않고
+  타임라인 하나를 순서대로 그리므로, 버튼으로 먼저 받은 힌트든 미달로 받은 힌트든
+  실제로 일어난 순서 그대로 보인다.
+
+  개념이 끝날 때까지 지워지지 않는다(정의서 §3 "코드는 개념 내내 고정, 대화만 아래로 흐른다").
 */
 export default function QuestionThread({
   mode,
-  answeredTurns,
-  currentTurn,
+  answered,
+  currentQuestion,
+  current,
   waiting,
-  hintUsed,
 }: Props) {
   return (
     <div className="flex-1 overflow-auto p-4">
       <div className="flex flex-col gap-4">
-        {answeredTurns.map((turn, i) => (
+        {answered.map((q, i) => (
           <div key={i} className="flex flex-col gap-2">
-            <QuestionBubble mode={mode} index={i} question={turn.question} refText={turn.ref} />
-            <AnswerBubble>{turn.answer}</AnswerBubble>
+            <QuestionBubble mode={mode} level={q.level} question={q.text} refText={q.ref} />
+            <Timeline items={q.items} />
           </div>
         ))}
 
-        {currentTurn && (
+        {currentQuestion && (
           <div className="flex flex-col gap-2">
             <QuestionBubble
               mode={mode}
-              index={answeredTurns.length}
-              question={currentTurn.question}
-              refText={currentTurn.ref}
+              level={currentQuestion.level}
+              question={currentQuestion.text}
+              refText={currentQuestion.ref}
               active
             />
-            {currentTurn.hintTexts.slice(0, hintUsed).map((text, i) => (
-              <HintBubble key={i}>{text}</HintBubble>
-            ))}
+            <Timeline items={current} />
           </div>
         )}
 
@@ -69,24 +69,49 @@ export default function QuestionThread({
   )
 }
 
+function Timeline({ items }: { items: ThreadItem[] }) {
+  return (
+    <>
+      {items.map((item, i) =>
+        item.kind === 'answer' ? (
+          <AnswerBubble key={i}>{item.text}</AnswerBubble>
+        ) : (
+          <HintBubble key={i}>{item.text}</HintBubble>
+        ),
+      )}
+    </>
+  )
+}
+
 function Dot() {
   return <span className="inline-block size-1.5 animate-pulse rounded-full bg-fg-subtle" />
 }
 
+/*
+  라벨이 `질문 N`이 아니라 **단계 이름**이다 — 질문 하나가 단계 하나이고, 학생이 지금
+  어느 깊이에 있는지가 순번보다 쓸모 있다. 점수는 절대 안 보인다(A5).
+*/
+const LEVEL_LABEL = {
+  1: '코드 이해',
+  2: '설계 논리',
+  3: '대안 비교',
+  4: '반례 대응',
+} as const
+
 function QuestionBubble({
   mode,
-  index,
+  level,
   question,
   refText,
   active,
 }: {
   mode: SessionMode
-  index: number
+  level: 1 | 2 | 3 | 4
   question: string
   refText: string
   active?: boolean
 }) {
-  const label = mode === 'RETRY' ? '지난번에 막혔던 질문' : `질문 ${index + 1}`
+  const label = mode === 'RETRY' ? `다시 보기 · ${LEVEL_LABEL[level]}` : LEVEL_LABEL[level]
   return (
     <div
       className={cn(

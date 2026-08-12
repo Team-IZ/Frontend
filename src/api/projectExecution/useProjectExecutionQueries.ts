@@ -8,6 +8,7 @@ import {
   findRounds,
   findConceptCandidates,
   findProjectClassProgress,
+  findCurrentProject,
 } from './projectExecutionApi'
 import { projectExecutionKeys } from './projectExecutionKeys'
 import type {
@@ -23,6 +24,8 @@ import type {
   findProjectClassProgress_Path,
   findProjectClassProgress_Query,
   findProjectClassProgress_Response,
+  findCurrentProject_Path,
+  findCurrentProject_Response,
 } from './projectExecutionTypes'
 
 /** 기수 프로젝트 목록 */
@@ -81,6 +84,18 @@ export function useFindProjectClassProgress(
   return useQuery({
     queryKey: projectExecutionKeys.findProjectClassProgress(params),
     queryFn: ({ signal }) => findProjectClassProgress({ ...params, signal }),
+    ...options,
+  })
+}
+
+/** 기수의 이번 회차 조회 */
+export function useFindCurrentProject(
+  params: { path: findCurrentProject_Path },
+  options?: QueryOptions<findCurrentProject_Response>,
+) {
+  return useQuery({
+    queryKey: projectExecutionKeys.findCurrentProject(params),
+    queryFn: ({ signal }) => findCurrentProject({ ...params, signal }),
     ...options,
   })
 }

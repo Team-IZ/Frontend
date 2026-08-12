@@ -34,6 +34,8 @@ import type {
   findProjectClassProgress_Path,
   findProjectClassProgress_Query,
   findProjectClassProgress_Response,
+  findCurrentProject_Path,
+  findCurrentProject_Response,
   unlinkCurriculum_Path,
   unlinkCurriculum_Response,
 } from './projectExecutionTypes'
@@ -169,6 +171,15 @@ export const findProjectClassProgress = (
   unwrap<findProjectClassProgress_Response>(
     izClient.GET('/api/v0/projects/{projectId}/class-progress', {
       params: { path: params.path, query: params.query ?? {} },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 기수의 이번 회차 조회 — `GET /api/v0/cohorts/{cohortId}/projects/current` */
+export const findCurrentProject = (params: { path: findCurrentProject_Path } & RequestOptions) =>
+  unwrap<findCurrentProject_Response>(
+    izClient.GET('/api/v0/cohorts/{cohortId}/projects/current', {
+      params: { path: params.path },
       signal: params.signal,
     }) as never,
   )

@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { MutationOptions } from '@/api/_contract'
 import {
   replaceManagerClassrooms,
+  updateMyCommitEmail,
   inviteManager,
   resendManagerInvitation,
   registerTrainees,
@@ -18,6 +19,8 @@ import type {
   replaceManagerClassrooms_Path,
   replaceManagerClassrooms_Body,
   replaceManagerClassrooms_Response,
+  updateMyCommitEmail_Body,
+  updateMyCommitEmail_Response,
   inviteManager_Path,
   inviteManager_Body,
   inviteManager_Response,
@@ -60,6 +63,22 @@ export function useReplaceManagerClassrooms(
       path: replaceManagerClassrooms_Path
       body: replaceManagerClassrooms_Body
     }) => replaceManagerClassrooms(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: memberKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 내 커밋 이메일 등록·변경 */
+export function useUpdateMyCommitEmail(
+  options?: MutationOptions<updateMyCommitEmail_Response, { body: updateMyCommitEmail_Body }>,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { body: updateMyCommitEmail_Body }) => updateMyCommitEmail(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다

@@ -98,6 +98,26 @@ chore: enable ts strict, prettier, path alias
 제목 길이는 훅이 검사한다(72자 초과 = 실패, 50자 초과 = 경고). **경고가 떠도
 제목을 억지로 줄이지 말 것** — 줄여서 뜻이 깎이면 본문에 쓰는 게 맞다.
 
+### 제목은 **토픽**이다 — 백엔드 요청 차수를 넣지 않는다
+
+`16차`·`17th`·`request-19` 같은 번호는 **백엔드와 주고받은 순번**이라 이 저장소에서는
+아무것도 식별하지 못한다. 3개월 뒤 로그를 보는 사람에게 `19th`는 무엇을 했는지 하나도
+알려주지 않는다.
+
+```
+✗ chore: regenerate the api layer from the 13th round spec
+⭕ chore: regenerate the api layer for trainee submission and reports
+
+✗ docs: file the 19th backend request
+⭕ docs: request nullable flags and shared enums for the trainee api
+```
+
+**커밋 제목·브랜치 이름·PR 제목 셋 다 같다.** 차수가 꼭 필요하면 **본문에** 적는다 —
+거기서는 어느 요청서를 가리키는지가 맥락과 함께 읽힌다.
+
+> 훅이 막는다(§6). 숫자 자체를 막는 것이 아니라 차수 표기(`N차`·`Nth`·`request-N`)만
+> 잡으므로 `bump vite to 8.1` 같은 제목은 통과한다.
+
 ### PR
 
 제목: `[Feat] Add Login Page UI` — 이슈와 같은 형식(§3).
@@ -201,6 +221,8 @@ git status · git stash list · git worktree list
 |---|---|---|
 | 커밋 메시지 형식 | `.githooks/commit-msg` | ✅ |
 | AI 공동저자 trailer 금지 | `.githooks/commit-msg` | ✅ |
+| **커밋 제목에 요청 차수**(`17th`·`16차`) | `.githooks/commit-msg` | ✅ |
+| **브랜치 이름에 요청 차수** | `.githooks/pre-commit` | ✅ |
 | 이슈 번호 자동 부착 | `.githooks/prepare-commit-msg` | ✅ |
 | `main`·`develop` 직접 커밋 | `.githooks/pre-commit` | ✅ |
 | `.env` 커밋 | `.gitignore` + `.githooks/pre-commit` | ✅ |

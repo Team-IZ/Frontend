@@ -148,10 +148,20 @@ export function renderDomainTypes(ops, cfg) {
       ? `${O}['responses'][${op.successCode}]['content']['application/json']`
       : 'void'
     lines.push(`export type ${alias(op, 'Response')} = ${responseType}`)
-    // 목록이면 항목 타입까지 — 표 컴포넌트가 쓰는 것이 이쪽이다
+    /*
+      목록이면 항목 타입까지 — 표 컴포넌트가 쓰는 것이 이쪽이다.
+
+      **`NonNullable`이 필요하다.** 그 배열 속성이 `required`가 아니면 생성 타입에서
+      `T[] | undefined`가 되는데, 거기에 `[number]`로 인덱싱하면 **컴파일이 깨진다**
+      (TS2537 — 유니온에는 인덱스 시그니처가 없다). `_Body`가 `requestBody`를 감싸는
+      것과 같은 이유다.
+
+      백엔드가 상태별로 키가 빠지는 응답(`RoundReportResponse.concepts?`)을 내면서
+      실제로 터졌다. 배열 속성이 항상 오는 스펙에서는 `NonNullable`이 아무 일도 안 한다.
+    */
     if (op.listProp)
       lines.push(
-        `export type ${alias(op, 'Item')} = ${alias(op, 'Response')}['${op.listProp}'][number]`,
+        `export type ${alias(op, 'Item')} = NonNullable<${alias(op, 'Response')}['${op.listProp}']>[number]`,
       )
     if (op.errorCodes.length)
       lines.push(

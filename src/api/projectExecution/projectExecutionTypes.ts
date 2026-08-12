@@ -47,7 +47,7 @@ export type findProjects_Path = operations['findProjects']['parameters']['path']
 export type findProjects_Query = NonNullable<operations['findProjects']['parameters']['query']>
 export type findProjects_Response =
   operations['findProjects']['responses'][200]['content']['application/json']
-export type findProjects_Item = findProjects_Response['projects'][number]
+export type findProjects_Item = NonNullable<findProjects_Response['projects']>[number]
 export type findProjects_Errors = 'VALIDATION_FAILED' | 'UNAUTHENTICATED'
 
 // POST /api/v0/cohorts/{cohortId}/projects — 프로젝트 생성
@@ -120,6 +120,12 @@ export type findProjectClassProgress_Errors =
   | 'PROJECT_CROSS_ORGANIZATION'
   | 'ACCESS_DENIED'
   | 'PROJECT_ROUND_NOT_FOUND'
+
+// GET /api/v0/cohorts/{cohortId}/projects/current — 기수의 이번 회차 조회
+export type findCurrentProject_Path = operations['findCurrentProject']['parameters']['path']
+export type findCurrentProject_Response =
+  operations['findCurrentProject']['responses'][200]['content']['application/json']
+export type findCurrentProject_Errors = 'UNAUTHENTICATED'
 
 // DELETE /api/v0/projects/{projectId}/curricula/{projectCurriculumId} — 프로젝트 교안 연결 해제
 export type unlinkCurriculum_Path = operations['unlinkCurriculum']['parameters']['path']

@@ -43,6 +43,18 @@ check ng "feat: add a description so long that it sails past seventy two charact
 check ok "docs: reorganize screen definition docs into plan tree (#3)"
 check ok "feat: add exactly fifty characters of description (#3)"
 
+# 백엔드 요청 차수 — 제목에 넣으면 막는다(이 저장소에서 식별력이 0인 번호)
+check ng "chore: regenerate the api layer from the 13th round spec (#3)"
+check ng "docs: file the 19th backend request (#3)"
+check ng "docs: add trainee rules and 16th backend request (#3)"
+check ng "chore: apply backend-api-requests-17 (#3)"
+check ng "docs: 17차 요청서 작성 (#3)"
+# 같은 자리에 오는 정상 제목은 통과해야 한다 — 숫자 자체를 막는 게 아니다
+check ok "chore: regenerate the api layer for trainee reports (#3)"
+check ok "build: bump vite to 8.1 (#3)"
+check ok "feat: support 3 concepts per session (#3)"
+check ok "fix: keep the 20 minute timer per problem (#3)"
+
 # 본문은 길이 제한 없음 — 설명은 본문에 쓰라는 게 규칙의 취지
 check ok "feat: add login API (#5)\n\n왜 이렇게 했는지 길게 설명하는 본문.\n여러 줄이어도 통과해야 한다."
 

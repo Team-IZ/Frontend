@@ -226,10 +226,16 @@ export function useCohortScope(cohortId: string | undefined, enabled = true) {
     queryKey: [...academicKeys.all, 'scope', cohortId],
     enabled: enabled && !!cohortId,
     queryFn: async (): Promise<CohortScope> => {
-      const [cohort, rooms] = await Promise.all([
-        findCohort({ path: { cohortId: cohortId! } }),
-        findClassrooms({ path: { cohortId: cohortId! } }),
-      ])
+      /*
+        ⚠ **둘을 동시에 보내지 않는다.** `Promise.all`이었는데 진입할 때마다 둘 중 하나가
+        `net::ERR_FAILED`로 떨어졌다 — 프록시가 동시 요청의 프리플라이트를 502로 죽이고
+        (15차 R3), 전역 재시도도 **동시에** 나가 같은 자리에서 또 죽는다.
+
+        하나씩 보내면 산다. 느려지는 대가(둘을 더한 시간)는 이 문구 한 줄(`9반 209명`)이
+        치를 만하다 — 안 오면 아예 안 보이는 값이다.
+      */
+      const cohort = await findCohort({ path: { cohortId: cohortId! } })
+      const rooms = await findClassrooms({ path: { cohortId: cohortId! } })
       return {
         cohortId: cohort.cohortId,
         name: cohort.name,
@@ -261,10 +267,23 @@ export function useSectionCandidates(curricula: Curriculum[]) {
     queryKey: [...curriculumKeys.all, 'section-candidates', curricula.map((c) => c.versionId)],
     enabled: curricula.length > 0,
     queryFn: async (): Promise<ConceptCandidate[]> => {
-      const lists = await Promise.all(
-        curricula.map(async (c) => {
-          const sections = await findSections({ path: { materialId: c.materialId } })
-          return sections.flatMap((s) =>
+      /*
+        ⚠ **한 번에 하나씩 보낸다.** `Promise.all`로 동시에 보냈더니 **교안을 둘 이상
+        고르는 순간 전부 죽었다** — 프록시가 동시 요청의 CORS 프리플라이트를 502로
+        떨어뜨리고(15차 R3), 브라우저는 그러면 실제 요청을 아예 안 보낸다
+        (`net::ERR_FAILED`). 네트워크 탭에는 **요청이 나가지도 않은 것처럼** 보인다.
+
+        실측(교안 4개) — 동시: 3건 전부 `ERR_FAILED` → 전역 재시도도 같은 방식으로
+        동시에 나가 또 죽어 **후보 목록이 영원히 안 온다.** 순차: 하나씩 200.
+
+        느려지는 대가는 안다(교안 N개면 N번). 그래도 **되는 것이 먼저다.** 한 번에
+        묶어 주는 API가 생기면 그때 한 건으로 바꾼다(18차 R5).
+      */
+      const lists: ConceptCandidate[][] = []
+      for (const c of curricula) {
+        const sections = await findSections({ path: { materialId: c.materialId } })
+        lists.push(
+          sections.flatMap((s) =>
             s.items.map((it) => ({
               mappingId: it.mappingId,
               // 섹션 항목은 teachesId를 주지 않는다 — 확정은 mappingId로 하므로 화면에 필요 없다
@@ -278,9 +297,9 @@ export function useSectionCandidates(curricula: Curriculum[]) {
               pageStart: it.pageStart,
               pageEnd: it.pageEnd,
             })),
-          )
-        }),
-      )
+          ),
+        )
+      }
       return lists.flat()
     },
   })

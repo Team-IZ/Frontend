@@ -124,7 +124,13 @@ export type Curriculum = {
   materialId: string
   versionNo: number
   originalFileName: string
-  pageCount: number
+  /**
+   * 쪽수. **스펙은 `integer` + `required`인데 서버가 `null`을 보낸다**(실측 — 6종 중 4종).
+   * 같은 필드가 `CurriculumCatalogItem`에서는 `['integer','null']`로 선언돼 있다 —
+   * 두 스키마가 한 필드를 다르게 말하고, 동작은 nullable 쪽이다(15차 R4).
+   * 모르는 값이므로 `0`으로 채우지 않는다 — 화면은 아예 안 쓴다.
+   */
+  pageCount: number | null
   createdAt: string
 }
 

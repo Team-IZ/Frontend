@@ -43,6 +43,25 @@ case "$subject" in
   *.) fail "제목 끝에 마침표를 붙이지 않는다" ;;
 esac
 
+# 백엔드 요청 차수(16차·17th·request-19…)를 제목에 넣지 않는다.
+# 그 번호는 **백엔드와 주고받은 순번**이라 이 저장소에서는 아무것도 식별하지 못한다 —
+# 3개월 뒤 로그를 보는 사람에게 "19th"는 무엇을 했는지 하나도 안 알려준다.
+# 제목에는 **무엇을 바꿨는지(토픽)** 를 쓴다.
+#   ✗ chore: regenerate the api layer from the 13th round spec
+#   ⭕ chore: regenerate the api layer for trainee submission and reports
+if echo "$subject" | grep -qiE '(^|[^a-z0-9])[0-9]+(st|nd|rd|th)([^a-z0-9]|$)|[0-9]+차|request-[0-9]+|requests?-[0-9]+'; then
+  echo "" >&2
+  echo "✗ 제목에 백엔드 요청 차수가 들어 있습니다: $subject" >&2
+  echo "" >&2
+  echo "  그 번호는 백엔드와의 주고받은 순번이라 이 저장소에서는 아무것도 식별하지 못합니다." >&2
+  echo "  **무엇을 바꿨는지**를 제목으로 쓰세요. 차수는 필요하면 본문에 적습니다." >&2
+  echo "    ✗ chore: regenerate the api layer from the 13th round spec" >&2
+  echo "    ⭕ chore: regenerate the api layer for trainee submission and reports" >&2
+  echo "  규약: docs/handbook/git-convention.md §4" >&2
+  echo "" >&2
+  exit 1
+fi
+
 # 길이는 이슈 참조 (#N)를 제외한 설명 기준 — 훅이 자동 부착하는 메타데이터라 사용자 책임 밖.
 # 72 = GitHub UI가 제목을 잘라내는 지점(실제로 깨지는 값) → 실패.
 # 50 = 고전 가이드라인(50/72 룰). 권장일 뿐이라 경고만 — 취향에 실패를 걸면

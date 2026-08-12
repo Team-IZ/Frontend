@@ -1,86 +1,152 @@
-import type { AnsweredTurn, SessionState, TurnOutcome } from './types'
+import type {
+  AnsweredQuestion,
+  ReachedLevel,
+  Score,
+  SessionState,
+  SubmitAnswerResult,
+} from './types'
 
 /*
-  턴 진행·힌트·전환 상태 머신 — 화면이 실제로 갖는 로직이다(api-boundary §1-⑤ 화면 것).
-  서버가 오는 자리는 outcome **값** 하나뿐이고, 그 값은 `api.submitAnswer()`가 계산해서
-  넘겨준다(script.ts 참고) — 리듀서는 주어진 outcome을 적용만 한다. 연동 시 `api.ts`
-  안쪽만 실제 채점 호출로 바뀌고 이 파일은 한 글자도 안 바뀐다.
+  단계 진행·힌트·전환 상태 머신 — 화면이 실제로 갖는 로직이다(api-boundary §1-⑤ 화면 것).
 
-  전환 두 단계 — "이 문제는 여기까지"(STOP)와 "다음 문제 예고"(NEXT)를 하나로 합치지
-  않는다. 정상 완료는 NEXT로 바로 가고, 설명이 안 닿아 접힌 경우만 STOP을 거쳐 NEXT로
-  간다 — 목업에 `#stop`과 `#next`가 별개 페이지로 있는 이유가 이것이다.
+  **판정은 여기 없다.** `api.ts`가 점수와 `outcome`을 계산해 주고 리듀서는 적용만 한다 —
+  "힌트를 다 썼는데도 미달인가"를 여기서 세면 그 규칙이 화면과 서버 두 곳에 생긴다.
+  연동 시 `api.ts` 안쪽만 실제 호출로 바뀌고 이 파일은 한 글자도 안 바뀐다.
+
+  ## 도달 단계는 세지 않는다 — 통과한 질문 수가 곧 그 값이다
+  질문은 L1부터 순서대로이고 **통과해야만 다음 단계로 올라간다.** 그래서
+  `answered.filter(passed).length`가 마지막으로 통과한 단계와 항상 같다. L2에서 실패하면
+  통과가 1개라 1단, L1에서 실패하면 0개라 0단이다 — *"2단에서 종료되면 1단"* 이 별도
+  보정이 아니라 이 계산에서 그냥 나온다.
+
+  전환 두 갈래 — 통과해서 끝난 개념은 `NEXT`로 바로 가고, 설명이 안 닿아 접힌 개념만
+  `STOP`을 거쳐 `NEXT`로 간다.
 */
 
 export type SessionAction =
   | { type: 'START' }
-  | { type: 'REQUEST_HINT' }
-  | { type: 'APPLY_SUBMIT_RESULT'; answer: string; outcome: TurnOutcome }
-  | { type: 'RECEIVE_NEXT_TURN' }
+  /** 학생이 [다시 설명해 주세요]를 눌러 받은 힌트 */
+  | { type: 'SHOW_HINT'; hint: string }
+  | ({ type: 'APPLY_SUBMIT_RESULT'; answer: string } & SubmitAnswerResult)
+  | { type: 'RECEIVE_NEXT_QUESTION' }
   | { type: 'CONTINUE_AFTER_STOP' }
-  | { type: 'START_NEXT_PROBLEM' }
+  /** `now`로 개념 제한시간이 다시 시작한다 — 리듀서가 시계를 읽지 않게 */
+  | { type: 'START_NEXT_CONCEPT'; now: number }
   | { type: 'TOGGLE_CALLERS' }
+  /** 문제당 제한시간 초과 — 그 개념은 거기까지다 */
+  | { type: 'CONCEPT_TIMEOUT' }
+  /** 세션 전체 제한시간 초과 */
   | { type: 'TIMEOUT' }
+
+/** 통과한 질문 수 = 마지막으로 통과한 단계 */
+const reachedOf = (answered: AnsweredQuestion[]) =>
+  answered.filter((a) => a.passed).length as ReachedLevel
+
+/** 지금 개념을 닫는다 — 도달 단계를 확정하고 다음으로 넘길 준비를 한다 */
+function closeConcept(state: SessionState, answered: AnsweredQuestion[]): SessionState {
+  const reached = state.reached.map((r, i) => (i === state.conceptIndex ? reachedOf(answered) : r))
+  const isLast = state.conceptIndex === state.concepts.length - 1
+
+  if (isLast) {
+    return { ...state, phase: 'ENDED', endReason: 'COMPLETED', answered, current: [], reached }
+  }
+  return {
+    ...state,
+    phase: 'TRANSITION',
+    // 마지막 질문까지 통과했으면 정상 완료, 아니면 접힌 것
+    transitionReason: answered[answered.length - 1]?.passed ? 'NEXT' : 'STOP',
+    answered,
+    current: [],
+    reached,
+  }
+}
 
 export function sessionReducer(state: SessionState, action: SessionAction): SessionState {
   switch (action.type) {
     case 'START':
       return { ...state, phase: 'IN_PROBLEM' }
 
-    case 'REQUEST_HINT':
-      if (state.phase !== 'IN_PROBLEM' || state.currentHintUsed >= 2) return state
-      return { ...state, currentHintUsed: (state.currentHintUsed + 1) as 1 | 2 }
+    case 'SHOW_HINT':
+      if (state.phase !== 'IN_PROBLEM') return state
+      return { ...state, current: [...state.current, { kind: 'hint', text: action.hint }] }
 
     case 'APPLY_SUBMIT_RESULT': {
       if (state.phase !== 'IN_PROBLEM') return state
-      const currentTurn = state.problems[state.problemIndex].turns[state.answeredTurns.length]
-      const answered: AnsweredTurn = {
-        question: currentTurn.question,
-        ref: currentTurn.ref,
-        answer: action.answer,
-        hintUsed: state.currentHintUsed,
-      }
-      const answeredTurns = [...state.answeredTurns, answered]
-      const isLastProblem = state.problemIndex === state.problems.length - 1
+      const concept = state.concepts[state.conceptIndex]
+      const question = concept.questions[state.answered.length]
+      const current = [
+        ...state.current,
+        { kind: 'answer' as const, text: action.answer, score: action.score as Score },
+      ]
 
-      if (action.outcome === 'NEXT_TURN') {
-        return { ...state, phase: 'WAITING_NEXT', answeredTurns }
+      // 미달이지만 힌트가 남았다 — 같은 질문에 다시 답한다
+      if (action.outcome === 'SAME_QUESTION') {
+        return {
+          ...state,
+          current: action.hint ? [...current, { kind: 'hint', text: action.hint }] : current,
+        }
       }
-      if (isLastProblem) {
-        return { ...state, phase: 'ENDED', endReason: 'COMPLETED', answeredTurns }
+
+      const answered: AnsweredQuestion[] = [
+        ...state.answered,
+        {
+          level: question.level,
+          text: question.text,
+          ref: question.ref,
+          items: current,
+          passed: action.outcome === 'NEXT_QUESTION' || action.score >= 3,
+        },
+      ]
+
+      // 통과 — 같은 개념의 다음 단계로
+      if (action.outcome === 'NEXT_QUESTION') {
+        return { ...state, phase: 'WAITING_NEXT', answered, current: [] }
       }
-      return {
-        ...state,
-        phase: 'TRANSITION',
-        transitionReason: action.outcome === 'STOP_PROBLEM' ? 'STOP' : 'NEXT',
-        answeredTurns,
-      }
+
+      return closeConcept(state, answered)
     }
 
-    case 'RECEIVE_NEXT_TURN':
+    case 'RECEIVE_NEXT_QUESTION':
       if (state.phase !== 'WAITING_NEXT') return state
-      return { ...state, phase: 'IN_PROBLEM', currentHintUsed: 0 }
+      return { ...state, phase: 'IN_PROBLEM' }
 
     case 'CONTINUE_AFTER_STOP':
       if (state.phase !== 'TRANSITION' || state.transitionReason !== 'STOP') return state
       return { ...state, transitionReason: 'NEXT' }
 
-    case 'START_NEXT_PROBLEM':
+    case 'START_NEXT_CONCEPT':
       if (state.phase !== 'TRANSITION' || state.transitionReason !== 'NEXT') return state
       return {
         ...state,
         phase: 'IN_PROBLEM',
-        problemIndex: state.problemIndex + 1,
-        answeredTurns: [],
-        currentHintUsed: 0,
+        conceptIndex: state.conceptIndex + 1,
+        answered: [],
+        current: [],
         callersExpanded: false,
         transitionReason: null,
+        // 제한시간은 개념마다 새로 센다
+        conceptStartedAt: action.now,
       }
 
     case 'TOGGLE_CALLERS':
       return { ...state, callersExpanded: !state.callersExpanded }
 
-    case 'TIMEOUT':
+    /*
+      ponytail: 시간이 다하면 **그 개념을 통째로 닫는다** — 남은 시도가 있어도 마찬가지다.
+      백엔드에 "첫 시도에서 시간초과면 그 시도만 실패인가"를 물어 뒀고(16차 R3 확인 3),
+      답이 오면 여기만 고친다.
+    */
+    case 'CONCEPT_TIMEOUT': {
+      if (state.phase === 'ENDED' || state.phase === 'TRANSITION') return state
+      return closeConcept(state, state.answered)
+    }
+
+    case 'TIMEOUT': {
       if (state.phase === 'ENDED') return state
-      return { ...state, phase: 'ENDED', endReason: 'TIMEOUT' }
+      const reached = state.reached.map((r, i) =>
+        i === state.conceptIndex ? reachedOf(state.answered) : r,
+      )
+      return { ...state, phase: 'ENDED', endReason: 'TIMEOUT', reached }
+    }
   }
 }

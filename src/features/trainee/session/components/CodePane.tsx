@@ -1,10 +1,10 @@
 import { ChevronRightIcon, ChevronDownIcon } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { parseRefLines } from '../parseRefLines'
-import type { ProblemScript } from '../types'
+import type { Concept } from '../types'
 
 type Props = {
-  problem: ProblemScript
+  problem: Concept
   highlightRef: string
   dimmed: boolean
   callersExpanded: boolean
@@ -31,7 +31,7 @@ export default function CodePane({
   return (
     <div className={dimmed ? 'flex h-full flex-col opacity-45' : 'flex h-full flex-col'}>
       <div className="flex items-baseline gap-2 border-b border-border px-4 py-3">
-        <span className="font-semibold text-fg">{problem.title}</span>
+        <span className="font-semibold text-fg">{problem.name}</span>
         <span className="font-mono text-xs text-fg-subtle">{problem.file}</span>
       </div>
       <div className="flex-1 overflow-hidden p-4">

@@ -1,180 +1,251 @@
-import type { ProblemScript } from './types'
+import type { Concept } from './types'
 
 /*
-  ⚠️ Mock 전용 시나리오 — 백엔드(AI 채점) 연동 시 이 파일을 통째로 삭제하세요.
+  ⚠️ Mock 전용 — 백엔드 연동 시 이 파일을 통째로 삭제하세요.
 
-  질문 다음에 일어나는 일은 실제로는 AI가 답을 보고 판단한다. 지금은 그 판단을
-  흉내낼 수 없어서 **턴 인덱스로 완전히 확정**해 둔다 — 힌트를 다 쓰고 제출하면
-  `hintExhaustedOutcome`(정의서 §6 "미달이면 거기서 끝난다"), 아니면 `outcome`으로 간다.
-  이 조건 분기 자체는 사용자 행동(힌트를 썼는지)에 반응하는 것이라 인터랙티브하다 —
-  거짓으로 "다 맞았다"고 하는 게 아니라 사용자가 실제로 고를 수 있는 두 갈래다.
+  개념 3개 × 단계 4개(L1~L4). **실제로는 학생이 낸 코드에서 서버가 뽑는다** — 여기 것은
+  화면을 돌려보기 위한 고정 시나리오다.
 
-  문제 순서·문항 텍스트는 목업(trainee/session.html)에서 그대로 가져왔다. 목업이
-  구체적으로 보여주지 않은 자리(Problem 1 "Graph 구성"의 턴·State 관리의 힌트 문구)만
-  같은 도메인(AI_LLMOps 미프)에 맞춰 새로 썼다 — 임계값이 아니라 UI 문구라 "지어낸 값"
-  규칙(mock-first §2-4)에 걸리지 않는다.
+  **개념마다 L4까지 다 채운다.** 학생이 잘 답하면 어느 개념에서든 4단까지 올라갈 수 있어서,
+  중간에 비면 런타임에 터진다.
 
-  Problem 1·2가 각각 힌트 소진 시 STOP으로 가게 해 둔 것은 TR-01 mockDb.ts의
-  `retryConcepts: ['HITL Trigger 조건', 'Graph 구성']`와 짝을 맞춘 것이다 — 다시 보기가
-  겨냥하는 두 개념이 실제로 이 세션에서 막혔어야 이야기가 맞는다.
+  코드에 결함을 하나씩 심어 뒀다 — L3·L4 질문이 물을 자리가 있어야 하기 때문이다.
+  · REST 설계 → 삭제를 `POST /{id}/delete`로 (DELETE를 안 씀)
+  · 예외처리  → 500 응답에 `e.getMessage()`가 그대로 실림
+  · DTO 분리  → (결함 없음. 잘 된 코드도 하나는 있어야 "왜 이렇게 했나"를 물을 수 있다)
 */
 
-export const SESSION_SCRIPT: ProblemScript[] = [
-  {
-    title: 'Graph 구성',
-    file: 'graph.py',
-    code: [
-      { line: 5, text: 'workflow = StateGraph(AgentState)' },
-      { line: 6, text: 'workflow.add_node("agent", call_model)' },
-      { line: 7, text: 'workflow.add_node("human", human_review)' },
-      { line: 8, text: '' },
-      { line: 39, text: 'workflow.add_conditional_edges(' },
-      { line: 40, text: '    "agent", should_trigger_hitl,' },
-      { line: 41, text: '    {True: "human", False: "end"})' },
-    ],
-    callers: { label: '이 그래프를 쓰는 곳', snippet: 'main.py:8\napp = workflow.compile()' },
-    turns: [
-      {
-        question: '이 그래프는 노드를 어떤 순서로 연결하나요? 전체 흐름을 설명해 주세요.',
-        ref: 'graph.py:5–8',
-        level: 1,
-        hintTexts: [
-          'agent 노드와 human 노드가 각각 무엇을 하는지부터 짚어 보세요.',
-          '이 그래프에 들어온 입력이 끝(end)에 닿기까지 지나가는 노드를 순서대로 말해 보세요.',
-        ],
-        outcome: 'NEXT_TURN',
-      },
-      {
-        question: 'conditional_edges에서 분기 조건은 무엇을 기준으로 정해지나요?',
-        ref: 'graph.py:39–41',
-        level: 2,
-        hintTexts: [
-          'should_trigger_hitl이 True를 돌려주는 경우와 False를 돌려주는 경우, 각각 어디로 가나요?',
-          '이 분기가 없다면 agent 노드 다음엔 무슨 일이 일어날까요?',
-        ],
-        outcome: 'COMPLETE_PROBLEM',
-        hintExhaustedOutcome: 'STOP_PROBLEM',
-      },
-    ],
-  },
-  {
-    title: 'HITL Trigger 조건',
-    file: 'nodes.py',
-    code: [
-      { line: 8, text: '# 재시도 상한 — 넘으면 사람이 확인한다', gap: true },
-      { line: 9, text: 'MAX_ITERATIONS = 3', gap: true },
-      { line: 10, text: '', gap: true },
-      { line: 11, text: '', gap: true },
-      { line: 12, text: 'def should_trigger_hitl(state: AgentState) -> bool:' },
-      { line: 13, text: '    """사람 확인이 필요한지 판단한다."""' },
-      { line: 14, text: '    if state["retry"] > MAX_ITERATIONS:' },
-      { line: 15, text: '        return True' },
-      { line: 16, text: '' },
-      { line: 17, text: '    if state["decision"] == "REJECTED":' },
-      { line: 18, text: '        return True' },
-      { line: 19, text: '' },
-      { line: 20, text: '    return False' },
-    ],
-    callers: {
-      label: '이 함수를 쓰는 곳',
-      snippet:
-        'graph.py:41\nworkflow.add_conditional_edges(\n  "agent", should_trigger_hitl,\n  {True: "human", False: "end"})',
+const REST: Concept = {
+  name: 'REST 설계',
+  file: 'MemberController.java',
+  code: [
+    { line: 8, text: '@RestController' },
+    { line: 9, text: '@RequestMapping("/api/v1/members")' },
+    { line: 10, text: 'public class MemberController {' },
+    { line: 11, text: '' },
+    { line: 12, text: '    private final MemberService memberService;' },
+    { line: 13, text: '' },
+    { line: 14, text: '    @GetMapping("/{memberId}")' },
+    {
+      line: 15,
+      text: '    public ResponseEntity<MemberResponse> findMember(@PathVariable Long memberId) {',
     },
-    turns: [
-      {
-        question:
-          '이 함수는 무슨 일을 하나요? 어떤 값이 들어오고, 어디에서 쓰이는지도 같이 이야기해 주세요.',
-        ref: 'nodes.py:12–20',
-        level: 1,
-        hintTexts: [
-          '이 함수가 True를 돌려주면 그래프는 어디로 가나요? False면요?',
-          'state 안의 어떤 값들을 보고 판단하는 함수인가요?',
-        ],
-        outcome: 'NEXT_TURN',
-      },
-      {
-        question:
-          '교안에서는 사람이 확인해야 하는 조건을 세 가지로 봤는데, 여기서는 두 가지만 보고 있어요. 왜 그렇게 하셨나요?',
-        ref: 'nodes.py:14, 17',
-        level: 2,
-        hintTexts: [
-          '이 함수가 True를 돌려주는 경우를 먼저 짚어 보고, 교안에 있던 나머지 한 가지를 여기서는 왜 넣지 않았는지 이야기해 주세요.',
-          '조건이 두 개일 때와 세 개일 때, 사람이 확인하게 되는 상황이 어떻게 달라질까요?',
-        ],
-        outcome: 'NEXT_TURN',
-        hintExhaustedOutcome: 'STOP_PROBLEM',
-      },
-      {
-        question:
-          '이 조건들을 쓰지 않고 다르게 만들 수도 있었을까요? 다른 방법이 있다면 무엇이 달라지는지 이야기해 주세요.',
-        ref: 'nodes.py:20',
-        level: 3,
-        hintTexts: [
-          '조건을 함수 밖으로 빼서 설정값으로 두면 무엇이 달라질까요?',
-          '지금 방식의 장점과 단점을 하나씩 들어 보세요.',
-        ],
-        outcome: 'COMPLETE_PROBLEM',
-      },
-    ],
+    { line: 16, text: '        return ResponseEntity.ok(memberService.findMember(memberId));' },
+    { line: 17, text: '    }' },
+    { line: 18, text: '' },
+    { line: 19, text: '    @PostMapping' },
+    {
+      line: 20,
+      text: '    public ResponseEntity<MemberResponse> createMember(@RequestBody MemberCreateRequest request) {',
+    },
+    { line: 21, text: '        MemberResponse response = memberService.create(request);' },
+    { line: 22, text: '        return ResponseEntity.status(HttpStatus.CREATED).body(response);' },
+    { line: 23, text: '    }' },
+    { line: 24, text: '' },
+    { line: 25, text: '    @PostMapping("/{memberId}/delete")' },
+    {
+      line: 26,
+      text: '    public ResponseEntity<Void> deleteMember(@PathVariable Long memberId) {',
+    },
+    { line: 27, text: '        memberService.delete(memberId);' },
+    { line: 28, text: '        return ResponseEntity.ok().build();' },
+    { line: 29, text: '    }' },
+    { line: 30, text: '}' },
+  ],
+  callers: {
+    label: '이 컨트롤러를 부르는 곳',
+    snippet: 'MemberApiTest.java:41 — mockMvc.perform(post("/api/v1/members/3/delete"))',
   },
-  {
-    title: 'State 관리',
-    file: 'state.py',
-    code: [
-      { line: 1, text: 'from typing import Annotated, TypedDict', gap: true },
-      { line: 2, text: '', gap: true },
-      { line: 6, text: 'class AgentState(TypedDict):' },
-      { line: 7, text: '    messages: Annotated[list, add_messages]' },
-      { line: 8, text: '    retry: int' },
-      { line: 9, text: '    decision: str' },
-      { line: 10, text: '    human_decision: str | None' },
-    ],
-    callers: { label: '이 타입을 쓰는 곳', snippet: 'graph.py:12 · nodes.py:12' },
-    turns: [
-      {
-        question: 'messages에 add_messages를 붙인 이유가 뭔가요?',
-        ref: 'state.py:7',
-        level: 1,
-        hintTexts: [
-          'add_messages 없이 그냥 리스트로 두면 노드를 지날 때마다 무슨 일이 일어날까요?',
-          '이 값이 여러 노드를 오가며 계속 쌓여야 하는 이유가 있나요?',
-        ],
-        outcome: 'NEXT_TURN',
-      },
-      {
-        question: '이걸 쓰지 않았다면 어디에서 문제가 생겼을까요?',
-        ref: 'state.py:7',
-        level: 2,
-        hintTexts: [
-          'HITL 노드에서 사람 답을 받아 agent로 돌아가는 상황을 떠올려 보세요.',
-          '앞서 나눈 대화가 사라지면 다음 질문에 어떤 영향이 있을까요?',
-        ],
-        outcome: 'COMPLETE_PROBLEM',
-      },
-    ],
-  },
-]
+  questions: [
+    {
+      level: 1,
+      text: '이 컨트롤러가 받는 요청이 몇 가지이고 각각 무엇을 하나요? 주소도 같이 이야기해 주세요.',
+      ref: 'MemberController.java:14–29',
+      hints: [
+        '@GetMapping·@PostMapping이 붙은 메서드를 하나씩 짚어 보고, 각각 어떤 일을 하는지부터 말해 주세요.',
+        '클래스 위의 @RequestMapping("/api/v1/members")가 앞에 붙습니다. 그러면 실제 주소가 어떻게 되나요?',
+      ],
+    },
+    {
+      level: 2,
+      text: '생성은 201, 조회와 삭제는 200을 돌려주고 있어요. 상태 코드를 이렇게 고른 이유가 있나요?',
+      ref: 'MemberController.java:16, 22, 28',
+      hints: [
+        'ResponseEntity.status(HttpStatus.CREATED)와 ResponseEntity.ok()가 각각 몇 번을 내는지 먼저 짚어 주세요.',
+        '새로 만들어진 자원이 있을 때와 없을 때, 클라이언트가 다음에 할 일이 어떻게 달라질까요?',
+      ],
+    },
+    {
+      level: 3,
+      text: '삭제를 POST /{memberId}/delete로 만들었는데 DELETE /{memberId}로도 할 수 있어요. 둘은 어떻게 다르고, 왜 이쪽을 고르셨나요?',
+      ref: 'MemberController.java:25',
+      hints: [
+        'HTTP 메서드 자체가 의미를 갖습니다. DELETE가 이미 있는데 POST를 쓰면 무엇을 잃을까요?',
+        '중간에 있는 프록시·캐시·로그는 본문을 열어보지 않고 메서드만 봅니다. 그때 차이가 생기는 지점을 생각해 보세요.',
+      ],
+    },
+    {
+      level: 4,
+      text: '같은 삭제 요청이 네트워크 문제로 두 번 도착하면 어떻게 되나요? 지금 코드를 따라가며 이야기해 주세요.',
+      ref: 'MemberController.java:25–29',
+      hints: [
+        '첫 요청이 성공한 뒤 두 번째가 도착하면 memberService.delete가 무엇을 만나게 될까요?',
+        '여러 번 보내도 결과가 한 번 보낸 것과 같은 성질을 멱등(idempotent)이라고 합니다. 지금 코드는 그런가요?',
+      ],
+    },
+  ],
+}
 
-/** 다시 보기 — 1차에서 막힌 두 개념만, 힌트 없이, 통과하면 더 깊이 가지 않는다 */
-export const RETRY_SCRIPT: ProblemScript[] = [
-  {
-    ...SESSION_SCRIPT[1], // HITL Trigger 조건
-    turns: [
-      {
-        ...SESSION_SCRIPT[1].turns[1],
-        outcome: 'COMPLETE_PROBLEM',
-        hintExhaustedOutcome: 'COMPLETE_PROBLEM',
-      },
-    ],
+const EXCEPTION: Concept = {
+  name: '예외처리',
+  file: 'GlobalExceptionHandler.java',
+  code: [
+    { line: 10, text: '@Slf4j' },
+    { line: 11, text: '@RestControllerAdvice' },
+    { line: 12, text: 'public class GlobalExceptionHandler {' },
+    { line: 13, text: '' },
+    { line: 14, text: '    @ExceptionHandler(MemberNotFoundException.class)' },
+    {
+      line: 15,
+      text: '    public ResponseEntity<ErrorResponse> handleNotFound(MemberNotFoundException e) {',
+    },
+    { line: 16, text: '        log.warn("member not found: {}", e.getMessage());' },
+    { line: 17, text: '        return ResponseEntity.status(HttpStatus.NOT_FOUND)' },
+    {
+      line: 18,
+      text: '                .body(new ErrorResponse("MEMBER_NOT_FOUND", e.getMessage()));',
+    },
+    { line: 19, text: '    }' },
+    { line: 20, text: '' },
+    { line: 21, text: '    @ExceptionHandler(Exception.class)' },
+    { line: 22, text: '    public ResponseEntity<ErrorResponse> handleAll(Exception e) {' },
+    { line: 23, text: '        log.error("unexpected", e);' },
+    { line: 24, text: '        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)' },
+    {
+      line: 25,
+      text: '                .body(new ErrorResponse("INTERNAL_ERROR", e.getMessage()));',
+    },
+    { line: 26, text: '    }' },
+    { line: 27, text: '}' },
+  ],
+  callers: {
+    label: '이 예외가 나는 곳',
+    snippet: 'MemberService.java:17 — .orElseThrow(() -> new MemberNotFoundException(memberId))',
   },
-  {
-    ...SESSION_SCRIPT[0], // Graph 구성
-    turns: [
-      {
-        ...SESSION_SCRIPT[0].turns[1],
-        outcome: 'COMPLETE_PROBLEM',
-        hintExhaustedOutcome: 'COMPLETE_PROBLEM',
-      },
-    ],
+  questions: [
+    {
+      level: 1,
+      text: '이 클래스는 무슨 일을 하나요? 두 메서드가 어떻게 다른지도 같이 이야기해 주세요.',
+      ref: 'GlobalExceptionHandler.java:14–26',
+      hints: [
+        '@ExceptionHandler에 적힌 예외 종류를 각각 보고, 어떤 상황에서 어느 쪽이 불릴지 짚어 주세요.',
+        '두 메서드가 돌려주는 상태 코드가 다릅니다. 그 차이가 무엇을 뜻할까요?',
+      ],
+    },
+    {
+      level: 2,
+      text: '예외 처리를 컨트롤러마다 두지 않고 이 클래스 한 곳에 모았어요. 그렇게 한 이유가 있나요?',
+      ref: 'GlobalExceptionHandler.java:11',
+      hints: [
+        '@RestControllerAdvice가 어느 범위에 적용되는지부터 이야기해 주세요.',
+        '컨트롤러가 열 개로 늘었을 때, 응답 모양을 한 번 바꾸려면 각각 어디를 고쳐야 할까요?',
+      ],
+    },
+    {
+      level: 3,
+      text: '컨트롤러 안에서 try-catch로 직접 잡는 방법도 있어요. 지금 방식과 견주면 어떤 점이 다른가요?',
+      ref: 'GlobalExceptionHandler.java:14, 21',
+      hints: [
+        '두 방식에서 "이 예외를 어떻게 응답으로 바꿀지"를 아는 코드가 각각 어디에 있는지 짚어 보세요.',
+        '한 예외를 여러 컨트롤러가 낸다면, 두 방식에서 그 처리 코드가 몇 벌이 될까요?',
+      ],
+    },
+    {
+      level: 4,
+      text: '예상하지 못한 예외가 났을 때 e.getMessage()가 응답 본문에 그대로 실려 나갑니다. 어떤 문제가 생길 수 있나요?',
+      ref: 'GlobalExceptionHandler.java:25',
+      hints: [
+        'DB 연결이 끊겼을 때 그 예외의 메시지에 무엇이 들어 있을지 떠올려 보세요.',
+        '그 문자열을 받는 쪽이 우리 화면만이 아닐 수도 있습니다. 누가 볼 수 있을까요?',
+      ],
+    },
+  ],
+}
+
+const DTO: Concept = {
+  name: 'DTO 분리',
+  file: 'MemberService.java',
+  code: [
+    { line: 12, text: '@Service' },
+    { line: 13, text: '@RequiredArgsConstructor' },
+    { line: 14, text: 'public class MemberService {' },
+    { line: 15, text: '' },
+    { line: 16, text: '    private final MemberRepository memberRepository;' },
+    { line: 17, text: '' },
+    { line: 18, text: '    @Transactional(readOnly = true)' },
+    { line: 19, text: '    public MemberResponse findMember(Long memberId) {' },
+    { line: 20, text: '        Member member = memberRepository.findById(memberId)' },
+    {
+      line: 21,
+      text: '                .orElseThrow(() -> new MemberNotFoundException(memberId));',
+    },
+    { line: 22, text: '        return MemberResponse.from(member);' },
+    { line: 23, text: '    }' },
+    { line: 24, text: '' },
+    { line: 25, text: '    @Transactional' },
+    { line: 26, text: '    public MemberResponse create(MemberCreateRequest request) {' },
+    { line: 27, text: '        Member member = Member.builder()' },
+    { line: 28, text: '                .email(request.email())' },
+    { line: 29, text: '                .name(request.name())' },
+    { line: 30, text: '                .build();' },
+    { line: 31, text: '        return MemberResponse.from(memberRepository.save(member));' },
+    { line: 32, text: '    }' },
+    { line: 33, text: '}' },
+  ],
+  callers: {
+    label: 'MemberResponse가 정의된 곳',
+    snippet:
+      'MemberResponse.java:6 — public record MemberResponse(Long id, String email, String name)',
   },
-]
+  questions: [
+    {
+      level: 1,
+      text: 'findMember가 하는 일을 순서대로 설명해 주세요. 값이 없으면 어떻게 되나요?',
+      ref: 'MemberService.java:19–23',
+      hints: [
+        'findById가 무엇을 돌려주는지, 그리고 orElseThrow가 언제 동작하는지부터 짚어 주세요.',
+        '마지막 줄에서 Member가 무엇으로 바뀌어 나가는지도 같이 이야기해 주세요.',
+      ],
+    },
+    {
+      level: 2,
+      text: 'Member 엔티티를 그대로 돌려주지 않고 MemberResponse로 바꿔서 내보내고 있어요. 왜 그렇게 하셨나요?',
+      ref: 'MemberService.java:22, 31',
+      hints: [
+        'Member에 있는 필드와 MemberResponse에 있는 필드를 견줘 보세요. 무엇이 빠졌나요?',
+        '엔티티는 DB 테이블과 짝을 이룹니다. 그 모양이 밖으로 그대로 나가면 무엇이 묶이게 될까요?',
+      ],
+    },
+    {
+      level: 3,
+      text: '엔티티를 그대로 반환하는 방법도 있습니다. 두 방식을 견주면 어떤 점이 다른가요?',
+      ref: 'MemberService.java:22',
+      hints: [
+        '컬럼을 하나 추가했을 때, 두 방식에서 API 응답이 각각 어떻게 되는지 따라가 보세요.',
+        '변환 코드를 한 벌 더 쓰는 비용도 있습니다. 그 비용으로 무엇을 사는 건가요?',
+      ],
+    },
+    {
+      level: 4,
+      text: '엔티티를 그대로 내보냈다면 어디에서 문제가 터졌을까요? 구체적인 상황으로 이야기해 주세요.',
+      ref: 'MemberService.java:22, 31',
+      hints: [
+        'Member에 비밀번호나 내부 상태 같은 필드가 있다면 응답에 어떻게 될까요?',
+        '지연 로딩(lazy) 연관관계가 걸린 필드를 직렬화하려 하면 무슨 일이 생기는지도 떠올려 보세요.',
+      ],
+    },
+  ],
+}
+
+/** 개념 3개 고정 — 순서가 곧 출제 순서다 */
+export const SESSION_SCRIPT: Concept[] = [REST, EXCEPTION, DTO]

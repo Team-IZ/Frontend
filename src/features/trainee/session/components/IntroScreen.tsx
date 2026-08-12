@@ -54,10 +54,9 @@ export default function IntroScreen({ mode, onStart }: { mode: SessionMode; onSt
                 icon: ClockIcon,
                 body: (
                   <>
-                    보통 30~40분 걸려요. 질문에 잘 답할수록 더 깊은 질문으로 이어져 길어질 수
-                    있어요.{' '}
+                    문제 3개를 봐요. 질문에 잘 답할수록 더 깊은 질문으로 이어집니다.{' '}
                     <b className="text-fg">
-                      최대 70분까지 진행되고, 시작하면 중간에 나갈 수 없어요.
+                      문제마다 20분, 전체 1시간까지 쓸 수 있고 시작하면 중간에 나갈 수 없어요.
                     </b>
                   </>
                 ),
@@ -141,7 +140,7 @@ export default function IntroScreen({ mode, onStart }: { mode: SessionMode; onSt
                 icon: ClockIcon,
                 body: (
                   <>
-                    보통 15~20분 걸려요. 이번에도{' '}
+                    문제 하나를 처음 단계부터 다시 봐요. 20분까지 쓸 수 있고{' '}
                     <b className="text-fg">시작하면 중간에 나갈 수 없어요.</b>
                   </>
                 ),
@@ -176,8 +175,8 @@ export default function IntroScreen({ mode, onStart }: { mode: SessionMode; onSt
                 icon: XCircleIcon,
                 body: (
                   <>
-                    지난번과 같은 질문이에요.{' '}
-                    <b className="text-fg">다시 설명해 주는 도움이 없어요.</b>
+                    막혔던 문제를 <b className="text-fg">1단계부터 전부 다시</b> 봐요. 기회는 한
+                    번입니다.
                   </>
                 ),
               },
@@ -216,7 +215,7 @@ export default function IntroScreen({ mode, onStart }: { mode: SessionMode; onSt
               </>
             ) : (
               <>
-                지난번에 덜 이야기된 곳을 다시 봐요. 리포트에서 안내한 교안을 보고 왔다면 시작해도
+                지난번에 막혔던 곳을 다시 봐요. 리포트에서 안내한 교안을 보고 왔다면 시작해도
                 좋아요.
               </>
             )}
@@ -244,7 +243,7 @@ export default function IntroScreen({ mode, onStart }: { mode: SessionMode; onSt
 
         <label className="flex cursor-pointer items-center gap-2.5 rounded-md border border-border px-3 py-2.5 text-sm text-fg">
           <Checkbox checked={ready} onCheckedChange={(v) => setReady(v === true)} />
-          지금 {mode === 'FIRST' ? '30~40분' : '15~20분'} 동안 방해받지 않을 수 있어요
+          지금 {mode === 'FIRST' ? '1시간' : '20분'} 동안 방해받지 않을 수 있어요
         </label>
 
         <div className="flex items-center justify-end gap-3">

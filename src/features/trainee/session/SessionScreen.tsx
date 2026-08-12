@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/Button'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/Empty'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/Resizable'
 import { Spinner } from '@/components/ui/Spinner'
+import { formatClock } from '@/lib/format'
 import { useAsync } from '@/lib/useAsync'
-import { getSession, submitAnswer } from './api'
+import { getSession, requestHint, submitAnswer } from './api'
 import { sessionReducer } from './sessionReducer'
 import CodePane from './components/CodePane'
 import ComposeBar from './components/ComposeBar'
@@ -16,11 +17,12 @@ import TransitionScreen from './components/TransitionScreen'
 import { AwayToast, OfflineOverlay, TimeWarningToast } from './components/AwayToast'
 import {
   useAwayToast,
+  useConceptTimer,
   useOnlineStatus,
   useSessionTimer,
   useTimeWarningToast,
 } from './useSessionEffects'
-import type { SessionMode, SessionState } from './types'
+import { MAX_HINTS, hintsUsed, type SessionMode, type SessionState } from './types'
 
 /*
   TR-03 검증 세션 — 전체화면 · 네비 없음 · 나가는 경로 없음(정의서 §2). ConsoleShell을
@@ -86,11 +88,17 @@ function SessionRunner({ initial }: { initial: SessionState }) {
     showTimeWarning,
     running,
   )
+  // 개념마다 20분. 다 쓰면 그 개념이 닫히고 도달 단계가 확정된다
+  const conceptRemainingMs = useConceptTimer(
+    state.conceptStartedAt,
+    () => dispatch({ type: 'CONCEPT_TIMEOUT' }),
+    running && state.phase !== 'TRANSITION',
+  )
 
   // 제출 후 "다음 질문 준비 중" 대기를 흉내낸다 — 실제로는 AI 응답 지연이다
   useEffect(() => {
     if (state.phase !== 'WAITING_NEXT') return
-    const id = setTimeout(() => dispatch({ type: 'RECEIVE_NEXT_TURN' }), 1100)
+    const id = setTimeout(() => dispatch({ type: 'RECEIVE_NEXT_QUESTION' }), 1100)
     return () => clearTimeout(id)
   }, [state.phase])
 
@@ -113,25 +121,26 @@ function SessionRunner({ initial }: { initial: SessionState }) {
     )
   }
 
-  const problem = state.problems[state.problemIndex]
+  const concept = state.concepts[state.conceptIndex]
 
   if (state.phase === 'TRANSITION') {
     const nextIndex =
-      state.transitionReason === 'NEXT' ? state.problemIndex + 1 : state.problemIndex
+      state.transitionReason === 'NEXT' ? state.conceptIndex + 1 : state.conceptIndex
     return (
       <div className="flex h-full flex-col">
-        <TopBar state={state} elapsedMs={elapsedMs} displayProblemIndex={nextIndex} />
+        <TopBar state={state} elapsedMs={elapsedMs} displayConceptIndex={nextIndex} />
         <div className="flex-1">
           <TransitionScreen
             reason={state.transitionReason!}
             mode={state.mode}
-            nextProblem={state.problems[nextIndex]}
-            isNextLast={nextIndex === state.problems.length - 1}
+            nextProblem={state.concepts[nextIndex]}
+            isNextLast={nextIndex === state.concepts.length - 1}
             onContinue={() =>
-              dispatch({
-                type:
-                  state.transitionReason === 'STOP' ? 'CONTINUE_AFTER_STOP' : 'START_NEXT_PROBLEM',
-              })
+              dispatch(
+                state.transitionReason === 'STOP'
+                  ? { type: 'CONTINUE_AFTER_STOP' }
+                  : { type: 'START_NEXT_CONCEPT', now: Date.now() },
+              )
             }
           />
         </div>
@@ -140,27 +149,41 @@ function SessionRunner({ initial }: { initial: SessionState }) {
   }
 
   // IN_PROBLEM · WAITING_NEXT
-  const turnIndex = state.answeredTurns.length
-  const currentTurn = state.phase === 'IN_PROBLEM' ? problem.turns[turnIndex] : null
+  const questionIndex = state.answered.length
+  const currentQuestion = state.phase === 'IN_PROBLEM' ? concept.questions[questionIndex] : null
   const highlightRef =
-    currentTurn?.ref ??
-    state.answeredTurns[state.answeredTurns.length - 1]?.ref ??
-    problem.turns[0].ref
-  const isLastTurnOfSession =
+    currentQuestion?.ref ??
+    state.answered[state.answered.length - 1]?.ref ??
+    concept.questions[0].ref
+  const isLastQuestion = questionIndex === concept.questions.length - 1
+  const isLastOfSession =
     state.phase === 'IN_PROBLEM' &&
-    state.problemIndex === state.problems.length - 1 &&
-    turnIndex === problem.turns.length - 1
+    state.conceptIndex === state.concepts.length - 1 &&
+    isLastQuestion
 
   const handleSubmit = async (answer: string) => {
+    if (!currentQuestion) return
     setSubmitting(true)
-    const result = await submitAnswer(problem.turns[turnIndex], state.currentHintUsed)
+    const result = await submitAnswer({
+      question: currentQuestion,
+      current: state.current,
+      isLastQuestion,
+      answer,
+    })
     setSubmitting(false)
-    dispatch({ type: 'APPLY_SUBMIT_RESULT', answer, outcome: result.outcome })
+    dispatch({ type: 'APPLY_SUBMIT_RESULT', answer, ...result })
+  }
+
+  /** 버튼으로 받는 힌트 — 지급분과 같은 주머니를 쓴다(합산 2개) */
+  const handleRequestHint = async () => {
+    if (!currentQuestion) return
+    const hint = await requestHint({ question: currentQuestion, current: state.current })
+    if (hint) dispatch({ type: 'SHOW_HINT', hint })
   }
 
   return (
     <div className="relative flex h-full flex-col">
-      <TopBar state={state} elapsedMs={elapsedMs} />
+      <TopBar state={state} elapsedMs={elapsedMs} conceptRemainingMs={conceptRemainingMs} />
       {/*
         목업은 코드 패널을 428px 고정폭으로 그렸다 — 실제로는 코드 길이가 문제마다
         다르니 고정하면 안 맞는 문제가 반드시 나온다. 기본값은 428px(목업 그대로)로
@@ -175,7 +198,7 @@ function SessionRunner({ initial }: { initial: SessionState }) {
           className="border-r border-border"
         >
           <CodePane
-            problem={problem}
+            problem={concept}
             highlightRef={highlightRef}
             dimmed={state.phase === 'WAITING_NEXT'}
             callersExpanded={state.callersExpanded}
@@ -186,19 +209,19 @@ function SessionRunner({ initial }: { initial: SessionState }) {
         <ResizablePanel minSize={320} className="flex flex-col">
           <QuestionThread
             mode={state.mode}
-            answeredTurns={state.answeredTurns}
-            currentTurn={currentTurn}
+            answered={state.answered}
+            currentQuestion={currentQuestion}
+            current={state.current}
             waiting={state.phase === 'WAITING_NEXT'}
-            hintUsed={state.currentHintUsed}
           />
-          {currentTurn && (
+          {currentQuestion && (
             <ComposeBar
-              draftKey={`tr03-draft-${state.mode}-${state.problemIndex}-${turnIndex}`}
+              draftKey={`tr03-draft-${state.mode}-${state.conceptIndex}-${questionIndex}`}
               mode={state.mode}
-              hintUsed={state.currentHintUsed}
-              isLastTurnOfSession={isLastTurnOfSession}
+              hintsLeft={MAX_HINTS - hintsUsed(state.current)}
+              isLastTurnOfSession={isLastOfSession}
               submitting={submitting}
-              onRequestHint={() => dispatch({ type: 'REQUEST_HINT' })}
+              onRequestHint={handleRequestHint}
               onSubmit={handleSubmit}
             />
           )}
@@ -217,21 +240,24 @@ function SessionRunner({ initial }: { initial: SessionState }) {
 function TopBar({
   state,
   elapsedMs,
-  displayProblemIndex,
+  conceptRemainingMs,
+  displayConceptIndex,
 }: {
   state: SessionState
   elapsedMs: number
-  displayProblemIndex?: number
+  /** 전환 화면에서는 다음 개념 시간이 아직 안 시작해서 안 그린다 */
+  conceptRemainingMs?: number
+  displayConceptIndex?: number
 }) {
-  const index = displayProblemIndex ?? state.problemIndex
-  const total = state.problems.length
+  const index = displayConceptIndex ?? state.conceptIndex
+  const total = state.concepts.length
   const minutes = Math.floor(elapsedMs / 60_000)
 
   return (
     <div className="flex items-center justify-between border-b border-border px-4 py-3">
       <div className="flex items-center gap-3">
         <span className="text-sm font-semibold text-fg">
-          문제 {index + 1} / {total}
+          {state.concepts[index]?.name} · {index + 1} / {total}
         </span>
         <span className="flex gap-1">
           {Array.from({ length: total }, (_, i) => (
@@ -253,12 +279,22 @@ function TopBar({
           </span>
         )}
       </div>
-      <span className="text-sm text-fg-subtle">
+      {/*
+        **문제당 남은 시간이 실제로 판정에 쓰이는 값이라 앞에 둔다.** 세션 경과는 참고용이라
+        뒤로 물러난다 — 학생이 지금 관리해야 하는 것은 이 문제에 남은 20분이다.
+        3분 아래로 내려가면 경고색. 평소엔 차분하게(정의서 §2 "상시 경고 = 불안 누적").
+      */}
+      <span className="flex items-baseline gap-3 text-sm text-fg-subtle">
         {state.phase === 'ENDED' ? (
           `${minutes}분 걸렸어요`
         ) : (
           <>
-            <b className="text-fg">{minutes}분</b> 경과
+            {conceptRemainingMs !== undefined && (
+              <span className={conceptRemainingMs < 3 * 60_000 ? 'text-warning' : undefined}>
+                이 문제 <b className="font-bold">{formatClock(conceptRemainingMs)}</b> 남음
+              </span>
+            )}
+            <span className="text-xs">{minutes}분 경과</span>
           </>
         )}
       </span>

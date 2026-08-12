@@ -109,6 +109,16 @@ export default function SettingsTab({ org }: { org: Org }) {
   const [open, setOpen] = useState<'limits' | 'data' | 'features' | 'tier' | 'status' | null>(null)
   const [deleteOpen, setDeleteOpen] = useState(false)
   const restore = useRestoreOrganization()
+  const [restoreError, setRestoreError] = useState<string | null>(null)
+
+  async function handleRestore() {
+    setRestoreError(null)
+    try {
+      await restore.mutateAsync({ path: { organizationId } })
+    } catch {
+      setRestoreError('복구하지 못했습니다. 잠시 후 다시 시도해 주세요.')
+    }
+  }
 
   if (isError) {
     return (
@@ -148,6 +158,22 @@ export default function SettingsTab({ org }: { org: Org }) {
             >
               복구
             </Button>
+          <AlertDescription className="flex flex-col gap-2">
+            <div className="flex items-center justify-between gap-4">
+              <span>
+                {purgeAt ? `${purgeAt}에 파기됩니다.` : '보존기간이 지나면 파기됩니다.'} 그전까지는
+                복구할 수 있습니다.
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={restore.isPending}
+                onClick={() => void handleRestore()}
+              >
+                복구
+              </Button>
+            </div>
+            {restoreError && <p className="font-semibold">{restoreError}</p>}
           </AlertDescription>
         </Alert>
       )}

@@ -20,6 +20,7 @@ import { useFindUsage } from '@/api/usage/useUsageQueries'
 import type { findOrganization_Response } from '@/api/organization/organizationTypes'
 import {
   cohortStatusBadge,
+  currentPeriod,
   formatBytes,
   formatChangeRate,
   formatCost,
@@ -71,7 +72,12 @@ function MetricCard({
 
 export default function OverviewTab({ org }: { org: Org }) {
   const cohorts = useFindOrganizationCohorts({ path: { organizationId: org.organizationId } })
-  const usage = useFindUsage({ path: { organizationId: org.organizationId } })
+  // 사용량 탭의 "이번 달" 조회와 같은 쿼리 키를 쓰도록 period를 명시한다 — 안 그러면 탭을
+  // 오갈 때마다 같은 달을 두 번 조회한다(G8, docs/dev/screens/sa-02-org-detail-situations.md).
+  const usage = useFindUsage({
+    path: { organizationId: org.organizationId },
+    query: { period: currentPeriod() },
+  })
 
   const rows = cohorts.data?.content ?? []
   const running = rows.filter((c) => c.status === 'RUNNING').length
@@ -141,8 +147,22 @@ export default function OverviewTab({ org }: { org: Org }) {
         </MetricCard>
         <MetricCard
           label="저장량"
-          value={usage.isPending ? '—' : formatBytes(usage.data?.storage.totalBytes ?? 0)}
-          sub={storageChange ? `전월 대비 ${storageChange}` : undefined}
+          value={
+            usage.isPending || usage.isError ? '—' : formatBytes(usage.data.storage.totalBytes)
+          }
+          sub={
+            usage.isError ? (
+              <button
+                type="button"
+                onClick={() => usage.refetch()}
+                className="text-danger text-xs font-semibold hover:underline"
+              >
+                불러오지 못함 · 다시 시도
+              </button>
+            ) : storageChange ? (
+              `전월 대비 ${storageChange}`
+            ) : undefined
+          }
         />
       </div>
 

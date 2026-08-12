@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { keepPreviousData } from '@tanstack/react-query'
 import { ClockIcon, TriangleAlertIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Progress } from '@/components/ui/Progress'
@@ -22,7 +23,8 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { useFindUsage } from '@/api/usage/useUsageQueries'
-import { formatBytes, formatChangeRate, formatCost } from '../../labels'
+import { cn } from '@/lib/utils/cn'
+import { currentPeriod, formatBytes, formatChangeRate, formatCost } from '../../labels'
 
 /*
   SA-02 ③ 사용량 · AI 비용.
@@ -50,7 +52,11 @@ function useRecentMonths() {
     const now = new Date()
     return [0, 1, 2].map((back) => {
       const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - back, 1))
-      const value = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
+      // back === 0(이번 달)은 개요 탭과 같은 쿼리 키가 되도록 currentPeriod()를 그대로 쓴다(G8)
+      const value =
+        back === 0
+          ? currentPeriod()
+          : `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`
       return { value, label: back === 0 ? '이번 달' : back === 1 ? '지난 달' : `${back}개월 전` }
     })
   }, [])
@@ -61,10 +67,12 @@ const formatTokens = (n: number) => (n === 0 ? '0' : `${(n / 1_000_000).toFixed(
 export default function UsageTab({ org }: { org: { organizationId: string } }) {
   const months = useRecentMonths()
   const [period, setPeriod] = useState(months[0].value)
-  const { data, isPending, isError, refetch } = useFindUsage({
-    path: { organizationId: org.organizationId },
-    query: { period },
-  })
+  // 기간을 바꿀 때 이전 값을 붙들어 둔다 — 없으면 쿼리 키가 바뀔 때마다 화면 전체가
+  // 스켈레톤으로 리셋됐다가 새로 채워진다(G7, docs/dev/screens/sa-02-org-detail-situations.md)
+  const { data, isPending, isError, isFetching, refetch } = useFindUsage(
+    { path: { organizationId: org.organizationId }, query: { period } },
+    { placeholderData: keepPreviousData },
+  )
 
   const periodLabel = months.find((m) => m.value === period)?.label ?? period
 
@@ -144,7 +152,7 @@ export default function UsageTab({ org }: { org: { organizationId: string } }) {
   ].filter((r) => r.bytes > 0)
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className={cn('flex flex-col gap-4 transition-opacity', isFetching && 'opacity-60')}>
       {periodSelect}
 
       {!aiCost.costComplete && (

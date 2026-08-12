@@ -109,6 +109,15 @@ export function formatBytes(bytes: number): string {
   return `${value.toLocaleString(undefined, { maximumFractionDigits: digits })} ${UNITS[i]}`
 }
 
+/**
+ * 이번 달 `yyyy-MM`(UTC) — 개요 탭·사용량 탭이 "이번 달" 저장량을 같은 쿼리 키로 조회하도록
+ * 여기 하나로 둔다. 각자 계산하면(예전처럼) 키가 갈려 캐시가 안 섞인다.
+ */
+export const currentPeriod = (): string => {
+  const now = new Date()
+  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`
+}
+
 /** `0.0675` → `+7%`. null이면 비교할 전월이 없다는 뜻이라 문구를 안 만든다 */
 export function formatChangeRate(rate: number | null | undefined): string | null {
   if (rate == null) return null

@@ -54,7 +54,9 @@ function baseState(mode: SessionMode, concepts: Concept[], now: number): Session
     endReason: null,
     sessionStartedAt: now,
     conceptStartedAt: now,
-    callersExpanded: false,
+    // 처음부터 열어 둔다 — 이 함수가 어디서 쓰이는지는 질문에 답하는 데 필요한
+    // 맥락이라, 학생이 그것을 찾아 여는 단계를 거치게 할 이유가 없다.
+    callersExpanded: true,
   }
 }
 

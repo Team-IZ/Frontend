@@ -53,23 +53,26 @@ export default function CodePane({
           ))}
         </pre>
       </div>
+      {/*
+        접었을 때 스니펫 첫 줄을 버튼 안에 미리 보여주던 것을 뺐다 — 그 줄이 길면
+        버튼(=한 줄 flex)이 통째로 늘어나 코드 영역을 밀어냈다(실사용 피드백으로 발견).
+        접힘 상태는 "지금 안 보인다"만 말하면 되고, 내용은 열어서 본다.
+      */}
       <button
         type="button"
         onClick={onToggleCallers}
-        className="flex items-center gap-1.5 border-t border-border px-4 py-2 text-left text-xs text-fg-subtle hover:text-fg"
+        className="flex shrink-0 items-center gap-1.5 border-t border-border px-4 py-2 text-left text-xs text-fg-subtle hover:text-fg"
       >
         {callersExpanded ? (
-          <ChevronDownIcon className="size-3.5" />
+          <ChevronDownIcon className="size-3.5 shrink-0" />
         ) : (
-          <ChevronRightIcon className="size-3.5" />
+          <ChevronRightIcon className="size-3.5 shrink-0" />
         )}
-        {problem.callers.label}
-        {!callersExpanded && (
-          <span className="ml-1 font-mono">{problem.callers.snippet.split('\n')[0]}</span>
-        )}
+        <span className="truncate">{problem.callers.label}</span>
       </button>
+      {/* max-h로 상한을 둔다 — 스니펫이 길어도 코드 영역을 잠식하지 않는다 */}
       {callersExpanded && (
-        <pre className="border-t border-border bg-surface-2 p-3 font-mono text-xs text-fg-muted whitespace-pre-wrap">
+        <pre className="max-h-32 shrink-0 overflow-auto border-t border-border bg-surface-2 p-3 font-mono text-xs text-fg-muted whitespace-pre-wrap">
           {problem.callers.snippet}
         </pre>
       )}

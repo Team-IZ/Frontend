@@ -21,7 +21,7 @@ import { getReports } from './api'
 import { buildRailNote, formatDate, formatRelativeMonths } from './labels'
 import ConceptCard from './components/ConceptCard'
 import RoundRail from './components/RoundRail'
-import type { ReportsData, RoundReport } from './types'
+import { askedConcepts, type ReportsData, type RoundReport } from './types'
 
 /*
   StatusMessage(카드 없는 플로팅 텍스트)를 지운다 — 아이콘도 유니코드 손글씨
@@ -181,7 +181,8 @@ function RoundBody({ report }: { report: RoundReport }) {
 }
 
 function PublishedBody({ report }: { report: Extract<RoundReport, { status: 'PUBLISHED' }> }) {
-  const retryCount = report.concepts.filter((c) => c.isRetryTarget).length
+  // 문항 없음은 재시험 대상이 아니다 — 못한 게 아니라 안 물어본 것이라 다시 볼 것도 없다
+  const retryCount = askedConcepts(report.concepts).filter((c) => c.isRetryTarget).length
   const relative = formatRelativeMonths(report.publishedAt, Date.now())
 
   return (
@@ -242,7 +243,6 @@ function PublishedBody({ report }: { report: Extract<RoundReport, { status: 'PUB
           <ConceptCard
             key={concept.name}
             concept={concept}
-            locked={concept.isRetryTarget && report.retryState === 'PENDING'}
             isLast={i === report.concepts.length - 1}
           />
         ))}

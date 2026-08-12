@@ -13,7 +13,9 @@ import type { CurrentRound, HomeView, PastRound, RoundStatus, UpcomingRound } fr
 const HOUR = 3_600_000
 const DAY = 86_400_000
 
-const ROUND_META = { roundLabel: '미프 3차', classTeam: 'A반 3팀', curriculum: 'AI_LLMOps' }
+// 개념·교안은 TR-03 `script.ts`·TR-04 `mockDb.ts`와 **같은 시나리오**를 쓴다 —
+// 한 학생의 같은 회차인데 화면마다 다른 개념이 뜨면 연동 전부터 어긋난다
+const ROUND_META = { roundLabel: '미프 3차', classTeam: 'A반 3팀', curriculum: 'Spring Boot 기초' }
 
 const UPCOMING: UpcomingRound = {
   roundLabel: '미프 4차',
@@ -61,7 +63,8 @@ function currentRoundFor(status: RoundStatus, now: number): CurrentRound {
         ...ROUND_META,
         status,
         retryDueAt: new Date(now + 6 * DAY).toISOString(),
-        retryConcepts: ['HITL Trigger 조건', 'Graph 구성'],
+        // TR-04에서 2단 미만인 개념 — 거기 목과 같은 하나(DTO 분리)여야 숫자가 안 갈린다
+        retryConcepts: ['DTO 분리'],
         reportRoundId: 'mif-3',
       }
     case 'SUBMISSION_CLOSED':

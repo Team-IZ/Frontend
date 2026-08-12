@@ -12,6 +12,8 @@ type Props = {
   hintsLeft: number
   isLastTurnOfSession: boolean
   submitting: boolean
+  /** 채점·다음 질문 대기 중 — 입력은 잠그되 **영역은 그대로 둔다** */
+  waiting: boolean
   onRequestHint: () => void
   onSubmit: (answer: string) => void
 }
@@ -30,6 +32,7 @@ export default function ComposeBar({
   hintsLeft,
   isLastTurnOfSession,
   submitting,
+  waiting,
   onRequestHint,
   onSubmit,
 }: Props) {
@@ -51,6 +54,12 @@ export default function ComposeBar({
   }
 
   const isShort = answer.length > 0 && answer.length < SHORT_ANSWER_THRESHOLD
+  /*
+    제출 중이거나 다음 질문을 기다리는 동안은 잠근다. **감추지는 않는다** — 입력
+    영역이 통째로 사라지면 대화 패널 높이가 튀고, 답을 낸 직후 화면이 무너지는 것처럼
+    보인다(실사용 피드백으로 발견). 자리를 지키고 상태만 바꾼다.
+  */
+  const busy = submitting || waiting
 
   return (
     <div className="flex flex-col gap-2 border-t border-border p-4">
@@ -58,13 +67,13 @@ export default function ComposeBar({
         value={answer}
         onChange={(e) => handleChange(e.target.value)}
         onPaste={(e) => e.preventDefault()}
-        placeholder="답을 입력해 주세요"
+        placeholder={waiting ? '' : '답을 입력해 주세요'}
         rows={3}
-        disabled={submitting}
+        disabled={busy}
       />
       <div className="flex items-center justify-between text-xs text-fg-subtle">
         <span>{answer.length}자</span>
-        {isShort && (
+        {isShort && !busy && (
           <span className="font-medium text-warning">조금 더 써 볼까요? 지금은 짧아요</span>
         )}
       </div>
@@ -83,7 +92,7 @@ export default function ComposeBar({
                   variant="ghost"
                   size="sm"
                   onClick={onRequestHint}
-                  disabled={submitting}
+                  disabled={busy}
                 >
                   다시 설명해 주세요
                 </Button>
@@ -101,8 +110,8 @@ export default function ComposeBar({
           <p className="text-xs font-medium text-fg">마지막 답변이에요 · 제출하면 끝납니다</p>
         )}
 
-        <Button onClick={handleSubmit} disabled={!answer.trim() || submitting}>
-          {isLastTurnOfSession ? '답변 제출하고 마치기' : '답변 제출'}
+        <Button onClick={handleSubmit} disabled={!answer.trim() || busy}>
+          {waiting ? '채점하는 중' : isLastTurnOfSession ? '답변 제출하고 마치기' : '답변 제출'}
         </Button>
       </div>
     </div>

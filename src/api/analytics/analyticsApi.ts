@@ -5,6 +5,9 @@ import type {
   findCohortRiskTraineeRates_Path,
   findCohortRiskTraineeRates_Query,
   findCohortRiskTraineeRates_Response,
+  findManagerHeatmap_Path,
+  findManagerHeatmap_Query,
+  findManagerHeatmap_Response,
   findCohortGroupGaps_Path,
   findCohortGroupGaps_Response,
   findCohortComparison_Path,
@@ -24,6 +27,17 @@ export const findCohortRiskTraineeRates = (
   unwrap<findCohortRiskTraineeRates_Response>(
     izClient.GET('/api/v0/cohorts/{cohortId}/analytics/risk-trainees', {
       params: { path: params.path, query: params.query ?? {} },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 매니저 히트맵 조회 — `GET /api/v0/cohorts/{cohortId}/analytics/heatmap` */
+export const findManagerHeatmap = (
+  params: { path: findManagerHeatmap_Path; query: findManagerHeatmap_Query } & RequestOptions,
+) =>
+  unwrap<findManagerHeatmap_Response>(
+    izClient.GET('/api/v0/cohorts/{cohortId}/analytics/heatmap', {
+      params: { path: params.path, query: params.query },
       signal: params.signal,
     }) as never,
   )

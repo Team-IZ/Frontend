@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react'
 import { Card } from '@/components/ui/Card'
 import { Progress } from '@/components/ui/Progress'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { Alert, AlertTitle, AlertAction } from '@/components/ui/Alert'
+import { Button } from '@/components/ui/Button'
 import type { findPlatformSummary_Response } from '@/api/organization/organizationTypes'
 import { formatBytes, formatChangeRate, formatCost } from '../labels'
 
@@ -35,6 +38,42 @@ function MetricCard({
       {sub && <p className="text-fg-subtle text-xs">{sub}</p>}
       {children}
     </Card>
+  )
+}
+
+/*
+  로딩·실패 — 카드 4장과 같은 `grid-cols-4`·`mb-5`, MetricCard와 같은 `Card size="sm"
+  gap-1.5 px-4` 래퍼를 그대로 써서 자리 높이를 맞춘다(CLS, 정의서 축 B1 근거: 2026-08-12
+  실측 CLS 0.0550). 실패는 카드 자리 대신 한 줄 Alert로 — 4칸짜리 dashed Empty는
+  이 좁은 높이에서 어색하다(manager/dashboard DashboardScreen.tsx의 밴드 실패 줄과 같은
+  Alert+AlertAction 조합을 따른다).
+*/
+export function OrgMetricsSkeleton() {
+  return (
+    <div className="mb-5 grid grid-cols-4 gap-4">
+      {Array.from({ length: 4 }, (_, i) => (
+        <Card key={i} size="sm" className="gap-1.5 px-4">
+          <Skeleton className="h-3 w-16" />
+          <Skeleton className="h-8 w-20" />
+          <Skeleton className="h-7 w-28" />
+          {/* AI 비용 카드에만 있는 예산 진행바(Progress) 자리 — 4장이 같은 높이로 늘어나므로(grid stretch) 전부에 둔다 */}
+          <Skeleton className="mt-2 h-1.5 w-full" />
+        </Card>
+      ))}
+    </div>
+  )
+}
+
+export function OrgMetricsFailed({ onRetry }: { onRetry: () => void }) {
+  return (
+    <Alert variant="danger" className="mb-5">
+      <AlertTitle>요약 정보를 불러오지 못했습니다</AlertTitle>
+      <AlertAction>
+        <Button variant="ghost" size="sm" onClick={onRetry}>
+          다시 시도
+        </Button>
+      </AlertAction>
+    </Alert>
   )
 }
 

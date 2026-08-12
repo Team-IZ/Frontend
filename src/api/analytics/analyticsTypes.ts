@@ -31,11 +31,25 @@ export type findCohortRiskTraineeRates_Errors =
   | 'COHORT_NOT_FOUND'
   | 'CLASSROOM_NOT_FOUND'
 
+// GET /api/v0/cohorts/{cohortId}/analytics/heatmap — 매니저 히트맵 조회
+export type findManagerHeatmap_Path = operations['findManagerHeatmap']['parameters']['path']
+export type findManagerHeatmap_Query = NonNullable<
+  operations['findManagerHeatmap']['parameters']['query']
+>
+export type findManagerHeatmap_Response =
+  operations['findManagerHeatmap']['responses'][200]['content']['application/json']
+export type findManagerHeatmap_Errors =
+  | 'HEATMAP_SCOPE_INVALID'
+  | 'HEATMAP_REVIEW_TRAINEE_REQUIRED'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'MANAGER_SCOPE_NOT_FOUND'
+
 // GET /api/v0/cohorts/{cohortId}/analytics/group-gaps — 집단 미달 목록 조회
 export type findCohortGroupGaps_Path = operations['findCohortGroupGaps']['parameters']['path']
 export type findCohortGroupGaps_Response =
   operations['findCohortGroupGaps']['responses'][200]['content']['application/json']
-export type findCohortGroupGaps_Item = findCohortGroupGaps_Response['gaps'][number]
+export type findCohortGroupGaps_Item = NonNullable<findCohortGroupGaps_Response['gaps']>[number]
 export type findCohortGroupGaps_Errors =
   | 'ANALYTICS_VIEWER_NOT_FOUND'
   | 'UNAUTHENTICATED'

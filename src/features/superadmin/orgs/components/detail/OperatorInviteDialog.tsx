@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   Dialog,
   DialogContent,
@@ -11,6 +12,7 @@ import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { Alert } from '@/components/ui/Alert'
 import { useInviteOperator } from '@/api/organization/useOrganizationMutations'
+import { organizationKeys } from '@/api/organization/organizationKeys'
 import { isApiError } from '@/api/_contract'
 import { EMAIL_PATTERN, EMAIL_INVALID_MESSAGE } from '#lib/validation.ts'
 
@@ -47,6 +49,7 @@ export default function OperatorInviteDialog({
   const [touched, setTouched] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const invite = useInviteOperator()
+  const queryClient = useQueryClient()
 
   // 다이얼로그는 닫아도 언마운트되지 않는다 — 열 때마다 비운다
   useEffect(() => {
@@ -69,8 +72,11 @@ export default function OperatorInviteDialog({
       await invite.mutateAsync({ path: { organizationId }, body: { email: trimmed } })
       onOpenChange(false)
     } catch (e) {
-      // 메일 실패는 초대 자체가 된 것이라 닫는다. 표의 그 행이 재발송을 안내한다
+      // 메일 실패는 초대 자체가 된 것이라 닫는다. 표의 그 행이 재발송을 안내한다.
+      // 실패라 useInviteOperator의 onSuccess 무효화가 안 돌아서 여기서 직접 무효화한다 —
+      // 안 하면 방금 생긴 "메일 발송 실패" 행이 다른 계기로 재조회되기 전까진 안 보인다(F6).
       if (isApiError(e) && e.code === 'INVITE_MAIL_FAILED') {
+        queryClient.invalidateQueries({ queryKey: organizationKeys.all })
         onOpenChange(false)
         return
       }

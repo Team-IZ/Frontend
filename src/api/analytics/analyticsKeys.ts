@@ -3,6 +3,8 @@
 import type {
   findCohortRiskTraineeRates_Path,
   findCohortRiskTraineeRates_Query,
+  findManagerHeatmap_Path,
+  findManagerHeatmap_Query,
   findCohortGroupGaps_Path,
   findCohortComparison_Path,
   findCohortComparison_Query,
@@ -23,6 +25,16 @@ export const analyticsKeys = {
     [
       ...analyticsKeys.all,
       'findCohortRiskTraineeRates',
+      params.path ?? null,
+      params.query ?? null,
+    ] as const,
+  findManagerHeatmap: (params: {
+    path: findManagerHeatmap_Path
+    query?: findManagerHeatmap_Query
+  }) =>
+    [
+      ...analyticsKeys.all,
+      'findManagerHeatmap',
       params.path ?? null,
       params.query ?? null,
     ] as const,

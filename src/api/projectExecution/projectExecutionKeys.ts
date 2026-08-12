@@ -8,6 +8,7 @@ import type {
   findConceptCandidates_Path,
   findProjectClassProgress_Path,
   findProjectClassProgress_Query,
+  findCurrentProject_Path,
 } from './projectExecutionTypes'
 
 /*
@@ -40,4 +41,6 @@ export const projectExecutionKeys = {
       params.path ?? null,
       params.query ?? null,
     ] as const,
+  findCurrentProject: (params: { path: findCurrentProject_Path }) =>
+    [...projectExecutionKeys.all, 'findCurrentProject', params.path ?? null] as const,
 }

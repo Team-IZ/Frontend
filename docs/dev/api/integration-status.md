@@ -1,7 +1,13 @@
 # API 연동 현황 — 역할·화면별 스냅샷
 
-> 기준: `origin/develop` c643a25(PR #182 머지, 2026-08-11) + 초대·가입 실서버 연동(이 세션, PR 미생성)까지, 코드 직접 확인(각 화면의 `_/api`·`mockData.ts`·`mockDb.ts` 존재 여부와 실제 import 대상).
-> "연동 완료"는 화면이 mock 파일 대신 `src/api/{domain}` 생성 훅(`useFind*`/`use*Mutation` 등)을 직접 호출하는 상태를 뜻한다. 자동 갱신 문서가 아니라 이 시점의 수동 스냅샷 — 다음에 다시 확인하려면 각 화면 폴더에 `mockData.ts`/`mockDb.ts`가 남아 있는지부터 보면 된다.
+> 기준: `develop` c80d3da(PR #188 머지, 2026-08-12) + TR-04 작업분(#189, PR 전)까지, 코드 직접 확인.
+> "연동 완료"는 화면이 mock 파일 대신 `src/api/{domain}` 생성 훅을 직접 호출하는 상태를 뜻한다.
+> 자동 갱신 문서가 아니라 이 시점의 수동 스냅샷 — 다시 확인하려면 각 화면 폴더에
+> `mockData.ts`/`mockDb.ts`가 남아 있는지부터 보면 된다.
+>
+> ⚠️ **스펙은 2026-08-12에 크게 늘었다(오퍼레이션 96 → 118).** 교육생 제출·분석·세션·리포트가
+> 통째로 왔지만 **`api:check` error 37건이라 아직 못 붙인다** — [17차 요청](../backend/backend-api-requests-17.md).
+> 아래 "미착수"는 **화면을 안 만들었다는 뜻이 아니라 실서버에 안 붙었다는 뜻**이다.
 
 ---
 
@@ -11,8 +17,8 @@
 |---|---|---|---|
 | 슈퍼어드민 | 3 | 3 | 전체 완료 |
 | 오퍼레이터 | 8 | 8 | 전체 완료 |
-| 매니저 | 10 | 0 | 전체 미착수(전부 mock) |
-| 교육생 | 4 | 0 | 전체 미착수(전부 mock) |
+| 매니저 | 10 | 0 | 전부 mock. **히트맵 API가 열렸다**(MG-02, 17차 R2에 걸림) |
+| 교육생 | 4 | 0 | 전부 mock. **API는 다 왔다** — 17차 R1~R3이 풀리면 바로 붙는다 |
 | 공통(인증) | 4 | 4 | 전체 완료(초대·가입은 렌더 확인 전) |
 
 ---
@@ -63,16 +69,21 @@
 
 ---
 
-## 교육생 — 전체 미착수(전부 mock)
+## 교육생 — 화면은 새 모델로 재작성, 연동은 대기
 
-| 화면 | 경로 | 상태 | 비고 |
-|---|---|---|---|
-| 홈(TR-01) | `/trainee/home` | mock | `mockDb.ts`(`buildHomeFixture`) |
-| 내 리포트 | `/trainee/report` | mock | `mockDb.ts`(`buildReportsFixture`) |
-| 세션(문제 풀이) | `/trainee/session` | mock | 스크립트 픽스처(`script.ts`), 인위적 지연(250ms)까지 흉내 |
-| 제출 | `/trainee/submission` | mock | `mockDb.ts`(`buildSubmissionFixture`) |
+**2026-08-11 확정된 채점 모델로 세션·리포트를 다시 만들었다**(#187 · #189).
+개념 3 × 단계 4(0~4단) × 시도 3 · 점수 0~5 · 힌트 2(요청·지급 합산) · 재시험 1회.
+규칙은 [tr-03-session.md](../screens/tr-03-session.md) · [tr-04-report.md](../screens/tr-04-report.md).
 
----
+| 화면 | 경로 | 상태 | 붙일 API | 비고 |
+|---|---|---|---|---|
+| 홈(TR-01) | `/trainee/home` | mock | `GET /assessment-rounds` ✅ | 44필드 플랫 + `representativeStatus` — 우리 8종 union보다 표현력이 높다 |
+| 제출(TR-02) | `/trainee/submission` | mock | `GET /projects/{id}/my-submission` ✅ · `POST /submissions/zip` ✅ · `repository-checks` ✅ | **status 6종이 요청 그대로 왔다** |
+| 세션(TR-03) | `/trainee/session` | mock | `assessment-sessions/*` ⚠️ | **7개 전부 `사용 불가`** — 계약은 확인됨 |
+| 내 리포트(TR-04) | `/trainee/report` | mock | `GET /reports` · `/{id}` · `/disclosure` ✅ | **16차로 열렸다**(unavailable → available) |
+
+**막는 것은 하나다** — `api:check` error 37건(enum 제약 없음 · required 9 · nullable 28).
+스펙을 커밋하면 CI가 그 종료코드로 실패하므로 `api/openapi.json`도 아직 안 올렸다.
 
 ## 공통(인증) — 전체 완료
 
@@ -81,7 +92,7 @@
 | 로그인·퀵로그인 | `/shared/login` | 완료 | `login()`(`@/api/auth/authApi`) |
 | 세션 조회·로그아웃·리프레시 | (전역) | 완료 | `useSession`(`GET /members/me`), `logout`, `/auth/refresh` |
 | 비밀번호 재설정 | `/shared/password-reset` | 완료 | 이슈 #178 → PR #179(2026-08-11 머지). `passwordResetApi.ts`가 `@/api/auth/authApi` 실호출 |
-| 초대·가입(회원가입) | `/invite/:token` | 완료(렌더 확인 2/6) | `inviteApi.ts`가 `resolveInvitation`·`signupManager`·`activateTrainee`·`resendAccountInvitation` 실호출로 교체됨. `mockDb.ts` 삭제 완료 |
+| 초대·가입(회원가입) | `/invite/:token` | 완료(렌더 확인 3/6) | 이슈 #183 → PR #184(2026-08-11 머지). `inviteApi.ts`가 `resolveInvitation`·`signupManager`·`activateTrainee`·`resendAccountInvitation` 실호출로 교체됨. `mockDb.ts` 삭제 완료 |
 | 개인정보 처리방침 | `/shared/privacy-policy` | N/A | 정적 콘텐츠 페이지, API 없음 |
 
 ⚠ **비밀번호 재설정은 연동됐지만 렌더 확인이 절반만 됐다.** 위변조 토큰(에러 경로)은 실제 렌더로 확인했지만, 정상 진입·확정 성공·`SAME_AS_CURRENT`·만료·이미사용(성공 경로 대부분)은 **유효한 토큰이 있는 계정이 있어야 확인 가능**한데 시드 계정 이메일이 전부 가짜 도메인(`org.com` 등)이라 아직 못 봤다 — 백엔드에 실제 이메일로 받을 수 있는 테스트 계정을 요청해 둔 상태(상세: `docs/dev/handoff.md` 최신 항목).
@@ -105,15 +116,20 @@
 
 ---
 
-## 백엔드가 막고 있는 나머지(`src/api/PENDING.md` 기준)
+## 백엔드가 막고 있는 나머지
+
+**리포트 4건은 16차 요청으로 해제됐다**(`unavailable` → `✅ 사용 가능`).
+2026-08-12 기준 남은 것은 아래다.
 
 | readiness | 엔드포인트 | 비고 |
 |---|---|---|
-| unavailable | `GET /reports/{reportId}/disclosure` | 내 리포트 공개 상태 조회 |
-| unavailable | `PUT /reports/{reportId}/disclosure` | 리포트 공개 범위 설정 |
+| unavailable | `POST /assessment-sessions/{id}/start` · `/answers` · `/hints` · `/activity` | **TR-03 세션 전량** |
+| unavailable | `GET /assessment-sessions/current` · `/problems/{problemNo}` | 〃 |
+| unavailable | `PATCH /assessment-attempts/{id}/validity` | 무효 응시 판정(매니저) |
+| unavailable | `POST /submissions` (GitHub URL) | ZIP(`/submissions/zip`)은 열려 있다 |
+| unavailable | `GET /reports/managed` · `/analytics/risk-signals` · `/timeline` · `/notifications/inbox` · `/analytics/concept-scope` | 매니저 화면들 |
 | unavailable | `POST /organizations/{organizationId}/purge` | 기관 파기 요청 |
-| unavailable | `GET /reports` | 내 리포트 전량 조회(교육생) |
-| unavailable | `GET /reports/{reportId}` | 리포트 단건 조회 |
-| unavailable | `GET /reports/managed` | 담당 반 리포트 목록 조회(매니저) |
 
-이 6건은 operator 화면엔 안 걸린다(operator는 `class-diagnosis` 단일 엔드포인트만 씀) — 교육생·매니저의 리포트 조회 화면이 나중에 연동될 때 걸릴 항목들.
+**매니저 히트맵(`/analytics/heatmap`)은 열렸다** — 매니저 6화면 중 처음 붙일 수 있는 것이지만
+`ManagerHeatmapResponse`·`Cell`·`Row`·`Scope`가 17차 R2(`required` 누락)에 걸려 있어
+지금 붙이면 전 필드가 optional이 된다. **R2 해결 후가 낫다.**

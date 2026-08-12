@@ -2,9 +2,10 @@
 
 import { useQuery } from '@tanstack/react-query'
 import type { QueryOptions } from '@/api/_contract'
-import { findTraineeRoster, getCurrentMember, findManagers } from './memberApi'
+import { getMyCommitEmail, findTraineeRoster, getCurrentMember, findManagers } from './memberApi'
 import { memberKeys } from './memberKeys'
 import type {
+  getMyCommitEmail_Response,
   findTraineeRoster_Path,
   findTraineeRoster_Query,
   findTraineeRoster_Response,
@@ -12,6 +13,15 @@ import type {
   findManagers_Query,
   findManagers_Response,
 } from './memberTypes'
+
+/** 내 커밋 이메일 조회 */
+export function useGetMyCommitEmail(options?: QueryOptions<getMyCommitEmail_Response>) {
+  return useQuery({
+    queryKey: memberKeys.getMyCommitEmail(),
+    queryFn: ({ signal }) => getMyCommitEmail({ signal }),
+    ...options,
+  })
+}
 
 /** 기수 교육생 명단 조회 */
 export function useFindTraineeRoster(

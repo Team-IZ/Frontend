@@ -13,6 +13,7 @@ import type {
 */
 export const memberKeys = {
   all: ['member'] as const,
+  getMyCommitEmail: () => [...memberKeys.all, 'getMyCommitEmail'] as const,
   findTraineeRoster: (params: { path: findTraineeRoster_Path; query?: findTraineeRoster_Query }) =>
     [...memberKeys.all, 'findTraineeRoster', params.path ?? null, params.query ?? null] as const,
   getCurrentMember: () => [...memberKeys.all, 'getCurrentMember'] as const,

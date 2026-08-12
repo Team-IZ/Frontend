@@ -32,7 +32,12 @@ import SettingsTab from './components/detail/SettingsTab'
 
 export default function OrgDetailScreen() {
   const { id = '' } = useParams()
-  const { data: org, isPending, isError } = useFindOrganization({ path: { organizationId: id } })
+  const {
+    data: org,
+    isPending,
+    isError,
+    refetch,
+  } = useFindOrganization({ path: { organizationId: id } })
 
   if (isPending) {
     return (
@@ -50,8 +55,10 @@ export default function OrgDetailScreen() {
   }
 
   /*
-    404와 그 밖의 실패를 가르지 않는다 — 슈퍼어드민이 목록에서 눌러 들어오는 화면이라
-    "없는 기관"은 삭제됐거나 주소를 직접 고친 경우뿐이고, 둘 다 할 수 있는 일이 같다.
+    404와 그 밖의 실패를 가르지 않는다 — `isError`는 원인을 안 가른다. 문구는 "없는 기관"
+    가정 그대로 두되(대부분 그 경우다), 일시적 5xx·네트워크 장애도 같은 분기를 타므로
+    재시도 수단은 다른 탭들과 똑같이 둔다(SA-02 하드닝 2라운드 A2 — 렌더 확인 결과 실제로
+    새로고침 말고는 복구할 방법이 없었다).
   */
   if (isError) {
     return (
@@ -67,6 +74,9 @@ export default function OrgDetailScreen() {
           <Card className="items-center gap-2 p-10 text-center">
             <p className="text-lg font-semibold">기관을 찾을 수 없습니다</p>
             <p className="text-fg-subtle text-sm">삭제되었거나 잘못된 주소일 수 있습니다.</p>
+            <Button variant="ghost" size="sm" onClick={() => refetch()}>
+              다시 시도
+            </Button>
           </Card>
         </div>
       </ConsoleShell>

@@ -42,7 +42,7 @@ export default function DashboardScreen() {
     기수는 서버에 물어본다(`stores/cohortScope`). 목일 때 쓰던 상수 `'7'`은 UUID가 아니라
     실서버에서 안 통한다. **정해지기 전에는 조회가 안 나간다.**
   */
-  const { cohortId, cohortName, failed: cohortFailed } = useCohortId()
+  const { cohortId, cohortName, failed: cohortFailed, cohorts, selectCohort } = useCohortId()
   const page = useDashboard(cohortId)
   /** 값이 온 블록만 꺼낸다 — 다른 블록의 문구가 이 값을 참조한다 */
   const pipe = page.pipeline?.state === 'ok' ? page.pipeline.value : null
@@ -50,7 +50,12 @@ export default function DashboardScreen() {
   const todos = page.todos?.state === 'ok' ? page.todos.value : null
 
   return (
-    <ConsoleShell role="operator" cohort={cohortName ?? ''}>
+    <ConsoleShell
+      role="operator"
+      cohort={cohortName ?? ''}
+      cohorts={cohorts}
+      onCohortChange={selectCohort}
+    >
       {/*
         **제목 줄은 조회를 기다리지 않는다**(async-states §1-3) — 통째로 없다가 생기면
         도착 순간 페이지 전체가 아래로 밀린다. 기수 이름은 스코프가 알고(`loadScope`),

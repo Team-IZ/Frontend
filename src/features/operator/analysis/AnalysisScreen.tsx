@@ -60,7 +60,7 @@ import type { AnalysisTab, Level, RoundSort } from './_/api/types'
 
 export default function AnalysisScreen() {
   /* 기수는 서버에 물어본다(`stores/cohortScope`) — 정해지기 전에는 조회가 안 나간다 */
-  const { cohortId, cohortName, failed: cohortFailed } = useCohortId()
+  const { cohortId, cohortName, failed: cohortFailed, cohorts, selectCohort } = useCohortId()
   const [tab, setTab] = useState<AnalysisTab>('rounds')
   const [level, setLevel] = useState<Level>('class')
   /*
@@ -151,7 +151,12 @@ export default function AnalysisScreen() {
     (`ConsoleShell` prop 주석). 오퍼레이터 5화면이 같다.
   */
   return (
-    <ConsoleShell role="operator" cohort={cohortName ?? ''}>
+    <ConsoleShell
+      role="operator"
+      cohort={cohortName ?? ''}
+      cohorts={cohorts}
+      onCohortChange={selectCohort}
+    >
       <PageHeader breadcrumb={crumb} title="분석" />
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as AnalysisTab)}>

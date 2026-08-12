@@ -68,7 +68,7 @@ export default function ProjectDetailScreen() {
     (딥링크·새로고침·다른 기수 회차 링크) **화면이 두 기수를 섞어 보여준다** —
     10기 회차를 열었는데 9기의 교안 목록과 형제 회차를 조회했다. 렌더로 잡았다.
   */
-  const { cohortName } = useCohortId()
+  const { cohortName, cohorts, selectCohort } = useCohortId()
   const [pickOpen, setPickOpen] = useState(false)
   const [curriculaOpen, setCurriculaOpen] = useState(false)
   const [requirementsOpen, setRequirementsOpen] = useState(false)
@@ -133,7 +133,12 @@ export default function ProjectDetailScreen() {
         문구·재시도 여부는 `errorCopy`가 `status`·코드를 보고 정한다.
       */
       return (
-        <ConsoleShell role="operator" cohort={cohortName ?? ''}>
+        <ConsoleShell
+          role="operator"
+          cohort={cohortName ?? ''}
+          cohorts={cohorts}
+          onCohortChange={selectCohort}
+        >
           <ErrorState
             error={project.error}
             subject="회차"
@@ -162,7 +167,12 @@ export default function ProjectDetailScreen() {
     const TabSkeleton =
       active === 'status' ? StatusSkeleton : active === 'config' ? ConfigSkeleton : OverviewSkeleton
     return (
-      <ConsoleShell role="operator" cohort={cohortName ?? ''}>
+      <ConsoleShell
+        role="operator"
+        cohort={cohortName ?? ''}
+        cohorts={cohorts}
+        onCohortChange={selectCohort}
+      >
         <div aria-hidden className="mb-4">
           <Skeleton className="h-3 w-20" />
           <Skeleton className="mt-3 h-7 w-52" />
@@ -188,7 +198,12 @@ export default function ProjectDetailScreen() {
   const goTab = (t: ProjectTab) => navigate(`/operator/projects/${id}/${t}`, { replace: true })
 
   return (
-    <ConsoleShell role="operator" cohort={cohortName ?? ''}>
+    <ConsoleShell
+      role="operator"
+      cohort={cohortName ?? ''}
+      cohorts={cohorts}
+      onCohortChange={selectCohort}
+    >
       <DetailHeader project={data} now={getToday()} />
 
       {notice && (

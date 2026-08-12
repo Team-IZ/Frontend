@@ -94,7 +94,7 @@ export default function ProjectListScreen() {
     (`cohortScope.ts`). **정해지기 전에는 아무 조회도 안 나간다** — 없는 기수로 부르면
     실패 화면이 잠깐 스쳤다가 사라진다.
   */
-  const { cohortId, cohortName, failed: cohortFailed } = useCohortId()
+  const { cohortId, cohortName, failed: cohortFailed, cohorts, selectCohort } = useCohortId()
 
   /*
     **조회 셋이 각자 캐시된다.** 목록으로 돌아왔을 때 교안·스코프를 다시 묻지 않고,
@@ -139,7 +139,12 @@ export default function ProjectListScreen() {
   const narrowed = isNarrowed({ ...filters, search })
 
   return (
-    <ConsoleShell role="operator" cohort={cohortName ?? ''}>
+    <ConsoleShell
+      role="operator"
+      cohort={cohortName ?? ''}
+      cohorts={cohorts}
+      onCohortChange={selectCohort}
+    >
       <PageHeader
         // 기수 이름을 하드코딩했었다 — 기수를 바꾸면 빵부스러기만 옛 기수를 가리킨다
         breadcrumb={cohortName ? `프로젝트 › ${cohortName}` : '프로젝트'}

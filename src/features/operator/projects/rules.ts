@@ -1,4 +1,4 @@
-import type { ProjectStatus } from './types'
+import type { Curriculum, ProjectStatus } from './types'
 
 /*
   기획이 정한 규칙과, 그 규칙에서 나오는 표시값.
@@ -15,6 +15,65 @@ import type { ProjectStatus } from './types'
  * **유일한 비교 축**이 된다. 미만이면 문항을 만들 수 없고, 초과하면 축이 어긋난다.
  */
 export const CONCEPT_COUNT = 3
+
+/**
+ * 이 교안을 회차에 붙일 수 있나 — **분석이 끝난 것만** 고를 수 있다.
+ *
+ * ─── 왜 이 판정이 필요한가 ──────────────────────────────────────
+ * 검증 개념은 교안 분석 결과(가르친 항목)에서 나온다. 분석 전 교안을 고르면
+ * 후보 조회(`GET /curricula/{id}/sections`)가 **409 `CURRICULUM_ANALYSIS_NOT_COMPLETED`**
+ * 로 떨어져 개념을 못 고르고, 그러면 회차 생성이 그 자리에서 막힌다.
+ *
+ * ⚠ 전에는 `pageCount == null`로 **추측**했다. 서버가 상태를 안 줘서 쪽수 유무로
+ * 대신 판정한 것인데, 「쪽수를 아직 모른다」와 「분석 중」은 다른 말이고 **실패한 교안과도
+ * 구분이 안 됐다**(18차 R2로 요청해 `analysisStatus`를 받았다).
+ *
+ * @returns 못 고르는 이유. 고를 수 있으면 `null`
+ */
+export function curriculumBlockedReason(
+  c: Pick<Curriculum, 'analysisStatus' | 'teachesCount'>,
+): string | null {
+  /*
+    `null`(분석 전)과 `FAILED`(분석 실패)를 갈라 쓴다 — **전자는 기다리면 되고 후자는
+    다시 올려야 한다.** 한 문구로 접으면 사용자가 무엇을 해야 하는지 모른다.
+  */
+  if (c.analysisStatus === null) return '분석 전'
+  if (c.analysisStatus === 'FAILED') return '분석 실패 · 다시 올려 주세요'
+  if (c.analysisStatus !== 'SUCCEEDED') return '분석 중 · 끝나면 고를 수 있음'
+  /*
+    분석은 됐는데 가르친 항목이 3건 미만이면 이 교안만으로는 개념을 채울 수 없다.
+    **막지는 않는다** — 다른 교안과 같이 고르면 3건이 된다. 사실만 알린다.
+  */
+  return null
+}
+
+/**
+ * 고를 수 있는 것과 없는 것으로 가른다 — **순서가 아니라 두 무리다.**
+ *
+ * ─── 왜 서버에서 안 거르나 ──────────────────────────────────────
+ * `analysisStatus`가 이미 응답에 있어 **거르는 것은 여기서 공짜**다. 서버에
+ * `?analysisStatus=SUCCEEDED` 같은 필터를 만들면 왕복만 하나 늘어나는데, 이 지연은
+ * 왕복 수가 지배한다(응답 3,502B와 488B의 TTFB가 같았다 — 22차 R3).
+ *
+ * **그리고 숨기면 안 된다.** `FAILED`는 *다시 올려야 하는* 상태이고 `PENDING`은
+ * *방금 올린* 것이다 — 목록에서 사라지면 「업로드가 실패했나」가 되고, 못 고르는 이유를
+ * 물어볼 자리가 없어진다. OP-02가 비교 불가한 기수를 같은 이유로 목록에 남긴다.
+ *
+ * 그래서 **감추지 않고 접는다** — 위에는 고를 수 있는 것만, 아래는 열어서 본다.
+ */
+export function splitByAvailability<T extends Pick<Curriculum, 'analysisStatus' | 'teachesCount'>>(
+  curricula: readonly T[],
+): { ready: T[]; blocked: T[] } {
+  const ready: T[] = []
+  const blocked: T[] = []
+  for (const c of curricula) (curriculumBlockedReason(c) ? blocked : ready).push(c)
+  return { ready, blocked }
+}
+
+/** 이 교안 하나로 검증 개념 3건을 채울 수 있나. 막는 판정이 아니라 **알리는** 값이다 */
+export function coversConceptQuota(c: Pick<Curriculum, 'teachesCount'>): boolean {
+  return c.teachesCount >= CONCEPT_COUNT
+}
 
 /**
  * 검증 개념이 확정됐나 — **문항이 만들어졌나**와 같은 말이다(OP-04 §6).

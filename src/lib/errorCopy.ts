@@ -61,6 +61,23 @@ const BY_CODE: Record<string, (ctx: Ctx) => ErrorCopy> = {
     retry: false,
     tone: 'pending',
   }),
+  /*
+    교안 분석이 아직 안 끝났다 — **실패가 아니라 「아직」이다.**
+
+    한때 이 코드가 **503**이라 전역 재시도(5xx 3회)에 걸렸고, 그 재시도가 동시에 나가
+    프록시 결함(15차 R3)을 밟아 `net::ERR_FAILED`가 됐다. 화면에는 **응답이 아예 없는 것**
+    처럼 보였다 — 「무응답」이라고 요청서를 썼는데 실제로는 즉시 오는 503이었다(18차 R1).
+    409로 내려와서 이제 여기서 판정한다.
+
+    화면은 분석 안 된 교안을 애초에 못 고르게 막지만(`rules.curriculumBlockedReason`),
+    고른 뒤 분석이 만료되거나 다른 사람이 지운 경우가 남는다.
+  */
+  CURRICULUM_ANALYSIS_NOT_COMPLETED: () => ({
+    title: '교안 분석이 아직 끝나지 않았습니다',
+    description: '분석이 끝나면 그 교안에서 검증 개념을 고를 수 있습니다.',
+    retry: false,
+    tone: 'pending',
+  }),
 }
 
 export function errorCopy(error: unknown, ctx: Ctx): ErrorCopy {

@@ -238,7 +238,7 @@ export default function ProjectListScreen() {
             <EmptyHeader>
               <EmptyTitle>
                 {/* 조회에 나간 검색어를 쓴다 — 입력 원본이면 아직 안 걸린 글자를 인용한다 */}
-                {search ? `"${search}"와 맞는 회차가 없습니다` : '조건에 맞는 회차가 없습니다'}
+                {search ? `"${search}"에 맞는 회차가 없습니다` : '조건에 맞는 회차가 없습니다'}
               </EmptyTitle>
               <EmptyDescription>전체 {totalAll}개에서 찾았습니다.</EmptyDescription>
             </EmptyHeader>

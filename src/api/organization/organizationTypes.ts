@@ -14,6 +14,7 @@ export type findOrganizations_Query = NonNullable<
 export type findOrganizations_Response =
   operations['findOrganizations']['responses'][200]['content']['application/json']
 export type findOrganizations_Item = NonNullable<findOrganizations_Response['content']>[number]
+export type findOrganizations_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // POST /api/v0/organizations — 기관 생성 및 기본 운영 정책 초기화
 export type createOrganization_Body = NonNullable<
@@ -22,7 +23,8 @@ export type createOrganization_Body = NonNullable<
 export type createOrganization_Response =
   operations['createOrganization']['responses'][201]['content']['application/json']
 export type createOrganization_Item = NonNullable<createOrganization_Response['operators']>[number]
-export type createOrganization_Errors = 'ORG_NAME_TAKEN' | 'ORG_IDEMPOTENCY_CONFLICT'
+export type createOrganization_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'ORG_NAME_TAKEN' | 'ORG_IDEMPOTENCY_CONFLICT'
 
 // POST /api/v0/organizations/{organizationId}/restore — 기관 복구
 export type restoreOrganization_Path = operations['restoreOrganization']['parameters']['path']
@@ -32,7 +34,12 @@ export type restoreOrganization_Item = NonNullable<
   restoreOrganization_Response['operators']
 >[number]
 export type restoreOrganization_Errors =
-  'ORG_NOT_FOUND' | 'ORG_NOT_DELETED' | 'ORG_ALREADY_DELETED' | 'ORG_NAME_TAKEN'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'ORG_NOT_FOUND'
+  | 'ORG_NOT_DELETED'
+  | 'ORG_ALREADY_DELETED'
+  | 'ORG_NAME_TAKEN'
 
 // POST /api/v0/organizations/{organizationId}/operators/invitations — 오퍼레이터 초대
 export type inviteOperator_Path = operations['inviteOperator']['parameters']['path']
@@ -41,7 +48,8 @@ export type inviteOperator_Body = NonNullable<
 >['content']['application/json']
 export type inviteOperator_Response =
   operations['inviteOperator']['responses'][201]['content']['application/json']
-export type inviteOperator_Errors = 'NOT_FOUND' | 'ALREADY_INVITED' | 'INVITE_MAIL_FAILED'
+export type inviteOperator_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'NOT_FOUND' | 'ALREADY_INVITED' | 'INVITE_MAIL_FAILED'
 
 // POST /api/v0/organizations/{organizationId}/operators/invitations/{tokenId}/resend — 오퍼레이터 초대 재발송
 export type resendOperatorInvitation_Path =
@@ -51,13 +59,15 @@ export type resendOperatorInvitation_Response =
 export type resendOperatorInvitation_Item = NonNullable<
   resendOperatorInvitation_Response['content']
 >[number]
-export type resendOperatorInvitation_Errors = 'OPERATOR_INVITATION_NOT_FOUND' | 'INVITE_MAIL_FAILED'
+export type resendOperatorInvitation_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'OPERATOR_INVITATION_NOT_FOUND' | 'INVITE_MAIL_FAILED'
 
 // GET /api/v0/organizations/{organizationId} — 기관 상세 조회
 export type findOrganization_Path = operations['findOrganization']['parameters']['path']
 export type findOrganization_Response =
   operations['findOrganization']['responses'][200]['content']['application/json']
 export type findOrganization_Item = NonNullable<findOrganization_Response['operators']>[number]
+export type findOrganization_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // DELETE /api/v0/organizations/{organizationId} — 기관 soft-delete
 export type deleteOrganization_Path = operations['deleteOrganization']['parameters']['path']
@@ -68,6 +78,8 @@ export type deleteOrganization_Response =
   operations['deleteOrganization']['responses'][200]['content']['application/json']
 export type deleteOrganization_Errors =
   | 'ORG_DELETE_CONFIRM_MISMATCH'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
   | 'ORG_NOT_FOUND'
   | 'ORG_ALREADY_DELETED'
   | 'ORG_POLICY_NOT_FOUND'
@@ -81,6 +93,7 @@ export type updateOrganization_Body = NonNullable<
 export type updateOrganization_Response =
   operations['updateOrganization']['responses'][200]['content']['application/json']
 export type updateOrganization_Item = NonNullable<updateOrganization_Response['operators']>[number]
+export type updateOrganization_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // PATCH /api/v0/organizations/{organizationId}/operators/{memberId}/status — 오퍼레이터 계정 정지 / 재활성
 export type updateOperatorStatus_Path = operations['updateOperatorStatus']['parameters']['path']
@@ -93,13 +106,19 @@ export type updateOperatorStatus_Item = NonNullable<
   updateOperatorStatus_Response['content']
 >[number]
 export type updateOperatorStatus_Errors =
-  'VALIDATION_FAILED' | 'BAD_REQUEST' | 'OPERATOR_NOT_FOUND' | 'LAST_OPERATOR'
+  | 'VALIDATION_FAILED'
+  | 'BAD_REQUEST'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'OPERATOR_NOT_FOUND'
+  | 'LAST_OPERATOR'
 
 // GET /api/v0/organizations/{organizationId}/operators — 기관 오퍼레이터 계정 목록 조회
 export type findOperators_Path = operations['findOperators']['parameters']['path']
 export type findOperators_Response =
   operations['findOperators']['responses'][200]['content']['application/json']
 export type findOperators_Item = NonNullable<findOperators_Response['content']>[number]
+export type findOperators_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // GET /api/v0/organizations/{organizationId}/cohorts — 기관 기수 목록 조회 (읽기전용)
 export type findOrganizationCohorts_Path =
@@ -109,10 +128,12 @@ export type findOrganizationCohorts_Response =
 export type findOrganizationCohorts_Item = NonNullable<
   findOrganizationCohorts_Response['content']
 >[number]
+export type findOrganizationCohorts_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // GET /api/v0/organizations/summary — 플랫폼 전체 집계 조회
 export type findPlatformSummary_Response =
   operations['findPlatformSummary']['responses'][200]['content']['application/json']
+export type findPlatformSummary_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // GET /api/v0/organizations/name-availability — 기관명 중복 확인
 export type checkNameAvailability_Query = NonNullable<
@@ -120,10 +141,12 @@ export type checkNameAvailability_Query = NonNullable<
 >
 export type checkNameAvailability_Response =
   operations['checkNameAvailability']['responses'][200]['content']['application/json']
+export type checkNameAvailability_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // DELETE /api/v0/organizations/{organizationId}/operators/invitations/{tokenId} — 오퍼레이터 초대 취소
 export type cancelInvitation_Path = operations['cancelInvitation']['parameters']['path']
 export type cancelInvitation_Response =
   operations['cancelInvitation']['responses'][200]['content']['application/json']
 export type cancelInvitation_Item = NonNullable<cancelInvitation_Response['content']>[number]
-export type cancelInvitation_Errors = 'OPERATOR_INVITATION_NOT_FOUND'
+export type cancelInvitation_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'OPERATOR_INVITATION_NOT_FOUND'

@@ -6,6 +6,23 @@
 
 const pad2 = (n: number) => String(n).padStart(2, '0')
 
+/**
+ * 조사를 받침에 맞춰 붙인다 — `withParticle('회차', '을', '를')` → `회차를`.
+ *
+ * **세 번째 도메인이 같은 것을 필요로 해서 여기로 올렸다**(D14). `operator/projects`가
+ * 먼저 만들었고 `manager/projects`가 목 데이터 안에 복붙했으며(교차 import가 막혀서),
+ * `lib/errorCopy`가 세 번째다 — 실패 문구가 대상 이름을 받아 쓰기 때문이다.
+ *
+ * 한글이 아닌 글자로 끝나면(영문·숫자) 받침 없는 쪽을 쓴다 — `없음`이 아니라 기본값이다.
+ */
+export function withParticle(name: string, withBatchim: string, without: string): string {
+  const last = name.trim().at(-1) ?? ''
+  const code = last.charCodeAt(0)
+  const isHangul = code >= 0xac00 && code <= 0xd7a3
+  const hasBatchim = isHangul && (code - 0xac00) % 28 !== 0
+  return `${name}${hasBatchim ? withBatchim : without}`
+}
+
 /** "07-14 18:00" */
 export function formatDateTime(iso: string): string {
   const d = new Date(iso)

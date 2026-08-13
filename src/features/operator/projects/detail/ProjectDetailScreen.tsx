@@ -3,8 +3,10 @@ import { useLocation, useNavigate, useParams } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
-import { Spinner } from '@/components/ui/Spinner'
+import ErrorState from '@/components/common/ErrorState'
+import { SlowNotice } from '@/components/common/Loading'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { ConfigSkeleton, OverviewSkeleton, StatusSkeleton } from './components/DetailSkeleton'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import {
   getToday,
@@ -66,7 +68,7 @@ export default function ProjectDetailScreen() {
     (딥링크·새로고침·다른 기수 회차 링크) **화면이 두 기수를 섞어 보여준다** —
     10기 회차를 열었는데 9기의 교안 목록과 형제 회차를 조회했다. 렌더로 잡았다.
   */
-  const { cohortName } = useCohortId()
+  const { cohortName, cohorts, selectCohort } = useCohortId()
   const [pickOpen, setPickOpen] = useState(false)
   const [curriculaOpen, setCurriculaOpen] = useState(false)
   const [requirementsOpen, setRequirementsOpen] = useState(false)
@@ -125,25 +127,63 @@ export default function ProjectDetailScreen() {
   */
   if (!data) {
     if (project.isError) {
+      /*
+        **모든 실패를 "찾을 수 없습니다"로 쓰지 않는다.** 서버가 500을 주는 동안 주소가
+        틀렸다고 말하면 사용자가 **없는 문제를 고치러 간다**(async-states §3-1).
+        문구·재시도 여부는 `errorCopy`가 `status`·코드를 보고 정한다.
+      */
       return (
-        <ConsoleShell role="operator" cohort={cohortName}>
-          <Empty>
-            <EmptyHeader>
-              <EmptyTitle>회차를 찾을 수 없습니다</EmptyTitle>
-              <EmptyDescription>지워졌거나 주소가 잘못됐을 수 있습니다.</EmptyDescription>
-            </EmptyHeader>
-            <Button variant="ghost" onClick={() => navigate('/operator/projects')}>
-              프로젝트 목록으로
-            </Button>
-          </Empty>
+        <ConsoleShell
+          role="operator"
+          cohort={cohortName ?? ''}
+          cohorts={cohorts}
+          onCohortChange={selectCohort}
+        >
+          <ErrorState
+            error={project.error}
+            subject="회차"
+            onRetry={() => project.refetch()}
+            retrying={project.isFetching}
+            action={
+              <Button variant="ghost" onClick={() => navigate('/operator/projects')}>
+                프로젝트 목록으로
+              </Button>
+            }
+          />
         </ConsoleShell>
       )
     }
+    /*
+      **OP-01·02·03과 같이 스켈레톤이다.** 여기만 스피너로 남아 있었다 — 같은 콘솔
+      안에서 기다리는 모양이 화면마다 다를 이유가 없다(async-states §1-2).
+
+      **주소가 가리키는 탭의 모양으로** 그린다. 개요 자리에 현황 모양을 그리면 도착 순간
+      구조가 통째로 바뀌어 스피너와 다를 것이 없다.
+
+      **스피너를 같이 두지 않는다.** 스켈레톤이 이미 「기다려」를 말하고 있어서 밑에
+      스피너가 또 돌면 어수선하기만 하다. 다만 12초를 넘기면 그 사실은 말해야 한다 —
+      없는 회차는 서버가 404 대신 매단다(18차 R7).
+    */
+    const TabSkeleton =
+      active === 'status' ? StatusSkeleton : active === 'config' ? ConfigSkeleton : OverviewSkeleton
     return (
-      <ConsoleShell role="operator" cohort={cohortName}>
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" aria-label="회차를 불러오는 중" />
+      <ConsoleShell
+        role="operator"
+        cohort={cohortName ?? ''}
+        cohorts={cohorts}
+        onCohortChange={selectCohort}
+      >
+        <div aria-hidden className="mb-4">
+          <Skeleton className="h-3 w-20" />
+          <Skeleton className="mt-3 h-7 w-52" />
+          <div className="mt-5 flex gap-5">
+            {TABS.map((t) => (
+              <Skeleton key={t.value} className="h-4 w-9" />
+            ))}
+          </div>
         </div>
+        <TabSkeleton />
+        <SlowNotice />
       </ConsoleShell>
     )
   }
@@ -158,7 +198,12 @@ export default function ProjectDetailScreen() {
   const goTab = (t: ProjectTab) => navigate(`/operator/projects/${id}/${t}`, { replace: true })
 
   return (
-    <ConsoleShell role="operator" cohort={cohortName}>
+    <ConsoleShell
+      role="operator"
+      cohort={cohortName ?? ''}
+      cohorts={cohorts}
+      onCohortChange={selectCohort}
+    >
       <DetailHeader project={data} now={getToday()} />
 
       {notice && (
@@ -183,6 +228,7 @@ export default function ProjectDetailScreen() {
             nextDueAt={next?.endDate ?? null}
             nextProjectName={next?.name ?? null}
             onEditSchedule={() => setScheduleOpen(true)}
+            onGoConfig={() => goTab('config')}
           />
         </TabsContent>
 
@@ -190,7 +236,12 @@ export default function ProjectDetailScreen() {
           <StatusTab
             project={data}
             report={status.data}
-            loading={status.isPending}
+            /*
+              데이터 유무로 판정한다 — `enabled`가 조건부라 `isLoading`은 조회가 시작되기
+              전에도 `false`다. 개념 미확정이면 `StatusTab`이 그 앞에서 반환하므로
+              「영원히 로딩」이 되지 않는다.
+            */
+            loading={!status.data && !status.isError}
             failed={status.isError}
             onRetry={() => status.refetch()}
             onGoConfig={() => goTab('config')}
@@ -213,7 +264,12 @@ export default function ProjectDetailScreen() {
         onOpenChange={setPickOpen}
         project={data}
         candidates={candidates.data ?? []}
-        loadingCandidates={candidates.isPending}
+        /*
+          ⚠ `isLoading`은 **모달을 열기 전에도 false**다(`enabled: pickOpen`) — 조회가
+          시작조차 안 했기 때문이다. 그러면 여는 순간 한 프레임 동안 「후보가 없습니다」가
+          스친다. 판정은 **데이터 유무**로 한다(async-states §1-9).
+        */
+        loadingCandidates={!candidates.data && !candidates.isError}
         curricula={curricula.data ?? []}
       />
 
@@ -222,6 +278,7 @@ export default function ProjectDetailScreen() {
         onOpenChange={setCurriculaOpen}
         project={data}
         curricula={curricula.data ?? []}
+        loading={!curricula.data && !curricula.isError}
       />
 
       <EditRequirementsDialog

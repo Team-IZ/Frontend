@@ -1,3 +1,4 @@
+import StaleBlock from '../../_shared/StaleBlock'
 import { useEffect, useState } from 'react'
 import { TriangleAlertIcon } from 'lucide-react'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
@@ -12,6 +13,7 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { useDebounced } from '@/lib/useDebounced'
+import { listQueryOptions } from '../../_shared/listQuery'
 import { useFindManagers } from '@/api/member/useMemberQueries'
 import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useGetCurrentMember } from '@/api/member/useMemberQueries'
@@ -29,7 +31,8 @@ import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
 import ResultBanner from '../_/components/ResultBanner'
 import { useActionResult } from '../_/actionResult'
-import { Loading, LoadFailed } from '../_/components/AsyncState'
+import TableSkeleton from '@/components/common/TableSkeleton'
+import ErrorState from '@/components/common/ErrorState'
 import { ManagerStatusBadge } from '../_/components/StatusBadges'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
 import { ALL, asQuery, withAll } from '../_/filterState'
@@ -112,16 +115,20 @@ export default function ManagersTab({ onCount }: Props) {
   const { data: me } = useGetCurrentMember()
   const organizationId = me?.organizationId
 
-  const page = useFindManagers({
-    query: {
-      // **화면이 늘 기수를 보낸다** — 상단 스위처가 가리키는 기수가 이 목록의 범위다
-      cohortId: scope.cohortId,
-      query: query.trim() || undefined,
-      status: asQuery<AccountStatus>(status),
-      sort,
-      size: PAGE_SIZE,
+  const page = useFindManagers(
+    {
+      query: {
+        // **화면이 늘 기수를 보낸다** — 상단 스위처가 가리키는 기수가 이 목록의 범위다
+        cohortId: scope.cohortId,
+        query: query.trim() || undefined,
+        status: asQuery<AccountStatus>(status),
+        sort,
+        size: PAGE_SIZE,
+      },
     },
-  })
+    /* 조건·페이지를 바꿔도 표를 비우지 않는다 — `_shared/listQuery` 주석 참고 */
+    listQueryOptions,
+  )
 
   /*
     **담당 없는 반은 반 목록이 안다.** 목에서는 매니저 응답이 `unstaffedClasses`를 실어
@@ -254,13 +261,21 @@ export default function ManagersTab({ onCount }: Props) {
         />
       </div>
 
-      {page.isPending ? (
-        <Loading label="매니저를 불러오는 중" />
+      {page.isLoading ? (
+        <TableSkeleton
+          rows={PAGE_SIZE}
+          cols={['w-28', 'w-52', 'w-20', 'w-36', 'w-24', 'w-24', 'w-32', 'w-40']}
+        />
       ) : page.isError ? (
-        <LoadFailed label="매니저를 불러오지 못했습니다" onRetry={() => void page.refetch()} />
-      ) : page.data.content.length === 0 ? (
+        <ErrorState
+          error={page.error}
+          subject="매니저"
+          onRetry={() => void page.refetch()}
+          retrying={page.isFetching}
+        />
+      ) : !page.data || page.data.content.length === 0 ? (
         narrowed ? (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
                 {query ? `"${query}"와 맞는 매니저가 없습니다` : '조건에 맞는 매니저가 없습니다'}
@@ -278,7 +293,7 @@ export default function ManagersTab({ onCount }: Props) {
             </Button>
           </Empty>
         ) : (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>아직 매니저가 없습니다</EmptyTitle>
               <EmptyDescription>
@@ -290,7 +305,8 @@ export default function ManagersTab({ onCount }: Props) {
           </Empty>
         )
       ) : (
-        <>
+        /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
+        <StaleBlock stale={page.isPlaceholderData} label="매니저를 불러오는 중">
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -413,7 +429,7 @@ export default function ManagersTab({ onCount }: Props) {
             totalPages={1}
             onPageChange={() => {}}
           />
-        </>
+        </StaleBlock>
       )}
 
       <InviteManagerDialog open={inviteOpen} onOpenChange={setInviteOpen} />

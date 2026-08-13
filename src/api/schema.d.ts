@@ -496,12 +496,18 @@ export interface paths {
     put?: never
     /**
      * GitHub 저장소 URL 제출·재제출 | ⚠️ 사용 불가
-     * @description 🔴 **실제 AI 배포 서버와 연동할 수 없다.** 제출 접수 자체(`201 CREATED`까지)는 정상 동작하지만,
-     *     접수 직후 트리거되는 코드 분석이 배포된 AI 서버에 닿지 못해 **그 뒤 흐름이 끝까지 가지 않는다.**
-     *     GitHub 저장소를 clone·분석하는 주체가 AI 서버이고 백엔드에는 그 경로가 없기 때문이다.
-     *     분석이 없으면 문제·질문·힌트가 만들어지지 않으므로 이해도 검증 세션도 열리지 않는다.
-     *     동작을 끝까지 확인하려면 ZIP 업로드(`POST /submissions/zip`)를 쓴다 — 그쪽은 백엔드가 파일을
-     *     직접 실어 보낸다.
+     * @description > ⚠️ **사용 불가 (2026-08-13 기준)** — 2026-08-23 오전 3시 16분 경에 `nvidia provider error`으로
+     *     > 확인 후 사용가능 전환 예정.
+     *
+     *     **제출 → 분석 → 세션까지 끝까지 간다.** 접수 직후 트리거되는 코드 분석은 AI 원본 서버
+     *     (`ai.origin-base-url`)의 `POST /analyses`로 나가며 저장소 주소와 브랜치를 함께 싣는다 —
+     *     clone·분석의 주체는 AI 서버이지만 그쪽으로 주소를 넘기는 경로는 백엔드에 있다.
+     *
+     *     접수 전에 **AI 프록시를 먼저 깨운다**(`GET /api/health`). 원본은 PAUSED 상태를 스스로 깨우지
+     *     못하고, 프록시가 원본이 RUNNING이 될 때까지 동기로 기다린다(유휴 후 첫 호출 80초 안팎,
+     *     상한 `ai.proxy.warm-up-timeout` 기본 150초). 깨우지 못하면 접수 자체를 `AI_SERVER_UNAVAILABLE`로
+     *     거절한다 — 접수만 받아 두면 실패가 한참 뒤 분석 화면에서야 드러나고 그때는 마감이 지나 있다.
+     *     ZIP 업로드도 같은 순서를 탄다.
      *
      *     **제출 시점에 백엔드는 GitHub에 접근하지 않는다.** 검사하는 것은 URL 형식과 호스트뿐이고,
      *     저장소가 실제로 존재하는지·접근 가능한지는 분석 단계에서 판정된다. 따라서 형식만 맞으면 즉시
@@ -554,6 +560,7 @@ export interface paths {
      *     | `SUBMISSION_DEADLINE_PASSED` | 409 | 마감이 지났다 |
      *     | `SUBMISSION_METHOD_NOT_ALLOWED` | 409 | 기관 정책이 GitHub 제출을 막았다 |
      *     | `IDEMPOTENCY_KEY_CONFLICT` | 409 | 같은 키를 다른 회차에 재사용했다 |
+     *     | `AI_SERVER_UNAVAILABLE` | 503 | AI 프록시를 깨우지 못했다. **재시도하면 된다** |
      *
      *     ZIP 업로드는 같은 리소스를 만들지만 `POST /submissions/zip`으로 분리돼 있다.
      */
@@ -574,8 +581,12 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * ZIP 업로드 제출·재제출 | ✅ 사용 가능
-     * @description GitHub URL 제출과 같은 리소스를 만드는 다른 표현이지만 **경로를 분리한다.** OpenAPI는
+     * ZIP 업로드 제출·재제출 | ⚠️ 사용 불가
+     * @description > ⚠️ **사용 불가 (2026-08-13 기준)** — 2026-08-23 오전 3시 16분 경에 `nvidia provider error`으로
+     *     > 확인 후 사용가능 전환 예정. 접수 직후 트리거되는 코드 분석이 GitHub URL 제출과 같은 경로를
+     *     > 타므로 함께 내린다.
+     *
+     *     GitHub URL 제출과 같은 리소스를 만드는 다른 표현이지만 **경로를 분리한다.** OpenAPI는
      *     경로·메서드당 operation이 하나뿐이라, 한 경로에 `consumes`만 다른 핸들러를 둘 두면 springdoc이
      *     둘을 한 operation으로 병합한다. 그러면 Swagger UI에서 `application/json`을 골라도 multipart
      *     입력 폼이 뜨고, ZIP 전용 쿼리 파라미터가 JSON 쪽에도 필수로 붙는다.
@@ -640,6 +651,7 @@ export interface paths {
      *     | `IDEMPOTENCY_KEY_CONFLICT` | 409 | 같은 키를 다른 회차에 재사용했다 |
      *     | `FILE_TOO_LARGE` | 413 | 허용 크기를 넘었다 |
      *     | `ARTIFACT_STORE_FAILED` | 500 | 파일 저장에 실패했다 |
+     *     | `AI_SERVER_UNAVAILABLE` | 503 | AI 프록시를 깨우지 못했다. **재시도하면 된다** |
      *
      *     > **2026-08-09 보류 해제.** 종전에는 "AI 서버에 ZIP을 전달할 자리가 없다"는 이유로 이
      *     > 경로를 막아 두었으나, `POST /api/v0/analyses`에 `multipart/form-data`(`payload` +
@@ -1443,11 +1455,12 @@ export interface paths {
      *
      *     | 파라미터 | 필수 | 타입 | 설명 |
      *     | --- | --- | --- | --- |
-     *     | `classroomId` | 선택 | UUID | 특정 반으로 좁힌다. `unassignedOnly`와 함께 지정하면 400 |
-     *     | `unassignedOnly` | 선택 | boolean | 반 배정이 없는 교육생만. 기본 `false` |
+     *     | `classroomId` | 선택 | UUID | 특정 반으로 좁힌다. 생략하면 (매니저는 담당 반, 오퍼레이터는 기수) 전체. `unassignedOnly`와 함께 지정하면 400 |
+     *     | `unassignedOnly` | 선택 | boolean | 반 배정이 없는 교육생만. 기본 `false`. **오퍼레이터 전용** — 매니저가 `true`로 보내면 400 |
      *     | `accountStatus` | 선택 | enum | `INVITED`(초대 대기) · `ACTIVE`(활성) · `INACTIVE`(비활성). 비우면 전체(화면의 `계정 · 전체`) |
      *     | `query` | 선택 | string | 이름·이메일 부분검색. 비우면 전체 |
-     *     | `sort` | 선택 | enum | `NAME`(이름순, 기본) · `RECENT_ENROLLED`(최근 등록순) |
+     *     | `sort` | 선택 | enum | `NAME`(이름순, 기본) · `RECENT_ENROLLED`(최근 등록순) · `RISK`(위험순) · `EXCELLENCE`(우수순) |
+     *     | `assessmentRoundId` | 선택 | UUID | **이 화면의 `회차 · 미프 N차` 필터.** 도달 단계·2단 이하·위험 배지·우수 누적 같은 회차 지표를 이 회차 기준으로 채운다. **생략하면 서버가 「이번 회차」를 고른다**(아래 표) |
      *     | `page` | 선택 | int | 0부터 시작. 기본 `0` |
      *     | `size` | 선택 | int | 페이지당 개수. 기본 `20`, 최대 `100` |
      *
@@ -1456,6 +1469,48 @@ export interface paths {
      *
      *     ⚠️ **`classroomId`와 `unassignedOnly`는 함께 못 쓴다.** 화면에서 `반 · 전체 / 미배정 / A반…`이
      *     단일 드롭다운이라 동시에 지정될 일이 없고, 들어오면 400으로 막는다.
+     *
+     *     💡 **`assessmentRoundId`를 생략하면 서버가 「이번 회차」를 골라 답한다.** 화면이 첫 진입에
+     *     이미 `회차 · 미프 3차`를 고른 상태로 떠야 하는데, 그 값을 알려면 회차 목록을 먼저 받아야 해서
+     *     호출이 두 번이 된다. 응답의 `rounds[]`(드롭다운 선택지)와 `assessmentRoundId`(**실제로 쓴 회차**)를
+     *     함께 돌려주므로 한 번의 호출로 표와 드롭다운을 같이 그릴 수 있다.
+     *
+     *     판정은 `GET /cohorts/{cohortId}/projects/current`와 **완전히 같은 규칙**이다(15차 R1) —
+     *     서버가 규칙을 한 벌만 갖는다.
+     *
+     *     | 순서 | 고르는 것 |
+     *     | --- | --- |
+     *     | ① | `RUNNING`인 프로젝트. 여럿이면 **가장 늦게 시작한** 것 |
+     *     | ② | 없으면 **가장 이른 `PLANNED`** — 다음에 열릴 회차가 지금의 관심사다 |
+     *     | ③ | 그것도 없으면 **마지막 프로젝트**(전부 `CLOSED`인 기수) |
+     *
+     *     ⚠️ **`rounds[]`의 마지막 원소가 기본값이라고 가정하지 마라.** 미프 2차가 진행 중이고 3차가
+     *     아직 안 열렸으면 기본값은 **2차**다. 드롭다운의 선택 상태는 반드시 응답의
+     *     `assessmentRoundId`에 맞춰야 대시보드의 `이번 회차`와 같은 차수를 가리킨다.
+     *
+     *     ③이 `CLOSED`를 돌려주므로 **화면은 "진행 중"이라고 단정하면 안 된다.**
+     *     이번 회차 프로젝트에 회차가 아직 없으면 목록의 마지막 회차로 물러선다 — 아무것도 고르지
+     *     못하면 지표 칸이 통째로 비기 때문이다.
+     *
+     *     ⚠️ **`assessmentRoundId`는 회차 지표만 바꾸고, 명단에 어느 교육생이 나오는지는 안 바꾼다.**
+     *     회차를 고르면 그 회차의 도달·위험·우수 지표로 화면이 다시 그려지지만, 행 자체(누가 명단에
+     *     있는지)는 기수 소속 기준 그대로다. 예를 들어 회차 시작 전(팀 미배정 시점)에도 프로필 행은
+     *     남아 있고 도달·배지 칸만 비어 있다 — 회차가 명단의 **필터**가 아니라 **지표의 기준 시점**이기
+     *     때문이다.
+     *
+     *     ⚠️ **회차 지표는 매니저에게만 채워진다.** 원천인 `manager_trainee_roster_view`가
+     *     `manager_assignment` 기반인데 테이블정의서가 *'기수 전체 배정과 오퍼레이터 배정은 만들지
+     *     않는다'*고 못박아, 오퍼레이터가 부르면 회차를 지정하든 말든 아래 회차 지표 열이 전부 `null`이다.
+     *     오퍼레이터 화면(OP-06)은 이 열들을 그리지 않으므로 문제되지 않는다.
+     *
+     *     ⚠️ **`sort=RISK`·`EXCELLENCE`는 기준 회차가 있어야 한다.** 보통은 위처럼 서버가 최근 회차를
+     *     골라 주므로 그냥 쓰면 되지만, **기수에 회차가 하나도 없으면**(= `rounds[]`가 빈 배열) 고를 것이
+     *     없어 `ROSTER_ASSESSMENT_ROUND_REQUIRED`(400)로 막는다.
+     *
+     *     ⚠️ **매니저는 `unassignedOnly`를 쓸 수 없다.** 매니저 명단은 담당 반으로 좁혀져 있어 반이 없는
+     *     교육생은 애초에 들어오지 않으므로 결과가 항상 빈다. 조용히 빈 표를 주면 화면이 데이터가 없다고
+     *     오해하므로 `ROSTER_UNASSIGNED_FILTER_NOT_ALLOWED`(400)로 거절한다 — 이 필터는 오퍼레이터
+     *     화면(OP-06)의 `소속 반 · 미배정` 전용이다. 같은 이유로 `unassignedCount`도 매니저에게는 늘 `0`이다.
      *
      *     ## 응답 (200)
      *
@@ -1466,8 +1521,28 @@ export interface paths {
      *     | `size` | int | 페이지당 개수 |
      *     | `totalElements` | long | **필터 적용 후** 전체 건수 |
      *     | `totalPages` | int | 전체 페이지 수 |
-     *     | `unassignedCount` | int | 반 배정이 없는 교육생 수. 화면 상단 `미배정 N` 배지 |
+     *     | `unassignedCount` | int | 반 배정이 없는 교육생 수. 화면 상단 `미배정 N` 배지. **매니저는 늘 `0`** |
      *     | `cohortTotal` | int | 기수 전체 교육생 수. 화면 상단 `명단 393명` |
+     *     | `rounds[]` | array | **`회차 · 미프 N차` 드롭다운 선택지.** 차수 오름차순이라 마지막이 가장 최근 |
+     *     | `assessmentRoundId` | UUID? | **실제로 조회에 쓴 회차.** 드롭다운의 선택 상태를 이 값에 맞춘다. 회차가 없으면 `null` |
+     *
+     *     ### rounds[] 각 항목 — 회차 드롭다운
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `assessmentRoundId` | UUID | 회차 ID. 요청의 `assessmentRoundId`에 그대로 넣는 값 |
+     *     | `roundNo` | int | 프로젝트 안의 회차 번호. 미니프로젝트는 **늘 1**이라 차수 표기에 쓸 수 없다 |
+     *     | `cohortRoundNo` | int | **기수 안의 회차 순번.** 화면의 `미프 3차`에서 3이 이 값 |
+     *     | `roundName` | string | 회차 이름 |
+     *     | `projectId` | UUID | 회차가 속한 프로젝트 ID |
+     *     | `projectName` | string | 회차가 속한 프로젝트 이름 |
+     *
+     *     💡 **기수 단위 회차 목록 API가 따로 없어 명단과 같은 응답에 싣는다.** 없으면 화면이
+     *     `GET /cohorts/{cohortId}/projects` 뒤에 프로젝트마다 `/rounds`를 다시 부르는 N+1이 된다.
+     *
+     *     ⚠️ **차수는 `cohortRoundNo`이지 `roundNo`가 아니다.** `roundNo`는 `(project_id, round_no)`가
+     *     UNIQUE라 프로젝트마다 1부터 다시 시작하는데, 미니프로젝트는 프로젝트당 회차가 1건뿐이라
+     *     전부 1이 되어 `미프 1차·2차·3차`를 구분하지 못한다.
      *
      *     ### content[] 각 항목
      *
@@ -1486,6 +1561,24 @@ export interface paths {
      *     | `inactivatedById` | UUID? | 비활성화한 사용자 ID. 활성이면 `null` |
      *     | `inactivatedByName` | string? | 비활성화한 사용자 이름. 화면 표시용 |
      *     | `inactivatedAt` | date-time? | 비활성화 시각. 활성이면 `null` |
+     *     | `pendingInvitationTokenId` | UUID? | 아직 수락·취소되지 않은 초대 토큰(11차 R2). `null`이 아닐 때만 재발송 버튼(`POST /cohorts/{cohortId}/trainees/invitations/resend`)을 켠다. 이미 활성화됐거나 초대가 취소됐으면 `null` |
+     *
+     *     #### 여기부터는 회차 지표다 — **매니저에게만** 채워지고 오퍼레이터는 전부 `null`이다
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     | --- | --- | --- |
+     *     | `assessmentRoundId` | UUID? | 지표를 계산한 평가 회차. 응답 최상위의 `assessmentRoundId`와 같은 값 |
+     *     | `attemptId` | UUID? | 그 회차의 응시 시도 ID. 아직 응시하지 않았으면 `null` |
+     *     | `roundResultStatus` | enum? | 응시 시도 상태. `NOT_STARTED`(미시작) · `SUBMITTED` · `ANALYZING` · `SESSION_READY` · `SESSION_IN_PROGRESS` · `COMPLETED`(완료) · `FAILED` · `EXPIRED` |
+     *     | `conceptResultItems` | string? | 문항별 결과의 JSON 배열(문자열로 직렬화됨). 각 항목은 `problemId`·`problemNo`·`conceptId`·`generationStatus`·`reachLevel`(0~4단, 미생성·무응답이면 `null`)을 가진다 |
+     *     | `expectedConceptCount` | int? | `저단계 개수`의 분모. 실제로 생성된(`generationStatus='GENERATED'`) 문항 수이며 사람마다 다르다 |
+     *     | `lowStageConceptCount` | int? | 도달 단계 0~2단(저단계)인 문항 수. 응답한 문항이 하나도 없으면 `null`(화면의 `—`) |
+     *     | `excellentOccurrenceCount` | int? | 이 교육생이 우수로 발견된 누적 횟수 |
+     *     | `excellentAssessmentSequenceNos` | int[] | 우수로 발견된 프로젝트 차수(`analysis_sequence_no`) 전부. **조회 회차를 포함**하므로 이 배열에 조회 차수가 있으면 이번 회차도 우수다. 최신 차수부터 내림차순, 근거 없으면 빈 배열 |
+     *     | `matchedRiskTypeCodes` | string? | 이번 회차에 걸린 위험 유형 코드 배열(문자열로 직렬화됨). `STAGE_DECLINE`(단계 하락) · `PERSISTENT_LOW`(지속 저점) · `INVALID_ATTEMPT`(무효 응시) · `CONTRIBUTION_UNDERSTANDING_GAP`(기여·이해도 괴리) · `LOW_PARTICIPATION`(저기여) 중 동시에 여러 개가 걸릴 수 있다. 해소(`RESOLVED`)된 사유는 들어오지 않는다 |
+     *     | `roundPrimaryStatusCode` | enum? | 배지 한 칸에 넣을 **단일** 코드. 1층 응시상태(`NOT_ATTENDED` 미응시 → `SESSION_INCOMPLETE` 응시 중단 → `INVALID_ATTEMPT` 무효 응시)가 있으면 2층 위험 유형(`LOW_PARTICIPATION` → `CONTRIBUTION_UNDERSTANDING_GAP` → `STAGE_DECLINE` → `PERSISTENT_LOW`)은 보지 않는다. 걸린 것이 없으면 `null`(정상). 중도 이탈은 여기 들어오지 않는다 — 계정 상태의 비활성화 사유로 이미 드러난다 |
+     *     | `roundTerminalAt` | date-time? | `roundPrimaryStatusCode`가 `NOT_ATTENDED`·`SESSION_INCOMPLETE`일 때만 값이 있는 시각. 화면이 `우수 누적` 칸에 정상 결과 대신 `세션 중단 · 07-14`처럼 사유·일자를 그릴 때 쓴다 |
+     *     | `rowAggregationStatus` | string? | 이 행의 지표 집계 상태. 현재는 항상 `COMPLETE`다 |
      *
      *     #### inactivatedReasonCode 값
      *
@@ -1864,7 +1957,14 @@ export interface paths {
     }
     /**
      * 기수 반 목록 조회 | ✅ 사용 가능
-     * @description 기수에 편성된 반 전체를 조회한다. 조회 범위인 기관은 액세스 토큰에서 가져온다.
+     * @description 기수에 편성된 반을 조회한다. 조회 범위인 기관은 액세스 토큰에서 가져온다.
+     *
+     *     **역할에 따라 범위가 다르다.** 오퍼레이터는 기수의 반 전체를, **매니저는 자신이 현재
+     *     담당하는 반만** 본다(`manager_assignment`가 ACTIVE인 반).
+     *
+     *     매니저를 좁히는 이유는 이 목록이 교육생 명단 화면의 `반 · 전체` 드롭다운을 채우기 때문이다 —
+     *     `GET /cohorts/{cohortId}/trainees`가 매니저에게 담당 반 교육생만 주는데 드롭다운만 기수 전체
+     *     10개를 보여주면, 고를 수는 있는데 고르면 늘 비는 반이 생긴다. **두 API는 같은 모집단이어야 한다.**
      *
      *     **요청**
      *     - cohortId (경로): 반을 조회할 기수 ID
@@ -2781,9 +2881,25 @@ export interface paths {
      *     순간 **학생에게 알려준 마감과 실제 마감이 갈린다.** 마감 시각을 보여줘야 하는 자리에서는
      *     `class-progress`의 `submissionDueAt`을 쓰는 것이 맞다.
      *
-     *     **어느 쪽으로 정할지 알려주시면 그대로 맞추겠다** — ⓐ `endDate` 저장 시 그 날짜의
-     *     `23:59:59 KST`로 `submission_due_at`을 함께 갱신하거나, ⓑ 마감 시각을 별도 입력으로 받는다.
-     *     되돌릴 수 없는 학생 화면 값이라 임의로 정하지 않았다.
+     *     ## 🔴 18차 R5로 정해졌다 — 마감 시각을 이 API가 받는다
+     *
+     *     **`submissionDueAt`(선택)** 을 함께 보내면 그 회차의 `submission_due_at`을 같이 바꾼다.
+     *     9차 Q2에서 열어 둔 질문을 프론트가 ⓑ(별도 필드)로 답해 그대로 구현했다.
+     *
+     *     | 보낸 것 | 결과 |
+     *     |---|---|
+     *     | `startDate`·`endDate`만 | 기간만 바뀐다. **마감은 그대로** |
+     *     | + `submissionDueAt` | 기간과 마감이 함께 바뀐다 |
+     *
+     *     **여전히 서버가 둘을 자동으로 연결하지 않는다.** 기간을 늘려도 마감은 움직이지
+     *     않는다 — 회차 기간은 운영 일정이고 제출 마감은 학생과의 약속이라 같이 움직여야 할
+     *     이유가 없고, 자동 파생을 넣으면 운영자가 기간만 손댔을 때 **이미 알린 마감이 조용히
+     *     바뀐다.**
+     *
+     *     그래서 화면이 마감을 표시할 때는 여전히 `endDate`에 `23:59`을 붙이지 말고
+     *     실제 마감 값을 써야 한다.
+     *
+     *     시각대는 UTC로 저장된다 — `23:59 KST`는 `T14:59:00Z`다.
      */
     patch: operations['updateSchedule']
     trace?: never
@@ -4213,6 +4329,88 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v0/projects/{projectId}/submissions': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * [프로젝트 상세 - 제출현황 탭] 프로젝트 회차 제출 현황 조회 (매니저) | ✅ 사용 가능
+     * @description MG-08 프로젝트 상세 '제출 현황' 탭 한 화면을 **한 번에** 내려준다.
+     *
+     *     ## 왜 한 덩어리인가
+     *
+     *     게이트(팀 편성 단계)·탭 머리 카운트·팀 행·팀원 행·요구사항 판정이 모두 같은
+     *     `(프로젝트, 회차, 반)` 스코프에서 나오고 화면이 그것을 한 번에 그린다. 요구사항을
+     *     따로 떼면 팀 행을 펼칠 때마다 호출이라 팀이 8개면 8번이 되는데, 요구사항은 프로젝트당
+     *     서너 건 고정이라 같이 실어도 응답이 커지지 않는다.
+     *
+     *     ## 요청
+     *
+     *     | 파라미터 | 필수 | 설명 |
+     *     |---|---|---|
+     *     | `projectId` (경로) | 필수 | 조회할 프로젝트 |
+     *     | `roundNo` | 선택 | 회차 번호(기본 1). 프로젝트 안에서만 유일하다 |
+     *     | `classId` | 선택 | 담당 반 하나로 좁힌다. 생략하면 **담당 반 전체**다 |
+     *
+     *     🔴 **응답은 호출자가 담당하는 반으로 제한된다.** `classId`를 생략해도 프로젝트 전체가
+     *     아니라 담당 반만 온다. 담당하지 않는 반의 `classId`를 지정하면 빈 결과가 아니라
+     *     `404 MANAGER_SCOPE_NOT_FOUND`다 — 빈 결과로 주면 화면이 "팀이 없는 회차"로 읽는다.
+     *
+     *     따라서 `summary`·`teams[]`·`unassignedMemberCount`·`teamFormationStage`는 모두
+     *                    **그 매니저가 보는 범위의 값**이며, 같은 회차라도 매니저마다 다르다.
+     *
+     *     ## 응답 (200)
+     *
+     *     | 필드 | 설명 |
+     *     |---|---|
+     *     | `teamFormationStage` | `NOT_STARTED` · `FORMING` · `READY_TO_CONFIRM` · `CONFIRMED` · `CLOSED` |
+     *     | `submissionOpened` | 제출이 열렸는가. **화면은 이 값만 보고 표/빈 상태를 정한다** |
+     *     | `locked` | 종료된 회차 |
+     *     | `unassignedMemberCount` | 미배정 인원. 0이 아니면 제출이 열리지 않는다 |
+     *     | `summary` | `teamCount` · `submittedTeamCount` · `unsubmittedTeamCount` · `analysisFailedTeamCount` |
+     *     | `requirements[]` | 프로젝트가 정의한 요구사항. **팀이 아니라 프로젝트에 달린 값이라 최상위에 한 번만 싣는다** |
+     *     | `teams[]` | 팀 행. `submission` · `analysis` · `requirementResults[]` · `members[]` |
+     *
+     *     ### teams[]
+     *
+     *     | 필드 | 설명 |
+     *     |---|---|
+     *     | `submission` | 아직 아무도 제출하지 않았으면 **null**. 팀·회차별 최신 제출 한 건이다 |
+     *     | `analysis` | 그 제출에 매인 최신 분석 시도. `status`는 원값(QUEUED·RUNNING·SUCCEEDED·PARTIAL·FAILED) |
+     *     | `requirementResults[]` | (팀, 요구사항)별 최신 판정. 분석 전이면 빈 배열 |
+     *     | `members[]` | 팀원 개인 행 |
+     *
+     *     ### members[].attendanceStatus
+     *
+     *     | 값 | 뜻 |
+     *     |---|---|
+     *     | `DONE` | 응시를 마쳤다 |
+     *     | `OPEN` | 창이 열려 있고 아직 안 봤다 (마감 전) |
+     *     | `MISSED` | 창이 닫히도록 끝내 안 봤다 (마감 후) |
+     *     | `BLOCKED` | 창이 애초에 안 열렸다 — 미제출이거나 분석이 실패했다 |
+     *
+     *     ⚠️ **`BLOCKED`와 `MISSED`를 합치지 않는다.** `BLOCKED`는 못 본 것이 아니라 볼 수 없었던
+     *     것이라 독촉해도 할 수 있는 일이 없다. 둘을 합치면 화면이 그 사람에게 무엇을 해야 하는지
+     *     말할 수 없다.
+     *
+     *     💡 **표시 문구는 서버가 만들지 않는다.** `D-2`·`19시간 남음` 같은 라벨 대신
+     *     `assessmentCloseAt` 시각을 주며, 문구는 화면이 만든다.
+     *
+     *     💡 **제출은 팀 단위, 응시는 개인 단위다.** 팀 중 한 명이 내면 팀원 전원이 같은 코드를
+     *     쓰므로 같은 팀에서 제출 상태가 갈릴 수 없고, 그래서 행이 2계층이다.
+     */
+    get: operations['findProjectSubmissionStatus']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v0/projects/{projectId}/rounds': {
     parameters: {
       query?: never
@@ -4248,7 +4446,7 @@ export interface paths {
       cookie?: never
     }
     /**
-     * 내 팀의 제출 현황 조회 | ✅ 사용 가능
+     * 내 팀의 제출 현황 조회 | ⚠️ 사용 불가
      * @description TR-02 `제출` 화면 전체를 이 응답 하나로 그린다. 제출 폼·분석 진행·재제출 가능 여부가
      *     모두 `status` 하나에서 갈린다.
      *
@@ -4287,17 +4485,26 @@ export interface paths {
      *     명이 세션을 시작했다고 나머지가 잠기지 않는다. 같은 제출을 두고도 사람마다 `READY`와
      *     `LOCKED`가 갈릴 수 있다.
      *
-     *     ## content — GitHub 제출에서만
+     *     ## content — 두 수단이 같은 카드를 채운다
      *
-     *     | 필드 | 타입 | 설명 |
-     *     |---|---|---|
-     *     | `repoUrl` | string | 교육생이 입력한 **원문** 주소. 정규화 전이라 폼에 그대로 되채운다 |
-     *     | `branch` | string? | 실제로 분석된 브랜치. 분석 전에는 적어 낸 값, 비워 냈으면 기본 브랜치 |
-     *     | `lastCommit` | object? | `{sha, message, at}` — **분석 성공 후에만** |
+     *     | 필드 | 타입 | GitHub | ZIP | 설명 |
+     *     |---|---|---|---|---|
+     *     | `repoUrl` | string? | ✅ | — | 교육생이 입력한 **원문** 주소. 정규화 전이라 폼에 그대로 되채운다 |
+     *     | `branch` | string? | ✅ | — | 실제로 분석된 브랜치. 분석 전에는 적어 낸 값, 비워 냈으면 기본 브랜치 |
+     *     | `fileName` | string? | — | ✅ | 올린 파일 이름. 예: `team3-miniproject.zip` |
+     *     | `fileSize` | int64? | — | ✅ | 올린 파일 크기(바이트) |
+     *     | `lastCommit` | object? | ✅ | ✅ | `{sha, message, at}` — **분석 성공 후에만** |
      *
-     *     ⚠️ **ZIP 제출이면 `content` 키 자체가 빠진다.** `ck_submission_method_2`가 ZIP 분기의
-     *     저장소·커밋 컬럼을 전부 NULL로 강제하므로 담을 값이 없다. 빈 객체를 보내면 화면이
-     *     "GitHub인데 주소가 비었다"로 읽는다.
+     *     **필드는 수단별로 배타적이다.** GitHub이면 저장소·브랜치가, ZIP이면 파일 이름·크기가
+     *     채워지고 반대쪽은 키가 빠진다. 화면은 `repoUrl`이 있으면 저장소 줄을, `fileName`이
+     *     있으면 파일 줄을 그리면 된다.
+     *
+     *     🔴 **ZIP의 커밋 정보는 분석 결과에서 온다.** `ck_submission_method_2`가 ZIP 분기의
+     *     `source_commit_*`를 NULL로 강제하고 git log를 읽는 주체가 AI라, 제출 직후에는
+     *     `lastCommit`이 없다가 **분석이 끝나면 나타난다.** GitHub 쪽도 같은 시점에 채워진다.
+     *
+     *     ⚠️ **미제출이면 `content` 키 자체가 빠진다.** ZIP인데 아티팩트 행이 아직 없는
+     *     접수 도중에도 마찬가지다 — 빈 객체를 보내면 화면이 "냈는데 내용이 비었다"로 읽는다.
      *
      *     ## 상태별로 쓰지 않는 필드는 키가 빠진다
      *
@@ -4316,6 +4523,111 @@ export interface paths {
      *     | `SUBMISSION_ROUND_NOT_ACCESSIBLE` | 404 | 프로젝트가 없거나, 회차가 없거나, 호출자가 그 프로젝트의 유효 팀 구성원이 아니다. 셋을 구분하지 않는다 |
      */
     get: operations['findMySubmission']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v0/projects/{projectId}/evaluations': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * [프로젝트 상세 - 결과 탭] 프로젝트 회차 결과 종합 조회 (매니저) | ✅ 사용 가능
+     * @description 결과 탭의 **왼쪽 교육생 목록과 '프로젝트 종합' 화면**을 그린다.
+     *
+     *     ## 요청
+     *
+     *     | 파라미터 | 필수 | 설명 |
+     *     |---|---|---|
+     *     | `projectId` (경로) | 필수 | 조회할 프로젝트 |
+     *     | `roundNo` | 선택 | 회차 번호(기본 1) |
+     *     | `classId` | 선택 | 담당 반 하나로 좁힌다. 생략하면 **담당 반 전체**다 |
+     *
+     *     🔴 **응답은 호출자가 담당하는 반으로 제한된다.** 담당하지 않는 반의 `classId`를 지정하면
+     *     `404 MANAGER_SCOPE_NOT_FOUND`다.
+     *
+     *     ## 응답 (200)
+     *
+     *     | 필드 | 설명 |
+     *     |---|---|
+     *     | `reportPublished` | 회차 리포트 발행 여부. 발행 방식이 ROUND_BATCH라 회차 단위 판정 |
+     *     | `resultAvailable` | 결과를 그릴 수 있는지. false면 화면은 빈 상태를 보여준다 |
+     *     | `summary` | `totalCount` · `attendedCount` · `failedCount` · `notAttendedCount` · `invalidCount` |
+     *     | `classWarnings[]` | 집단 미달 경고. 유효 응시자의 **절반을 넘는** 인원이 막힌 개념 |
+     *     | `conceptAggregates[]` | 개념별 막힌 사람 · 코드에 없던 사람과 명단 |
+     *     | `trainees[]` | 교육생 목록. 개념별 도달 결과까지 담고 **축별 단계는 담지 않는다** |
+     *
+     *     💡 **`notInCode`를 따로 센다.** 그 개념이 코드에 없어 문제가 만들어지지 않은 것이라
+     *     **못한 것이 아니다.** 막힌 사람과 한 칸에 넣으면 매니저가 둘을 구분하지 못한다.
+     *
+     *     💡 **발행 전 집계는 임시 값이다.** 아직 응시하지 않은 인원이 빠져 있고, 발행 시점의
+     *     값으로 굳는다. 화면은 발행 전에 '다시 보기 대상' 숫자를 아예 보여주지 않는다.
+     *
+     *     🔴 **합격·불합격은 응시를 마친 사람(`AVAILABLE`)에게만 붙는다.** 아직 풀지 않은 문제는
+     *     도달 단계가 0이라, 판정을 그대로 걸면 응시 중인 사람이 전부 불합격으로 잡힌다 —
+     *     `retryTarget`·`stuckConceptCount`·`failedCount`가 모두 그 규칙을 따른다.
+     *
+     *     ⚠️ **`retryTargetCount`를 서버가 더해 주지 않는다** — 화면 규칙상 발행 전에는 그 합을
+     *     감추기 때문에 `failedCount`와 `notAttendedCount`를 따로 준다.
+     */
+    get: operations['findProjectEvaluationSummary']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v0/projects/{projectId}/evaluations/{userId}': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * [프로젝트 상세 - 결과 탭] 교육생 채점 결과 상세 조회 (매니저) | ✅ 사용 가능
+     * @description 결과 탭에서 사람을 클릭했을 때 **오른쪽에 그리는 값**이다. 개념마다 도달 단계와
+     *     축 4단계 사다리, 그 안에 접힌 채점 근거가 온다.
+     *
+     *     ## 응답 (200)
+     *
+     *     | 필드 | 설명 |
+     *     |---|---|
+     *     | `resultStatus` | `AVAILABLE` · `IN_PROGRESS` · `INCOMPLETE`(중단) · `NOT_ATTENDED` · `INVALID` |
+     *     | `concepts[]` | 개념별 `inCode` · `reachLevel` · `retryTarget` · `steps[]` |
+     *
+     *     ### concepts[].steps[]
+     *
+     *     | 필드 | 설명 |
+     *     |---|---|
+     *     | `axisCode` · `stepNo` | L1~L4 = 코드이해 · 설계논리 · 대안비교 · 반례대응 |
+     *     | `passed` | 그 단계 통과 여부. 도움을 받고 통과해도 true |
+     *     | `helpCount` | 힌트를 받고 답한 횟수 0~2 |
+     *     | `score` | 0~5 원점수. **화면에 노출하지 않는 내부 값** |
+     *     | `note` | 채점 근거 한 줄 |
+     *
+     *     ⚠️ **실제로 물은 단계만 배열에 있다.** 앞 단계에서 미달하면 그 문제가 끝나므로 뒤 단계는
+     *     아예 오지 않는다 — 화면은 그 자리를 '미도달' 빈 칸으로 그린다. **0점·불합격과 다르다.**
+     *
+     *     ⚠️ **`passed`와 `helpCount`를 따로 읽어야 한다.** 힌트를 2회까지 받고도 통과할 수 있고,
+     *     2회 받고도 기준을 못 넘으면 불합격이다. 화면의 4범주(합격 · 합격(도움 1회) ·
+     *     합격(도움 2회) · 불합격)가 이 둘의 조합이다.
+     *
+     *     ⚠️ **`note`는 리포트 생성 전에는 null이다** — 채점 근거가 리포트 스냅샷에 쌓이기 때문이다.
+     *     발행 전에는 도달 단계와 통과 여부까지만 보여줄 수 있다.
+     *
+     *     💡 **주고받은 대화 전문은 주지 않는다.** 매니저 화면의 계약이며 전문은 학생 리포트에만 있다.
+     */
+    get: operations['findTraineeEvaluationDetail']
     put?: never
     post?: never
     delete?: never
@@ -5370,7 +5682,20 @@ export interface paths {
      *       - usedAsVerificationConcept: ★ 표시(검증개념으로 확정된 적 있는지)
      *       - usedRoundLabels: 검증개념으로 쓰인 회차 라벨 목록
      *
-     *     ⚠ 이 교안의 최신 버전에 "성공한 분석"이 한 번도 없으면 404를 반환한다.
+     *     ## 🔴 분석 전 교안은 409다 (18차 R1)
+     *
+     *     이 교안의 최신 버전에 "성공한 분석"이 한 번도 없으면 **`409 CURRICULUM_ANALYSIS_NOT_COMPLETED`**
+     *     를 즉시 반환한다. 화면은 이때 `분석이 끝나면 고를 수 있습니다`를 그리면 된다.
+     *
+     *     **종전에는 503이었다.** 그런데 503은 "서버가 지금 요청을 처리할 수 없다"는 인프라
+     *     신호라, 프론트 전역 재시도(`status >= 500`)가 자동으로 3회 붙고 그 재시도가 동시에
+     *     나가면서 프록시 결함(15차 R3)을 밟아 `net::ERR_FAILED`가 됐다 — 화면에는
+     *     **응답이 아예 오지 않는 것처럼** 보였다. 실제로는 요청이 지금 상태와 맞지 않는
+     *     것이지 서버가 아픈 것이 아니므로 409가 정확하다.
+     *
+     *     재시도해야 한다는 사실은 상태 코드가 아니라 `code`로 전달한다.
+     *
+     *     ⚠ 교안 자체가 없으면 그건 영구 실패라 여전히 **404**(`CURRICULUM_MATERIAL_NOT_FOUND`)다.
      */
     get: operations['findSections']
     put?: never
@@ -5641,8 +5966,33 @@ export interface paths {
      *     **응답 (200)**
      *     - versionId / materialId: 교안 버전 ID / 원장 ID
      *     - versionNo: 버전 번호
-     *     - originalFileName / pageCount: 파일명 / 페이지 수
+     *     - originalFileName: 파일명
+     *     - pageCount: 페이지 수. **분석 전이면 null**
+     *     - analysisStatus: 분석 상태. **한 번도 분석하지 않았으면 null**
+     *     - teachesCount: 승인된 가르친 항목 수
      *     - createdAt: 등록 시각
+     *
+     *     ## 🔴 분석 여부를 pageCount로 추측하지 말 것 (18차 R2)
+     *
+     *     종전에는 상태 필드가 없어 화면이 `pageCount == null`로 분석 여부를 추측하고
+     *     있었다. 그건 **"쪽수를 아직 모른다"는 뜻이지 "분석 중"이 아니고**, 분석이
+     *     **실패**한 교안과도 구분되지 않는다. `analysisStatus`를 쓴다.
+     *
+     *     | `analysisStatus` | 화면 |
+     *     |---|---|
+     *     | `null` | `분석 전` · 못 고름 |
+     *     | `PENDING` · `RUNNING` | `분석 중 — 끝나면 고를 수 있습니다` · 못 고름 |
+     *     | `SUCCEEDED` | 고를 수 있음 |
+     *     | `FAILED` | `분석 실패 — 다시 올려 주세요` · 못 고름 |
+     *
+     *     ⚠️ 값이 **4종 + null**이다(요청서의 `ANALYZING`·`READY`·`FAILED` 3종이 아니다).
+     *     `PENDING`과 `RUNNING`을 화면에서 `분석 중` 하나로 접으시면 되고, **`null`(분석 전)과
+     *     `FAILED`(분석 실패)는 갈라야 한다** — 전자는 기다리면 되고 후자는 다시 올려야 한다.
+     *
+     *     `teachesCount`는 고르기 **전에** 이 교안에서 검증 개념 3건을 뽑을 수 있는지
+     *     알려 준다. `GET /projects/{projectId}/concept-candidates`가 세는 것과 같은 값이다.
+     *
+     *     **조회는 교안 수와 무관하게 고정 3건**이라 목록이 길어져도 느려지지 않는다.
      */
     get: operations['findLinkableCurricula']
     put?: never
@@ -6341,7 +6691,11 @@ export interface paths {
      *     | 파라미터 | 필수 | 타입 | 설명 |
      *     |---|---|---|---|
      *     | `sessionId` | 필수 | UUID | 세션 식별자 |
-     *     | `problemNo` | 필수 | int | 문제 번호 `1`~`3` |
+     *     | `problemNo` | 필수 | int | 문제 번호 `1`~`problemTotal`. `GET /current`·`POST /answers`가 준 값을 그대로 쓴다 |
+     *
+     *     💡 번호는 **생성된 문항만 1부터 센 값**이다. 문항이 만들어지지 않은 개념
+     *     (`NOT_GENERATED`)은 세션에 나오지 않으므로 이 경로로 열 수도 없다 —
+     *     화면이 `1..problemTotal`을 순서대로 부르면 빈 번호에 걸리지 않는다.
      *
      *     ## 응답
      *
@@ -6433,14 +6787,19 @@ export interface paths {
      *     | `sessionId` | UUID | 이후 네 경로가 모두 이 값을 쓴다 |
      *     | `mode` | enum | `FIRST`(1차) · `REVIEW`(다시 보기). REVIEW는 힌트가 없고 판정에 반영되지 않는다 |
      *     | `status` | enum | `READY`(시작 전 안내) · `IN_PROGRESS`(진행 중) |
-     *     | `currentProblemNo` | int? | 지금 서 있는 문제 번호(1~3). 시작 전이면 `null` |
+     *     | `currentProblemNo` | int? | 지금 서 있는 문제 번호(1~`problemTotal`). 시작 전이면 `null` |
      *     | `problemTotal` | int | 생성된 문제 수. 화면의 `문제 n/N`의 N |
      *     | `startedAt` | date-time? | 경과 시간 표시의 기산점. 시작 전이면 `null` |
      *     | `timeLimitAt` | date-time? | 정책 시간 상한. 상한이 없으면 `null` |
      *     | `reviewDueAt` | date-time? | 다시 보기 마감. `mode=FIRST`이면 `null` |
      *
-     *     ⚠️ `problemTotal`은 **3이 아닐 수 있다.** `NOT_GENERATED` 문제에는 단계를 만들지 않으므로
-     *     화면의 `n/3` 하드코딩은 틀린다.
+     *     ⚠️ `problemTotal`은 **3이 아닐 수 있다.** 코드에 근거가 없어 문항이 만들어지지 않은 개념
+     *     (`NOT_GENERATED`)에는 단계를 만들지 않으므로 화면의 `n/3` 하드코딩은 틀린다.
+     *
+     *     💡 **번호는 생성된 문제만 1부터 센다.** 원본 `assessment_problem.problem_no`에는 빈틈이
+     *     생길 수 있으나(1번이 `NOT_GENERATED`면 2·3만 남는다) 세션 API는 그것을 다시 매겨
+     *     `1~problemTotal`을 준다. 그래서 화면은 **받은 번호를 그대로** 쓰면 되고, 생성되지 않은
+     *     문제는 애초에 열 수 없다.
      *
      *     진행 중인 세션을 다시 보기보다 먼저 고른다. 둘 다 없으면 **`204 No Content`**이며 화면은
      *     `진행 중인 회차 없음`으로 그린다.
@@ -7288,9 +7647,8 @@ export interface components {
       /**
        * @description 커밋 이메일 검증 상태. PUT으로 등록·변경하면 항상 PENDING이 되며, VERIFIED는 별도 검증 완료 경로에서만 부여됩니다.
        * @example PENDING
-       * @enum {string}
        */
-      status: 'PENDING' | 'VERIFIED' | 'UNVERIFIED'
+      status: components['schemas']['CommitEmailStatus']
       /**
        * @description 검증 완료 방식. 자가 입력만으로는 부여되지 않으므로 PENDING 상태에서는 항상 null입니다.
        * @example null
@@ -7310,6 +7668,13 @@ export interface components {
        */
       updatedAt: string
     }
+    /**
+     * @description 커밋 이메일 검증 상태. `PENDING`(검증 대기) · `VERIFIED`(검증됨) · `UNVERIFIED`(검증 실패·해제).
+     *
+     *     ⚠️ **`null`은 미등록**을 뜻하며 값으로 표현하지 않는다.
+     * @enum {string}
+     */
+    CommitEmailStatus: 'PENDING' | 'VERIFIED' | 'UNVERIFIED'
     /**
      * @description 공통 오류 응답. 모든 4xx·5xx가 이 모양이다.
      *
@@ -7812,6 +8177,14 @@ export interface components {
      * @enum {string}
      */
     Role: 'SUPER_ADMIN' | 'OPERATOR' | 'MANAGER' | 'TRAINEE'
+    /**
+     * @description 교안 분석 실행 상태.
+     *     `PENDING`(대기) · `RUNNING`(진행 중) → 화면의 `분석 중`,
+     *     `SUCCEEDED` → `분석 완료`, `FAILED` → `분석 실패`.
+     *     한 번도 분석하지 않은 교안은 이 값 자체가 null이다.
+     * @enum {string}
+     */
+    CurriculumAnalysisStatus: 'PENDING' | 'RUNNING' | 'SUCCEEDED' | 'FAILED'
     /** @description 연결 가능한 교안 버전 */
     CurriculumVersionResponse: {
       /**
@@ -7837,9 +8210,30 @@ export interface components {
       originalFileName: string
       /**
        * Format: int32
-       * @description 페이지 수
+       * @description 페이지 수. 분석 전이거나 확정되지 않았으면 null
+       * @example 84
        */
-      pageCount: number
+      pageCount: number | null
+      /**
+       * @description 가장 최근 분석 **시도**의 상태. 회차 생성 모달의 `분석 중`·`분석 실패` 배지 근거다.
+       *
+       *     **한 번도 분석하지 않은 교안은 `null`이다** — 실패와 구분해야 해서 값을 만들어 넣지 않는다.
+       *
+       *     화면은 이렇게 접으면 된다. `SUCCEEDED` → 고를 수 있음 ·
+       *     `PENDING`/`RUNNING` → `분석 중 — 끝나면 고를 수 있습니다` ·
+       *     `FAILED` → `분석 실패 — 다시 올려 주세요` · `null` → `분석 전`
+       */
+      analysisStatus: components['schemas']['CurriculumAnalysisStatus'] | null
+      /**
+       * Format: int32
+       * @description 승인된(ACTIVE) 가르친 항목 수. **고르기 전에** 이 교안에서 검증 개념 3건을 뽑을 수
+       *     있는지 알 수 있다 — 종전에는 골라 봐야 알았다.
+       *
+       *     `GET /projects/{projectId}/concept-candidates`가 세는 것과 같은 값이라 두 화면이
+       *     다른 수를 말하지 않는다.
+       * @example 34
+       */
+      teachesCount: number
       /**
        * Format: date-time
        * @description 등록 시각
@@ -8135,6 +8529,26 @@ export interface components {
        * @example 12
        */
       conceptCandidateCount: number
+      /**
+       * @description 연결된 교안 파일명. 순서는 연결 순서(`sequence_no`)다.
+       *
+       *     `curriculumCount`와 길이가 <b>다를 수 있다</b> — 개수는 연결 행을 그대로 세지만
+       *     이름은 못 찾은 항목이 빠진다. 개수 표시에는 `curriculumCount`를 쓸 것.
+       * @example [
+       *       "spring_backend_v1.pdf"
+       *     ]
+       */
+      curriculumNames: string[]
+      /**
+       * @description 확정된 검증 개념 이름. 순서는 확정 순서(`sequence_no`)다.
+       *
+       *     `conceptCount`와 길이가 다를 수 있는 이유는 위와 같다.
+       * @example [
+       *       "예외 처리와 롤백 전략",
+       *       "API 응답 계약 설계"
+       *     ]
+       */
+      conceptNames: string[]
     }
     /**
      * @description 프로젝트 진행 상태. PLANNED(생성됨 — 아직 시작 전) · RUNNING(진행 중) · CLOSED(종료). 값은 CohortStatus와 같지만 개념이 달라 별도 스키마로 둔다.
@@ -8491,12 +8905,14 @@ export interface components {
       status?: components['schemas']['AssessmentSessionStatus']
       /**
        * Format: int32
-       * @description 지금 서 있는 문제 번호(1~3). 시작 전이면 null
+       * @description 지금 서 있는 문제 번호. 시작 전이면 null. 생성된 문제만 1부터 세므로 항상
+       *     1~problemTotal 범위이며, 그대로 `GET .../problems/{problemNo}`에 넣으면 된다
        */
       currentProblemNo?: number | null
       /**
        * Format: int32
-       * @description 생성된 문제 수. 화면의 `문제 n/N`의 N이다. NOT_GENERATED 문제가 있으면 3보다 작다
+       * @description 생성된 문제 수. 화면의 `문제 n/N`의 N이다. 코드 근거를 못 찾아 문항이 만들어지지 않은
+       *     개념(NOT_GENERATED)이 있으면 3보다 작다 — 그 문제는 세션에 아예 나오지 않는다
        */
       problemTotal?: number
       /**
@@ -8550,7 +8966,8 @@ export interface components {
         'RETRY_WITH_HINT' | 'NEXT_TURN' | 'NEXT_PROBLEM' | 'PROBLEM_CLOSED' | 'SESSION_ENDED'
       /**
        * Format: int32
-       * @description 다음에 설 문제 번호. 세션이 끝났으면 null
+       * @description 다음에 설 문제 번호(1~problemTotal). 세션이 끝났으면 null.
+       *     그대로 `GET .../problems/{problemNo}`에 넣으면 된다
        */
       nextProblemNo?: number | null
       /** @description 다음 질문. 세션이 끝났으면 null */
@@ -8635,6 +9052,22 @@ export interface components {
        * @description 종료일
        */
       endDate: string
+      /**
+       * Format: date-time
+       * @description 제출 마감 **시각**(ISO-8601, 예: `2026-08-18T14:59:00Z`).
+       *
+       *     생략하면 **마감을 바꾸지 않는다** — 기간만 조정하는 경우가 흔해서 필수로 두지 않았다.
+       *     기존 회차의 마감은 그대로 남는다.
+       *
+       *     ⚠️ `endDate`(날짜)와 **서버가 자동으로 연결하지 않는다.** 기간을 늘려도 마감은
+       *     움직이지 않으므로, 마감을 함께 옮기려면 이 값을 같이 보내야 한다. 자동 파생을
+       *     넣지 않은 이유는 그렇게 하면 운영자가 기간만 손댔을 때 **학생에게 이미 알린
+       *     마감이 조용히 바뀌기** 때문이다.
+       *
+       *     시각대는 UTC로 저장된다. `23:59 KST` 마감은 `T14:59:00Z`다.
+       * @example 2026-08-18T14:59:00Z
+       */
+      submissionDueAt?: string | null
     }
     /**
      * @description 슈퍼어드민 계정 상태 변경 요청.
@@ -8917,11 +9350,56 @@ export interface components {
       attemptId: string
       roundResultStatus: string
       conceptResultItems: string
+      /**
+       * Format: int32
+       * @description `2단 이하` 칸의 **분모**이며 그 회차에 이 교육생에게 실제로 만들어진 문항 수입니다.
+       *     사람마다 다릅니다 — 코드에 근거가 없어 문항이 생성되지 않은(`NOT_GENERATED`) 개념은
+       *     검증 세션에서도 물을 수 없어 분모에서 빠집니다. 화면의 `1/2`가 이 값입니다.
+       * @example 2
+       */
+      expectedConceptCount: number
       /** Format: int32 */
       lowStageConceptCount: number
       /** Format: int32 */
       excellentOccurrenceCount: number
+      /**
+       * @description 이 교육생이 우수로 발견된 프로젝트 차수 전부입니다(원장: report_evidence,
+       *     evidence_category=PARTICIPANT_RESULT_OCCURRENCE). **조회 회차를 포함**하므로
+       *     `assessmentRoundId`에 해당하는 차수가 이 배열에 있으면 이번 회차도 우수입니다.
+       *     최신 차수부터 내림차순이며, 근거가 없으면 빈 배열입니다. `우수 3회 · 1·2·3차`가 이 값입니다.
+       * @example [
+       *       3,
+       *       2,
+       *       1
+       *     ]
+       */
+      excellentAssessmentSequenceNos: number[]
+      /**
+       * @description 이번 회차에 걸린 위험 유형 **전부**입니다(원장: InterviewCandidateReason).
+       *     `STAGE_DECLINE`(단계 하락) · `PERSISTENT_LOW`(지속 저점) · `INVALID_ATTEMPT`(무효 응시) ·
+       *     `CONTRIBUTION_UNDERSTANDING_GAP`(기여·이해도 괴리) · `LOW_PARTICIPATION`(저기여) 5종이며
+       *     동시에 여러 개가 걸릴 수 있습니다. 해소(`RESOLVED`)된 사유는 들어오지 않습니다.
+       * @example {INVALID_ATTEMPT}
+       */
       matchedRiskTypeCodes: string
+      /**
+       * @description 배지 한 칸에 넣을 **단일** 코드입니다. 정책 문서 §7의 2층 구조를 그대로 담습니다 —
+       *     1층 응시상태(`NOT_ATTENDED` 미응시 → `SESSION_INCOMPLETE` 응시 중단 →
+       *     `INVALID_ATTEMPT` 무효 응시)가 있으면 2층 위험 유형(저기여 → 기여·이해도 괴리 →
+       *     단계 하락 → 지속 저점)은 보지 않습니다. 걸린 것이 없으면 `null`(정상)입니다.
+       *
+       *     **중도 이탈은 이 값에 들어오지 않습니다** — 계정 상태의 비활성화 사유로 이미
+       *     드러나므로 화면은 `status=INACTIVE`일 때 그 사유·일자를 계정 칸에 그리면 됩니다.
+       * @example SESSION_INCOMPLETE
+       */
+      roundPrimaryStatusCode: string | null
+      /**
+       * Format: date-time
+       * @description `roundPrimaryStatusCode`가 `NOT_ATTENDED`·`SESSION_INCOMPLETE`일 때만 값이 있는
+       *     시각입니다. 그 회차엔 우수 누적을 그릴 수 없으므로, 화면이 `우수 누적` 칸에 대신
+       *     `세션 중단 · 07-14`처럼 사유·일자를 그릴 때 이 값을 씁니다.
+       */
+      roundTerminalAt: string | null
       rowAggregationStatus: string
     }
     /** @description 기수 종료 요청 */
@@ -9164,8 +9642,25 @@ export interface components {
       problemId: string | null
       name: string
       asked: boolean
-      /** Format: int32 */
-      level?: number
+      /**
+       * Format: int32
+       * @description 통과한 축의 최댓값. **0~4 이외의 값은 나가지 않는다.**
+       *
+       *     | 값 | 뜻 |
+       *     |---|---|
+       *     | `0` | 물었지만 통과한 축이 하나도 없다. **1로 올리지 않는다** |
+       *     | `1` | 코드 이해까지 |
+       *     | `2` | 설계 논리까지(왜 이렇게 했나) |
+       *     | `3` | 대안 비교까지(다른 방법은) |
+       *     | `4` | 반례 대응까지(언제 깨지나) — 전부 통과 |
+       *
+       *     🔴 **`asked=false`면 이 키가 아예 빠진다.** 문항이 만들어지지 않은 개념이라
+       *     단계를 말할 대상이 없다. `0`(물었는데 못했다)과 섞으면 화면이 학생에게
+       *     "못했다"고 말하게 되는데 사실은 묻지 않은 것이다. `asked=true`인데 빠지는
+       *     경우는 없다.
+       * @example 2
+       */
+      level?: number | null
       said?: string
       isRetryTarget: boolean
       curriculumRef?: components['schemas']['CurriculumRefResponse']
@@ -9596,6 +10091,241 @@ export interface components {
        */
       linkedAt: string
     }
+    /**
+     * @description 분석 시도 한 건.
+     *
+     *     `status`는 원값 그대로입니다 — PARTIAL을 완료로 접으면 실패도 완료도 아닌 팀이 어느 열에도
+     *     잡히지 않고 사라집니다.
+     */
+    Analysis: {
+      /** Format: uuid */
+      analysisJobId: string
+      /**
+       * @description QUEUED · RUNNING · SUCCEEDED · PARTIAL · FAILED
+       * @example SUCCEEDED
+       */
+      status: string
+      /** @description analysis_job.failure_code 그대로이며 실패가 아니면 null입니다. */
+      failureCode: string | null
+      /** @description 실패 사유 원문이며 실패가 아니면 null입니다. */
+      failureReason: string | null
+    }
+    /**
+     * @description 팀원 한 명의 응시 상태.
+     *
+     *     회차의 공식 결과인 최초 응시(INITIAL) 기준입니다. 재시험·다시 보기는 결과 탭 소관이라
+     *     여기 섞지 않습니다.
+     */
+    Member: {
+      /** Format: uuid */
+      userId: string
+      name: string
+      /**
+       * @description 응시 창이 지금 어떤 상태인가로 넷을 가릅니다. **서버가 판정합니다.**
+       *
+       *     | 값 | 뜻 |
+       *     |---|---|
+       *     | `DONE` | 응시를 마쳤다 |
+       *     | `OPEN` | 창이 열려 있고 아직 안 봤다 (마감 전) |
+       *     | `MISSED` | 창이 닫히도록 끝내 안 봤다 (마감 후) |
+       *     | `BLOCKED` | 창이 애초에 안 열렸다 — 미제출이거나 분석이 실패했다 |
+       *
+       *     `BLOCKED`는 `MISSED`와 다릅니다. 못 본 것이 아니라 볼 수 없었던 것이라 독촉 대상이
+       *     아니며, 이 둘을 합치면 화면이 그 사람에게 무엇을 해야 하는지 말할 수 없습니다.
+       * @example OPEN
+       */
+      attendanceStatus: string
+      /**
+       * Format: date-time
+       * @description 개인 응시 창이 닫히는 시각입니다. `D-2`·`19시간 남음` 같은 표시 문구는 화면이 만듭니다.
+       */
+      assessmentCloseAt: string | null
+      /**
+       * Format: date-time
+       * @description 응시를 실제로 마친 시각이며 `DONE`일 때만 값이 있습니다.
+       */
+      completedAt: string | null
+    }
+    /**
+     * @description 프로젝트 회차의 팀 단위 제출·분석과 팀원 개인 응시 현황.
+     *
+     *     **행이 2계층이다.** 팀 중 한 명이 내면 팀원 전원이 같은 코드를 쓰므로 제출·분석·요구사항은
+     *     팀에, 응시는 개인에 붙는다. 그래서 같은 팀에서 제출 상태가 갈릴 수 없다.
+     *
+     *     요구사항 목록은 팀이 아니라 프로젝트에 달린 값이라 최상위에 한 번만 싣는다. 팀별 판정은
+     *     `teams[].requirementResults[]`이며 아직 분석되지 않은 팀은 빈 배열이다.
+     *
+     *     🔴 **범위는 호출한 매니저의 담당 반이다.** 프로젝트 전체가 아니므로 `summary`의 팀 수,
+     *     `unassignedMemberCount`, `teamFormationStage`가 같은 회차라도 매니저마다 다르다.
+     */
+    ProjectSubmissionStatusResponse: {
+      /** Format: uuid */
+      projectId: string
+      projectName: string
+      /** Format: uuid */
+      assessmentRoundId: string
+      /**
+       * Format: int32
+       * @description 회차 번호이며 프로젝트 안에서만 유일합니다.
+       * @example 1
+       */
+      roundNo: number
+      roundName: string
+      /**
+       * Format: date-time
+       * @description 제출 마감 시각입니다.
+       */
+      submissionDueAt: string
+      /**
+       * @description 팀 편성 단계입니다.
+       *
+       *     | 값 | 뜻 |
+       *     |---|---|
+       *     | `NOT_STARTED` | 팀이 하나도 없음 |
+       *     | `FORMING` | 미배정 인원이 남아 있음 |
+       *     | `READY_TO_CONFIRM` | 전원 배정됐으나 확정 전 팀이 있음 |
+       *     | `CONFIRMED` | 전 팀 확정됨 |
+       *     | `CLOSED` | 종료된 프로젝트 |
+       * @example CONFIRMED
+       */
+      teamFormationStage: string
+      /**
+       * @description 제출이 열렸는지 여부입니다. `teamFormationStage`가 `CONFIRMED`·`CLOSED`일 때 true입니다.
+       *
+       *     **화면은 이 값만 보고 표를 그릴지 빈 상태를 보여줄지 정합니다.** 단계 이름으로 다시
+       *     판정하면 같은 규칙이 서버와 화면 두 곳에 생깁니다.
+       */
+      submissionOpened: boolean
+      /** @description 종료된 회차입니다. 독촉·팀 이동 등 편성 액션을 잠급니다. */
+      locked: boolean
+      /**
+       * Format: int64
+       * @description 미배정 인원 수입니다. 0이 아니면 제출이 열리지 않습니다.
+       * @example 0
+       */
+      unassignedMemberCount: number
+      summary: components['schemas']['Summary']
+      /** @description 이 프로젝트가 정의한 요구사항이며 sequenceNo 오름차순입니다. */
+      requirements: components['schemas']['Requirement'][]
+      /** @description 팀 행 목록이며 반 이름 → 팀 번호 순입니다. */
+      teams: components['schemas']['Team'][]
+    }
+    Requirement: {
+      /** Format: uuid */
+      requirementId: string
+      /**
+       * @description 요구사항 식별 키이며 프로젝트 안에서 유일합니다.
+       * @example HITL_TRIGGER
+       */
+      requirementKey: string
+      /**
+       * Format: int32
+       * @description 표시 순서
+       * @example 1
+       */
+      sequenceNo: number
+      title: string
+      description: string
+    }
+    Submission: {
+      /** Format: uuid */
+      submissionId: string
+      /** Format: date-time */
+      submittedAt: string
+      /**
+       * @description GITHUB_URL · ZIP_WITH_GITLOG
+       * @example GITHUB_URL
+       */
+      method: string
+      /**
+       * @description VALIDATING · ACCEPTED · FETCH_FAILED · INVALID
+       * @example ACCEPTED
+       */
+      status: string
+      /** Format: uuid */
+      submittedByUserId: string
+      /**
+       * @description 제출을 실행한 팀원 이름
+       * @example 김민준
+       */
+      submittedByName: string
+      /** @description GitHub 저장소 주소. ZIP 제출은 null입니다. */
+      repositoryUrl: string | null
+    }
+    /**
+     * @description 탭 머리의 `제출 6/8` 카운트.
+     *
+     *     teamCount = submittedTeamCount + unsubmittedTeamCount 입니다. analysisFailedTeamCount는
+     *     제출한 팀 중 최신 분석이 FAILED인 팀이라 이 등식과 별개입니다.
+     */
+    Summary: {
+      /**
+       * Format: int64
+       * @description 조회 범위의 팀 수
+       * @example 8
+       */
+      teamCount: number
+      /**
+       * Format: int64
+       * @description 제출을 마친 팀 수
+       * @example 6
+       */
+      submittedTeamCount: number
+      /**
+       * Format: int64
+       * @description 아직 제출하지 않은 팀 수
+       * @example 2
+       */
+      unsubmittedTeamCount: number
+      /**
+       * Format: int64
+       * @description 최신 분석이 실패한 팀 수
+       * @example 1
+       */
+      analysisFailedTeamCount: number
+    }
+    /** @description 팀 한 행. 제출·분석이 없으면 submission·analysis가 null입니다. */
+    Team: {
+      /** Format: uuid */
+      teamId: string
+      /** Format: uuid */
+      classId: string
+      className: string
+      /**
+       * @description 반 안에서의 팀 번호
+       * @example 3
+       */
+      teamNumber: string
+      teamName: string
+      /**
+       * @description DRAFT · CONFIRMED
+       * @example CONFIRMED
+       */
+      teamStatus: string
+      /** @description 아직 아무도 제출하지 않았으면 null입니다. **레코드 존재가 아니라 이 값으로 미제출을 판정합니다.** */
+      submission: components['schemas']['Submission'] | null
+      /** @description 제출에 매인 최신 분석 시도입니다. 제출이 없거나 아직 분석이 걸리지 않았으면 null입니다. */
+      analysis: components['schemas']['Analysis'] | null
+      /** @description 요구사항 P/F 판정이며 sequenceNo 오름차순입니다. 분석 전이면 빈 배열입니다. */
+      requirementResults: components['schemas']['RequirementResult'][]
+      /** @description 팀원 개인 행이며 이름 오름차순입니다. */
+      members: components['schemas']['Member'][]
+    }
+    /** @description GitHub 저장소로 낸 제출 */
+    GithubSubmissionContent: {
+      /**
+       * @description 교육생이 입력한 원문 주소. 정규화 전 값이라 폼에 그대로 되채울 수 있다
+       * @example https://github.com/team3/mini
+       */
+      repoUrl: string
+      /**
+       * @description 브랜치. 아직 확정되지 않았으면 null
+       * @example main
+       */
+      branch: string | null
+      /** @description 분석 대상 커밋. 분석 성공 후에만 채워지고 그 전에는 키가 빠진다 */
+      lastCommit?: components['schemas']['LastCommit']
+    }
     LastCommit: {
       /** @example a3f9c21 */
       sha: string
@@ -9673,19 +10403,226 @@ export interface components {
         | 'EMPTY_CODE'
         | 'PROHIBITED_FILE'
         | 'GIT_LOG_MISSING'
-      /** @description 제출 내용. GitHub 제출에서만. ZIP 제출이면 키가 빠진다 */
-      content?: components['schemas']['SubmissionContent']
-    }
-    SubmissionContent: {
-      /** @description 교육생이 입력한 원문 주소. 정규화 전 값이라 폼에 그대로 되채울 수 있다 */
-      repoUrl: string
       /**
-       * @description 브랜치
-       * @example main
+       * @description 제출 내용. **제출 수단에 따라 둘 중 하나**이고, 미제출이면 키가 빠진다.
+       *
+       *     `repoUrl`이 있으면 저장소 행을, `fileName`이 있으면 파일 행을 그리면 된다.
        */
-      branch: string
-      /** @description 분석 대상 커밋. 분석 성공 후에만 채워진다. 그 전에는 키가 빠진다 */
+      content?:
+        | components['schemas']['GithubSubmissionContent']
+        | components['schemas']['ZipSubmissionContent']
+    }
+    /** @description ZIP 파일로 낸 제출 */
+    ZipSubmissionContent: {
+      /**
+       * @description 올린 파일 이름
+       * @example team3-miniproject.zip
+       */
+      fileName: string
+      /**
+       * Format: int64
+       * @description 올린 파일 크기(바이트)
+       * @example 12873421
+       */
+      fileSize: number
+      /**
+       * @description 분석 대상 커밋. 분석 성공 후에만 채워지고 그 전에는 키가 빠진다.
+       *     ZIP 제출도 AI가 git log를 읽어 채운다
+       */
       lastCommit?: components['schemas']['LastCommit']
+    }
+    ClassWarning: {
+      /** Format: uuid */
+      conceptId: string
+      concept: string
+      /**
+       * Format: int64
+       * @description 그 개념에서 막힌 인원
+       * @example 13
+       */
+      stuckCount: number
+      /**
+       * Format: int64
+       * @description 판정 분모인 유효 응시자 수
+       * @example 23
+       */
+      assessedCount: number
+    }
+    /**
+     * @description 개념 한 행.
+     *
+     *     `notInCode`를 따로 세는 이유 — 그 개념이 코드에 없어 **문제가 만들어지지 않은** 것이라
+     *     못한 것이 아닙니다. 막힌 사람과 같은 칸에 넣으면 매니저가 둘을 구분하지 못합니다.
+     */
+    ConceptAggregate: {
+      /** Format: uuid */
+      conceptId: string
+      concept: string
+      /** Format: int32 */
+      displayOrder: number
+      /**
+       * Format: int64
+       * @description 2단 미달로 막힌 인원
+       * @example 3
+       */
+      stuckCount: number
+      /**
+       * Format: int64
+       * @description 코드에 개념이 없어 문제를 받지 못한 인원
+       * @example 1
+       */
+      notInCodeCount: number
+      /** @description 막힌 사람 명단 */
+      stuck: components['schemas']['Person'][]
+      /** @description 코드에 없던 사람 명단 */
+      notInCode: components['schemas']['Person'][]
+    }
+    Person: {
+      /** Format: uuid */
+      userId: string
+      name: string
+    }
+    /**
+     * @description 프로젝트 회차의 채점 결과 종합과 교육생 목록.
+     *
+     *     결과 탭은 마스터-디테일이고 이 응답이 **왼쪽 목록과 '프로젝트 종합' 화면**을 담당한다.
+     *     사람을 클릭했을 때 오른쪽에 그리는 축별 4단계와 채점 근거는
+     *     `GET /projects/{projectId}/evaluations/{userId}`가 따로 준다 — 그쪽이 사람 수 × 개념 수 × 4배라
+     *     목록만 보는 기본 진입에 함께 실을 값이 아니다.
+     *
+     *     🔴 **범위는 호출한 매니저의 담당 반이다.** 프로젝트 전체가 아니다.
+     */
+    ProjectEvaluationSummaryResponse: {
+      /** Format: uuid */
+      projectId: string
+      projectName: string
+      /** Format: uuid */
+      assessmentRoundId: string
+      /**
+       * Format: int32
+       * @description 회차 번호이며 프로젝트 안에서만 유일합니다.
+       * @example 1
+       */
+      roundNo: number
+      roundName: string
+      /**
+       * @description 회차 리포트가 발행됐는지. 발행 방식이 ROUND_BATCH 하나뿐이라 회차 단위 판정입니다.
+       *
+       *     발행 전 집계는 아직 응시하지 않은 인원이 빠진 **임시 값**이며, 발행 시점의 값으로 굳습니다.
+       */
+      reportPublished: boolean
+      /**
+       * Format: date-time
+       * @description 발행 시각. 발행 전이면 null입니다.
+       */
+      publishedAt: string | null
+      /**
+       * @description 결과를 그릴 수 있는지. 아직 아무도 응시를 마치지 않았으면 false이고, 화면은 표 대신
+       *     "팀 편성·제출·응시가 끝나야 개념별 집계가 생깁니다" 빈 상태를 보여줍니다.
+       */
+      resultAvailable: boolean
+      summary: components['schemas']['Summary']
+      /**
+       * @description 집단 미달 경고. 한 개념에서 **유효 응시자의 절반을 넘는 인원**이 막히면 담습니다.
+       *
+       *     이 개념은 개인 사유에서 빼고 여기서만 경고합니다 — 반 전체가 막힌 것을 개인 문제로
+       *     읽으면 면담에서 엉뚱한 말을 하게 됩니다.
+       */
+      classWarnings: components['schemas']['ClassWarning'][]
+      /** @description 개념별 집계이며 표시 순서 오름차순입니다. */
+      conceptAggregates: components['schemas']['ConceptAggregate'][]
+      /** @description 교육생 목록이며 이름 오름차순입니다. 왼쪽 목록이 이 배열입니다. */
+      trainees: components['schemas']['Trainee'][]
+    }
+    Concept: {
+      /** Format: uuid */
+      conceptId: string
+      concept: string
+      /** Format: int32 */
+      displayOrder: number
+      /** @description 그 개념이 코드에 있어 문제가 만들어졌는지. false면 못한 것이 아니라 묻지 못한 것입니다. */
+      inCode: boolean
+      /**
+       * Format: int32
+       * @description 통과한 축 중 가장 높은 단계(0~4)
+       * @example 2
+       */
+      reachLevel: number
+      /** @description 2단 미달이라 다시 보기 대상인 개념인지 */
+      retryTarget: boolean
+      /**
+       * @description **실제로 물은 단계만** 옵니다. 앞 단계에서 멈추면 뒤 단계는 아예 배열에 없고,
+       *     화면은 그 자리를 '미도달' 빈 칸으로 그립니다 — 0점이나 불합격과 구분해야 합니다.
+       */
+      steps: components['schemas']['Step'][]
+    }
+    /**
+     * @description 축 한 단계의 판정.
+     *
+     *     `passed`와 `helpCount`를 **따로** 읽어야 합니다. 힌트를 2회까지 받고도 통과할 수 있고,
+     *     2회 받고도 기준을 못 넘으면 불합격입니다. 화면의 4범주(합격 · 합격(도움 1회) ·
+     *     합격(도움 2회) · 불합격)는 이 둘을 조합해 만듭니다.
+     */
+    Step: {
+      /**
+       * @description L1 · L2 · L3 · L4
+       * @example L2
+       */
+      axisCode: string
+      /**
+       * Format: int32
+       * @description 축 순서 1~4. L1=코드이해, L2=설계논리, L3=대안비교, L4=반례대응입니다.
+       * @example 2
+       */
+      stepNo: number
+      passed: boolean
+      /**
+       * Format: int32
+       * @description 힌트를 받고 답한 횟수 0~2
+       * @example 1
+       */
+      helpCount: number
+      /**
+       * Format: int32
+       * @description 0~5점 원점수. 화면에는 노출하지 않는 내부 값이며 아직 채점되지 않았으면 null입니다.
+       */
+      score: number | null
+      /** @description 채점 근거 한 줄. 리포트 생성 전에는 null입니다. */
+      note: string | null
+    }
+    /**
+     * @description 교육생 한 명의 채점 결과 상세. 결과 탭에서 사람을 클릭했을 때 오른쪽에 그리는 값이다.
+     *
+     *     개념마다 도달 단계 한 칸과 축 4단계(코드이해 → 설계논리 → 대안비교 → 반례대응) 사다리가 있고,
+     *     채점 근거는 그 안에 접혀 있다. **주고받은 대화 전문은 주지 않는다** — 매니저 화면의 계약이며
+     *     학생 리포트에만 전문이 있다.
+     */
+    TraineeEvaluationDetailResponse: {
+      /** Format: uuid */
+      projectId: string
+      /** Format: uuid */
+      assessmentRoundId: string
+      /** Format: int32 */
+      roundNo: number
+      /** Format: uuid */
+      userId: string
+      name: string
+      /** Format: uuid */
+      classId: string
+      className: string
+      /** @description 회차 리포트 발행 여부. 발행 전에는 채점 근거(note)가 아직 없습니다. */
+      reportPublished: boolean
+      /**
+       * @description `AVAILABLE`(응시 완료) · `IN_PROGRESS`(응시 중) · `INCOMPLETE`(끝내지 못하고 창이 닫힘) ·
+       *     `NOT_ATTENDED`(아예 안 봄) · `INVALID`(무효 확정).
+       *
+       *     🔴 **`AVAILABLE`이 아니면 `retryTarget`이 항상 false입니다** — 아직 풀지 않은 문제를
+       *     2단 미달로 판정하면 응시 중인 사람이 전부 다시 보기 대상이 됩니다.
+       * @example AVAILABLE
+       */
+      resultStatus: string
+      /** @description 개념별 결과이며 표시 순서 오름차순입니다. */
+      concepts: components['schemas']['Concept'][]
     }
     /** @description 검증개념 후보 하나 */
     ConceptCandidateResponse: {
@@ -9915,51 +10852,6 @@ export interface components {
       representativeName: string
       /** @description analysis_job.failure_reason 그대로이며 사유가 기록되지 않았으면 null입니다. */
       failureReason: string | null
-    }
-    /**
-     * @description 회차 전체 합계.
-     *
-     *     analysisTargetCount는 submittedCount와, assessmentTargetCount는 analysisSucceededCount와
-     *     값이 같습니다 — 단계별 분모를 필드 이름으로도 드러내기 위해 따로 둡니다.
-     *     제출률은 submittedCount / targetTraineeCount, 응시율은 assessedCount / analysisTargetCount 입니다.
-     */
-    Summary: {
-      /**
-       * Format: int64
-       * @description 이번 회차 수행 대상 교육생 수(기수 총원)이며 제출률의 분모입니다.
-       * @example 250
-       */
-      targetTraineeCount: number
-      /**
-       * Format: int64
-       * @description 제출을 마친 교육생 수
-       * @example 231
-       */
-      submittedCount: number
-      /**
-       * Format: int64
-       * @description 분석 대상 교육생 수이며 submittedCount와 같습니다.
-       * @example 231
-       */
-      analysisTargetCount: number
-      /**
-       * Format: int64
-       * @description 분석이 성공한 교육생 수
-       * @example 223
-       */
-      analysisSucceededCount: number
-      /**
-       * Format: int64
-       * @description 응시 대상 교육생 수이며 analysisSucceededCount와 같습니다.
-       * @example 223
-       */
-      assessmentTargetCount: number
-      /**
-       * Format: int64
-       * @description 응시(INITIAL 완료)를 마친 교육생 수
-       * @example 198
-       */
-      assessedCount: number
     }
     /**
      * @description 기관 목록 정렬 기준
@@ -10305,14 +11197,6 @@ export interface components {
       /** @description 그달에 제출 마감된 회차 이름. **비어 있으면 회차 없이 재시험만 있던 달**이다. */
       projectNames: string[]
     }
-    /**
-     * @description 교안 분석 실행 상태.
-     *     `PENDING`(대기) · `RUNNING`(진행 중) → 화면의 `분석 중`,
-     *     `SUCCEEDED` → `분석 완료`, `FAILED` → `분석 실패`.
-     *     한 번도 분석하지 않은 교안은 이 값 자체가 null이다.
-     * @enum {string}
-     */
-    CurriculumAnalysisStatus: 'PENDING' | 'RUNNING' | 'SUCCEEDED' | 'FAILED'
     /**
      * @description 교안 목록 정렬 기준.
      *     `RECENT`(최근 업로드 순, 기본) · `NAME`(파일명 오름차순) · `USAGE`(사용 회차 많은 순)
@@ -10870,6 +11754,69 @@ export interface components {
        * @example 393
        */
       cohortTotal: number
+      /**
+       * @description 화면의 '회차 · 미프 N차' 드롭다운에 그대로 넣는 이 기수의 평가 회차 전부입니다.
+       *     **차수 오름차순**이라 화면이 '미프 1차 · 2차 · 3차'를 위에서 아래로 그리는 순서와 같습니다.
+       *     선택 상태는 이 배열의 순서가 아니라 assessmentRoundId에 맞추십시오 — 마지막 원소가
+       *     기본 선택이라는 보장이 없습니다.
+       *
+       *     기수 단위 회차 목록을 주는 API가 따로 없어 명단과 같은 응답에 싣습니다 — 없으면 화면이
+       *     GET /cohorts/{cohortId}/projects 뒤에 프로젝트마다 /rounds를 다시 부르는 N+1이 됩니다.
+       *     기수가 아직 프로젝트를 열지 않았으면 빈 배열입니다.
+       */
+      rounds: components['schemas']['TraineeRosterRoundOption'][]
+      /**
+       * Format: uuid
+       * @description **실제로 조회에 쓴 회차**입니다. 요청이 assessmentRoundId를 생략하면 서버가 「이번 회차」를
+       *     골라 이 값으로 답하므로, 화면은 첫 진입에 회차를 모르는 채로도 드롭다운의 선택 상태를
+       *     이 값으로 맞출 수 있습니다.
+       *
+       *     판정은 GET /cohorts/{cohortId}/projects/current와 같은 규칙입니다 —
+       *     RUNNING 중 가장 늦게 시작한 것 → 없으면 가장 이른 PLANNED → 그것도 없으면 마지막 프로젝트.
+       *
+       *     ⚠️ **rounds의 마지막 원소와 다를 수 있습니다.** 미프 2차가 진행 중이고 3차가 아직 안 열렸으면
+       *     이 값은 2차입니다. 드롭다운 선택은 rounds의 순서가 아니라 **반드시 이 값**에 맞추십시오.
+       *
+       *     content[].assessmentRoundId와 같은 값이며, 기수에 회차가 하나도 없으면 null입니다.
+       */
+      assessmentRoundId: string | null
+    }
+    /** @description 명단 화면의 회차 드롭다운 한 항목 */
+    TraineeRosterRoundOption: {
+      /**
+       * Format: uuid
+       * @description 회차 ID이며 요청의 assessmentRoundId에 그대로 넣는 값입니다.
+       */
+      assessmentRoundId: string
+      /**
+       * Format: int32
+       * @description 프로젝트 안의 회차 번호이며 (project_id, round_no) UNIQUE라 프로젝트마다 1부터 다시
+       *     시작합니다. 미니프로젝트는 프로젝트당 회차가 1건뿐이라 **늘 1**이므로 화면의 차수
+       *     표기에는 쓸 수 없습니다 — cohortRoundNo를 쓰십시오.
+       * @example 1
+       */
+      roundNo: number
+      /**
+       * Format: int32
+       * @description **기수 안의 회차 순번**이며 화면의 '미프 3차'에서 3이 이 값입니다.
+       * @example 3
+       */
+      cohortRoundNo: number
+      /**
+       * @description 회차 이름
+       * @example 3차 이해도 확인
+       */
+      roundName: string
+      /**
+       * Format: uuid
+       * @description 회차가 속한 프로젝트 ID
+       */
+      projectId: string
+      /**
+       * @description 회차가 속한 프로젝트 이름
+       * @example 미니프로젝트 3
+       */
+      projectName: string
     }
     TimelineEntry: {
       /** Format: uuid */
@@ -11347,14 +12294,6 @@ export interface components {
        */
       delta?: number
     }
-    Concept: {
-      /** Format: int32 */
-      problemNo: number
-      /** Format: uuid */
-      teachesId: string
-      conceptName: string
-      groupShortfall: boolean
-    }
     ManagerHeatmapResponse: {
       /** Format: uuid */
       cohortId: string
@@ -11409,13 +12348,6 @@ export interface components {
       teamId?: string
       /** @description TEAM·CLASS 계층에서는 키가 빠진다 */
       teamName?: string
-    }
-    Team: {
-      /** Format: uuid */
-      teamId: string
-      teamName: string
-      /** Format: int32 */
-      memberCount: number
     }
     /**
      * @description 기수 전체의 집단 미달 목록.
@@ -12053,7 +12985,7 @@ export interface components {
     ProblemActivityResponse: {
       /**
        * Format: int32
-       * @description 문제 번호(1~3)
+       * @description 문제 번호. 생성된 문제만 1부터 세므로 항상 1~problemTotal 범위다
        */
       problemNo?: number
       /**
@@ -12120,13 +13052,6 @@ export interface components {
       /** @description 배열 자체는 항상 존재한다. 없으면 빈 배열 */
       past: components['schemas']['PastRoundResponse'][]
     }
-    /**
-     * @description 커밋 이메일 검증 상태. `PENDING`(검증 대기) · `VERIFIED`(검증됨) · `UNVERIFIED`(검증 실패·해제).
-     *
-     *     ⚠️ **`null`은 미등록**을 뜻하며 값으로 표현하지 않는다.
-     * @enum {string}
-     */
-    CommitEmailStatus: 'PENDING' | 'VERIFIED' | 'UNVERIFIED'
     /** @description 지금 할 일 카드. 회차가 없으면 NO_ACTIVE_ROUND 합성 카드가 들어간다. */
     CurrentRoundResponse: {
       /**
@@ -12448,6 +13373,24 @@ export interface operations {
           'application/json': components['schemas']['ReportDisclosureResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   updateDisclosure: {
@@ -12472,6 +13415,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['ReportDisclosureResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -12510,6 +13471,15 @@ export interface operations {
       }
       /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -12569,6 +13539,15 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
       /** @description PROJECT_NOT_FOUND 프로젝트를 찾을 수 없음 */
       404: {
         headers: {
@@ -12611,6 +13590,24 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   updateModelPricing: {
@@ -12646,6 +13643,24 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   updateGradingModel: {
@@ -12672,6 +13687,24 @@ export interface operations {
       }
       /** @description AI_MODEL_NOT_AVAILABLE · 확인 플래그 누락 */
       400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -12910,13 +13943,67 @@ export interface operations {
       }
     }
     responses: {
-      /** @description OK */
-      200: {
+      /** @description 제출 접수됨 */
+      201: {
         headers: {
           [name: string]: unknown
         }
         content: {
           'application/json': components['schemas']['SubmissionResponse']
+        }
+      }
+      /** @description IDEMPOTENCY_KEY_REQUIRED · IDEMPOTENCY_KEY_INVALID · INVALID_REPOSITORY_URL · UNSUPPORTED_HOST */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SUBMISSION_ROUND_NOT_ACCESSIBLE */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SUBMISSION_ROUND_NOT_OPEN · SUBMISSION_DEADLINE_PASSED · SUBMISSION_METHOD_NOT_ALLOWED · IDEMPOTENCY_KEY_CONFLICT */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description AI_SERVER_UNAVAILABLE */
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -12950,13 +14037,85 @@ export interface operations {
       }
     }
     responses: {
-      /** @description OK */
-      200: {
+      /** @description 업로드 접수됨. 분석은 비동기로 이어진다 */
+      202: {
         headers: {
           [name: string]: unknown
         }
         content: {
           'application/json': components['schemas']['SubmissionResponse']
+        }
+      }
+      /** @description IDEMPOTENCY_KEY_REQUIRED · IDEMPOTENCY_KEY_INVALID · ARCHIVE_INVALID */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SUBMISSION_ROUND_NOT_ACCESSIBLE */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SUBMISSION_ROUND_NOT_OPEN · SUBMISSION_DEADLINE_PASSED · SUBMISSION_METHOD_NOT_ALLOWED · IDEMPOTENCY_KEY_CONFLICT */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description FILE_TOO_LARGE */
+      413: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ARTIFACT_STORE_FAILED */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description AI_SERVER_UNAVAILABLE */
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -12981,6 +14140,33 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['RepositoryCheckResponse']
+        }
+      }
+      /** @description INVALID_REPOSITORY_URL · UNSUPPORTED_HOST */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -13021,6 +14207,15 @@ export interface operations {
       }
       /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -13085,6 +14280,15 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
       /** @description 슈퍼어드민만 슈퍼어드민을 초대할 수 있음 */
       403: {
         headers: {
@@ -13138,6 +14342,24 @@ export interface operations {
           'application/json': components['schemas']['OrganizationListResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   createOrganization: {
@@ -13163,6 +14385,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['OrganizationResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
       /** @description ORG_NAME_TAKEN · ORG_IDEMPOTENCY_CONFLICT */
@@ -13194,6 +14434,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['OrganizationResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
       /** @description ORG_NOT_FOUND */
@@ -13234,6 +14492,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['PurgeOrganizationResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
       /** @description ORG_NOT_FOUND */
@@ -13284,6 +14560,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['InviteOperatorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
       /** @description 활성 기관을 찾을 수 없음 */
@@ -13340,6 +14634,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['OperatorListResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
       /** @description OPERATOR_INVITATION_NOT_FOUND · 이미 수락·취소된 초대 */
@@ -13594,6 +14906,15 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   requestAnalysis: {
@@ -13617,6 +14938,15 @@ export interface operations {
       }
       /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -13682,6 +15012,15 @@ export interface operations {
       }
       /** @description 액세스 토큰이 없거나 유효하지 않음 */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -13774,7 +15113,7 @@ export interface operations {
       query?: {
         /** @description 특정 반으로 좁힌다. unassignedOnly와 함께 지정할 수 없다 */
         classroomId?: string
-        /** @description true면 반 배정이 없는 교육생만 조회한다 */
+        /** @description true면 반 배정이 없는 교육생만 조회한다. 오퍼레이터 전용이며 매니저가 지정하면 400 */
         unassignedOnly?: boolean
         /** @description 계정 상태 필터. INVITED/ACTIVE/INACTIVE만 지원하며 생략하면 전체 */
         accountStatus?: components['schemas']['AccountStatus']
@@ -13788,7 +15127,7 @@ export interface operations {
          * @example NAME
          */
         sort?: components['schemas']['TraineeRosterSort']
-        /** @description 회차별 결과를 합칠 평가 회차 ID */
+        /** @description 회차 지표를 채울 평가 회차 ID. 생략하면 가장 최근 회차를 서버가 고르며, 실제로 쓴 값은 응답의 assessmentRoundId에 담긴다 */
         assessmentRoundId?: string
         /**
          * @description 0부터 시작하는 페이지 번호
@@ -13822,7 +15161,7 @@ export interface operations {
           'application/json': components['schemas']['TraineeRosterResponse']
         }
       }
-      /** @description ROSTER_FILTER_CONFLICT classroomId와 unassignedOnly를 함께 지정함 · VALIDATION_FAILED accountStatus·sort에 없는 값을 지정했거나 page·size 값이 올바르지 않음 */
+      /** @description ROSTER_FILTER_CONFLICT classroomId와 unassignedOnly를 함께 지정함 · ROSTER_UNASSIGNED_FILTER_NOT_ALLOWED 매니저가 unassignedOnly를 지정함(오퍼레이터 전용) · ROSTER_ASSESSMENT_ROUND_REQUIRED sort가 RISK·EXCELLENCE인데 기수에 회차가 하나도 없음 · VALIDATION_FAILED accountStatus·sort에 없는 값을 지정했거나 page·size 값이 올바르지 않음 */
       400: {
         headers: {
           [name: string]: unknown
@@ -14301,6 +15640,15 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   createProject: {
@@ -14346,6 +15694,15 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
       /** @description PROJECT_NAME_DUPLICATED 같은 기수에 이미 존재하는 프로젝트명 — 이름 입력란에 인라인 오류 */
       409: {
         headers: {
@@ -14383,6 +15740,24 @@ export interface operations {
           'application/json': components['schemas']['SendReminderResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   findClassrooms: {
@@ -14411,6 +15786,15 @@ export interface operations {
       }
       /** @description 액세스 토큰이 없거나 유효하지 않음 */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -15087,6 +16471,42 @@ export interface operations {
           'application/json': components['schemas']['SessionResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SESSION_NOT_ACCESSIBLE */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SESSION_ALREADY_ENDED */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   openHint: {
@@ -15107,6 +16527,33 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['HintResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description HINT_EXHAUSTED · HINT_NOT_AVAILABLE · SESSION_NOT_STARTED */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -15137,6 +16584,51 @@ export interface operations {
           'application/json': components['schemas']['AnswerSubmitResponse']
         }
       }
+      /** @description ANSWER_TEXT_REQUIRED */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SESSION_NOT_STARTED · SESSION_TIMEOUT · ANSWER_ALREADY_SUBMITTED */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description GRADING_FAILED */
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   recordActivity: {
@@ -15160,6 +16652,51 @@ export interface operations {
           [name: string]: unknown
         }
         content?: never
+      }
+      /** @description ACTIVITY_SIGNAL_REQUIRED */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SESSION_NOT_ACCESSIBLE */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SESSION_NOT_STARTED · SESSION_TIMEOUT · SESSION_ALREADY_ENDED */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
       }
     }
   }
@@ -15186,6 +16723,15 @@ export interface operations {
       }
       /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -15225,6 +16771,15 @@ export interface operations {
       }
       /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -15295,6 +16850,15 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
       /** @description PROJECT_NOT_FOUND 프로젝트를 찾을 수 없음 */
       404: {
         headers: {
@@ -15351,6 +16915,15 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
       /** @description PROJECT_NOT_FOUND 회차(프로젝트)를 찾을 수 없음 */
       404: {
         headers: {
@@ -15384,6 +16957,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['SuperAdminListResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
       /** @description SUPER_ADMIN_NOT_FOUND */
@@ -15426,6 +17017,24 @@ export interface operations {
           'application/json': components['schemas']['OrganizationResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   deleteOrganization: {
@@ -15457,6 +17066,24 @@ export interface operations {
       }
       /** @description ORG_DELETE_CONFIRM_MISMATCH · 기관명이 일치하지 않음 */
       400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -15508,6 +17135,24 @@ export interface operations {
           'application/json': components['schemas']['OrganizationResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   updateOperatorStatus: {
@@ -15537,6 +17182,24 @@ export interface operations {
       }
       /** @description ACTIVE/INACTIVE 외의 상태를 지정함 */
       400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -15584,6 +17247,24 @@ export interface operations {
           'application/json': components['schemas']['OperationSettingResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   updateOrganizationOperationSettings: {
@@ -15608,6 +17289,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['OperationSettingResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -15727,6 +17426,15 @@ export interface operations {
       }
       /** @description 액세스 토큰이 없거나 유효하지 않음 */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -16430,6 +18138,24 @@ export interface operations {
           'application/json': components['schemas']['AssessmentValidityResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   getAnalysis: {
@@ -16450,6 +18176,33 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['SubmissionAnalysisResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SUBMISSION_ACCESS_DENIED */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SUBMISSION_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -16474,6 +18227,33 @@ export interface operations {
           'application/json': components['schemas']['SubmissionAnalysisResultResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SUBMISSION_ACCESS_DENIED */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SUBMISSION_NOT_FOUND · ANALYSIS_RESULT_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   findMyReports: {
@@ -16492,6 +18272,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['TraineeReportsResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -16514,6 +18312,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['RoundReportResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -16540,6 +18356,24 @@ export interface operations {
           'application/json': components['schemas']['ManagedReportListResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   findClassDiagnosis: {
@@ -16560,6 +18394,94 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['CohortDiagnosisResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  findProjectSubmissionStatus: {
+    parameters: {
+      query?: {
+        /**
+         * @description 조회할 회차 번호이며 프로젝트 안에서만 유일합니다.
+         * @example 1
+         */
+        roundNo?: number
+        /** @description 담당 반 하나로 좁힐 때만 지정합니다. 생략하면 담당 반 전체입니다. */
+        classId?: string
+      }
+      header?: never
+      path: {
+        /**
+         * @description 조회할 프로젝트 ID
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        projectId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 제출 현황 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ProjectSubmissionStatusResponse']
+        }
+      }
+      /** @description VALIDATION_FAILED roundNo가 1 미만 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 · MANAGER_VIEWER_NOT_FOUND 토큰은 유효하지만 계정을 찾을 수 없음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED 매니저 권한이 아님 · MANAGER_VIEWER_NOT_ACTIVE 활성 계정이 아님 · MANAGER_ROLE_REQUIRED 매니저가 아님 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description PROJECT_ROUND_NOT_FOUND 그 프로젝트에 그 번호의 회차가 없음 · MANAGER_SCOPE_NOT_FOUND 담당 범위 밖의 기수이거나 담당하지 않는 반을 classId로 지정함 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -16587,6 +18509,15 @@ export interface operations {
       }
       /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -16626,6 +18557,158 @@ export interface operations {
           'application/json': components['schemas']['MySubmissionResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SUBMISSION_ROUND_NOT_ACCESSIBLE */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  findProjectEvaluationSummary: {
+    parameters: {
+      query?: {
+        /**
+         * @description 조회할 회차 번호
+         * @example 1
+         */
+        roundNo?: number
+        /** @description 담당 반 하나로 좁힐 때만 지정합니다. 생략하면 담당 반 전체입니다. */
+        classId?: string
+      }
+      header?: never
+      path: {
+        /** @description 조회할 프로젝트 ID */
+        projectId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 결과 종합 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ProjectEvaluationSummaryResponse']
+        }
+      }
+      /** @description VALIDATION_FAILED roundNo가 1 미만 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED 매니저 권한이 아님 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description PROJECT_ROUND_NOT_FOUND 그 번호의 회차가 없음 · MANAGER_SCOPE_NOT_FOUND 담당 범위 밖 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  findTraineeEvaluationDetail: {
+    parameters: {
+      query?: {
+        /**
+         * @description 조회할 회차 번호
+         * @example 1
+         */
+        roundNo?: number
+      }
+      header?: never
+      path: {
+        /** @description 조회할 프로젝트 ID */
+        projectId: string
+        /** @description 조회할 교육생 ID */
+        userId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 교육생 결과 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['TraineeEvaluationDetailResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED 매니저 권한이 아님 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description PROJECT_ROUND_NOT_FOUND 그 번호의 회차가 없음 · EVALUATION_TRAINEE_NOT_FOUND 담당 범위에 없는 교육생 · MANAGER_SCOPE_NOT_FOUND 담당 범위 밖의 기수 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   findConceptCandidates: {
@@ -16651,6 +18734,15 @@ export interface operations {
       }
       /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -16755,6 +18847,24 @@ export interface operations {
           'application/json': components['schemas']['SuperAdminListResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   findModelSettings: {
@@ -16773,6 +18883,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['PlatformModelSettingResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -16795,6 +18923,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['OperatorListResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -16827,6 +18973,24 @@ export interface operations {
           'application/json': components['schemas']['OrganizationUsageResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   findCohortCost: {
@@ -16850,6 +19014,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['CohortCostResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -16962,6 +19144,24 @@ export interface operations {
           'application/json': components['schemas']['OrganizationCohortListResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   findPlatformSummary: {
@@ -16980,6 +19180,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['PlatformSummaryResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -17002,6 +19220,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['OrganizationNameAvailabilityResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -17033,6 +19269,15 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   findMyEnrollments: {
@@ -17055,6 +19300,15 @@ export interface operations {
       }
       /** @description 액세스 토큰이 없거나 유효하지 않음 */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -17187,6 +19441,15 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
       /** @description CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(다른 기관의 교안도 여기로 온다) */
       404: {
         headers: {
@@ -17228,6 +19491,15 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
       /** @description CURRICULUM_MATERIAL_NOT_FOUND 그 기관에 그 교안이 없음(영구적) */
       404: {
         headers: {
@@ -17237,8 +19509,8 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description CURRICULUM_ANALYSIS_NOT_COMPLETED 최신 버전에 성공한 분석이 아직 없음(일시적 — 화면은 재시도를 안내한다) */
-      503: {
+      /** @description CURRICULUM_ANALYSIS_NOT_COMPLETED 최신 버전에 성공한 분석이 아직 없음(일시적 — 화면은 `분석이 끝나면 고를 수 있습니다`를 안내한다). **18차 R1로 503에서 내렸다** — 503은 인프라 신호라 프론트 전역 재시도와 프록시가 그대로 밟아 응답이 화면에 닿지 못했다 */
+      409: {
         headers: {
           [name: string]: unknown
         }
@@ -17271,6 +19543,15 @@ export interface operations {
       }
       /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -17312,6 +19593,15 @@ export interface operations {
       }
       /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -17378,6 +19668,24 @@ export interface operations {
           'application/json': components['schemas']['TraineeTimelineResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   findCurrentProject: {
@@ -17419,6 +19727,15 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   findManagerNotificationInbox: {
@@ -17448,6 +19765,24 @@ export interface operations {
           'application/json': components['schemas']['NotificationInboxResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   findLinkableCurricula: {
@@ -17473,6 +19808,15 @@ export interface operations {
       }
       /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
       401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
         headers: {
           [name: string]: unknown
         }
@@ -17601,6 +19945,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['RiskSignalResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -17747,6 +20109,24 @@ export interface operations {
           'application/json': components['schemas']['ConceptScopeResponse']
         }
       }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
     }
   }
   findCohortComparison: {
@@ -17887,7 +20267,7 @@ export interface operations {
       header?: never
       path: {
         sessionId: string
-        /** @description 문제 번호(1~3) */
+        /** @description 문제 번호(1~problemTotal) */
         problemNo: number
       }
       cookie?: never
@@ -17901,6 +20281,42 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['ProblemActivityResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description PROBLEM_NOT_FOUND */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description PROBLEM_ALREADY_CLOSED */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -17921,6 +20337,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['SessionResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
     }
@@ -17993,6 +20427,15 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
       /** @description PROJECT_NOT_FOUND 프로젝트가 없음 · CURRICULUM_LINK_NOT_FOUND 이 프로젝트의 교안 연결이 아님(이미 해제됐거나 다른 프로젝트의 연결 ID) */
       404: {
         headers: {
@@ -18032,6 +20475,24 @@ export interface operations {
         }
         content: {
           'application/json': components['schemas']['OperatorListResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
         }
       }
       /** @description OPERATOR_INVITATION_NOT_FOUND · 이미 수락·취소된 초대 */

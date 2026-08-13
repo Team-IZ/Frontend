@@ -22,15 +22,13 @@ export const STATUS_LABEL: Record<ProjectStatus, string> = {
  * 이름 뒤에 붙는 조사 — **받침으로 갈린다.** `미프 4차를` / `1반을`.
  *
  * `을(를)` 표기는 읽는 사람이 괄호를 건너뛰며 읽어야 하고, 회차 이름이 데이터라
- * 미리 고를 수도 없다. 한글 음절은 유니코드에서 **초성×21×28 + 중성×28 + 종성**으로
- * 배열돼 있어, `(코드 - 0xAC00) % 28`이 0이면 받침이 없다.
+ * 미리 고를 수도 없다.
  *
- * 숫자·영문으로 끝나면 받침을 알 수 없으므로 **받침 없음으로 둔다**(`v2를`).
+ * **구현은 `lib/format`으로 올라갔다** — 실패 문구(`lib/errorCopy`)가 세 번째로 같은 것을
+ * 필요로 했다(D14). 여기서 다시 내보내는 이유는 호출부·검증 스크립트가 이 경로를 쓰고
+ * 있어서다. 새로 쓰는 곳은 `@/lib/format`에서 직접 가져간다.
+ *
+ * ⚠ 상대 경로 + 확장자인 이유는 `npm run check:project`가 이 파일을 node로 직접 읽어서다
+ * (별칭을 모른다). `lib/errorCopy.ts` 맨 위 주석과 같은 사정이다.
  */
-export function withParticle(name: string, withBatchim: string, without: string): string {
-  const last = name.trim().at(-1) ?? ''
-  const code = last.charCodeAt(0)
-  const isHangul = code >= 0xac00 && code <= 0xd7a3
-  const hasBatchim = isHangul && (code - 0xac00) % 28 !== 0
-  return `${name}${hasBatchim ? withBatchim : without}`
-}
+export { withParticle } from '../../../lib/format.ts'

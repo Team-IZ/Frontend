@@ -97,18 +97,23 @@ export default function ConceptDistribution({ concepts }: { concepts: ConceptDia
             : undefined
         }
       >
-        {/* 2지 토글은 ButtonGroup이다 — Button 두 개로 만들지 않는다 */}
+        {/*
+          2지 토글은 ButtonGroup이다 — Button 두 개로 만들지 않는다.
+
+          **높이를 옆 셀렉트와 맞춘다.** `size="sm"`이라 30px이었는데 셀렉트는 36px이라
+          한 줄 안에서 어긋나 보였다. 34 + 그룹 테두리 2 = 36 — OP-02 계층 토글과 같은 값이다.
+        */}
         <ButtonGroup>
           <Button
             variant={groupBy === 'curriculum' ? 'primary' : 'ghost'}
-            size="sm"
+            className="h-[34px] text-sm font-normal"
             onClick={() => switchTo('curriculum')}
           >
             교안순
           </Button>
           <Button
             variant={groupBy === 'round' ? 'primary' : 'ghost'}
-            size="sm"
+            className="h-[34px] text-sm font-normal"
             onClick={() => switchTo('round')}
           >
             회차순

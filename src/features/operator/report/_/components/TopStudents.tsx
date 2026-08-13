@@ -30,16 +30,62 @@ const ALL = '__all__'
 /**
  * 우수 횟수를 **초록 농도**로 바꾼다. 많이 든 사람일수록 진하다.
  *
- * 눈금은 `우수 횟수 / 전체 회차`라는 **실제 값의 연속 사상**이지, "몇 회부터 최상위"
- * 같은 컷이 아니다 — 그래서 화면이 기준을 만들지 않는다는 규칙(E8)에 안 걸린다.
- * 단계를 셋으로 끊은 건 색 차이가 눈에 보이게 하려는 것뿐이고, 정확한 값은 늘 옆에
- * 숫자로 같이 있다.
+ * 눈금은 **실제로 존재하는 횟수**를 줄 세운 것이지 "몇 회부터 최상위" 같은 컷이 아니다
+ * — 화면이 기준을 만들지 않는다(E8). 정확한 값은 늘 옆에 숫자로 같이 있다.
+ *
+ * ─── 세 번 고쳤다 ──────────────────────────────────────────────
+ * ① **고정 컷이 최상위들을 뭉갰다.** `count / totalRounds`를 0.6·0.35에서 끊었더니
+ *    6회(1.0)·5회(0.83)·4회(0.67)가 **전부 같은 색**이었다 — 가장 잘한 사람들이
+ *    서로 구분되지 않는다. 이제 **그 기수에 실제로 있는 횟수만** 줄 세운다.
+ *
+ * ② **바닥을 고정하고 위를 어둡게 했더니 1등이 거의 검정이었다**(`rgb(10,69,43)`).
+ *
+ * ③ **방향이 반대였다.** 이 표에서 중요한 것은 **1등**이다 — 그러니 1등을 기준에
+ *    놓고 **아래를 연하게 뺀다.** 그러면 위가 검어지지 않으면서 띠를 넓게 쓸 수 있다.
+ *
+ * ─── 왜 글자색이 갈리나 ───────────────────────────────────────
+ * 흰 글자는 **진한 배경에서만** 읽힌다 — 바닥색(`--color-success`)이 대비 5.12인데
+ * 흰색을 8%만 섞어도 4.49로 떨어진다(실측). 그래서 **1등만 채운 배지**(흰 글자)이고
+ * 아래는 **연한 초록 바탕 + 진한 글자**다. 두 띠가 갈리는 것이 오히려 신호가 된다 —
+ * "채워진 것 하나"가 곧 최고 기록이다.
  */
-function intensity(count: number, totalRounds: number) {
-  const ratio = count / Math.max(totalRounds, 1)
-  if (ratio >= 0.6) return 'bg-success'
-  if (ratio >= 0.35) return 'bg-success/70'
-  return 'bg-success/40'
+
+/** 2등이 시작하는 밝기(%). 여기서부터 진한 글자로 갈아탄다 — 그 아래는 흰 글자가 안 읽힌다 */
+const SECOND_LIGHTNESS = 45
+/** 꼴찌 밝기(%). 더 밝히면 바탕(흰색)과 구분이 안 된다 */
+const LAST_LIGHTNESS = 82
+
+type Ink = { bg: string; text: string }
+
+function intensityScale(counts: number[]): Map<number, Ink> {
+  const distinct = [...new Set(counts)].sort((a, b) => b - a)
+  /* 1등을 뺀 나머지가 연한 띠를 나눠 갖는다 */
+  const steps = distinct.length - 2
+
+  return new Map(
+    distinct.map((count, rank): [number, Ink] => {
+      // 1등 — 유일하게 채운 배지다
+      // 진한 면 위의 글자는 흰 면과 같은 값이다(`--primary-foreground`가 쓰는 그 토큰)
+      if (rank === 0) return [count, { bg: 'var(--color-success)', text: 'var(--color-surface)' }]
+
+      const light =
+        steps > 0
+          ? SECOND_LIGHTNESS + ((rank - 1) / steps) * (LAST_LIGHTNESS - SECOND_LIGHTNESS)
+          : SECOND_LIGHTNESS
+      /*
+        `color-mix`로 섞는다 — `bg-success-200` 같은 계단 클래스를 미리 박아 두면
+        단계 수가 데이터에 따라 변하는 것을 표현할 수 없다(Tailwind는 런타임 문자열로
+        만든 클래스를 못 만든다).
+      */
+      return [
+        count,
+        {
+          bg: `color-mix(in oklab, var(--color-success), white ${light.toFixed(1)}%)`,
+          text: 'var(--color-fg)',
+        },
+      ]
+    }),
+  )
 }
 
 /**
@@ -58,14 +104,14 @@ function intensity(count: number, totalRounds: number) {
 function RoundMarks({
   rounds,
   totalRounds,
-  count,
+  fill,
 }: {
   rounds: number[]
   totalRounds: number
-  count: number
+  /** 배지와 **같은 색**이어야 한 사람의 두 표현이 같은 것을 말한다 */
+  fill: Ink | undefined
 }) {
   const hit = new Set(rounds)
-  const fill = intensity(count, totalRounds)
   return (
     // 칸이 열 폭을 나눠 가지므로 **모든 행에서 같은 회차가 같은 x 위치**에 온다 —
     // 그래야 위아래로 훑으며 "누가 후반에 올라왔나"를 읽을 수 있다.
@@ -75,14 +121,29 @@ function RoundMarks({
           key={n}
           aria-hidden="true"
           title={`${n}차`}
-          className={`h-[18px] flex-1 rounded-sm ${hit.has(n) ? fill : 'bg-surface-2 border-border border'}`}
+          className={`h-[18px] flex-1 rounded-sm ${hit.has(n) ? '' : 'bg-surface-2 border-border border'}`}
+          style={hit.has(n) ? { backgroundColor: fill?.bg } : undefined}
         />
       ))}
     </span>
   )
 }
 
-function StudentRows({ students, totalRounds }: { students: TopStudent[]; totalRounds: number }) {
+function StudentRows({
+  students,
+  totalRounds,
+  scale,
+}: {
+  students: TopStudent[]
+  totalRounds: number
+  /**
+   * ⚠ **여기서 만들지 않는다.** 이 컴포넌트는 **한 페이지**와 **인쇄용 전체** 두 곳에서
+   * 불리는데, 각자 눈금을 잡으면 **2페이지의 1등이 1페이지 1등만큼 진해진다**
+   * (실측 — 4회와 2회가 같은 색이고 3회가 4회보다 진했다). 눈금은 걸러진 명단 전체가
+   * 기준이라 부모가 한 번만 만든다.
+   */
+  scale: Map<number, Ink>
+}) {
   return (
     <>
       {students.map((s, i) => (
@@ -104,17 +165,22 @@ function StudentRows({ students, totalRounds }: { students: TopStudent[]; totalR
           <TableCell className="text-fg-muted text-xs">{s.className}</TableCell>
           <TableCell>
             <span
-              className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold text-white ${intensity(
-                s.miniTopCount,
-                totalRounds,
-              )}`}
+              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold"
+              style={{
+                backgroundColor: scale.get(s.miniTopCount)?.bg,
+                color: scale.get(s.miniTopCount)?.text,
+              }}
             >
               <StarIcon className="size-3" fill="currentColor" strokeWidth={0} />
               {s.miniTopCount}회
             </span>
           </TableCell>
           <TableCell>
-            <RoundMarks rounds={s.miniTopRounds} totalRounds={totalRounds} count={s.miniTopCount} />
+            <RoundMarks
+              rounds={s.miniTopRounds}
+              totalRounds={totalRounds}
+              fill={scale.get(s.miniTopCount)}
+            />
           </TableCell>
         </TableRow>
       ))}
@@ -192,11 +258,17 @@ export default function TopStudents({
 
   const filtered = cls !== ALL || round !== ALL
 
+  /*
+    눈금은 **걸러진 명단 전체**가 기준이다 — 페이지가 아니라. 반·회차로 걸러도
+    그 안에서 1등이 가장 진하다.
+  */
+  const scale = intensityScale(shown.map((s) => s.miniTopCount))
+
   return (
     <div>
       {students.length === 0 ? (
         // 「없음」(다 봤고 0건) — 아무도 반 상위 1~2명에 못 들었다는 것도 사실이다
-        <Empty className="border-solid bg-surface">
+        <Empty variant="empty">
           <EmptyHeader>
             <EmptyTitle>이번 기수엔 우수 교육생이 없습니다</EmptyTitle>
             <EmptyDescription>
@@ -246,7 +318,7 @@ export default function TopStudents({
             <Table className="table-fixed rounded-none border-0">
               <StudentsTableHead totalRounds={totalRounds} />
               <TableBody>
-                <StudentRows students={pageItems} totalRounds={totalRounds} />
+                <StudentRows students={pageItems} totalRounds={totalRounds} scale={scale} />
               </TableBody>
             </Table>
 
@@ -321,7 +393,7 @@ export default function TopStudents({
           <Table className="hidden table-fixed rounded-none border-0 print:block">
             <StudentsTableHead totalRounds={totalRounds} />
             <TableBody>
-              <StudentRows students={students} totalRounds={totalRounds} />
+              <StudentRows students={students} totalRounds={totalRounds} scale={scale} />
             </TableBody>
           </Table>
         </>

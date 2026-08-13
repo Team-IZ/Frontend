@@ -26,7 +26,8 @@ import type {
   findSections_Response,
   findUsedProjects_Response,
 } from '@/api/curriculum/curriculumTypes'
-import { Loading, LoadFailed } from '../_/components/AsyncState'
+import Loading from '@/components/common/Loading'
+import ErrorState from '@/components/common/ErrorState'
 import { CurriculumStatusBadge } from '../_/components/StatusBadges'
 import ReanalyzeDialog from './components/ReanalyzeDialog'
 
@@ -69,7 +70,7 @@ export default function CurriculumDetailScreen() {
   const sections = useFindSections({ path: { materialId: id } }, { enabled: !!id })
   const usedProjects = useFindUsedProjects({ path: { materialId: id } }, { enabled: !!id })
 
-  if (curriculum.isPending)
+  if (curriculum.isLoading)
     return (
       <ConsoleShell role="operator">
         <Loading label="교안을 불러오는 중" />
@@ -79,7 +80,12 @@ export default function CurriculumDetailScreen() {
   if (curriculum.isError || !curriculum.data)
     return (
       <ConsoleShell role="operator">
-        <LoadFailed label="교안을 찾을 수 없습니다" onRetry={() => void curriculum.refetch()} />
+        <ErrorState
+          error={curriculum.error}
+          subject="교안"
+          onRetry={() => void curriculum.refetch()}
+          retrying={curriculum.isFetching}
+        />
         <Button
           variant="ghost"
           className="mt-3"
@@ -155,12 +161,14 @@ export default function CurriculumDetailScreen() {
           </TabsList>
 
           <TabsContent value="sections">
-            {sections.isPending ? (
+            {sections.isLoading ? (
               <Loading label="섹션을 불러오는 중" />
             ) : sections.isError ? (
-              <LoadFailed
-                label="섹션을 불러오지 못했습니다"
+              <ErrorState
+                error={sections.error}
+                subject="섹션"
                 onRetry={() => void sections.refetch()}
+                retrying={sections.isFetching}
               />
             ) : (
               <SectionsTab
@@ -197,7 +205,11 @@ export default function CurriculumDetailScreen() {
  * SA-02 `labels.ts`에 같은 것이 있지만 **feature 간 교차 import는 금지**라 여기서 만든다 —
  * 세 번째 도메인이 필요로 하면 그때 `lib/`으로 올린다.
  */
-const uploadedOn = (iso: string) => iso.slice(0, 10)
+/**
+ * 등록일 표시. ⚠ **`required`라고 해서 값이 온다고 믿지 않는다** — 같은 형태의
+ * `joinedAt`이 실제로 `null`로 와서 화면을 죽였다(22차 Q2). 모르면 `—`다.
+ */
+const uploadedOn = (iso: string | null | undefined) => (iso ? iso.slice(0, 10) : '—')
 
 /** 섹션 한 건 — 응답이 배열이라 생성기가 항목 타입을 따로 만들지 않는다 */
 type Section = findSections_Response[number]

@@ -97,6 +97,11 @@ export type Report = {
   status: ReportStatus
   cohortName: string
   /** 확정 전이면 null — PDF가 잠긴 이유이기도 하다 */
+  /**
+   * 발행 시각. 서버가 **ISO 타임스탬프**(`2026-03-05T00:00:00Z`)로 준다 —
+   * `periodStart`·`periodEnd`가 날짜(`2025-09-01`)인 것과 다르다.
+   * 화면에 쓸 때는 `reportDate()`로 날짜만 잘라 쓴다.
+   */
   publishedAt: string | null
   /** 지금까지 발행된 회차 수 */
   completedRounds: number

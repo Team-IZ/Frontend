@@ -1,3 +1,4 @@
+import { useSearchParams } from 'react-router'
 import { useFindCohorts } from '@/api/academic/useAcademicQueries'
 
 /**
@@ -13,9 +14,18 @@ import { useFindCohorts } from '@/api/academic/useAcademicQueries'
  * 그래서 **서버에 물어본다.** 진행 중인 기수를 고르고, 없으면 목록의 첫 기수를 쓴다 —
  * 오퍼레이터가 지금 손대는 기수가 진행 중인 것이라는 근거다.
  *
- * ⚠ **여전히 임시다.** 실제로는 **상단 기수 스위처가 정하는 앱 상태**여야 한다(점검표
- * H5 — 컨텍스트 스위처는 상단 고정). 스위처가 붙으면 **이 파일만** 스토어 조회로 바뀌고
- * 화면은 안 바뀐다. 지금 형태가 그 교체를 이미 견디는 모양이다(훅이라 동기 상수가 아니다).
+ * ─── 스위처가 붙었다 (2026-08-12) ────────────────────────────
+ * **고른 값은 주소가 갖는다**(`?cohort=`) — async-states §5. 그래야 새로고침·뒤로가기가
+ * 따라오고 링크 하나가 「8기의 리포트」를 가리킨다. 스토어에 두면 그중 아무것도 안 된다.
+ *
+ * 주소에 없으면 **진행 중 기수**를 고른다 — 오퍼레이터가 지금 손대는 기수라는 근거다.
+ * 그래서 기본 주소(`/operator/report`)는 예전과 똑같이 동작한다.
+ *
+ * **기존 반환값은 그대로 두고 `cohorts`·`selectCohort`만 더했다** — 다섯 화면이 이미
+ * 이 훅을 쓰고 있어서, 바꾸면 다 고쳐야 한다.
+ *
+ * ⚠ **주소에 있는 기수가 목록에 없으면 무시한다.** 남의 조직 기수 id를 주소로 받아도
+ * 화면이 그 값으로 조회하지 않는다 — 서버가 막겠지만 화면이 먼저 안 보낸다.
  *
  * ─── 왜 `stores/`인가 ────────────────────────────────────────
  * **세 번째 도메인이 나와서 올렸다**(D14). OP-03/04와 OP-01이 같은 값을 물었고,
@@ -38,14 +48,41 @@ export function useCohortId(): {
   cohortName: string | undefined
   /** 기수가 하나도 없거나 조회가 실패했다 — 화면이 그 자리에 무엇을 그릴지 정한다 */
   failed: boolean
+  /** 스위처에 넘길 선택지. 아직 안 왔으면 빈 배열이다 */
+  cohorts: { value: string; label: string }[]
+  /** 스위처가 부른다 — 주소를 바꾸면 이 훅을 쓰는 화면이 전부 따라온다 */
+  selectCohort: (cohortId: string) => void
 } {
   const { data, isError } = useFindCohorts({ query: { page: 0, size: 50 } })
+  const [params, setParams] = useSearchParams()
   const list = data?.content ?? []
-  const picked = list.find((c) => c.status === 'RUNNING') ?? list[0]
+
+  /*
+    주소가 먼저다. 없거나 **목록에 없는 값**이면 진행 중 기수로 떨어진다 —
+    남의 조직 기수 id가 주소에 실려 와도 그것으로 조회하지 않는다.
+  */
+  const fromUrl = params.get('cohort')
+  const picked =
+    /* `fromUrl &&` 로 쓰면 빈 문자열이 그대로 흘러 타입이 넓어진다 — 조회를 먼저 한다 */
+    (fromUrl ? list.find((c) => c.cohortId === fromUrl) : undefined) ??
+    list.find((c) => c.status === 'RUNNING') ??
+    list[0]
+
+  const selectCohort = (cohortId: string) => {
+    const next = new URLSearchParams(params)
+    next.set('cohort', cohortId)
+    /*
+      `replace`가 아니다 — 기수를 바꾸는 것은 **다른 것을 보러 가는 것**이라
+      뒤로가기로 되돌아올 수 있어야 한다(검색어 타이핑과 다르다).
+    */
+    setParams(next)
+  }
 
   return {
     cohortId: picked?.cohortId,
     cohortName: picked?.name,
     failed: isError || (!!data && list.length === 0),
+    cohorts: list.map((c) => ({ value: c.cohortId, label: c.name })),
+    selectCohort,
   }
 }

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { Card } from '@/components/ui/Card'
+import { errorCopy } from '@/lib/errorCopy'
 import type { Block } from '../api/types'
 
 /*
@@ -55,40 +56,84 @@ export function Section({
 }
 
 /**
- * 블록 하나가 실패했을 때. **화면 전체를 비우지 않는다**(F2 · 목업 `#partial`).
+ * 블록 한 줄 자리의 「없는 것」. **화면 전체를 비우지 않는다**(F2 · 목업 `#partial`).
  *
- * 「없는 것」 3종 중 **유형 3 `실패`** 라서 `다시 시도`를 같이 둔다(02-layout §4).
- * 다만 여기서는 카드 한 줄이라 danger 배경을 깔지 않는다 — 나머지 블록이 정상인데
- * 한 줄만 붉은 면이 되면 그 블록이 이 화면의 주인공처럼 보인다.
+ * 나머지 블록이 정상인데 한 줄만 붉은 면이 되면 그 블록이 이 화면의 주인공처럼 보인다 —
+ * 카드 한 줄이라 danger 배경을 깔지 않고 톤으로만 가른다.
  */
-export function BlockFailed({ label, onRetry }: { label: string; onRetry: () => void }) {
+function BlockNote({
+  icon,
+  children,
+  action,
+}: {
+  icon: string
+  children: ReactNode
+  action?: ReactNode
+}) {
   return (
     <div className="text-fg-subtle flex items-center gap-3 px-6 py-3 text-sm">
-      <span aria-hidden>⚠</span>
-      <span>{label}</span>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="text-primary ml-auto text-xs hover:underline"
-      >
-        다시 시도
-      </button>
+      <span aria-hidden>{icon}</span>
+      <span>{children}</span>
+      {action && <span className="ml-auto">{action}</span>}
     </div>
   )
 }
 
-/** 값이 왔으면 그리고, 실패했으면 그 줄만 실패로 — 네 블록이 같은 분기를 반복하지 않게 */
+/**
+ * 값이 왔으면 그리고, 아니면 그 줄만 「없는 것」으로 — 네 블록이 같은 분기를 반복하지 않게.
+ *
+ * ▸ `undefined` — 아직 조회 중. **자리만 잡는다**(스켈레톤) — 없으면 도착할 때 카드가 튄다.
+ * ▸ `pending`   — 조회는 됐는데 그릴 것이 아직 없다. **재시도를 붙이지 않는다** — 눌러도
+ *   회차가 돌기 전엔 영영 같다(async-states §3-2 · op-01-situations §2-3).
+ * ▸ `failed`    — 못 가져왔다. 문구는 `errorCopy`가 `status`·코드를 보고 정한다.
+ */
 export function BlockBody<T>({
   block,
-  failedLabel,
+  skeleton,
+  subject,
   onRetry,
+  retrying,
   children,
 }: {
-  block: Block<T>
-  failedLabel: string
+  block: Block<T> | undefined
+  /**
+   * 조회 중에 그릴 자리표시자. **회색 막대 하나를 기본값으로 두지 않는다** — 기본값이
+   * 있으면 새 블록이 그걸 그대로 쓰고 다시 레이아웃이 밀린다. 모양을 정하게 강제한다.
+   */
+  skeleton: ReactNode
+  /** 실패 문구에 들어갈 대상 — `errorCopy`가 조사와 함께 쓴다 */
+  subject: string
   onRetry: () => void
+  retrying?: boolean
   children: (value: T) => ReactNode
 }) {
-  if (!block.ok) return <BlockFailed label={failedLabel} onRetry={onRetry} />
+  // 아직 조회 중 — **그 블록 모양으로** 자리를 잡는다(`BlockSkeleton`)
+  if (block === undefined) return <>{skeleton}</>
+
+  if (block.state === 'pending') return <BlockNote icon="·">{block.reason}</BlockNote>
+
+  if (block.state === 'failed') {
+    const copy = errorCopy(block.error, { subject })
+    return (
+      <BlockNote
+        icon="⚠"
+        action={
+          copy.retry && (
+            <button
+              type="button"
+              onClick={onRetry}
+              disabled={retrying}
+              className="text-primary text-xs hover:underline disabled:opacity-50"
+            >
+              {retrying ? '불러오는 중…' : '다시 시도'}
+            </button>
+          )
+        }
+      >
+        {copy.title}
+      </BlockNote>
+    )
+  }
+
   return <>{children(block.value)}</>
 }

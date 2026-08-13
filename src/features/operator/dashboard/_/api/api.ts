@@ -171,8 +171,21 @@ export function useDashboard(cohortId: string | undefined) {
 /**
  * 지금 굴러가는 회차의 진행.
  *
- * **회차를 먼저 고른다** — 진행 중(`RUNNING`)이 있으면 그것, 없으면 **가장 이른 예정**
- * 회차다(다음에 열릴 것이 지금 준비할 대상이다). 종료만 남았으면 마지막 회차를 쓴다.
+ * **회차를 먼저 고른다** — 진행 중(`RUNNING`)이 있으면 그중 **가장 늦게 시작한** 것,
+ * 없으면 **가장 이른 예정** 회차다(다음에 열릴 것이 지금 준비할 대상이다).
+ * 종료만 남았으면 마지막 회차를 쓴다.
+ *
+ * ─── 왜 `/projects/current`를 안 쓰나 ───────────────────────────
+ * 15차 R1로 **서버가 이 규칙을 가져갔다**(`GET /cohorts/{id}/projects/current`).
+ * 그런데 이 블록은 `3차 / 6회`를 그리므로 **총 회차 수도 필요**하고, 그 값은 그 응답에
+ * 없다. 둘 다 부르면 왕복이 두 번이라 오히려 느려진다 — 실측 TTFB가 목록 1.9초 ·
+ * current 1.7~2.9초로 **차이가 없다**(응답 크기 3.5KB vs 0.5KB는 이 지연에서 무의미).
+ *
+ * 그래서 목록을 그대로 쓰되 **선택 규칙만 서버 것과 맞췄다.** 전에는 `RUNNING` 중
+ * 목록 순서상 첫 번째를 골랐는데, 18차 R4로 정렬이 바뀌면서 **정렬에 따라 다른 회차가
+ * 뽑힐 수 있는** 상태였다. 시작일 기준으로 못 박는다.
+ *
+ * 총 회차 수가 `current` 응답에 실리면 그때 갈아탄다(22차 R3).
  */
 async function loadPipeline(cohortId: string, signal: AbortSignal): Promise<RoundPipeline | null> {
   const list = await findProjects({ path: { cohortId }, signal })
@@ -184,7 +197,10 @@ async function loadPipeline(cohortId: string, signal: AbortSignal): Promise<Roun
   */
   if (projects.length === 0) return null
 
-  const running = projects.find((p) => p.status === 'RUNNING')
+  /* 여럿이면 **가장 늦게 시작한** 것 — 겹쳐 열렸으면 나중에 연 쪽이 지금이다(15차 R1) */
+  const running = projects
+    .filter((p) => p.status === 'RUNNING')
+    .sort((a, b) => b.startDate.localeCompare(a.startDate))[0]
   const planned = projects
     .filter((p) => p.status === 'PLANNED')
     .sort((a, b) => a.startDate.localeCompare(b.startDate))[0]

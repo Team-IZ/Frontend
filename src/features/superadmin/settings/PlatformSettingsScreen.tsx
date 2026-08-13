@@ -46,9 +46,24 @@ export default function PlatformSettingsScreen() {
             </Empty>
           ) : isPending ? (
             <div className="flex flex-col gap-4">
-              <Skeleton className="h-28 w-full" />
-              <Skeleton className="h-40 w-full" />
+              <Skeleton className="h-[140px] w-full" />
+              <Skeleton className="h-[189px] w-full" />
+              <Skeleton className="h-[207px] w-full" />
             </div>
+          ) : !data.gradingPolicy ? (
+            // 스펙(schema.d.ts findModelSettings 응답 주석): "gradingPolicy가 null이면
+            // 플랫폼 초기 설정 전 — 화면은 빈 상태를 그려야 한다(오류가 아니다)."
+            // 생성 타입은 이 필드를 non-null로 잡아 ModelPricingTab이 그대로 구조분해하면
+            // 이 상태에서 TypeError로 화면 전체가 죽는다(렌더 확인으로 재현됨).
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>플랫폼 초기 설정이 아직 없습니다</EmptyTitle>
+                <EmptyDescription>
+                  채점 모델·단가가 아직 설정되지 않았습니다. 초기 데이터가 들어간 뒤 다시 확인해
+                  주세요.
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
           ) : (
             <ModelPricingTab settings={data} />
           )}

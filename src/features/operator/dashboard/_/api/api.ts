@@ -217,6 +217,28 @@ async function loadPipeline(cohortId: string, signal: AbortSignal): Promise<Roun
   */
   const analysisFailedTeams = r.classes.reduce((n, c) => n + c.failedTeams.length, 0)
 
+  /*
+    ⚠ **`summary`를 안 쓰고 반별로 센다.**
+
+    스펙의 `summary`가 교육생 단위 6개(`targetTraineeCount`·`submittedCount`·
+    `analysisSucceededCount`·`assessedCount`…)에서 **팀 단위 4개**(`teamCount`·
+    `submittedTeamCount`·`unsubmittedTeamCount`·`analysisFailedTeamCount`)로 바뀌었고,
+    **응시 단계가 통째로 없어졌다.** 그런데 **실서버는 아직 옛 모양을 준다**(실측 —
+    스펙과 배포본이 다른 말을 하는 중이다).
+
+    `classes[]`는 두 스펙에서 그대로이고 서버도 안 바꿨다. 그리고 그 합이 옛 `summary`와
+    **정확히 같다**(9기 5차 — 196/196/192/59 전부 일치). 그래서 여기서 센다.
+
+    이 블록은 「제출 → 분석 → 응시」를 **사람 수**로 그린다. 팀 수로 바꾸면 옆의 반 비교·
+    명단과 단위가 갈려 같은 화면이 두 가지를 센다 — 그래서 팀 요약으로 갈아타지 않는다.
+
+    > 미배정 교육생은 반이 없어 여기 안 잡히는데, **제출이 팀 단위이고 팀은 반에 속하므로
+    > 애초에 제출 대상이 아니다.** 분모로도 맞다.
+  */
+  const sum = (pick: (c: (typeof r.classes)[number]) => number) =>
+    r.classes.reduce((n, c) => n + pick(c), 0)
+  const submitted = sum((c) => c.submittedCount)
+
   return {
     projectId: target.projectId,
     // 회차 라벨은 **운영자가 붙인 이름**이다 — 화면이 `미프 N차`로 만들지 않는다
@@ -228,16 +250,16 @@ async function loadPipeline(cohortId: string, signal: AbortSignal): Promise<Roun
     pick,
     roundNo: target.sequenceNo,
     roundTotal: projects.length,
-    submitted: r.summary.submittedCount,
-    total: r.summary.targetTraineeCount,
-    analyzed: r.summary.analysisSucceededCount,
+    submitted,
+    total: sum((c) => c.targetTraineeCount),
+    analyzed: sum((c) => c.analysisSucceededCount),
     analysisFailedTeams,
-    attended: r.summary.assessedCount,
+    attended: sum((c) => c.assessedCount),
     reportPublished: r.reportPublished,
     // 실제 마감은 이 값이다 — 프로젝트의 `endDate`는 날짜뿐이고 서로 연결돼 있지 않다(9차 §15)
     dueAt: r.submissionDueAt,
     startAt: target.startDate,
-    notStarted: r.summary.submittedCount === 0,
+    notStarted: submitted === 0,
   }
 }
 

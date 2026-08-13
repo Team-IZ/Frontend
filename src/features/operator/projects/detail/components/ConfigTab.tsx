@@ -109,7 +109,17 @@ export default function ConfigTab({
                     <b className="font-semibold">(이름을 불러오지 못함)</b>
                   )}
                   {c.versionNo != null && <span className="text-fg-subtle"> v{c.versionNo}</span>}
-                  <span className="text-fg-subtle text-xs"> · 연결 {c.linkedAt.slice(0, 10)}</span>
+                  {/*
+                    ⚠ **날짜 필드가 `required`라고 해서 믿지 않는다.** 같은 형태의
+                    `joinedAt`이 실제로 `null`로 와서 화면을 죽였다(22차 Q2).
+                    없으면 그 조각만 안 쓴다 — 「연결 」이라고 매달지 않는다.
+                  */}
+                  {c.linkedAt && (
+                    <span className="text-fg-subtle text-xs">
+                      {' '}
+                      · 연결 {c.linkedAt.slice(0, 10)}
+                    </span>
+                  )}
                   {used > 0 && (
                     <span className="text-fg-subtle text-xs"> · 검증 개념 {used}건 사용 중</span>
                   )}

@@ -472,7 +472,15 @@ export default function RosterTab({ onCount }: Props) {
                       <AccountStatusBadge status={t.status} />
                     </TableCell>
                     <TableCell className="text-fg-muted text-xs tabular-nums">
-                      {t.joinedAt.slice(0, 10)}
+                      {/*
+                        ⚠ **`joinedAt`이 `null`로 온다.** 스펙은 `required` 문자열인데
+                        **미배정 교육생에게는 값이 없다**(22차 Q2). `.slice()`를 바로
+                        부르다가 **화면이 통째로 죽었다** — 반 필터에서 「미배정」을
+                        고르는 순간 라우터 errorElement가 화면을 먹었다(실측).
+
+                        모르는 값이라 `—`로 둔다. 오늘 날짜를 넣으면 등록일을 지어내는 것이다.
+                      */}
+                      {t.joinedAt ? t.joinedAt.slice(0, 10) : '—'}
                     </TableCell>
                     <TableCell className="text-fg-muted truncate text-xs">
                       {statusNote(t)}

@@ -21,7 +21,8 @@ import { canEditClasses } from '../_/rules'
 import { useCohortScope } from '../_/cohortScope'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
-import { Loading, LoadFailed } from '../_/components/AsyncState'
+import TableSkeleton from '@/components/common/TableSkeleton'
+import ErrorState from '@/components/common/ErrorState'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
 import { ALL } from '../_/filterState'
 import ConfirmDialog from '../_/components/ConfirmDialog'
@@ -181,13 +182,18 @@ export default function ClassesTab({ onCount }: Props) {
         </Alert>
       )}
 
-      {!cohortId || classes.isPending ? (
-        <Loading label="반을 불러오는 중" />
+      {!cohortId || classes.isLoading ? (
+        <TableSkeleton rows={5} cols={['w-24', 'w-40', 'w-28', null]} />
       ) : classes.isError ? (
-        <LoadFailed label="반을 불러오지 못했습니다" onRetry={() => void classes.refetch()} />
+        <ErrorState
+          error={classes.error}
+          subject="반"
+          onRetry={() => void classes.refetch()}
+          retrying={classes.isFetching}
+        />
       ) : rooms.length === 0 ? (
         narrowed ? (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
                 {query ? `"${query}"와 맞는 반이 없습니다` : '조건에 맞는 반이 없습니다'}
@@ -207,7 +213,7 @@ export default function ClassesTab({ onCount }: Props) {
             </Button>
           </Empty>
         ) : (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>아직 반이 없습니다</EmptyTitle>
               <EmptyDescription>

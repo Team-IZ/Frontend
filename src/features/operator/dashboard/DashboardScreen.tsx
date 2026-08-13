@@ -1,12 +1,11 @@
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
-import { Spinner } from '@/components/ui/Spinner'
-import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import { useCohortId } from '@/stores/cohortScope'
 import { getToday, useDashboard } from './_/api/api'
 import { ANALYSIS, GO_ANALYSIS, GO_PROJECT, projectPath } from './_/labels'
 import { Section, BlockBody } from './_/components/Section'
+import { ClassCompareSkeleton, PipelineSkeleton, TodoSkeleton } from './_/components/BlockSkeleton'
 import PipelineBlock from './_/components/PipelineBlock'
 import ClassCompareBlock from './_/components/ClassCompareBlock'
 import TodoBlock from './_/components/TodoBlock'
@@ -43,25 +42,41 @@ export default function DashboardScreen() {
     기수는 서버에 물어본다(`stores/cohortScope`). 목일 때 쓰던 상수 `'7'`은 UUID가 아니라
     실서버에서 안 통한다. **정해지기 전에는 조회가 안 나간다.**
   */
-  const { cohortId, cohortName, failed: cohortFailed } = useCohortId()
+  const { cohortId, cohortName, failed: cohortFailed, cohorts, selectCohort } = useCohortId()
   const page = useDashboard(cohortId)
-  const d = page.data
+  /** 값이 온 블록만 꺼낸다 — 다른 블록의 문구가 이 값을 참조한다 */
+  const pipe = page.pipeline?.state === 'ok' ? page.pipeline.value : null
+  const compare = page.compare?.state === 'ok' ? page.compare.value : null
+  const todos = page.todos?.state === 'ok' ? page.todos.value : null
 
   return (
-    <ConsoleShell role="operator" cohort={cohortName}>
-      {d && (
-        /*
-          기수 이름은 스코프가 안다 — 대시보드 응답에는 없다(`api.ts` `loadScope`).
-          인원·반 수는 반 비교 응답에서 나온다.
-        */
-        <PageHeader
-          breadcrumb={`대시보드 › ${cohortName ?? ''} › ${d.trainees}명 · ${d.classes}반`}
-          title="대시보드"
-        />
-      )}
+    <ConsoleShell
+      role="operator"
+      cohort={cohortName ?? ''}
+      cohorts={cohorts}
+      onCohortChange={selectCohort}
+    >
+      {/*
+        **제목 줄은 조회를 기다리지 않는다**(async-states §1-3) — 통째로 없다가 생기면
+        도착 순간 페이지 전체가 아래로 밀린다. 기수 이름은 스코프가 알고(`loadScope`),
+        인원·반 수만 반 비교 응답에서 오므로 **그 조각만 늦게 채운다.**
+      */}
+      <PageHeader
+        breadcrumb={
+          cohortName
+            ? `대시보드 › ${cohortName}${page.head ? ` › ${page.head.trainees}명 · ${page.head.classes}반` : ''}`
+            : '대시보드'
+        }
+        title="대시보드"
+      />
 
+      {/*
+        **화면 전체를 막는 것은 기수가 없을 때뿐이다.** 조회 셋은 각자 도착하고 각자
+        실패하므로(§2-1) 여기에 전역 로딩·전역 실패 분기가 없다 — 전에는 가장 느린
+        조회(5.2초) 때문에 화면이 8.1초 동안 스피너 하나였다.
+      */}
       {cohortFailed ? (
-        <Empty>
+        <Empty variant="empty">
           <EmptyHeader>
             <EmptyTitle>기수가 없습니다</EmptyTitle>
             <EmptyDescription>
@@ -69,60 +84,51 @@ export default function DashboardScreen() {
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
-      ) : page.isPending ? (
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" aria-label="대시보드를 불러오는 중" />
-        </div>
-      ) : page.isError || !d ? (
-        /*
-          전체 조회 실패(`DASHBOARD_UNAVAILABLE`). **0으로 그리지 않는다** — 케이스 표가
-          *"그림 없음"* 으로 정했다. 여기는 카드가 없는 자리라 박스를 쓴다
-          (02-layout §4 — 유형 3 `실패`: 실선 + danger).
-        */
-        <Empty className="bg-danger-soft border-danger-border border-solid">
-          <EmptyHeader>
-            <EmptyTitle>대시보드를 불러오지 못했습니다</EmptyTitle>
-            <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
-          </EmptyHeader>
-          <Button variant="ghost" onClick={() => page.refetch()}>
-            다시 시도
-          </Button>
-        </Empty>
       ) : (
         <>
           <Section
             title="이번 회차"
-            note={d.pipeline.ok && `· ${d.pipeline.value.roundLabel}`}
-            link={
-              d.pipeline.ok
-                ? { to: projectPath(d.pipeline.value.projectId), label: GO_PROJECT }
-                : undefined
+            /*
+              **진행 중인 회차가 아닐 때만 근거를 밝힌다.** 하나뿐인 RUNNING을 골랐다는
+              것은 자명해서 쓰면 잔소리가 되고, 예정·종료를 집었을 때는 그 사실이 없으면
+              사용자가 *"왜 이 회차지"* 에 답을 못 얻는다(§2-7).
+            */
+            note={
+              pipe &&
+              `· ${pipe.roundLabel}${
+                pipe.pick === 'RUNNING'
+                  ? ''
+                  : pipe.pick === 'PLANNED'
+                    ? ' · 다음 예정 회차'
+                    : ' · 마지막으로 끝난 회차'
+              }`
             }
+            link={pipe ? { to: projectPath(pipe.projectId), label: GO_PROJECT } : undefined}
           >
             <BlockBody
-              block={d.pipeline}
-              failedLabel="이번 회차 진행 상황을 불러오지 못했습니다"
-              onRetry={() => page.refetch()}
+              block={page.pipeline}
+              skeleton={<PipelineSkeleton />}
+              subject="이번 회차 진행 상황"
+              onRetry={page.retry.pipeline}
+              retrying={page.fetching.pipeline}
             >
               {(p) => <PipelineBlock p={p} today={getToday()} />}
             </BlockBody>
           </Section>
 
           {/* 이 화면의 주인공 — 나머지 셋은 이 네 줄을 읽기 위한 배경이다 */}
-          <Section title="조치 필요" note={d.todos.ok && `· ${d.todos.value.length}건`} lead>
+          <Section title="조치 필요" note={todos && `· ${todos.length}건`} lead>
             <BlockBody
-              block={d.todos}
-              failedLabel="조치 항목을 불러오지 못했습니다"
-              onRetry={() => page.refetch()}
+              block={page.todos}
+              skeleton={<TodoSkeleton />}
+              subject="조치 항목"
+              onRetry={page.retry.todos}
+              retrying={page.fetching.todos}
             >
-              {(todos) => (
+              {(list) => (
                 <TodoBlock
-                  todos={todos}
-                  upcomingRoundLabel={
-                    d.pipeline.ok && d.pipeline.value.notStarted
-                      ? d.pipeline.value.roundLabel
-                      : null
-                  }
+                  todos={list}
+                  upcomingRoundLabel={pipe?.notStarted ? pipe.roundLabel : null}
                 />
               )}
             </BlockBody>
@@ -135,17 +141,27 @@ export default function DashboardScreen() {
               파이프라인이 `0/250`인데 여기 숫자가 차 있으면 특히 그렇다.
             */
             note={
-              d.compare.ok &&
-              `· ${d.compare.value.basisRoundLabel} 기준 — ${d.compare.value.currentRoundLabel}는 ${
-                d.compare.value.currentNotStarted ? '아직 결과 없음' : '미발행'
+              compare &&
+              `· ${compare.basisRoundLabel} 기준 — ${compare.currentRoundLabel}는 ${
+                compare.currentNotStarted ? '아직 결과 없음' : '미발행'
               }`
             }
-            link={{ to: ANALYSIS, label: GO_ANALYSIS }}
+            /*
+              **값이 있을 때만 나가는 길을 준다.** 조회 중·집계 전·실패에도 링크가 떠
+              있으면, 아무것도 없는 화면에서 «분석에서 보기»를 눌러 또 아무것도 없는
+              화면으로 간다 — 나가는 길은 **데이터에 붙어 있는 것**이지 자리에 붙어
+              있는 것이 아니다(OP-01 §5). 다른 두 블록은 이미 그렇게 하고 있었다.
+            */
+            link={compare ? { to: ANALYSIS, label: GO_ANALYSIS } : undefined}
           >
             <BlockBody
-              block={d.compare}
-              failedLabel="반별 위험 비율을 불러오지 못했습니다"
-              onRetry={() => page.refetch()}
+              block={page.compare}
+              /* 반 수는 이 블록과 **같은 응답**에서 온다 — 캐시가 있는 재진입에서만
+                 정확하고, 첫 진입은 기본값으로 자리를 잡는다 */
+              skeleton={<ClassCompareSkeleton rows={page.head?.classes} />}
+              subject="반별 위험 비율"
+              onRetry={page.retry.compare}
+              retrying={page.fetching.compare}
             >
               {(c) => <ClassCompareBlock c={c} />}
             </BlockBody>

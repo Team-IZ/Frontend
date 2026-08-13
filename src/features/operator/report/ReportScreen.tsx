@@ -1,18 +1,19 @@
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
-import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
-import { useCohortId } from '@/stores/cohortScope'
 import type { Report } from './_/api/types'
 import { REPORT_SECTIONS, type ReportSectionKey } from './_/sections'
-import { getReport } from './_/api/api'
-import { useAsync } from './_/useAsync'
-import { exportReportCsv } from './_/labels'
-import { Loading, LoadFailed } from './_/components/AsyncState'
+import { useReport } from './_/api/api'
+import { useCohortId } from '@/stores/cohortScope'
+import { exportReportCsv, reportDate } from './_/labels'
+import { SlowNotice } from '@/components/common/Loading'
+import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import ErrorState from '@/components/common/ErrorState'
 import ReportHead from './_/components/ReportHead'
+import ReportSkeleton from './_/components/ReportSkeleton'
 import SectionHeading from './_/components/SectionHeading'
 import DiagnosisSummary from './_/components/DiagnosisSummary'
 import ConceptDistribution from './_/components/ConceptDistribution'
@@ -115,15 +116,19 @@ export default function ReportScreen() {
   const [section, setSection] = useState<Section>('summary')
 
   /*
-    기수는 서버에 물어본다(`stores/cohortScope`) — 대시보드·프로젝트와 같은 훅이다.
-    예전엔 이 화면만 하드코딩 상수(`_/cohortScope.ts`)를 따로 갖고 있어서, 다른 화면에서
-    기수를 바꿔도 리포트는 그 상수가 가리키는 기수에 그대로 고정돼 있었다.
-    **정해지기 전에는 조회가 안 나간다**(`useAsync`의 `enabled`).
+    **기수는 스코프가 정한다**(`stores/cohortScope`) — 이 화면만 상수 UUID를 들고 있었다.
+    그러면 다른 화면과 **서로 다른 기수를 보고 있어도** 화면이 아무 경고를 안 낸다.
   */
-  const { cohortId, cohortName: scopeCohortName, failed: cohortFailed } = useCohortId()
-  const load = useCallback(() => getReport(cohortId!), [cohortId])
-  const report = useAsync(load, cohortId !== undefined)
-  const cohortName = report.data?.cohortName
+  const {
+    cohortId,
+    cohortName: scopeName,
+    failed: cohortFailed,
+    cohorts,
+    selectCohort,
+  } = useCohortId()
+  const report = useReport(cohortId)
+  /* 표지·빵부스러기는 리포트가 준 이름을 먼저 쓴다 — 얼린 시점의 기수 이름이다 */
+  const cohortName = report.data?.cohortName ?? scopeName
 
   /**
    * 인쇄창의 기본 파일명이 "IZ-Get"이 아니라 실제 문서 제목이 되도록 인쇄
@@ -137,8 +142,14 @@ export default function ReportScreen() {
     document.title = original
   }
 
+  /* 기수를 셸에 넘긴다 — 안 넘기면 헤더가 자리표시자(`7기`)를 그려 본문과 다른 기수를 말한다 */
   return (
-    <ConsoleShell role="operator" cohort={scopeCohortName}>
+    <ConsoleShell
+      role="operator"
+      cohort={cohortName ?? ''}
+      cohorts={cohorts}
+      onCohortChange={selectCohort}
+    >
       {/*
         cohortName이 로딩 중엔 없다 — 조건 없이 이어 붙이면 데이터가 오기 전 "리포트 ›"
         만 매달린 채로 250ms(목 지연) 동안 보인다. `PageHeader`는 `breadcrumb`이
@@ -154,18 +165,40 @@ export default function ReportScreen() {
       </div>
 
       {cohortFailed ? (
-        <Empty>
+        <Empty variant="empty">
           <EmptyHeader>
             <EmptyTitle>기수가 없습니다</EmptyTitle>
             <EmptyDescription>
-              운영 관리에서 기수를 먼저 만들면 여기에 리포트가 쌓입니다.
+              운영 관리에서 기수를 먼저 만들면 회차가 끝난 뒤 리포트가 발행됩니다.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
-      ) : report.loading ? (
-        <Loading label="리포트를 불러오는 중" />
-      ) : report.failed ? (
-        <LoadFailed label="리포트를 불러오지 못했습니다" onRetry={report.reload} />
+      ) : /*
+        ⚠ **`isLoading`으로 가르면 안 된다.** 기수가 정해지기 전에는 `enabled: false`라
+        조회가 시작조차 안 하고, 그때 `isLoading`은 **`false`** 다 — 어느 분기도 안 타서
+        **진입 후 2.25초 동안 제목만 있고 본문이 비었다**(실측). OP-03에서 6초 백지를
+        만든 것과 같은 뿌리다(async-states §1-9).
+
+        판정은 **데이터가 있나**로 한다. 그리고 스피너가 아니라 문서 모양으로 자리를
+        잡는다 — OP-01~04와 같다.
+      */
+      !report.data && !report.isError ? (
+        <>
+          <ReportSkeleton />
+          <SlowNotice />
+        </>
+      ) : report.isError ? (
+        /*
+          **404가 늘 고장인 것은 아니다.** `COHORT_REPORT_NOT_FOUND`는 아직 진단이 확정되지
+          않은 것이라 「없는 것」 3종 중 **유형 1 `아직`** 이고, 다시 시도를 눌러도 리포트가
+          생기지 않는다 — `errorCopy`가 그 판정을 갖는다(async-states §3-1·3-2).
+        */
+        <ErrorState
+          error={report.error}
+          subject="리포트"
+          onRetry={() => void report.refetch()}
+          retrying={report.isFetching}
+        />
       ) : (
         report.data && (
           <>
@@ -176,12 +209,14 @@ export default function ReportScreen() {
                 // 안 보인다 — "전체 N회 완료"로 써서 completedRounds가 곧
                 // totalRounds라는 사실(=더 남은 회차가 없다)을 문구가 직접 말하게 한다.
                 report.data.status === 'CONFIRMED'
-                  ? `${report.data.publishedAt} 미니프로젝트 전체 ${report.data.completedRounds}회 완료 시점으로 고정`
+                  ? `${reportDate(report.data.publishedAt)} 미니프로젝트 전체 ${report.data.completedRounds}회 완료 시점으로 고정`
                   : `미니프로젝트 ${report.data.completedRounds} / ${report.data.totalRounds}회 진행 중 · 아직 확정 전`
               }
               exportDisabled={report.data.status !== 'CONFIRMED'}
               onExport={() =>
-                handlePrint(`리포트 · ${report.data!.cohortName} · ${report.data!.publishedAt}`)
+                handlePrint(
+                  `리포트 · ${report.data!.cohortName} · ${reportDate(report.data!.publishedAt)}`,
+                )
               }
               onExportCsv={() => exportReportCsv(report.data!)}
             />

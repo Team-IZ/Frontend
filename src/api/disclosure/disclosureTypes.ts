@@ -11,6 +11,7 @@ import type { operations } from '@/api/schema'
 export type findMyDisclosure_Path = operations['findMyDisclosure']['parameters']['path']
 export type findMyDisclosure_Response =
   operations['findMyDisclosure']['responses'][200]['content']['application/json']
+export type findMyDisclosure_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // PUT /api/v0/reports/{reportId}/disclosure — 리포트 공개 범위 설정
 export type updateDisclosure_Path = operations['updateDisclosure']['parameters']['path']
@@ -19,3 +20,4 @@ export type updateDisclosure_Body = NonNullable<
 >['content']['application/json']
 export type updateDisclosure_Response =
   operations['updateDisclosure']['responses'][200]['content']['application/json']
+export type updateDisclosure_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'

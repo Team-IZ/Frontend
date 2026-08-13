@@ -12,6 +12,7 @@ export type findOrganizationOperationSettings_Path =
   operations['findOrganizationOperationSettings']['parameters']['path']
 export type findOrganizationOperationSettings_Response =
   operations['findOrganizationOperationSettings']['responses'][200]['content']['application/json']
+export type findOrganizationOperationSettings_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // PATCH /api/v0/organizations/{organizationId}/operations/settings — 기관 운영 설정 변경
 export type updateOrganizationOperationSettings_Path =
@@ -21,12 +22,14 @@ export type updateOrganizationOperationSettings_Body = NonNullable<
 >['content']['application/json']
 export type updateOrganizationOperationSettings_Response =
   operations['updateOrganizationOperationSettings']['responses'][200]['content']['application/json']
+export type updateOrganizationOperationSettings_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // GET /api/v0/organizations/{organizationId}/operations/usage — 기관 월별 저장량·활동·AI 비용 조회
 export type findUsage_Path = operations['findUsage']['parameters']['path']
 export type findUsage_Query = NonNullable<operations['findUsage']['parameters']['query']>
 export type findUsage_Response =
   operations['findUsage']['responses'][200]['content']['application/json']
+export type findUsage_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // GET /api/v0/organizations/{organizationId}/operations/cost — 기수 비용 조회 (OP-06 ⑤)
 export type findCohortCost_Path = operations['findCohortCost']['parameters']['path']
@@ -34,3 +37,4 @@ export type findCohortCost_Query = NonNullable<operations['findCohortCost']['par
 export type findCohortCost_Response =
   operations['findCohortCost']['responses'][200]['content']['application/json']
 export type findCohortCost_Item = NonNullable<findCohortCost_Response['classes']>[number]
+export type findCohortCost_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'

@@ -21,8 +21,11 @@ import {
   useUpdateOperatorStatus,
 } from '@/api/organization/useOrganizationMutations'
 import { isApiError } from '@/api/_contract'
-import type { findOperators_Item } from '@/api/organization/organizationTypes'
-import { formatDate, formatDateTime } from '../../labels'
+import type {
+  findOperators_Item,
+  findOrganization_Response,
+} from '@/api/organization/organizationTypes'
+import { formatDate, formatDateTime, isDeletionLocked } from '../../labels'
 import OperatorInviteDialog from './OperatorInviteDialog'
 
 /*
@@ -44,6 +47,7 @@ import OperatorInviteDialog from './OperatorInviteDialog'
   그때는 `LAST_OPERATOR`를 문장으로 바꿔 띄운다. 앞은 평소를 위한 것이고 뒤는 어긋난 순간을 위한 것이다.
 */
 
+type Org = findOrganization_Response
 type Operator = findOperators_Item
 
 function ActionLink({
@@ -96,8 +100,12 @@ function OperatorStatusBadge({ op }: { op: Operator }) {
   }
 }
 
-export default function OperatorsTab({ org }: { org: { organizationId: string } }) {
+/** J6(정책) — 삭제 대기 중엔 이 문구가 다른 잠금 사유보다 우선한다 */
+const DELETION_LOCKED_TITLE = '삭제 대기 상태인 기관은 오퍼레이터를 관리할 수 없습니다.'
+
+export default function OperatorsTab({ org }: { org: Org }) {
   const organizationId = org.organizationId
+  const locked = isDeletionLocked(org.status)
   const { data, isPending, isError, refetch } = useFindOperators({ path: { organizationId } })
   const [inviteOpen, setInviteOpen] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -157,7 +165,11 @@ export default function OperatorsTab({ org }: { org: { organizationId: string } 
             ? `이 기관의 오퍼레이터 계정 · ${operators.length}명 (활성 ${data.activeCount})`
             : ' '}
         </p>
-        <Button onClick={() => setInviteOpen(true)}>
+        <Button
+          disabled={locked}
+          title={locked ? DELETION_LOCKED_TITLE : undefined}
+          onClick={() => setInviteOpen(true)}
+        >
           <PlusIcon /> 오퍼레이터 초대
         </Button>
       </div>
@@ -212,11 +224,13 @@ export default function OperatorsTab({ org }: { org: { organizationId: string } 
                       {op.status === 'ACTIVE' && (
                         <ActionLink
                           tone="danger"
-                          disabled={!op.suspendable || busy}
+                          disabled={locked || !op.suspendable || busy}
                           title={
-                            op.suspendable
-                              ? undefined
-                              : '이 기관의 마지막 활성 오퍼레이터는 정지할 수 없습니다'
+                            locked
+                              ? DELETION_LOCKED_TITLE
+                              : op.suspendable
+                                ? undefined
+                                : '이 기관의 마지막 활성 오퍼레이터는 정지할 수 없습니다'
                           }
                           onClick={() =>
                             void run(
@@ -236,7 +250,8 @@ export default function OperatorsTab({ org }: { org: { organizationId: string } 
                       {inactive && (
                         <ActionLink
                           tone="primary"
-                          disabled={busy}
+                          disabled={locked || busy}
+                          title={locked ? DELETION_LOCKED_TITLE : undefined}
                           onClick={() =>
                             void run(
                               () =>
@@ -256,7 +271,8 @@ export default function OperatorsTab({ org }: { org: { organizationId: string } 
                         <>
                           <ActionLink
                             tone="primary"
-                            disabled={busy}
+                            disabled={locked || busy}
+                            title={locked ? DELETION_LOCKED_TITLE : undefined}
                             onClick={() =>
                               void run(
                                 () => resend.mutateAsync({ path: { organizationId, tokenId } }),
@@ -268,7 +284,8 @@ export default function OperatorsTab({ org }: { org: { organizationId: string } 
                           </ActionLink>
                           <ActionLink
                             tone="danger"
-                            disabled={busy}
+                            disabled={locked || busy}
+                            title={locked ? DELETION_LOCKED_TITLE : undefined}
                             onClick={() =>
                               void run(
                                 () => cancel.mutateAsync({ path: { organizationId, tokenId } }),

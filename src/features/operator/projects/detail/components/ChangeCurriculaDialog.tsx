@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/Checkbox'
 import { Spinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils/cn'
 import { useSaveCurricula } from '../../queries'
-import { canUnlinkCurriculum } from '../../rules'
+import { canUnlinkCurriculum, curriculumBlockedReason, splitByAvailability } from '../../rules'
 import type { Curriculum, ProjectDetail } from '../../types'
 
 /*
@@ -38,10 +38,24 @@ type Props = {
   onOpenChange: (open: boolean) => void
   project: ProjectDetail
   curricula: Curriculum[]
+  /**
+   * 교안 목록이 **아직 오는 중인가.** 모르면 열자마자 「등록된 교안이 없습니다 —
+   * 운영 관리에서 먼저 등록하세요」가 떠서, 1초 뒤 도착할 목록을 두고 **없다고 단정하며
+   * 다른 화면으로 보낸다**(실측 — 열고 1초 시점에 그 문구가 보였다).
+   */
+  loading?: boolean
 }
 
-export default function ChangeCurriculaDialog({ open, onOpenChange, project, curricula }: Props) {
+export default function ChangeCurriculaDialog({
+  open,
+  onOpenChange,
+  project,
+  curricula,
+  loading,
+}: Props) {
   const [picked, setPicked] = useState<string[]>([])
+  /** 못 붙이는 교안은 접어 둔다 — 기본은 닫힘 */
+  const [showBlocked, setShowBlocked] = useState(false)
   const [failed, setFailed] = useState(false)
   const save = useSaveCurricula()
 
@@ -57,6 +71,15 @@ export default function ChangeCurriculaDialog({ open, onOpenChange, project, cur
     setPicked((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
 
   const linkedIds = project.curricula.map((c) => c.curriculumVersionId)
+
+  /*
+    **이미 붙어 있는 것은 늘 위에 남는다** — 떼려고 열었는데 접혀 있으면 못 찾는다.
+    나머지는 고를 수 있는 것을 위로, 못 고르는 것을 접는다(`rules.ts`).
+  */
+  const { ready, blocked } = splitByAvailability(
+    curricula.filter((c) => !linkedIds.includes(c.versionId)),
+  )
+  const linked = curricula.filter((c) => linkedIds.includes(c.versionId))
   const changed = picked.length !== linkedIds.length || picked.some((id) => !linkedIds.includes(id))
 
   return (
@@ -78,20 +101,32 @@ export default function ChangeCurriculaDialog({ open, onOpenChange, project, cur
             </Alert>
           )}
 
-          {curricula.length === 0 ? (
+          {loading ? (
+            <p className="border-border-strong text-fg-subtle rounded-md border border-dashed p-5 text-center text-xs">
+              교안을 불러오는 중
+            </p>
+          ) : curricula.length === 0 ? (
             <p className="border-border-strong text-fg-subtle rounded-md border border-dashed p-5 text-center text-xs">
               등록된 교안이 없습니다 —{' '}
               <b className="text-fg-muted font-semibold">운영 관리 › 교안</b>에서 먼저 등록하세요
             </p>
           ) : (
             <div className="border-border divide-border divide-y rounded-md border">
-              {curricula.map((c) => {
+              {[...linked, ...ready, ...(showBlocked ? blocked : [])].map((c) => {
                 const checked = picked.includes(c.versionId)
                 /*
                   규칙은 `rules.ts`가 갖는다 — 여기서 `concepts.some(...)`을 다시 쓰면
                   같은 규칙이 두 곳에 생기고, 서버 검증(`saveCurricula`)과 갈릴 수 있다.
                 */
-                const locked = checked && !canUnlinkCurriculum(project.concepts, c.versionId)
+                /*
+                  **분석이 끝난 교안만 새로 붙일 수 있다.** 판정은 `rules.ts`가 갖는다 —
+                  생성 모달(OP-03)과 같은 규칙이라 두 곳이 갈리면 안 된다.
+                  **이미 붙어 있는 것은 건드리지 않는다** — 떼는 것은 막을 이유가 없다.
+                */
+                const blockedReason = checked ? null : curriculumBlockedReason(c)
+                const locked =
+                  !!blockedReason ||
+                  (checked && !canUnlinkCurriculum(project.concepts, c.versionId))
                 const users = locked
                   ? project.concepts.filter((k) => k.curriculumVersionId === c.versionId)
                   : []
@@ -120,9 +155,17 @@ export default function ChangeCurriculaDialog({ open, onOpenChange, project, cur
                           후보는 프로젝트 기준으로 따로 조회된다. 쪽수로 바꿨다:
                           **없는 값을 추정하지 않고 응답에 있는 사실을 쓴다.**
                         */}
-                        <span className="text-fg-subtle ml-auto shrink-0 text-xs">
-                          {c.pageCount}쪽
-                        </span>
+                        {/* 쪽수를 모르면 단위도 안 쓴다 — 「쪽」만 남으면 0쪽처럼 읽힌다 */}
+                        {blockedReason && (
+                          <span className="border-border text-fg-subtle rounded-full border px-1.5 py-px text-xs">
+                            {blockedReason}
+                          </span>
+                        )}
+                        {c.pageCount != null && (
+                          <span className="text-fg-subtle ml-auto shrink-0 text-xs">
+                            {c.pageCount}쪽
+                          </span>
+                        )}
                       </span>
                       {/*
                         왜 못 빼는지 + 무엇부터 바꿔야 하는지. 이름을 쓰는 이유는
@@ -139,6 +182,18 @@ export default function ChangeCurriculaDialog({ open, onOpenChange, project, cur
                   </label>
                 )
               })}
+              {/* 접힌 것이 몇 개이고 왜 못 붙는지 — 개수만 쓰면 「고장인가」가 된다 */}
+              {blocked.length > 0 && (
+                <button
+                  type="button"
+                  className="text-fg-subtle hover:text-fg w-full p-2.5 text-center text-xs"
+                  onClick={() => setShowBlocked((v) => !v)}
+                >
+                  {showBlocked
+                    ? '분석이 안 끝난 교안 접기'
+                    : `분석이 안 끝난 교안 ${blocked.length}개 보기`}
+                </button>
+              )}
             </div>
           )}
         </div>

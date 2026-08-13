@@ -2,20 +2,45 @@ import { cva, type VariantProps } from 'class-variance-authority'
 
 import { cn } from '@/lib/utils/cn'
 
-function Empty({ className, ...props }: React.ComponentProps<'div'>) {
+/*
+  「없는 것」은 세 종류다(02-layout §4). **질문 하나로 갈린다 — 사용자가 지금 할 일이 있나.**
+
+      pending `아직`  기다리면 채워진다   점선          문구에 **언제** 채워지는지
+      empty   `없음`  만들거나 조건을 푼다 실선          **0건이 무슨 뜻인지** + 그 행동
+      failed  `실패`  다시 시도            실선 + danger 다시 시도 버튼
+
+  점선은 "지금은 비었지만 채워질 자리", 실선은 "확정된 면"이라는 뜻이다. 셋을 갈라 쓰지
+  않으면 화면이 *"기다리면 됩니다"* 라고 잘못 말한다 — 실제로 운영 관리 열 곳이 전부
+  유형 2인데 점선으로 그려지고 있었다(async-states §2-2).
+
+  ⚠ **기본값은 아직 `pending`이다.** 실사용 빈도는 `empty`가 압도적이라 기본값이 그쪽이어야
+  맞지만, 이 컴포넌트를 **다른 레포(auth·슈퍼어드민)도 쓴다** — 지금 뒤집으면 그쪽 화면이
+  조용히 바뀐다. 양쪽이 `variant`로 옮긴 뒤에 뒤집는다(async-states-plan §3).
+*/
+const emptyVariants = cva(
+  'flex w-full min-w-0 flex-1 flex-col items-center justify-center gap-4 rounded-md border p-6 text-center text-balance',
+  {
+    variants: {
+      variant: {
+        pending: 'border-dashed border-border-strong bg-surface-2',
+        empty: 'border-solid border-border-strong bg-surface-2',
+        failed: 'border-solid border-danger-border bg-danger-soft',
+      },
+    },
+    defaultVariants: { variant: 'pending' },
+  },
+)
+
+function Empty({
+  className,
+  variant,
+  ...props
+}: React.ComponentProps<'div'> & VariantProps<typeof emptyVariants>) {
   return (
     <div
       data-slot="empty"
-      className={cn(
-        /*
-          기본값은 `border-dashed`만 있고 `border`(두께)도 색도 없어서 **테두리가 아예
-          안 그려졌다.** 점선 의도는 남기고 실제로 보이게 채운다 — 빈 상태는 "여기가
-          무언가 들어올 자리"임을 말해야 하고, 경계가 없으면 그냥 떠 있는 문구가 된다.
-          점선은 "지금은 비었지만 채워질 자리"라는 뜻으로 실선(=확정된 면)과 구분한다.
-        */
-        'flex w-full min-w-0 flex-1 flex-col items-center justify-center gap-4 rounded-md border border-dashed border-border-strong bg-surface-2 p-6 text-center text-balance',
-        className,
-      )}
+      data-variant={variant ?? 'pending'}
+      className={cn(emptyVariants({ variant }), className)}
       {...props}
     />
   )

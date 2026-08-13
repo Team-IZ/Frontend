@@ -91,7 +91,9 @@ export default function SettingEditDialog<T extends object>({
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+          {/* 저장 중엔 취소도 잠근다 — 안 잠그면 "취소"로 닫아도 요청은 백그라운드에서
+              계속 진행돼 나중에 조용히 반영되거나(성공) 사용자가 못 보는 채로 실패한다(I6) */}
+          <Button variant="ghost" disabled={update.isPending} onClick={() => onOpenChange(false)}>
             취소
           </Button>
           {/* 바꾼 게 없으면 막는다 — 빈 저장은 정책 버전만 하나 늘린다(append-only) */}

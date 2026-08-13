@@ -13,18 +13,41 @@ export type checkRepository_Body = NonNullable<
 >['content']['application/json']
 export type checkRepository_Response =
   operations['checkRepository']['responses'][200]['content']['application/json']
+export type checkRepository_Errors =
+  'INVALID_REPOSITORY_URL' | 'UNSUPPORTED_HOST' | 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // GET /api/v0/submissions/{submissionId}/analysis — 코드 분석 진행 상태·실패 사유 조회
 export type getAnalysis_Path = operations['getAnalysis']['parameters']['path']
 export type getAnalysis_Response =
   operations['getAnalysis']['responses'][200]['content']['application/json']
+export type getAnalysis_Errors =
+  'UNAUTHENTICATED' | 'SUBMISSION_ACCESS_DENIED' | 'ACCESS_DENIED' | 'SUBMISSION_NOT_FOUND'
 
 // GET /api/v0/submissions/{submissionId}/analysis/result — 코드 분석 결과 조회
 export type getAnalysisResult_Path = operations['getAnalysisResult']['parameters']['path']
 export type getAnalysisResult_Response =
   operations['getAnalysisResult']['responses'][200]['content']['application/json']
+export type getAnalysisResult_Errors =
+  | 'UNAUTHENTICATED'
+  | 'SUBMISSION_ACCESS_DENIED'
+  | 'ACCESS_DENIED'
+  | 'SUBMISSION_NOT_FOUND'
+  | 'ANALYSIS_RESULT_NOT_FOUND'
 
-// GET /api/v0/projects/{projectId}/my-submission — 내 팀의 제출 현황 조회
-export type findMySubmission_Path = operations['findMySubmission']['parameters']['path']
-export type findMySubmission_Response =
-  operations['findMySubmission']['responses'][200]['content']['application/json']
+// GET /api/v0/projects/{projectId}/submissions — [프로젝트 상세 - 제출현황 탭] 프로젝트 회차 제출 현황 조회 (매니저)
+export type findProjectSubmissionStatus_Path =
+  operations['findProjectSubmissionStatus']['parameters']['path']
+export type findProjectSubmissionStatus_Query = NonNullable<
+  operations['findProjectSubmissionStatus']['parameters']['query']
+>
+export type findProjectSubmissionStatus_Response =
+  operations['findProjectSubmissionStatus']['responses'][200]['content']['application/json']
+export type findProjectSubmissionStatus_Errors =
+  | 'VALIDATION_FAILED'
+  | 'MANAGER_VIEWER_NOT_FOUND'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'MANAGER_VIEWER_NOT_ACTIVE'
+  | 'MANAGER_ROLE_REQUIRED'
+  | 'PROJECT_ROUND_NOT_FOUND'
+  | 'MANAGER_SCOPE_NOT_FOUND'

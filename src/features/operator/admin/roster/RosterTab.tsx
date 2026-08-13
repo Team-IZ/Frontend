@@ -1,3 +1,4 @@
+import StaleBlock from '../../_shared/StaleBlock'
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router'
 import { Button } from '@/components/ui/Button'
@@ -12,20 +13,22 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { useDebounced } from '@/lib/useDebounced'
+import { listQueryOptions } from '../../_shared/listQuery'
 import { cn } from '@/lib/utils/cn'
 import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useFindTraineeRoster } from '@/api/member/useMemberQueries'
 import { useResendTraineeInvitations } from '@/api/member/useMemberMutations'
-import type { findTraineeRoster_Item, findTraineeRoster_Query } from '@/api/member/memberTypes'
+import type { findTraineeRoster_Query } from '@/api/member/memberTypes'
 import { ACCOUNT_STATUS_LABEL } from '../_/labels'
 import { ROSTER_PAGE_SIZE } from '../_/rules'
 import { useCohortScope } from '../_/cohortScope'
-import type { AccountStatus } from '../_/api/types'
+import type { AccountStatus, TraineeRosterEntry } from '../_/api/types'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
 import ResultBanner from '../_/components/ResultBanner'
 import { useActionResult } from '../_/actionResult'
-import { Loading, LoadFailed } from '../_/components/AsyncState'
+import TableSkeleton from '@/components/common/TableSkeleton'
+import ErrorState from '@/components/common/ErrorState'
 import { AccountStatusBadge } from '../_/components/StatusBadges'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
 import { ALL, UNASSIGNED, asQuery, withAll } from '../_/filterState'
@@ -55,7 +58,7 @@ type Props = {
   onCount: (count: number | null) => void
 }
 
-type Trainee = findTraineeRoster_Item
+type Trainee = TraineeRosterEntry
 type RosterSort = NonNullable<findTraineeRoster_Query['sort']>
 
 /*
@@ -140,7 +143,8 @@ export default function RosterTab({ onCount }: Props) {
         size: ROSTER_PAGE_SIZE,
       },
     },
-    { enabled: !!cohortId },
+    /* 조건·페이지를 바꿔도 표를 비우지 않는다 — `_shared/listQuery` 주석 참고 */
+    { enabled: !!cohortId, ...listQueryOptions },
   )
 
   /** 필터 드롭다운용 반 목록 — 명단과 달리 필터·페이지에 안 걸리므로 따로 조회한다 */
@@ -157,6 +161,8 @@ export default function RosterTab({ onCount }: Props) {
   }
 
   const rows = roster.data?.content ?? []
+  /** 지금 화면에 있는 행이 **어느 쪽의 것인지**. 옛 값을 그리는 동안 `page`와 갈린다 */
+  const shownPage = roster.data?.page ?? page - 1
   const total = roster.data?.totalElements ?? 0
   const totalPages = Math.max(1, roster.data?.totalPages ?? 1)
   const cohortTotal = roster.data?.cohortTotal ?? 0
@@ -346,13 +352,21 @@ export default function RosterTab({ onCount }: Props) {
         </div>
       </div>
 
-      {!cohortId || roster.isPending ? (
-        <Loading label="명단을 불러오는 중" />
+      {!cohortId || roster.isLoading ? (
+        <TableSkeleton
+          rows={ROSTER_PAGE_SIZE}
+          cols={['w-10', 'w-32', 'w-56', 'w-32', 'w-28', 'w-32', 'w-44']}
+        />
       ) : roster.isError ? (
-        <LoadFailed label="명단을 불러오지 못했습니다" onRetry={() => void roster.refetch()} />
+        <ErrorState
+          error={roster.error}
+          subject="명단"
+          onRetry={() => void roster.refetch()}
+          retrying={roster.isFetching}
+        />
       ) : rows.length === 0 ? (
         narrowed ? (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
                 {query ? `"${query}"와 맞는 사람이 없습니다` : '조건에 맞는 사람이 없습니다'}
@@ -376,7 +390,7 @@ export default function RosterTab({ onCount }: Props) {
             </Button>
           </Empty>
         ) : (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>아직 등록된 교육생이 없습니다</EmptyTitle>
               <EmptyDescription>
@@ -387,7 +401,8 @@ export default function RosterTab({ onCount }: Props) {
           </Empty>
         )
       ) : (
-        <>
+        /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
+        <StaleBlock stale={roster.isPlaceholderData} label="명단을 불러오는 중">
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -457,7 +472,15 @@ export default function RosterTab({ onCount }: Props) {
                       <AccountStatusBadge status={t.status} />
                     </TableCell>
                     <TableCell className="text-fg-muted text-xs tabular-nums">
-                      {t.joinedAt.slice(0, 10)}
+                      {/*
+                        ⚠ **`joinedAt`이 `null`로 온다.** 스펙은 `required` 문자열인데
+                        **미배정 교육생에게는 값이 없다**(22차 Q2). `.slice()`를 바로
+                        부르다가 **화면이 통째로 죽었다** — 반 필터에서 「미배정」을
+                        고르는 순간 라우터 errorElement가 화면을 먹었다(실측).
+
+                        모르는 값이라 `—`로 둔다. 오늘 날짜를 넣으면 등록일을 지어내는 것이다.
+                      */}
+                      {t.joinedAt ? t.joinedAt.slice(0, 10) : '—'}
                     </TableCell>
                     <TableCell className="text-fg-muted truncate text-xs">
                       {statusNote(t)}
@@ -487,16 +510,23 @@ export default function RosterTab({ onCount }: Props) {
             </TableBody>
           </Table>
 
+          {/*
+            **범위는 응답이 알려준 쪽으로 센다** — 화면이 든 `page`로 세면 옛 값을 그리는
+            동안 푸터만 앞서 간다(1쪽 열 줄을 보여주면서 `21–30`이라고 썼다). 쪽 번호가
+            바뀌는 시점과 그 쪽 데이터가 오는 시점이 다르기 때문이다.
+
+            페이저 자체는 `page`를 쓴다 — 누른 쪽이 바로 눌린 것으로 보여야 한다.
+          */}
           <TableFooterBar
-            range={`${(page - 1) * ROSTER_PAGE_SIZE + 1}–${
-              (page - 1) * ROSTER_PAGE_SIZE + rows.length
+            range={`${shownPage * ROSTER_PAGE_SIZE + 1}–${
+              shownPage * ROSTER_PAGE_SIZE + rows.length
             } / ${total}명${selected.size > 0 ? ` · ${selected.size}명 선택` : ''}`}
             page={page}
             totalPages={totalPages}
             // 쪽을 넘겨도 선택은 남긴다 — 여러 쪽에서 골라 한 번에 배정하는 동선이 있다
             onPageChange={setPage}
           />
-        </>
+        </StaleBlock>
       )}
 
       <DeactivateTraineeDialog

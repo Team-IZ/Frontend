@@ -174,8 +174,9 @@ export type RoundGrid = {
    * 실제로 적용된 범위. 화면이 범위를 안 보냈으면 서버가 정한 값이 여기 온다 —
    * **툴바가 무엇을 보고 있는지 표시하려면 필요하다.**
    */
-  appliedFrom: number
-  appliedTo: number
+  /** 서버가 실제로 적용한 범위. **`null`이면 고를 회차가 없다** — 숫자를 지어내지 않는다 */
+  appliedFrom: number | null
+  appliedTo: number | null
   /**
    * 기준선 + 행들. **기준선이 계층에 따라 바뀐다**(OP-02 §3):
    * 반별이면 `기수 전체`, 팀이면 **그 반** — 팀은 같은 반 안에서 비교해야 뜻이 있다.
@@ -183,6 +184,14 @@ export type RoundGrid = {
   rows: GridRow[]
   /** 축 라벨·범례가 이 이름을 쓴다. 안 바꾸면 **무엇과 비교한 색인지** 알 수 없다 */
   baselineName: string
+  /**
+   * 어느 계층의 격자인가. **표가 라벨·표시를 이걸로 가른다.**
+   *
+   * ⚠ 전에는 표가 `baselineName === '기수'`로 계층을 알아냈는데 실제 값이 `'기수 전체'`라
+   * **그 비교가 영원히 거짓**이었다 — 반별인데 머리글이 「팀」이었고 팀 전용 표시가
+   * 반별에도 붙었다. 문자열로 판정하면 라벨을 바꿀 때 조용히 깨진다.
+   */
+  level: Level
   /**
    * 팀 계층인데 **반이나 회차를 아직 안 골랐다.** 빈 표가 아니라 **사용자가 할 일이
    * 남은 상태**라 화면이 따로 그린다 — 무엇이 빠졌는지도 같이 준다.
@@ -250,6 +259,15 @@ export type CohortQuery = {
 
 export type CohortCompare = {
   /**
+   * 서버가 **실제로** 같은 교안 필터를 걸었나.
+   *
+   * ⚠ 화면은 `true`를 보내는데 **응답이 늘 `false`로 온다**(실측 2026-08-12 ·
+   * op-02-situations §2-2). 필터가 안 도는 것인지 필드만 안 채워진 것인지 지금
+   * 데이터로는 못 가른다 — 그래서 **화면이 단언을 낮춘다.** 표가 *"같은 교안 ·
+   * 같은 개념"* 이라고 말하려면 서버가 그렇다고 해야 한다.
+   */
+  sameCurriculumOnly: boolean
+  /**
    * 비교 가능한 기수 목록. **비어 있으면 첫 기수**다 — 다른 기관 평균을 만들지 않는다.
    *
    * 서버는 비교 불가한 기수도 `comparable: false`로 함께 준다(교안이 하나도 안 겹치는
@@ -257,6 +275,8 @@ export type CohortCompare = {
    * 목록에 없지"* 가 되고, 답은 "겹치는 교안이 없어서"라 사용자가 알아야 할 사실이다.
    */
   availableCohorts: { id: string; label: string; comparable: boolean }[]
+  /** 실제로 견준 기수의 id. **사용자가 안 골랐으면 서버 목록의 첫 `comparable`** 이다 */
+  compareCohortId: string | null
   compareCohortLabel: string | null
   currentCohortLabel: string
   rows: ConceptCompare[]

@@ -11,8 +11,8 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
 import { useUpdateTraineeStatus } from '@/api/member/useMemberMutations'
-import type { findTraineeRoster_Item } from '@/api/member/memberTypes'
 import RequiredMark from '../../_/components/RequiredMark'
+import type { TraineeRosterEntry } from '../../_/api/types'
 
 /*
   교육생 비활성 — **중도 이탈 처리**(op-06-admin.md OP06-7-①).
@@ -34,7 +34,7 @@ import RequiredMark from '../../_/components/RequiredMark'
   **다시 활성으로 못 되돌린다는 사실을 누르기 전에 적는다** — `ConfirmDialog`가 되돌릴
   수 없는 것에만 확인을 세우는 것과 같은 자리다.
 */
-type Trainee = findTraineeRoster_Item
+type Trainee = TraineeRosterEntry
 
 type Props = {
   /** 비활성할 사람. null이면 닫힌 상태 */

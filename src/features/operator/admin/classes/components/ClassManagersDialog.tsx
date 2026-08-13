@@ -15,7 +15,7 @@ import { useFindManagers } from '@/api/member/useMemberQueries'
 import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useUpdateManagers } from '@/api/academic/useAcademicMutations'
 import type { findClassrooms_Item } from '@/api/academic/academicTypes'
-import { Loading } from '../../_/components/AsyncState'
+import Loading from '@/components/common/Loading'
 
 /*
   이 반을 누가 맡나 — **반 하나에 매니저 여럿**이라 체크박스다.
@@ -137,7 +137,7 @@ export default function ClassManagersDialog({
             </Alert>
           )}
 
-          {managers.isPending ? (
+          {managers.isLoading ? (
             <Loading label="매니저를 불러오는 중" />
           ) : (
             <div className="border-border divide-border divide-y rounded-md border">

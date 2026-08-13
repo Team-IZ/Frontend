@@ -1,3 +1,4 @@
+import StaleBlock from '../../_shared/StaleBlock'
 import { useEffect, useMemo, useState } from 'react'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
@@ -11,6 +12,7 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { useDebounced } from '@/lib/useDebounced'
+import { listQueryOptions } from '../../_shared/listQuery'
 import { useFindCohorts } from '@/api/academic/useAcademicQueries'
 import { useDeleteCohort, useEndCohort } from '@/api/academic/useAcademicMutations'
 import { isApiError } from '@/api/_contract'
@@ -20,7 +22,8 @@ import { useCohortScope, type Cohort } from '../_/cohortScope'
 import type { CohortStatus } from '../_/api/types'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
-import { Loading, LoadFailed } from '../_/components/AsyncState'
+import TableSkeleton from '@/components/common/TableSkeleton'
+import ErrorState from '@/components/common/ErrorState'
 import { CohortStatusBadge } from '../_/components/StatusBadges'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
 import { ALL, asQuery, withAll } from '../_/filterState'
@@ -92,13 +95,17 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
     스위처의 전량 목록을 쓴다(같은 쿼리 키라 캐시에서 나온다).
   */
   const scope = useCohortScope()
-  const page = useFindCohorts({
-    query: {
-      query: query.trim() || undefined,
-      status: asQuery<CohortStatus>(status),
-      size: PAGE_SIZE,
+  const page = useFindCohorts(
+    {
+      query: {
+        query: query.trim() || undefined,
+        status: asQuery<CohortStatus>(status),
+        size: PAGE_SIZE,
+      },
     },
-  })
+    /* 조건·페이지를 바꿔도 표를 비우지 않는다 — `_shared/listQuery` 주석 참고 */
+    listQueryOptions,
+  )
 
   const counts = useMemo(() => {
     const base: Record<CohortStatus, number> = { PLANNED: 0, RUNNING: 0, CLOSED: 0 }
@@ -114,8 +121,8 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
     렌더 중에 부모 상태를 바꾸면 렌더가 렌더를 부른다 — 커밋된 뒤에 알린다.
   */
   useEffect(() => {
-    if (!scope.isPending) onCount(totalAll)
-  }, [scope.isPending, totalAll, onCount])
+    if (!scope.isLoading) onCount(totalAll)
+  }, [scope.isLoading, totalAll, onCount])
 
   /** 빈 결과가 "아직 없음"인지 "필터에 안 걸림"인지 — 문구가 갈린다 */
   const narrowed = query.trim().length > 0 || status !== ALL
@@ -131,9 +138,9 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
     <>
       <SectionHeader
         title="기수"
-        count={scope.isPending ? undefined : `${totalAll}개`}
+        count={scope.isLoading ? undefined : `${totalAll}개`}
         breakdown={
-          !scope.isPending && (
+          !scope.isLoading && (
             <>
               기관 전체 · 개강 전 {counts.PLANNED} · 진행{' '}
               <b className="text-fg-muted font-semibold">{counts.RUNNING}</b> · 종료 {counts.CLOSED}
@@ -172,13 +179,18 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
         </Alert>
       )}
 
-      {page.isPending ? (
-        <Loading label="기수를 불러오는 중" />
+      {page.isLoading ? (
+        <TableSkeleton rows={5} cols={['w-44', 'w-28', 'w-20', 'w-24', 'w-48', null]} />
       ) : page.isError ? (
-        <LoadFailed label="기수를 불러오지 못했습니다" onRetry={() => void page.refetch()} />
+        <ErrorState
+          error={page.error}
+          subject="기수"
+          onRetry={() => void page.refetch()}
+          retrying={page.isFetching}
+        />
       ) : items.length === 0 ? (
         narrowed ? (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
                 {query ? `"${query}"와 맞는 기수가 없습니다` : '조건에 맞는 기수가 없습니다'}
@@ -200,7 +212,7 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
             기수 0 — 신규 기관이다. **생성을 권한다**: 오퍼레이터는 만들 권한이 있고,
             여기가 시작점이라 다른 탭은 아직 아무것도 담을 수 없다.
           */
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>첫 기수를 만드세요</EmptyTitle>
               <EmptyDescription>
@@ -211,7 +223,8 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
           </Empty>
         )
       ) : (
-        <>
+        /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
+        <StaleBlock stale={page.isPlaceholderData} label="기수를 불러오는 중">
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -302,7 +315,7 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
             totalPages={1}
             onPageChange={() => {}}
           />
-        </>
+        </StaleBlock>
       )}
 
       <CreateCohortDialog open={createOpen} onOpenChange={setCreateOpen} />

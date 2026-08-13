@@ -13,7 +13,7 @@ export type findCohorts_Response =
   operations['findCohorts']['responses'][200]['content']['application/json']
 export type findCohorts_Item = NonNullable<findCohorts_Response['content']>[number]
 export type findCohorts_Errors =
-  'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ORGANIZATION_CONTEXT_MISSING'
+  'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'ORGANIZATION_CONTEXT_MISSING'
 
 // POST /api/v0/cohorts — 기수 생성
 export type createCohort_Body = NonNullable<
@@ -37,7 +37,7 @@ export type findClassrooms_Response =
   operations['findClassrooms']['responses'][200]['content']['application/json']
 export type findClassrooms_Item = NonNullable<findClassrooms_Response['classrooms']>[number]
 export type findClassrooms_Errors =
-  'UNAUTHENTICATED' | 'COHORT_NOT_FOUND' | 'ORGANIZATION_CONTEXT_MISSING'
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND' | 'ORGANIZATION_CONTEXT_MISSING'
 
 // POST /api/v0/cohorts/{cohortId}/classrooms — 반 생성
 export type createClassroom_Path = operations['createClassroom']['parameters']['path']
@@ -56,7 +56,7 @@ export type findCohort_Response =
   operations['findCohort']['responses'][200]['content']['application/json']
 export type findCohort_Item = NonNullable<findCohort_Response['managers']>[number]
 export type findCohort_Errors =
-  'UNAUTHENTICATED' | 'COHORT_NOT_FOUND' | 'ORGANIZATION_CONTEXT_MISSING'
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND' | 'ORGANIZATION_CONTEXT_MISSING'
 
 // DELETE /api/v0/cohorts/{cohortId} — 기수 삭제
 export type deleteCohort_Path = operations['deleteCohort']['parameters']['path']
@@ -167,4 +167,5 @@ export type rollbackAssignment_Errors =
 export type findMyEnrollments_Response =
   operations['findMyEnrollments']['responses'][200]['content']['application/json']
 export type findMyEnrollments_Item = NonNullable<findMyEnrollments_Response['enrollments']>[number]
-export type findMyEnrollments_Errors = 'UNAUTHENTICATED' | 'ORGANIZATION_CONTEXT_MISSING'
+export type findMyEnrollments_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'ORGANIZATION_CONTEXT_MISSING'

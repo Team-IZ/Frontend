@@ -1,3 +1,4 @@
+import StaleBlock from '../../_shared/StaleBlock'
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Button } from '@/components/ui/Button'
@@ -11,13 +12,15 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { useDebounced } from '@/lib/useDebounced'
+import { listQueryOptions } from '../../_shared/listQuery'
 import { useGetCurrentMember } from '@/api/member/useMemberQueries'
 import { useFindOrganizationCurricula } from '@/api/curriculum/useCurriculumQueries'
 import type { findOrganizationCurricula_Query } from '@/api/curriculum/curriculumTypes'
 import { CURRICULUM_STATUS_LABEL } from '../_/labels'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
-import { Loading, LoadFailed } from '../_/components/AsyncState'
+import TableSkeleton from '@/components/common/TableSkeleton'
+import ErrorState from '@/components/common/ErrorState'
 import { CurriculumStatusBadge } from '../_/components/StatusBadges'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
 import { ALL, asQuery } from '../_/filterState'
@@ -93,7 +96,8 @@ export default function CurriculaTab({ onCount }: Props) {
         size: PAGE_SIZE,
       },
     },
-    { enabled: !!organizationId },
+    /* 조건·페이지를 바꿔도 표를 비우지 않는다 — `_shared/listQuery` 주석 참고 */
+    { enabled: !!organizationId, ...listQueryOptions },
   )
 
   const items = page.data?.content ?? []
@@ -185,13 +189,18 @@ export default function CurriculaTab({ onCount }: Props) {
         />
       </div>
 
-      {!organizationId || page.isPending ? (
-        <Loading label="교안을 불러오는 중" />
+      {!organizationId || page.isLoading ? (
+        <TableSkeleton rows={PAGE_SIZE} cols={['w-52', 'w-20', 'w-20', 'w-28', null, 'w-28']} />
       ) : page.isError ? (
-        <LoadFailed label="교안을 불러오지 못했습니다" onRetry={() => void page.refetch()} />
+        <ErrorState
+          error={page.error}
+          subject="교안"
+          onRetry={() => void page.refetch()}
+          retrying={page.isFetching}
+        />
       ) : items.length === 0 ? (
         narrowed ? (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
                 {query ? `"${query}"와 맞는 교안이 없습니다` : '조건에 맞는 교안이 없습니다'}
@@ -209,7 +218,7 @@ export default function CurriculaTab({ onCount }: Props) {
             </Button>
           </Empty>
         ) : (
-          <Empty>
+          <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>아직 등록된 교안이 없습니다</EmptyTitle>
               {/* 왜 필요한지를 쓴다 — 이것이 없으면 프로젝트를 만들 수 없다 */}
@@ -222,7 +231,8 @@ export default function CurriculaTab({ onCount }: Props) {
           </Empty>
         )
       ) : (
-        <>
+        /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
+        <StaleBlock stale={page.isPlaceholderData} label="교안을 불러오는 중">
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -301,7 +311,7 @@ export default function CurriculaTab({ onCount }: Props) {
             totalPages={1}
             onPageChange={() => {}}
           />
-        </>
+        </StaleBlock>
       )}
 
       <RegisterCurriculumDialog open={registerOpen} onOpenChange={setRegisterOpen} />

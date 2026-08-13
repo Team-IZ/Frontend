@@ -12,8 +12,20 @@
   `api.ts`·`mockDb.ts`는 지웠다.
 */
 import type { findCohorts_Item } from '@/api/academic/academicTypes'
-import type { findManagers_Item } from '@/api/member/memberTypes'
+import type { findManagers_Item, findTraineeRoster_Response } from '@/api/member/memberTypes'
 import type { findOrganizationCurricula_Item } from '@/api/curriculum/curriculumTypes'
+
+/**
+ * 명단 한 줄.
+ *
+ * ⚠ **생성기가 `findTraineeRoster_Item`을 안 만든다.** 목록 봉투 판정이
+ * *"배열 프로퍼티가 정확히 하나"* 인데(`scripts/api-gen.mjs`), 이 응답은 `content`와
+ * **`rounds` 둘**이 배열이라 규칙에서 빠진다. 생성물을 손으로 고치지 않고 여기서 파생한다.
+ *
+ * 세 화면(명단·반 배정·비활성 처리)이 같은 줄을 쓰므로 **이름은 한 곳에만 있어야 한다** —
+ * 각자 파생하면 같은 개념을 가리키는 경로가 셋이 된다(이 파일이 존재하는 이유).
+ */
+export type TraineeRosterEntry = NonNullable<findTraineeRoster_Response['content']>[number]
 
 /**
  * 기수 상태 — `PLANNED`·`RUNNING`·`CLOSED`.

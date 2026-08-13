@@ -17,7 +17,6 @@ import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useFindTraineeRoster } from '@/api/member/useMemberQueries'
 import { useAssignTrainees, useRollbackAssignment } from '@/api/academic/useAcademicMutations'
 import type { findClassrooms_Item } from '@/api/academic/academicTypes'
-import type { findTraineeRoster_Item } from '@/api/member/memberTypes'
 import { ROSTER_PAGE_SIZE, capacityPreview, type CapacityPreview } from '../_/rules'
 import { useCohortScope } from '../_/cohortScope'
 import TableFooterBar from '../_/components/TableFooterBar'
@@ -26,6 +25,7 @@ import Loading from '@/components/common/Loading'
 import ErrorState from '@/components/common/ErrorState'
 import { AccountStatusBadge } from '../_/components/StatusBadges'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
+import type { TraineeRosterEntry } from '../_/api/types'
 
 /*
   반 배정 — **모드**다.
@@ -59,7 +59,7 @@ const SCOPE_OPTIONS = [
 ]
 
 type ClassRoom = findClassrooms_Item
-type Trainee = findTraineeRoster_Item
+type Trainee = TraineeRosterEntry
 type RosterScope = 'ALL' | 'UNASSIGNED'
 
 /**

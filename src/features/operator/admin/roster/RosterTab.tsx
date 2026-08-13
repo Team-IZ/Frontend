@@ -18,11 +18,11 @@ import { cn } from '@/lib/utils/cn'
 import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useFindTraineeRoster } from '@/api/member/useMemberQueries'
 import { useResendTraineeInvitations } from '@/api/member/useMemberMutations'
-import type { findTraineeRoster_Item, findTraineeRoster_Query } from '@/api/member/memberTypes'
+import type { findTraineeRoster_Query } from '@/api/member/memberTypes'
 import { ACCOUNT_STATUS_LABEL } from '../_/labels'
 import { ROSTER_PAGE_SIZE } from '../_/rules'
 import { useCohortScope } from '../_/cohortScope'
-import type { AccountStatus } from '../_/api/types'
+import type { AccountStatus, TraineeRosterEntry } from '../_/api/types'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
 import ResultBanner from '../_/components/ResultBanner'
@@ -58,7 +58,7 @@ type Props = {
   onCount: (count: number | null) => void
 }
 
-type Trainee = findTraineeRoster_Item
+type Trainee = TraineeRosterEntry
 type RosterSort = NonNullable<findTraineeRoster_Query['sort']>
 
 /*

@@ -9,6 +9,7 @@
 | readiness | 엔드포인트 | |
 |---|---|---|
 | `unavailable` | POST /api/v0/submissions | GitHub 저장소 URL 제출·재제출 |
+| `unavailable` | POST /api/v0/submissions/zip | ZIP 업로드 제출·재제출 |
 | `unavailable` | POST /api/v0/organizations/{organizationId}/purge | 기관 파기 요청 |
 | `unavailable` | POST /api/v0/cohorts/{cohortId}/notifications/reminders | 매니저 단건 독촉 발송 |
 | `unavailable` | POST /api/v0/assessment-sessions/{sessionId}/start | 세션 시작(인트로 동의) |
@@ -29,7 +30,6 @@
 `openapi-fetch`는 JSON 직렬화를 전제한다. 파일 업로드는 `FormData`를 직접 만들어야 하므로
 호출 함수를 생성하지 않는다. **타입(`{tagName}Types.ts`)은 생성돼 있으니 그것을 쓴다.**
 
-- `POST /api/v0/submissions/zip` — ZIP 업로드 제출·재제출
 - `POST /api/v0/curricula` — 교안 등록
 - `POST /api/v0/cohorts/{cohortId}/trainees` — CSV 교육생 명단 등록 및 초대
 - `POST /api/v0/cohorts/{cohortId}/trainees/preview` — CSV 교육생 명단 사전 검증(드라이런)

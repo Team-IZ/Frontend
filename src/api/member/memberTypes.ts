@@ -90,9 +90,10 @@ export type findTraineeRoster_Query = NonNullable<
 >
 export type findTraineeRoster_Response =
   operations['findTraineeRoster']['responses'][200]['content']['application/json']
-export type findTraineeRoster_Item = NonNullable<findTraineeRoster_Response['content']>[number]
 export type findTraineeRoster_Errors =
   | 'ROSTER_FILTER_CONFLICT'
+  | 'ROSTER_UNASSIGNED_FILTER_NOT_ALLOWED'
+  | 'ROSTER_ASSESSMENT_ROUND_REQUIRED'
   | 'VALIDATION_FAILED'
   | 'UNAUTHENTICATED'
   | 'ACCESS_DENIED'
@@ -183,6 +184,9 @@ export type updateTraineeStatus_Body = NonNullable<
 >['content']['application/json']
 export type updateTraineeStatus_Response =
   operations['updateTraineeStatus']['responses'][200]['content']['application/json']
+export type updateTraineeStatus_Item = NonNullable<
+  updateTraineeStatus_Response['excellentAssessmentSequenceNos']
+>[number]
 export type updateTraineeStatus_Errors =
   | 'VALIDATION_FAILED'
   | 'UNAUTHENTICATED'

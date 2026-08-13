@@ -24,7 +24,21 @@ export function CurriculumSummary({ project }: { project: Project }) {
   if (project.curriculumCount === 0) {
     return <span className="text-warning font-semibold">교안 연결 안 됨</span>
   }
-  return <span className="tabular-nums">{project.curriculumCount}개</span>
+  /*
+    **이름을 쓴다**(18차 R3). `1개`만 있을 때는 교안 필터를 걸어도 **무엇이 걸린 건지**
+    표에서 확인할 수 없었다 — 0건이 나와도 *"정말 없어서"* 인지 *"필터가 안 먹어서"* 인지
+    구분이 안 됐다.
+
+    ⚠ **개수는 `curriculumCount`로 센다.** 이름을 못 찾은 항목은 조용히 빠져서 배열
+    길이가 원장 개수와 다를 수 있다(회신 명시). 길이로 세면 화면이 없는 사실을 주장한다.
+  */
+  return (
+    <span className="truncate">
+      {project.curriculumNames.length > 0
+        ? project.curriculumNames.join(' · ')
+        : `${project.curriculumCount}개`}
+    </span>
+  )
 }
 
 /*
@@ -50,11 +64,24 @@ export function ConceptSummary({ project }: { project: Project }) {
       (radius-full · 11px · 600 · px-2 py-0.5가 이미 같다). 인라인 클래스로 다시
       만들지 않고 Badge를 쓴다.
 
-      ⚠ **이름을 못 쓴다.** 목록 응답에 개념 배열이 없어 `3건 확정`까지만 말한다 —
-      이름은 상세 구성 탭이 출처·페이지와 함께 그린다.
+      **이름을 쓴다**(18차 R3). `3건 확정`은 개수일 뿐이고, **무엇을 확정했는지**가
+      이 회차의 정체다 — 전에는 그걸 보려고 회차마다 상세를 열어야 했다.
+      출처 교안·페이지는 여전히 상세 구성 탭이 갖는다.
+
+      ⚠ 개수 표기는 `conceptCount`다 — 배열 길이가 다를 수 있다(회신 명시).
     */
-    <Badge className="border-border-strong bg-surface-2 text-fg-muted border">
-      {project.conceptCount}건 확정
-    </Badge>
+    <span className="flex flex-wrap gap-1">
+      {project.conceptNames.length > 0 ? (
+        project.conceptNames.map((n) => (
+          <Badge key={n} className="border-border-strong bg-surface-2 text-fg-muted border">
+            {n}
+          </Badge>
+        ))
+      ) : (
+        <Badge className="border-border-strong bg-surface-2 text-fg-muted border">
+          {project.conceptCount}건 확정
+        </Badge>
+      )}
+    </span>
   )
 }

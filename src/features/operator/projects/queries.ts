@@ -115,6 +115,12 @@ function toProject(p: ServerProjectProjection): Project {
     sequenceNo: p.sequenceNo,
     curriculumCount: p.curriculumCount,
     conceptCount: p.conceptCount,
+    /*
+      18차 R3으로 받은 이름들. **개수는 여전히 `…Count`를 쓴다** — 이름을 못 찾은 항목이
+      조용히 빠져 길이가 다를 수 있다고 회신에 명시돼 있다.
+    */
+    curriculumNames: p.curriculumNames ?? [],
+    conceptNames: p.conceptNames ?? [],
     conceptCandidateCount: p.conceptCandidateCount,
     startDate: p.startDate,
     endDate: p.endDate,

@@ -2,15 +2,16 @@
 
 import { useQuery } from '@tanstack/react-query'
 import type { QueryOptions } from '@/api/_contract'
-import { getAnalysis, getAnalysisResult, findMySubmission } from './submissionApi'
+import { getAnalysis, getAnalysisResult, findProjectSubmissionStatus } from './submissionApi'
 import { submissionKeys } from './submissionKeys'
 import type {
   getAnalysis_Path,
   getAnalysis_Response,
   getAnalysisResult_Path,
   getAnalysisResult_Response,
-  findMySubmission_Path,
-  findMySubmission_Response,
+  findProjectSubmissionStatus_Path,
+  findProjectSubmissionStatus_Query,
+  findProjectSubmissionStatus_Response,
 } from './submissionTypes'
 
 /** 코드 분석 진행 상태·실패 사유 조회 */
@@ -37,14 +38,14 @@ export function useGetAnalysisResult(
   })
 }
 
-/** 내 팀의 제출 현황 조회 */
-export function useFindMySubmission(
-  params: { path: findMySubmission_Path },
-  options?: QueryOptions<findMySubmission_Response>,
+/** [프로젝트 상세 - 제출현황 탭] 프로젝트 회차 제출 현황 조회 (매니저) */
+export function useFindProjectSubmissionStatus(
+  params: { path: findProjectSubmissionStatus_Path; query?: findProjectSubmissionStatus_Query },
+  options?: QueryOptions<findProjectSubmissionStatus_Response>,
 ) {
   return useQuery({
-    queryKey: submissionKeys.findMySubmission(params),
-    queryFn: ({ signal }) => findMySubmission({ ...params, signal }),
+    queryKey: submissionKeys.findProjectSubmissionStatus(params),
+    queryFn: ({ signal }) => findProjectSubmissionStatus({ ...params, signal }),
     ...options,
   })
 }

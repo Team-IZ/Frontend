@@ -199,7 +199,7 @@ export type updateTraineeStatus_Errors =
 // GET /api/v0/members/me — 내 정보 조회
 export type getCurrentMember_Response =
   operations['getCurrentMember']['responses'][200]['content']['application/json']
-export type getCurrentMember_Errors = 'MEMBER_NOT_FOUND' | 'UNAUTHENTICATED'
+export type getCurrentMember_Errors = 'MEMBER_NOT_FOUND' | 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // GET /api/v0/managers — 매니저 목록 조회
 export type findManagers_Query = NonNullable<operations['findManagers']['parameters']['query']>

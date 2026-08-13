@@ -30,6 +30,10 @@
       "description": "교육생 코드 제출과 코드 분석 상태 조회 API"
     },
     {
+      "name": "Evaluation",
+      "description": "채점 결과 조회 API"
+    },
+    {
       "name": "Organization",
       "description": "기관 프로비저닝, 기관 상태, 계약, 기관별 운영 정책, 기관 삭제·복구 API (v2 IA: SA-01 기관 목록 / SA-02 기관 상세)"
     },
@@ -112,6 +116,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -156,6 +198,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReportDisclosureResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -235,6 +315,25 @@
                     "summary": "UNAUTHENTICATED",
                     "value": {
                       "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -350,6 +449,25 @@
               }
             }
           },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
           "404": {
             "description": "PROJECT_NOT_FOUND 프로젝트를 찾을 수 없음",
             "content": {
@@ -425,6 +543,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -493,6 +649,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -545,6 +739,44 @@
                     "value": {
                       "code": "AI_MODEL_NOT_AVAILABLE",
                       "message": "사용할 수 없는 AI 모델입니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
                     }
                   }
                 }
@@ -1040,12 +1272,168 @@
           "required": true
         },
         "responses": {
-          "200": {
-            "description": "OK",
+          "201": {
+            "description": "제출 접수됨",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SubmissionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "IDEMPOTENCY_KEY_REQUIRED · IDEMPOTENCY_KEY_INVALID · INVALID_REPOSITORY_URL · UNSUPPORTED_HOST",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "IDEMPOTENCY_KEY_REQUIRED": {
+                    "summary": "IDEMPOTENCY_KEY_REQUIRED",
+                    "value": {
+                      "code": "IDEMPOTENCY_KEY_REQUIRED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "IDEMPOTENCY_KEY_INVALID": {
+                    "summary": "IDEMPOTENCY_KEY_INVALID",
+                    "value": {
+                      "code": "IDEMPOTENCY_KEY_INVALID",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "INVALID_REPOSITORY_URL": {
+                    "summary": "INVALID_REPOSITORY_URL",
+                    "value": {
+                      "code": "INVALID_REPOSITORY_URL",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "UNSUPPORTED_HOST": {
+                    "summary": "UNSUPPORTED_HOST",
+                    "value": {
+                      "code": "UNSUPPORTED_HOST",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SUBMISSION_ROUND_NOT_ACCESSIBLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SUBMISSION_ROUND_NOT_ACCESSIBLE": {
+                    "summary": "SUBMISSION_ROUND_NOT_ACCESSIBLE",
+                    "value": {
+                      "code": "SUBMISSION_ROUND_NOT_ACCESSIBLE",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "SUBMISSION_ROUND_NOT_OPEN · SUBMISSION_DEADLINE_PASSED · SUBMISSION_METHOD_NOT_ALLOWED · IDEMPOTENCY_KEY_CONFLICT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SUBMISSION_ROUND_NOT_OPEN": {
+                    "summary": "SUBMISSION_ROUND_NOT_OPEN",
+                    "value": {
+                      "code": "SUBMISSION_ROUND_NOT_OPEN",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "SUBMISSION_DEADLINE_PASSED": {
+                    "summary": "SUBMISSION_DEADLINE_PASSED",
+                    "value": {
+                      "code": "SUBMISSION_DEADLINE_PASSED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "SUBMISSION_METHOD_NOT_ALLOWED": {
+                    "summary": "SUBMISSION_METHOD_NOT_ALLOWED",
+                    "value": {
+                      "code": "SUBMISSION_METHOD_NOT_ALLOWED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "IDEMPOTENCY_KEY_CONFLICT": {
+                    "summary": "IDEMPOTENCY_KEY_CONFLICT",
+                    "value": {
+                      "code": "IDEMPOTENCY_KEY_CONFLICT",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AI_SERVER_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "AI_SERVER_UNAVAILABLE": {
+                    "summary": "AI_SERVER_UNAVAILABLE",
+                    "value": {
+                      "code": "AI_SERVER_UNAVAILABLE",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -1106,12 +1494,199 @@
           }
         },
         "responses": {
-          "200": {
-            "description": "OK",
+          "202": {
+            "description": "업로드 접수됨. 분석은 비동기로 이어진다",
             "content": {
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SubmissionResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "IDEMPOTENCY_KEY_REQUIRED · IDEMPOTENCY_KEY_INVALID · ARCHIVE_INVALID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "IDEMPOTENCY_KEY_REQUIRED": {
+                    "summary": "IDEMPOTENCY_KEY_REQUIRED",
+                    "value": {
+                      "code": "IDEMPOTENCY_KEY_REQUIRED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "IDEMPOTENCY_KEY_INVALID": {
+                    "summary": "IDEMPOTENCY_KEY_INVALID",
+                    "value": {
+                      "code": "IDEMPOTENCY_KEY_INVALID",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "ARCHIVE_INVALID": {
+                    "summary": "ARCHIVE_INVALID",
+                    "value": {
+                      "code": "ARCHIVE_INVALID",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SUBMISSION_ROUND_NOT_ACCESSIBLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SUBMISSION_ROUND_NOT_ACCESSIBLE": {
+                    "summary": "SUBMISSION_ROUND_NOT_ACCESSIBLE",
+                    "value": {
+                      "code": "SUBMISSION_ROUND_NOT_ACCESSIBLE",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "SUBMISSION_ROUND_NOT_OPEN · SUBMISSION_DEADLINE_PASSED · SUBMISSION_METHOD_NOT_ALLOWED · IDEMPOTENCY_KEY_CONFLICT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SUBMISSION_ROUND_NOT_OPEN": {
+                    "summary": "SUBMISSION_ROUND_NOT_OPEN",
+                    "value": {
+                      "code": "SUBMISSION_ROUND_NOT_OPEN",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "SUBMISSION_DEADLINE_PASSED": {
+                    "summary": "SUBMISSION_DEADLINE_PASSED",
+                    "value": {
+                      "code": "SUBMISSION_DEADLINE_PASSED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "SUBMISSION_METHOD_NOT_ALLOWED": {
+                    "summary": "SUBMISSION_METHOD_NOT_ALLOWED",
+                    "value": {
+                      "code": "SUBMISSION_METHOD_NOT_ALLOWED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "IDEMPOTENCY_KEY_CONFLICT": {
+                    "summary": "IDEMPOTENCY_KEY_CONFLICT",
+                    "value": {
+                      "code": "IDEMPOTENCY_KEY_CONFLICT",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "FILE_TOO_LARGE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "FILE_TOO_LARGE": {
+                    "summary": "FILE_TOO_LARGE",
+                    "value": {
+                      "code": "FILE_TOO_LARGE",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "ARTIFACT_STORE_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ARTIFACT_STORE_FAILED": {
+                    "summary": "ARTIFACT_STORE_FAILED",
+                    "value": {
+                      "code": "ARTIFACT_STORE_FAILED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AI_SERVER_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "AI_SERVER_UNAVAILABLE": {
+                    "summary": "AI_SERVER_UNAVAILABLE",
+                    "value": {
+                      "code": "AI_SERVER_UNAVAILABLE",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -1150,6 +1725,70 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RepositoryCheckResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "INVALID_REPOSITORY_URL · UNSUPPORTED_HOST",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "INVALID_REPOSITORY_URL": {
+                    "summary": "INVALID_REPOSITORY_URL",
+                    "value": {
+                      "code": "INVALID_REPOSITORY_URL",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "UNSUPPORTED_HOST": {
+                    "summary": "UNSUPPORTED_HOST",
+                    "value": {
+                      "code": "UNSUPPORTED_HOST",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -1257,6 +1896,25 @@
                     "summary": "UNAUTHENTICATED",
                     "value": {
                       "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -1378,6 +2036,25 @@
                     "summary": "BAD_REQUEST",
                     "value": {
                       "code": "BAD_REQUEST",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -1518,6 +2195,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -1563,6 +2278,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrganizationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -1628,6 +2381,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrganizationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -1719,6 +2510,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PurgeOrganizationResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -1823,6 +2652,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/InviteOperatorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -1938,6 +2805,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OperatorListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -2491,6 +3396,25 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -2537,6 +3461,25 @@
                     "summary": "UNAUTHENTICATED",
                     "value": {
                       "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -2670,6 +3613,25 @@
                     "summary": "UNAUTHENTICATED",
                     "value": {
                       "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -4062,6 +5024,25 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -4150,6 +5131,25 @@
               }
             }
           },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
           "409": {
             "description": "PROJECT_NAME_DUPLICATED 같은 기수에 이미 존재하는 프로젝트명 — 이름 입력란에 인라인 오류",
             "content": {
@@ -4225,6 +5225,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -4279,6 +5317,25 @@
                     "summary": "UNAUTHENTICATED",
                     "value": {
                       "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -5610,6 +6667,82 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SESSION_NOT_ACCESSIBLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SESSION_NOT_ACCESSIBLE": {
+                    "summary": "SESSION_NOT_ACCESSIBLE",
+                    "value": {
+                      "code": "SESSION_NOT_ACCESSIBLE",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "SESSION_ALREADY_ENDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SESSION_ALREADY_ENDED": {
+                    "summary": "SESSION_ALREADY_ENDED",
+                    "value": {
+                      "code": "SESSION_ALREADY_ENDED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -5646,6 +6779,77 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HintResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "HINT_EXHAUSTED · HINT_NOT_AVAILABLE · SESSION_NOT_STARTED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "HINT_EXHAUSTED": {
+                    "summary": "HINT_EXHAUSTED",
+                    "value": {
+                      "code": "HINT_EXHAUSTED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "HINT_NOT_AVAILABLE": {
+                    "summary": "HINT_NOT_AVAILABLE",
+                    "value": {
+                      "code": "HINT_NOT_AVAILABLE",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "SESSION_NOT_STARTED": {
+                    "summary": "SESSION_NOT_STARTED",
+                    "value": {
+                      "code": "SESSION_NOT_STARTED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -5706,6 +6910,115 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "ANSWER_TEXT_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ANSWER_TEXT_REQUIRED": {
+                    "summary": "ANSWER_TEXT_REQUIRED",
+                    "value": {
+                      "code": "ANSWER_TEXT_REQUIRED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "SESSION_NOT_STARTED · SESSION_TIMEOUT · ANSWER_ALREADY_SUBMITTED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SESSION_NOT_STARTED": {
+                    "summary": "SESSION_NOT_STARTED",
+                    "value": {
+                      "code": "SESSION_NOT_STARTED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "SESSION_TIMEOUT": {
+                    "summary": "SESSION_TIMEOUT",
+                    "value": {
+                      "code": "SESSION_TIMEOUT",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "ANSWER_ALREADY_SUBMITTED": {
+                    "summary": "ANSWER_ALREADY_SUBMITTED",
+                    "value": {
+                      "code": "ANSWER_ALREADY_SUBMITTED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "GRADING_FAILED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "GRADING_FAILED": {
+                    "summary": "GRADING_FAILED",
+                    "value": {
+                      "code": "GRADING_FAILED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -5748,6 +7061,115 @@
         "responses": {
           "200": {
             "description": "OK"
+          },
+          "400": {
+            "description": "ACTIVITY_SIGNAL_REQUIRED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACTIVITY_SIGNAL_REQUIRED": {
+                    "summary": "ACTIVITY_SIGNAL_REQUIRED",
+                    "value": {
+                      "code": "ACTIVITY_SIGNAL_REQUIRED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SESSION_NOT_ACCESSIBLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SESSION_NOT_ACCESSIBLE": {
+                    "summary": "SESSION_NOT_ACCESSIBLE",
+                    "value": {
+                      "code": "SESSION_NOT_ACCESSIBLE",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "SESSION_NOT_STARTED · SESSION_TIMEOUT · SESSION_ALREADY_ENDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SESSION_NOT_STARTED": {
+                    "summary": "SESSION_NOT_STARTED",
+                    "value": {
+                      "code": "SESSION_NOT_STARTED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "SESSION_TIMEOUT": {
+                    "summary": "SESSION_TIMEOUT",
+                    "value": {
+                      "code": "SESSION_TIMEOUT",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "SESSION_ALREADY_ENDED": {
+                    "summary": "SESSION_ALREADY_ENDED",
+                    "value": {
+                      "code": "SESSION_ALREADY_ENDED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -5802,6 +7224,25 @@
                     "summary": "UNAUTHENTICATED",
                     "value": {
                       "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -5872,6 +7313,25 @@
                     "summary": "UNAUTHENTICATED",
                     "value": {
                       "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -6004,6 +7464,25 @@
               }
             }
           },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
           "404": {
             "description": "PROJECT_NOT_FOUND 프로젝트를 찾을 수 없음",
             "content": {
@@ -6122,6 +7601,25 @@
               }
             }
           },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
           "404": {
             "description": "PROJECT_NOT_FOUND 회차(프로젝트)를 찾을 수 없음",
             "content": {
@@ -6186,6 +7684,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SuperAdminListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -6266,6 +7802,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -6337,6 +7911,44 @@
                     "value": {
                       "code": "ORG_DELETE_CONFIRM_MISMATCH",
                       "message": "기관명이 일치하지 않습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
                     }
                   }
                 }
@@ -6441,6 +8053,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -6526,6 +8176,44 @@
               }
             }
           },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
           "404": {
             "description": "OPERATOR_NOT_FOUND",
             "content": {
@@ -6602,6 +8290,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -6646,6 +8372,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OperationSettingResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -6886,6 +8650,25 @@
                     "summary": "UNAUTHENTICATED",
                     "value": {
                       "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -8294,6 +10077,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -8330,6 +10151,70 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SubmissionAnalysisResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "SUBMISSION_ACCESS_DENIED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SUBMISSION_ACCESS_DENIED": {
+                    "summary": "SUBMISSION_ACCESS_DENIED",
+                    "value": {
+                      "code": "SUBMISSION_ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SUBMISSION_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SUBMISSION_NOT_FOUND": {
+                    "summary": "SUBMISSION_NOT_FOUND",
+                    "value": {
+                      "code": "SUBMISSION_NOT_FOUND",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -8372,6 +10257,77 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "SUBMISSION_ACCESS_DENIED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SUBMISSION_ACCESS_DENIED": {
+                    "summary": "SUBMISSION_ACCESS_DENIED",
+                    "value": {
+                      "code": "SUBMISSION_ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SUBMISSION_NOT_FOUND · ANALYSIS_RESULT_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SUBMISSION_NOT_FOUND": {
+                    "summary": "SUBMISSION_NOT_FOUND",
+                    "value": {
+                      "code": "SUBMISSION_NOT_FOUND",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "ANALYSIS_RESULT_NOT_FOUND": {
+                    "summary": "ANALYSIS_RESULT_NOT_FOUND",
+                    "value": {
+                      "code": "ANALYSIS_RESULT_NOT_FOUND",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -8397,6 +10353,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TraineeReportsResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -8436,6 +10430,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RoundReportResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -8496,6 +10528,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -8532,6 +10602,212 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CohortDiagnosisResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-readiness": "available"
+      }
+    },
+    "/api/v0/projects/{projectId}/submissions": {
+      "get": {
+        "tags": [
+          "Submission"
+        ],
+        "summary": "[프로젝트 상세 - 제출현황 탭] 프로젝트 회차 제출 현황 조회 (매니저) | ✅ 사용 가능",
+        "description": "MG-08 프로젝트 상세 '제출 현황' 탭 한 화면을 **한 번에** 내려준다.\n\n## 왜 한 덩어리인가\n\n게이트(팀 편성 단계)·탭 머리 카운트·팀 행·팀원 행·요구사항 판정이 모두 같은\n`(프로젝트, 회차, 반)` 스코프에서 나오고 화면이 그것을 한 번에 그린다. 요구사항을\n따로 떼면 팀 행을 펼칠 때마다 호출이라 팀이 8개면 8번이 되는데, 요구사항은 프로젝트당\n서너 건 고정이라 같이 실어도 응답이 커지지 않는다.\n\n## 요청\n\n| 파라미터 | 필수 | 설명 |\n|---|---|---|\n| `projectId` (경로) | 필수 | 조회할 프로젝트 |\n| `roundNo` | 선택 | 회차 번호(기본 1). 프로젝트 안에서만 유일하다 |\n| `classId` | 선택 | 담당 반 하나로 좁힌다. 생략하면 **담당 반 전체**다 |\n\n🔴 **응답은 호출자가 담당하는 반으로 제한된다.** `classId`를 생략해도 프로젝트 전체가\n아니라 담당 반만 온다. 담당하지 않는 반의 `classId`를 지정하면 빈 결과가 아니라\n`404 MANAGER_SCOPE_NOT_FOUND`다 — 빈 결과로 주면 화면이 \"팀이 없는 회차\"로 읽는다.\n\n따라서 `summary`·`teams[]`·`unassignedMemberCount`·`teamFormationStage`는 모두\n               **그 매니저가 보는 범위의 값**이며, 같은 회차라도 매니저마다 다르다.\n\n## 응답 (200)\n\n| 필드 | 설명 |\n|---|---|\n| `teamFormationStage` | `NOT_STARTED` · `FORMING` · `READY_TO_CONFIRM` · `CONFIRMED` · `CLOSED` |\n| `submissionOpened` | 제출이 열렸는가. **화면은 이 값만 보고 표/빈 상태를 정한다** |\n| `locked` | 종료된 회차 |\n| `unassignedMemberCount` | 미배정 인원. 0이 아니면 제출이 열리지 않는다 |\n| `summary` | `teamCount` · `submittedTeamCount` · `unsubmittedTeamCount` · `analysisFailedTeamCount` |\n| `requirements[]` | 프로젝트가 정의한 요구사항. **팀이 아니라 프로젝트에 달린 값이라 최상위에 한 번만 싣는다** |\n| `teams[]` | 팀 행. `submission` · `analysis` · `requirementResults[]` · `members[]` |\n\n### teams[]\n\n| 필드 | 설명 |\n|---|---|\n| `submission` | 아직 아무도 제출하지 않았으면 **null**. 팀·회차별 최신 제출 한 건이다 |\n| `analysis` | 그 제출에 매인 최신 분석 시도. `status`는 원값(QUEUED·RUNNING·SUCCEEDED·PARTIAL·FAILED) |\n| `requirementResults[]` | (팀, 요구사항)별 최신 판정. 분석 전이면 빈 배열 |\n| `members[]` | 팀원 개인 행 |\n\n### members[].attendanceStatus\n\n| 값 | 뜻 |\n|---|---|\n| `DONE` | 응시를 마쳤다 |\n| `OPEN` | 창이 열려 있고 아직 안 봤다 (마감 전) |\n| `MISSED` | 창이 닫히도록 끝내 안 봤다 (마감 후) |\n| `BLOCKED` | 창이 애초에 안 열렸다 — 미제출이거나 분석이 실패했다 |\n\n⚠️ **`BLOCKED`와 `MISSED`를 합치지 않는다.** `BLOCKED`는 못 본 것이 아니라 볼 수 없었던\n것이라 독촉해도 할 수 있는 일이 없다. 둘을 합치면 화면이 그 사람에게 무엇을 해야 하는지\n말할 수 없다.\n\n💡 **표시 문구는 서버가 만들지 않는다.** `D-2`·`19시간 남음` 같은 라벨 대신\n`assessmentCloseAt` 시각을 주며, 문구는 화면이 만든다.\n\n💡 **제출은 팀 단위, 응시는 개인 단위다.** 팀 중 한 명이 내면 팀원 전원이 같은 코드를\n쓰므로 같은 팀에서 제출 상태가 갈릴 수 없고, 그래서 행이 2계층이다.\n",
+        "operationId": "findProjectSubmissionStatus",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "description": "조회할 프로젝트 ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          {
+            "name": "roundNo",
+            "in": "query",
+            "description": "조회할 회차 번호이며 프로젝트 안에서만 유일합니다.",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1,
+              "minimum": 1
+            },
+            "example": 1
+          },
+          {
+            "name": "classId",
+            "in": "query",
+            "description": "담당 반 하나로 좁힐 때만 지정합니다. 생략하면 담당 반 전체입니다.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "제출 현황 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectSubmissionStatusResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED roundNo가 1 미만",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "VALIDATION_FAILED": {
+                    "summary": "VALIDATION_FAILED",
+                    "value": {
+                      "code": "VALIDATION_FAILED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 · MANAGER_VIEWER_NOT_FOUND 토큰은 유효하지만 계정을 찾을 수 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "MANAGER_VIEWER_NOT_FOUND": {
+                    "summary": "MANAGER_VIEWER_NOT_FOUND",
+                    "value": {
+                      "code": "MANAGER_VIEWER_NOT_FOUND",
+                      "message": "인증 사용자를 찾을 수 없습니다."
+                    }
+                  },
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED 매니저 권한이 아님 · MANAGER_VIEWER_NOT_ACTIVE 활성 계정이 아님 · MANAGER_ROLE_REQUIRED 매니저가 아님",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "MANAGER_VIEWER_NOT_ACTIVE": {
+                    "summary": "MANAGER_VIEWER_NOT_ACTIVE",
+                    "value": {
+                      "code": "MANAGER_VIEWER_NOT_ACTIVE",
+                      "message": "활성 매니저만 조회할 수 있습니다."
+                    }
+                  },
+                  "MANAGER_ROLE_REQUIRED": {
+                    "summary": "MANAGER_ROLE_REQUIRED",
+                    "value": {
+                      "code": "MANAGER_ROLE_REQUIRED",
+                      "message": "매니저 권한이 필요합니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PROJECT_ROUND_NOT_FOUND 그 프로젝트에 그 번호의 회차가 없음 · MANAGER_SCOPE_NOT_FOUND 담당 범위 밖의 기수이거나 담당하지 않는 반을 classId로 지정함",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "PROJECT_ROUND_NOT_FOUND": {
+                    "summary": "PROJECT_ROUND_NOT_FOUND",
+                    "value": {
+                      "code": "PROJECT_ROUND_NOT_FOUND",
+                      "message": "프로젝트 회차를 찾을 수 없습니다."
+                    }
+                  },
+                  "MANAGER_SCOPE_NOT_FOUND": {
+                    "summary": "MANAGER_SCOPE_NOT_FOUND",
+                    "value": {
+                      "code": "MANAGER_SCOPE_NOT_FOUND",
+                      "message": "담당 범위에서 대상을 찾을 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -8599,6 +10875,25 @@
               }
             }
           },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
           "404": {
             "description": "PROJECT_NOT_FOUND 기준 프로젝트를 찾을 수 없음",
             "content": {
@@ -8632,7 +10927,7 @@
         "tags": [
           "Submission"
         ],
-        "summary": "내 팀의 제출 현황 조회 | ✅ 사용 가능",
+        "summary": "내 팀의 제출 현황 조회 | ⚠️ 사용 불가",
         "description": "TR-02 `제출` 화면 전체를 이 응답 하나로 그린다. 제출 폼·분석 진행·재제출 가능 여부가\n모두 `status` 하나에서 갈린다.\n\n## 🔴 상태를 서버가 하나로 판정한다\n\n화면이 *제출했나 · 분석 끝났나 · 세션 시작했나 · 마감 지났나* 를 조합해 상태를 유추하지\n않게 한 것이 이 API의 요점이다. 조합하면 같은 판정 규칙이 화면과 서버 양쪽에 생기고,\n규칙이 바뀔 때 반드시 한쪽만 바뀐다.\n\n| status | 뜻 | 함께 오는 것 |\n|---|---|---|\n| `DRAFT` | 아직 제출 안 함 → 폼 | `submissionDueAt` |\n| `ANALYZING` | 제출됨·분석 중 | `submittedAt` · `submissionId` |\n| `READY` | 분석 완료 → **아직 다시 제출할 수 있다** | `analyzedAt` · `verifyClosesAt` · `content` |\n| `LOCKED` | **세션을 시작해서 잠김** — 다시 제출 불가 | 위와 같음 |\n| `ANALYSIS_FAILED` | 분석 실패 → 폼을 이전 값으로 되채워 다시 제출 | `failureReason` · `failureCode` · `content` |\n| `SUBMISSION_CLOSED` | 미제출인 채로 마감이 지났다 | `submissionDueAt` |\n\n**판정 순서가 규칙이다** — 위에서부터가 아니라 아래 순서로 먼저 맞는 것 하나로 정한다.\n\n1. 제출이 없다 → 마감 전이면 `DRAFT`, 지났으면 `SUBMISSION_CLOSED`\n2. 제출 접수가 깨졌거나(`FETCH_FAILED`·`INVALID`) 분석 job이 `FAILED` → `ANALYSIS_FAILED`\n3. 분석이 아직 `SUCCEEDED`·`PARTIAL`이 아니다 → `ANALYZING`\n4. 세션을 시작했다 → `LOCKED`, 아니면 `READY`\n\n⚠️ 마감을 가장 먼저 보지 않는다. 마감이 지나도 이미 분석까지 끝났다면 화면이 그려야 할\n것은 \"마감 지남\"이 아니라 응시 안내다. `SUBMISSION_CLOSED`는 **미제출인 채로** 마감이\n지났다는 뜻이다.\n\n### `LOCKED`가 중요하다\n\n질문이 **제출된 코드로** 만들어지므로 세션을 시작한 뒤 코드가 바뀌면 질문과 답이 어긋난다.\n그래서 `READY`와 `LOCKED`를 서버가 가른다 — 화면은 두 상태에 다른 문구를 띄우면 된다.\n\n**잠금은 개인 단위다.** 제출·분석은 팀 단위지만 세션은 사람마다 따로 열리므로, 팀원 한\n명이 세션을 시작했다고 나머지가 잠기지 않는다. 같은 제출을 두고도 사람마다 `READY`와\n`LOCKED`가 갈릴 수 있다.\n\n## content — 두 수단이 같은 카드를 채운다\n\n| 필드 | 타입 | GitHub | ZIP | 설명 |\n|---|---|---|---|---|\n| `repoUrl` | string? | ✅ | — | 교육생이 입력한 **원문** 주소. 정규화 전이라 폼에 그대로 되채운다 |\n| `branch` | string? | ✅ | — | 실제로 분석된 브랜치. 분석 전에는 적어 낸 값, 비워 냈으면 기본 브랜치 |\n| `fileName` | string? | — | ✅ | 올린 파일 이름. 예: `team3-miniproject.zip` |\n| `fileSize` | int64? | — | ✅ | 올린 파일 크기(바이트) |\n| `lastCommit` | object? | ✅ | ✅ | `{sha, message, at}` — **분석 성공 후에만** |\n\n**필드는 수단별로 배타적이다.** GitHub이면 저장소·브랜치가, ZIP이면 파일 이름·크기가\n채워지고 반대쪽은 키가 빠진다. 화면은 `repoUrl`이 있으면 저장소 줄을, `fileName`이\n있으면 파일 줄을 그리면 된다.\n\n🔴 **ZIP의 커밋 정보는 분석 결과에서 온다.** `ck_submission_method_2`가 ZIP 분기의\n`source_commit_*`를 NULL로 강제하고 git log를 읽는 주체가 AI라, 제출 직후에는\n`lastCommit`이 없다가 **분석이 끝나면 나타난다.** GitHub 쪽도 같은 시점에 채워진다.\n\n⚠️ **미제출이면 `content` 키 자체가 빠진다.** ZIP인데 아티팩트 행이 아직 없는\n접수 도중에도 마찬가지다 — 빈 객체를 보내면 화면이 \"냈는데 내용이 비었다\"로 읽는다.\n\n## 상태별로 쓰지 않는 필드는 키가 빠진다\n\nnull을 실어 보내지 않는다 — `ANALYZING`인데 `verifyClosesAt`이 있으면 무슨 뜻인지를\n화면이 매번 판단하게 되기 때문이다.\n\n## 회차를 고르는 규칙\n\n`projectId`로 부르면 서버가 그 프로젝트의 **최신 회차**(`round_no DESC`) 하나를 고른다.\n정의서가 MINI_PROJECT에 \"활성 회차 정확히 1건\"을 요구하므로 지금은 사실상 1건이다.\n\n## 오류\n\n| 코드 | 상태 | 언제 |\n|---|---|---|\n| `SUBMISSION_ROUND_NOT_ACCESSIBLE` | 404 | 프로젝트가 없거나, 회차가 없거나, 호출자가 그 프로젝트의 유효 팀 구성원이 아니다. 셋을 구분하지 않는다 |\n",
         "operationId": "findMySubmission",
         "parameters": [
@@ -8654,6 +10949,343 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/MySubmissionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "SUBMISSION_ROUND_NOT_ACCESSIBLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "SUBMISSION_ROUND_NOT_ACCESSIBLE": {
+                    "summary": "SUBMISSION_ROUND_NOT_ACCESSIBLE",
+                    "value": {
+                      "code": "SUBMISSION_ROUND_NOT_ACCESSIBLE",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-readiness": "unavailable"
+      }
+    },
+    "/api/v0/projects/{projectId}/evaluations": {
+      "get": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "[프로젝트 상세 - 결과 탭] 프로젝트 회차 결과 종합 조회 (매니저) | ✅ 사용 가능",
+        "description": "결과 탭의 **왼쪽 교육생 목록과 '프로젝트 종합' 화면**을 그린다.\n\n## 요청\n\n| 파라미터 | 필수 | 설명 |\n|---|---|---|\n| `projectId` (경로) | 필수 | 조회할 프로젝트 |\n| `roundNo` | 선택 | 회차 번호(기본 1) |\n| `classId` | 선택 | 담당 반 하나로 좁힌다. 생략하면 **담당 반 전체**다 |\n\n🔴 **응답은 호출자가 담당하는 반으로 제한된다.** 담당하지 않는 반의 `classId`를 지정하면\n`404 MANAGER_SCOPE_NOT_FOUND`다.\n\n## 응답 (200)\n\n| 필드 | 설명 |\n|---|---|\n| `reportPublished` | 회차 리포트 발행 여부. 발행 방식이 ROUND_BATCH라 회차 단위 판정 |\n| `resultAvailable` | 결과를 그릴 수 있는지. false면 화면은 빈 상태를 보여준다 |\n| `summary` | `totalCount` · `attendedCount` · `failedCount` · `notAttendedCount` · `invalidCount` |\n| `classWarnings[]` | 집단 미달 경고. 유효 응시자의 **절반을 넘는** 인원이 막힌 개념 |\n| `conceptAggregates[]` | 개념별 막힌 사람 · 코드에 없던 사람과 명단 |\n| `trainees[]` | 교육생 목록. 개념별 도달 결과까지 담고 **축별 단계는 담지 않는다** |\n\n💡 **`notInCode`를 따로 센다.** 그 개념이 코드에 없어 문제가 만들어지지 않은 것이라\n**못한 것이 아니다.** 막힌 사람과 한 칸에 넣으면 매니저가 둘을 구분하지 못한다.\n\n💡 **발행 전 집계는 임시 값이다.** 아직 응시하지 않은 인원이 빠져 있고, 발행 시점의\n값으로 굳는다. 화면은 발행 전에 '다시 보기 대상' 숫자를 아예 보여주지 않는다.\n\n🔴 **합격·불합격은 응시를 마친 사람(`AVAILABLE`)에게만 붙는다.** 아직 풀지 않은 문제는\n도달 단계가 0이라, 판정을 그대로 걸면 응시 중인 사람이 전부 불합격으로 잡힌다 —\n`retryTarget`·`stuckConceptCount`·`failedCount`가 모두 그 규칙을 따른다.\n\n⚠️ **`retryTargetCount`를 서버가 더해 주지 않는다** — 화면 규칙상 발행 전에는 그 합을\n감추기 때문에 `failedCount`와 `notAttendedCount`를 따로 준다.\n",
+        "operationId": "findProjectEvaluationSummary",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "description": "조회할 프로젝트 ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "roundNo",
+            "in": "query",
+            "description": "조회할 회차 번호",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1,
+              "minimum": 1
+            },
+            "example": 1
+          },
+          {
+            "name": "classId",
+            "in": "query",
+            "description": "담당 반 하나로 좁힐 때만 지정합니다. 생략하면 담당 반 전체입니다.",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "결과 종합 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectEvaluationSummaryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED roundNo가 1 미만",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "VALIDATION_FAILED": {
+                    "summary": "VALIDATION_FAILED",
+                    "value": {
+                      "code": "VALIDATION_FAILED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED 매니저 권한이 아님",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PROJECT_ROUND_NOT_FOUND 그 번호의 회차가 없음 · MANAGER_SCOPE_NOT_FOUND 담당 범위 밖",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "PROJECT_ROUND_NOT_FOUND": {
+                    "summary": "PROJECT_ROUND_NOT_FOUND",
+                    "value": {
+                      "code": "PROJECT_ROUND_NOT_FOUND",
+                      "message": "프로젝트 회차를 찾을 수 없습니다."
+                    }
+                  },
+                  "MANAGER_SCOPE_NOT_FOUND": {
+                    "summary": "MANAGER_SCOPE_NOT_FOUND",
+                    "value": {
+                      "code": "MANAGER_SCOPE_NOT_FOUND",
+                      "message": "담당 범위에서 대상을 찾을 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-readiness": "available"
+      }
+    },
+    "/api/v0/projects/{projectId}/evaluations/{userId}": {
+      "get": {
+        "tags": [
+          "Evaluation"
+        ],
+        "summary": "[프로젝트 상세 - 결과 탭] 교육생 채점 결과 상세 조회 (매니저) | ✅ 사용 가능",
+        "description": "결과 탭에서 사람을 클릭했을 때 **오른쪽에 그리는 값**이다. 개념마다 도달 단계와\n축 4단계 사다리, 그 안에 접힌 채점 근거가 온다.\n\n## 응답 (200)\n\n| 필드 | 설명 |\n|---|---|\n| `resultStatus` | `AVAILABLE` · `IN_PROGRESS` · `INCOMPLETE`(중단) · `NOT_ATTENDED` · `INVALID` |\n| `concepts[]` | 개념별 `inCode` · `reachLevel` · `retryTarget` · `steps[]` |\n\n### concepts[].steps[]\n\n| 필드 | 설명 |\n|---|---|\n| `axisCode` · `stepNo` | L1~L4 = 코드이해 · 설계논리 · 대안비교 · 반례대응 |\n| `passed` | 그 단계 통과 여부. 도움을 받고 통과해도 true |\n| `helpCount` | 힌트를 받고 답한 횟수 0~2 |\n| `score` | 0~5 원점수. **화면에 노출하지 않는 내부 값** |\n| `note` | 채점 근거 한 줄 |\n\n⚠️ **실제로 물은 단계만 배열에 있다.** 앞 단계에서 미달하면 그 문제가 끝나므로 뒤 단계는\n아예 오지 않는다 — 화면은 그 자리를 '미도달' 빈 칸으로 그린다. **0점·불합격과 다르다.**\n\n⚠️ **`passed`와 `helpCount`를 따로 읽어야 한다.** 힌트를 2회까지 받고도 통과할 수 있고,\n2회 받고도 기준을 못 넘으면 불합격이다. 화면의 4범주(합격 · 합격(도움 1회) ·\n합격(도움 2회) · 불합격)가 이 둘의 조합이다.\n\n⚠️ **`note`는 리포트 생성 전에는 null이다** — 채점 근거가 리포트 스냅샷에 쌓이기 때문이다.\n발행 전에는 도달 단계와 통과 여부까지만 보여줄 수 있다.\n\n💡 **주고받은 대화 전문은 주지 않는다.** 매니저 화면의 계약이며 전문은 학생 리포트에만 있다.\n",
+        "operationId": "findTraineeEvaluationDetail",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "description": "조회할 프로젝트 ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "조회할 교육생 ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "roundNo",
+            "in": "query",
+            "description": "조회할 회차 번호",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 1,
+              "minimum": 1
+            },
+            "example": 1
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "교육생 결과 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TraineeEvaluationDetailResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED 매니저 권한이 아님",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PROJECT_ROUND_NOT_FOUND 그 번호의 회차가 없음 · EVALUATION_TRAINEE_NOT_FOUND 담당 범위에 없는 교육생 · MANAGER_SCOPE_NOT_FOUND 담당 범위 밖의 기수",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "PROJECT_ROUND_NOT_FOUND": {
+                    "summary": "PROJECT_ROUND_NOT_FOUND",
+                    "value": {
+                      "code": "PROJECT_ROUND_NOT_FOUND",
+                      "message": "프로젝트 회차를 찾을 수 없습니다."
+                    }
+                  },
+                  "EVALUATION_TRAINEE_NOT_FOUND": {
+                    "summary": "EVALUATION_TRAINEE_NOT_FOUND",
+                    "value": {
+                      "code": "EVALUATION_TRAINEE_NOT_FOUND",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  },
+                  "MANAGER_SCOPE_NOT_FOUND": {
+                    "summary": "MANAGER_SCOPE_NOT_FOUND",
+                    "value": {
+                      "code": "MANAGER_SCOPE_NOT_FOUND",
+                      "message": "담당 범위에서 대상을 찾을 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -8714,6 +11346,25 @@
                     "summary": "UNAUTHENTICATED",
                     "value": {
                       "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -8933,6 +11584,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -8958,6 +11647,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PlatformModelSettingResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -8997,6 +11724,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OperatorListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -9061,6 +11826,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -9119,6 +11922,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/CohortCostResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -9341,6 +12182,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -9366,6 +12245,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PlatformSummaryResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -9405,6 +12322,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OrganizationNameAvailabilityResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -9462,6 +12417,25 @@
                 }
               }
             }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -9503,6 +12477,25 @@
                     "summary": "UNAUTHENTICATED",
                     "value": {
                       "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -9762,6 +12755,25 @@
               }
             }
           },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
           "404": {
             "description": "CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(다른 기관의 교안도 여기로 온다)",
             "content": {
@@ -9836,6 +12848,25 @@
                     "summary": "UNAUTHENTICATED",
                     "value": {
                       "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -9943,6 +12974,25 @@
               }
             }
           },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
           "404": {
             "description": "CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(다른 기관의 교안 포함)",
             "content": {
@@ -10018,6 +13068,25 @@
                     "summary": "UNAUTHENTICATED",
                     "value": {
                       "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -10170,6 +13239,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -10234,6 +13341,25 @@
                     "summary": "UNAUTHENTICATED",
                     "value": {
                       "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -10334,6 +13460,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -10390,6 +13554,25 @@
                     "summary": "UNAUTHENTICATED",
                     "value": {
                       "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
                       "message": "요청을 처리할 수 없습니다."
                     }
                   }
@@ -10722,6 +13905,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RiskSignalResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -11107,6 +14328,44 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -11475,6 +14734,82 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "PROBLEM_NOT_FOUND",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "PROBLEM_NOT_FOUND": {
+                    "summary": "PROBLEM_NOT_FOUND",
+                    "value": {
+                      "code": "PROBLEM_NOT_FOUND",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "PROBLEM_ALREADY_CLOSED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "PROBLEM_ALREADY_CLOSED": {
+                    "summary": "PROBLEM_ALREADY_CLOSED",
+                    "value": {
+                      "code": "PROBLEM_ALREADY_CLOSED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
           }
         },
         "security": [
@@ -11500,6 +14835,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -11784,6 +15157,25 @@
               }
             }
           },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
           "404": {
             "description": "PROJECT_NOT_FOUND 프로젝트가 없음 · CURRICULUM_LINK_NOT_FOUND 이 프로젝트의 교안 연결이 아님(이미 해제됐거나 다른 프로젝트의 연결 ID)",
             "content": {
@@ -11873,6 +15265,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OperatorListResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED — 토큰이 없거나 만료됐다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "code": "UNAUTHENTICATED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "code": "ACCESS_DENIED",
+                      "message": "요청을 처리할 수 없습니다."
+                    }
+                  }
                 }
               }
             }
@@ -17181,6 +20611,386 @@
           "versionNo"
         ]
       },
+      "Analysis": {
+        "type": "object",
+        "description": "분석 시도 한 건.\n\n`status`는 원값 그대로입니다 — PARTIAL을 완료로 접으면 실패도 완료도 아닌 팀이 어느 열에도\n잡히지 않고 사라집니다.\n",
+        "properties": {
+          "analysisJobId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "description": "QUEUED · RUNNING · SUCCEEDED · PARTIAL · FAILED",
+            "example": "SUCCEEDED"
+          },
+          "failureCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "analysis_job.failure_code 그대로이며 실패가 아니면 null입니다."
+          },
+          "failureReason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "실패 사유 원문이며 실패가 아니면 null입니다."
+          }
+        },
+        "required": [
+          "analysisJobId",
+          "failureCode",
+          "failureReason",
+          "status"
+        ]
+      },
+      "Member": {
+        "type": "object",
+        "description": "팀원 한 명의 응시 상태.\n\n회차의 공식 결과인 최초 응시(INITIAL) 기준입니다. 재시험·다시 보기는 결과 탭 소관이라\n여기 섞지 않습니다.\n",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "attendanceStatus": {
+            "type": "string",
+            "description": "응시 창이 지금 어떤 상태인가로 넷을 가릅니다. **서버가 판정합니다.**\n\n| 값 | 뜻 |\n|---|---|\n| `DONE` | 응시를 마쳤다 |\n| `OPEN` | 창이 열려 있고 아직 안 봤다 (마감 전) |\n| `MISSED` | 창이 닫히도록 끝내 안 봤다 (마감 후) |\n| `BLOCKED` | 창이 애초에 안 열렸다 — 미제출이거나 분석이 실패했다 |\n\n`BLOCKED`는 `MISSED`와 다릅니다. 못 본 것이 아니라 볼 수 없었던 것이라 독촉 대상이\n아니며, 이 둘을 합치면 화면이 그 사람에게 무엇을 해야 하는지 말할 수 없습니다.\n",
+            "example": "OPEN"
+          },
+          "assessmentCloseAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "개인 응시 창이 닫히는 시각입니다. `D-2`·`19시간 남음` 같은 표시 문구는 화면이 만듭니다."
+          },
+          "completedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "응시를 실제로 마친 시각이며 `DONE`일 때만 값이 있습니다."
+          }
+        },
+        "required": [
+          "assessmentCloseAt",
+          "attendanceStatus",
+          "completedAt",
+          "name",
+          "userId"
+        ]
+      },
+      "ProjectSubmissionStatusResponse": {
+        "type": "object",
+        "description": "프로젝트 회차의 팀 단위 제출·분석과 팀원 개인 응시 현황.\n\n**행이 2계층이다.** 팀 중 한 명이 내면 팀원 전원이 같은 코드를 쓰므로 제출·분석·요구사항은\n팀에, 응시는 개인에 붙는다. 그래서 같은 팀에서 제출 상태가 갈릴 수 없다.\n\n요구사항 목록은 팀이 아니라 프로젝트에 달린 값이라 최상위에 한 번만 싣는다. 팀별 판정은\n`teams[].requirementResults[]`이며 아직 분석되지 않은 팀은 빈 배열이다.\n\n🔴 **범위는 호출한 매니저의 담당 반이다.** 프로젝트 전체가 아니므로 `summary`의 팀 수,\n`unassignedMemberCount`, `teamFormationStage`가 같은 회차라도 매니저마다 다르다.\n",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "assessmentRoundId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roundNo": {
+            "type": "integer",
+            "format": "int32",
+            "description": "회차 번호이며 프로젝트 안에서만 유일합니다.",
+            "example": 1
+          },
+          "roundName": {
+            "type": "string"
+          },
+          "submissionDueAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "제출 마감 시각입니다."
+          },
+          "teamFormationStage": {
+            "type": "string",
+            "description": "팀 편성 단계입니다.\n\n| 값 | 뜻 |\n|---|---|\n| `NOT_STARTED` | 팀이 하나도 없음 |\n| `FORMING` | 미배정 인원이 남아 있음 |\n| `READY_TO_CONFIRM` | 전원 배정됐으나 확정 전 팀이 있음 |\n| `CONFIRMED` | 전 팀 확정됨 |\n| `CLOSED` | 종료된 프로젝트 |\n",
+            "example": "CONFIRMED"
+          },
+          "submissionOpened": {
+            "type": "boolean",
+            "description": "제출이 열렸는지 여부입니다. `teamFormationStage`가 `CONFIRMED`·`CLOSED`일 때 true입니다.\n\n**화면은 이 값만 보고 표를 그릴지 빈 상태를 보여줄지 정합니다.** 단계 이름으로 다시\n판정하면 같은 규칙이 서버와 화면 두 곳에 생깁니다.\n"
+          },
+          "locked": {
+            "type": "boolean",
+            "description": "종료된 회차입니다. 독촉·팀 이동 등 편성 액션을 잠급니다."
+          },
+          "unassignedMemberCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "미배정 인원 수입니다. 0이 아니면 제출이 열리지 않습니다.",
+            "example": 0
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Summary"
+          },
+          "requirements": {
+            "type": "array",
+            "description": "이 프로젝트가 정의한 요구사항이며 sequenceNo 오름차순입니다.",
+            "items": {
+              "$ref": "#/components/schemas/Requirement"
+            }
+          },
+          "teams": {
+            "type": "array",
+            "description": "팀 행 목록이며 반 이름 → 팀 번호 순입니다.",
+            "items": {
+              "$ref": "#/components/schemas/Team"
+            }
+          }
+        },
+        "required": [
+          "assessmentRoundId",
+          "locked",
+          "projectId",
+          "projectName",
+          "requirements",
+          "roundName",
+          "roundNo",
+          "submissionDueAt",
+          "submissionOpened",
+          "summary",
+          "teamFormationStage",
+          "teams",
+          "unassignedMemberCount"
+        ]
+      },
+      "Requirement": {
+        "type": "object",
+        "properties": {
+          "requirementId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "requirementKey": {
+            "type": "string",
+            "description": "요구사항 식별 키이며 프로젝트 안에서 유일합니다.",
+            "example": "HITL_TRIGGER"
+          },
+          "sequenceNo": {
+            "type": "integer",
+            "format": "int32",
+            "description": "표시 순서",
+            "example": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "description",
+          "requirementId",
+          "requirementKey",
+          "sequenceNo",
+          "title"
+        ]
+      },
+      "Submission": {
+        "type": "object",
+        "properties": {
+          "submissionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "submittedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "method": {
+            "type": "string",
+            "description": "GITHUB_URL · ZIP_WITH_GITLOG",
+            "example": "GITHUB_URL"
+          },
+          "status": {
+            "type": "string",
+            "description": "VALIDATING · ACCEPTED · FETCH_FAILED · INVALID",
+            "example": "ACCEPTED"
+          },
+          "submittedByUserId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "submittedByName": {
+            "type": "string",
+            "description": "제출을 실행한 팀원 이름",
+            "example": "김민준"
+          },
+          "repositoryUrl": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "GitHub 저장소 주소. ZIP 제출은 null입니다."
+          }
+        },
+        "required": [
+          "method",
+          "repositoryUrl",
+          "status",
+          "submissionId",
+          "submittedAt",
+          "submittedByName",
+          "submittedByUserId"
+        ]
+      },
+      "Summary": {
+        "type": "object",
+        "description": "탭 머리의 `제출 6/8` 카운트.\n\nteamCount = submittedTeamCount + unsubmittedTeamCount 입니다. analysisFailedTeamCount는\n제출한 팀 중 최신 분석이 FAILED인 팀이라 이 등식과 별개입니다.\n",
+        "properties": {
+          "teamCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "조회 범위의 팀 수",
+            "example": 8
+          },
+          "submittedTeamCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "제출을 마친 팀 수",
+            "example": 6
+          },
+          "unsubmittedTeamCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "아직 제출하지 않은 팀 수",
+            "example": 2
+          },
+          "analysisFailedTeamCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "최신 분석이 실패한 팀 수",
+            "example": 1
+          }
+        },
+        "required": [
+          "analysisFailedTeamCount",
+          "submittedTeamCount",
+          "teamCount",
+          "unsubmittedTeamCount"
+        ]
+      },
+      "Team": {
+        "type": "object",
+        "description": "팀 한 행. 제출·분석이 없으면 submission·analysis가 null입니다.",
+        "properties": {
+          "teamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "className": {
+            "type": "string"
+          },
+          "teamNumber": {
+            "type": "string",
+            "description": "반 안에서의 팀 번호",
+            "example": "3"
+          },
+          "teamName": {
+            "type": "string"
+          },
+          "teamStatus": {
+            "type": "string",
+            "description": "DRAFT · CONFIRMED",
+            "example": "CONFIRMED"
+          },
+          "submission": {
+            "description": "아직 아무도 제출하지 않았으면 null입니다. **레코드 존재가 아니라 이 값으로 미제출을 판정합니다.**",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Submission"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "analysis": {
+            "description": "제출에 매인 최신 분석 시도입니다. 제출이 없거나 아직 분석이 걸리지 않았으면 null입니다.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Analysis"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requirementResults": {
+            "type": "array",
+            "description": "요구사항 P/F 판정이며 sequenceNo 오름차순입니다. 분석 전이면 빈 배열입니다.",
+            "items": {
+              "$ref": "#/components/schemas/RequirementResult"
+            }
+          },
+          "members": {
+            "type": "array",
+            "description": "팀원 개인 행이며 이름 오름차순입니다.",
+            "items": {
+              "$ref": "#/components/schemas/Member"
+            }
+          }
+        },
+        "required": [
+          "analysis",
+          "classId",
+          "className",
+          "members",
+          "requirementResults",
+          "submission",
+          "teamId",
+          "teamName",
+          "teamNumber",
+          "teamStatus"
+        ]
+      },
+      "GithubSubmissionContent": {
+        "type": "object",
+        "description": "GitHub 저장소로 낸 제출",
+        "properties": {
+          "repoUrl": {
+            "type": "string",
+            "description": "교육생이 입력한 원문 주소. 정규화 전 값이라 폼에 그대로 되채울 수 있다",
+            "example": "https://github.com/team3/mini"
+          },
+          "branch": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "브랜치. 아직 확정되지 않았으면 null",
+            "example": "main"
+          },
+          "lastCommit": {
+            "$ref": "#/components/schemas/LastCommit",
+            "description": "분석 대상 커밋. 분석 성공 후에만 채워지고 그 전에는 키가 빠진다"
+          }
+        },
+        "required": [
+          "branch",
+          "repoUrl"
+        ]
+      },
       "LastCommit": {
         "type": "object",
         "properties": {
@@ -17282,8 +21092,15 @@
             ]
           },
           "content": {
-            "$ref": "#/components/schemas/SubmissionContent",
-            "description": "제출 내용. 미제출이면 키가 빠진다. 제출 수단에 따라 채워지는 필드가 다르다"
+            "description": "제출 내용. **제출 수단에 따라 둘 중 하나**이고, 미제출이면 키가 빠진다.\n\n`repoUrl`이 있으면 저장소 행을, `fileName`이 있으면 파일 행을 그리면 된다.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/GithubSubmissionContent"
+              },
+              {
+                "$ref": "#/components/schemas/ZipSubmissionContent"
+              }
+            ]
           }
         },
         "required": [
@@ -17293,34 +21110,363 @@
           "submissionDueAt"
         ]
       },
-      "SubmissionContent": {
+      "ZipSubmissionContent": {
         "type": "object",
+        "description": "ZIP 파일로 낸 제출",
         "properties": {
-          "repoUrl": {
-            "type": "string",
-            "description": "교육생이 입력한 원문 주소. 정규화 전 값이라 폼에 그대로 되채울 수 있다.\n**GitHub 제출에서만** 채워진다"
-          },
-          "branch": {
-            "type": "string",
-            "description": "브랜치. **GitHub 제출에서만**",
-            "example": "main"
-          },
           "fileName": {
             "type": "string",
-            "description": "올린 파일 이름. **ZIP 제출에서만**",
+            "description": "올린 파일 이름",
             "example": "team3-miniproject.zip"
           },
           "fileSize": {
             "type": "integer",
             "format": "int64",
-            "description": "올린 파일 크기(바이트). **ZIP 제출에서만**",
+            "description": "올린 파일 크기(바이트)",
             "example": 12873421
           },
           "lastCommit": {
             "$ref": "#/components/schemas/LastCommit",
             "description": "분석 대상 커밋. 분석 성공 후에만 채워지고 그 전에는 키가 빠진다.\nZIP 제출도 AI가 git log를 읽어 채운다"
           }
-        }
+        },
+        "required": [
+          "fileName",
+          "fileSize"
+        ]
+      },
+      "ClassWarning": {
+        "type": "object",
+        "properties": {
+          "conceptId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "concept": {
+            "type": "string"
+          },
+          "stuckCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "그 개념에서 막힌 인원",
+            "example": 13
+          },
+          "assessedCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "판정 분모인 유효 응시자 수",
+            "example": 23
+          }
+        },
+        "required": [
+          "assessedCount",
+          "concept",
+          "conceptId",
+          "stuckCount"
+        ]
+      },
+      "ConceptAggregate": {
+        "type": "object",
+        "description": "개념 한 행.\n\n`notInCode`를 따로 세는 이유 — 그 개념이 코드에 없어 **문제가 만들어지지 않은** 것이라\n못한 것이 아닙니다. 막힌 사람과 같은 칸에 넣으면 매니저가 둘을 구분하지 못합니다.\n",
+        "properties": {
+          "conceptId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "concept": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "stuckCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "2단 미달로 막힌 인원",
+            "example": 3
+          },
+          "notInCodeCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "코드에 개념이 없어 문제를 받지 못한 인원",
+            "example": 1
+          },
+          "stuck": {
+            "type": "array",
+            "description": "막힌 사람 명단",
+            "items": {
+              "$ref": "#/components/schemas/Person"
+            }
+          },
+          "notInCode": {
+            "type": "array",
+            "description": "코드에 없던 사람 명단",
+            "items": {
+              "$ref": "#/components/schemas/Person"
+            }
+          }
+        },
+        "required": [
+          "concept",
+          "conceptId",
+          "displayOrder",
+          "notInCode",
+          "notInCodeCount",
+          "stuck",
+          "stuckCount"
+        ]
+      },
+      "Person": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "userId"
+        ]
+      },
+      "ProjectEvaluationSummaryResponse": {
+        "type": "object",
+        "description": "프로젝트 회차의 채점 결과 종합과 교육생 목록.\n\n결과 탭은 마스터-디테일이고 이 응답이 **왼쪽 목록과 '프로젝트 종합' 화면**을 담당한다.\n사람을 클릭했을 때 오른쪽에 그리는 축별 4단계와 채점 근거는\n`GET /projects/{projectId}/evaluations/{userId}`가 따로 준다 — 그쪽이 사람 수 × 개념 수 × 4배라\n목록만 보는 기본 진입에 함께 실을 값이 아니다.\n\n🔴 **범위는 호출한 매니저의 담당 반이다.** 프로젝트 전체가 아니다.\n",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "assessmentRoundId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roundNo": {
+            "type": "integer",
+            "format": "int32",
+            "description": "회차 번호이며 프로젝트 안에서만 유일합니다.",
+            "example": 1
+          },
+          "roundName": {
+            "type": "string"
+          },
+          "reportPublished": {
+            "type": "boolean",
+            "description": "회차 리포트가 발행됐는지. 발행 방식이 ROUND_BATCH 하나뿐이라 회차 단위 판정입니다.\n\n발행 전 집계는 아직 응시하지 않은 인원이 빠진 **임시 값**이며, 발행 시점의 값으로 굳습니다.\n"
+          },
+          "publishedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "발행 시각. 발행 전이면 null입니다."
+          },
+          "resultAvailable": {
+            "type": "boolean",
+            "description": "결과를 그릴 수 있는지. 아직 아무도 응시를 마치지 않았으면 false이고, 화면은 표 대신\n\"팀 편성·제출·응시가 끝나야 개념별 집계가 생깁니다\" 빈 상태를 보여줍니다.\n"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/Summary"
+          },
+          "classWarnings": {
+            "type": "array",
+            "description": "집단 미달 경고. 한 개념에서 **유효 응시자의 절반을 넘는 인원**이 막히면 담습니다.\n\n이 개념은 개인 사유에서 빼고 여기서만 경고합니다 — 반 전체가 막힌 것을 개인 문제로\n읽으면 면담에서 엉뚱한 말을 하게 됩니다.\n",
+            "items": {
+              "$ref": "#/components/schemas/ClassWarning"
+            }
+          },
+          "conceptAggregates": {
+            "type": "array",
+            "description": "개념별 집계이며 표시 순서 오름차순입니다.",
+            "items": {
+              "$ref": "#/components/schemas/ConceptAggregate"
+            }
+          },
+          "trainees": {
+            "type": "array",
+            "description": "교육생 목록이며 이름 오름차순입니다. 왼쪽 목록이 이 배열입니다.",
+            "items": {
+              "$ref": "#/components/schemas/Trainee"
+            }
+          }
+        },
+        "required": [
+          "assessmentRoundId",
+          "classWarnings",
+          "conceptAggregates",
+          "projectId",
+          "projectName",
+          "publishedAt",
+          "reportPublished",
+          "resultAvailable",
+          "roundName",
+          "roundNo",
+          "summary",
+          "trainees"
+        ]
+      },
+      "Concept": {
+        "type": "object",
+        "properties": {
+          "conceptId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "concept": {
+            "type": "string"
+          },
+          "displayOrder": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "inCode": {
+            "type": "boolean",
+            "description": "그 개념이 코드에 있어 문제가 만들어졌는지. false면 못한 것이 아니라 묻지 못한 것입니다."
+          },
+          "reachLevel": {
+            "type": "integer",
+            "format": "int32",
+            "description": "통과한 축 중 가장 높은 단계(0~4)",
+            "example": 2
+          },
+          "retryTarget": {
+            "type": "boolean",
+            "description": "2단 미달이라 다시 보기 대상인 개념인지"
+          },
+          "steps": {
+            "type": "array",
+            "description": "**실제로 물은 단계만** 옵니다. 앞 단계에서 멈추면 뒤 단계는 아예 배열에 없고,\n화면은 그 자리를 '미도달' 빈 칸으로 그립니다 — 0점이나 불합격과 구분해야 합니다.\n",
+            "items": {
+              "$ref": "#/components/schemas/Step"
+            }
+          }
+        },
+        "required": [
+          "concept",
+          "conceptId",
+          "displayOrder",
+          "inCode",
+          "reachLevel",
+          "retryTarget",
+          "steps"
+        ]
+      },
+      "Step": {
+        "type": "object",
+        "description": "축 한 단계의 판정.\n\n`passed`와 `helpCount`를 **따로** 읽어야 합니다. 힌트를 2회까지 받고도 통과할 수 있고,\n2회 받고도 기준을 못 넘으면 불합격입니다. 화면의 4범주(합격 · 합격(도움 1회) ·\n합격(도움 2회) · 불합격)는 이 둘을 조합해 만듭니다.\n",
+        "properties": {
+          "axisCode": {
+            "type": "string",
+            "description": "L1 · L2 · L3 · L4",
+            "example": "L2"
+          },
+          "stepNo": {
+            "type": "integer",
+            "format": "int32",
+            "description": "축 순서 1~4. L1=코드이해, L2=설계논리, L3=대안비교, L4=반례대응입니다.",
+            "example": 2
+          },
+          "passed": {
+            "type": "boolean"
+          },
+          "helpCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "힌트를 받고 답한 횟수 0~2",
+            "example": 1
+          },
+          "score": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "description": "0~5점 원점수. 화면에는 노출하지 않는 내부 값이며 아직 채점되지 않았으면 null입니다."
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "채점 근거 한 줄. 리포트 생성 전에는 null입니다."
+          }
+        },
+        "required": [
+          "axisCode",
+          "helpCount",
+          "note",
+          "passed",
+          "score",
+          "stepNo"
+        ]
+      },
+      "TraineeEvaluationDetailResponse": {
+        "type": "object",
+        "description": "교육생 한 명의 채점 결과 상세. 결과 탭에서 사람을 클릭했을 때 오른쪽에 그리는 값이다.\n\n개념마다 도달 단계 한 칸과 축 4단계(코드이해 → 설계논리 → 대안비교 → 반례대응) 사다리가 있고,\n채점 근거는 그 안에 접혀 있다. **주고받은 대화 전문은 주지 않는다** — 매니저 화면의 계약이며\n학생 리포트에만 전문이 있다.\n",
+        "properties": {
+          "projectId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "assessmentRoundId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "roundNo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "classId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "className": {
+            "type": "string"
+          },
+          "reportPublished": {
+            "type": "boolean",
+            "description": "회차 리포트 발행 여부. 발행 전에는 채점 근거(note)가 아직 없습니다."
+          },
+          "resultStatus": {
+            "type": "string",
+            "description": "`AVAILABLE`(응시 완료) · `IN_PROGRESS`(응시 중) · `INCOMPLETE`(끝내지 못하고 창이 닫힘) ·\n`NOT_ATTENDED`(아예 안 봄) · `INVALID`(무효 확정).\n\n🔴 **`AVAILABLE`이 아니면 `retryTarget`이 항상 false입니다** — 아직 풀지 않은 문제를\n2단 미달로 판정하면 응시 중인 사람이 전부 다시 보기 대상이 됩니다.\n",
+            "example": "AVAILABLE"
+          },
+          "concepts": {
+            "type": "array",
+            "description": "개념별 결과이며 표시 순서 오름차순입니다.",
+            "items": {
+              "$ref": "#/components/schemas/Concept"
+            }
+          }
+        },
+        "required": [
+          "assessmentRoundId",
+          "classId",
+          "className",
+          "concepts",
+          "name",
+          "projectId",
+          "reportPublished",
+          "resultStatus",
+          "roundNo",
+          "userId"
+        ]
       },
       "ConceptCandidateResponse": {
         "type": "object",
@@ -17648,56 +21794,6 @@
           "representativeUserId",
           "teamId",
           "teamName"
-        ]
-      },
-      "Summary": {
-        "type": "object",
-        "description": "회차 전체 합계.\n\nanalysisTargetCount는 submittedCount와, assessmentTargetCount는 analysisSucceededCount와\n값이 같습니다 — 단계별 분모를 필드 이름으로도 드러내기 위해 따로 둡니다.\n제출률은 submittedCount / targetTraineeCount, 응시율은 assessedCount / analysisTargetCount 입니다.\n",
-        "properties": {
-          "targetTraineeCount": {
-            "type": "integer",
-            "format": "int64",
-            "description": "이번 회차 수행 대상 교육생 수(기수 총원)이며 제출률의 분모입니다.",
-            "example": 250
-          },
-          "submittedCount": {
-            "type": "integer",
-            "format": "int64",
-            "description": "제출을 마친 교육생 수",
-            "example": 231
-          },
-          "analysisTargetCount": {
-            "type": "integer",
-            "format": "int64",
-            "description": "분석 대상 교육생 수이며 submittedCount와 같습니다.",
-            "example": 231
-          },
-          "analysisSucceededCount": {
-            "type": "integer",
-            "format": "int64",
-            "description": "분석이 성공한 교육생 수",
-            "example": 223
-          },
-          "assessmentTargetCount": {
-            "type": "integer",
-            "format": "int64",
-            "description": "응시 대상 교육생 수이며 analysisSucceededCount와 같습니다.",
-            "example": 223
-          },
-          "assessedCount": {
-            "type": "integer",
-            "format": "int64",
-            "description": "응시(INITIAL 완료)를 마친 교육생 수",
-            "example": 198
-          }
-        },
-        "required": [
-          "analysisSucceededCount",
-          "analysisTargetCount",
-          "assessedCount",
-          "assessmentTargetCount",
-          "submittedCount",
-          "targetTraineeCount"
         ]
       },
       "OrganizationSort": {
@@ -20210,31 +24306,6 @@
           "value"
         ]
       },
-      "Concept": {
-        "type": "object",
-        "properties": {
-          "problemNo": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "teachesId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "conceptName": {
-            "type": "string"
-          },
-          "groupShortfall": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "conceptName",
-          "groupShortfall",
-          "problemNo",
-          "teachesId"
-        ]
-      },
       "ManagerHeatmapResponse": {
         "type": "object",
         "properties": {
@@ -20377,27 +24448,6 @@
         "required": [
           "classroomId",
           "classroomName"
-        ]
-      },
-      "Team": {
-        "type": "object",
-        "properties": {
-          "teamId": {
-            "type": "string",
-            "format": "uuid"
-          },
-          "teamName": {
-            "type": "string"
-          },
-          "memberCount": {
-            "type": "integer",
-            "format": "int32"
-          }
-        },
-        "required": [
-          "memberCount",
-          "teamId",
-          "teamName"
         ]
       },
       "GroupGapResponse": {

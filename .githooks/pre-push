@@ -1,0 +1,61 @@
+#!/bin/sh
+# 올린 브랜치가 CI에서 깨지지 않게 한다 — `npm run verify:ci`를 푸시 직전에 돌린다.
+# 규약: docs/handbook/git-convention.md §1 · 재현기: scripts/verify-ci.mjs
+#
+# ## 왜 여기인가
+# PR은 푸시된 브랜치에만 열 수 있으므로 **푸시가 PR 직전의 마지막 관문**이다.
+# 로컬에서 `npm run lint` 같은 것을 손으로 돌리는 것으로는 부족하다 —
+#   ① 커밋 안 된 파일까지 본다(CI는 커밋된 것만 본다)
+#   ② `npm ci`를 안 거친다(#132가 정확히 그래서 통과했다가 CI에서 죽었다)
+# `verify:ci`는 임시 워크트리에 커밋된 상태만 꺼내 `npm ci`부터 돌린다.
+#
+# ## 비용 — `--no-verify` 우회를 부르지 않으려고
+# `verify-ci.mjs` 주석이 *"1분 가까이 걸려 매 커밋에 붙이면 우회하게 된다"* 고
+# 적어 뒀다. 그래서 **커밋마다가 아니라 푸시마다**이고, 아래 셋으로 더 줄인다.
+#   · 같은 커밋을 다시 밀면 건너뛴다(직전 통과 sha를 기록해 둔다)
+#   · 브랜치 삭제(`git push --delete`)는 검사할 것이 없다
+#   · main·develop으로 미는 것은 어차피 훅이 아니라 서버가 막는다
+#
+# 급할 때는 `git push --no-verify`가 열려 있다. 막으려는 것은 "잊는 것"이지
+# "판단해서 건너뛰는 것"이 아니다.
+
+# 원격 참조가 하나도 안 오면 삭제 푸시다 — 검사할 커밋이 없다
+if [ -t 0 ]; then
+  refs=""
+else
+  refs=$(cat)
+fi
+case "$refs" in
+  '') exit 0 ;;
+esac
+
+# 전부 삭제(로컬 sha가 0000…)면 건너뛴다
+if ! echo "$refs" | awk '{print $2}' | grep -qvE '^0{40}$'; then
+  exit 0
+fi
+
+# `.git`이 파일인 경우(워크트리)가 있어 실제 git 디렉터리를 물어본다
+head_sha=$(git rev-parse HEAD)
+stamp="$(git rev-parse --git-dir)/verify-ci-passed"
+
+if [ -f "$stamp" ] && [ "$(cat "$stamp")" = "$head_sha" ]; then
+  echo "· verify:ci — ${head_sha%"${head_sha#???????}"} 는 이미 통과했다. 건너뛴다."
+  exit 0
+fi
+
+echo ""
+echo "▶ verify:ci — CI가 돌리는 것을 먼저 돌린다 (1분 내외)"
+echo "  건너뛰려면: git push --no-verify"
+echo ""
+
+if npm run --silent verify:ci; then
+  echo "$head_sha" > "$stamp"
+  exit 0
+fi
+
+echo "" >&2
+echo "✗ CI가 돌리는 검사에서 깨졌습니다 — 올리면 PR이 빨간불입니다." >&2
+echo "  위 실패 항목을 고치고 다시 푸시하세요." >&2
+echo "  판단해서 건너뛰려면: git push --no-verify" >&2
+echo "" >&2
+exit 1

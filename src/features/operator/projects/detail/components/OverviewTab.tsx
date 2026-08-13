@@ -66,7 +66,7 @@ export default function OverviewTab({
     <div className="flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-3">
         <Stat
-          label="제출 마감"
+          label="기간 종료일"
           value={project.endDate ? formatDue(project.endDate) : '미설정'}
           // 색만으로 상태를 구분하지 않는다 — 남은 시간 텍스트가 같이 있다(F4)
           /*
@@ -74,7 +74,7 @@ export default function OverviewTab({
             (18차 R5). 지어내지 않고 **날짜만 쓴다** — 화면이 `23:59`이라고 말하면
             학생은 그때까지 낼 수 있다고 믿는데 서버는 그 약속을 모른다.
           */
-          note={due?.text ?? (project.endDate ? undefined : '학생이 언제까지 낼지 정해집니다')}
+          note={due?.text ?? (project.endDate ? undefined : '회차가 언제 닫히는지 정해집니다')}
           tone={!project.endDate ? 'warn' : due?.urgent ? 'danger' : undefined}
         />
         {/*
@@ -146,10 +146,24 @@ export default function OverviewTab({
             done={!!project.startDate}
             value={project.startDate ? formatDue(project.startDate) : '미설정'}
           />
+          {/*
+            ⚠ **이 값은 「기간의 끝」이지 「제출 마감 시각」이 아니다.** 서버가 둘을
+            자동으로 연결하지 않는다(18차 R5 회신) — 실제로 9기 5차는 `endDate`가
+            07-31인데 실제 마감은 **08-12 03:00 KST**로 12일 차이가 난다.
+
+            실제 마감(`submissionDueAt`)은 지금 **읽을 곳이 없다** — 회차 상세 응답에
+            없고, `class-progress`는 현황 탭 조회라 개념 3건 뒤에만 있으며 `PLANNED`
+            회차에서는 아예 응답하지 않는다(22차 R2·R6).
+
+            그래서 **마감이라고 단정하지 않는다.** 라벨을 「기간 종료일」로 두고, 실제
+            마감 시각은 따로 있다는 사실을 그 자리에서 말한다 — 값이 오면 이 마디가
+            실제 마감을 그리고 이 주석도 지운다.
+          */}
           <Node
-            label="제출 마감"
+            label="기간 종료일"
             done={!!project.endDate}
             value={project.endDate ? formatDue(project.endDate) : '아직 정하지 않았습니다'}
+            note="제출 마감 시각은 따로 정해집니다 — 이 날짜와 다를 수 있습니다"
             strong
           />
           <Node

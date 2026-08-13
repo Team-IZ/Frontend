@@ -132,8 +132,14 @@ export default function StatusTab({
           <EmptyTitle>아직 제출한 학생이 없습니다</EmptyTitle>
           <EmptyDescription>
             {project.endDate
-              ? `제출이 시작되면 반별 진행이 여기에 쌓입니다. 제출 마감은 ${formatDue(project.endDate)}입니다.`
-              : '제출 마감이 정해지지 않아 학생에게 아직 열리지 않았습니다 — 개요 탭에서 일정을 정하세요.'}
+              ? /*
+                   ⚠ `endDate`를 「제출 마감」이라고 쓰지 않는다 — 실제 마감 시각은 따로
+                   있고 다를 수 있다(22차 R2 · 9기 5차는 12일 차이). 이 응답
+                   (`class-progress`)에는 `submissionDueAt`이 있지만, 이 분기는 그 값이
+                   오기 **전**(제출 0건)에도 그려지므로 기간 종료일로만 말한다.
+                 */
+                `제출이 시작되면 반별 진행이 여기에 쌓입니다. 회차 기간은 ${formatDue(project.endDate)}까지입니다.`
+              : '회차 기간이 정해지지 않아 학생에게 아직 열리지 않았습니다 — 개요 탭에서 일정을 정하세요.'}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>

@@ -382,6 +382,47 @@ export type findOrganizations_Item = findOrganizations_Response['content'][numbe
 **판정 규칙:** 성공 응답이 `$ref`이고 그 스키마에 **배열 속성이 정확히 하나**일 때만 만든다.
 둘 이상이면 어느 것이 "항목"인지 알 수 없어 안 만든다.
 
+### ⚠ TODO — 이 결정은 걷어내기로 했다 (2026-08-13)
+
+**위의 근거가 틀렸다.** `_Item`이 없을 때의 대안은 `OrganizationResponse`가 아니라
+**바로 윗줄의 우변**이다 — `findOrganizations_Response['content'][number]` 에는 스키마
+이름이 없다. 규약 안에 그대로 남는다. 즉 `_Item`이 사는 값은 「스키마 이름 은닉」이
+아니라 **글자 수**뿐이다.
+
+그 대가가 크다. 다른 다섯 별칭은 **부르는 함수만 알면** 있는지가 나오는데
+(`_Path`는 경로에 `{}`가 있으면, `_Query`는 쿼리가 있으면 …), `_Item` 혼자
+**응답 몸통 안**을 봐야 안다. 그래서 두 가지가 따라온다.
+
+- **조용히 사라진다.** 명단 응답에 `rounds`가 붙어 배열이 둘이 되자 `findTraineeRoster_Item`이
+  없어졌다 — 백엔드가 필드 하나 늘린 것이 공개 타입을 지웠다.
+  같은 일이 `createProject`·`updateSchedule`·`findCurrentProject`에도 이미 일어났다
+- **뜻이 제각각이다.** 배열이 하나면 그게 뭐든 붙어서
+  `assignTrainees_Item = string`(교육생 id) · `updateTraineeStatus_Item = integer` 같은 것이 나온다
+- **39개 만들어 16개 쓴다** (스펙 119 오퍼레이션 기준 · 2026-08-13 실측)
+
+**바꿀 방향:** `_Item` 폐기. 화면은 `_Response['<속성>'][number]`를 직접 쓴다.
+그러면 규칙이 한 문장이 된다 — *「오퍼레이션이 갖고 있는 것만 별칭이 된다」.*
+화면이 새로 알아야 할 정보도 없다. `_Item`이 외워 주던 건 배열 속성 이름 하나인데,
+화면은 어차피 `data.content.map(...)`으로 그 이름을 쓴다.
+쓰는 8종은 모두 `required`라 `NonNullable`도 필요 없다.
+
+**작업 범위**
+
+| 어디 | 무엇 |
+|---|---|
+| `scripts/api-gen.mjs` | `listPropertyOf` · `op.listProp` · `_Item` 렌더 블록 삭제, 헤더 주석 1줄 |
+| `scripts/api-gen.test.mjs` | `_Item` 테스트 2개 삭제 (TS2537 회귀는 `_Body`가 같은 것을 지킨다) |
+| 화면 **16곳** | 슈퍼어드민 7 · 오퍼레이터 9. 전부 `type X = …` 한 줄이라 그 줄만 바뀐다 |
+| 문서 | 이 절 · `api-usage.md` · `api-process.md` · `api-codegen.md` D6 |
+
+**왜 지금 안 하나:** 16곳 중 7곳이 슈퍼어드민이라 다른 세션과 겹칠 수 있다.
+OP-06을 끝내고, 슈퍼어드민을 건드려도 되는 때에 한 번에 한다.
+
+> 중간 대안 둘은 검토했고 **안 쓴다.**
+> 배열 속성마다 이름을 붙이면(`_Content`·`_Rounds`) 결정적이지만 별칭이 120개로 불고
+> `_Path`·`_Body` 같은 속성명과 충돌한다. `content`일 때만 만들면 12개로 줄지만
+> 「있을 때도 없을 때도 있다」는 구멍이 그대로 남는다.
+
 ## ★ E3. `_Errors` — 오퍼레이션별 에러 코드 유니온
 
 ```ts

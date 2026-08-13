@@ -41,6 +41,7 @@ import { findSections } from '@/api/curriculum/curriculumApi'
 import { findCohort, findClassrooms } from '@/api/academic/academicApi'
 import { academicKeys } from '@/api/academic/academicKeys'
 import { curriculumKeys } from '@/api/curriculum/curriculumKeys'
+import { listQueryOptions } from '../_shared/listQuery'
 import type {
   findProjects_Response,
   findProjectClassProgress_Response,
@@ -114,6 +115,12 @@ function toProject(p: ServerProjectProjection): Project {
     sequenceNo: p.sequenceNo,
     curriculumCount: p.curriculumCount,
     conceptCount: p.conceptCount,
+    /*
+      18차 R3으로 받은 이름들. **개수는 여전히 `…Count`를 쓴다** — 이름을 못 찾은 항목이
+      조용히 빠져 길이가 다를 수 있다고 회신에 명시돼 있다.
+    */
+    curriculumNames: p.curriculumNames ?? [],
+    conceptNames: p.conceptNames ?? [],
     conceptCandidateCount: p.conceptCandidateCount,
     startDate: p.startDate,
     endDate: p.endDate,
@@ -145,10 +152,24 @@ export function useProjectList(q: ProjectQuery | undefined) {
         sort: q?.sort ? SORT[q.sort] : undefined,
       },
     },
-    { enabled: !!q },
+    /*
+      **조건을 바꿔도 표를 비우지 않는다**(`listQueryOptions`). 조건이 곧 쿼리 키라
+      바뀌는 순간 캐시가 없어져 화면이 통째로 비었다 — 검색어 한 글자마다 그랬다.
+    */
+    { enabled: !!q, ...listQueryOptions },
   )
 
-  return { ...res, data: res.data ? toPage(res.data, q!) : undefined }
+  /*
+    ⚠ **`q`가 없으면 변환도 안 한다.** `q!`로 단언했다가 **화면이 통째로 죽었다** —
+    조회를 끄면(`enabled: false`) 캐시의 `res.data`는 **그대로 남는데** `q`만 `undefined`가
+    되어 `toPage`가 `q.status`를 읽었다.
+
+    실제로 난 자리 — OP-04 상세에서 개요 탭(형제 회차를 부른다)을 보다가 **현황·구성 탭을
+    누르는 순간.** `active !== 'overview'`라 `q`가 `undefined`가 되고, 캐시는 살아 있어
+    `res.data`가 참이었다. 주소로 직접 들어가면 캐시가 없어 안 났다 — **탭을 눌러야만**
+    나는 사고였다.
+  */
+  return { ...res, data: q && res.data ? toPage(res.data, q) : undefined }
 }
 
 function toPage(res: findProjects_Response, q: ProjectQuery): ProjectPage {
@@ -163,7 +184,12 @@ function toPage(res: findProjects_Response, q: ProjectQuery): ProjectPage {
     그 둘로 나눠 준다 — `PREP + READY == PLANNED`이므로 **모집단은 여전히 세 키의 합이다.**
   */
   const c = res.counts as Record<string, number>
-  const r = res.readinessCounts as Record<string, number>
+  /*
+    ⚠ **스펙은 `required`인데 서버가 안 보낸다**(실측). 그대로 읽으면 `undefined.PREP`으로
+    **화면이 아니라 앱이 터진다** — 실제로 목록 진입이 통째로 막혔다. 없으면 없는 대로
+    두고(개수 없이 라벨만), `0`으로 채우지 않는다 — `0`은 없는 사실을 주장하는 것이다.
+  */
+  const r = (res.readinessCounts ?? {}) as Partial<Record<string, number>>
   return {
     items,
     total: q.status === 'PREP' || q.status === 'READY' ? items.length : res.total,
@@ -216,10 +242,16 @@ export function useCohortScope(cohortId: string | undefined, enabled = true) {
     queryKey: [...academicKeys.all, 'scope', cohortId],
     enabled: enabled && !!cohortId,
     queryFn: async (): Promise<CohortScope> => {
-      const [cohort, rooms] = await Promise.all([
-        findCohort({ path: { cohortId: cohortId! } }),
-        findClassrooms({ path: { cohortId: cohortId! } }),
-      ])
+      /*
+        ⚠ **둘을 동시에 보내지 않는다.** `Promise.all`이었는데 진입할 때마다 둘 중 하나가
+        `net::ERR_FAILED`로 떨어졌다 — 프록시가 동시 요청의 프리플라이트를 502로 죽이고
+        (15차 R3), 전역 재시도도 **동시에** 나가 같은 자리에서 또 죽는다.
+
+        하나씩 보내면 산다. 느려지는 대가(둘을 더한 시간)는 이 문구 한 줄(`9반 209명`)이
+        치를 만하다 — 안 오면 아예 안 보이는 값이다.
+      */
+      const cohort = await findCohort({ path: { cohortId: cohortId! } })
+      const rooms = await findClassrooms({ path: { cohortId: cohortId! } })
       return {
         cohortId: cohort.cohortId,
         name: cohort.name,
@@ -251,10 +283,23 @@ export function useSectionCandidates(curricula: Curriculum[]) {
     queryKey: [...curriculumKeys.all, 'section-candidates', curricula.map((c) => c.versionId)],
     enabled: curricula.length > 0,
     queryFn: async (): Promise<ConceptCandidate[]> => {
-      const lists = await Promise.all(
-        curricula.map(async (c) => {
-          const sections = await findSections({ path: { materialId: c.materialId } })
-          return sections.flatMap((s) =>
+      /*
+        ⚠ **한 번에 하나씩 보낸다.** `Promise.all`로 동시에 보냈더니 **교안을 둘 이상
+        고르는 순간 전부 죽었다** — 프록시가 동시 요청의 CORS 프리플라이트를 502로
+        떨어뜨리고(15차 R3), 브라우저는 그러면 실제 요청을 아예 안 보낸다
+        (`net::ERR_FAILED`). 네트워크 탭에는 **요청이 나가지도 않은 것처럼** 보인다.
+
+        실측(교안 4개) — 동시: 3건 전부 `ERR_FAILED` → 전역 재시도도 같은 방식으로
+        동시에 나가 또 죽어 **후보 목록이 영원히 안 온다.** 순차: 하나씩 200.
+
+        느려지는 대가는 안다(교안 N개면 N번). 그래도 **되는 것이 먼저다.** 한 번에
+        묶어 주는 API가 생기면 그때 한 건으로 바꾼다(18차 R5).
+      */
+      const lists: ConceptCandidate[][] = []
+      for (const c of curricula) {
+        const sections = await findSections({ path: { materialId: c.materialId } })
+        lists.push(
+          sections.flatMap((s) =>
             s.items.map((it) => ({
               mappingId: it.mappingId,
               // 섹션 항목은 teachesId를 주지 않는다 — 확정은 mappingId로 하므로 화면에 필요 없다
@@ -268,9 +313,9 @@ export function useSectionCandidates(curricula: Curriculum[]) {
               pageStart: it.pageStart,
               pageEnd: it.pageEnd,
             })),
-          )
-        }),
-      )
+          ),
+        )
+      }
       return lists.flat()
     },
   })

@@ -71,7 +71,12 @@ export function useCohortScope() {
     current,
     /** 스위처가 그릴 전량. 기수 탭의 상태별 내역도 여기서 센다 */
     cohorts,
-    isPending: query.isPending,
+    /*
+      **`isLoading`을 내보낸다.** `isPending`은 *"데이터가 없다"* 라 조회를 끄면 영원히
+      참이다 — 지금 이 조회는 늘 켜져 있어 값이 같지만, 내보내는 이름이 `isPending`이면
+      쓰는 쪽이 그 뜻으로 읽고 나중에 `enabled`가 붙는 순간 조용히 깨진다(§1-9).
+    */
+    isLoading: query.isLoading,
     isError: query.isError,
     setCohort,
   }

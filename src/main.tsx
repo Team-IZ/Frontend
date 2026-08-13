@@ -31,7 +31,34 @@ connectSession()
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: (count, error) => isApiError(error) && error.status >= 500 && count < 1,
+      /*
+        **네트워크 실패(`status: 0`)도 재시도한다.** 5xx만 잡으면 **지금 실제로 나는 실패를
+        하나도 못 잡는다.**
+
+        실측(2026-08-12) — 대시보드가 조회 셋을 동시에 쏘면 브라우저가 **CORS 프리플라이트
+        (`OPTIONS`) 셋을 먼저 동시에** 보내는데, 프록시가 그중 둘을 **502**로 죽인다
+        (3회 반복 모두 `502/502/200`). 프리플라이트가 죽으면 브라우저는 **본 요청을 아예
+        보내지 않고** `net::ERR_FAILED`를 낸다 — 그것이 `status: 0`이라 5xx 조건에 안 걸린다.
+
+        원본으로 같은 요청을 보내면 5/5 성공이고 App Runner 로그에도 에러가 없다
+        (서비스 `RUNNING`) — **프록시(Lambda) 층의 동시성 문제다.**
+
+        오프라인도 `status: 0`이라 같이 걸리지만 손해가 없다 — 3회면 4초 안에 끝나고
+        그다음 `errorCopy`가 「인터넷 연결을 확인해 주세요」를 낸다. 지금은 **한 번 튕기면
+        그걸로 끝**이라 프록시가 회복돼도 화면이 실패인 채로 남았다.
+      */
+      retry: (count, error) =>
+        isApiError(error) && (error.status >= 500 || error.isNetwork) && count < 3,
+      /*
+        **흔들림(jitter)이 핵심이다.** 동시에 죽은 요청들이 **같은 순간에** 재시도하면
+        또 겹쳐서 또 죽는다 — 고정 지연으로는 충돌이 그대로 반복된다.
+
+        0.4~0.8초 → 0.8~1.2초 → 1.6~2.0초. **실패했을 때만** 붙고 최악이 4초다.
+
+        ⚠ **증상 완화이지 해결이 아니다.** 프록시가 프리플라이트를 제대로 처리하면 이 값을
+        되돌린다(요청서 대상).
+      */
+      retryDelay: (count) => 400 * 2 ** count + Math.random() * 400,
       staleTime: 30_000,
       refetchOnWindowFocus: false,
     },

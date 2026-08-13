@@ -8,8 +8,9 @@ import type {
   getAnalysis_Response,
   getAnalysisResult_Path,
   getAnalysisResult_Response,
-  findMySubmission_Path,
-  findMySubmission_Response,
+  findProjectSubmissionStatus_Path,
+  findProjectSubmissionStatus_Query,
+  findProjectSubmissionStatus_Response,
 } from './submissionTypes'
 
 /** 저장소 주소 사전 확인 — `POST /api/v0/submissions/repository-checks` */
@@ -39,11 +40,16 @@ export const getAnalysisResult = (params: { path: getAnalysisResult_Path } & Req
     }) as never,
   )
 
-/** 내 팀의 제출 현황 조회 — `GET /api/v0/projects/{projectId}/my-submission` */
-export const findMySubmission = (params: { path: findMySubmission_Path } & RequestOptions) =>
-  unwrap<findMySubmission_Response>(
-    izClient.GET('/api/v0/projects/{projectId}/my-submission', {
-      params: { path: params.path },
+/** [프로젝트 상세 - 제출현황 탭] 프로젝트 회차 제출 현황 조회 (매니저) — `GET /api/v0/projects/{projectId}/submissions` */
+export const findProjectSubmissionStatus = (
+  params: {
+    path: findProjectSubmissionStatus_Path
+    query?: findProjectSubmissionStatus_Query
+  } & RequestOptions,
+) =>
+  unwrap<findProjectSubmissionStatus_Response>(
+    izClient.GET('/api/v0/projects/{projectId}/submissions', {
+      params: { path: params.path, query: params.query ?? {} },
       signal: params.signal,
     }) as never,
   )

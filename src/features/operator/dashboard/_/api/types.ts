@@ -13,13 +13,24 @@
 
 // ── 블록 ────────────────────────────────────────────────────
 /**
- * 블록 하나 — 값이거나 실패다.
+ * 블록 하나 — **값 · 아직 · 실패 셋이다.**
  *
  * **부분 실패는 그 줄만 실패로 그린다**(F2 · 목업 `#partial`). 응답 전체를 한 덩어리로
- * 두면 반 비교 하나가 실패했을 때 화면을 통째로 비우게 된다. 블록마다 갈라 두면
- * 실패한 자리에만 `다시 시도`가 붙는다.
+ * 두면 반 비교 하나가 실패했을 때 화면을 통째로 비우게 된다.
+ *
+ * ⚠ **`pending`이 없으면 「아직」이 「실패」로 그려진다.** 전에는 성패 둘뿐이라, 회차가
+ * 아직 안 돈 기수에서 *"반별 위험 비율을 불러오지 못했습니다 + 다시 시도"* 가 떴다 —
+ * **조회는 200인데** 집계된 회차가 없을 뿐이었고, 눌러도 회차가 돌기 전엔 영영 같다
+ * (op-01-situations §2-3 · async-states §3-2).
+ *
+ * `failed`가 원인(`error`)을 들고 있는 것도 같은 이유다. 버리면 권한 없음·서버 오류·
+ * 오프라인이 전부 한 문구가 된다 — `lib/errorCopy`가 그것을 갈라야 한다.
  */
-export type Block<T> = { ok: true; value: T } | { ok: false }
+export type Block<T> =
+  | { state: 'ok'; value: T }
+  /** 기다리면 채워진다 — 「없는 것」 유형 1. **재시도 버튼을 붙이지 않는다** */
+  | { state: 'pending'; reason: string }
+  | { state: 'failed'; error: unknown }
 
 // ── ① 이번 회차 파이프라인 ───────────────────────────────────
 /**
@@ -39,6 +50,12 @@ export type RoundPipeline = {
   roundNo: number
   /** 등록된 미프 회차 수. `8` 같은 상수가 아니다(OP-02 §4-2) */
   roundTotal: number
+  /**
+   * **왜 이 회차를 고르나.** 진행 중인 회차가 하나면 자명하지만(`RUNNING`), 없어서
+   * 예정 회차를 집거나 끝난 회차를 집을 때는 화면이 그 사실을 말해야 한다 —
+   * 안 그러면 *"왜 3차를 보여주지"* 에 답이 없다(op-01-situations §2-7).
+   */
+  pick: 'RUNNING' | 'PLANNED' | 'CLOSED'
   submitted: number
   /** 명부 전체 — `231/250`의 분모 */
   total: number
@@ -196,33 +213,9 @@ export type Todo =
     }
 
 // ── 응답 ────────────────────────────────────────────────────
-/**
- * 대시보드 한 장.
- *
- * ⚠ **한 호출이 아니다 — 셋이다.** 목일 때는 `GET /operator/dashboard` 하나를 가정했는데
- * 서버에는 그런 엔드포인트가 없고 세 곳에서 모은다.
- *
- * ```
- * pipeline  ←  findProjects + findProjectClassProgress   (OP-04와 같은 조회)
- * compare   ←  findCohortRiskTraineeRates
- * todos     ←  findCohortActionsRequired
- * ```
- *
- * **그래서 `Block<T>`가 이제 실제 값을 갖는다.** 목에서는 부분 실패를 흉내만 냈지만
- * (`?case=partial`), 지금은 셋 중 하나만 죽는 일이 실제로 생긴다 — 반 비교가 실패해도
- * 조치 필요는 그대로 그린다(F2).
- */
-export type DashboardResponse = {
-  /*
-    헤더 빵부스러기 `대시보드 › 9기 › 223명 · 8반`의 뒷부분.
-
-    ⚠ **기수 이름은 여기 없다.** 세 응답 어디에도 없고, 화면이 이미 스코프
-    (`stores/cohortScope`)에서 알고 있다 — 같은 값을 두 곳에서 받으면 갈린다.
-  */
-  trainees: number
-  classes: number
-  pipeline: Block<RoundPipeline>
-  compare: Block<ClassCompare>
-  /** **0건도 정상이다** — 빈 배열과 실패를 갈라야 한다(F3) */
-  todos: Block<Todo[]>
-}
+/*
+  ⚠ **`DashboardResponse`를 지웠다.** 세 조회를 한 덩어리로 묶는 타입이었는데, 묶여 있는
+  동안 **도착도 같이 묶여** 가장 느린 조회(5.2초)에 맞춰졌다 — 화면이 8.1초 스피너였다
+  (op-01-situations §2-1). 지금은 블록마다 자기 쿼리를 갖고, `useDashboard`가 그 셋을
+  화면 어휘로 돌려준다. 한 장으로 보이는 것은 화면이지 응답이 아니다.
+*/

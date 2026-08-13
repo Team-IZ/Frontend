@@ -42,7 +42,7 @@ export function PeriodCell({ project, now }: { project: Project; now: string }) 
     return (
       <div className="flex flex-col gap-0.5">
         <span className="tabular-nums">
-          {formatDue(project.startDate)}
+          {formatDue(project.startDate, true)}
           <span className="text-fg-subtle"> ~ </span>
           <span className="text-warning font-semibold">미설정</span>
         </span>
@@ -53,9 +53,9 @@ export function PeriodCell({ project, now }: { project: Project; now: string }) 
   return (
     <div className="flex flex-col gap-0.5">
       <span className="tabular-nums">
-        {formatDue(project.startDate)}
+        {formatDue(project.startDate, true)}
         <span className="text-fg-subtle"> ~ </span>
-        {formatDue(project.endDate)}
+        {formatDue(project.endDate, true)}
       </span>
       {due && (
         // 색만으로 상태를 구분하지 않는다 — 남은 시간 텍스트가 같이 있다(F4)

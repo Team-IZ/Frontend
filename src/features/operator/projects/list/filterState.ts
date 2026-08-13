@@ -27,6 +27,38 @@ export const INITIAL_FILTERS: FilterValues = {
   sort: 'PREP_FIRST',
 }
 
+/*
+  ─── 조건은 주소가 갖는다 ──────────────────────────────────────
+  `useState`에 두면 **상세를 갔다 뒤로 오는 순간 전부 초기화된다**(op-03-situations §2-6).
+  좁혀 놓고 회차 하나를 열어 본 뒤 돌아오는 것이 이 화면의 주 동선인데, 그때마다 조건이
+  사라져 사용자는 목록이 갱신된 줄 안다. 새로고침·링크 공유도 같은 이유로 따라온다
+  (스코프를 URL에 두는 것과 같은 근거 — async-states §5).
+
+  **기본값은 주소에 안 쓴다.** `?status=ALL&sort=PREP_FIRST`처럼 아무것도 안 고른 상태가
+  주소에 남으면 "무엇을 골랐나"를 주소에서 읽을 수 없다.
+*/
+
+/** 주소 → 필터 값. 없는 키는 기본값이다 */
+export function fromSearchParams(sp: URLSearchParams): FilterValues {
+  const sort = sp.get('sort')
+  return {
+    search: sp.get('q') ?? '',
+    curriculumId: sp.get('curriculum') ?? ALL,
+    status: sp.get('status') ?? ALL,
+    sort: (sort as ProjectSort) || INITIAL_FILTERS.sort,
+  }
+}
+
+/** 필터 값 → 주소. 기본값인 키는 뺀다 */
+export function toSearchParams(f: FilterValues): URLSearchParams {
+  const sp = new URLSearchParams()
+  if (f.search) sp.set('q', f.search)
+  if (f.curriculumId !== ALL) sp.set('curriculum', f.curriculumId)
+  if (f.status !== ALL) sp.set('status', f.status)
+  if (f.sort !== INITIAL_FILTERS.sort) sp.set('sort', f.sort)
+  return sp
+}
+
 /**
  * 목록을 좁히는 조건이 하나라도 걸려 있나. 빈 결과가 **"아직 없음"인지 "필터에 안
  * 걸림"인지**를 가르는 판정이라 문구가 갈린다.

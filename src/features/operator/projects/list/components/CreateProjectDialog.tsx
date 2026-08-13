@@ -17,6 +17,9 @@ import { useCreateProjectFlow, useSectionCandidates } from '../../queries'
 import {
   CONCEPT_COUNT,
   canCreate,
+  coversConceptQuota,
+  curriculumBlockedReason,
+  splitByAvailability,
   dropOrphanConcepts,
   toSchedule,
   toggleConcept,
@@ -55,6 +58,12 @@ type Props = {
   onOpenChange: (open: boolean) => void
   cohortId: string
   curricula: Curriculum[]
+  /**
+   * 교안 목록이 **아직 오는 중인가.** 모르면 목록 자리에 「등록된 교안이 없습니다」가
+   * 떠서 **운영 관리로 보내는 안내까지 그린다** — 잠깐 뒤에 도착할 것을 두고
+   * 없다고 단정하는 셈이다(op-03-situations §2-7).
+   */
+  curriculaLoading?: boolean
   /** 기수 기간 — 달력이 이 밖을 못 고르게 막는다 */
   cohort?: CohortScope
   /**
@@ -69,6 +78,7 @@ export default function CreateProjectDialog({
   onOpenChange,
   cohortId,
   curricula,
+  curriculaLoading,
   cohort,
   onPartial,
 }: Props) {
@@ -86,6 +96,10 @@ export default function CreateProjectDialog({
     () => curricula.filter((c) => versionIds.includes(c.versionId)),
     [curricula, versionIds],
   )
+
+  /** 못 고르는 교안은 접어 둔다 — 기본은 닫힘 */
+  const [showBlocked, setShowBlocked] = useState(false)
+  const { ready, blocked } = splitByAvailability(curricula)
 
   const create = useCreateProjectFlow()
   const submitting = create.isPending
@@ -211,31 +225,88 @@ export default function CreateProjectDialog({
               </span>
             </FieldLabel>
             <div className="border-border divide-border divide-y rounded-md border">
-              {curricula.length === 0 ? (
+              {curriculaLoading ? (
+                <p className="text-fg-subtle p-4 text-center text-xs">교안을 불러오는 중</p>
+              ) : curricula.length === 0 ? (
                 <p className="text-fg-subtle p-4 text-center text-xs">
                   등록된 교안이 없습니다 —{' '}
                   <b className="text-fg-muted font-semibold">운영 관리 › 교안</b>에서 먼저
                   등록하세요
                 </p>
               ) : (
-                curricula.map((c) => (
-                  <label
-                    key={c.versionId}
-                    className={cn(
-                      'flex cursor-pointer items-center gap-2 p-2.5 text-sm',
-                      versionIds.includes(c.versionId) && 'bg-primary-soft',
-                    )}
-                  >
-                    <Checkbox
-                      checked={versionIds.includes(c.versionId)}
-                      onCheckedChange={() => toggleCurriculum(c.versionId)}
-                    />
-                    <span className="font-medium">{c.originalFileName}</span>
-                    <span className="text-fg-subtle text-xs">v{c.versionNo}</span>
-                    {/* 항목 수는 이 목록에 없다 — 고르면 아래 후보 목록이 채워진다 */}
-                    <span className="text-fg-subtle ml-auto text-xs">{c.pageCount}쪽</span>
-                  </label>
-                ))
+                /*
+                  **고를 수 있는 것을 위로, 못 고르는 것은 접는다.** 9기 실측이 7개 중
+                  2개만 고를 수 있는 상태라, 섞어 두면 고를 것이 노이즈에 묻힌다.
+                  **감추지는 않는다** — `FAILED`는 다시 올려야 하는 상태이고 `PENDING`은
+                  방금 올린 것이라, 사라지면 「업로드가 실패했나」가 된다(`rules.ts`).
+                */
+                [...ready, ...(showBlocked ? blocked : [])].map((c) => {
+                  /*
+                    **분석이 끝난 교안만 고를 수 있다.** 판정은 `rules.ts`가 갖는다 —
+                    교안 변경 모달(OP-04)도 같은 규칙을 쓰므로 두 곳이 갈리면 안 된다.
+
+                    한때 `pageCount == null`로 추측했다(서버가 상태를 안 줬다).
+                    18차 R2로 `analysisStatus`를 받아 그 추측을 걷어냈다.
+                  */
+                  const blocked = curriculumBlockedReason(c)
+                  return (
+                    <label
+                      key={c.versionId}
+                      className={cn(
+                        'flex items-center gap-2 p-2.5 text-sm',
+                        blocked ? 'cursor-not-allowed' : 'cursor-pointer',
+                        versionIds.includes(c.versionId) && 'bg-primary-soft',
+                      )}
+                    >
+                      <Checkbox
+                        checked={versionIds.includes(c.versionId)}
+                        disabled={!!blocked}
+                        onCheckedChange={() => toggleCurriculum(c.versionId)}
+                      />
+                      <span className={cn('font-medium', blocked && 'text-fg-subtle')}>
+                        {c.originalFileName}
+                      </span>
+                      <span className="text-fg-subtle text-xs">v{c.versionNo}</span>
+                      {/*
+                        왜 못 고르는지 그 자리에서 말한다 — 잠긴 이유가 없으면 고장으로 읽힌다.
+                        **「분석 전」과 「분석 실패」를 갈라 쓴다** — 전자는 기다리면 되고
+                        후자는 다시 올려야 한다(18차 R2 회신이 명시한 구분이다).
+                      */}
+                      {blocked && (
+                        <span className="border-border text-fg-subtle rounded-full border px-1.5 py-px text-xs">
+                          {blocked}
+                        </span>
+                      )}
+                      {/*
+                        고를 수 있는 교안에는 **고르기 전에** 개념 3건을 뽑을 수 있는지 알린다
+                        (`teachesCount`). 전에는 골라 봐야 알았다. 막지는 않는다 —
+                        다른 교안과 같이 고르면 3건이 된다.
+                      */}
+                      {!blocked && !coversConceptQuota(c) && (
+                        <span className="text-warning text-xs">가르친 항목 {c.teachesCount}건</span>
+                      )}
+                      {/*
+                      항목 수는 이 목록에 없다 — 고르면 아래 후보 목록이 채워진다.
+                      **쪽수를 모르면 단위도 안 쓴다** — `쪽`만 남으면 0쪽처럼 읽힌다.
+                    */}
+                      {c.pageCount != null && (
+                        <span className="text-fg-subtle ml-auto text-xs">{c.pageCount}쪽</span>
+                      )}
+                    </label>
+                  )
+                })
+              )}
+              {/* 접힌 것이 몇 개이고 왜 못 고르는지 — 개수만 쓰면 「고장인가」가 된다 */}
+              {!curriculaLoading && blocked.length > 0 && (
+                <button
+                  type="button"
+                  className="text-fg-subtle hover:text-fg w-full p-2.5 text-center text-xs"
+                  onClick={() => setShowBlocked((v) => !v)}
+                >
+                  {showBlocked
+                    ? '분석이 안 끝난 교안 접기'
+                    : `분석이 안 끝난 교안 ${blocked.length}개 보기`}
+                </button>
               )}
             </div>
           </Field>

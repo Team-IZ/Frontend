@@ -48,6 +48,9 @@ export type ServerProjectProjection = {
   sequenceNo: number
   curriculumCount: number
   conceptCount: number
+  /** 18차 R3으로 늘어난 이름들. 길이가 `…Count`와 다를 수 있다 — 개수는 `…Count`를 쓴다 */
+  curriculumNames?: string[]
+  conceptNames?: string[]
   conceptCandidateCount: number
   startDate: string
   endDate: string | null
@@ -119,12 +122,31 @@ export type ConceptCandidate = {
  * ⚠ **`teaches`가 없다.** 예전 목은 교안이 후보를 들고 다녔지만 서버는 갈라 준다 —
  * 후보는 `findConceptCandidates`(프로젝트 기준) 또는 `findSections`(교안 기준)가 준다.
  */
+/** 교안 분석 시도의 상태. `null`(분석 전)은 이 유니온에 없다 — 필드 쪽에서 `| null`로 받는다 */
+export type CurriculumAnalysisStatus = 'PENDING' | 'RUNNING' | 'SUCCEEDED' | 'FAILED'
+
 export type Curriculum = {
   versionId: string
   materialId: string
   versionNo: number
   originalFileName: string
-  pageCount: number
+  /**
+   * 쪽수. 분석 전이거나 확정되지 않았으면 `null`이다.
+   * (18차 R6에서 스펙이 `["integer","null"]`로 맞춰졌다.)
+   */
+  pageCount: number | null
+  /**
+   * 가장 최근 **분석 시도**의 상태. `null`이면 한 번도 시도하지 않은 것이다 —
+   * **`FAILED`와 갈라야 한다**(전자는 기다리면 되고 후자는 다시 올려야 한다).
+   *
+   * 전에는 `pageCount == null`로 분석 여부를 **추측**했다(18차 R2로 요청해 받은 필드다).
+   */
+  analysisStatus: CurriculumAnalysisStatus | null
+  /**
+   * 승인된 「가르친 항목」 수. **고르기 전에** 이 교안에서 검증 개념 3건을 뽑을 수 있는지
+   * 알려 준다 — 전에는 골라 봐야 알았다.
+   */
+  teachesCount: number
   createdAt: string
 }
 
@@ -146,6 +168,13 @@ export type Project = {
   curriculumCount: number
   /** 확정 개념 수. 3이거나 0이다 — 그 사이는 저장되지 않는다 */
   conceptCount: number
+  /**
+   * 연결된 교안 이름 전량. **개수 표시에는 안 쓴다** — 이름을 못 찾은 항목은 조용히
+   * 빠지므로 길이가 `curriculumCount`와 다를 수 있다(18차 R3 회신).
+   */
+  curriculumNames: string[]
+  /** 확정된 검증 개념 이름 전량. 위와 같은 이유로 개수는 `conceptCount`를 쓴다 */
+  conceptNames: string[]
   /** 연결한 교안들의 승인된 매핑 수. **서버가 세어 준다** — 화면이 합산하면 교안 전량이 필요하다 */
   conceptCandidateCount: number
   /**
@@ -210,11 +239,15 @@ export type ProjectPage = {
   /**
    * 상태별 개수. **필터와 무관한 전체 모집단 기준**이다.
    *
-   * 네 값이 **모두 채워진다.** 서버 `counts`는 `PLANNED`·`RUNNING`·`CLOSED` 세 키뿐이라
-   * 준비 중·준비됨을 가를 수 없었는데, 10차 Q1 회신으로 `readinessCounts`(`PREP`·`READY`)가
-   * 생겨 `PLANNED`를 그 둘로 나눠 받는다.
+   * 서버 `counts`는 `PLANNED`·`RUNNING`·`CLOSED` 세 키뿐이라 준비 중·준비됨을 가를 수
+   * 없다. 10차 Q1 회신의 `readinessCounts`(`PREP`·`READY`)가 `PLANNED`를 그 둘로 나눠
+   * 주기로 했고 **스펙에는 `required`로 들어가 있다.**
+   *
+   * ⚠ **그런데 배포된 서버가 그 필드를 안 보낸다**(실측: 응답 키가 `projects`·`total`·
+   * `counts` 셋뿐). 그래서 `PREP`·`READY`는 **없을 수 있다** — `undefined`를 허용하는
+   * 이유다. 필터 라벨은 개수가 없으면 라벨만 그린다(`0`으로 채우면 없는 사실을 주장한다).
    */
-  counts: Record<ProjectStatus, number>
+  counts: Partial<Record<ProjectStatus, number>>
   /**
    * 이 기수의 전체 회차 수 — 화면 제목의 `총 7개`.
    *

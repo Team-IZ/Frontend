@@ -11,12 +11,14 @@ import type { operations } from '@/api/schema'
 export type findMyReports_Response =
   operations['findMyReports']['responses'][200]['content']['application/json']
 export type findMyReports_Item = NonNullable<findMyReports_Response['rounds']>[number]
+export type findMyReports_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // GET /api/v0/reports/{reportId} — 리포트 단건 조회
 export type findMyReport_Path = operations['findMyReport']['parameters']['path']
 export type findMyReport_Response =
   operations['findMyReport']['responses'][200]['content']['application/json']
 export type findMyReport_Item = NonNullable<findMyReport_Response['concepts']>[number]
+export type findMyReport_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // GET /api/v0/reports/class-diagnosis — 수업 진단 리포트 조회
 export type findClassDiagnosis_Query = NonNullable<
@@ -24,3 +26,4 @@ export type findClassDiagnosis_Query = NonNullable<
 >
 export type findClassDiagnosis_Response =
   operations['findClassDiagnosis']['responses'][200]['content']['application/json']
+export type findClassDiagnosis_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'

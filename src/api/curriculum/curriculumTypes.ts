@@ -10,7 +10,8 @@ import type { operations } from '@/api/schema'
 // POST /api/v0/curricula/{materialId}/analyses — 재분석 요청
 export type requestAnalysis_Path = operations['requestAnalysis']['parameters']['path']
 export type requestAnalysis_Response = void
-export type requestAnalysis_Errors = 'UNAUTHENTICATED' | 'CURRICULUM_MATERIAL_NOT_FOUND'
+export type requestAnalysis_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'CURRICULUM_MATERIAL_NOT_FOUND'
 
 // GET /api/v0/organizations/{organizationId}/curricula — 기관 교안 목록
 export type findOrganizationCurricula_Path =
@@ -34,20 +35,25 @@ export type findOrganizationCurricula_Errors =
 export type findCurriculum_Path = operations['findCurriculum']['parameters']['path']
 export type findCurriculum_Response =
   operations['findCurriculum']['responses'][200]['content']['application/json']
-export type findCurriculum_Errors = 'UNAUTHENTICATED' | 'CURRICULUM_MATERIAL_NOT_FOUND'
+export type findCurriculum_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'CURRICULUM_MATERIAL_NOT_FOUND'
 
 // GET /api/v0/curricula/{materialId}/sections — 교안 섹션·개념 조회
 export type findSections_Path = operations['findSections']['parameters']['path']
 export type findSections_Response =
   operations['findSections']['responses'][200]['content']['application/json']
 export type findSections_Errors =
-  'UNAUTHENTICATED' | 'CURRICULUM_MATERIAL_NOT_FOUND' | 'CURRICULUM_ANALYSIS_NOT_COMPLETED'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'CURRICULUM_MATERIAL_NOT_FOUND'
+  | 'CURRICULUM_ANALYSIS_NOT_COMPLETED'
 
 // GET /api/v0/curricula/{materialId}/projects — 쓰인 회차
 export type findUsedProjects_Path = operations['findUsedProjects']['parameters']['path']
 export type findUsedProjects_Response =
   operations['findUsedProjects']['responses'][200]['content']['application/json']
-export type findUsedProjects_Errors = 'UNAUTHENTICATED' | 'CURRICULUM_MATERIAL_NOT_FOUND'
+export type findUsedProjects_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'CURRICULUM_MATERIAL_NOT_FOUND'
 
 // GET /api/v0/curricula/comparable-cohorts — 비교 가능한 기수 목록
 export type findComparableCohorts_Query = NonNullable<
@@ -55,10 +61,10 @@ export type findComparableCohorts_Query = NonNullable<
 >
 export type findComparableCohorts_Response =
   operations['findComparableCohorts']['responses'][200]['content']['application/json']
-export type findComparableCohorts_Errors = 'UNAUTHENTICATED'
+export type findComparableCohorts_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // GET /api/v0/cohorts/{cohortId}/curricula — 기수 연결 교안 목록
 export type findLinkableCurricula_Path = operations['findLinkableCurricula']['parameters']['path']
 export type findLinkableCurricula_Response =
   operations['findLinkableCurricula']['responses'][200]['content']['application/json']
-export type findLinkableCurricula_Errors = 'UNAUTHENTICATED'
+export type findLinkableCurricula_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'

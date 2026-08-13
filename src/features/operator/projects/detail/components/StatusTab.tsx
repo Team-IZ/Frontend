@@ -2,7 +2,8 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
-import { Spinner } from '@/components/ui/Spinner'
+import { SlowNotice } from '@/components/common/Loading'
+import { StatusSkeleton } from './DetailSkeleton'
 import {
   Table,
   TableHeader,
@@ -58,7 +59,7 @@ export default function StatusTab({
   */
   if (!conceptsFixed(project.conceptCount)) {
     return (
-      <Empty className="border-solid bg-surface">
+      <Empty variant="empty">
         <EmptyHeader>
           <EmptyTitle>아직 집계할 것이 없습니다</EmptyTitle>
           <EmptyDescription>
@@ -71,17 +72,24 @@ export default function StatusTab({
     )
   }
 
-  if (loading) {
+  /*
+    ⚠ **여기가 끝나지 않을 수 있다.** 개념 3건이 확정됐는데 아직 아무도 제출하지 않은
+    회차에서 `class-progress`가 **응답하지 않는다**(18차 R8 — 실측 35초 스피너, 요청은
+    나가고 응답만 안 온다). 인라인 스피너를 쓰던 자리라 「오래 걸린다」는 말조차 없었다.
+
+    `SlowNotice`가 12초 뒤 그 사실을 말한다 — 끊지는 않는다(잠든 서버는 깨는 데 76초).
+  */
+  if (loading)
     return (
-      <div className="flex justify-center py-16">
-        <Spinner className="size-6" aria-label="현황을 불러오는 중" />
-      </div>
+      <>
+        <StatusSkeleton />
+        <SlowNotice />
+      </>
     )
-  }
 
   if (failed || !report) {
     return (
-      <Empty className="bg-danger-soft border-solid">
+      <Empty variant="failed">
         <EmptyHeader>
           <EmptyTitle>현황을 불러오지 못했습니다</EmptyTitle>
         </EmptyHeader>
@@ -102,7 +110,7 @@ export default function StatusTab({
   */
   if (report.classes.length === 0) {
     return (
-      <Empty className="border-solid bg-surface">
+      <Empty variant="empty">
         <EmptyHeader>
           <EmptyTitle>이 기수에 반이 없습니다</EmptyTitle>
           <EmptyDescription>
@@ -115,17 +123,23 @@ export default function StatusTab({
 
   /*
     개념은 정해졌는데 아직 아무도 안 냈다 — **`아직`이다.** 마감까지 기다리면 채워지므로
-    액션이 없고, **언제 채워지는지**를 쓴다(유형 1 · 점선이 기본값).
+    액션이 없고, **언제 채워지는지**를 쓴다 — 오퍼레이터가 할 일이 없는 유일한 자리다(유형 1 · 점선).
   */
   if (report.classes.every((c) => c.submitted === 0)) {
     return (
-      <Empty>
+      <Empty variant="pending">
         <EmptyHeader>
           <EmptyTitle>아직 제출한 학생이 없습니다</EmptyTitle>
           <EmptyDescription>
             {project.endDate
-              ? `제출이 시작되면 반별 진행이 여기에 쌓입니다. 제출 마감은 ${formatDue(project.endDate)}입니다.`
-              : '제출 마감이 정해지지 않아 학생에게 아직 열리지 않았습니다 — 개요 탭에서 일정을 정하세요.'}
+              ? /*
+                   ⚠ `endDate`를 「제출 마감」이라고 쓰지 않는다 — 실제 마감 시각은 따로
+                   있고 다를 수 있다(22차 R2 · 9기 5차는 12일 차이). 이 응답
+                   (`class-progress`)에는 `submissionDueAt`이 있지만, 이 분기는 그 값이
+                   오기 **전**(제출 0건)에도 그려지므로 기간 종료일로만 말한다.
+                 */
+                `제출이 시작되면 반별 진행이 여기에 쌓입니다. 회차 기간은 ${formatDue(project.endDate)}까지입니다.`
+              : '회차 기간이 정해지지 않아 학생에게 아직 열리지 않았습니다 — 개요 탭에서 일정을 정하세요.'}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>

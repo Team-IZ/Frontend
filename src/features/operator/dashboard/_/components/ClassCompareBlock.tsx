@@ -53,8 +53,17 @@ export default function ClassCompareBlock({ c }: { c: ClassCompare }) {
       </p>
 
       {c.classes.map((row) => {
+        /*
+          **아직 안 센 반이 있다.** 서버가 `riskRate: null`을 주는 자리이고(채점된 사람이
+          0일 때), 그것을 `0%`로 그리면 *"위험자가 없다"* 는 **없는 사실을 주장**하게 된다
+          — 실제로는 아직 세지 않은 것이다(F3 · op-01-situations §2-6).
+
+          판정은 **파생값(`ratio`)이 아니라 원인이 되는 값**으로 한다 — 채점된 사람이
+          0이면 비율이 존재할 수 없다.
+        */
+        const counted = row.graded > 0
         /** 기준선 초과 = 기수보다 나쁘다. 같으면 초과가 아니다 */
-        const worse = row.ratio > c.cohortRatio
+        const worse = counted && row.ratio > c.cohortRatio
         return (
           /*
             행 간격 `py-0.5`(2px)는 막대 높이 16px에 비해 너무 붙어서 열 줄이 한 덩어리로
@@ -82,10 +91,13 @@ export default function ClassCompareBlock({ c }: { c: ClassCompare }) {
                 정상 범위는 무채색으로 두면 **붉은 다섯 줄이 실제로 튄다.** 막대 길이는
                 여전히 전 행에서 비교되므로 잃는 정보가 없다.
               */}
-              <span
-                className={`block h-full rounded-sm ${worse ? 'bg-danger/55' : 'bg-border-strong'}`}
-                style={{ width: pct(row.ratio) }}
-              />
+              {/* 안 센 반은 막대를 그리지 않는다 — 길이 0인 막대는 «0%»로 읽힌다 */}
+              {counted && (
+                <span
+                  className={`block h-full rounded-sm ${worse ? 'bg-danger/55' : 'bg-border-strong'}`}
+                  style={{ width: pct(row.ratio) }}
+                />
+              )}
               {/* 기준선. 막대 위에 얹혀야 넘었는지가 보인다 */}
               <span
                 aria-hidden
@@ -95,10 +107,17 @@ export default function ClassCompareBlock({ c }: { c: ClassCompare }) {
             </span>
 
             <span className="text-fg-muted w-24 shrink-0 text-right text-xs tabular-nums">
-              <b className={worse ? 'font-bold text-danger' : 'font-semibold text-fg'}>
-                {row.ratio}%
-              </b>{' '}
-              · {row.risky}/{row.graded}명
+              {counted ? (
+                <>
+                  <b className={worse ? 'font-bold text-danger' : 'font-semibold text-fg'}>
+                    {row.ratio}%
+                  </b>{' '}
+                  · {row.risky}/{row.graded}명
+                </>
+              ) : (
+                /* 「없음」 표기는 이 레포가 이미 쓰는 것이다(RoundGridTable · StatusTab …) */
+                <span className="text-fg-subtle">— 집계 전</span>
+              )}
             </span>
 
             {/*

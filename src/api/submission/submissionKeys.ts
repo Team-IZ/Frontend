@@ -3,7 +3,8 @@
 import type {
   getAnalysis_Path,
   getAnalysisResult_Path,
-  findMySubmission_Path,
+  findProjectSubmissionStatus_Path,
+  findProjectSubmissionStatus_Query,
 } from './submissionTypes'
 
 /*
@@ -17,6 +18,14 @@ export const submissionKeys = {
     [...submissionKeys.all, 'getAnalysis', params.path ?? null] as const,
   getAnalysisResult: (params: { path: getAnalysisResult_Path }) =>
     [...submissionKeys.all, 'getAnalysisResult', params.path ?? null] as const,
-  findMySubmission: (params: { path: findMySubmission_Path }) =>
-    [...submissionKeys.all, 'findMySubmission', params.path ?? null] as const,
+  findProjectSubmissionStatus: (params: {
+    path: findProjectSubmissionStatus_Path
+    query?: findProjectSubmissionStatus_Query
+  }) =>
+    [
+      ...submissionKeys.all,
+      'findProjectSubmissionStatus',
+      params.path ?? null,
+      params.query ?? null,
+    ] as const,
 }

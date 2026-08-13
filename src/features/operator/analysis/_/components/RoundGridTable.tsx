@@ -76,8 +76,12 @@ function UncountedCell({ u }: { u: GridRow['uncounted'] }) {
 }
 
 export default function RoundGridTable({ grid }: { grid: RoundGrid }) {
-  /** 팀 계층인가 — 기준선 이름이 `기수`가 아니면 반 안으로 내려온 것이다 */
-  const showCount = grid.baselineName !== '기수'
+  /*
+    팀 계층인가. **`level`로 판정한다** — 전에는 `baselineName !== '기수'`였는데 실제 값이
+    `'기수 전체'`라 **늘 참**이었다. 그래서 반별 계층에도 팀 전용 표시(칸 안 실수)가
+    붙어 있었고 머리글도 「팀」이라고 썼다(op-02-situations §2-4).
+  */
+  const isTeam = grid.level === 'team'
 
   return (
     <div className="overflow-x-auto">
@@ -101,11 +105,17 @@ export default function RoundGridTable({ grid }: { grid: RoundGrid }) {
               범례 것이다. 읽는 순서와도 맞는다 — 표를 보다 색이 궁금해지면 그때 아래를 본다.
             */}
             <th className="bg-surface sticky left-0 z-10 w-[172px] pb-2 text-left align-bottom font-normal">
+              {/*
+                ⚠ **계층은 `level`로 판정한다.** 전에는 `baselineName === '기수'`로 갈랐는데
+                실제 값이 `'기수 전체'`라 **그 비교가 영원히 거짓**이었다 — 반별 계층에서도
+                머리글이 `기수 전체 › 팀 / 9개 팀`으로 나왔다(실제로는 9개 반).
+                문자열로 계층을 알아내면 라벨을 바꿀 때마다 조용히 깨진다.
+              */}
               <span className="text-fg block text-xs font-semibold">
-                {grid.baselineName === '기수' ? '반' : `${grid.baselineName} › 팀`}
+                {isTeam ? `${grid.baselineName} › 팀` : '반'}
               </span>
               <span className="text-fg-subtle block text-2xs">
-                {grid.rows.length - 1}개 {grid.baselineName === '기수' ? '반' : '팀'}
+                {grid.rows.length - 1}개 {isTeam ? '팀' : '반'}
               </span>
             </th>
             {grid.columns.map((c) => (
@@ -149,21 +159,30 @@ export default function RoundGridTable({ grid }: { grid: RoundGrid }) {
         </thead>
 
         <tbody>
-          {grid.rows.map((row) => (
-            <tr key={row.name}>
-              {/*
+          {grid.rows.map((row, i) => {
+            /*
+              기준선 바로 아래 행. **구분선과 데이터가 붙어 있으면 선이 «머리글 밑줄»로
+              읽힌다** — 한 칸 띄워야 기준선 행이 위쪽 덩어리로 갈린다.
+
+              여백을 기준선 행의 `pb`로 주지 않는 이유: 그쪽은 배경이 회색이라 **회색 면이
+              커질 뿐** 선 아래는 그대로다. 선은 셀 맨 아래에 그려진다.
+            */
+            const afterBaseline = grid.rows[i - 1]?.baseline
+            return (
+              <tr key={row.name}>
+                {/*
                 **기준선 행을 면으로 구분한다.** 색의 뜻이 전부 이 행 대비인데, 지금은
                 배경도 흰색이고 아래 선 1px뿐이라 **그냥 첫 번째 행처럼 보였다.**
                 무엇과 비교한 색인지 표에서 알 수 없으면 격자가 성립하지 않는다.
               */}
-              <th
-                scope="row"
-                className={`sticky left-0 z-10 py-1.5 text-left font-normal ${
-                  row.baseline ? 'bg-surface-2 border-border-strong border-b-2' : 'bg-surface'
-                }`}
-              >
-                <span className="text-fg text-sm font-semibold">{row.name}</span>
-                {/*
+                <th
+                  scope="row"
+                  className={`sticky left-0 z-10 py-1.5 text-left font-normal ${
+                    row.baseline ? 'bg-surface-2 border-border-strong border-b-2' : 'bg-surface'
+                  } ${afterBaseline ? 'pt-3' : ''}`}
+                >
+                  <span className="text-fg text-sm font-semibold">{row.name}</span>
+                  {/*
                   **분모를 행 이름 옆에 쓴다.** `미집계 16`이라고만 하면 *"무엇에서
                   줄었나"* 가 없어서, 사용자가 `25명 − 4`를 직접 빼야 했다(셀의 12%가
                   `30/234`인데 234가 화면 어디에도 없었다 — 호버에만).
@@ -171,20 +190,20 @@ export default function RoundGridTable({ grid }: { grid: RoundGrid }) {
                   **분모는 행의 속성**이지 셀마다 다르지 않으므로 행 이름 열이 그 자리다.
                   격자 칸은 여전히 값 하나라 E11을 안 어긴다 — 행 머리는 격자가 아니다.
                 */}
-                <span className="text-fg-subtle ml-1.5 text-2xs">
-                  {row.size}명
-                  {graded(row) < row.size && (
-                    <span className="text-fg-muted"> → 채점 {graded(row)}</span>
+                  <span className="text-fg-subtle ml-1.5 text-2xs">
+                    {row.size}명
+                    {graded(row) < row.size && (
+                      <span className="text-fg-muted"> → 채점 {graded(row)}</span>
+                    )}
+                  </span>
+                  {/* 이 행이 왜 위에 있는지 — 정렬에서 빠지는 이유이기도 하다 */}
+                  {row.baseline && (
+                    <span className="text-fg-muted mt-0.5 block text-2xs">아래 색의 기준</span>
                   )}
-                </span>
-                {/* 이 행이 왜 위에 있는지 — 정렬에서 빠지는 이유이기도 하다 */}
-                {row.baseline && (
-                  <span className="text-fg-muted mt-0.5 block text-2xs">아래 색의 기준</span>
-                )}
-              </th>
+                </th>
 
-              {row.cells.map((cell) => {
-                /*
+                {row.cells.map((cell) => {
+                  /*
                   **집계가 끝났는데 비율이 없는 칸이 있다.** 채점 대상이 0명이면 서버가
                   `riskRate`를 `null`로 준다(분모가 0이라 비율이 성립하지 않는다) —
                   `state`는 그대로 `VALUE`다. 그 조합을 안 보고 `${cell.ratio}%`를 쓰다가
@@ -193,55 +212,55 @@ export default function RoundGridTable({ grid }: { grid: RoundGrid }) {
                   `집계 전`으로 낮춰 쓰지 않는다 — 집계는 실제로 끝났고, 셀 수 있는 사람이
                   없었을 뿐이라 그렇게 쓰면 거짓이 된다. 값이 없다는 표시만 한다.
                 */
-                const empty = cell.state === 'VALUE' && cell.ratio == null
-                const label = empty
-                  ? '—'
-                  : cell.state === 'VALUE'
-                    ? `${cell.ratio}%`
-                    : CELL_STATE_LABEL[cell.state as 'PENDING' | 'BEFORE']
-                const hint = empty
-                  ? '채점 대상이 없습니다'
-                  : cell.state === 'VALUE'
-                    ? `위험자 ${cell.risky}명 / 채점 ${cell.graded}명${
-                        cell.sign === 'BASELINE'
-                          ? ''
-                          : ` · ${grid.baselineName}보다 ${
-                              cell.sign === 'WORSE'
-                                ? '나쁨'
-                                : cell.sign === 'BETTER'
-                                  ? '좋음'
-                                  : '같음'
-                            }`
-                      }`
-                    : CELL_STATE_HINT[cell.state as 'PENDING' | 'BEFORE']
-                return (
-                  <td
-                    key={cell.round}
-                    className={`p-0.5 ${
-                      row.baseline ? 'bg-surface-2 border-border-strong border-b-2' : ''
-                    }`}
-                  >
-                    {/*
+                  const empty = cell.state === 'VALUE' && cell.ratio == null
+                  const label = empty
+                    ? '—'
+                    : cell.state === 'VALUE'
+                      ? `${cell.ratio}%`
+                      : CELL_STATE_LABEL[cell.state as 'PENDING' | 'BEFORE']
+                  const hint = empty
+                    ? '채점 대상이 없습니다'
+                    : cell.state === 'VALUE'
+                      ? `위험자 ${cell.risky}명 / 채점 ${cell.graded}명${
+                          cell.sign === 'BASELINE'
+                            ? ''
+                            : ` · ${grid.baselineName}보다 ${
+                                cell.sign === 'WORSE'
+                                  ? '나쁨'
+                                  : cell.sign === 'BETTER'
+                                    ? '좋음'
+                                    : '같음'
+                              }`
+                        }`
+                      : CELL_STATE_HINT[cell.state as 'PENDING' | 'BEFORE']
+                  return (
+                    <td
+                      key={cell.round}
+                      className={`p-0.5 ${
+                        row.baseline ? 'bg-surface-2 border-border-strong border-b-2' : ''
+                      } ${afterBaseline ? 'pt-3' : ''}`}
+                    >
+                      {/*
                       **포커스로도 같은 내용이 나온다.** 호버 전용이면 터치·키보드
                       사용자에게 분모가 아예 없다(PRODUCT.md — 키보드만으로 전 화면).
                     */}
-                    <span
-                      tabIndex={0}
-                      title={hint}
-                      aria-label={`${row.name} ${cell.round}차 · ${label} · ${hint}`}
-                      className={`focus-visible:ring-primary block rounded-sm py-1.5 text-center text-sm tabular-nums focus-visible:ring-2 focus-visible:outline-none ${
-                        cell.state === 'VALUE' && !empty
-                          ? `font-semibold ${SIGN_CLASS[cell.sign]}`
-                          : /*
+                      <span
+                        tabIndex={0}
+                        title={hint}
+                        aria-label={`${row.name} ${cell.round}차 · ${label} · ${hint}`}
+                        className={`focus-visible:ring-primary block rounded-sm py-1.5 text-center text-sm tabular-nums focus-visible:ring-2 focus-visible:outline-none ${
+                          cell.state === 'VALUE' && !empty
+                            ? `font-semibold ${SIGN_CLASS[cell.sign]}`
+                            : /*
                               **값이 없는 칸에 면을 깔지 않는다.** `bg-surface-2`를 줬더니
                               `집계 전` 열이 11행 내리 이어져 **정보가 없는 열이 표에서
                               가장 진한 띠**가 됐다. 없는 것은 조용해야 한다.
                             */
-                            'text-fg-subtle/70 text-2xs'
-                      }`}
-                    >
-                      {label}
-                      {/*
+                              'text-fg-subtle/70 text-2xs'
+                        }`}
+                      >
+                        {label}
+                        {/*
                         **팀 계층에서만 실수를 같이 쓴다**(OP-02 §「팀 계층에는 방향이 없다」) —
                         4명 팀에서 1명이면 25%라 **비율이 튄다.** 반은 25명이라 그 문제가
                         없어서 붙이지 않는다.
@@ -250,25 +269,26 @@ export default function RoundGridTable({ grid }: { grid: RoundGrid }) {
                         색을 못 읽는다"* 인데, 여기는 **한 줄 더**이고 그것이 없으면 값
                         자체를 잘못 읽는다.
                       */}
-                      {showCount && cell.state === 'VALUE' && (
-                        <span className="text-fg-subtle block text-2xs font-normal">
-                          {cell.risky}명
-                        </span>
-                      )}
-                    </span>
-                  </td>
-                )
-              })}
+                        {isTeam && cell.state === 'VALUE' && (
+                          <span className="text-fg-subtle block text-2xs font-normal">
+                            {cell.risky}명
+                          </span>
+                        )}
+                      </span>
+                    </td>
+                  )
+                })}
 
-              <td
-                className={`py-1.5 pl-4 text-right text-xs ${
-                  row.baseline ? 'bg-surface-2 border-border-strong border-b-2' : ''
-                }`}
-              >
-                <UncountedCell u={row.uncounted} />
-              </td>
-            </tr>
-          ))}
+                <td
+                  className={`py-1.5 pl-4 text-right text-xs ${
+                    row.baseline ? 'bg-surface-2 border-border-strong border-b-2' : ''
+                  } ${afterBaseline ? 'pt-3' : ''}`}
+                >
+                  <UncountedCell u={row.uncounted} />
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
     </div>

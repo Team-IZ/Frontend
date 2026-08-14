@@ -117,10 +117,10 @@ const authMiddleware: Middleware = {
  * 테스트·스토리북이 자기 인스턴스를 만들 수 있게 팩토리를 연다.
  * 서버가 하나뿐이라 앱은 아래 `izClient` 하나만 쓴다 — 팩토리는 "문"이지 사용 패턴이 아니다.
  */
-export function createIzClient(options: { baseUrl: string }) {
+export function createIzClient(options: { baseUrl: string; credentials?: RequestCredentials }) {
   const client = createClient<paths>({
     baseUrl: options.baseUrl,
-    credentials: 'include', // 리프레시 쿠키
+    credentials: options.credentials ?? 'include', // 기본은 리프레시 쿠키 포함
   })
   client.use(authMiddleware)
   return client
@@ -141,10 +141,16 @@ export const izClient = createIzClient({
   PAUSED 상태는 origin 직접 호출로 못 깨운다 — `resume_service()`는 Lambda 프록시를 거친
   요청만 트리거한다(프록시 소스 확인). 그래서 이 클라이언트를 쓰는 호출 앞에는 반드시
   `izClient`로 가벼운 웜업 GET이 선행돼야 한다(예: `uploads.ts`의 `registerCurriculum`).
+
+  `credentials: 'omit'`이다 — 리프레시 쿠키는 로그인이 실제로 일어나는 `izClient`의 호스트에만
+  scope된 host-only 쿠키라(Domain 속성 미지정) 브라우저가 애초에 이 도메인으론 실어 보내지
+  않지만, 이 클라이언트가 쿠키를 쓸 일이 없다는 걸 최소 권한으로 명시해 둔다 — Bearer 헤더만으로
+  인증이 끝나는 호출이라서다.
 */
 export const izOriginClient = createIzClient({
   baseUrl:
     import.meta.env?.VITE_API_ORIGIN_BASE ?? 'https://mmbvymzj5k.ap-northeast-1.awsapprunner.com',
+  credentials: 'omit',
 })
 
 /**

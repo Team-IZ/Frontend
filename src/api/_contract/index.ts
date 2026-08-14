@@ -5,7 +5,7 @@
   여기 있는 시그니처는 백엔드가 바뀌어도 그대로 남는다. 반대로 생성물은 스펙이 바뀌면
   통째로 다시 만들어진다. **그 경계가 이 폴더다.**
 */
-export { izClient, createIzClient, unwrap } from './client'
+export { izClient, izOriginClient, createIzClient, unwrap } from './client'
 export { ApiError, isApiError, isGenericCode, NETWORK_ERROR_CODE } from './errors'
 export type { FieldError, ErrorCode } from './errors'
 export { authBridge, connectAuth } from './authBridge'

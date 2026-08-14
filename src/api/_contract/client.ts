@@ -130,6 +130,23 @@ export const izClient = createIzClient({
   baseUrl: import.meta.env?.VITE_API_BASE ?? '',
 })
 
+/*
+  **대용량 업로드 전용 — App Runner origin 도메인으로 직접.**
+
+  Lambda Function URL(=`izClient`)은 AWS 플랫폼 자체의 동기 페이로드 상한이 6MB다(실측,
+  Backend 코드 도달 전에 413). Backend가 자기 쪽(→AI 서비스) 같은 문제를 이미 이 패턴으로
+  풀었다(`AiCurriculumClient`/`AiProxyWarmUp`, Backend PR #87) — 가벼운 GET을 프록시로 먼저
+  보내 깨우고, 실제 대용량 바디는 origin으로 직접. 여기서는 그 패턴을 프론트 쪽에 미러링한다.
+
+  PAUSED 상태는 origin 직접 호출로 못 깨운다 — `resume_service()`는 Lambda 프록시를 거친
+  요청만 트리거한다(프록시 소스 확인). 그래서 이 클라이언트를 쓰는 호출 앞에는 반드시
+  `izClient`로 가벼운 웜업 GET이 선행돼야 한다(예: `uploads.ts`의 `registerCurriculum`).
+*/
+export const izOriginClient = createIzClient({
+  baseUrl:
+    import.meta.env?.VITE_API_ORIGIN_BASE ?? 'https://mmbvymzj5k.ap-northeast-1.awsapprunner.com',
+})
+
 /**
  * openapi-fetch의 `{ data, error, response }`를 **성공값 또는 throw**로 바꾼다.
  *

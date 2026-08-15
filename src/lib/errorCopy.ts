@@ -100,7 +100,7 @@ export function errorCopy(error: unknown, ctx: Ctx): ErrorCopy {
       */
       case error.isTimeout:
         return {
-          title: failedLine,
+          title: `${obj(subject)} 불러오지 못했습니다`,
           description: '서버가 시간 안에 응답하지 않았습니다 — 잠시 후 다시 시도해 주세요.',
           retry: true,
           tone: 'failed',

@@ -33,15 +33,11 @@ import CostTab from './cost/CostTab'
   나눠 읽었다. **서버에 그 API가 없다** — 개수는 각 목록 응답의 `totalElements`에 들어
   있으므로, 목록을 받은 탭이 그 김에 알린다(AdminScreen 주석).
 */
-type TabProps = {
-  /** 탭 이름 옆에 쓸 개수. **필터와 무관한 전체 기준**이고, 셀 것이 없으면 `null` */
-  onCount: (count: number | null) => void
-}
-
 type AdminTabDef = {
   value: string
   label: string
-  Panel: ComponentType<TabProps>
+  /** 탭 본문. **개수를 부모에 알리지 않는다** — 배지를 없앴다(`AdminScreen` 주석) */
+  Panel: ComponentType
 }
 
 export const ADMIN_TABS = [
@@ -61,7 +57,7 @@ export const ADMIN_TABS = [
       한 뷰포트에 안 들어갔다 — 반 표를 잘라 넣으면 *"같이 보인다"* 는 합친 이유가 사라진다.
     */
     value: 'roster',
-    label: '명단',
+    label: '교육생',
     Panel: RosterTab,
   },
   {

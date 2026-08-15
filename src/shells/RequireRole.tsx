@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Navigate } from 'react-router'
+import Loading from '@/components/common/Loading'
 import { useSession } from '@/features/auth/useSession'
 import { initialScreenFor } from '@/features/auth/authStore'
 import type { Role } from '@/features/auth/authTypes'
@@ -13,9 +14,11 @@ import type { Role } from '@/features/auth/authTypes'
   하나 더 둔다(시큐어코딩 가이드 ⑤ 관리자 권한 접속,
   docs/dev/pipa-secure-coding-audit.md 시큐어5).
 
-  세션 확인 중엔 아무것도 그리지 않는다. LoginScreen과 같은 이유 —
-  먼저 그리면(로그인 화면이든 대상 화면이든) 잠깐 보였다가 사라져
-  화면이 깜빡인다.
+  세션 확인 중엔 **대상 화면도 로그인 화면도 그리지 않는다.** LoginScreen과 같은 이유 —
+  먼저 그리면 잠깐 보였다가 사라져 화면이 깜빡인다.
+
+  ⚠ 다만 `null`은 아니다. 응답이 안 오는 동안(최대 76초 — 서버가 깨어나는 시간) 화면이
+  통째로 흰색이 된다. 기다리는 것과 아무것도 안 보여주는 것은 다르다.
 
   - 비로그인 → 로그인 화면
   - 로그인은 했지만 role 불일치 → 자기 초기 화면(initialScreenFor)
@@ -31,7 +34,13 @@ type Props = {
 export default function RequireRole({ allow, children }: Props) {
   const { user, isLoading } = useSession()
 
-  if (isLoading) return null
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-canvas">
+        <Loading label="로그인 상태를 확인하는 중" />
+      </div>
+    )
+  }
   if (!user) return <Navigate to="/shared/login" replace />
   if (!allow.includes(user.role)) {
     return <Navigate to={initialScreenFor(user.role)} replace />

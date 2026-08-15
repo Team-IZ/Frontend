@@ -12,6 +12,7 @@ import { QUICK_LOGIN_ACCOUNTS } from './quickLoginAccounts'
 import BrandPanel from './components/BrandPanel'
 import AuthForm from './components/AuthForm'
 import TextLink from './components/TextLink'
+import Loading from '@/components/common/Loading'
 import { Alert } from '@/components/ui/Alert'
 import { Field, FieldLabel, FieldError } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
@@ -106,10 +107,23 @@ export default function LoginScreen() {
   }
 
   /*
-    세션을 확인하는 동안은 아무것도 그리지 않는다. 로그인 폼을 먼저 보여주면
-    쿠키가 살아 있는 사용자에게 **로그인 화면이 깜빡였다가 사라진다.**
+    세션을 확인하는 동안은 **로그인 폼을 그리지 않는다.** 먼저 보여주면 쿠키가 살아 있는
+    사용자에게 로그인 화면이 깜빡였다가 사라진다.
+
+    ⚠ 한때 여기서 `null`을 돌려줬다. 그런데 이 백엔드는 응답이 아예 안 오는 일이 있고
+    (실측 — 진입에서 60초 넘게 무응답), 잠들어 있으면 깨어나는 데 최대 76초가 걸린다.
+    그동안 화면은 **완전한 흰 화면**이었다 — 사용자는 앱이 죽은 것으로 읽는다.
+
+    기다리는 것과 아무것도 안 보여주는 것은 다르다. `Loading`이 12초를 넘기면
+    *"서버가 깨어나는 중일 수 있습니다"* 까지 말해 준다.
   */
-  if (sessionLoading) return null
+  if (sessionLoading) {
+    return (
+      <div className="flex min-h-screen w-full items-center justify-center bg-canvas">
+        <Loading label="로그인 상태를 확인하는 중" />
+      </div>
+    )
+  }
 
   // 이미 로그인한 사용자가 로그인 화면에 오면 자기 초기 화면으로 되돌림
   if (user) {

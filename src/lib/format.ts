@@ -60,3 +60,21 @@ export function formatCoarse(ms: number): string {
   if (hours >= 1) return `${hours}시간`
   return `${minutes}분`
 }
+
+/*
+  바이트 → 사람이 읽는 크기. superadmin 사용량 화면이 먼저 만들었고 `trainee/submission`이
+  같은 것을 필요로 해서 올렸다(이 파일 머리 주석의 규칙).
+
+  SA-02 상세는 한 기관의 항목별 내역이라 MB가 나오고, TB는 아직 안 나오지만 상한을
+  열어 둔다(분기 하나 값이 크지 않다).
+*/
+const BYTE_UNITS = ['B', 'KB', 'MB', 'GB', 'TB'] as const
+
+export function formatBytes(bytes: number): string {
+  if (!bytes) return '0 B'
+  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), BYTE_UNITS.length - 1)
+  const value = bytes / 1024 ** i
+  // GB 이상은 소수 첫째 자리까지. MB 이하는 정수로 충분하다
+  const digits = i >= 3 && value < 100 ? 1 : 0
+  return `${value.toLocaleString(undefined, { maximumFractionDigits: digits })} ${BYTE_UNITS[i]}`
+}

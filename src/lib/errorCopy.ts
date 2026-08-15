@@ -100,6 +100,48 @@ const BY_CODE: Record<string, (ctx: Ctx) => ErrorCopy> = {
     화면은 애초에 활성인 행에만 버튼을 그리지만(`RosterTab`), 목록을 띄워 둔 사이
     누가 상태를 바꾸면 여기로 온다.
   */
+  /*
+    이미 분석이 돌고 있는 교안에 다시 요청했다.
+
+    **재시도를 주지 않는다** — 같은 요청을 다시 보내면 또 409다. 기다리는 것이 답이고,
+    오래 멈춰 있으면 화면이 **처음부터 다시 돌리는 출구**를 따로 준다(`ReanalyzeDialog`).
+    그건 다른 요청(`?force=true`)이라 여기서 말할 것이 아니다.
+  */
+  /*
+    쓰는 프로젝트가 있는 교안은 못 지운다 — 그 회차의 문항이 근거로 삼는 교안이
+    목록에서 사라지면 안 되기 때문이다(판정 기준은 `usedProjectCount`).
+
+    **재시도를 주지 않는다.** 다시 눌러도 같은 실패다 — 연결을 먼저 끊어야 한다.
+    화면은 연결이 0일 때만 버튼을 그리지만(`CurriculumDetailScreen`), 목록을 띄워 둔
+    사이 누가 그 교안을 회차에 붙이면 여기로 온다.
+  */
+  CURRICULUM_MATERIAL_IN_USE: () => ({
+    title: '이 교안을 쓰는 프로젝트가 있습니다',
+    description: '연결을 먼저 끊어야 지울 수 있습니다 — 연결된 프로젝트 탭에서 확인하세요.',
+    retry: false,
+    tone: 'failed',
+  }),
+
+  CURRICULUM_ANALYSIS_IN_PROGRESS: () => ({
+    title: '이 교안은 이미 분석 중입니다',
+    description: '끝날 때까지 기다려 주세요.',
+    retry: false,
+    tone: 'pending',
+  }),
+
+  /*
+    고른 매니저가 없다. 반 생성·담당 변경에 검증이 붙으면서 나온다.
+
+    **목록을 띄워 둔 사이 그 사람이 빠진 것**이다 — 다른 기수로 옮겼거나 정지됐거나.
+    다시 눌러도 같은 실패라 목록을 새로 고쳐 고르게 한다.
+  */
+  MANAGER_NOT_FOUND: () => ({
+    title: '고른 매니저를 찾을 수 없습니다',
+    description: '그 사이 담당에서 빠졌을 수 있습니다 — 목록을 새로 고친 뒤 다시 골라 주세요.',
+    retry: false,
+    tone: 'failed',
+  }),
+
   TRAINEE_STATUS_NOT_MUTABLE: () => ({
     title: '이 계정은 상태를 바꿀 수 없습니다',
     description: '초대 대기이거나 이미 비활성입니다 — 초대 대기는 초대를 취소해야 합니다.',

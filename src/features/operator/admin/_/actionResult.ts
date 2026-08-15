@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { errorCopy } from '@/lib/errorCopy'
+import { isApiError, isGenericCode } from '@/api/_contract'
 
 /*
   행 액션·모드 액션의 결과 — 배너(`_/components/ResultBanner`)가 그린다.
@@ -27,20 +29,40 @@ export function useActionResult() {
   /**
    * @param action 실행할 일
    * @param onDone 성공했을 때 띄울 문구. 결과값을 받아 문장을 만든다
-   * @param failText 실패했을 때 띄울 문구 — **무엇이 안 됐는지**를 쓴다
+   * @param failText 실패했을 때 띄울 문구 — **무엇이 안 됐는지**를 쓴다.
+   *   서버가 아는 코드로 답하면 그 문구가 이기고 이 값은 밑줄로 내려간다
+   * @param subject 실패 문구가 대상 이름을 쓸 때 — `교육생` · `반`
    */
   const run = async <T>(
     action: () => Promise<T>,
     onDone: (value: T) => string,
     failText: string,
+    subject = '요청',
   ): Promise<T | undefined> => {
     try {
       const value = await action()
       setResult({ text: onDone(value) })
       return value
-    } catch {
-      // 실패에는 다음 행동을 붙인다 — 같은 일을 다시 시도할 수 있어야 한다
-      setResult({ text: failText, failed: true, retry: () => void run(action, onDone, failText) })
+    } catch (e) {
+      /*
+        ⚠ **원인을 버리지 않는다.** 한때 `catch {}`로 묶고 `failText` 하나를 띄우면서
+        **재시도 버튼을 늘 달았다.** 그런데 서버가 거절하는 이유의 상당수는 다시 눌러도
+        똑같다 — `TRAINEE_STATUS_NOT_MUTABLE`(초대 대기라 못 바꾼다),
+        `TRAINEE_NOT_IN_COHORT`(비활성 계정이 섞였다). **버튼이 「다시 하면 된다」는
+        거짓 약속**이 된다.
+
+        `errorCopy`가 코드를 아는 실패면 그 문구를 쓰고, **`retry`가 참일 때만** 버튼을
+        붙인다. 모르는 실패는 원래 `failText`로 떨어진다.
+      */
+      /** 서버가 **도메인 코드**로 답했나 — 그때만 그 문구가 `failText`를 이긴다 */
+      const known = isApiError(e) && !isGenericCode(e.code)
+      const copy = errorCopy(e, { subject })
+      const text = known ? `${copy.title} — ${copy.description}` : failText
+      setResult({
+        text,
+        failed: true,
+        retry: copy.retry ? () => void run(action, onDone, failText, subject) : undefined,
+      })
       return undefined
     }
   }

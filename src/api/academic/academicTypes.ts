@@ -4,7 +4,7 @@ import type { operations } from '@/api/schema'
 
 /*
   operationId별 타입 별칭. 규칙이 고정이라 스키마 이름을 몰라도 찾을 수 있다:
-    {operationId}_Body · _Query · _Path · _Response · _Item · _Errors
+    {operationId}_Body · _Query · _Path · _Header · _Response · _Item · _Errors
 */
 
 // GET /api/v0/cohorts — 기관 기수 목록 조회
@@ -48,7 +48,12 @@ export type createClassroom_Response =
   operations['createClassroom']['responses'][201]['content']['application/json']
 export type createClassroom_Item = NonNullable<createClassroom_Response['managers']>[number]
 export type createClassroom_Errors =
-  'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND'
+  | 'VALIDATION_FAILED'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'COHORT_NOT_FOUND'
+  | 'MANAGER_NOT_FOUND'
+  | 'CLASSROOM_NAME_TAKEN'
 
 // GET /api/v0/cohorts/{cohortId} — 기수 상세 조회
 export type findCohort_Path = operations['findCohort']['parameters']['path']
@@ -128,7 +133,11 @@ export type updateManagers_Response =
   operations['updateManagers']['responses'][200]['content']['application/json']
 export type updateManagers_Item = NonNullable<updateManagers_Response['managers']>[number]
 export type updateManagers_Errors =
-  'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'CLASSROOM_NOT_FOUND'
+  | 'VALIDATION_FAILED'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'CLASSROOM_NOT_FOUND'
+  | 'MANAGER_NOT_FOUND'
 
 // PATCH /api/v0/cohorts/{cohortId}/classrooms/trainee-assignments — 교육생 일괄 반 배정
 export type assignTrainees_Path = operations['assignTrainees']['parameters']['path']

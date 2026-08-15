@@ -4,7 +4,7 @@ import type { operations } from '@/api/schema'
 
 /*
   operationId별 타입 별칭. 규칙이 고정이라 스키마 이름을 몰라도 찾을 수 있다:
-    {operationId}_Body · _Query · _Path · _Response · _Item · _Errors
+    {operationId}_Body · _Query · _Path · _Header · _Response · _Item · _Errors
 */
 
 // GET /api/v0/organizations/{organizationId}/operations/settings — 기관 운영 설정 조회

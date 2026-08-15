@@ -103,23 +103,11 @@ export function formatCost(amount: number, currencyCode: string | null): string 
     : `${rounded}${currencyCode ? ` ${currencyCode}` : ''}`
 }
 
-/*
-  저장량은 바이트로 온다. 단위를 크기에 맞춰 고른다.
-
-  SA-01 목록은 기관 전체 합이라 늘 GB 이상이지만, SA-02 상세는 **한 기관의 항목별**
-  내역이라 이제 MB 단위가 나온다 — 정수 GB로 줄이면 `0 GB`가 여러 줄 생긴다.
-  TB는 아직 안 나오지만 상한을 열어 둔다(분기 하나 값이 크지 않다).
-*/
-const UNITS = ['B', 'KB', 'MB', 'GB', 'TB'] as const
-
-export function formatBytes(bytes: number): string {
-  if (!bytes) return '0 B'
-  const i = Math.min(Math.floor(Math.log(bytes) / Math.log(1024)), UNITS.length - 1)
-  const value = bytes / 1024 ** i
-  // GB 이상은 소수 첫째 자리까지. MB 이하는 정수로 충분하다
-  const digits = i >= 3 && value < 100 ? 1 : 0
-  return `${value.toLocaleString(undefined, { maximumFractionDigits: digits })} ${UNITS[i]}`
-}
+/**
+ * 저장량 표시. **공용으로 올라갔다**(`lib/format.ts`) — `trainee/submission`이 ZIP
+ * 파일 크기에 같은 것을 필요로 했다. 호출부 4곳을 안 건드리려고 여기서 다시 내보낸다.
+ */
+export { formatBytes } from '@/lib/format'
 
 /**
  * 이번 달 `yyyy-MM`(UTC) — 개요 탭·사용량 탭이 "이번 달" 저장량을 같은 쿼리 키로 조회하도록

@@ -8,6 +8,19 @@ import type {
   confirmConcepts_Path,
   confirmConcepts_Body,
   confirmConcepts_Response,
+  findTeams_Path,
+  findTeams_Response,
+  createTeam_Path,
+  createTeam_Body,
+  createTeam_Response,
+  assignTeamMember_Path,
+  assignTeamMember_Body,
+  assignTeamMember_Response,
+  confirmTeams_Path,
+  confirmTeams_Response,
+  autoAssignTeams_Path,
+  autoAssignTeams_Body,
+  autoAssignTeams_Response,
   linkCurriculum_Path,
   linkCurriculum_Body,
   linkCurriculum_Response,
@@ -24,9 +37,16 @@ import type {
   updateSchedule_Path,
   updateSchedule_Body,
   updateSchedule_Response,
+  updateTeam_Path,
+  updateTeam_Body,
+  updateTeam_Response,
+  reopenTeams_Path,
+  reopenTeams_Response,
   updateRoundSchedule_Path,
   updateRoundSchedule_Body,
   updateRoundSchedule_Response,
+  findProjectsForManager_Query,
+  findProjectsForManager_Response,
   findRounds_Path,
   findRounds_Response,
   findConceptCandidates_Path,
@@ -36,6 +56,9 @@ import type {
   findProjectClassProgress_Response,
   findCurrentProject_Path,
   findCurrentProject_Response,
+  findCurrentRound_Response,
+  removeTeamMember_Path,
+  removeTeamMember_Response,
   unlinkCurriculum_Path,
   unlinkCurriculum_Response,
 } from './projectExecutionTypes'
@@ -58,6 +81,60 @@ export const confirmConcepts = (
 ) =>
   unwrap<confirmConcepts_Response>(
     izClient.PUT('/api/v0/projects/{projectId}/concepts', {
+      params: { path: params.path },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 팀 목록 조회 — `GET /api/v0/projects/{projectId}/teams` */
+export const findTeams = (params: { path: findTeams_Path } & RequestOptions) =>
+  unwrap<findTeams_Response>(
+    izClient.GET('/api/v0/projects/{projectId}/teams', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 팀 생성 — `POST /api/v0/projects/{projectId}/teams` */
+export const createTeam = (
+  params: { path: createTeam_Path; body: createTeam_Body } & RequestOptions,
+) =>
+  unwrap<createTeam_Response>(
+    izClient.POST('/api/v0/projects/{projectId}/teams', {
+      params: { path: params.path },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 팀원 배정 — `POST /api/v0/projects/{projectId}/teams/{teamId}/members` */
+export const assignTeamMember = (
+  params: { path: assignTeamMember_Path; body: assignTeamMember_Body } & RequestOptions,
+) =>
+  unwrap<assignTeamMember_Response>(
+    izClient.POST('/api/v0/projects/{projectId}/teams/{teamId}/members', {
+      params: { path: params.path },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 팀 편성 확정 — `POST /api/v0/projects/{projectId}/teams/confirm` */
+export const confirmTeams = (params: { path: confirmTeams_Path } & RequestOptions) =>
+  unwrap<confirmTeams_Response>(
+    izClient.POST('/api/v0/projects/{projectId}/teams/confirm', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 팀 자동 배분 실행 — `POST /api/v0/projects/{projectId}/teams/auto-assign` */
+export const autoAssignTeams = (
+  params: { path: autoAssignTeams_Path; body: autoAssignTeams_Body } & RequestOptions,
+) =>
+  unwrap<autoAssignTeams_Response>(
+    izClient.POST('/api/v0/projects/{projectId}/teams/auto-assign', {
       params: { path: params.path },
       body: params.body,
       signal: params.signal,
@@ -129,6 +206,27 @@ export const updateSchedule = (
     }) as never,
   )
 
+/** 팀 정보 수정 — `PATCH /api/v0/projects/{projectId}/teams/{teamId}` */
+export const updateTeam = (
+  params: { path: updateTeam_Path; body: updateTeam_Body } & RequestOptions,
+) =>
+  unwrap<updateTeam_Response>(
+    izClient.PATCH('/api/v0/projects/{projectId}/teams/{teamId}', {
+      params: { path: params.path },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 팀 편성 다시 열기 — `PATCH /api/v0/projects/{projectId}/teams/reopen` */
+export const reopenTeams = (params: { path: reopenTeams_Path } & RequestOptions) =>
+  unwrap<reopenTeams_Response>(
+    izClient.PATCH('/api/v0/projects/{projectId}/teams/reopen', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
 /** 프로젝트 회차 일정 수정 — `PATCH /api/v0/projects/{projectId}/rounds/{roundId}` */
 export const updateRoundSchedule = (
   params: { path: updateRoundSchedule_Path; body: updateRoundSchedule_Body } & RequestOptions,
@@ -137,6 +235,17 @@ export const updateRoundSchedule = (
     izClient.PATCH('/api/v0/projects/{projectId}/rounds/{roundId}', {
       params: { path: params.path },
       body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 담당 반 프로젝트 목록 — `GET /api/v0/projects` */
+export const findProjectsForManager = (
+  params: { query?: findProjectsForManager_Query } & RequestOptions = {},
+) =>
+  unwrap<findProjectsForManager_Response>(
+    izClient.GET('/api/v0/projects', {
+      params: { query: params.query ?? {} },
       signal: params.signal,
     }) as never,
   )
@@ -179,6 +288,21 @@ export const findProjectClassProgress = (
 export const findCurrentProject = (params: { path: findCurrentProject_Path } & RequestOptions) =>
   unwrap<findCurrentProject_Response>(
     izClient.GET('/api/v0/cohorts/{cohortId}/projects/current', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 이번 회차 상태 판정 조회 (지금 할 일 하나) — `GET /api/v0/api/v0/bff/me/current-round` */
+export const findCurrentRound = (params: RequestOptions = {}) =>
+  unwrap<findCurrentRound_Response>(
+    izClient.GET('/api/v0/api/v0/bff/me/current-round', { signal: params.signal }) as never,
+  )
+
+/** 팀원 제외 — `DELETE /api/v0/projects/{projectId}/teams/{teamId}/members/{traineeId}` */
+export const removeTeamMember = (params: { path: removeTeamMember_Path } & RequestOptions) =>
+  unwrap<removeTeamMember_Response>(
+    izClient.DELETE('/api/v0/projects/{projectId}/teams/{teamId}/members/{traineeId}', {
       params: { path: params.path },
       signal: params.signal,
     }) as never,

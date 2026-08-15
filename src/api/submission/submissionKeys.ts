@@ -5,6 +5,7 @@ import type {
   getAnalysisResult_Path,
   findProjectSubmissionStatus_Path,
   findProjectSubmissionStatus_Query,
+  findMySubmission_Path,
 } from './submissionTypes'
 
 /*
@@ -28,4 +29,6 @@ export const submissionKeys = {
       params.path ?? null,
       params.query ?? null,
     ] as const,
+  findMySubmission: (params: { path: findMySubmission_Path }) =>
+    [...submissionKeys.all, 'findMySubmission', params.path ?? null] as const,
 }

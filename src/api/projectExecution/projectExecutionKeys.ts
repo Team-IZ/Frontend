@@ -1,9 +1,11 @@
 /* 자동 생성 — 손으로 고치지 마세요. 다시 만들려면: npm run api:gen */
 
 import type {
+  findTeams_Path,
   findProjects_Path,
   findProjects_Query,
   findProject_Path,
+  findProjectsForManager_Query,
   findRounds_Path,
   findConceptCandidates_Path,
   findProjectClassProgress_Path,
@@ -18,6 +20,8 @@ import type {
 */
 export const projectExecutionKeys = {
   all: ['projectExecution'] as const,
+  findTeams: (params: { path: findTeams_Path }) =>
+    [...projectExecutionKeys.all, 'findTeams', params.path ?? null] as const,
   findProjects: (params: { path: findProjects_Path; query?: findProjects_Query }) =>
     [
       ...projectExecutionKeys.all,
@@ -27,6 +31,8 @@ export const projectExecutionKeys = {
     ] as const,
   findProject: (params: { path: findProject_Path }) =>
     [...projectExecutionKeys.all, 'findProject', params.path ?? null] as const,
+  findProjectsForManager: (params: { query?: findProjectsForManager_Query }) =>
+    [...projectExecutionKeys.all, 'findProjectsForManager', params.query ?? null] as const,
   findRounds: (params: { path: findRounds_Path }) =>
     [...projectExecutionKeys.all, 'findRounds', params.path ?? null] as const,
   findConceptCandidates: (params: { path: findConceptCandidates_Path }) =>
@@ -43,4 +49,5 @@ export const projectExecutionKeys = {
     ] as const,
   findCurrentProject: (params: { path: findCurrentProject_Path }) =>
     [...projectExecutionKeys.all, 'findCurrentProject', params.path ?? null] as const,
+  findCurrentRound: () => [...projectExecutionKeys.all, 'findCurrentRound'] as const,
 }

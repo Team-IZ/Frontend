@@ -38,6 +38,26 @@ const { data, isPending, isError } = useFindOrganizations({ query: { page: 0, si
 
 ## 2. 화면에서 쓰는 법 — 이것만 알면 된다
 
+> ### ⚠️ 기본은 **생성된 훅**(`use*Queries`·`use*Mutations`)이다
+>
+> 호출 함수(`{tag}Api.ts`)를 직접 쓰고 `useQuery`를 손으로 짜지 않는다. 그러면
+> **쿼리 키와 `queryFn`이 두 벌**이 되고, 키가 한 글자만 달라도 캐시가 갈린다 —
+> 같은 데이터를 두 번 받아 오고 무효화가 한쪽만 맞는다. 조용히 틀리는 종류다.
+>
+> ```tsx
+> // ✗ 손으로 — 키·queryFn·signal을 다시 쓴다
+> useQuery({ queryKey: assessmentKeys.getMyAssessmentRounds(), queryFn: … })
+>
+> // ⭕ 생성 훅
+> useGetMyAssessmentRounds()
+> ```
+>
+> **직접 써야 하는 경우도 있다** — 여러 응답을 합치거나(OP-01이 3콜을 블록으로 나눠
+> 담는다), 순서가 있는 오케스트레이션이거나(OP-03의 회차 생성 4콜), 훅을 못 쓰는
+> 자리일 때(`authStore`의 재발급). 그때는 **왜 직접 쓰는지 주석을 남긴다.**
+>
+> 변환만 필요하면 **생성 훅 위에 얹는다** — `features/trainee/home/_/api/api.ts`가 그 예다.
+
 ### 조회 (데이터 가져오기)
 
 ```tsx

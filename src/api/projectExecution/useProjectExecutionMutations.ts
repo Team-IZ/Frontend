@@ -5,11 +5,18 @@ import type { MutationOptions } from '@/api/_contract'
 import {
   replaceRequirements,
   confirmConcepts,
+  createTeam,
+  assignTeamMember,
+  confirmTeams,
+  autoAssignTeams,
   linkCurriculum,
   createProject,
   deleteProject,
   updateSchedule,
+  updateTeam,
+  reopenTeams,
   updateRoundSchedule,
+  removeTeamMember,
   unlinkCurriculum,
 } from './projectExecutionApi'
 import { projectExecutionKeys } from './projectExecutionKeys'
@@ -20,6 +27,17 @@ import type {
   confirmConcepts_Path,
   confirmConcepts_Body,
   confirmConcepts_Response,
+  createTeam_Path,
+  createTeam_Body,
+  createTeam_Response,
+  assignTeamMember_Path,
+  assignTeamMember_Body,
+  assignTeamMember_Response,
+  confirmTeams_Path,
+  confirmTeams_Response,
+  autoAssignTeams_Path,
+  autoAssignTeams_Body,
+  autoAssignTeams_Response,
   linkCurriculum_Path,
   linkCurriculum_Body,
   linkCurriculum_Response,
@@ -31,9 +49,16 @@ import type {
   updateSchedule_Path,
   updateSchedule_Body,
   updateSchedule_Response,
+  updateTeam_Path,
+  updateTeam_Body,
+  updateTeam_Response,
+  reopenTeams_Path,
+  reopenTeams_Response,
   updateRoundSchedule_Path,
   updateRoundSchedule_Body,
   updateRoundSchedule_Response,
+  removeTeamMember_Path,
+  removeTeamMember_Response,
   unlinkCurriculum_Path,
   unlinkCurriculum_Response,
 } from './projectExecutionTypes'
@@ -74,6 +99,78 @@ export function useConfirmConcepts(
   return useMutation({
     mutationFn: (vars: { path: confirmConcepts_Path; body: confirmConcepts_Body }) =>
       confirmConcepts(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: projectExecutionKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 팀 생성 */
+export function useCreateTeam(
+  options?: MutationOptions<createTeam_Response, { path: createTeam_Path; body: createTeam_Body }>,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: createTeam_Path; body: createTeam_Body }) => createTeam(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: projectExecutionKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 팀원 배정 */
+export function useAssignTeamMember(
+  options?: MutationOptions<
+    assignTeamMember_Response,
+    { path: assignTeamMember_Path; body: assignTeamMember_Body }
+  >,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: assignTeamMember_Path; body: assignTeamMember_Body }) =>
+      assignTeamMember(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: projectExecutionKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 팀 편성 확정 */
+export function useConfirmTeams(
+  options?: MutationOptions<confirmTeams_Response, { path: confirmTeams_Path }>,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: confirmTeams_Path }) => confirmTeams(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: projectExecutionKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 팀 자동 배분 실행 */
+export function useAutoAssignTeams(
+  options?: MutationOptions<
+    autoAssignTeams_Response,
+    { path: autoAssignTeams_Path; body: autoAssignTeams_Body }
+  >,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: autoAssignTeams_Path; body: autoAssignTeams_Body }) =>
+      autoAssignTeams(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
@@ -159,6 +256,38 @@ export function useUpdateSchedule(
   })
 }
 
+/** 팀 정보 수정 */
+export function useUpdateTeam(
+  options?: MutationOptions<updateTeam_Response, { path: updateTeam_Path; body: updateTeam_Body }>,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: updateTeam_Path; body: updateTeam_Body }) => updateTeam(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: projectExecutionKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 팀 편성 다시 열기 */
+export function useReopenTeams(
+  options?: MutationOptions<reopenTeams_Response, { path: reopenTeams_Path }>,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: reopenTeams_Path }) => reopenTeams(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: projectExecutionKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
 /** 프로젝트 회차 일정 수정 */
 export function useUpdateRoundSchedule(
   options?: MutationOptions<
@@ -170,6 +299,22 @@ export function useUpdateRoundSchedule(
   return useMutation({
     mutationFn: (vars: { path: updateRoundSchedule_Path; body: updateRoundSchedule_Body }) =>
       updateRoundSchedule(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: projectExecutionKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 팀원 제외 */
+export function useRemoveTeamMember(
+  options?: MutationOptions<removeTeamMember_Response, { path: removeTeamMember_Path }>,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: removeTeamMember_Path }) => removeTeamMember(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다

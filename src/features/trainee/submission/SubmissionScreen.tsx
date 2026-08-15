@@ -1,129 +1,79 @@
-import { useCallback, useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useState } from 'react'
+import { Link } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/Empty'
 import { Spinner } from '@/components/ui/Spinner'
 import { formatDateTime } from '@/lib/format'
-import { useAsync } from '@/lib/useAsync'
 import ConsoleShell from '@/shells/ConsoleShell'
-import { getSubmission, submitCode } from './api'
+import { useSubmission, useSubmitZip } from './_/api/api'
+import type { SubmissionView } from './_/api/types'
 import { buildStateBanner } from './labels'
 import StateBanner from './components/StateBanner'
 import SubmissionForm from './components/SubmissionForm'
 import SubmittedContentCard from './components/SubmittedContentCard'
-import type { SubmissionView, SubmitInput } from './types'
 
 /*
   TR-02 코드 제출 — 레포를 내고 분석이 끝날 때까지의 상태를 본다.
 
-  `#page-closed`가 `#page-locked`를 복붙한 목업 버그를 케이스표 기준으로 고쳐서
-  구현했다(types.ts 머리 주석). SUBMISSION_CLOSED는 폼·카드 없이 안내만 — TR-01
-  `missed`와 같은 모양이다.
+  **상태 6종을 서버가 정한다**(`DRAFT`·`ANALYZING`·`READY`·`LOCKED`·`ANALYSIS_FAILED`·
+  `SUBMISSION_CLOSED`). 16차로 요청한 이름이 글자까지 그대로 와서 목일 때의 분기가 그대로 산다.
 
-  제출 후 다음 상태로의 전환은 실제 서버 없이 로컬에서 흉내낸다(design-checklist I1
-  "누르면 결과를 같이 그린다"). 연동 시 이 낙관적 전환 로직은 지우고 `page.reload()`만
-  남는다 — 실제로는 서버가 분석 상태를 갖고 있다.
+  **낙관적 전환을 걷어냈다.** 목은 제출 즉시 화면이 `ANALYZING` 카드를 지어냈는데, 지금은
+  서버가 접수만 하고 분석을 비동기로 돌리므로 **제출 후 다시 읽어** 서버가 준 상태를 그린다.
 */
-
-const PREVIEW_STATUSES = new Set<SubmissionView['status'] | 'ERROR'>([
-  'DRAFT',
-  'ANALYZING',
-  'READY',
-  'LOCKED',
-  'ANALYSIS_FAILED',
-  'SUBMISSION_CLOSED',
-  'ERROR',
-])
-
 export default function SubmissionScreen() {
-  const [searchParams] = useSearchParams()
-  const stateParam = searchParams.get('state')?.toUpperCase()
-  const previewStatus =
-    stateParam && PREVIEW_STATUSES.has(stateParam as SubmissionView['status'])
-      ? (stateParam as SubmissionView['status'] | 'ERROR')
-      : undefined
-
-  const load = useCallback(() => getSubmission(previewStatus), [previewStatus])
-  const page = useAsync(load)
-
-  const [override, setOverride] = useState<SubmissionView | null>(null)
+  const { data, isPending, isError, refetch } = useSubmission()
+  const submit = useSubmitZip()
   const [resubmitting, setResubmitting] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
 
-  const view = override ?? page.data
-
-  const handleSubmit = async (input: SubmitInput) => {
-    if (!view) return
-    setSubmitting(true)
-    await submitCode(input)
-    setSubmitting(false)
-    setResubmitting(false)
-    // ponytail: ZIP 제출의 "제출한 내용" 표시 형태는 기획에 없다 — 저장소·브랜치 형태를
-    // 그대로 빌려 쓴다. 실제 API 문서가 정해지면 이 합성 로직을 지운다.
-    const content =
-      input.method === 'GITHUB'
-        ? {
-            repoUrl: input.repoUrl,
-            branch: input.branch,
-            lastCommit: {
-              sha: '방금 제출됨',
-              message: '분석 대기 중',
-              at: formatDateTime(new Date().toISOString()),
-            },
-          }
-        : {
-            repoUrl: `ZIP · ${input.file.name}`,
-            branch: '-',
-            lastCommit: {
-              sha: '-',
-              message: 'ZIP 업로드',
-              at: formatDateTime(new Date().toISOString()),
-            },
-          }
-    setOverride({
-      status: 'ANALYZING',
-      roundLabel: view.roundLabel,
-      submissionDueAt: view.submissionDueAt,
-      submittedAt: new Date().toISOString(),
-      content,
+  const handleSubmit = async (file: File) => {
+    if (!data) return
+    await submit.mutateAsync({
+      assessmentRoundId: data.assessmentRoundId,
+      /*
+        **제출 버튼을 누른 이 순간 키를 만든다.** 재시도(타임아웃·5xx)는 같은 키라야
+        서버가 최초 결과를 돌려주고, 사용자가 다시 제출하면 새 키가 되어 별개 제출이
+        된다 — `mutateAsync` 한 번이 곧 한 제출이라 여기가 그 경계다.
+      */
+      idempotencyKey: crypto.randomUUID(),
+      file,
     })
+    setResubmitting(false)
   }
 
   return (
     <ConsoleShell role="trainee">
       {/*
-        TR-01과 같은 860px — 목업은 홈 860 · 제출 620으로 서로 다르게 그렸지만(폼은
-        좁게, 읽기는 넓게가 원 원칙), 실제로 나란히 써 보면 한 플로우(홈→제출→홈) 안에서
-        폭이 화면마다 바뀌는 게 더 어색하다. 제출 폼의 입력칸(저장소 URL·브랜치)은
-        한두 줄이라 넓어져도 가독성 손해가 없어 홈 쪽 값으로 맞춘다.
+        TR-01과 같은 860px — 한 플로우(홈→제출→홈) 안에서 폭이 화면마다 바뀌는 것이
+        더 어색하다. 제출 폼의 입력칸은 한두 줄이라 넓어져도 가독성 손해가 없다.
       */}
       <div className="mx-auto flex max-w-[860px] flex-col gap-4">
-        {/* flex-col 부모의 stretch 기본값 때문에 클릭 영역이 컨테이너 전체 폭으로 늘어나
-            있었다(시각적으로는 안 보이지만 호버·포커스 영역이 실제 텍스트보다 훨씬 넓음) */}
+        {/* flex-col 부모의 stretch 때문에 클릭 영역이 컨테이너 폭으로 늘어나 있었다 */}
         <Link to="/trainee/home" className="self-start text-sm text-fg-subtle hover:underline">
           ← 홈
         </Link>
 
-        {page.loading ? (
+        {isPending ? (
           <div className="flex justify-center py-16">
             <Spinner className="size-6" aria-label="제출 현황을 불러오는 중" />
           </div>
-        ) : page.failed || !view ? (
+        ) : isError || !data ? (
           <Empty className="border-solid bg-danger-soft border-danger-border">
             <EmptyHeader>
               <EmptyTitle>제출 현황을 불러오지 못했습니다</EmptyTitle>
               <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
             </EmptyHeader>
-            <Button variant="ghost" onClick={page.reload}>
+            <Button variant="ghost" onClick={() => refetch()}>
               다시 시도
             </Button>
           </Empty>
         ) : (
           <SubmissionBody
-            view={view}
+            view={data}
             resubmitting={resubmitting}
-            submitting={submitting}
+            submitting={submit.isPending}
+            failed={submit.isError}
             onResubmitClick={() => setResubmitting(true)}
             onCancelResubmit={() => setResubmitting(false)}
             onSubmit={handleSubmit}
@@ -138,6 +88,7 @@ function SubmissionBody({
   view,
   resubmitting,
   submitting,
+  failed,
   onResubmitClick,
   onCancelResubmit,
   onSubmit,
@@ -145,12 +96,13 @@ function SubmissionBody({
   view: SubmissionView
   resubmitting: boolean
   submitting: boolean
+  failed: boolean
   onResubmitClick: () => void
   onCancelResubmit: () => void
-  onSubmit: (input: SubmitInput) => void
+  onSubmit: (file: File) => void
 }) {
-  // 재제출 폼을 펴면 "분석이 끝났어요" 성공 배너를 감춘다 — 지금 하려는 일(다시 제출)과
-  // 반대되는 메시지("시작하세요")가 폼 위에 그대로 남으면 서로 부딪힌다.
+  // 재제출 폼을 펴면 "분석이 끝났어요" 성공 배너를 감춘다 — 지금 하려는 일과 반대되는
+  // 메시지("시작하세요")가 폼 위에 남으면 서로 부딪힌다.
   const banner = resubmitting ? null : buildStateBanner(view)
 
   return (
@@ -162,19 +114,31 @@ function SubmissionBody({
 
       {banner && <StateBanner {...banner} />}
 
-      {view.status === 'DRAFT' && <SubmissionForm submitting={submitting} onSubmit={onSubmit} />}
+      {failed && (
+        <div className="rounded-md bg-danger-soft px-4 py-3 text-sm text-danger">
+          제출하지 못했어요. 잠시 후 다시 시도해 주세요.
+        </div>
+      )}
 
-      {view.status === 'ANALYSIS_FAILED' && (
+      {/*
+        **실패했을 때 무엇이 실패했는지 먼저 보인다.** 다시 낼 파일을 고르기 전에
+        지난번에 무엇을 냈는지 알아야 같은 파일을 또 올리지 않는다 — 서버가 실패한
+        제출의 `content`도 그대로 주므로(23차 R3) 폼 위에 얹는다.
+      */}
+      {view.status === 'ANALYSIS_FAILED' && view.content && <SubmittedContentCard view={view} />}
+
+      {(view.status === 'DRAFT' || view.status === 'ANALYSIS_FAILED') && (
         <SubmissionForm
           submitting={submitting}
+          availableMethods={view.availableMethods}
+          submissionDueAt={view.submissionDueAt}
           onSubmit={onSubmit}
-          initial={{ repoUrl: view.content.repoUrl, branch: view.content.branch }}
         />
       )}
 
       {view.status === 'ANALYZING' && (
         <SubmittedContentCard
-          content={view.content}
+          view={view}
           actions={
             <Button variant="ghost" nativeButton={false} render={<Link to="/trainee/home" />}>
               홈으로
@@ -191,13 +155,14 @@ function SubmissionBody({
             </Button>
             <SubmissionForm
               submitting={submitting}
+              availableMethods={view.availableMethods}
+              submissionDueAt={view.submissionDueAt}
               onSubmit={onSubmit}
-              initial={{ repoUrl: view.content.repoUrl, branch: view.content.branch }}
             />
           </div>
         ) : (
           <SubmittedContentCard
-            content={view.content}
+            view={view}
             actions={
               <>
                 <span className="mr-auto text-xs text-fg-subtle">
@@ -216,7 +181,7 @@ function SubmissionBody({
 
       {view.status === 'LOCKED' && (
         <SubmittedContentCard
-          content={view.content}
+          view={view}
           actions={
             <Button nativeButton={false} render={<Link to="/trainee/home" />}>
               홈으로
@@ -239,15 +204,11 @@ function SubmissionBody({
 }
 
 function DueLabel({ view }: { view: SubmissionView }) {
-  if (view.status === 'ANALYZING')
+  if (view.status === 'ANALYZING' && view.submittedAt)
     return (
       <span className="text-sm text-fg-subtle">제출 완료 {formatDateTime(view.submittedAt)}</span>
     )
-  if (view.status === 'READY')
-    return (
-      <span className="text-sm text-fg-subtle">분석 완료 {formatDateTime(view.analyzedAt)}</span>
-    )
-  if (view.status === 'LOCKED')
+  if ((view.status === 'READY' || view.status === 'LOCKED') && view.analyzedAt)
     return (
       <span className="text-sm text-fg-subtle">분석 완료 {formatDateTime(view.analyzedAt)}</span>
     )

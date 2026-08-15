@@ -1,5 +1,5 @@
 import { formatDate } from '@/lib/format'
-import { askedConcepts, type ReachedLevel, type RoundReport } from './types'
+import { askedConcepts, type ReachedLevel, type RoundReport } from './_/api/types'
 
 /*
   표시 라벨 — **화면 것**(api-boundary §1-⑤). 숫자 계단을 학생 언어로 바꾸는 것도
@@ -57,11 +57,18 @@ export function buildRailNote(report: RoundReport | undefined): string | undefin
     case 'PUBLISHED': {
       if (report.retryState === 'PENDING') {
         const count = askedConcepts(report.concepts).filter((c) => c.isRetryTarget).length
-        return `다시 볼 문제 ${count}개`
+        // 0개면 안내가 아니라 소음이다 — 서버에 `PENDING`인데 대상이 없는 회차가 있다(24차 문의).
+        // 본문 배너도 같은 조건으로 접히므로 레일도 같이 접어야 둘이 어긋나지 않는다.
+        if (count > 0) return `다시 볼 문제 ${count}개`
+        return '응시 완료'
       }
       if (report.retryState === 'DONE') return '다시 보기 1개 완료'
       return undefined
     }
+    // 마감 전(아직 할 수 있다)과 마감 후(기회가 지났다)를 레일에서도 가른다 — 본문과
+    // 다른 말을 하면 목록을 훑을 때와 열었을 때 인상이 달라진다
+    case 'NOT_STARTED':
+      return '시작 전'
     case 'NOT_ATTEMPTED':
       return '미응시'
     case 'STOPPED':

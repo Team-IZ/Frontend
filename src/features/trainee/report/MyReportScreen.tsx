@@ -7,21 +7,21 @@ import {
   MinusCircleIcon,
   PauseCircleIcon,
   RotateCcwIcon,
+  TriangleAlertIcon,
 } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { Link, useSearchParams } from 'react-router'
 import StatusMessageCard from '@/components/common/StatusMessageCard'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/Empty'
 import { Spinner } from '@/components/ui/Spinner'
-import { useAsync } from '@/lib/useAsync'
 import ConsoleShell from '@/shells/ConsoleShell'
-import { getReports } from './api'
+import { useReports } from './_/api/api'
 import { buildRailNote, formatDate, formatRelativeMonths } from './labels'
 import ConceptCard from './components/ConceptCard'
 import RoundRail from './components/RoundRail'
-import { askedConcepts, type ReportsData, type RoundReport } from './types'
+import { askedConcepts, type ReportsData, type RoundReport } from './_/api/types'
 
 /*
   StatusMessage(카드 없는 플로팅 텍스트)를 지운다 — 아이콘도 유니코드 손글씨
@@ -42,34 +42,32 @@ function ReportStatusCard(props: React.ComponentProps<typeof StatusMessageCard>)
 
   ?round= 은 TR-01 홈의 "리포트 보기" 링크가 넘기는 값이다 — 과거 회차를 눌렀는데
   최신이 열리면 링크가 거짓말이 된다.
-  ?state= 는 API 명세가 없는 지금 12개 상태를 확인하기 위한 dev 오버라이드다 — 미프
-  3차 한 라운드만 바꿔치기하고 나머지 두 라운드는 배경으로 남겨 마스터-디테일이 항상
-  살아있게 한다.
+
+  **한 번의 `GET /reports`가 전부 준다.** 회차를 바꿔도 요청이 없다 — 마스터-디테일이
+  캐시 안에서 움직인다.
 */
 export default function MyReportScreen() {
   const [searchParams] = useSearchParams()
-  const previewStatus = searchParams.get('state') ?? undefined
   const initialRoundId = searchParams.get('round') ?? undefined
 
-  const load = useCallback(() => getReports(previewStatus), [previewStatus])
-  const page = useAsync(load)
+  const page = useReports()
 
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const effectiveSelectedId = selectedId ?? initialRoundId ?? page.data?.rounds[0]?.id ?? null
 
   return (
     <ConsoleShell role="trainee">
-      {page.loading ? (
+      {page.isPending ? (
         <div className="flex justify-center py-16">
           <Spinner className="size-6" aria-label="리포트를 불러오는 중" />
         </div>
-      ) : page.failed || !page.data ? (
+      ) : page.isError || !page.data ? (
         <Empty className="border-solid bg-danger-soft border-danger-border">
           <EmptyHeader>
             <EmptyTitle>리포트를 불러오지 못했습니다</EmptyTitle>
             <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
           </EmptyHeader>
-          <Button variant="ghost" onClick={page.reload}>
+          <Button variant="ghost" onClick={() => page.refetch()}>
             다시 시도
           </Button>
         </Empty>
@@ -126,7 +124,12 @@ function RoundBody({ report }: { report: RoundReport }) {
           icon={<ClockIcon className="size-5" />}
           title="아직 발행 전이에요"
           description="리포트는 회차 마감 후 한꺼번에 발행됩니다."
-          aux={`발행되면 알려드릴게요 · 발행 예정 ${formatDate(report.publishAfter)} 이후`}
+          /* 서버가 발행 예정일을 아직 안 정했을 수 있다 — 날짜를 지어내지 않고 뒷문장만 남긴다 */
+          aux={
+            report.publishAfter
+              ? `발행되면 알려드릴게요 · 발행 예정 ${formatDate(report.publishAfter)} 이후`
+              : '발행되면 알려드릴게요'
+          }
         />
       )
     case 'PENDING_VISIBILITY':
@@ -137,6 +140,22 @@ function RoundBody({ report }: { report: RoundReport }) {
           title="아직 공개되지 않았어요"
           description="담당 매니저가 공개 범위를 정하면 확인할 수 있어요."
           aux="회차는 끝났고 결과도 나와 있습니다 — 여는 시점만 남았어요"
+        />
+      )
+    /*
+      **`NOT_STARTED`와 `NOT_ATTEMPTED`는 정반대다**(26차 A1). 둘 다 "응시 기록이
+      없다"지만 제출 마감을 기준으로 갈린다 — 앞은 아직 시간이 있는 정상이고, 뒤는
+      기회가 지나간 것이다. 그래서 매니저 안내(`aux`)는 **뒤에만** 붙는다. 마감 전
+      학생에게 "사정이 있었다면 알려 주세요"라고 하면 없는 일을 사고로 만든다.
+    */
+    case 'NOT_STARTED':
+      return (
+        <ReportStatusCard
+          variant="default"
+          icon={<ClockIcon className="size-5" />}
+          title="아직 시작하지 않았어요"
+          description="코드를 제출하고 이해도 확인을 마치면 리포트가 만들어집니다."
+          aux="아직 시간이 있어요 — 홈에서 이어서 하면 됩니다"
         />
       )
     case 'NOT_ATTEMPTED':
@@ -199,7 +218,13 @@ function PublishedBody({ report }: { report: Extract<RoundReport, { status: 'PUB
         </p>
       </div>
 
-      {report.retryState === 'PENDING' && report.retryDueAt && (
+      {/*
+        🔴 **`retryCount > 0`을 같이 본다.** 서버 실데이터에 `retryState: PENDING`인데
+        재시험 대상 개념이 하나도 없는 회차가 있다(24차로 문의). 그대로 그리면
+        *"다시 볼 수 있는 문제가 0개 있어요"* 라는 배너 아래에 아무것도 없고, 버튼을
+        누르면 빈 세션으로 들어간다. 할 일이 없으면 할 일이 있다고 말하지 않는다.
+      */}
+      {report.retryState === 'PENDING' && report.retryDueAt && retryCount > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-md bg-warning-soft px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
             <RotateCcwIcon className="size-5 shrink-0 text-warning" />
@@ -221,13 +246,56 @@ function PublishedBody({ report }: { report: Extract<RoundReport, { status: 'PUB
         </div>
       )}
 
+      {/*
+        **공개 범위는 리포트 하나에 걸린다** — `SUMMARY`면 세 개념이 통째로 닫힌다.
+        그래서 개념마다 자물쇠를 그리지 않고 여기서 한 번만 말한다(같은 말을 세 번
+        하면 "이 개념만 잠겼나"로 읽힌다).
+
+        **여는 사람은 매니저다**(24차 R1 회신). 다시 보기를 마쳐도 안 열리는 회차가
+        실제로 있어서(1차 — REVIEW 완료인데 SUMMARY), 학생이 할 수 없는 일을 조건으로
+        걸면 영영 안 열리는 자물쇠를 기다리게 된다.
+      */}
+      {report.scope === 'SUMMARY' && (
+        <div className="flex items-center gap-3 rounded-md bg-neutral-soft px-4 py-3">
+          <LockIcon className="size-5 shrink-0 text-fg-muted" />
+          <div>
+            <b className="text-fg">이 리포트는 요약만 공개돼 있어요</b>
+            <div className="text-xs text-fg-subtle">
+              문답 원문과 자세한 해설은 매니저가 공개하면 열려요
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/*
+        **AI 생성이 실패해 빠진 개념**(23차 Q1). 문항 없음(`asked: false`)과 다르다 —
+        그건 "코드에 그 개념이 없어 안 물었다"는 정상이고, 이건 학생 잘못이 아닌데
+        결과가 덜 나온 장애다. 같은 문구를 쓰면 한쪽이 거짓말이 되므로 따로 말한다.
+      */}
+      {report.missingConceptCount > 0 && (
+        <div className="flex items-center gap-3 rounded-md bg-warning-soft px-4 py-3 text-warning">
+          <TriangleAlertIcon className="size-5 shrink-0" />
+          <div>
+            <b>개념 {report.missingConceptCount}개의 결과를 만들지 못했어요</b>
+            <div className="text-xs text-fg-subtle">
+              시스템 문제라 응시한 내용과는 관계가 없어요 · 매니저에게 알려 주세요
+            </div>
+          </div>
+        </div>
+      )}
+
       {report.retryState === 'DONE' && (
         <div className="flex items-center gap-3 rounded-md bg-info-soft px-4 py-3 text-info">
           <CheckIcon className="size-5 shrink-0" />
           <div>
             <b>다시 보기를 마쳤어요</b>
+            {/*
+              **"해설이 열렸다"고 말하지 않는다**(24차 R1 회신) — 해설을 여는 것은
+              매니저의 공개 범위이지 다시 보기가 아니다. 마쳤는데도 SUMMARY로 잠긴
+              회차가 실제로 있어서, 그 학생에게는 이 문장이 거짓이 된다.
+            */}
             <div className="text-xs text-fg-subtle">
-              자세한 해설이 열렸습니다 · 다시 본 결과는 <b>성적에 반영되지 않아요</b>
+              다시 본 결과는 <b>성적에 반영되지 않아요</b>
             </div>
           </div>
         </div>

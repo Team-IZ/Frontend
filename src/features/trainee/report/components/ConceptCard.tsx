@@ -1,7 +1,8 @@
-import { BookOpenIcon, CircleSlashIcon, LockIcon, LockOpenIcon } from 'lucide-react'
+import { BookOpenIcon, CircleSlashIcon, LockOpenIcon } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { REACH_LABEL, UNASKED_BODY, UNASKED_TITLE } from '../labels'
-import type { ConceptReport, ReachedLevel } from '../types'
+import { clampLevel } from '../_/api/types'
+import type { ConceptReport, ReachedLevel } from '../_/api/types'
 import QaList from './QaList'
 
 /*
@@ -76,7 +77,7 @@ export default function ConceptCard({ concept, isLast }: Props) {
   둘 다 회색 점선 박스였더니 구분이 안 됐다(실사용 피드백으로 발견). 뜻이 반대인데
   같은 옷을 입고 있었던 것이다.
 
-    잠금(SUMMARY) — 안에 내용이 **있는데** 아직 못 본다. 다시 보기를 마치면 열린다
+    잠금(SUMMARY) — 안에 내용이 **있는데** 아직 못 본다. 리포트 머리에서 한 번 말한다
     문항 없음      — 안에 내용이 **없다.** 열릴 것도, 학생이 할 일도 없다
 
   그래서 **박스를 아예 그리지 않는다.** 박스가 있으면 "여기 뭔가 담겨 있다"로 읽히고,
@@ -101,16 +102,6 @@ function UnaskedBody({ name }: { name: string }) {
 }
 
 function AskedBody({ concept }: { concept: Extract<ConceptReport, { asked: true }> }) {
-  /*
-    **잠금 판정을 화면이 하지 않는다.** 예전에는 `isRetryTarget && retryState==='PENDING'`을
-    화면이 계산했는데, 지금은 서버가 준 `scope` 하나로 갈린다 — SUMMARY면 해설·문답이
-    아예 오지 않으므로 "숨길" 것도 없다(안 보이게 하는 것과 안 보내는 것은 다르다).
-  */
-  const locked = concept.scope === 'SUMMARY'
-  /** 재시험을 봤으면 시도가 2건 — 첫 응시가 정본이고 뒤가 기록이다 */
-  const firstAttempt = concept.attempts?.[0]
-  const retryAttempt = concept.attempts?.[1]
-
   return (
     <>
       <div className="mb-2 flex items-baseline justify-between gap-3">
@@ -127,10 +118,13 @@ function AskedBody({ concept }: { concept: Extract<ConceptReport, { asked: true 
           {/*
             다시 봐서 올라간 단계는 **배지를 덮어쓰지 않는다** — 배지는 정본(첫 응시)이고
             성적에 반영되는 값이다. 올라간 것은 그 아래 한 줄로만 말한다.
+
+            서버는 문답을 두 벌로 주지 않고 전후 단계(`comparedReach`)만 준다 — 올라간
+            경우에만 말하면 되므로 그것으로 충분하다.
           */}
-          {retryAttempt && retryAttempt.reachedLevel > concept.reachedLevel && (
+          {concept.comparedReach && concept.comparedReach.after > concept.reachedLevel && (
             <span className="text-2xs text-fg-subtle">
-              다시 봤을 때 {REACH_LABEL[retryAttempt.reachedLevel]}
+              다시 봤을 때 {REACH_LABEL[clampLevel(concept.comparedReach.after)]}
             </span>
           )}
         </div>
@@ -138,34 +132,27 @@ function AskedBody({ concept }: { concept: Extract<ConceptReport, { asked: true 
 
       <p className="text-sm leading-relaxed text-fg-muted">{concept.said}</p>
 
-      {locked ? (
-        /*
-          잠김 — **회색으로 확실히 채운다.** 예전엔 `bg-surface-2`였는데 그 토큰은
-          캔버스보다 **더 밝아서**(거의 흰색) 여백과 구분되지 않았다(실사용 피드백으로
-          발견). `neutral-soft`가 이 화면에서 유일하게 뚜렷한 회색 면이라, 색을 쓰지
-          않고도 "닫혀 있다"가 형태로 읽힌다.
-        */
-        <div className="mt-3 flex items-center gap-2 rounded-md bg-neutral-soft p-3 text-sm">
-          <LockIcon className="size-4 shrink-0 text-fg-muted" />
-          <b className="text-fg">자세한 해설은 다시 보기를 마치면 열려요</b>
-        </div>
-      ) : (
-        concept.explanation && (
-          // 열림 — 잠금 박스와 정반대로 보이게 한다: 회색 대신 primary 색, 점선 대신
-          // 실선, 자물쇠 대신 열린 자물쇠. 무게(배경+테두리)는 같게 둬서 옆 잠금
-          // 박스보다 오히려 흐려 보이는 일이 없게 한다(실사용 피드백으로 발견).
-          <div className="mt-3 rounded-md border border-primary-border bg-primary-soft p-3 text-sm">
-            <div className="mb-1.5 flex items-center gap-1.5 text-xs font-bold text-primary">
-              <LockOpenIcon className="size-3.5 shrink-0" />
-              어디서 막혔나
-            </div>
-            {concept.explanation.map((p, i) => (
-              <p key={i} className={cn('leading-relaxed text-fg', i > 0 && 'mt-2')}>
-                {p}
-              </p>
-            ))}
+      {/*
+        **잠금은 개념이 아니라 리포트에 걸린다.** `disclosureScope`는 *"이 리포트를
+        어디까지 공개하나"* 라 SUMMARY면 세 개념이 통째로 닫힌다 — 개념마다 자물쇠를
+        그리면 같은 말이 세 번 반복되고 "이 개념만 잠겼나"로 읽힌다. 그래서 잠금
+        안내는 리포트 머리에 한 번만 두고(`MyReportScreen`), 여기서는 **올 것이
+        왔을 때만** 그린다.
+      */}
+      {concept.explanation && (
+        // 열림 — 회색 대신 primary 색, 점선 대신 실선, 열린 자물쇠. 무게(배경+테두리)를
+        // 카드 안 다른 박스와 같게 둬서 흐려 보이지 않게 한다(실사용 피드백으로 발견).
+        <div className="mt-3 rounded-md border border-primary-border bg-primary-soft p-3 text-sm">
+          <div className="mb-1.5 flex items-center gap-1.5 text-xs font-bold text-primary">
+            <LockOpenIcon className="size-3.5 shrink-0" />
+            어디서 막혔나
           </div>
-        )
+          {concept.explanation.map((p, i) => (
+            <p key={i} className={cn('leading-relaxed text-fg', i > 0 && 'mt-2')}>
+              {p}
+            </p>
+          ))}
+        </div>
       )}
 
       {/*
@@ -185,7 +172,7 @@ function AskedBody({ concept }: { concept: Extract<ConceptReport, { asked: true 
       )}
 
       {/* SUMMARY면 문답 원문이 오지 않는다 — 없으면 목록 자체를 그리지 않는다 */}
-      {firstAttempt && <QaList first={firstAttempt} retry={retryAttempt} />}
+      {concept.qa && <QaList entries={concept.qa} />}
     </>
   )
 }

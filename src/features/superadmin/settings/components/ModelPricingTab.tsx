@@ -79,10 +79,16 @@ export default function ModelPricingTab({ settings }: { settings: Settings }) {
   const { activeCalibration, runningCalibration } = gradingPolicy
 
   const unpriced = modelPricings.filter((p) => p.pricingMissing)
-  // 서버 응답 순서에 기대지 않는다 — 정확도 → 균형 → 비용으로 고정한다
-  const orderedTiers = TIER_ORDER.map((code) =>
-    tierMappings.find((t) => t.tierCode === code),
-  ).filter((t): t is TierMapping => Boolean(t))
+  /*
+    서버 응답 순서에 기대지 않는다 — 정확도 → 균형 → 비용으로 고정한다.
+    **3개 미만으로 와도 조용히 숨기지 않는다** — 티어 자리 자체는 항상 그리고,
+    매핑이 없는 티어만 "매핑 없음"으로 표시한다(렌더 확인: 예전엔 `.filter(Boolean)`으로
+    빠진 티어가 통째로 사라져 3개가 있어야 하는지조차 알 수 없었다).
+  */
+  const orderedTiers = TIER_ORDER.map((code) => ({
+    tierCode: code,
+    mapping: tierMappings.find((t) => t.tierCode === code) ?? null,
+  }))
 
   /*
     재캘리브레이션이 도는 중에는 채점 모델을 또 바꾸지 못하게 막는다.
@@ -186,21 +192,29 @@ export default function ModelPricingTab({ settings }: { settings: Settings }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orderedTiers.map((t) => (
-              <TableRow key={t.tierPolicyId}>
-                <TableCell className="font-bold">{TIER_LABEL[t.tierCode]}</TableCell>
-                <TableCell className="text-xs">{t.modelDisplayName}</TableCell>
+            {orderedTiers.map(({ tierCode, mapping }) => (
+              <TableRow key={tierCode}>
+                <TableCell className="font-bold">{TIER_LABEL[tierCode]}</TableCell>
+                <TableCell className="text-xs">
+                  {mapping ? (
+                    mapping.modelDisplayName
+                  ) : (
+                    <span className="text-warning font-semibold">매핑 없음</span>
+                  )}
+                </TableCell>
                 <TableCell className="text-fg-muted text-xs">
-                  {TIER_DESCRIPTION[t.tierCode]}
+                  {TIER_DESCRIPTION[tierCode]}
                 </TableCell>
                 <TableCell>
-                  <button
-                    type="button"
-                    onClick={() => setTierTarget(t)}
-                    className="text-primary text-xs font-semibold hover:underline"
-                  >
-                    변경
-                  </button>
+                  {mapping && (
+                    <button
+                      type="button"
+                      onClick={() => setTierTarget(mapping)}
+                      className="text-primary text-xs font-semibold hover:underline"
+                    >
+                      변경
+                    </button>
+                  )}
                 </TableCell>
               </TableRow>
             ))}

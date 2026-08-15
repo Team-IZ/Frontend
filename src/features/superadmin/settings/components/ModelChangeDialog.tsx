@@ -79,7 +79,16 @@ export default function ModelChangeDialog({
     }
   }, [open, gradingPolicy.modelId])
 
-  const options = models.filter((m) => isSelectableModel(m) || m.modelId === gradingPolicy.modelId)
+  /*
+    단가 미설정 모델은 채점 모델로 고를 수 없다(사용자 정책 — 채점 모델은 전 기관 강제
+    적용 단일 모델이라, 단가 미설정 상태로 바뀌면 전 기관 채점 호출 비용이 통째로 집계에서
+    빠진다. 정의서 §6 "0으로 계산하지 않는다" 원칙과 같은 결의 문제).
+    지금 채점 모델이 마침 단가 미설정이면(이 화면 밖에서 이미 그렇게 된 상태) 목록에서
+    완전히 빼지 않는다 — 빼면 트리거가 빈 값으로 보인다. 대신 목록엔 남기고 선택만 막는다.
+  */
+  const options = models.filter(
+    (m) => (isSelectableModel(m) && !m.pricingMissing) || m.modelId === gradingPolicy.modelId,
+  )
   const versionValid = VERSION_CODE_PATTERN.test(versionCode)
   const changed = modelId !== gradingPolicy.modelId
   const canSubmit = changed && versionValid && acknowledged && !update.isPending
@@ -136,10 +145,10 @@ export default function ModelChangeDialog({
               </SelectTrigger>
               <SelectContent>
                 {options.map((m) => (
-                  <SelectItem key={m.modelId} value={m.modelId}>
+                  <SelectItem key={m.modelId} value={m.modelId} disabled={m.pricingMissing}>
                     {m.modelDisplayName}
                     {m.modelId === gradingPolicy.modelId && ' (현재)'}
-                    {m.pricingMissing && ' · 단가 미설정'}
+                    {m.pricingMissing && ' · 단가 미설정이라 고를 수 없습니다'}
                   </SelectItem>
                 ))}
               </SelectContent>

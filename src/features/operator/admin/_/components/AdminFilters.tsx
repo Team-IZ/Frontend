@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select'
+import ControlLabel from '@/components/common/ControlLabel'
 import type { FilterOption } from '../filterState'
 
 /*
@@ -67,8 +68,17 @@ export function SearchBox({
 /**
  * 필터 드롭다운 하나.
  *
- * **라벨 접두사를 값에도 붙인다**(`상태 · 전체`) — 닫힌 상태에서 무엇으로 거른 건지가
- * 보여야 한다. 드롭다운에 사용법 문장을 쓰지 않는다(E10) — 컨트롤 모양이 이미 그 말이다.
+ * 닫힌 상태에서 무엇으로 거른 건지가 보여야 한다. **다만 이름표를 값에 섞지 않는다** —
+ * 이름표는 컨트롤 안 왼쪽(`ControlLabel`)이 갖고, 옵션은 값만 말한다.
+ *
+ * 한때 `{label} · {값}`을 **옵션마다** 넣었다. 그러면 열었을 때
+ * `상태 · 전체 / 상태 · 활성 / 상태 · 초대 대기 / 상태 · 정지`가 되어 접두사가 4번
+ * 반복되고, 스크린리더도 항목마다 그것을 읽는다. **이미 그 컨트롤 안에 있는데** 말이다.
+ * OP-02가 같은 이유로 먼저 걷어냈고(`ProjectFilters`), 거기서는 파일명이 값으로 들어가
+ * 트리거가 580px까지 자라 **툴바가 두 줄로 접히는** 일까지 있었다. 여기 값은 짧아
+ * 그 사고는 안 나지만, 같은 앱에서 같은 일을 두 가지로 할 이유가 없다.
+ *
+ * 드롭다운에 사용법 문장을 쓰지 않는다(E10) — 컨트롤 모양이 이미 그 말이다.
  */
 export function FilterSelect({
   label,
@@ -83,7 +93,7 @@ export function FilterSelect({
   onChange: (value: string) => void
   className?: string
 }) {
-  const items = Object.fromEntries(options.map((o) => [o.value, `${label} · ${o.label}`]))
+  const items = Object.fromEntries(options.map((o) => [o.value, o.label]))
   return (
     <Select
       value={value}
@@ -91,12 +101,13 @@ export function FilterSelect({
       items={items}
     >
       <SelectTrigger className={`h-9 ${className}`} aria-label={`${label} 필터`}>
-        <SelectValue />
+        <ControlLabel>{label}</ControlLabel>
+        <SelectValue className="truncate" />
       </SelectTrigger>
       <SelectContent>
         {options.map((o) => (
           <SelectItem key={o.value} value={o.value}>
-            {label} · {o.label}
+            {o.label}
           </SelectItem>
         ))}
       </SelectContent>

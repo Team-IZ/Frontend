@@ -26,7 +26,35 @@ type Props = {
   onChange: (parsed: ParsedRoster | null, fileName: string | null, file: File | null) => void
 }
 
-const TEMPLATE = '이름,이메일\n홍길동,gildong@example.com\n'
+/**
+ * 내려받는 양식. **도메인은 그 기관 것을 쓴다** — `example.com`을 예시로 두면 그대로
+ * 채워 올리고 「기관 도메인 밖 주소」로 전부 튕긴다. 이름 칸은 **비우면 서버가 파일
+ * 전체를 거절**하므로(`TRAINEE_NAME_INVALID`) 예시 줄이 그것을 보여 준다.
+ */
+const template = (domain: string) => `이름,이메일\n홍길동,gildong@${domain || 'example.com'}\n`
+
+/*
+  파일을 글자로 읽는다 — **`file.text()`를 안 쓴다.**
+
+  `File.text()`는 무조건 UTF-8로 디코딩하고, **깨져도 조용히 성공한다**(`�`가 섞인
+  문자열이 나온다). 그러면 화면은 머리글을 못 찾은 이유를 *"이름 열이 없다"* 로 잘못
+  말한다 — 진짜 이유는 **인코딩**이다.
+
+  ⚠ **윈도우 엑셀의 「CSV(쉼표로 분리)」는 CP949다.** 그리고 **서버는 UTF-8만 받는다**
+  (실측 — `CSV_FORMAT_INVALID · "CSV 파일은 UTF-8 인코딩이어야 합니다"`). 그래서 여기서
+  euc-kr로 **읽어서 통과시키면 안 된다** — 미리보기는 멀쩡한데 등록이 튕긴다.
+
+  엄격 모드로 UTF-8을 시도해 **아니라는 것만 알아내고**, 그 사실을 그대로 알린다.
+  나중에 프런트가 UTF-8로 정규화해 보내게 되면 그때 euc-kr을 실제로 읽으면 된다.
+*/
+async function readSheet(file: File): Promise<string | null> {
+  const buf = await file.arrayBuffer()
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(buf)
+  } catch {
+    return null // UTF-8이 아니다 — 서버도 안 받는다
+  }
+}
 
 export default function RosterCsvField({ domain, onChange }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -35,7 +63,15 @@ export default function RosterCsvField({ domain, onChange }: Props) {
 
   const take = async (file: File | undefined) => {
     if (!file) return
-    const text = await file.text()
+    const text = await readSheet(file)
+    if (text === null) {
+      onChange(
+        { entries: [], invalid: [{ line: 1, reason: 'ENCODING_NOT_UTF8' }] },
+        file.name,
+        file,
+      )
+      return
+    }
     setFileName(file.name)
     onChange(parseRosterCsv(text, domain), file.name, file)
   }
@@ -72,8 +108,8 @@ export default function RosterCsvField({ domain, onChange }: Props) {
           끌어다 놓아도 됩니다 · 열 = 이름, 이메일 (2열) ·{' '}
           <a
             className="underline"
-            download="명단-양식.csv"
-            href={`data:text/csv;charset=utf-8,${encodeURIComponent(TEMPLATE)}`}
+            download="교육생-양식.csv"
+            href={`data:text/csv;charset=utf-8,${encodeURIComponent(template(domain))}`}
           >
             양식 내려받기
           </a>

@@ -222,7 +222,7 @@ export function canDelete(status: ProjectStatus): boolean {
 /** 왜 막혔는지 — 흐린 버튼만 두면 이유를 모른다(C1). 상태 이름이 아니라 **사유**를 쓴다 */
 export function lockedReason(status: ProjectStatus): string | null {
   if (status === 'RUNNING') return '응시가 시작돼 바꿀 수 없습니다'
-  if (status === 'DONE') return '종료된 회차라 바꿀 수 없습니다'
+  if (status === 'DONE') return '종료된 프로젝트라 바꿀 수 없습니다'
   return null
 }
 

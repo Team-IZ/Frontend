@@ -238,7 +238,9 @@ export default function ProjectListScreen() {
             <EmptyHeader>
               <EmptyTitle>
                 {/* 조회에 나간 검색어를 쓴다 — 입력 원본이면 아직 안 걸린 글자를 인용한다 */}
-                {search ? `"${search}"에 맞는 회차가 없습니다` : '조건에 맞는 회차가 없습니다'}
+                {search
+                  ? `"${search}"에 맞는 프로젝트가 없습니다`
+                  : '조건에 맞는 프로젝트가 없습니다'}
               </EmptyTitle>
               <EmptyDescription>전체 {totalAll}개에서 찾았습니다.</EmptyDescription>
             </EmptyHeader>
@@ -249,7 +251,7 @@ export default function ProjectListScreen() {
             <EmptyHeader>
               <EmptyTitle>아직 프로젝트가 없습니다</EmptyTitle>
               <EmptyDescription>
-                회차를 만들고 교안을 연결하면 검증 개념 3건을 고를 수 있습니다.
+                프로젝트를 만들고 교안을 연결하면 검증 개념 3건을 고를 수 있습니다.
               </EmptyDescription>
             </EmptyHeader>
             <Button onClick={() => setCreateOpen(true)}>+ 프로젝트 생성</Button>
@@ -262,7 +264,7 @@ export default function ProjectListScreen() {
             비우는 것(깜빡임)과 그냥 두는 것(거짓말) 사이의 답이다(async-states §1-4).
             `aria-busy`가 보조 기술에도 같은 것을 알린다.
           */
-          <StaleBlock stale={page.isPlaceholderData} label="목록을 불러오는 중">
+          <StaleBlock stale={page.isFetching && page.data !== undefined} label="목록을 불러오는 중">
             <Table className="table-fixed">
               <TableHeader>
                 <TableRow className="hover:bg-transparent">

@@ -203,7 +203,7 @@ export default function CreateProjectDialog({
 
           <Field>
             <FieldLabel>
-              회차 기간 <RequiredMark>필수</RequiredMark>
+              프로젝트 기간 <RequiredMark>필수</RequiredMark>
             </FieldLabel>
             <SchedulePicker
               value={schedule}
@@ -315,7 +315,7 @@ export default function CreateProjectDialog({
             <FieldLabel>
               검증 개념 <RequiredMark>3건 고정</RequiredMark>{' '}
               <span className="text-fg-subtle text-xs font-normal">
-                · 이 회차 모든 학생의 문항 3개
+                · 이 프로젝트 모든 학생의 문항 3개
               </span>
             </FieldLabel>
             <div className="border-border rounded-md border">
@@ -387,11 +387,12 @@ export default function CreateProjectDialog({
 
 /** 어디서 멈췄나 → 상세에서 무엇을 이어서 해야 하나. 상태 이름이 아니라 **할 일**을 쓴다 */
 const PARTIAL_MESSAGE: Record<string, string> = {
-  CURRICULA_FAILED: '회차는 만들어졌지만 교안이 연결되지 않았습니다 — 구성 탭에서 이어서 하세요.',
+  CURRICULA_FAILED:
+    '프로젝트는 만들어졌지만 교안이 연결되지 않았습니다 — 구성 탭에서 이어서 하세요.',
   CONCEPTS_FAILED:
-    '회차는 만들어졌지만 검증 개념이 확정되지 않았습니다 — 구성 탭에서 이어서 하세요.',
+    '프로젝트는 만들어졌지만 검증 개념이 확정되지 않았습니다 — 구성 탭에서 이어서 하세요.',
   REQUIREMENTS_FAILED:
-    '회차는 만들어졌지만 요구사항이 저장되지 않았습니다 — 구성 탭에서 이어서 하세요.',
+    '프로젝트는 만들어졌지만 요구사항이 저장되지 않았습니다 — 구성 탭에서 이어서 하세요.',
 }
 
 function RequiredMark({ children }: { children: React.ReactNode }) {

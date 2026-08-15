@@ -87,7 +87,7 @@ export default function DashboardScreen() {
       ) : (
         <>
           <Section
-            title="이번 회차"
+            title="이번 프로젝트"
             /*
               **진행 중인 회차가 아닐 때만 근거를 밝힌다.** 하나뿐인 RUNNING을 골랐다는
               것은 자명해서 쓰면 잔소리가 되고, 예정·종료를 집었을 때는 그 사실이 없으면
@@ -99,8 +99,8 @@ export default function DashboardScreen() {
                 pipe.pick === 'RUNNING'
                   ? ''
                   : pipe.pick === 'PLANNED'
-                    ? ' · 다음 예정 회차'
-                    : ' · 마지막으로 끝난 회차'
+                    ? ' · 다음 예정 프로젝트'
+                    : ' · 마지막으로 끝난 프로젝트'
               }`
             }
             link={pipe ? { to: projectPath(pipe.projectId), label: GO_PROJECT } : undefined}
@@ -108,7 +108,7 @@ export default function DashboardScreen() {
             <BlockBody
               block={page.pipeline}
               skeleton={<PipelineSkeleton />}
-              subject="이번 회차 진행 상황"
+              subject="이번 프로젝트 진행 상황"
               onRetry={page.retry.pipeline}
               retrying={page.fetching.pipeline}
             >

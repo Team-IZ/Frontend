@@ -196,7 +196,7 @@ function StudentsTableHead({ totalRounds }: { totalRounds: number }) {
         <TableHead className="w-[80px]">반</TableHead>
         <TableHead className="w-[104px]">우수 횟수</TableHead>
         <TableHead>
-          우수한 회차
+          우수한 프로젝트
           {/* 아래 칸들과 같은 폭·같은 간격이라 번호가 칸 위에 정확히 선다 */}
           <span className="mt-1 flex max-w-[420px] items-center gap-1 font-normal">
             {Array.from({ length: totalRounds }, (_, i) => i + 1).map((n) => (
@@ -272,7 +272,7 @@ export default function TopStudents({
           <EmptyHeader>
             <EmptyTitle>이번 기수엔 우수 교육생이 없습니다</EmptyTitle>
             <EmptyDescription>
-              회차마다 반 상위 1~2명을 표시하는데, 아무도 들지 못했습니다.
+              프로젝트마다 반 상위 1~2명을 표시하는데, 아무도 들지 못했습니다.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -298,7 +298,7 @@ export default function TopStudents({
               ]}
             />
             <ToolbarSelect
-              label="회차"
+              label="프로젝트"
               value={round}
               onChange={(v) => {
                 setRound(v)

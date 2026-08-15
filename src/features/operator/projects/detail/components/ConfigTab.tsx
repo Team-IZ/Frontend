@@ -61,7 +61,8 @@ export default function ConfigTab({
       */}
       {locked && (
         <p className="border-border-strong text-fg-muted rounded-md border border-dashed px-4 py-2.5 text-xs">
-          {locked} — 교안·검증 개념·요구사항은 그 회차의 <b className="font-semibold">측정 기준</b>
+          {locked} — 교안·검증 개념·요구사항은 그 프로젝트의{' '}
+          <b className="font-semibold">측정 기준</b>
           이라, 응시가 시작된 뒤 바꾸면 학생마다 다른 시험이 됩니다.
         </p>
       )}
@@ -238,11 +239,11 @@ export default function ConfigTab({
       <Card className="border-danger/30 gap-3 p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
-            <h2 className="text-sm font-bold">회차 삭제</h2>
+            <h2 className="text-sm font-bold">프로젝트 삭제</h2>
             <p className="text-fg-subtle mt-0.5 text-xs">
               {canDelete(project.status)
                 ? '교안 연결·검증 개념·요구사항·일정이 함께 사라집니다. 되돌릴 수 없습니다.'
-                : '제출·분석·응시 결과가 이 회차에 매달려 있어 지울 수 없습니다 — 끝난 회차는 기록입니다.'}
+                : '제출·분석·응시 결과가 이 프로젝트에 매달려 있어 지울 수 없습니다 — 끝난 프로젝트는 기록입니다.'}
             </p>
           </div>
           <Button

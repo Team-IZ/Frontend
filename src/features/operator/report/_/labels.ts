@@ -96,9 +96,9 @@ export function exportReportCsv(report: Report) {
     },
     {
       key: 'round',
-      title: '회차별',
+      title: '프로젝트별',
       headers: [
-        '회차',
+        '프로젝트',
         '검증 개념',
         '0단(명)',
         '1단(명)',
@@ -131,7 +131,7 @@ export function exportReportCsv(report: Report) {
         '교안',
         '검증 개념',
         '출처',
-        '쓰인 회차',
+        '쓰인 프로젝트',
         '0단(명)',
         '1단(명)',
         '2단(명)',
@@ -190,7 +190,7 @@ export function exportReportCsv(report: Report) {
     {
       key: 'top',
       title: '우수 교육생',
-      headers: ['이름', '반', '우수 횟수(회)', '우수한 회차'],
+      headers: ['이름', '반', '우수 횟수(회)', '우수한 프로젝트'],
       rows: report.topStudents.map((s) => [
         s.name,
         s.className,

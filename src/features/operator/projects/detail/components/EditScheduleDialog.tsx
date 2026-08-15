@@ -119,8 +119,9 @@ export default function EditScheduleDialog({
             <Alert variant="warning">
               <AlertTitle>재시험 창이 열리지 않습니다</AlertTitle>
               <AlertDescription>
-                재시험 창은 <b className="font-semibold">3일 또는 다음 회차 제출일 중 빠른 쪽</b>
-                까지입니다. 다음 회차 {nextProjectName}의 마감이{' '}
+                재시험 창은{' '}
+                <b className="font-semibold">3일 또는 다음 프로젝트 제출일 중 빠른 쪽</b>
+                까지입니다. 다음 프로젝트 {nextProjectName}의 마감이{' '}
                 <b className="font-semibold tabular-nums">{formatDue(nextDueAt)}</b>이라 이번 마감이
                 더 늦습니다.
               </AlertDescription>

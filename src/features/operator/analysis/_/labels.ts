@@ -53,7 +53,7 @@ export const CELL_STATE_LABEL: Record<Exclude<CellState, 'VALUE'>, string> = {
 /** 셀에 두 줄을 넣지 않는다(E11) — 뜻은 범례가 말한다 */
 export const CELL_STATE_HINT: Record<Exclude<CellState, 'VALUE'>, string> = {
   PENDING: '리포트 미발행 — 발행되면 값이 채워집니다',
-  BEFORE: '아직 시작하지 않은 회차입니다',
+  BEFORE: '아직 시작하지 않은 프로젝트입니다',
 }
 
 /**
@@ -65,7 +65,7 @@ export const CELL_STATE_HINT: Record<Exclude<CellState, 'VALUE'>, string> = {
  */
 export const CELL_STATE_LEGEND: { label: string; desc: string }[] = [
   { label: CELL_STATE_LABEL.PENDING, desc: '리포트가 발행되면 채워집니다' },
-  { label: CELL_STATE_LABEL.BEFORE, desc: '아직 시작하지 않은 회차' },
+  { label: CELL_STATE_LABEL.BEFORE, desc: '아직 시작하지 않은 프로젝트' },
 ]
 
 /**
@@ -112,8 +112,8 @@ export const TAB_PURPOSE = {
 
 /** 정렬 4종은 **서로 다른 질문**이다(OP-02 §4-3) */
 export const ROUND_SORT_LABEL: Record<RoundSort, string> = {
-  LATEST_WORST: '최근 발행 회차 나쁜 순',
-  WORSE_COUNT: '기준보다 나쁜 회차가 많은 순',
+  LATEST_WORST: '최근 발행 프로젝트 나쁜 순',
+  WORSE_COUNT: '기준보다 나쁜 프로젝트가 많은 순',
   UNCOUNTED: '미집계 많은 순',
   NAME: '이름순',
 }

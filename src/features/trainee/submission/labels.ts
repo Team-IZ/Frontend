@@ -1,6 +1,6 @@
 import { CheckIcon, ClockIcon, LockIcon, TriangleAlertIcon, type LucideIcon } from 'lucide-react'
 import { formatDateTime } from '@/lib/format'
-import type { SubmissionView } from './types'
+import type { SubmissionMethod, SubmissionView } from './_/api/types'
 
 /*
   표시 라벨 — **화면 것**(api-boundary §1-⑤). 문구는 목업(trainee/submission.html)
@@ -54,7 +54,10 @@ export function buildStateBanner(view: SubmissionView): StateBannerContent | nul
         icon: CheckIcon,
         title: '분석이 끝났어요',
         description: '이해도 확인을 시작할 수 있습니다. 홈에서 시작하면 돼요.',
-        sub: `${formatDateTime(view.verifyClosesAt)}까지 · 시작 전까지는 다시 제출할 수 있어요`,
+        // 서버가 응시 창을 아직 안 정했을 수 있다 — 마감을 지어내지 않고 뒷문장만 남긴다
+        sub: view.verifyClosesAt
+          ? `${formatDateTime(view.verifyClosesAt)}까지 · 시작 전까지는 다시 제출할 수 있어요`
+          : '시작 전까지는 다시 제출할 수 있어요',
       }
     case 'LOCKED':
       return {
@@ -71,12 +74,68 @@ export function buildStateBanner(view: SubmissionView): StateBannerContent | nul
         weight: 'card',
         icon: TriangleAlertIcon,
         title: '코드를 분석하지 못했어요',
-        description: '저장소는 열렸지만 분석할 코드를 찾지 못했습니다.',
-        sub: '브랜치가 비어 있거나 소스 폴더가 없는지 확인해 주세요. 계속 안 되면 매니저에게 알려 주세요.',
+        description: failureText(view.failureCode),
+        sub: '계속 안 되면 매니저에게 알려 주세요.',
       }
     case 'SUBMISSION_CLOSED':
       return null // 폼도 카드도 없이 안내 문단 하나만 — TR-01 `missed`와 같은 모양
   }
+}
+
+/*
+  분석 실패 사유 — **서버는 코드만 준다.** `failureReason`도 오지만 그건 개발자용 문구라
+  그대로 띄우지 않는다(F3 — 백엔드가 문구를 다듬는 순간 화면 톤이 조용히 바뀐다).
+
+  15종 전부를 갈라 쓰지 않는다. **학생이 할 수 있는 일이 같으면 같은 문장**이다 —
+  `SOURCE_UNREACHABLE`과 `REPO_NOT_FOUND`는 원인이 달라도 "주소를 확인하라"로 같다.
+  모르는 코드가 오면 마지막 문장으로 떨어진다(스펙이 늘 최신은 아니다).
+*/
+const FAILURE_TEXT: Record<string, string> = {
+  EMPTY_CODE: '압축 파일 안에서 분석할 코드를 찾지 못했어요.',
+  ARCHIVE_INVALID: '압축 파일을 열지 못했어요. 다시 압축해서 올려 주세요.',
+  FILE_TOO_LARGE: '파일이 너무 커요. 50MB 아래로 줄여 주세요.',
+  GIT_LOG_MISSING: 'git log가 없어요. 저장소 폴더째 압축했는지 확인해 주세요.',
+  PROHIBITED_FILE: '올릴 수 없는 파일이 들어 있어요.',
+  UNSUPPORTED_LANGUAGE: '아직 분석할 수 없는 언어예요.',
+  ANALYSIS_TIMEOUT: '분석이 시간 안에 끝나지 않았어요. 다시 제출해 주세요.',
+  TEMPORARY_ERROR: '일시적인 문제가 있었어요. 다시 제출해 주세요.',
+  MODEL_ERROR: '분석 중 문제가 생겼어요. 다시 제출해 주세요.',
+}
+
+const failureText = (code: string | null) =>
+  (code && FAILURE_TEXT[code]) ?? '제출한 코드를 읽지 못했어요. 파일을 확인하고 다시 올려 주세요.'
+
+/*
+  🔴 **서버 상한과 정확히 같은 값이다** — `app.submission.max-zip-bytes` 기본값이고,
+  넘으면 `413 FILE_TOO_LARGE`다. 화면 상한이 더 크면 "올린 뒤에 거절"이 생기고, 더 작으면
+  올릴 수 있는 파일을 막는다. 50MB를 `50 * 1024 * 1024`로 쓰면 같은 값이지만, 스펙이
+  바이트로 못박은 값이라 그대로 적는다.
+
+  톰캣 상한(60MB)이 그 앞에 하나 더 있는데 **일부러 넉넉하게 잡은 것**이다 — 톰캣이 먼저
+  끊으면 우리 에러 코드가 안 실려 화면이 사유를 알 수 없기 때문이다(스펙 명시).
+*/
+export const MAX_ZIP_BYTES = 52_428_800
+
+export type ZipCheckResult = { ok: true } | { ok: false; message: string }
+
+/** 순수 계산 — 네트워크가 필요 없다. **업로드 전에** 막는 것이 목적이다 */
+export function validateZipSize(file: File): ZipCheckResult {
+  if (file.size > MAX_ZIP_BYTES) {
+    /*
+      **올림한다.** 반올림하면 상한을 1바이트 넘긴 파일이 `50MB — 50MB를 넘어…`로 나와
+      제 말과 부딪힌다(실제로 그렇게 보였다). 올림하면 표시값이 상한과 같아지는 일이
+      없어 문구가 늘 성립하고, 실제로 큰 파일에서는 어차피 같은 수가 나온다.
+    */
+    const mb = Math.ceil(file.size / (1024 * 1024))
+    return { ok: false, message: `${file.name} · ${mb}MB — 50MB를 넘어 제출할 수 없어요` }
+  }
+  return { ok: true }
+}
+
+/** 서버 enum을 학생이 읽는 말로 — 폼의 탭 이름과 같은 단어를 쓴다 */
+export const METHOD_LABEL: Record<SubmissionMethod, string> = {
+  GITHUB_URL: 'GitHub 저장소',
+  ZIP_WITH_GITLOG: 'ZIP 업로드',
 }
 
 export const REPO_HELP =

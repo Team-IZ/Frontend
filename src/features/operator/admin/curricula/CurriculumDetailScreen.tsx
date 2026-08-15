@@ -1,6 +1,12 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { ChevronLeftIcon, TriangleAlertIcon } from 'lucide-react'
+import {
+  ChevronLeftIcon,
+  PlayIcon,
+  RefreshCwIcon,
+  Trash2Icon,
+  TriangleAlertIcon,
+} from 'lucide-react'
 import ConsoleShell from '@/shells/ConsoleShell'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
@@ -30,6 +36,7 @@ import CurriculumDetailSkeleton, { SectionListSkeleton } from './CurriculumDetai
 import ErrorState from '@/components/common/ErrorState'
 import { CurriculumStatusBadge } from '../_/components/StatusBadges'
 import ReanalyzeDialog from './components/ReanalyzeDialog'
+import DeleteCurriculumDialog from './components/DeleteCurriculumDialog'
 
 /*
   교안 상세 — 탭 2.
@@ -64,6 +71,7 @@ export default function CurriculumDetailScreen() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const [reanalyzeOpen, setReanalyzeOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   const { data: me } = useGetCurrentMember()
   const curriculum = useFindCurriculum({ path: { materialId: id } }, { enabled: !!id })
@@ -137,14 +145,42 @@ export default function CurriculumDetailScreen() {
             )}
           </h1>
           {/*
-            분석 실패한 교안에는 아래 `FailedState`가 같은 버튼을 다시 그린다 —
-            그 화면에서는 그것이 **유일한 다음 행동**이라 본문 안에 있어야 한다.
+            **액션은 오른쪽 끝에 모은다.** 한때 이 셋이 `justify-between`의 형제라
+            버튼이 늘어나자 **다시 분석이 화면 한가운데로 밀렸다** — 제목과 액션 사이가
+            아니라 액션 사이에 여백이 생긴 것이다. 한 묶음으로 감싸면 제목은 왼쪽,
+            액션은 오른쪽으로 붙는다.
+
+            **삭제가 가장 오른쪽이다.** 되돌릴 수 없는 것이 바깥이고, 없을 때는 다시
+            분석이 그 자리를 차지한다.
           */}
-          {!failed && (
-            <Button variant="ghost" onClick={() => setReanalyzeOpen(true)}>
-              {analyzed ? '다시 분석' : '분석 시작'}
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {/*
+              분석 실패한 교안에는 아래 `FailedState`가 같은 버튼을 다시 그린다 —
+              그 화면에서는 그것이 **유일한 다음 행동**이라 본문 안에 있어야 한다.
+            */}
+            {!failed && (
+              <Button variant="ghost" onClick={() => setReanalyzeOpen(true)}>
+                {analyzed ? <RefreshCwIcon /> : <PlayIcon />}
+                {analyzed ? '다시 분석' : '분석 시작'}
+              </Button>
+            )}
+            {/*
+              **쓰는 프로젝트가 없을 때만 그린다.** 하나라도 있으면 서버가 막으므로
+              (`409 CURRICULUM_MATERIAL_IN_USE`) 누를 수 있게 두면 **못 하는 일을 시키는
+              것**이다 — 그 사실은 옆 탭이 이미 말한다(`연결된 프로젝트 n`).
+
+              ⚠ **`inUse`가 아니라 `used`로 판정한다.** `inUse`는 *응시가 시작된* 것만
+              걸러 낸 값이라(재분석 경고용) 연결만 되고 아직 응시 전인 프로젝트가 빠진다 —
+              그걸로 판정하면 **버튼이 보이는데 서버가 거절**한다. 스펙도 판정 기준을
+              `usedProjectCount`라고 적어 뒀다.
+            */}
+            {used.length === 0 && (
+              <Button variant="danger" onClick={() => setDeleteOpen(true)}>
+                <Trash2Icon />
+                삭제
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -190,6 +226,15 @@ export default function CurriculumDetailScreen() {
           </TabsContent>
         </Tabs>
       )}
+
+      <DeleteCurriculumDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        materialId={id}
+        title={data.title ?? data.originalFileName}
+        /* 지운 것을 계속 보고 있을 수 없다 — 목록으로 돌아간다 */
+        onDeleted={() => navigate('/operator/admin/curricula')}
+      />
 
       <ReanalyzeDialog
         open={reanalyzeOpen}
@@ -459,7 +504,10 @@ function FailedState({
       </dl>
 
       <div className="mt-4">
-        <Button onClick={onReanalyze}>다시 분석</Button>
+        <Button onClick={onReanalyze}>
+          <RefreshCwIcon />
+          다시 분석
+        </Button>
       </div>
     </>
   )

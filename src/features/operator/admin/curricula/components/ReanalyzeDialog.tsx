@@ -7,7 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/Dialog'
-import { Alert, AlertTitle } from '@/components/ui/Alert'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
+import { errorCopy } from '@/lib/errorCopy'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { useRequestAnalysis } from '@/api/curriculum/useCurriculumMutations'
@@ -51,7 +52,8 @@ export default function ReanalyzeDialog({
   inUse,
   analysisStatus,
 }: Props) {
-  const [failed, setFailed] = useState(false)
+  /** 실패 **원인**을 들고 있는다 — 있고 없고만 알면 화면이 이유를 지어낸다 */
+  const [failed, setFailed] = useState<unknown>(null)
   const request = useRequestAnalysis()
   const sending = request.isPending
   const attended = inUse.reduce((n, p) => n + p.attendedCount, 0)
@@ -90,13 +92,26 @@ export default function ReanalyzeDialog({
     .map(([cohort, n]) => `${cohort} ${n}개`)
     .join(' · ')
 
+  /*
+    **분석이 돌고 있으면 `force`로 보낸다.**
+
+    ⚠ 이 다이얼로그는 *"오래 멈춰 있을 때만 누르세요"* 라고 안내해 놓고 **눌러도 아무
+    일이 없었다** — 서버가 `409 CURRICULUM_ANALYSIS_IN_PROGRESS`로 막기 때문이다.
+    말은 하는데 못 하는 자리였다.
+
+    `?force=true`가 그 출구다. **돌고 있는 것을 버리고 처음부터 다시** 돌리므로,
+    분석 중이 아닐 때는 보내지 않는다 — 필요 없는 강제는 쓰지 않는다.
+  */
   const run = async () => {
-    setFailed(false)
+    setFailed(null)
     try {
-      await request.mutateAsync({ path: { materialId } })
+      await request.mutateAsync({
+        path: { materialId },
+        ...(analysing && { query: { force: true } }),
+      })
       onOpenChange(false)
-    } catch {
-      setFailed(true)
+    } catch (e) {
+      setFailed(e)
     }
   }
 
@@ -107,18 +122,25 @@ export default function ReanalyzeDialog({
           <DialogTitle>다시 분석하기 전에</DialogTitle>
         </DialogHeader>
 
-        {failed && (
-          <Alert variant="danger">
-            <AlertTitle>분석을 요청하지 못했습니다. 잠시 후 다시 시도해 주세요.</AlertTitle>
-          </Alert>
-        )}
+        {/* 원인을 추측하지 않는다 — 서버가 코드로 말하면 그 문구가 이긴다 */}
+        {failed !== null &&
+          (() => {
+            const copy = errorCopy(failed, { subject: '분석', action: '요청' })
+            return (
+              <Alert variant="danger">
+                <AlertTitle>{copy.title}</AlertTitle>
+                <AlertDescription>{copy.description}</AlertDescription>
+              </Alert>
+            )
+          })()}
 
         {analysing && (
           <Alert variant="warning">
             <AlertTitle>이 교안은 지금 분석 중입니다</AlertTitle>
             <p className="text-fg-muted mt-1 text-sm">
-              다시 요청하면 <b className="text-fg font-medium">처음부터 다시</b> 분석합니다 — 돌고
-              있는 것이 빨라지지는 않습니다. 오래 멈춰 있을 때만 누르세요.
+              「처음부터 다시」를 누르면{' '}
+              <b className="text-fg font-medium">돌고 있는 것을 버리고</b> 새로 시작합니다 —
+              빨라지지는 않습니다. 오래 멈춰 있을 때만 누르세요.
             </p>
           </Alert>
         )}
@@ -165,7 +187,7 @@ export default function ReanalyzeDialog({
           </Button>
           <Button disabled={sending} onClick={run}>
             {sending && <Spinner className="size-3.5" />}
-            {inUse.length > 0 || analysing ? '그래도 다시 분석' : '다시 분석'}
+            {analysing ? '처음부터 다시' : inUse.length > 0 ? '그래도 다시 분석' : '다시 분석'}
           </Button>
         </DialogFooter>
       </DialogContent>

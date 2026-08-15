@@ -31,6 +31,12 @@ interface LoginFormValues {
   password: string
 }
 
+// dev 전용 UI 노출 가드 — Header.tsx·sidebarConfig.ts와 동일한 두 겹 조건.
+// env var(QUICK_LOGIN_ACCOUNTS) 존재만으로는 한 겹이라, 배포 환경에 그 값이 잘못
+// 세팅되면 그대로 뜬다. import.meta.env.DEV는 프로덕션 빌드에서 항상 false라 develop
+// Vercel 프리뷰까지 걸러지므로 __GIT_BRANCH__(vite.config.ts define)로 보완한다.
+const SHOW_DEV_UI = import.meta.env.DEV || __GIT_BRANCH__ === 'develop'
+
 /**
  * AU-01 · 로그인 (전 화면 공통 관문)
  * - 역할은 서버가 판정하며, 화면에 역할 선택 UI를 두지 않음
@@ -86,8 +92,14 @@ export default function LoginScreen() {
   }
 
   async function handleResend() {
-    await resendAccountInvitation({ body: { email } })
-    setResendDone(true)
+    try {
+      await resendAccountInvitation({ body: { email } })
+      setResendDone(true)
+    } catch (err) {
+      // showResend를 유지한다 — 안 하면 실패 문구가 뜨는 순간 재시도 링크가 같이
+      // 사라져 사용자가 다시 시도할 방법이 없어진다(렌더 확인에서 발견)
+      setAlert({ ...resolveAuthState(err), showResend: true })
+    }
   }
 
   // 발표용 임시 — 실제 배포 시 이 함수와 아래 버튼 블록을 통째로 제거
@@ -142,7 +154,7 @@ export default function LoginScreen() {
             계정은 `.env.local`에서 온다. **없으면 상자째 안 그린다** — 빈 상자가 남으면
             "버튼이 안 뜨는 버그"로 보인다.
           */}
-          {QUICK_LOGIN_ACCOUNTS.length > 0 && (
+          {SHOW_DEV_UI && QUICK_LOGIN_ACCOUNTS.length > 0 && (
             <div className="mb-6 rounded-md bg-canvas px-3 py-2.5">
               <p className="mb-2 text-[11px] font-medium text-fg-muted">
                 발표용 · 역할별 바로 입장
@@ -198,6 +210,7 @@ export default function LoginScreen() {
                   {...passwordField}
                   onKeyDown={passwordCaps.onKeyDown}
                   onKeyUp={passwordCaps.onKeyUp}
+                  onFocus={passwordCaps.onFocus}
                   onBlur={(event) => {
                     passwordCaps.onBlur(event)
                     passwordField.onBlur(event)
@@ -260,26 +273,28 @@ export default function LoginScreen() {
             제거) 여기서 케이스별 딥링크를 못 남긴다 — 요청 단계만 아래에서 바로 시도할 수
             있다. 아래에 남긴 것은 **아직 목으로 도는 흐름**(AU-02 초대)뿐이다.
           */}
-          <div className="mt-8 rounded-md bg-canvas px-3 py-2.5 text-[11px] leading-relaxed text-fg-subtle">
-            <b className="text-fg-muted">로그인</b> · 실서버 연동됨. 위 버튼으로 역할별 입장
-            <br />
-            연속 실패 시 잠시 차단된다(잠금 아님) — 서버가 남은 시간을 알려준다
-            <br />
-            <b className="text-fg-muted">초대 링크(AU-02)</b> · <span>아직 목</span> ·{' '}
-            <Link to="/invite/mgr-8f3a" className="text-primary hover:underline">
-              매니저 가입
-            </Link>{' '}
-            ·{' '}
-            <Link to="/invite/stu-4c19" className="text-primary hover:underline">
-              교육생 활성화
-            </Link>
-            <br />
-            <b className="text-fg-muted">비밀번호 재설정(AU-03)</b> · 실서버 연동됨 ·{' '}
-            <Link to="/shared/password-reset" className="text-primary hover:underline">
-              요청 화면 열기
-            </Link>{' '}
-            — 토큰은 실제 메일로만 오므로 케이스별 딥링크는 없다
-          </div>
+          {SHOW_DEV_UI && (
+            <div className="mt-8 rounded-md bg-canvas px-3 py-2.5 text-[11px] leading-relaxed text-fg-subtle">
+              <b className="text-fg-muted">로그인</b> · 실서버 연동됨. 위 버튼으로 역할별 입장
+              <br />
+              연속 실패 시 잠시 차단된다(잠금 아님) — 서버가 남은 시간을 알려준다
+              <br />
+              <b className="text-fg-muted">초대 링크(AU-02)</b> · <span>아직 목</span> ·{' '}
+              <Link to="/invite/mgr-8f3a" className="text-primary hover:underline">
+                매니저 가입
+              </Link>{' '}
+              ·{' '}
+              <Link to="/invite/stu-4c19" className="text-primary hover:underline">
+                교육생 활성화
+              </Link>
+              <br />
+              <b className="text-fg-muted">비밀번호 재설정(AU-03)</b> · 실서버 연동됨 ·{' '}
+              <Link to="/shared/password-reset" className="text-primary hover:underline">
+                요청 화면 열기
+              </Link>{' '}
+              — 토큰은 실제 메일로만 오므로 케이스별 딥링크는 없다
+            </div>
+          )}
         </AuthForm>
       </div>
     </div>

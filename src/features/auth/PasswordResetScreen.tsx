@@ -266,6 +266,7 @@ function SetPasswordStage({ token }: { token: string }) {
             {...passwordField}
             onKeyDown={passwordCaps.onKeyDown}
             onKeyUp={passwordCaps.onKeyUp}
+            onFocus={passwordCaps.onFocus}
             onBlur={(event) => {
               passwordCaps.onBlur(event)
               passwordField.onBlur(event)
@@ -310,6 +311,7 @@ function SetPasswordStage({ token }: { token: string }) {
             {...passwordConfirmField}
             onKeyDown={passwordConfirmCaps.onKeyDown}
             onKeyUp={passwordConfirmCaps.onKeyUp}
+            onFocus={passwordConfirmCaps.onFocus}
             onBlur={(event) => {
               passwordConfirmCaps.onBlur(event)
               passwordConfirmField.onBlur(event)

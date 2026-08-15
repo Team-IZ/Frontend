@@ -494,6 +494,7 @@ export default function InviteScreen() {
                     {...passwordField}
                     onKeyDown={passwordCaps.onKeyDown}
                     onKeyUp={passwordCaps.onKeyUp}
+                    onFocus={passwordCaps.onFocus}
                     onBlur={(event) => {
                       passwordCaps.onBlur(event)
                       passwordField.onBlur(event)
@@ -537,6 +538,7 @@ export default function InviteScreen() {
                     {...passwordConfirmField}
                     onKeyDown={passwordConfirmCaps.onKeyDown}
                     onKeyUp={passwordConfirmCaps.onKeyUp}
+                    onFocus={passwordConfirmCaps.onFocus}
                     onBlur={(event) => {
                       passwordConfirmCaps.onBlur(event)
                       passwordConfirmField.onBlur(event)

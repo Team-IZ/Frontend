@@ -17,7 +17,7 @@ import { useGetCurrentMember } from '@/api/member/useMemberQueries'
 import { useRegisterTrainees, usePreviewTrainees } from '@/api/member/useMemberMutations'
 import { registerTraineesFromCsv, previewTraineesFromCsv } from '@/api/uploads'
 import type { registerTrainees_Response } from '@/api/member/memberTypes'
-import { checkRosterRows, type ParsedRoster } from '../../_/rules'
+import { checkRosterRows, MAX_TRAINEE_INVITE, type ParsedRoster } from '../../_/rules'
 import { ROSTER_ISSUE_LABEL } from '../../_/labels'
 import { useCohortScope } from '../../_/cohortScope'
 import type { RosterEntry, RosterIssue } from '../../_/api/types'
@@ -94,7 +94,10 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
 
   const entries = mode === 'csv' ? (parsed?.entries ?? []) : typedValid
   const issues = mode === 'csv' ? (parsed?.invalid ?? []) : typedIssues
-  const submittable = entries.length > 0 && issues.length === 0 && !submitting && !!cohortId
+  /** 1000명 초과 — 서버가 파일 전체를 거절하는 규칙(`MAX_TRAINEE_INVITE`)을 화면에서 먼저 막는다 */
+  const tooMany = entries.length > MAX_TRAINEE_INVITE
+  const submittable =
+    entries.length > 0 && !tooMany && issues.length === 0 && !submitting && !!cohortId
 
   /** 서버가 센 중복 수 — 응답이 실패 행을 이유별 코드로 준다(3 = 이미 있는 이메일) */
   const duplicates = preview?.failures.filter((f) => f.status === 3).length ?? 0
@@ -245,6 +248,16 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
                 onChange={(next, _name, picked) => {
                   setParsed(next)
                   setFile(picked)
+                  /*
+                    **1000명을 넘으면 미리보기를 안 부른다.** 어차피 서버가 같은 이유로
+                    거절할 게 확실한 요청이다 — 물어보고 실패 문구를 또 하나 띄우는 대신
+                    화면이 이미 아는 사실(`tooMany`)만 보여준다.
+                  */
+                  if ((next?.entries.length ?? 0) > MAX_TRAINEE_INVITE) {
+                    setPreview(null)
+                    setPreviewFailure(null)
+                    return
+                  }
                   void askPreviewCsv(picked)
                 }}
               />
@@ -308,13 +321,21 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
           {/* 판정 결과 — **누르기 전에** 무엇이 등록되고 무엇이 걸리는지 보여준다 */}
           {(entries.length > 0 || issues.length > 0) && (
             <div className="border-border bg-surface-2 rounded-md border p-3">
-              {/* 유효가 0이면 이 줄을 쓰지 않는다 — `✓ 유효 0명`은 체크 표시가 거짓말을 한다 */}
-              {entries.length > 0 && (
-                <p className="text-success text-xs">
-                  ✓ 유효{' '}
-                  <b className="font-semibold">{preview?.registeredCount ?? entries.length}명</b> —
-                  등록하면 활성화 초대가 나갑니다
+              {tooMany ? (
+                <p className="text-danger text-xs">
+                  ✗ <b className="font-semibold">{entries.length.toLocaleString()}명</b> — 한 번에
+                  최대 {MAX_TRAINEE_INVITE.toLocaleString()}명까지 등록할 수 있습니다. 파일을 나눠서
+                  다시 올려 주세요.
                 </p>
+              ) : (
+                // 유효가 0이면 이 줄을 쓰지 않는다 — `✓ 유효 0명`은 체크 표시가 거짓말을 한다
+                entries.length > 0 && (
+                  <p className="text-success text-xs">
+                    ✓ 유효{' '}
+                    <b className="font-semibold">{preview?.registeredCount ?? entries.length}명</b>{' '}
+                    — 등록하면 활성화 초대가 나갑니다
+                  </p>
+                )
               )}
               {duplicates > 0 && (
                 <p className="text-warning mt-0.5 text-xs">

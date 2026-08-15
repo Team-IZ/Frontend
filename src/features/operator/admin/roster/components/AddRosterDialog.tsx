@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { XIcon } from 'lucide-react'
 import {
   Dialog,
@@ -68,7 +68,10 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
   const [preview, setPreview] = useState<registerTrainees_Response | null>(null)
   const [rows, setRows] = useState<RosterEntry[]>([emptyRow()])
   const [submitting, setSubmitting] = useState(false)
-  const [failed, setFailed] = useState(false)
+  /** 서버가 준 원본 에러 — previewFailure와 같은 방식으로 `errorCopy`가 문구를 정한다 */
+  const [submitFailure, setSubmitFailure] = useState<unknown>(null)
+  /** 진행 중인 CSV 등록 요청 — 닫으면서 취소할 수 있게 들고 있는다 */
+  const submitAbortRef = useRef<AbortController | null>(null)
 
   /** 기관 도메인은 세션이 준다(9차 Q3-④) — `null`이면 도메인 제한을 걸지 않는다 */
   const { data: me } = useGetCurrentMember()
@@ -131,18 +134,23 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
   const submit = async () => {
     if (!cohortId) return
     setSubmitting(true)
-    setFailed(false)
+    setSubmitFailure(null)
+    const controller = new AbortController()
+    submitAbortRef.current = controller
     try {
       const result =
         mode === 'csv' && file
-          ? await registerTraineesFromCsv({ path: { cohortId }, file })
+          ? await registerTraineesFromCsv({ path: { cohortId }, file, signal: controller.signal })
           : await registerTyped.mutateAsync({ path: { cohortId }, body: { trainees: entries } })
       onAdded(result)
       close(false) // 닫기가 비우는 일까지 한다 — 성공·취소가 같은 길로 나간다
-    } catch {
-      setFailed(true)
+    } catch (e) {
+      // 닫으면서 우리가 취소한 것 — 이미 닫힌 다이얼로그에 실패를 띄울 필요는 없다
+      if (controller.signal.aborted) return
+      setSubmitFailure(e)
     } finally {
       setSubmitting(false)
+      submitAbortRef.current = null
     }
   }
 
@@ -151,7 +159,9 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
     setFile(null)
     setPreview(null)
     setRows([emptyRow()])
-    setFailed(false)
+    setSubmitFailure(null)
+    // pending 상태에서 닫혔을 수 있다 — 닫혔다 다시 열었을 때 스피너가 안 남게 같이 지운다
+    setSubmitting(false)
   }
 
   /*
@@ -160,6 +170,7 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
     센 수**라 그 사이 명단이 바뀌면 틀린 수를 보여준다. 등록은 이어 하는 작업이 아니다.
   */
   const close = (next: boolean) => {
+    if (!next) submitAbortRef.current?.abort()
     onOpenChange(next)
     if (!next) reset()
   }
@@ -175,11 +186,24 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
         </DialogHeader>
 
         <div className="-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1">
-          {failed && (
-            <Alert variant="danger">
-              <AlertTitle>등록하지 못했습니다. 잠시 후 다시 시도해 주세요.</AlertTitle>
-            </Alert>
-          )}
+          {/*
+            **submit 실패를 previewFailure와 같은 방식으로 다룬다.** 예전엔
+            `catch { setFailed(true) }`로 뭉뚱그려 이유가 무엇이든(예: `CSV_FORMAT_INVALID`
+            "한 번에 최대 1000명" 같은 구체적 사유도) 같은 범용 문구만 보여줬다 — 서버가
+            이미 행 번호·사유가 담긴 message를 주는데 버리고 있었다.
+          */}
+          {submitFailure !== null &&
+            (() => {
+              const copy = errorCopy(submitFailure, { subject: '교육생', action: '등록' })
+              return (
+                <Alert variant="danger">
+                  <AlertTitle>{copy.title}</AlertTitle>
+                  <AlertDescription>
+                    {(submitFailure as { message?: string }).message ?? copy.description}
+                  </AlertDescription>
+                </Alert>
+              )
+            })()}
 
           {/*
             **미리보기가 거절당하면 그 말을 그대로 보여준다.** 서버는 행 번호까지 준다

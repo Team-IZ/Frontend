@@ -6,9 +6,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/Dialog'
-import { Alert, AlertTitle } from '@/components/ui/Alert'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { errorCopy } from '@/lib/errorCopy'
 import { Spinner } from '@/components/ui/Spinner'
 import { useUpdateTraineeStatus } from '@/api/member/useMemberMutations'
 import RequiredMark from '../../_/components/RequiredMark'
@@ -47,7 +48,8 @@ type Props = {
 
 export default function DeactivateTraineeDialog({ target, cohortId, onOpenChange, onDone }: Props) {
   const [reason, setReason] = useState('')
-  const [failed, setFailed] = useState(false)
+  /** 실패 **원인**을 들고 있는다 — 있고 없고만 알면 화면이 이유를 지어낸다 */
+  const [failure, setFailure] = useState<unknown>(null)
   const update = useUpdateTraineeStatus()
 
   const close = (next: boolean) => {
@@ -55,13 +57,13 @@ export default function DeactivateTraineeDialog({ target, cohortId, onOpenChange
     // 닫으면 비운다 — 다음 사람에게 지난 사유가 남아 있으면 그대로 저장된다
     if (!next) {
       setReason('')
-      setFailed(false)
+      setFailure(null)
     }
   }
 
   const save = async () => {
     if (!target) return
-    setFailed(false)
+    setFailure(null)
     try {
       await update.mutateAsync({
         path: { cohortId, traineeId: target.traineeId },
@@ -69,8 +71,8 @@ export default function DeactivateTraineeDialog({ target, cohortId, onOpenChange
       })
       onDone(target, reason)
       close(false)
-    } catch {
-      setFailed(true)
+    } catch (e) {
+      setFailure(e)
     }
   }
 
@@ -84,16 +86,26 @@ export default function DeactivateTraineeDialog({ target, cohortId, onOpenChange
           </DialogTitle>
         </DialogHeader>
 
-        {failed && (
-          <Alert variant="danger">
-            <AlertTitle>처리하지 못했습니다. 잠시 후 다시 시도해 주세요.</AlertTitle>
-          </Alert>
-        )}
+        {/*
+          ⚠ **원인을 추측하지 않는다.** 한때 실패를 하나로 묶어 *"잠시 후 다시 시도해
+          주세요"* 라고 했는데, `TRAINEE_STATUS_NOT_MUTABLE`처럼 **기다려도 안 되는 것**
+          까지 그렇게 말했다. `errorCopy`가 코드를 보고 정한다.
+        */}
+        {failure !== null &&
+          (() => {
+            const copy = errorCopy(failure, { subject: '교육생', action: '비활성 처리' })
+            return (
+              <Alert variant="danger">
+                <AlertTitle>{copy.title}</AlertTitle>
+                <AlertDescription>{copy.description}</AlertDescription>
+              </Alert>
+            )
+          })()}
 
         {/* **무엇이 일어나는지 쓴다**(G4) — `정말 하시겠습니까?`는 판단 근거를 안 준다 */}
         <p className="text-fg-muted text-xs">
-          계정이 막혀 더는 로그인할 수 없습니다. 명단과 소속 반에는 그대로 남고, 이미 응시한 기록과
-          리포트도 남습니다.{' '}
+          계정이 막혀 더는 로그인할 수 없습니다. 교육생 목록과 소속 반에는 그대로 남고, 이미 응시한
+          기록과 리포트도 남습니다.{' '}
           <b className="text-danger font-semibold">다시 활성으로 되돌릴 수 없습니다.</b>
         </p>
 
@@ -110,7 +122,7 @@ export default function DeactivateTraineeDialog({ target, cohortId, onOpenChange
           />
           {/* 일자는 서버가 찍는다 — 매니저 화면이 `중도 이탈 2026-08-04`로 읽는다 */}
           <p className="text-fg-subtle mt-1 text-2xs">
-            사유와 오늘 날짜가 명단에 남고, 담당 매니저 화면에도 그대로 보입니다.
+            사유와 오늘 날짜가 교육생 목록에 남고, 담당 매니저 화면에도 그대로 보입니다.
           </p>
         </div>
 

@@ -7,7 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/Dialog'
-import { Alert, AlertTitle } from '@/components/ui/Alert'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
+import { errorCopy } from '@/lib/errorCopy'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
@@ -95,14 +96,36 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
   /** 서버가 센 중복 수 — 응답이 실패 행을 이유별 코드로 준다(3 = 이미 있는 이메일) */
   const duplicates = preview?.failures.filter((f) => f.status === 3).length ?? 0
 
+  /*
+    ⚠ **미리보기 실패를 잡는다.** `await`만 하고 실패 경로가 없어서, 서버가 파일을
+    거절하면(`400 TRAINEE_NAME_INVALID` — 실측) **처리되지 않은 오류로 새고 화면에는
+    아무 말도 안 떴다.** 화면은 자기 판정만 보여주며 「유효 2명」이라고 했다.
+
+    서버가 거절한 이유는 우리 규칙과 다를 수 있다(파일 형식·인코딩·행 위치). 그 말을
+    그대로 보여 준다 — 여기서 추측하면 사용자가 엉뚱한 줄을 고친다.
+  */
+  const [previewFailure, setPreviewFailure] = useState<unknown>(null)
+
   const askPreviewCsv = async (next: File | null) => {
+    setPreviewFailure(null)
     if (!next || !cohortId) return setPreview(null)
-    setPreview(await previewTraineesFromCsv({ path: { cohortId }, file: next }))
+    try {
+      setPreview(await previewTraineesFromCsv({ path: { cohortId }, file: next }))
+    } catch (e) {
+      setPreview(null)
+      setPreviewFailure(e)
+    }
   }
 
   const askPreviewTyped = async (next: RosterEntry[]) => {
+    setPreviewFailure(null)
     if (next.length === 0 || !cohortId) return setPreview(null)
-    setPreview(await previewTyped.mutateAsync({ path: { cohortId }, body: { trainees: next } }))
+    try {
+      setPreview(await previewTyped.mutateAsync({ path: { cohortId }, body: { trainees: next } }))
+    } catch (e) {
+      setPreview(null)
+      setPreviewFailure(e)
+    }
   }
 
   const submit = async () => {
@@ -146,7 +169,7 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
       <DialogContent className="flex max-h-[85svh] flex-col sm:max-w-[520px]">
         <DialogHeader>
           <DialogTitle>
-            명단 추가{' '}
+            교육생 추가{' '}
             <span className="text-fg-subtle text-xs font-normal">· {scope.current?.name}</span>
           </DialogTitle>
         </DialogHeader>
@@ -157,6 +180,23 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
               <AlertTitle>등록하지 못했습니다. 잠시 후 다시 시도해 주세요.</AlertTitle>
             </Alert>
           )}
+
+          {/*
+            **미리보기가 거절당하면 그 말을 그대로 보여준다.** 서버는 행 번호까지 준다
+            (`"5행의 이름을 입력해야 합니다"`) — 우리가 요약하면 그 줄을 못 찾는다.
+          */}
+          {previewFailure !== null &&
+            (() => {
+              const copy = errorCopy(previewFailure, { subject: '교육생', action: '확인' })
+              return (
+                <Alert variant="danger">
+                  <AlertTitle>{copy.title}</AlertTitle>
+                  <AlertDescription>
+                    {(previewFailure as { message?: string }).message ?? copy.description}
+                  </AlertDescription>
+                </Alert>
+              )
+            })()}
 
           <Tabs
             value={mode}

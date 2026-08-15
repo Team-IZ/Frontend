@@ -112,27 +112,16 @@ export default function AssignPanel({
       .filter((t) => picked.has(t.traineeId))
       .map((t) => ({ traineeId: t.traineeId, name: t.name, fromClassName: t.className }))
     /*
-      ⚠ **서버에는 「배정」만 있고 「이동」이 없다.**
+      **이동도 배정 한 번으로 끝난다.**
 
-      이미 어느 반에 있는 사람에게 배정을 부르면 DB 유니크 제약에 걸려
-      `409 DATA_INTEGRITY_VIOLATION`(*"데이터 제약 조건에 맞지 않습니다"*)이 나온다 —
-      **같은 반으로 다시 넣어도, 다른 반으로 옮겨도 똑같다**(실측). 그런데 이 패널의
-      `범위=전체`는 애초에 **반 통폐합 때 옮기려고** 있는 자리다.
+      한때 여기서 되돌리기를 먼저 부르고 배정을 이어 붙였다 — 이미 반에 있는 사람에게
+      배정을 부르면 `409 DATA_INTEGRITY_VIOLATION`이 났기 때문이다(같은 반이든 다른
+      반이든). **25차 R7로 고쳐졌다** — 원인은 DB CHECK에 없는 해제 사유 값이었고,
+      지금은 `A반 → B반`이 한 번에 200이다(실측).
 
-      되돌리기(`rollback`)로 배정을 풀면 그 다음 배정은 통과한다(실측 — 풀고 B반 200,
-      다시 A반 200). 그래서 **옮길 사람만 먼저 풀고 한 번에 넣는다.** 사용자는 여전히
-      한 번 누른다.
-
-      서버가 이동을 한 번에 받아 주면 이 두 단계는 사라진다(25차 R7).
+      두 단계를 걷어내면서 「사이에서 실패하면 미배정으로 남는다」는 위험도 같이 사라졌다.
     */
-    const relocating = moved.filter((m) => m.fromClassName !== null).map((m) => m.traineeId)
-    /** 되돌리기가 **실제로 끝났나** — 실패했으면 아무도 원래 반에서 안 빠졌다 */
-    let unassigned = false
     try {
-      if (relocating.length > 0) {
-        await rollback.mutateAsync({ path: { cohortId }, body: { traineeIds: relocating } })
-        unassigned = true
-      }
       await assign.mutateAsync({
         path: { cohortId },
         body: { classroomId: target.classroomId, traineeIds: [...picked] },
@@ -165,21 +154,11 @@ export default function AssignPanel({
         **되돌리기까지 갔다가 실패하면 그 사람들은 미배정이다.** 원래 반이 사라졌으므로
         그 사실을 적는다 — 「넣지 못했습니다」만 쓰면 원래대로인 줄 안다.
       */
-      /*
-        ⚠ **되돌리기가 실패했으면 아무도 안 옮겨졌다.** 한때 `relocating.length > 0`만 보고
-        「미배정 상태입니다」를 붙였는데, 되돌리기 자체가 400이면 그 사람들은 **원래 반에
-        그대로 있다** — 화면이 없는 사고를 알리는 것이다(실측 — 비활성 학생을 고르면
-        되돌리기가 `TRAINEE_NOT_IN_COHORT`로 먼저 막힌다).
-      */
-      const strandedNote = unassigned
-        ? ` · 옮기려던 ${relocating.length}명은 미배정 상태입니다`
-        : ''
       setBanner({
         kind: 'failed',
-        text:
-          (known
-            ? `${copy.title} — ${copy.description}`
-            : `${picked.size}명을 ${target.name}에 넣지 못했습니다`) + strandedNote,
+        text: known
+          ? `${copy.title} — ${copy.description}`
+          : `${picked.size}명을 ${target.name}에 넣지 못했습니다`,
         retry: copy.retry ? run : undefined,
       })
     }

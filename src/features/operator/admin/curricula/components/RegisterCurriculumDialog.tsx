@@ -59,6 +59,18 @@ export default function RegisterCurriculumDialog({ open, onOpenChange }: Props) 
 
   const submittable = !!file && name.trim().length > 0 && !submitting
 
+  /** 닫을 때 비운다 — 실패 문구·고른 파일·이름이 다음에 열었을 때 남아있으면 안 된다 */
+  const reset = () => {
+    setFile(null)
+    setName('')
+    setFailed(null)
+  }
+
+  const close = (next: boolean) => {
+    onOpenChange(next)
+    if (!next) reset()
+  }
+
   const submit = async () => {
     if (!file) return
     setSubmitting(true)
@@ -74,9 +86,7 @@ export default function RegisterCurriculumDialog({ open, onOpenChange }: Props) 
         return
       }
       await queryClient.invalidateQueries({ queryKey: curriculumKeys.all })
-      onOpenChange(false)
-      setFile(null)
-      setName('')
+      close(false)
     } catch {
       setFailed('등록하지 못했습니다. PDF 파일인지 확인해 주세요.')
     } finally {
@@ -85,7 +95,7 @@ export default function RegisterCurriculumDialog({ open, onOpenChange }: Props) 
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={close}>
       <DialogContent className="sm:max-w-[460px]">
         <DialogHeader>
           <DialogTitle>교안 등록</DialogTitle>
@@ -146,7 +156,7 @@ export default function RegisterCurriculumDialog({ open, onOpenChange }: Props) 
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={submitting}>
+          <Button variant="ghost" onClick={() => close(false)} disabled={submitting}>
             취소
           </Button>
           <Button disabled={!submittable} onClick={submit}>

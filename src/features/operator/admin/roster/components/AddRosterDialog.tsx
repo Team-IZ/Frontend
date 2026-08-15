@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { XIcon } from 'lucide-react'
 import {
   Dialog,
@@ -17,7 +17,7 @@ import { useGetCurrentMember } from '@/api/member/useMemberQueries'
 import { useRegisterTrainees, usePreviewTrainees } from '@/api/member/useMemberMutations'
 import { registerTraineesFromCsv, previewTraineesFromCsv } from '@/api/uploads'
 import type { registerTrainees_Response } from '@/api/member/memberTypes'
-import { checkRosterRows, type ParsedRoster } from '../../_/rules'
+import { checkRosterRows, MAX_TRAINEE_INVITE, type ParsedRoster } from '../../_/rules'
 import { ROSTER_ISSUE_LABEL } from '../../_/labels'
 import { useCohortScope } from '../../_/cohortScope'
 import type { RosterEntry, RosterIssue } from '../../_/api/types'
@@ -68,7 +68,10 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
   const [preview, setPreview] = useState<registerTrainees_Response | null>(null)
   const [rows, setRows] = useState<RosterEntry[]>([emptyRow()])
   const [submitting, setSubmitting] = useState(false)
-  const [failed, setFailed] = useState(false)
+  /** 서버가 준 원본 에러 — previewFailure와 같은 방식으로 `errorCopy`가 문구를 정한다 */
+  const [submitFailure, setSubmitFailure] = useState<unknown>(null)
+  /** 진행 중인 CSV 등록 요청 — 닫으면서 취소할 수 있게 들고 있는다 */
+  const submitAbortRef = useRef<AbortController | null>(null)
 
   /** 기관 도메인은 세션이 준다(9차 Q3-④) — `null`이면 도메인 제한을 걸지 않는다 */
   const { data: me } = useGetCurrentMember()
@@ -91,7 +94,10 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
 
   const entries = mode === 'csv' ? (parsed?.entries ?? []) : typedValid
   const issues = mode === 'csv' ? (parsed?.invalid ?? []) : typedIssues
-  const submittable = entries.length > 0 && issues.length === 0 && !submitting && !!cohortId
+  /** 1000명 초과 — 서버가 파일 전체를 거절하는 규칙(`MAX_TRAINEE_INVITE`)을 화면에서 먼저 막는다 */
+  const tooMany = entries.length > MAX_TRAINEE_INVITE
+  const submittable =
+    entries.length > 0 && !tooMany && issues.length === 0 && !submitting && !!cohortId
 
   /** 서버가 센 중복 수 — 응답이 실패 행을 이유별 코드로 준다(3 = 이미 있는 이메일) */
   const duplicates = preview?.failures.filter((f) => f.status === 3).length ?? 0
@@ -131,18 +137,23 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
   const submit = async () => {
     if (!cohortId) return
     setSubmitting(true)
-    setFailed(false)
+    setSubmitFailure(null)
+    const controller = new AbortController()
+    submitAbortRef.current = controller
     try {
       const result =
         mode === 'csv' && file
-          ? await registerTraineesFromCsv({ path: { cohortId }, file })
+          ? await registerTraineesFromCsv({ path: { cohortId }, file, signal: controller.signal })
           : await registerTyped.mutateAsync({ path: { cohortId }, body: { trainees: entries } })
       onAdded(result)
       close(false) // 닫기가 비우는 일까지 한다 — 성공·취소가 같은 길로 나간다
-    } catch {
-      setFailed(true)
+    } catch (e) {
+      // 닫으면서 우리가 취소한 것 — 이미 닫힌 다이얼로그에 실패를 띄울 필요는 없다
+      if (controller.signal.aborted) return
+      setSubmitFailure(e)
     } finally {
       setSubmitting(false)
+      submitAbortRef.current = null
     }
   }
 
@@ -151,7 +162,9 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
     setFile(null)
     setPreview(null)
     setRows([emptyRow()])
-    setFailed(false)
+    setSubmitFailure(null)
+    // pending 상태에서 닫혔을 수 있다 — 닫혔다 다시 열었을 때 스피너가 안 남게 같이 지운다
+    setSubmitting(false)
   }
 
   /*
@@ -160,6 +173,7 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
     센 수**라 그 사이 명단이 바뀌면 틀린 수를 보여준다. 등록은 이어 하는 작업이 아니다.
   */
   const close = (next: boolean) => {
+    if (!next) submitAbortRef.current?.abort()
     onOpenChange(next)
     if (!next) reset()
   }
@@ -175,11 +189,24 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
         </DialogHeader>
 
         <div className="-mx-1 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-1">
-          {failed && (
-            <Alert variant="danger">
-              <AlertTitle>등록하지 못했습니다. 잠시 후 다시 시도해 주세요.</AlertTitle>
-            </Alert>
-          )}
+          {/*
+            **submit 실패를 previewFailure와 같은 방식으로 다룬다.** 예전엔
+            `catch { setFailed(true) }`로 뭉뚱그려 이유가 무엇이든(예: `CSV_FORMAT_INVALID`
+            "한 번에 최대 1000명" 같은 구체적 사유도) 같은 범용 문구만 보여줬다 — 서버가
+            이미 행 번호·사유가 담긴 message를 주는데 버리고 있었다.
+          */}
+          {submitFailure !== null &&
+            (() => {
+              const copy = errorCopy(submitFailure, { subject: '교육생', action: '등록' })
+              return (
+                <Alert variant="danger">
+                  <AlertTitle>{copy.title}</AlertTitle>
+                  <AlertDescription>
+                    {(submitFailure as { message?: string }).message ?? copy.description}
+                  </AlertDescription>
+                </Alert>
+              )
+            })()}
 
           {/*
             **미리보기가 거절당하면 그 말을 그대로 보여준다.** 서버는 행 번호까지 준다
@@ -221,6 +248,16 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
                 onChange={(next, _name, picked) => {
                   setParsed(next)
                   setFile(picked)
+                  /*
+                    **1000명을 넘으면 미리보기를 안 부른다.** 어차피 서버가 같은 이유로
+                    거절할 게 확실한 요청이다 — 물어보고 실패 문구를 또 하나 띄우는 대신
+                    화면이 이미 아는 사실(`tooMany`)만 보여준다.
+                  */
+                  if ((next?.entries.length ?? 0) > MAX_TRAINEE_INVITE) {
+                    setPreview(null)
+                    setPreviewFailure(null)
+                    return
+                  }
                   void askPreviewCsv(picked)
                 }}
               />
@@ -284,13 +321,21 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
           {/* 판정 결과 — **누르기 전에** 무엇이 등록되고 무엇이 걸리는지 보여준다 */}
           {(entries.length > 0 || issues.length > 0) && (
             <div className="border-border bg-surface-2 rounded-md border p-3">
-              {/* 유효가 0이면 이 줄을 쓰지 않는다 — `✓ 유효 0명`은 체크 표시가 거짓말을 한다 */}
-              {entries.length > 0 && (
-                <p className="text-success text-xs">
-                  ✓ 유효{' '}
-                  <b className="font-semibold">{preview?.registeredCount ?? entries.length}명</b> —
-                  등록하면 활성화 초대가 나갑니다
+              {tooMany ? (
+                <p className="text-danger text-xs">
+                  ✗ <b className="font-semibold">{entries.length.toLocaleString()}명</b> — 한 번에
+                  최대 {MAX_TRAINEE_INVITE.toLocaleString()}명까지 등록할 수 있습니다. 파일을 나눠서
+                  다시 올려 주세요.
                 </p>
+              ) : (
+                // 유효가 0이면 이 줄을 쓰지 않는다 — `✓ 유효 0명`은 체크 표시가 거짓말을 한다
+                entries.length > 0 && (
+                  <p className="text-success text-xs">
+                    ✓ 유효{' '}
+                    <b className="font-semibold">{preview?.registeredCount ?? entries.length}명</b>{' '}
+                    — 등록하면 활성화 초대가 나갑니다
+                  </p>
+                )
               )}
               {duplicates > 0 && (
                 <p className="text-warning mt-0.5 text-xs">

@@ -19,34 +19,26 @@ const SECTIONS: ScreenSection[] = [
   {
     title: 'TR-01 홈',
     liveFlowTo: '/trainee/home',
-    cases: [
-      { label: '미제출', to: '/trainee/home?state=todo' },
-      { label: '분석 중', to: '/trainee/home?state=analyzing' },
-      { label: '응시 가능', to: '/trainee/home?state=ready' },
-      { label: '응시 완료', to: '/trainee/home?state=done' },
-      { label: '다시 보기 대상', to: '/trainee/home?state=retry' },
-      { label: '분석 실패', to: '/trainee/home?state=failed' },
-      { label: '응시 창 마감', to: '/trainee/home?state=closed' },
-      { label: '제출 마감 지남', to: '/trainee/home?state=missed' },
-      { label: '진행 중인 회차 없음', to: '/trainee/home?state=none' },
-      { label: '조회 실패', to: '/trainee/home?state=error' },
+    /*
+      **실서버에 붙어서 ?state= 케이스가 없다.** 상태는 서버가 정하므로 목처럼 눌러서
+      재현할 수 없다 — 지금 계정이 실제로 어느 회차에 있는지가 그대로 나온다.
+      다른 상태를 보려면 백엔드 데이터를 바꾸거나 다른 계정으로 들어가야 한다.
+    */
+    cases: [],
+    manual: [
+      '실서버 연동됨 — 서버가 대표 상태(representativeStatus 10종)를 정한다',
+      '경고 배지는 배열이라 여러 개가 동시에 뜰 수 있다(마감 지남 + 분석 실패)',
     ],
   },
   {
     title: 'TR-02 코드 제출',
     liveFlowTo: '/trainee/submission',
-    cases: [
-      { label: '작성 중(빈 폼)', to: '/trainee/submission?state=draft' },
-      { label: '분석 중', to: '/trainee/submission?state=analyzing' },
-      { label: '분석 완료 · 재제출 가능', to: '/trainee/submission?state=ready' },
-      { label: '세션 시작 후 잠김', to: '/trainee/submission?state=locked' },
-      { label: '분석 실패', to: '/trainee/submission?state=analysis_failed' },
-      { label: '제출 마감 지남', to: '/trainee/submission?state=submission_closed' },
-      { label: '조회 실패', to: '/trainee/submission?state=error' },
-    ],
+    // 실서버 연동됨 — 상태는 서버가 정하므로 ?state=로 눌러 재현할 수 없다
+    cases: [],
     manual: [
-      '저장소 확인 실패 — draft에서 저장소 주소에 "notfound" 포함해 입력 후 포커스 아웃',
-      'ZIP 용량 초과 — ZIP 업로드 탭에서 50MB 넘는 파일 선택',
+      '실서버 연동됨 — status 6종(DRAFT·ANALYZING·READY·LOCKED·ANALYSIS_FAILED·SUBMISSION_CLOSED)을 서버가 정한다',
+      'GitHub 탭은 잠겨 있다 — 서버는 GITHUB_URL을 허용한다고 하는데 POST /submissions가 사용 불가라 화면이 막아 뒀다(SubmissionForm 주석)',
+      'ZIP 용량 초과 — 50MB(52,428,800바이트) 넘는 파일을 고르면 업로드 전에 막힌다',
     ],
   },
   {
@@ -79,22 +71,12 @@ const SECTIONS: ScreenSection[] = [
   {
     title: 'TR-04 내 리포트',
     liveFlowTo: '/trainee/report',
-    cases: [
-      { label: '발행 · 다시 볼 문제 있음', to: '/trainee/report?state=locked' },
-      { label: '다시 보기 마친 뒤(FULL 승격)', to: '/trainee/report?state=after' },
-      { label: '문항 없음(코드에 개념 없음)', to: '/trainee/report?state=unasked' },
-      { label: '0단(설명이 닿지 않음)', to: '/trainee/report?state=zero' },
-      { label: '발행 전', to: '/trainee/report?state=pre' },
-      { label: '공개 범위 미지정', to: '/trainee/report?state=private' },
-      { label: '미응시', to: '/trainee/report?state=missed' },
-      { label: '무효 응시(확인 필요)', to: '/trainee/report?state=void' },
-      { label: '중단', to: '/trainee/report?state=stopped' },
-      { label: '조회 실패', to: '/trainee/report?state=error' },
-      { label: '리포트 하나도 없음', to: '/trainee/report?state=empty' },
-    ],
+    // 실서버 연동됨 — 상태는 서버가 정하므로 ?state=로 눌러 재현할 수 없다
+    cases: [],
     manual: [
-      '재시험 병기 — 레일의 미프 2차 › Repository 계층 › [내 답변 5개] 펼치기. 처음/다시가 갈려 쌓이고 배지는 원점수(1단)를 유지한다',
-      'SUMMARY는 문답 버튼 자체가 없다(서버가 안 보낸다) — unasked 케이스의 DTO 분리에서 확인',
+      '실서버 연동됨 — 좌측 레일에서 회차를 바꾸면 상태 6종을 실제 데이터로 볼 수 있다(요청은 한 번뿐, 나머지는 캐시)',
+      '공개 범위는 리포트 단위다 — SUMMARY 회차는 전 개념에서 문답·해설이 통째로 빠진다(서버가 안 보낸다)',
+      '재시험은 문답이 두 벌로 오지 않는다 — 전후 도달 단계(comparedReach)만 오고 배지 옆 한 줄로 나온다',
     ],
   },
 ]

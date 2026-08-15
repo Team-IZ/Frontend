@@ -115,14 +115,26 @@ export default function PricingDialog({
 
   async function handleConfirmSave() {
     if (!pricing || !canSubmit) return
+    /*
+      **두 단가가 `required`가 됐다**(29차 회신 §2-① — 백엔드가 스스로 찾은 건).
+      `PUT`은 전체 치환이라 두 키는 항상 실어야 한다: 여기서 `null`은 *"미설정으로
+      되돌려라"* 는 **지시**이고, 키를 빼면 *"이 필드는 손대지 않는다"* 와 구분되지
+      않는다. 서버 동작은 안 바뀌었고 스펙이 사실을 적은 것이다.
+
+      `canSubmit`이 이미 `undefined`(못 읽은 입력)를 막지만 **타입은 그걸 모른다** —
+      같은 판정을 한 줄로 다시 써서 컴파일러에게 알린다. `canSubmit`을 지우면 안 된다:
+      그쪽은 버튼을 잠그는 값이고 이쪽은 전송 직전의 마지막 문이다.
+    */
+    const { input, output, cached } = values
+    if (input === undefined || output === undefined || cached === undefined) return
     setError(null)
     try {
       await update.mutateAsync({
         path: { modelId: pricing.modelId },
         body: {
-          inputPricePerMillionTokens: values.input,
-          outputPricePerMillionTokens: values.output,
-          cachedInputPricePerMillionTokens: values.cached,
+          inputPricePerMillionTokens: input,
+          outputPricePerMillionTokens: output,
+          cachedInputPricePerMillionTokens: cached,
         },
       })
       setConfirmOpen(false)

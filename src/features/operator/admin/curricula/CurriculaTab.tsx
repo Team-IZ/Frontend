@@ -23,7 +23,7 @@ import TableSkeleton from '@/components/common/TableSkeleton'
 import ErrorState from '@/components/common/ErrorState'
 import { CurriculumStatusBadge } from '../_/components/StatusBadges'
 import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
-import { ALL, asQuery } from '../_/filterState'
+import { ALL } from '../_/filterState'
 import RegisterCurriculumDialog from './components/RegisterCurriculumDialog'
 
 /*
@@ -46,7 +46,28 @@ const PAGE_SIZE = 100
 /** `분석 전` — enum 값이 아니라 별도 파라미터라 필터 값으로만 쓰는 표식이다 */
 const NOT_ANALYZED = 'NOT_ANALYZED'
 
-type CurriculumStatus = NonNullable<findOrganizationCurricula_Query['status']>
+/** `분석 중` — 같은 자리의 표식이다. **한 칸이 두 값을 보낸다**(아래 `statusQuery`) */
+const ANALYSING = 'ANALYSING'
+
+/** 상태 하나. **`status`가 배열이 되어**(25차 R1) 원소 타입을 꺼내 쓴다 */
+type CurriculumStatus = NonNullable<findOrganizationCurricula_Query['status']>[number]
+
+/**
+ * 상태 필터 → 서버 쿼리.
+ *
+ * ⚠ **한때 `분석 중`이 필터에 없었다.** `PENDING`과 `RUNNING`이 같은 라벨을 쓰는데 서버
+ * `status`가 값을 하나만 받아 둘을 한 번에 못 걸렀다 — 선택지를 둘로 늘리면 화면에
+ * **똑같이 생긴 `분석 중`이 두 줄** 나오고, 한쪽만 보내면 절반만 나온다. 그래서 머리가
+ * `분석 중 1`이라고 해 놓고 **고를 방법이 없었다.**
+ *
+ * **서버가 배열을 받게 되어 되살렸다** — 실측으로 `status=SUCCEEDED&status=FAILED`가
+ * 합집합 12건을 준다. 운영자에게 `PENDING`·`RUNNING`은 「기다린다」 하나라 **선택지도
+ * 하나**이고, 그 하나가 두 값을 보낸다.
+ */
+function statusQuery(value: string): CurriculumStatus[] | undefined {
+  if (value === ALL || value === NOT_ANALYZED) return undefined
+  return value === ANALYSING ? ['PENDING', 'RUNNING'] : [value as CurriculumStatus]
+}
 
 /*
   정렬 — 서버가 셋을 준다. **`USAGE`를 넣었다**: 목에는 없던 축인데, 이 목록의 실제
@@ -85,7 +106,7 @@ export default function CurriculaTab() {
           enum 값으로 고를 수 없다. 서버가 별도 파라미터로 준다(13차 R2 · 명단의
           `unassignedOnly`와 같은 모양).
         */
-        status: status === NOT_ANALYZED ? undefined : asQuery<CurriculumStatus>(status),
+        status: statusQuery(status),
         notAnalyzedOnly: status === NOT_ANALYZED ? true : undefined,
         sort,
         size: PAGE_SIZE,
@@ -153,10 +174,9 @@ export default function CurriculaTab() {
             (운영자가 그 둘로 할 일이 같아서 묶은 것). 화면에 똑같이 생긴 선택지가 둘이면
             무엇이 다른지 알 수 없다.
 
-            ⚠ **그래서 `분석 중`을 필터에서 뺐다.** 서버 파라미터가 값 하나만 받아
-            두 상태를 한 번에 못 거른다 — 어느 쪽을 보내도 절반만 나온다. 개수는 헤더가
-            말하고 있고, 필터가 실제로 답하는 질문은 *"조치가 필요한 것"*(실패·분석 전)이다.
-            `status`가 배열을 받게 되면 되살린다(14차 요청).
+            **`분석 중`은 한 선택지가 두 값(`PENDING`·`RUNNING`)을 보낸다** — 서버가 배열을
+            받게 되어 되살렸다(`statusQuery`). 운영자에게 그 둘은 「기다린다」 하나라서
+            선택지도 하나여야 한다 — 둘로 늘리면 똑같이 생긴 줄이 두 개 나온다.
 
             `분석 전`은 상태가 아니라 상태 없음이라 같은 드롭다운에 값으로만 넣는다 —
             서버 쿼리에서 갈린다(명단 탭의 `미배정`과 같은 처리).
@@ -164,6 +184,7 @@ export default function CurriculaTab() {
           options={[
             { value: ALL, label: '전체' },
             { value: 'SUCCEEDED', label: CURRICULUM_STATUS_LABEL.SUCCEEDED },
+            { value: ANALYSING, label: CURRICULUM_STATUS_LABEL.PENDING },
             { value: 'FAILED', label: CURRICULUM_STATUS_LABEL.FAILED },
             { value: NOT_ANALYZED, label: '분석 전' },
           ]}

@@ -4,7 +4,7 @@ import type { operations } from '@/api/schema'
 
 /*
   operationId별 타입 별칭. 규칙이 고정이라 스키마 이름을 몰라도 찾을 수 있다:
-    {operationId}_Body · _Query · _Path · _Response · _Item · _Errors
+    {operationId}_Body · _Query · _Path · _Header · _Response · _Item · _Errors
 */
 
 // PUT /api/v0/projects/{projectId}/requirements — 프로젝트 요구사항 전체 교체
@@ -217,7 +217,7 @@ export type findCurrentProject_Response =
   operations['findCurrentProject']['responses'][200]['content']['application/json']
 export type findCurrentProject_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND'
 
-// GET /api/v0/api/v0/bff/me/current-round — 이번 회차 상태 판정 조회 (지금 할 일 하나)
+// GET /api/v0/bff/me/current-round — 이번 회차 상태 판정 조회 (지금 할 일 하나)
 export type findCurrentRound_Response =
   operations['findCurrentRound']['responses'][200]['content']['application/json']
 export type findCurrentRound_Errors = 'UNAUTHENTICATED' | 'NOT_A_TRAINEE' | 'ACCESS_DENIED'

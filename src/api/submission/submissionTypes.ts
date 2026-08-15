@@ -4,8 +4,32 @@ import type { operations } from '@/api/schema'
 
 /*
   operationId별 타입 별칭. 규칙이 고정이라 스키마 이름을 몰라도 찾을 수 있다:
-    {operationId}_Body · _Query · _Path · _Response · _Item · _Errors
+    {operationId}_Body · _Query · _Path · _Header · _Response · _Item · _Errors
 */
+
+// POST /api/v0/submissions — GitHub 저장소 URL 제출·재제출
+export type submitGithubUrl_Header = NonNullable<
+  operations['submitGithubUrl']['parameters']['header']
+>
+export type submitGithubUrl_Body = NonNullable<
+  operations['submitGithubUrl']['requestBody']
+>['content']['application/json']
+export type submitGithubUrl_Response =
+  operations['submitGithubUrl']['responses'][201]['content']['application/json']
+export type submitGithubUrl_Errors =
+  | 'IDEMPOTENCY_KEY_REQUIRED'
+  | 'IDEMPOTENCY_KEY_INVALID'
+  | 'INVALID_REPOSITORY_URL'
+  | 'UNSUPPORTED_HOST'
+  | 'VALIDATION_FAILED'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'SUBMISSION_ROUND_NOT_ACCESSIBLE'
+  | 'SUBMISSION_ROUND_NOT_OPEN'
+  | 'SUBMISSION_DEADLINE_PASSED'
+  | 'SUBMISSION_METHOD_NOT_ALLOWED'
+  | 'IDEMPOTENCY_KEY_CONFLICT'
+  | 'AI_SERVER_UNAVAILABLE'
 
 // POST /api/v0/submissions/repository-checks — 저장소 주소 사전 확인
 export type checkRepository_Body = NonNullable<

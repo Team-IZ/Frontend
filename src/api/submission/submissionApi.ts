@@ -2,6 +2,9 @@
 
 import { izClient, unwrap, type RequestOptions } from '@/api/_contract'
 import type {
+  submitGithubUrl_Header,
+  submitGithubUrl_Body,
+  submitGithubUrl_Response,
   checkRepository_Body,
   checkRepository_Response,
   getAnalysis_Path,
@@ -14,6 +17,18 @@ import type {
   findMySubmission_Path,
   findMySubmission_Response,
 } from './submissionTypes'
+
+/** GitHub 저장소 URL 제출·재제출 — `POST /api/v0/submissions` */
+export const submitGithubUrl = (
+  params: { header: submitGithubUrl_Header; body: submitGithubUrl_Body } & RequestOptions,
+) =>
+  unwrap<submitGithubUrl_Response>(
+    izClient.POST('/api/v0/submissions', {
+      params: { header: params.header },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
 
 /** 저장소 주소 사전 확인 — `POST /api/v0/submissions/repository-checks` */
 export const checkRepository = (params: { body: checkRepository_Body } & RequestOptions) =>

@@ -485,6 +485,102 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v0/interviews/{caseId}/brief': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * [면담 상세] 면담 브리프 조회 | ✅ 사용 가능
+     * @description 저장된 브리프를 읽습니다. **AI를 부르지 않아 즉시 반환됩니다.**
+     *
+     *     ### 생성은 이 경로가 하지 않습니다
+     *
+     *     브리프는 `[브리프 생성]` 클릭 시 `POST`로 **1회만** 만들고, 그 뒤로는 이 `GET`이
+     *     저장본을 돌려줍니다(정의서 §5 "그때 브리프를 만든다 — 미리 만들어 두지 않는다").
+     *     아직 만들지 않은 케이스는 **404 `INTERVIEW_BRIEF_NOT_CREATED`** 입니다 —
+     *     화면은 그 응답을 받으면 `[브리프 생성]` 버튼을 그립니다.
+     *
+     *     ### 질문은 전부 반환합니다
+     *
+     *     `interview_brief_item.is_selected`로 거르지 않습니다. 화면에 질문을 고르는 UI가 없어
+     *     (정의서 §7) 전 항목을 그대로 그립니다.
+     *
+     *     ### 아직 비어 있는 필드
+     *
+     *     | 필드 | 사유 |
+     *     |---|---|
+     *     | `concepts` | 교안 위치·반 문제 판정이 DB 회신 대기. 빈 배열 |
+     *     | `voidEvidence` | "질문 문장 그대로 복사" 판정 규칙이 미확정. null |
+     */
+    get: operations['findInterviewBrief']
+    /**
+     * [면담 상세] 브리프 저장하고 면담 종결 | ✅ 사용 가능
+     * @description **저장은 항상 종결입니다**(정의서 §5). 별도의 "면담 시작" 단계가 없습니다 —
+     *     면담하는 30분 동안 매니저는 화면을 안 보기 때문입니다.
+     *
+     *     ### 한 트랜잭션에서 여섯 가지를 합니다
+     *
+     *     | | |
+     *     |---|---|
+     *     | ① | 원인 분류 **전체 교체**(기존 삭제 후 재삽입) |
+     *     | ② | 매니저 기록 **덧붙이기**(기존 행은 고치지 않음) |
+     *     | ③ | 브리프 확정 — 질문을 전부 `is_selected=TRUE`로 |
+     *     | ④ | 잠금 재검증 — 선택 항목 1건 이상 |
+     *     | ⑤ | 면담 `PENDING → COMPLETED` **직행** |
+     *     | ⑥ | 상태 이력 1행 |
+     *
+     *     `started_at`은 브리프를 연 시각을 알 수 없어 `completed_at`과 같은 값으로 기록합니다.
+     *
+     *     ### 종결 후 다시 저장하면 브리프는 그대로입니다
+     *
+     *     수정 대상은 **원인과 매니저 기록뿐**이고 여는 말·질문은 종결 시점 그대로 고정됩니다.
+     *     이 경우 ③~⑥을 건너뜁니다.
+     *
+     *     ### 빈 값도 저장됩니다
+     *
+     *     원인 0건, 상세 사유 없음, 추후 계획 없음 모두 허용합니다 — 면담이 항상 원인을
+     *     찾아내지는 않습니다.
+     */
+    put: operations['saveInterviewBrief']
+    /**
+     * [면담 목록] 면담 브리프 생성 (AI) | ✅ 사용 가능
+     * @description **AI를 호출해 여는 말과 질문 체크리스트를 만듭니다. 수 초~수십 초 걸립니다.**
+     *
+     *     화면은 이 응답을 기다리는 동안 로딩 상태를 유지해야 합니다 — AI가 동기 계약이라
+     *     (202+폴링이 아니라 200) 이 응답이 곧 결과입니다.
+     *
+     *     ### 브리프당 한 번만 만듭니다
+     *
+     *     이미 완성된 브리프가 있으면 **다시 만들지 않고 그대로 돌려줍니다.**
+     *     매니저가 열 때마다 여는 말이 달라지면 안 되고, LLM 비용도 열람 횟수만큼 나가서는
+     *     안 됩니다.
+     *
+     *     ### 실패한 브리프는 이 경로로 재시도합니다
+     *
+     *     생성이 끊겨 내용 없이 남은 DRAFT가 있으면 **그 행을 재사용**해 채웁니다
+     *     (목록의 `briefState`가 `FAILED`인 상태). 붙어 있던 근거는 지우고 다시 만듭니다.
+     *
+     *     ### 무효 확인이 먼저입니다
+     *
+     *     위험 유형이 `INVALID`인데 아직 판정하지 않았으면 **409**입니다.
+     *     판정 전에는 `briefType`(STANDARD/INVALID_ATTEMPT)을 정할 수 없어 여는 말과 질문이
+     *     통째로 어긋납니다.
+     *
+     *     ### 실패해도 브리프 행은 남습니다
+     *
+     *     태운 토큰을 원장에 남겨야 하고 중복 호출 방지 장치가 그 행을 씁니다.
+     *     그 상태에서 목록의 `briefState`는 `FAILED`가 되고 화면은 `[다시 생성]`을 그립니다.
+     */
+    post: operations['createInterviewBrief']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v0/submissions': {
     parameters: {
       query?: never
@@ -495,11 +591,8 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * GitHub 저장소 URL 제출·재제출 | ⚠️ 사용 불가
-     * @description > ⚠️ **사용 불가 (2026-08-13 기준)** — 2026-08-23 오전 3시 16분 경에 `nvidia provider error`으로
-     *     > 확인 후 사용가능 전환 예정.
-     *
-     *     **제출 → 분석 → 세션까지 끝까지 간다.** 접수 직후 트리거되는 코드 분석은 AI 원본 서버
+     * GitHub 저장소 URL 제출·재제출 | ✅ 사용 가능
+     * @description **제출 → 분석 → 세션까지 끝까지 간다.** 접수 직후 트리거되는 코드 분석은 AI 원본 서버
      *     (`ai.origin-base-url`)의 `POST /analyses`로 나가며 저장소 주소와 브랜치를 함께 싣는다 —
      *     clone·분석의 주체는 AI 서버이지만 그쪽으로 주소를 넘기는 경로는 백엔드에 있다.
      *
@@ -563,6 +656,20 @@ export interface paths {
      *     | `AI_SERVER_UNAVAILABLE` | 503 | AI 프록시를 깨우지 못했다. **재시도하면 된다** |
      *
      *     ZIP 업로드는 같은 리소스를 만들지만 `POST /submissions/zip`으로 분리돼 있다.
+     *
+     *     ## 🔴 성공 몸이 세 가지다 — 셋 다 `201`이다
+     *
+     *     | 상황 | `supersedesSubmissionId` | `submissionId` |
+     *     |---|---|---|
+     *     | 첫 제출 | `null` | 새 값 |
+     *     | 재제출 | **직전 제출 ID** | 새 값 |
+     *     | 멱등 재시도(같은 키·같은 내용) | 최초 결과 그대로 | **최초와 같은 값** |
+     *
+     *     세 번째가 있어서 클라이언트는 **`201`을 "새로 만들어졌다"로 읽으면 안 된다.** 같은 멱등키로
+     *     재시도하면 새 행을 만들지 않고 최초 결과를 그대로 돌려주므로, 화면이 제출 횟수를 세고 있다면
+     *     응답의 `submissionId`로 중복을 걸러야 한다.
+     *
+     *     `null`인 필드는 키가 빠지지 않고 `null`로 온다 — 세션 API와 직렬화 규칙이 다르다.
      */
     post: operations['submitGithubUrl']
     delete?: never
@@ -581,12 +688,8 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * ZIP 업로드 제출·재제출 | ⚠️ 사용 불가
-     * @description > ⚠️ **사용 불가 (2026-08-13 기준)** — 2026-08-23 오전 3시 16분 경에 `nvidia provider error`으로
-     *     > 확인 후 사용가능 전환 예정. 접수 직후 트리거되는 코드 분석이 GitHub URL 제출과 같은 경로를
-     *     > 타므로 함께 내린다.
-     *
-     *     GitHub URL 제출과 같은 리소스를 만드는 다른 표현이지만 **경로를 분리한다.** OpenAPI는
+     * ZIP 업로드 제출·재제출 | ✅ 사용 가능
+     * @description GitHub URL 제출과 같은 리소스를 만드는 다른 표현이지만 **경로를 분리한다.** OpenAPI는
      *     경로·메서드당 operation이 하나뿐이라, 한 경로에 `consumes`만 다른 핸들러를 둘 두면 springdoc이
      *     둘을 한 operation으로 병합한다. 그러면 Swagger UI에서 `application/json`을 골라도 multipart
      *     입력 폼이 뜨고, ZIP 전용 쿼리 파라미터가 JSON 쪽에도 필수로 붙는다.
@@ -657,6 +760,18 @@ export interface paths {
      *     > 경로를 막아 두었으나, `POST /api/v0/analyses`에 `multipart/form-data`(`payload` +
      *     > `file`) 경로가 생겨 근거가 사라졌다. S3 presigned URL이 아니라 **백엔드가 파일을 직접
      *     > 실어 보내는** 방식이라, GitHub 제출과 달리 AI 서버에 저장소 접근 권한이 없어도 된다.
+     *
+     *     ## 🔴 성공 몸이 세 가지다 — 셋 다 `202`다
+     *
+     *     | 상황 | `supersedesSubmissionId` | `submissionId` |
+     *     |---|---|---|
+     *     | 첫 제출 | `null` | 새 값 |
+     *     | 재제출 | **직전 제출 ID** | 새 값 |
+     *     | 멱등 재시도(같은 키) | 최초 결과 그대로 | **최초와 같은 값** |
+     *
+     *     GitHub 제출과 다른 점은 `artifactId`가 채워지고 `repositoryVerificationId`가 항상 `null`이라는
+     *     것뿐이다. `202`를 "새로 만들어졌다"로 읽으면 안 되는 이유도 같다 — 멱등 재시도가 같은 상태로
+     *     최초 결과를 돌려준다.
      */
     post: operations['submitZip']
     delete?: never
@@ -1438,6 +1553,58 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v0/interviews/{caseId}/exclusion': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * [면담 목록] 면담 대상 제외 | ✅ 사용 가능
+     * @description 이번 회차 대상에서 뺍니다. **되돌릴 수 있습니다**(`DELETE`).
+     *
+     *     화면이 확인 다이얼로그 없이 즉시 실행하고 배너로 되돌리기를 남기므로 **요청 본문이 없습니다.**
+     *     `exclusion_reason_code`는 NOT NULL이라 서버가 기본값을 채웁니다.
+     *
+     *     ### 제외할 수 없는 경우
+     *
+     *     연결된 면담이 이미 **시작·종결**됐으면 409입니다. 후보 상태 전이가
+     *     `연결된 면담이 PENDING인 후보`로 한정돼 있습니다 — 이미 만난 사람을 큐에서 빼는 것은
+     *     상태 모델상 의미가 없습니다.
+     *
+     *     ### 제외해도 지우지 않는 것
+     *
+     *     `Interview`와 그 브리프·원천 행은 **그대로 보존**됩니다. 되돌리면 만들어 둔 브리프가
+     *     그대로 살아납니다.
+     */
+    post: operations['excludeInterviewCase']
+    /**
+     * [면담 목록] 면담 대상 제외 되돌리기 | ✅ 사용 가능
+     * @description 제외를 되돌립니다.
+     *
+     *     ### 복귀 상태가 두 가지입니다
+     *
+     *     | 조건 | 복귀 상태 |
+     *     |---|---|
+     *     | 연결된 면담이 남아 있다(브리프를 만든 뒤 제외했다) | `INTERVIEW_CREATED` |
+     *     | 면담이 없다 | `ELIGIBLE` |
+     *
+     *     어느 쪽이든 제외 속성 4개를 NULL로 되돌립니다.
+     *
+     *     ### 목록에 없어도 호출됩니다
+     *
+     *     화면은 되돌리기 배너에서 **caseId만으로** 호출합니다 — 그 사이 필터를 바꿔
+     *     현재 목록에 그 케이스가 안 보여도 동작해야 합니다.
+     */
+    delete: operations['reincludeInterviewCase']
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v0/curricula': {
     parameters: {
       query?: never
@@ -1504,10 +1671,22 @@ export interface paths {
      *
      *     **요청**
      *     - materialId (경로): 교안 ID
+     *     - force (쿼리, 선택): 기본 `false`. 진행 중 검사를 건너뛴다
      *
      *     **응답 (202)**
      *     - 본문 없음. 요청이 접수됐다는 뜻이며, 분석 완료 여부는
-     *       `GET /curricula/{materialId}/sections`로 나중에 확인한다(503이면 아직 미완료)
+     *       `GET /curricula/{materialId}/sections`로 나중에 확인한다(409면 아직 미완료)
+     *
+     *     ## 이미 분석 중이면 409다 (25차 R2)
+     *
+     *     최신 버전에 `PENDING`·`RUNNING`인 분석이 있으면 `409 CURRICULUM_ANALYSIS_IN_PROGRESS`로
+     *     끊는다. 종전에는 그 상태에서도 202로 접수해서, 운영자가 「분석 중」 화면에서 버튼을
+     *     세 번 누르면 **AI 분석이 세 번 걸렸다.** 화면이 다이얼로그로 말릴 수는 있어도 서버가
+     *     막지 않으면 중복 요청은 계속 나간다 — 분석 1회가 LLM 호출 여러 건이라 그대로 비용이다.
+     *
+     *     **멈춘 분석을 푸는 출구는 남겨 뒀다.** `?force=true`를 보내면 진행 중이어도 새 분석을
+     *     건다. `PENDING`에서 오래 멈춰 있는 교안이 실제로 있고, 그때 이 버튼이 유일한 출구라
+     *     잠그면 안 되기 때문이다. 화면은 확인을 한 번 더 받고 보내는 것을 권한다.
      */
     post: operations['requestAnalysis']
     delete?: never
@@ -1607,13 +1786,18 @@ export interface paths {
      *     | `unassignedOnly` | 선택 | boolean | 반 배정이 없는 교육생만. 기본 `false`. **오퍼레이터 전용** — 매니저가 `true`로 보내면 400 |
      *     | `accountStatus` | 선택 | enum | `INVITED`(초대 대기) · `ACTIVE`(활성) · `INACTIVE`(비활성). 비우면 전체(화면의 `계정 · 전체`) |
      *     | `query` | 선택 | string | 이름·이메일 부분검색. 비우면 전체 |
-     *     | `sort` | 선택 | enum | `NAME`(이름순, 기본) · `RECENT_ENROLLED`(최근 등록순) · `RISK`(위험순) · `EXCELLENCE`(우수순) |
+     *     | `sort` | 선택 | enum | `NAME`(이름순, 기본) · `RECENT_ENROLLED`(최근 등록순, **등록일 없는 사람은 맨 뒤**) · `RISK`(위험순) · `EXCELLENCE`(우수순) |
      *     | `assessmentRoundId` | 선택 | UUID | **이 화면의 `회차 · 미프 N차` 필터.** 도달 단계·2단 이하·위험 배지·우수 누적 같은 회차 지표를 이 회차 기준으로 채운다. **생략하면 서버가 「이번 회차」를 고른다**(아래 표) |
      *     | `page` | 선택 | int | 0부터 시작. 기본 `0` |
      *     | `size` | 선택 | int | 페이지당 개수. 기본 `20`, 최대 `100` |
      *
      *     💡 **`accountStatus`는 세 값뿐이다.** `LOCKED`는 9차 Q3-②로 `AccountStatus`에서 제거했다 —
      *     `ck_app_user_status`가 `PENDING`·`ACTIVE`·`INACTIVE`만 허용해 실제로 올 수 없던 값이다.
+     *
+     *     💡 **`RECENT_ENROLLED`는 등록일 있는 사람 → 없는 사람 순이다(25차 R5).** `joinedAt`이
+     *     `null`인 초대 수락 전 교육생은 **맨 뒤**로 간다(`NULLS LAST`). 종전에는 초대 시각으로
+     *     같이 정렬해서, 「최근 등록순」을 골랐는데 등록일 열이 `—`인 사람들이 맨 위에 쌓였다.
+     *     미등록자끼리는 최근에 초대한 사람이 앞이다.
      *
      *     ⚠️ **`classroomId`와 `unassignedOnly`는 함께 못 쓴다.** 화면에서 `반 · 전체 / 미배정 / A반…`이
      *     단일 드롭다운이라 동시에 지정될 일이 없고, 들어오면 400으로 막는다.
@@ -1763,7 +1947,25 @@ export interface paths {
      *
      *     **요청** (multipart/form-data)
      *     - cohortId (경로): 교육생을 등록할 기수 ID
-     *     - file (필수): UTF-8 CSV. **첫 행은 `이름,이메일` 헤더**이며 최대 1MB·1,000행
+     *     - file (필수): CSV. **첫 행에 `이름`·`이메일` 열**이 있어야 하며 최대 1MB·1,000행
+     *
+     *     ## 받는 파일 범위를 넓혔다 (25차 Q1)
+     *
+     *     | | 종전 | 지금 |
+     *     |---|---|---|
+     *     | 인코딩 | UTF-8만 | **UTF-8 · CP949** — 윈도우 엑셀의 「CSV(쉼표로 분리)」 기본 저장이 그대로 올라간다 |
+     *     | 열 | `이름,이메일` 두 개, 그 순서 | **머리글 이름으로 찾는다** — 순서가 달라도, `번호`·`소속` 같은 열이 섞여 있어도 된다 |
+     *
+     *     모르는 열은 읽지 않는다. `이름`·`이메일` 중 하나라도 머리글에 없으면 400
+     *     `CSV_FORMAT_INVALID`이고, 어느 열이 없는지 `message`에 담는다.
+     *
+     *     **기존 파일은 그대로 통과한다** — UTF-8 `이름,이메일`은 넓힌 규칙의 부분집합이다.
+     *     프런트가 인코딩·열을 미리 정규화할 필요가 없어졌다(프론트 제안 「가」는 하지 않아도 된다).
+     *
+     *     ⚠️ **`.xlsx`는 받지 않는다.** 파싱 라이브러리가 통째로 하나 더 붙는데, 엑셀 파일은
+     *     서식·이미지 때문에 커지기 쉬워 앞단 Lambda의 6MB(base64로 부풀어 실질 4.5MB) 상한에
+     *     먼저 걸린다 — 라이브러리를 넣고도 "큰 파일은 안 된다"가 남는다. 엑셀에서
+     *     「CSV로 저장」 한 번이면 위 완화로 그대로 올라간다.
      *
      *     ## 🔴 등록은 202이고 메일은 그 뒤에 나간다
      *
@@ -1819,7 +2021,8 @@ export interface paths {
      *     200명을 붙여 넣고 나서야 30명이 중복이라는 걸 알게 되는 것을 없앤다.
      *
      *     **요청** (multipart/form-data) — 등록(`POST /cohorts/{cohortId}/trainees`)과 완전히 같다.
-     *     - cohortId (경로) · file: 첫 행이 '이름,이메일'인 UTF-8 CSV
+     *     - cohortId (경로) · file: 첫 행에 `이름`·`이메일` 열이 있는 CSV
+     *       (UTF-8·CP949 둘 다 되고 열 순서는 상관없다 — 등록 API와 같은 파서다, 25차 Q1)
      *
      *     **응답 (200)** — 등록 응답과 **같은 스키마**다(`RegisterTraineesResponse`).
      *     화면이 미리보기와 등록 결과를 한 컴포넌트로 그릴 수 있다.
@@ -2182,9 +2385,12 @@ export interface paths {
      *
      *     **요청**
      *     - cohortId (경로): 반을 만들 기수 ID
-     *     - name (필수): 반 이름. 같은 기수 안에서 중복되면 409
+     *     - name (필수): 반 이름. 같은 기수 안에서 중복되면 **409 `CLASSROOM_NAME_TAKEN`**
+     *       (25차 R3 — 코드 이름이 응답 목록에 없어서 화면이 분기할 근거가 없었다.
+     *       수정(`PATCH …/{classroomId}`)과 같은 코드다)
      *     - capacity (필수, 1 이상): 정원
-     *     - managerIds (선택): 담당 매니저로 지정할 사용자 ID 목록. **반 생성과 같은 트랜잭션에서 배정된다**
+     *     - managerIds (선택): 담당 매니저로 지정할 사용자 ID 목록. **반 생성과 같은 트랜잭션에서 배정된다**.
+     *       이 기관의 매니저가 아닌 ID가 있으면 반도 만들지 않고 `404 MANAGER_NOT_FOUND`다(25차 R3)
      *
      *     **응답 (201)**
      *     - 생성된 반 정보(응답 필드는 "기수 반 목록 조회"의 classrooms[] 항목과 동일).
@@ -2658,7 +2864,7 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * 세션 시작(인트로 동의) | ⚠️ 사용 불가
+     * 세션 시작(인트로 동의) | ✅ 사용 가능
      * @description 시작 전 안내에서 `전체화면으로 시작하기`를 눌렀을 때 부른다. `READY → IN_PROGRESS`로 옮기고
      *     **인트로 고지 동의를 함께 남긴다** — 무효 응시 검토에서 "그때 무엇을 고지받았나"를 이 기록으로
      *     되짚기 때문에 선택이 아니다.
@@ -2671,12 +2877,20 @@ export interface paths {
      *
      *     본문은 없다.
      *
-     *     ## 응답
+     *     ## 응답 (200)
      *
-     *     `GET /current`와 **같은 구조**다. `status`가 `IN_PROGRESS`로 바뀌고 `startedAt`·`timeLimitAt`이
-     *     채워진다. 커서는 첫 문제의 L1에 선다.
+     *     `GET /current`와 **같은 구조**(`SessionResponse`)다. `status`가 `IN_PROGRESS`로 바뀌고
+     *     `startedAt`·`timeLimitAt`이 채워진다. 커서는 첫 문제의 L1에 선다.
      *
-     *     **이미 진행 중이면 그대로 돌려준다** — 새로고침 후 다시 눌러도 커서가 처음으로 돌아가지 않는다.
+     *     ### 성공 몸이 두 가지다
+     *
+     *     | 상황 | 무엇이 다른가 |
+     *     |---|---|
+     *     | 처음 눌렀다 | `startedAt`이 방금 시각. `currentProblemNo=1` |
+     *     | 이미 진행 중이었다 | **그대로 돌려준다.** `startedAt`은 최초 시각이고 `currentProblemNo`는 서 있던 자리 |
+     *
+     *     두 번째가 있는 이유는 새로고침 후 다시 눌러도 커서가 처음으로 돌아가지 않아야 하기
+     *     때문이다. 화면은 둘을 구분할 필요가 없다 — 받은 커서로 그리면 된다.
      *
      *     ## 오류
      *
@@ -2684,8 +2898,13 @@ export interface paths {
      *     |---|---|---|
      *     | `SESSION_NOT_ACCESSIBLE` | 404 | 없거나 남의 세션 |
      *     | `SESSION_ALREADY_ENDED` | 409 | 이미 끝난 세션 |
+     *     | `STAGE_NOT_FOUND` | 409 | 세울 단계가 없다. 문항이 하나도 만들어지지 않은 세션이다 |
+     *
+     *     `STAGE_NOT_FOUND`는 문제 3개가 전부 `NOT_GENERATED`일 때 나온다. 200을 받고 전체화면으로
+     *     넘어갔는데 서버는 시작되지 않은 상태로 남는 것을 막기 위해, 갱신 건수가 아니라 **최종 상태를
+     *     다시 읽어** 판정한다.
      */
-    post: operations['start']
+    post: operations['startSession']
     delete?: never
     options?: never
     head?: never
@@ -2702,7 +2921,7 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * 다시 설명(힌트) 요청 | ⚠️ 사용 불가
+     * 다시 설명(힌트) 요청 | ✅ 사용 가능
      * @description `다시 설명해 주세요`를 눌렀을 때 부른다. **AI를 부르지 않는다** — 힌트 문구는 코드 분석 시점에
      *     이미 동결돼 DB에 있고 세션은 꺼내 보여줄 뿐이다("힌트는 재진술만 — 질문을 다르게 말할 뿐
      *     코드 위치·선택지·답의 방향을 주지 않는다"). 즉답이다.
@@ -2752,8 +2971,13 @@ export interface paths {
      *
      *     AI를 안 부르는데도 서버를 타는 이유는 **표시 시각을 남기기 위해서다.** 그 기록이 없으면
      *     힌트를 열어 둔 채 새로고침했을 때 사용 횟수가 0으로 되돌아가 학생이 힌트를 세 번, 네 번 쓴다.
+     *
+     *     ## 성공 몸이 두 가지다
+     *
+     *     `hintsLeft`가 `1`이냐 `0`이냐로 갈린다. `0`이면 화면은 버튼을 눌리지 않는 문구로 바꾼다 —
+     *     그대로 두면 다음 클릭이 `409 HINT_EXHAUSTED`로 떨어진다.
      */
-    post: operations['openHint']
+    post: operations['openSessionHint']
     delete?: never
     options?: never
     head?: never
@@ -2770,7 +2994,7 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * 답변 제출 → 채점 → 다음 질문 | ⚠️ 사용 불가
+     * 답변 제출 → 채점 → 다음 질문 | ✅ 사용 가능
      * @description 답변을 AI에 보내 채점하고 다음 자리를 정한다.
      *
      *     ## 요청 (본문)
@@ -2861,15 +3085,43 @@ export interface paths {
      *     |---|---|---|
      *     | `ANSWER_TEXT_REQUIRED` | 400 | 본문이 비었다 |
      *     | `SESSION_NOT_STARTED` | 409 | `POST /start`를 아직 부르지 않았다 |
-     *     | `SESSION_TIMEOUT` | 409 | 시간 상한 초과. 답한 데까지 저장하고 세션을 닫는다 |
+     *     | `SESSION_TIMEOUT` | 409 | 세션 상한(기본 60분) 초과. 답한 데까지 저장하고 세션을 닫는다 |
+     *     | `PROBLEM_TIME_LIMIT_EXCEEDED` | 409 | 이 문제의 상한(기본 20분) 초과. **이미 다음 문제로 넘어갔다** |
      *     | `ANSWER_ALREADY_SUBMITTED` | 409 | 같은 자리에 이미 제출됐다(낙관적 잠금). 다시 불러오면 된다 |
      *     | `GRADING_FAILED` | 503 | AI 채점 실패. **같은 답을 그대로 다시 제출하면 된다** |
+     *
+     *     ### 🔴 시간 상한 두 개는 결과가 다르다
+     *
+     *     | | 상한 | 넘기면 | 그다음 |
+     *     |---|---|---|---|
+     *     | 세션 | `timeLimitAt`(기본 60분) | 세션이 `INTERRUPTED`로 닫힌다 | `GET /current`가 **204** |
+     *     | 문제 | 지금 문제 시작 + 20분 | 그 문제만 접고 **다음 문제로 커서가 옮겨진다** | `GET /current`가 새 `currentProblemNo` |
+     *
+     *     ⚠️ **둘 다 409를 받은 시점에 서버 상태는 이미 바뀌어 있다.** 이 응답에는 다음 자리가 실리지
+     *     않으므로 화면은 `GET /current`를 다시 불러 커서를 읽는다 — 200이면 그 문제로 이동하고,
+     *     204면 종료 화면이다. `PROBLEM_TIME_LIMIT_EXCEEDED`가 마지막 문제에서 나면 세션이 함께
+     *     끝나므로 204가 온다.
+     *
+     *     접힌 문제의 남은 축은 `NOT_REACHED`로 닫히고, 다음 문제의 20분은 **그 문제로 옮겨간
+     *     시점부터** 새로 센다.
      *
      *     ⚠️ AI 채점에 **4.5~7.7초**가 걸린다. 클라이언트 타임아웃을 짧게 잡지 말 것.
      *     재전송이 안전한 이유는 서버가 자리마다 고정된 멱등키를 만들어 보내기 때문이다 —
      *     같은 자리 재시도는 AI가 처음 응답을 그대로 돌려주므로 LLM 비용이 두 번 나가지 않는다.
+     *
+     *     ## 🔴 성공 몸이 다섯 가지다 — `outcome`이 전부를 가른다
+     *
+     *     | `outcome` | `next` | `nextProblemNo` | `hint` | 화면이 할 일 |
+     *     |---|---|---|---|---|
+     *     | `RETRY_WITH_HINT` | 키 없음 | 키 없음 | **있다** | 힌트를 덧붙이고 같은 자리에서 다시 받는다 |
+     *     | `NEXT_TURN` | 다음 질문 | 같은 번호 | 키 없음 | 말풍선을 쌓고 강조만 옮긴다. 재조회 불필요 |
+     *     | `NEXT_PROBLEM` | 다음 문제 첫 질문 | 다음 번호 | 키 없음 | `문제 조회`를 다시 불러 코드 패널을 바꾼다 |
+     *     | `PROBLEM_CLOSED` | 다음 문제 첫 질문 | 다음 번호 | 키 없음 | `이 문제는 여기까지 볼게요` 후 위와 같다 |
+     *     | `SESSION_ENDED` | 키 없음 | 키 없음 | 키 없음 | 종료 화면 |
+     *
+     *     값이 없는 필드는 `null`이 아니라 **키가 빠진다**(`NON_NULL` 직렬화).
      */
-    post: operations['submitAnswer']
+    post: operations['submitSessionAnswer']
     delete?: never
     options?: never
     head?: never
@@ -2886,7 +3138,7 @@ export interface paths {
     get?: never
     put?: never
     /**
-     * 응시 중 관찰 신호 기록 | ⚠️ 사용 불가
+     * 응시 중 관찰 신호 기록 | ✅ 사용 가능
      * @description 창 이탈·연결 끊김·첫 타이핑 지연을 남긴다. **AI를 부르지 않고 진행 상태도 바꾸지 않는다** —
      *     오직 기록이며 응답 본문이 없다(`204`).
      *
@@ -2940,8 +3192,99 @@ export interface paths {
      *     이 경로가 없으면 `window_leave_count`·`connection_loss_count`·`*_away_count`·
      *     `*_first_keystroke_delay_ms`가 전부 초기값으로 남고, 무효 응시 판정과 매니저 브리프의
      *     "어느 답변이 의심스러운가"가 빈 값으로 돌아간다.
+     *
+     *     ## 성공 몸은 한 가지뿐이다
+     *
+     *     **성공은 언제나 `204`이고 본문이 없다.** 세 값 중 하나만 보내든 셋을 함께 보내든 응답은 같다 —
+     *     무엇이 기록됐는지 돌려주지 않는다. 화면이 그 값을 다시 그릴 일이 없고, 돌려주면 클라이언트가
+     *     서버 누적치를 자기 상태로 삼게 되기 때문이다.
      */
-    post: operations['recordActivity']
+    post: operations['recordSessionActivity']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v0/assessment-sessions/reviews': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * 다시 보기 개설(리포트에서 파생) | ✅ 사용 가능
+     * @description 공개된 리포트를 근거로 **다시 보기 응시를 만든다.** 이 경로가 없으면 다시 보기는 존재할 수
+     *     없다 — `measurement_attempt`를 만드는 다른 두 자리는 모두 `INITIAL` 고정이다.
+     *
+     *     ## 무엇을 다시 보는가
+     *
+     *     **도달 단계가 2단 미만인 문제**만 골라 그 문제의 **첫 번째 질문(L1)부터** 다시 본다.
+     *     2단(설계 논리)이 합격선이므로 그 미만이 다시 볼 대상이고, 리포트가 `retryTarget`으로
+     *     표시하는 개념과 **같은 규칙·같은 기준값**이다.
+     *
+     *     | 1차 도달 단계 | 다시 보기 |
+     *     |---|---|
+     *     | 0단(통과한 축 없음) · 1단 | **대상.** L1~L4를 처음부터 |
+     *     | 2단 이상 | 대상 아님. 세션에 나오지 않는다 |
+     *
+     *     도달 단계는 `problem_stage`에서 센다(통과한 가장 높은 축). 미응시로 단계가 전부
+     *     `NOT_REACHED`인 문제도 0단이라 대상이다.
+     *
+     *     ## 문제와 질문은 1차와 완전히 같다
+     *
+     *     AI를 다시 부르지 않고 1차 세션의 `problem_stage`를 **그대로 복사한다** — 같은 문제,
+     *     같은 질문, 같은 힌트 문구다. 새로 만들면 문구가 달라져 1차와 도달 단계를 비교할 수
+     *     없게 되고(매니저 지표가 그 비교를 읽는다) 비용도 다시 나간다.
+     *
+     *     답변·점수는 복사하지 않는다. 복사된 단계는 `source_problem_stage_id`로 원본을 가리키며,
+     *     매니저 화면의 `0단 → 1단` 비교가 이 연결을 따라간다.
+     *
+     *     ## 요청 (본문)
+     *
+     *     | 필드 | 필수 | 타입 | 설명 |
+     *     |---|---|---|---|
+     *     | `reportId` | 필수 | UUID | 근거 리포트. `GET /assessment-rounds`의 `current.reportId` |
+     *
+     *     리포트는 **본인 것이고 공개된 것**이어야 한다(`lifecycle_status=ACTIVE` ·
+     *     `traineeReleaseStatus=RELEASED`). 회차·1차 응시는 리포트에서 도출하므로 따로 받지 않는다.
+     *
+     *     스키마가 리포트를 요구한다 — `ck_measurement_attempt_attempt_type_2`가 REVIEW에
+     *     리포트 ID와 스냅샷 ID를 둘 다 NOT NULL로 못박고 있다.
+     *
+     *     ## 응답 (201)
+     *
+     *     **`GET /current`와 같은 구조**(`SessionResponse`)다. `mode`가 `REVIEW`이고 `status`는
+     *     `READY`, `reviewDueAt`이 채워진다. `problemTotal`은 **다시 볼 문제 수**라 1차보다 작다.
+     *
+     *     만든 다음은 1차와 똑같다 — 받은 `sessionId`로 `POST /{sessionId}/start`를 부르면 된다.
+     *     커서·인트로 동의·문제별 20분 시계는 그쪽이 세운다.
+     *
+     *     ⚠️ **다시 보기에는 힌트가 없다.** `POST /{sessionId}/hints`는 409 `HINT_NOT_AVAILABLE`이다
+     *     ("지난번과 같은 질문이라 이미 한 번 들었어요").
+     *
+     *     ## 두 번 눌러도 안전하다
+     *
+     *     이미 열려 있는 다시 보기가 있으면 **새로 만들지 않고 그것을 돌려준다.** 다시 보기는
+     *     회차당 한 번이라, 두 번 눌러 응시가 둘 생기면 도달 단계 비교가 어느 쪽을 봐야 하는지
+     *     알 수 없게 된다.
+     *
+     *     ## 오류
+     *
+     *     | 코드 | 상태 | 언제 |
+     *     |---|---|---|
+     *     | `REVIEW_REPORT_NOT_ACCESSIBLE` | 404 | 리포트가 없거나·남의 것이거나·아직 공개되지 않았다 |
+     *     | `REVIEW_SOURCE_NOT_READY` | 409 | 1차 응시가 끝나지 않았다. 도달 단계가 확정되지 않았다 |
+     *     | `REVIEW_NOT_ELIGIBLE` | 409 | 2단 미만인 문제가 없다. **다시 볼 것이 없다** |
+     *     | `REVIEW_ALREADY_COMPLETED` | 409 | 이 회차의 다시 보기를 이미 끝냈다 |
+     *
+     *     `REVIEW_NOT_ELIGIBLE`은 실패가 아니라 **안내**다. 화면은 `다시 볼 개념이 없어요`로
+     *     그리면 된다 — 리포트의 `retryTarget`이 전부 `false`인 경우와 같은 상태다.
+     */
+    post: operations['openReviewSession']
     delete?: never
     options?: never
     head?: never
@@ -3988,7 +4331,7 @@ export interface paths {
     /**
      * 반 담당 매니저 변경 | ✅ 사용 가능
      * @description 반의 담당 매니저를 **전체 교체**한다. 부분 추가·삭제가 아니라 보낸 목록이 그대로 최종 상태가 된다 —
-     *     기존 활성 배정을 모두 해제(사유 `REASSIGNED`)한 뒤 요청받은 매니저로 새 배정을 만든다.
+     *     기존 활성 배정을 모두 해제(사유 `MANUAL_UNASSIGN`)한 뒤 요청받은 매니저로 새 배정을 만든다.
      *     빈 배열을 보내면 전체 해제가 되어 담당자가 없는 반이 된다.
      *
      *     **요청**
@@ -4001,8 +4344,11 @@ export interface paths {
      *
      *     해제된 배정은 지워지지 않고 이력으로 남는다 — 과거 기수의 담당자를 추적할 수 있어야 하기 때문이다.
      *
-     *     ⚠️ managerIds에 담긴 UUID가 실제 매니저인지 검증하지 않는다. 존재하지 않거나 다른 역할인 사용자
-     *     ID를 보내도 배정 행이 만들어진다. 화면은 매니저 목록에서 고른 값만 보내야 한다.
+     *     **managerIds는 검증한다(25차 R3).** 이 기관의 매니저가 아닌 ID가 하나라도 있으면
+     *     `404 MANAGER_NOT_FOUND`로 **전체를 거부**하며 어느 ID가 문제인지 메시지에 담는다.
+     *     종전에는 검증이 없어 존재하지 않는 사용자 ID로도 배정 행이 만들어졌다 —
+     *     매니저 쪽 같은 기능(`PUT …/managers/{managerId}/classrooms`)은 처음부터 막고
+     *     있었으므로, 같은 일을 하는 두 경로의 계약이 서로 달랐다.
      */
     patch: operations['updateManagers']
     trace?: never
@@ -4023,7 +4369,12 @@ export interface paths {
     /**
      * 교육생 일괄 반 배정 | ✅ 사용 가능
      * @description 교육생 여러 명을 한 반으로 **옮긴다**(이동 배정). 대상자가 이미 다른 반에 있으면 그 배정을
-     *     해제(사유 `REASSIGNED`)한 뒤 새 반에 넣으므로, 교육생은 항상 기수 안에서 반 하나에만 속한다.
+     *     해제(사유 `MANUAL_MOVE`)한 뒤 새 반에 넣으므로, 교육생은 항상 기수 안에서 반 하나에만 속한다.
+     *
+     *     **이동에 되돌리기를 먼저 부를 필요가 없다.** 이미 배정된 사람을 그대로 보내면 되고,
+     *     같은 반으로 다시 보내도 된다(그 경우 배정 이력만 한 줄 새로 쌓인다). 25차 R7 전까지는
+     *     이 자리에서 `409 DATA_INTEGRITY_VIOLATION`이 났는데, 해제 사유 값이 DB 제약에 없는
+     *     값이어서 해제 자체가 실패한 것이었다 — 계약이 아니라 결함이었고 지금은 나지 않는다.
      *
      *     **요청**
      *     - cohortId (경로): 대상 기수
@@ -5548,7 +5899,7 @@ export interface paths {
      *     |---|---|---|---|
      *     | `organizationId` | **필수**(경로) | UUID | 기관 식별자. 호출자의 소속 기관과 다르면 403 |
      *     | `query` | 선택 | string | 파일명·교안 제목 부분검색(대소문자 무시) |
-     *     | `status` | 선택 | enum | `PENDING` · `RUNNING` · `SUCCEEDED` · `FAILED`. 최신 버전의 **가장 최근 분석 시도** 기준 |
+     *     | `status` | 선택 | enum **배열** | `PENDING` · `RUNNING` · `SUCCEEDED` · `FAILED`. 최신 버전의 **가장 최근 분석 시도** 기준. 여러 개 보내면 합집합(25차 R1) |
      *     | `notAnalyzedOnly` | 선택 | boolean | **한 번도 분석하지 않은 교안만.** 기본 `false`(13차 R2) |
      *     | `sort` | 선택 | enum | `RECENT`(최근 업로드 순, **기본**) · `NAME`(파일명순) · `USAGE`(사용 회차 많은 순) |
      *     | `page` | 선택 | int | 0부터 시작. 기본 `0` |
@@ -5587,6 +5938,19 @@ export interface paths {
      *     ⚠️ **`status`와 `notAnalyzedOnly=true`를 함께 보내면 400** `CURRICULUM_FILTER_CONFLICT`다 —
      *     서로를 배제하는 조건이라 결과가 항상 비는데, 빈 목록을 조용히 주면 화면이
      *     "그런 교안이 없다"로 읽는다.
+     *
+     *     ## `분석 중`처럼 두 상태를 한 라벨로 묶어 보기 (25차 R1)
+     *
+     *     `status`는 **값을 여러 개 받는다.** 반복 파라미터·콤마 둘 다 되고 결과는 **합집합**이다.
+     *
+     *     ```
+     *     ?status=PENDING&status=RUNNING   →  분석 중(둘 다)
+     *     ?status=PENDING,RUNNING          →  같은 결과
+     *     ```
+     *
+     *     종전에는 반복 파라미터를 보내면 **첫 값만 적용한 목록이 200으로** 나갔다. 화면은
+     *     그것이 전부인 줄 알고 그렸으므로, 있는 교안을 없다고 말하게 되는 자리였다.
+     *     콤마 형식은 400으로 막고 있었는데 이제 둘 다 같은 뜻으로 받는다.
      *
      *     💡 **한 행이 교안(material) 하나다.** 버전은 같은 자리의 새 파일이지 별도 항목이 아니라서,
      *     값은 전부 최신 버전 기준이고 `usedProjectCount`만 모든 버전을 합쳐 센다.
@@ -5942,6 +6306,84 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v0/interviews': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * [면담 목록] 면담 목록 조회 | ✅ 사용 가능
+     * @description 위험 판정이 켜진 교육생의 **작업 큐**입니다. 매니저가 고르는 목록이 아니라
+     *     이해도 확인 결과가 만든 목록이라, 회차 결과가 나오기 전에는 **비어 있는 것이 정상**입니다.
+     *
+     *     ### 스코프
+     *
+     *     담당 반만 보입니다. `manager_interview_list_view`가 `manager_assignment`
+     *     (`status='ACTIVE' AND unassigned_at IS NULL`)로 이미 걸러 주므로 별도 조인을 두지 않습니다.
+     *
+     *     ### 정렬 — 클라이언트가 바꿀 수 없습니다
+     *
+     *     "이미 급한 순으로 온다"(정의서 §3). 서버 고정 규칙입니다.
+     *
+     *     | 순위 | 기준 |
+     *     |---|---|
+     *     | ① | **무효 응시는 상태·반과 무관하게 항상 최상단** (9-4 "못하는 것보다 안 하는 것이 더 급하다") |
+     *     | ② | 상태 — 예정·제외 먼저, 종결 나중 |
+     *     | ③ | 반 이름 오름차순 |
+     *     | ④ | 이름 가나다순 |
+     *
+     *     ### counts · riskCounts는 필터와 무관합니다
+     *
+     *     **회차 전체 기준**입니다. 필터 옵션 라벨에 개수를 싣기 때문에
+     *     (`상태 · 종결 (4)`) 필터링된 결과로 세면 고를수록 숫자가 줄어드는 화면이 됩니다.
+     *
+     *     ### 페이지네이션이 없습니다
+     *
+     *     담당 반 한 회차라 수십 명 규모이고, 화면도 페이저를 그리지 않습니다.
+     *     조건에 맞는 케이스를 전부 반환합니다.
+     */
+    get: operations['findInterviews']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v0/interviews/rounds': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * [면담 목록] 면담 회차 옵션 조회 | ✅ 사용 가능
+     * @description 목록 화면의 **회차 드롭다운**을 채웁니다. 담당 기수의 회차를 프로젝트 순서대로 반환합니다.
+     *
+     *     ### `PLANNED` 회차도 포함합니다
+     *
+     *     결과가 아직 없는 회차를 고르면 목록이 *"이 회차는 아직 결과가 없어요"* 를 그리는 것이
+     *     정의된 동작입니다(정의서 §6). 목록에서 아예 빼면 그 상태를 보여줄 방법이 없습니다.
+     *     삭제된 회차만 제외합니다.
+     *
+     *     ### label에 프로젝트명이 붙습니다
+     *
+     *     `round_no`가 **프로젝트 안에서만 유일**하기 때문입니다. 안 붙이면 서로 다른 프로젝트의
+     *     1차가 드롭다운에 똑같이 두 번 보입니다.
+     */
+    get: operations['findInterviewRoundOptions']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v0/curricula/{materialId}': {
     parameters: {
       query?: never
@@ -5981,7 +6423,41 @@ export interface paths {
     get: operations['findCurriculum']
     put?: never
     post?: never
-    delete?: never
+    /**
+     * 교안 삭제 | ✅ 사용 가능
+     * @description 교안 하나를 목록에서 지운다(25차 R11).
+     *
+     *     종전에는 삭제 경로가 아예 없어 **한 번 올린 교안이 기관 목록에서 영원히 사라지지
+     *     않았다.** 잘못 올린 파일·시험 삼아 올린 파일이 그대로 쌓이고, 회차를 만들 때
+     *     그 목록에서 골라야 했다.
+     *
+     *     **요청**
+     *     - materialId (경로): 교안 ID
+     *
+     *     **응답 (204)**
+     *     - 본문 없음
+     *
+     *     ## 연결된 회차가 있으면 409다
+     *
+     *     이 교안을 쓰는 회차가 하나라도 있으면 지우지 않고 `409 CURRICULUM_MATERIAL_IN_USE`다 —
+     *     회차의 문항이 근거로 삼는 교안이 목록에서 사라지면 안 되기 때문이다. 판정 기준은
+     *     목록·상세의 `usedProjectCount`와 **같은 식**이라, 화면이 `0개 회차에서 사용 중`으로
+     *     읽은 교안이 삭제에서만 막히는 일은 없다.
+     *
+     *     먼저 연결을 끊으려면 `DELETE /projects/{projectId}/curricula/{curriculumVersionId}`를
+     *     쓴다. 어느 회차가 쓰는지는 `GET /curricula/{materialId}/projects`가 준다.
+     *
+     *     ## 행은 남는다 — 지우는 것은 목록에서다
+     *
+     *     `deleted_at`만 찍는 논리 삭제다. 분석 이력·섹션·개념 매핑이 이 교안을 참조하고 있어
+     *     물리 삭제는 그 이력까지 함께 지운다.
+     *
+     *     ⚠️ **제목은 계속 점유된다.** `uq_curriculum_material_org_id_normalized_title`이 부분
+     *     인덱스가 아니라 전역 UNIQUE라, 지운 교안과 **같은 제목으로 다시 올리면**
+     *     `409 CURRICULUM_TITLE_DUPLICATED`가 난다(22차 R2와 같은 자리). 다시 올릴 때는
+     *     제목을 바꿔야 한다.
+     */
+    delete: operations['deleteCurriculum']
     options?: never
     head?: never
     patch?: never
@@ -7238,6 +7714,38 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v0/bff/me/current-round': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 이번 회차 상태 판정 조회 (지금 할 일 하나) | ✅ 사용 가능
+     * @description TR-01(교육생 홈)이 보여줄 상태 하나를 조회한다. 진행 중인 회차가 없으면
+     *     status=NO_ACTIVE_ROUND로 200을 내려준다 — 빈 상태는 에러가 아니다.
+     *
+     *     **상태 파생 규칙 안내**: 여러 프로젝트에서 동시에 회차가 열려 있을 때 어느 걸
+     *     보여줄지, SESSION_INCOMPLETE(중단) 처리 방식 등은 아직 프론트와 확정되지 않았다.
+     *     status 종류는 CurrentRoundStatus 스키마 설명을 참고할 것.
+     *
+     *     **응답 (200)**
+     *     - status: 지금 상태 하나(SUBMISSION_MISSING · SUBMISSION_DEADLINE_PASSED ·
+     *       ANALYZING · ANALYSIS_FAILED · ASSESSMENT_AVAILABLE · ASSESSMENT_IN_PROGRESS ·
+     *       ASSESSMENT_WINDOW_CLOSED · COMPLETED_AWAITING_REPORT · REVIEW_AVAILABLE ·
+     *       NO_ACTIVE_ROUND)
+     *     - 그 외 필드는 status에 따라 의미 있는 것만 채워지고 나머지는 null
+     */
+    get: operations['findCurrentRound']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v0/assessment-sessions/{sessionId}/problems/{problemNo}': {
     parameters: {
       query?: never
@@ -7246,7 +7754,7 @@ export interface paths {
       cookie?: never
     }
     /**
-     * 문제 하나의 코드·질문·문답 조회 | ⚠️ 사용 불가
+     * 문제 하나의 코드·질문·문답 조회 | ✅ 사용 가능
      * @description 왼쪽 코드 패널과 오른쪽 대화가 이 한 번의 조회로 채워진다.
      *
      *     ## 요청 (경로 파라미터)
@@ -7317,8 +7825,19 @@ export interface paths {
      *     `PROBLEM_ALREADY_CLOSED`는 정의서 §3 때문이다 — 끝난 문제를 다시 열면 지금 문제와 무관한 데
      *     시간을 쓰고 "아까 그거 틀린 것 같은데"만 남는다. 아직 시작하지 않은 뒤 문제도 같은 이유로 막는다.
      *     **세션이 끝난 뒤에는 전부 열린다.**
+     *
+     *     ## 성공 몸이 세 가지다
+     *
+     *     | 상황 | `turns[]` | `current` |
+     *     |---|---|---|
+     *     | 문제에 처음 들어왔다 | 빈 배열 | 첫 질문(L1) |
+     *     | 답을 쌓는 중 | 확정된 문답 | 지금 질문 |
+     *     | 문제가 끝났다(종료 후 열람) | 전부 | **키 없음** |
+     *
+     *     `current`는 `null`로 오지 않고 **키가 통째로 빠진다**(`NON_NULL` 직렬화). `turns[]`의
+     *     `hintText`도 마찬가지라, 첫 시도 턴에는 그 키가 없다.
      */
-    get: operations['findProblem']
+    get: operations['findSessionProblem']
     put?: never
     post?: never
     delete?: never
@@ -7335,7 +7854,7 @@ export interface paths {
       cookie?: never
     }
     /**
-     * 지금 이어서 할 세션 조회 | ⚠️ 사용 불가
+     * 지금 이어서 할 세션 조회 | ✅ 사용 가능
      * @description TR-03 진입과 **복귀**를 함께 처리한다. 진행 중인 세션이 있으면 그것을, 없으면 시작할 수 있는
      *     세션을 준다 — 새로고침·브라우저 종료 후 재접속이 이 경로 하나로 해결되므로 별도 복구 API가 없다.
      *
@@ -7343,7 +7862,9 @@ export interface paths {
      *
      *     파라미터가 없다. 대상은 **액세스 토큰의 사용자**에서 도출한다(경로로 받지 않는다).
      *
-     *     ## 응답
+     *     요청 본문도 없다.
+     *
+     *     ## 응답 (200)
      *
      *     | 필드 | 타입 | 설명 |
      *     |---|---|---|
@@ -7356,6 +7877,20 @@ export interface paths {
      *     | `timeLimitAt` | date-time? | 정책 시간 상한. 상한이 없으면 `null` |
      *     | `reviewDueAt` | date-time? | 다시 보기 마감. `mode=FIRST`이면 `null` |
      *
+     *     ### 🔴 `null`인 필드는 키 자체가 없다
+     *
+     *     이 응답은 `NON_NULL` 직렬화라 값이 없는 필드가 `"startedAt": null`로 오지 않고 **키가 통째로
+     *     빠진다.** 화면은 `response.startedAt === null`이 아니라 `== null`(undefined 포함)로 판정해야
+     *     한다 — 아래 세 예시가 같은 스키마의 서로 다른 모양이다.
+     *
+     *     ### 상황에 따라 세 가지 몸이 온다
+     *
+     *     | 상황 | `status` | 무엇이 다른가 |
+     *     |---|---|---|
+     *     | 시작 전 | `READY` | `currentProblemNo`·`startedAt`·`timeLimitAt` 키가 없다 |
+     *     | 진행 중 복귀 | `IN_PROGRESS` | 커서와 시각이 모두 채워져 있다 |
+     *     | 다시 보기 | `READY`·`IN_PROGRESS` | `mode=REVIEW`이고 `reviewDueAt`이 붙는다 |
+     *
      *     ⚠️ `problemTotal`은 **3이 아닐 수 있다.** 코드에 근거가 없어 문항이 만들어지지 않은 개념
      *     (`NOT_GENERATED`)에는 단계를 만들지 않으므로 화면의 `n/3` 하드코딩은 틀린다.
      *
@@ -7366,8 +7901,43 @@ export interface paths {
      *
      *     진행 중인 세션을 다시 보기보다 먼저 고른다. 둘 다 없으면 **`204 No Content`**이며 화면은
      *     `진행 중인 회차 없음`으로 그린다.
+     *
+     *     ## 🔴 이 조회가 시간 상한을 정리한다
+     *
+     *     조회이지만 **읽기만 하지 않는다.** 상한을 넘긴 세션·문제를 이 자리에서 닫고, 그 결과를
+     *     반영한 상태를 돌려준다.
+     *
+     *     | 넘긴 상한 | 이 조회가 하는 일 | 응답 |
+     *     |---|---|---|
+     *     | 세션(`timeLimitAt`) | 세션을 `INTERRUPTED`로 닫는다 | **204**(다른 살아 있는 세션이 없으면) |
+     *     | 문제(시작 + 20분) | 그 문제를 접고 다음 문제로 커서를 옮긴다 | 200. `currentProblemNo`가 다음 번호 |
+     *
+     *     그래서 **학생이 아무것도 제출하지 않고 새로고침만 해도** 상한이 반영된다. 종전에는 쓰기
+     *     요청만 상한을 봐서, 끝났어야 할 세션이 계속 진행 중으로 내려가고 남은 시간이 음수인 화면이
+     *     그려졌다(2026-08-15 교정).
+     *
+     *     마지막 문제가 상한을 넘기면 그 자리에서 세션이 끝나므로 **204**가 온다.
+     *
+     *     ## 204를 "응시 완료"로 읽지 말 것
+     *
+     *     204는 **살아 있는 세션(`READY`·`IN_PROGRESS`·`PAUSED`)이 하나도 없다**는 뜻일 뿐이고 그 이유는
+     *     다섯 가지다 — 이미 완료했다 · **방금 상한을 넘겨 닫혔다** · 아직 분석이 끝나지 않아 세션이
+     *     만들어지지 않았다 · 분석이 실패했다 · 팀 배정이 끊겼다. 이들을 가르는 것은
+     *     `GET /assessment-rounds`의 `representativeStatus`이며, 완료는 그중 `ASSESSMENT_COMPLETED`
+     *     하나다. 상한 초과로 닫힌 세션은 응시가 `SESSION_INCOMPLETE`로 끝나 `initialSessionStatus`가
+     *     `INTERRUPTED`다.
+     *
+     *     ⚠️ **응시 창(`assessmentCloseAt`)이 닫혀도 204가 아니다.** 여기서 보는 것은 세션의 정책
+     *     시간 상한이지 응시 창이 아니다 — 창이 지난 `READY` 세션은 여전히 200으로 내려온다.
+     *
+     *     ## 오류
+     *
+     *     | 상태 | 언제 |
+     *     |---|---|
+     *     | 401 | 액세스 토큰이 없거나 만료됐다 |
+     *     | 403 | 호출자가 교육생(`TRAINEE`)이 아니다 |
      */
-    get: operations['findCurrent']
+    get: operations['findCurrentSession']
     put?: never
     post?: never
     delete?: never
@@ -7484,9 +8054,14 @@ export interface paths {
      *     | --- | --- | --- |
      *     | `initialAttemptStatus` | enum? | `NOT_STARTED` · `SUBMITTED` · `ANALYZING` · `SESSION_READY` · `SESSION_IN_PROGRESS` · `COMPLETED` · `FAILED` · `EXPIRED` |
      *     | `initialSessionStatus` | enum? | `READY` · `IN_PROGRESS` · `PAUSED` · `COMPLETED` 등 |
-     *     | `preparedProblemCount` | int | 출제된 문제 수. 보통 `3` |
+     *     | `preparedProblemCount` | int | 실제로 출제된 문제 수 `0`~`3`. ⚠️ **`3`이 아닐 수 있다** |
      *     | `reviewStatus` | enum? | 다시 보기 상태. 배정이 없으면 `null` |
      *     | `completedReviewCount` | int | 완료한 다시 보기 건수 |
+     *
+     *     ⚠️ **`preparedProblemCount`를 `3`으로 가정하지 말 것.** 검증 개념은 항상 3건이 계획되지만
+     *     코드에 근거가 없는 개념은 문항이 만들어지지 않고(`NOT_GENERATED`) 세션에도 나오지 않는다.
+     *     이 값은 **교육생이 실제로 받게 될 문제 수**이며 세션 API의 `problemTotal`과 같다.
+     *     세션이 열리기 전(분석 중·분석 실패)에는 `0`이다.
      *
      *     **리포트**
      *
@@ -7625,38 +8200,6 @@ export interface paths {
      *     | 403 | 호출자가 교육생(`TRAINEE`)이 아니다 |
      */
     get: operations['getMyAssessmentRounds']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/api/v0/api/v0/bff/me/current-round': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * 이번 회차 상태 판정 조회 (지금 할 일 하나) | ✅ 사용 가능
-     * @description TR-01(교육생 홈)이 보여줄 상태 하나를 조회한다. 진행 중인 회차가 없으면
-     *     status=NO_ACTIVE_ROUND로 200을 내려준다 — 빈 상태는 에러가 아니다.
-     *
-     *     **상태 파생 규칙 안내**: 여러 프로젝트에서 동시에 회차가 열려 있을 때 어느 걸
-     *     보여줄지, SESSION_INCOMPLETE(중단) 처리 방식 등은 아직 프론트와 확정되지 않았다.
-     *     status 종류는 CurrentRoundStatus 스키마 설명을 참고할 것.
-     *
-     *     **응답 (200)**
-     *     - status: 지금 상태 하나(SUBMISSION_MISSING · SUBMISSION_DEADLINE_PASSED ·
-     *       ANALYZING · ANALYSIS_FAILED · ASSESSMENT_AVAILABLE · ASSESSMENT_IN_PROGRESS ·
-     *       ASSESSMENT_WINDOW_CLOSED · COMPLETED_AWAITING_REPORT · REVIEW_AVAILABLE ·
-     *       NO_ACTIVE_ROUND)
-     *     - 그 외 필드는 status에 따라 의미 있는 것만 채워지고 나머지는 null
-     */
-    get: operations['findCurrentRound']
     put?: never
     post?: never
     delete?: never
@@ -8112,12 +8655,12 @@ export interface components {
        *     0은 '무료'를 의미하므로 미설정 용도로 쓰지 말 것.
        * @example 5
        */
-      inputPricePerMillionTokens?: number | null
+      inputPricePerMillionTokens: number | null
       /**
        * @description 100만 토큰당 출력 단가. null이면 단가 미설정.
        * @example 25
        */
-      outputPricePerMillionTokens?: number | null
+      outputPricePerMillionTokens: number | null
       /**
        * @description 100만 토큰당 캐시 입력 단가. 선택.
        * @example 0.5
@@ -8367,6 +8910,168 @@ export interface components {
        * @example 90, 180, 365 중 하나여야 합니다.
        */
       message: string
+    }
+    /** @description 면담 브리프 저장 요청 */
+    SaveInterviewBriefRequest: {
+      /**
+       * @description 고른 원인 분류. 복수 선택이고 **0건도 허용**합니다 — 그때는 `[]`를 보내세요.
+       *
+       *     `CONCEPT_GAP`(개념 이해 부족) · `OUT_OF_SCOPE`(담당 범위 밖) ·
+       *     `TIME_SHORTAGE`(구현 시간 부족) · `EXPRESSION`(설명·표현 어려움) ·
+       *     `DIFFICULTY_UP`(난이도 상승) · `TEAM_DEPENDENCE`(팀 의존) · `CONDITION`(컨디션·심리)
+       *
+       *     ⚠️ 원인에서 파생되는 **조치(라우팅 목적지)는 보내지 않습니다** — 화면이 계산합니다.
+       * @example [
+       *       "CONCEPT_GAP",
+       *       "TEAM_DEPENDENCE"
+       *     ]
+       */
+      causes: string[]
+      /**
+       * @description 상세 사유. 매니저가 타이핑한 서술. **비워도 저장됩니다**
+       * @example 담당 범위가 좁아 전체 흐름을 볼 기회가 없었다고 함
+       */
+      why?: string
+      /**
+       * @description 추후 계획. **비워도 저장됩니다**
+       * @example 담당 기능 흐름 그려오기
+       */
+      nextAction?: string
+    }
+    /** @description 질문 항목 */
+    BriefItemResponse: {
+      /** Format: uuid */
+      itemId: string
+      /**
+       * @description 매니저가 그대로 읽는 구어체 질문
+       * @example 이번에 어떤 역할을 맡았어요?
+       */
+      questionText: string
+      /**
+       * @description **매니저만 보는 근거.** 어떤 데이터에서 나온 질문인지
+       * @example Deployment 롤링 업데이트 관련 확인
+       */
+      questionRationale: string
+      /**
+       * Format: int32
+       * @description 제안 순서. 1부터 중복 없는 연속 정수
+       * @example 2
+       */
+      suggestedOrder: number
+    }
+    /** @description 막힌 개념 — 미구현 */
+    ConceptResponse: {
+      name: string
+      curriculumRef: string
+      groupIssueClassLabel: string
+    }
+    /** @description 면담 브리프 */
+    InterviewBriefResponse: {
+      /** Format: uuid */
+      caseId: string
+      /** Format: uuid */
+      traineeId: string
+      /** @example 김민준 */
+      name: string
+      /** @example A반 */
+      className: string
+      /**
+       * @description 위험 유형. 목록과 같은 값이다
+       * @example DECLINE
+       */
+      riskType: string
+      /**
+       * @description 판정 근거 문구
+       * @example 2단 이하 1 → 2
+       */
+      riskSummary: string
+      /**
+       * @description 무효 응시 브리프인가. true면 **여는 말과 질문이 통째로 다르다**(정의서 §6-2) —
+       *     `3개 중 0개`가 아니라 응시 자체를 안 한 것이라 기본 브리프 문장을 쓰면 말이 안 된다.
+       */
+      isVoid: boolean
+      /** @description 이 교육생의 첫 면담인가. AI가 라포 형성용 도입 질문을 넣는 기준이다 */
+      firstInterview: boolean
+      /**
+       * @description 브리프 상태 `NONE` / `FAILED` / `DRAFT` / `CONFIRMED`
+       * @example DRAFT
+       */
+      briefState: string
+      /**
+       * @description **★ AI가 생성한 여는 말.** 화면 ①칸에 그대로 표시한다.
+       *     1~3문장 구어체이고 점수·단계·위험 유형을 직접 언급하지 않는다.
+       * @example 지난 회차엔 3개 중 1개만 막혔었는데, 이번엔 2개나 막혔더라고요. 편하게 무슨 일이 있었는지 들어보고 싶어서 불렀어요.
+       */
+      openingRemark: string
+      /**
+       * @description **★ AI가 생성한 질문 체크리스트.** 4~8개(첫 면담이면 6~8개)입니다.
+       *
+       *     ⚠️ **전 항목을 그대로 그립니다.** 화면에는 질문을 고르는 UI가 없습니다
+       *     (정의서 §7 — 고르게 하면 "뭘 물을지" 부담이 생기고 그게 이 화면이 없애려던 것).
+       */
+      items: components['schemas']['BriefItemResponse'][]
+      /** @description 지난 면담에서 정한 것. 없으면 null — ①칸의 ⚠ 줄이 통째로 빠진다 */
+      priorInterview: components['schemas']['PriorInterviewResponse'] | null
+      /** @description 저장된 매니저 입력. 처음 여는 브리프는 null */
+      savedRecord: components['schemas']['SavedRecordResponse'] | null
+      /** @description ⚠️ **미구현** — 교안 위치·반 문제 판정이 DB 회신 대기입니다. 현재 빈 배열 */
+      concepts: components['schemas']['ConceptResponse'][]
+      /**
+       * @description "시스템이 본 것" — **무효 응시 브리프에서만** 채워집니다(그 외에는 null).
+       *
+       *     일반 브리프에 띄우지 않는 이유는 면담이 **추궁**이 되기 때문입니다 —
+       *     이 화면이 하려는 일은 "다음 한 주를 어디에 쓸지"를 정하는 것입니다(정의서 §6-2).
+       *
+       *     ⚠️ **관찰이지 판정이 아닙니다.** 화면도 "판단은 하지 않습니다"로 감싸 보여줍니다.
+       */
+      voidEvidence: components['schemas']['VoidEvidenceResponse'] | null
+    }
+    /** @description 지난 면담 기록 */
+    PriorInterviewResponse: {
+      /** Format: date-time */
+      completedAt: string
+      nextAction: string
+    }
+    /** @description 저장된 매니저 입력 */
+    SavedRecordResponse: {
+      /**
+       * @description 고른 원인 분류. `CONCEPT_GAP` / `OUT_OF_SCOPE` / `TIME_SHORTAGE` / `EXPRESSION`
+       *     / `DIFFICULTY_UP` / `TEAM_DEPENDENCE` / `CONDITION`
+       * @example [
+       *       "CONCEPT_GAP"
+       *     ]
+       */
+      causes: string[]
+      /** @description 상세 사유(매니저가 타이핑) */
+      why: string
+      /** @description 추후 계획(매니저가 타이핑) */
+      nextAction: string
+    }
+    /** @description 무효 응시 근거. 화면 문구: `3문항 중 2문항 무응답 · 나머지 1문항은 질문 문장을 그대로 복사 · 총 응답 시간 4분` */
+    VoidEvidenceResponse: {
+      /**
+       * Format: int32
+       * @description **문제 단위** 무응답 수. 그 문제의 단계가 전부 답 없이 끝난 경우
+       * @example 2
+       */
+      unanswered: number
+      /**
+       * Format: int32
+       * @description 그 회차 문제 수(최대 3)
+       * @example 3
+       */
+      totalQuestions: number
+      /**
+       * @description 답변이 질문 문장과 같은 단계가 있는가. **정규화 후 완전 일치**로 판정한다
+       * @example true
+       */
+      copied: boolean
+      /**
+       * Format: int32
+       * @description 세션 시작~종료 분
+       * @example 4
+       */
+      durationMin: number
     }
     /** @description GitHub 저장소 URL 제출 요청 */
     CreateGithubSubmissionRequest: {
@@ -9616,39 +10321,39 @@ export interface components {
        * Format: uuid
        * @description 세션 ID
        */
-      sessionId?: string
+      sessionId: string
       /**
        * @description FIRST(1차) · REVIEW(다시 보기). REVIEW는 힌트가 없고 판정에 반영되지 않는다
        * @enum {string}
        */
-      mode?: 'FIRST' | 'REVIEW'
+      mode: 'FIRST' | 'REVIEW'
       /** @description 이 조회는 사실상 READY(시작 전) · IN_PROGRESS(진행 중)만 돌려준다 */
-      status?: components['schemas']['AssessmentSessionStatus']
+      status: components['schemas']['AssessmentSessionStatus']
       /**
        * Format: int32
-       * @description 지금 서 있는 문제 번호. 시작 전이면 null. 생성된 문제만 1부터 세므로 항상
+       * @description 지금 서 있는 문제 번호. 시작 전이면 이 키가 없다. 생성된 문제만 1부터 세므로 항상
        *     1~problemTotal 범위이며, 그대로 `GET .../problems/{problemNo}`에 넣으면 된다
        */
-      currentProblemNo?: number | null
+      currentProblemNo?: number
       /**
        * Format: int32
        * @description 생성된 문제 수. 화면의 `문제 n/N`의 N이다. 코드 근거를 못 찾아 문항이 만들어지지 않은
        *     개념(NOT_GENERATED)이 있으면 3보다 작다 — 그 문제는 세션에 아예 나오지 않는다
        */
-      problemTotal?: number
+      problemTotal: number
       /**
        * Format: date-time
        * @description 세션 시작 시각. 경과 시간 표시의 기산점
        */
-      startedAt?: string
+      startedAt: string
       /**
        * Format: date-time
        * @description 정책 시간 상한. 넘기면 답한 데까지 저장하고 닫는다
        */
-      timeLimitAt?: string
+      timeLimitAt: string
       /**
        * Format: date-time
-       * @description 다시 보기 마감. REVIEW에서만 있다
+       * @description 다시 보기 마감. REVIEW에서만 있다(FIRST면 이 키가 없다)
        */
       reviewDueAt?: string
     }
@@ -9683,8 +10388,7 @@ export interface components {
        *     NEXT_PROBLEM(다음 문제로) · PROBLEM_CLOSED(이 문제는 여기까지) · SESSION_ENDED(세션 종료)
        * @enum {string}
        */
-      outcome?:
-        'RETRY_WITH_HINT' | 'NEXT_TURN' | 'NEXT_PROBLEM' | 'PROBLEM_CLOSED' | 'SESSION_ENDED'
+      outcome: 'RETRY_WITH_HINT' | 'NEXT_TURN' | 'NEXT_PROBLEM' | 'PROBLEM_CLOSED' | 'SESSION_ENDED'
       /**
        * Format: int32
        * @description 다음에 설 문제 번호(1~problemTotal). 세션이 끝났으면 null.
@@ -9701,17 +10405,17 @@ export interface components {
     }
     AutoHint: {
       /** @description 힌트 문구. 분석 시점에 동결된 것을 그대로 준다 */
-      hintText?: string
+      hintText: string
       /**
        * Format: int32
        * @description 지금까지 쓴 힌트 수(1~2)
        */
-      hintsUsed?: number
+      hintsUsed: number
       /**
        * Format: int32
        * @description 남은 횟수. 0이면 화면은 버튼을 문구로 바꾼다
        */
-      hintsLeft?: number
+      hintsLeft: number
     }
     Highlight: {
       path: string
@@ -9722,21 +10426,25 @@ export interface components {
     }
     NextQuestion: {
       /** Format: uuid */
-      problemId?: string
+      problemId: string
       /** @description 이 질문이 서 있는 축(L1~L4) */
-      axisCode?: string
+      axisCode: string
       /** Format: int32 */
-      sequenceNo?: number
-      questionText?: string
+      sequenceNo: number
+      questionText: string
       /**
        * Format: int32
        * @description 지금까지 쓴 힌트 수
        */
-      hintsUsed?: number
+      hintsUsed: number
       /** @description 이 질문이 가리키는 코드 구간. 축이 바뀌면 함께 옮겨간다 */
       highlight?: components['schemas']['Highlight']
     }
-    /** @description 응시 중 관찰 신호(창 이탈·연결 끊김·첫 타이핑 지연) */
+    /**
+     * @description 응시 중 관찰 신호(창 이탈·연결 끊김·첫 타이핑 지연).
+     *
+     *     **세 값 모두 선택이지만 빈 객체는 400이다** — 최소 하나는 담아야 한다.
+     */
     SessionActivityRequest: {
       /**
        * Format: int32
@@ -9760,6 +10468,15 @@ export interface components {
        */
       firstKeystrokeDelayMs?: number
       empty?: boolean
+    }
+    /** @description 다시 보기 개설 */
+    ReviewOpenRequest: {
+      /**
+       * Format: uuid
+       * @description 근거 리포트. `GET /assessment-rounds`의 `current.reportId`를 그대로 쓴다.
+       *     본인 것이고 공개된(`traineeReleaseStatus=RELEASED`) 리포트여야 한다.
+       */
+      reportId: string
     }
     /** @description 프로젝트 일정 수정 요청 */
     UpdateProjectScheduleRequest: {
@@ -12465,6 +13182,212 @@ export interface components {
         [key: string]: number
       }
     }
+    /** @description 담당 반 */
+    ClassOptionResponse: {
+      /** Format: uuid */
+      classId: string
+      /**
+       * @description 반 이름
+       * @example A반
+       */
+      className: string
+    }
+    /** @description 면담 케이스 한 건 */
+    InterviewCaseResponse: {
+      /**
+       * Format: uuid
+       * @description 케이스 ID(`interview_candidate.candidate_id`). 브리프·제외·무효 확인이 모두 이 값을 쓴다
+       */
+      caseId: string
+      /**
+       * Format: uuid
+       * @description 교육생 ID. 이름 클릭 시 MG-06 상세로 간다
+       */
+      traineeId: string
+      /**
+       * @description 교육생 이름
+       * @example 김민준
+       */
+      name: string
+      /** Format: uuid */
+      classId: string
+      /**
+       * @description 반 이름
+       * @example A반
+       */
+      className: string
+      /**
+       * @description 면담 진행 상태.
+       *
+       *     | 값 | 뜻 |
+       *     |---|---|
+       *     | `PLANNED` | 등재됐고 아직 안 만남 |
+       *     | `DONE` | 만났다(면담 종결) |
+       *     | `EXCLUDED` | 매니저가 이번 회차 대상에서 뺐다. 되돌릴 수 있다 |
+       *
+       *     `진행 중`은 없다 — 면담하는 30분 동안만 존재하고 그동안 매니저는 화면을 안 본다.
+       * @example PLANNED
+       */
+      status: string
+      /**
+       * @description 위험 유형.
+       *
+       *     | 값 | 뜻 |
+       *     |---|---|
+       *     | `INVALID` | 무효 응시. 판정 전이라 **목록 맨 위에 온다** |
+       *     | `LOW_PERSISTENT` | 지속 저점 |
+       *     | `DECLINE` | 단계 하락 |
+       *     | `OBSERVE` | 관찰. 1차라 비교할 직전 회차가 없어 유형이 붙지 않는다 |
+       * @example DECLINE
+       */
+      riskType: string
+      /**
+       * @description 판정 근거 문구. 서버가 만든 문장을 그대로 표시한다
+       * @example 2단 이하 1 → 2
+       */
+      riskSummary: string
+      /**
+       * @description 브리프 상태. **버튼 문구가 여기서 갈린다.**
+       *
+       *     | 값 | 버튼 | 동작 |
+       *     |---|---|---|
+       *     | `NONE` | 브리프 생성 | `POST .../brief` — AI 생성, 수 초 대기 |
+       *     | `FAILED` | 다시 생성 | `POST .../brief` 재시도 |
+       *     | `DRAFT` | 브리프 열기 | `GET .../brief` — 즉시 |
+       *     | `CONFIRMED` | 브리프 수정 | `GET .../brief` — 즉시 |
+       * @example NONE
+       */
+      briefState: string
+      /**
+       * Format: uuid
+       * @description 무효 확인 API(`PATCH /assessment-attempts/{attemptId}/validity`) 호출에 쓸 수행 ID.
+       *     화면은 이 값을 따로 조회할 경로가 없어 목록이 실어 보낸다.
+       */
+      attemptId: string
+      /** @description 무효 확인을 `그대로 두기`로 마쳤는가. true면 판정 근거가 `확인 완료 · 그대로 유지`로 바뀐다 */
+      voidConfirmed: boolean
+      /**
+       * @description 무효 확인이 아직 안 끝났는가. true면 `[브리프 열기]` 대신 **`[무효 확인]`을 먼저 보여준다** —
+       *     브리프를 먼저 만들면 briefType(STANDARD/INVALID_ATTEMPT)을 정할 수 없다.
+       */
+      voidReviewPending: boolean
+      /**
+       * Format: date-time
+       * @description 제외 시각. `EXCLUDED`일 때만
+       */
+      excludedAt: string
+      /**
+       * @description 제외한 매니저 이름. `EXCLUDED`일 때만
+       * @example 박지현
+       */
+      excludedBy: string
+      /**
+       * Format: date-time
+       * @description 면담 종결 시각. `DONE`일 때만
+       */
+      interviewedAt: string
+      /**
+       * @description 지난 면담에서 정한 `다음에 할 것`. 없으면 null
+       * @example 담당 기능 흐름 그려오기
+       */
+      nextAction: string | null
+    }
+    /** @description 면담 목록 조회 결과 */
+    InterviewListResponse: {
+      /** @description 면담 케이스 목록. 정렬은 서버가 정하며 클라이언트가 바꿀 수 없다 */
+      items: components['schemas']['InterviewCaseResponse'][]
+      /**
+       * Format: int32
+       * @description 필터가 적용된 결과 건수
+       * @example 9
+       */
+      total: number
+      /**
+       * @description 상태별 개수. **필터와 무관한 회차 전체 기준**이다
+       * @example {
+       *       "PLANNED": 5,
+       *       "DONE": 4,
+       *       "EXCLUDED": 0
+       *     }
+       */
+      counts: {
+        [key: string]: number
+      }
+      /**
+       * @description 위험 유형별 개수. **필터와 무관한 회차 전체 기준**이다
+       * @example {
+       *       "INVALID": 1,
+       *       "LOW_PERSISTENT": 3,
+       *       "DECLINE": 5,
+       *       "OBSERVE": 0
+       *     }
+       */
+      riskCounts: {
+        [key: string]: number
+      }
+      /**
+       * @description **반 필터 드롭다운** 재료. 이 매니저의 담당 반 전부입니다.
+       *
+       *     상태·위험 유형과 달리 값 집합을 고정할 수 없어 서버가 줍니다 — 매니저마다 담당이 다릅니다.
+       *     `counts`처럼 **필터와 무관한 전체 목록**입니다: `items[]`의 `className`으로 유도하면
+       *     반 필터를 걸었을 때 나머지 반이 드롭다운에서 사라집니다.
+       */
+      classes: components['schemas']['ClassOptionResponse'][]
+      /** @description 조회한 회차의 표시용 메타. 담당 밖 회차 ID를 넣으면 null */
+      round: components['schemas']['RoundResponse'] | null
+    }
+    /** @description 회차 메타 */
+    RoundResponse: {
+      /** Format: uuid */
+      assessmentRoundId: string
+      /**
+       * @description 드롭다운·헤더 문구. 회차 번호가 프로젝트 안에서만 유일해 프로젝트명을 함께 붙인다
+       * @example 미니프로젝트 3차
+       */
+      label: string
+      /**
+       * @description `PENDING`이면 화면이 **"이 회차는 아직 결과가 없어요"** 를 그린다.
+       *     리포트 발행 전이라 위험 판정 자체가 없는 상태다.
+       * @example READY
+       */
+      resultStatus: string
+      /** @description 1차인가. true면 **위험 유형이 붙지 않는다** — 비교할 직전 회차가 없다(9-5) */
+      firstRound: boolean
+      /**
+       * Format: date-time
+       * @description 리포트 발행 시각. **위험 판정 등재 시각이기도 하다**
+       */
+      publishedAt: string
+      /**
+       * Format: int32
+       * @description 발행 후 경과일. 상단 경고줄(`N일째 안 끝났습니다`)에 쓴다.
+       *     **대기는 개인별이 아니라 회차 경과다** — 리포트가 일괄 발행되므로 회차 안에서 모두 같은 값이다.
+       * @example 6
+       */
+      daysSincePublish: number
+    }
+    /** @description 면담 회차 옵션 */
+    InterviewRoundOptionResponse: {
+      /** Format: uuid */
+      assessmentRoundId: string
+      /**
+       * @description 드롭다운 문구. `round_no`가 프로젝트 안에서만 유일해 **프로젝트명을 함께 붙인다** —
+       *     안 붙이면 서로 다른 프로젝트의 1차가 목록에 똑같이 두 번 보인다.
+       * @example 미니프로젝트 3차
+       */
+      label: string
+      /**
+       * Format: int32
+       * @description 프로젝트 안에서의 회차 번호. 기수 전체에서 유일하지 않다
+       * @example 3
+       */
+      roundNo: number
+      /**
+       * @description 회차 상태 `PLANNED` / `OPEN` / `CLOSED` / `COMPLETED`
+       * @example CLOSED
+       */
+      status: string
+    }
     /** @description 섹션 안 항목(가르친 것) 하나 */
     SectionItemResponse: {
       /**
@@ -12996,13 +13919,14 @@ export interface components {
       /** Format: uuid */
       eventId: string
       /**
-       * @description `ASSESSMENT`(이해도 확인) · `REPORT`(리포트 발행) · `REVIEW`(다시 보기) ·
-       *     `REVIEW_CLOSED`(다시 보기 창 마감) · `INTERVIEW`(면담).
+       * @description 사건 유형. 이 다섯 값 중 하나이며 늘어나면 스펙이 먼저 바뀐다.
        *
-       *     유형마다 아래 블록 중 하나만 채워진다 — 나머지는 `null`이거나 빈 배열이다.
+       *     유형에 따라 아래 블록 중 **하나만** 채워진다. 어느 블록이 어느 유형 전용인지는
+       *     각 필드 설명에 적어 두었고, 해당 없는 필드의 값은 그 필드 설명이 말한다.
        * @example ASSESSMENT
+       * @enum {string}
        */
-      type: string
+      type: 'ASSESSMENT' | 'REPORT' | 'REVIEW' | 'REVIEW_CLOSED' | 'INTERVIEW'
       /**
        * Format: date-time
        * @description 일어난 시각. 화면 왼쪽의 `07.12`
@@ -13029,6 +13953,8 @@ export interface components {
        * @description **ASSESSMENT 전용.** 문항별 결과이며 **문항 번호 오름차순**이다. 화면의
        *     `0단 · 1단 · 3단`과 `재진술 2회`가 이 배열에서 나온다.
        *     문항이 만들어지지 않은 개념도 번호를 지켜 남는다 — 빼면 격자 칸이 밀린다.
+       *
+       *     `type`이 `ASSESSMENT`가 아니면 **빈 배열**이다(null이 아니다).
        */
       problems: components['schemas']['TraineeTimelineAssessmentProblem'][]
       /**
@@ -13050,12 +13976,16 @@ export interface components {
        * @description **REVIEW 전용.** 다시 보기로 답한 문항의 도달 단계 변화이며 화면의
        *     `HITL Trigger 0단 → 1단`이 이 배열의 한 항목이다. 답한 문항이 하나도 없으면
        *     `REVIEW` 사건 자체가 생기지 않는다.
+       *
+       *     `type`이 `REVIEW`가 아니면 **빈 배열**이다(null이 아니다).
        */
       reviewChanges: components['schemas']['TraineeTimelineReviewChange'][]
       /**
        * @description **REVIEW_CLOSED 전용.** 창이 닫힐 때까지 **답하지 않은** 문항이며 화면의
        *     `Graph 구성 미응시`가 이 배열의 한 항목이다. 창이 아직 열려 있으면
        *     `REVIEW_CLOSED` 사건이 생기지 않는다 — 마감돼야 미응시가 확정된다.
+       *
+       *     `type`이 `REVIEW_CLOSED`가 아니면 **빈 배열**이다(null이 아니다).
        */
       missedConcepts: components['schemas']['TraineeTimelineMissedConcept'][]
       /** @description **INTERVIEW 전용.** 면담 기록 */
@@ -13114,7 +14044,12 @@ export interface components {
        */
       conceptName: string
     }
-    /** @description 교육생 상세(MG-06)의 이력 — 회차마다 그 회차에서 일어난 사건을 묶어 낸다 */
+    /**
+     * @description 교육생 상세(MG-06)의 이력 — 회차마다 그 회차에서 일어난 사건을 묶어 낸다.
+     *
+     *     **페이징은 커서 방식이다.** 다음 페이지는 `nextCursor`·`hasNext`로만 넘긴다.
+     *     `totalElements`는 페이징 값이 아니라 머리글용 집계다(아래 필드 설명 참고).
+     */
     TraineeTimelineResponse: {
       /** Format: uuid */
       cohortId: string
@@ -13123,7 +14058,13 @@ export interface components {
       /**
        * Format: int32
        * @description 필터를 적용한 **전체 이벤트 수**이며 화면 상단의 `이벤트 8건`이다.
-       *     페이지와 무관하다 — 한 페이지에 담긴 수가 아니다.
+       *
+       *     🔴 **페이저가 읽는 값이 아니다.** 이 봉투는 커서 페이징이고 페이지 이동은
+       *     `nextCursor`·`hasNext`가 전담한다. 이 값은 오프셋 페이징의 `totalElements`와
+       *     이름만 같을 뿐, 페이지 수를 계산하는 데 쓸 수 없다 — 페이지 단위가 이벤트가
+       *     아니라 **회차**라서 `totalElements / size`가 페이지 수가 되지 않는다.
+       *
+       *     지금까지 받은 수도, 이 페이지에 담긴 수도 아닌 **필터 적용 후 전체 수**다.
        * @example 8
        */
       totalElements: number
@@ -14282,117 +15223,6 @@ export interface components {
        */
       traineeCount: number
     }
-    /** @description 코드 패널. snippet은 파일 전체이며 자를 위치는 화면이 정한다 */
-    Code: {
-      path: string
-      language: string
-      /** @description 문제를 낸 파일 전체 */
-      snippet: string
-      /**
-       * Format: int32
-       * @description 강조할 구간 시작(파일 기준 절대 줄 번호)
-       */
-      lineStart: number
-      /**
-       * Format: int32
-       * @description 강조할 구간 끝
-       */
-      lineEnd: number
-      /** @description 호출부·관련 문맥. 화면은 접어 두고 필요할 때 편다 */
-      references: components['schemas']['Reference'][]
-    }
-    CurrentQuestion: {
-      /** Format: int32 */
-      sequenceNo?: number
-      questionText?: string
-      /** @description 이미 연 힌트 문구. 없으면 비어 있다 */
-      shownHints?: string[]
-      /**
-       * Format: int32
-       * @description 지금까지 쓴 힌트 수(0~2)
-       */
-      hintsUsed?: number
-      /**
-       * Format: int32
-       * @description 남은 힌트 수. 다시 보기는 항상 0이다
-       */
-      hintsLeft?: number
-      /** @description 강조할 구간 */
-      highlight?: components['schemas']['Highlight']
-      /** @description 이 답변이 세션의 마지막인지. 버튼 문구가 `답변 제출하고 마치기`로 바뀐다 */
-      lastTurnOfSession?: boolean
-    }
-    /** @description 문제 하나의 코드·질문·지금까지의 문답 */
-    ProblemActivityResponse: {
-      /**
-       * Format: int32
-       * @description 문제 번호. 생성된 문제만 1부터 세므로 항상 1~problemTotal 범위다
-       */
-      problemNo?: number
-      /**
-       * Format: int32
-       * @description 생성된 문제 수. 화면의 `문제 n/N`
-       */
-      problemTotal?: number
-      /** @description 문제 제목. 검증하는 교안 개념 이름이다 */
-      title?: string
-      /** @description 코드 패널 */
-      code?: components['schemas']['Code']
-      /** @description 이 문제에서 지금까지 확정된 문답. 화면은 위에서 아래로 쌓는다 */
-      turns?: components['schemas']['Turn'][]
-      /** @description 지금 물어보는 질문. 문제가 끝났으면 null */
-      current?: components['schemas']['CurrentQuestion'] | null
-    }
-    /** @description 코드 근거 하나 */
-    Reference: {
-      /** @description PRIMARY_BLOCK · QUESTION_HIGHLIGHT · CALLER · RELATED_CONTEXT · CURRICULUM_EVIDENCE */
-      type: string
-      path: string
-      /** Format: int32 */
-      lineStart: number
-      /** Format: int32 */
-      lineEnd: number
-      /** @description 이 근거가 붙는 축. QUESTION_HIGHLIGHT에서만 채워진다 */
-      axisCode: string
-    }
-    Turn: {
-      /**
-       * Format: int32
-       * @description 질문 순번. 화면의 `◆ 질문 2`
-       */
-      sequenceNo?: number
-      questionText?: string
-      /** @description 이 턴 직전에 보여준 힌트. 첫 시도면 null */
-      hintText?: string | null
-      answerText?: string
-      /** Format: date-time */
-      answeredAt?: string
-      /** @description 강조할 구간. 질문마다 옮겨간다 */
-      highlight?: components['schemas']['Highlight']
-    }
-    /**
-     * @description 코드 분석 작업 상태. QUEUED · RUNNING · SUCCEEDED · PARTIAL(일부 개념만 생성) · FAILED
-     * @enum {string}
-     */
-    AnalysisJobStatus: 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'PARTIAL' | 'FAILED'
-    /**
-     * @description 이해도 확인 회차 상태. `PLANNED`(예정) · `OPEN`(진행 중) · `CLOSED`(마감) · `COMPLETED`(완료).
-     *
-     *     ⚠️ 프로젝트 상태(`ProjectStatus`)와 값이 겹치지만 다른 개념이다 — 그쪽은 3값이다.
-     * @enum {string}
-     */
-    AssessmentRoundStatus: 'PLANNED' | 'OPEN' | 'CLOSED' | 'COMPLETED'
-    /** @description 교육생 홈 3구획 */
-    AssessmentRoundsResponse: {
-      /** @description 객체 자체는 항상 존재한다 */
-      membership: components['schemas']['MembershipResponse']
-      /** @description 객체 자체는 항상 존재한다. 진행 회차가 없으면 NO_ACTIVE_ROUND 합성 카드 */
-      current: components['schemas']['CurrentRoundResponse']
-      /** @description 배열 자체는 항상 존재한다. 없으면 빈 배열 */
-      upcoming: components['schemas']['UpcomingRoundResponse'][]
-      /** @description 배열 자체는 항상 존재한다. 없으면 빈 배열 */
-      past: components['schemas']['PastRoundResponse'][]
-    }
     /** @description 지금 할 일 카드. 회차가 없으면 NO_ACTIVE_ROUND 합성 카드가 들어간다. */
     CurrentRoundResponse: {
       /**
@@ -14469,8 +15299,11 @@ export interface components {
       initialSessionStatus: components['schemas']['AssessmentSessionStatus'] | null
       /**
        * Format: int32
-       * @description 출제된 문제 수
-       * @example 3
+       * @description 실제로 출제된 문제 수(`0`~`3`). 세션 API의 `problemTotal`과 같다.
+       *
+       *     ⚠️ **`3`으로 가정하지 말 것.** 코드에 근거가 없는 검증 개념은 문항이 만들어지지 않아
+       *     (`NOT_GENERATED`) 세션에 나오지 않는다. 세션이 열리기 전에는 `0`이다.
+       * @example 1
        */
       preparedProblemCount: number
       /** @description 다시 보기 응시 상태. **배정이 없으면 null** */
@@ -14549,6 +15382,117 @@ export interface components {
        * @description 서버 조회 시각
        */
       asOfAt: string
+    }
+    /** @description 코드 패널. snippet은 파일 전체이며 자를 위치는 화면이 정한다 */
+    Code: {
+      path: string
+      language: string
+      /** @description 문제를 낸 파일 전체 */
+      snippet: string
+      /**
+       * Format: int32
+       * @description 강조할 구간 시작(파일 기준 절대 줄 번호)
+       */
+      lineStart: number
+      /**
+       * Format: int32
+       * @description 강조할 구간 끝
+       */
+      lineEnd: number
+      /** @description 호출부·관련 문맥. 화면은 접어 두고 필요할 때 편다 */
+      references: components['schemas']['Reference'][]
+    }
+    CurrentQuestion: {
+      /** Format: int32 */
+      sequenceNo: number
+      questionText: string
+      /** @description 이미 연 힌트 문구. 없으면 빈 배열이다 */
+      shownHints: string[]
+      /**
+       * Format: int32
+       * @description 지금까지 쓴 힌트 수(0~2)
+       */
+      hintsUsed: number
+      /**
+       * Format: int32
+       * @description 남은 힌트 수. 다시 보기는 항상 0이다
+       */
+      hintsLeft: number
+      /** @description 강조할 구간 */
+      highlight: components['schemas']['Highlight']
+      /** @description 이 답변이 세션의 마지막인지. 버튼 문구가 `답변 제출하고 마치기`로 바뀐다 */
+      lastTurnOfSession: boolean
+    }
+    /** @description 문제 하나의 코드·질문·지금까지의 문답 */
+    ProblemActivityResponse: {
+      /**
+       * Format: int32
+       * @description 문제 번호. 생성된 문제만 1부터 세므로 항상 1~problemTotal 범위다
+       */
+      problemNo: number
+      /**
+       * Format: int32
+       * @description 생성된 문제 수. 화면의 `문제 n/N`
+       */
+      problemTotal: number
+      /** @description 문제 제목. 검증하는 교안 개념 이름이다 */
+      title: string
+      /** @description 코드 패널 */
+      code: components['schemas']['Code']
+      /** @description 이 문제에서 지금까지 확정된 문답. 화면은 위에서 아래로 쌓는다. 아직 답한 것이 없으면 빈 배열이다 */
+      turns: components['schemas']['Turn'][]
+      /** @description 지금 물어보는 질문. 문제가 끝났으면 이 키가 없다 */
+      current?: components['schemas']['CurrentQuestion']
+    }
+    /** @description 코드 근거 하나 */
+    Reference: {
+      /** @description PRIMARY_BLOCK · QUESTION_HIGHLIGHT · CALLER · RELATED_CONTEXT · CURRICULUM_EVIDENCE */
+      type: string
+      path: string
+      /** Format: int32 */
+      lineStart: number
+      /** Format: int32 */
+      lineEnd: number
+      /** @description 이 근거가 붙는 축. QUESTION_HIGHLIGHT에서만 채워진다 */
+      axisCode: string
+    }
+    Turn: {
+      /**
+       * Format: int32
+       * @description 질문 순번. 화면의 `◆ 질문 2`
+       */
+      sequenceNo: number
+      questionText: string
+      /** @description 이 턴 직전에 보여준 힌트. 첫 시도면 이 키가 없다 */
+      hintText?: string
+      answerText: string
+      /** Format: date-time */
+      answeredAt: string
+      /** @description 강조할 구간. 질문마다 옮겨간다. 축별 구간이 없으면 문제의 대표 구간이다 */
+      highlight: components['schemas']['Highlight']
+    }
+    /**
+     * @description 코드 분석 작업 상태. QUEUED · RUNNING · SUCCEEDED · PARTIAL(일부 개념만 생성) · FAILED
+     * @enum {string}
+     */
+    AnalysisJobStatus: 'QUEUED' | 'RUNNING' | 'SUCCEEDED' | 'PARTIAL' | 'FAILED'
+    /**
+     * @description 이해도 확인 회차 상태. `PLANNED`(예정) · `OPEN`(진행 중) · `CLOSED`(마감) · `COMPLETED`(완료).
+     *
+     *     ⚠️ 프로젝트 상태(`ProjectStatus`)와 값이 겹치지만 다른 개념이다 — 그쪽은 3값이다.
+     * @enum {string}
+     */
+    AssessmentRoundStatus: 'PLANNED' | 'OPEN' | 'CLOSED' | 'COMPLETED'
+    /** @description 교육생 홈 3구획 */
+    AssessmentRoundsResponse: {
+      /** @description 객체 자체는 항상 존재한다 */
+      membership: components['schemas']['MembershipResponse']
+      /** @description 객체 자체는 항상 존재한다. 진행 회차가 없으면 NO_ACTIVE_ROUND 합성 카드 */
+      current: components['schemas']['CurrentRoundResponse']
+      /** @description 배열 자체는 항상 존재한다. 없으면 빈 배열 */
+      upcoming: components['schemas']['UpcomingRoundResponse'][]
+      /** @description 배열 자체는 항상 존재한다. 없으면 빈 배열 */
+      past: components['schemas']['PastRoundResponse'][]
     }
     /** @description 담당 매니저. 반에 활성 배정이 없으면 객체 자체가 null이다. */
     ManagerResponse: {
@@ -15285,6 +16229,201 @@ export interface operations {
       }
     }
   }
+  findInterviewBrief: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description 면담 케이스 ID */
+        caseId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['InterviewBriefResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description 매니저 권한이 없음 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /**
+       * @description INTERVIEW_CASE_NOT_FOUND 담당 범위에서 찾을 수 없음
+       *     · INTERVIEW_BRIEF_NOT_CREATED 아직 생성되지 않은 브리프
+       */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  saveInterviewBrief: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description 면담 케이스 ID */
+        caseId: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SaveInterviewBriefRequest']
+      }
+    }
+    responses: {
+      /** @description 저장·종결 완료. 갱신된 브리프를 반환 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['InterviewBriefResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /**
+       * @description INTERVIEW_CASE_NOT_FOUND 담당 범위에서 찾을 수 없음
+       *     · INTERVIEW_BRIEF_NOT_CREATED 브리프가 없거나 생성 실패 상태
+       */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /**
+       * @description BRIEF_HAS_NO_SELECTED_ITEM 질문이 없는 브리프
+       *     · INTERVIEW_ROW_VERSION_CONFLICT 그 사이 상태가 바뀜
+       */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  createInterviewBrief: {
+    parameters: {
+      query?: never
+      header?: {
+        'X-Trace-Id'?: string
+      }
+      path: {
+        /** @description 면담 케이스 ID */
+        caseId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 생성 완료(또는 이미 있던 브리프) */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['InterviewBriefResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description INTERVIEW_CASE_NOT_FOUND 담당 범위에서 찾을 수 없음 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description VALIDITY_REVIEW_REQUIRED 무효 확인을 먼저 처리해야 함 */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /**
+       * @description BRIEF_GENERATION_FAILED 다시 불러도 같은 실패(계약 위반·멱등 충돌)
+       *     · BRIEF_GENERATION_FAILED_RETRYABLE 재시도 가치가 있는 실패(타임아웃 등)
+       */
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
   submitGithubUrl: {
     parameters: {
       query?: never
@@ -15309,7 +16448,7 @@ export interface operations {
       }
     }
     responses: {
-      /** @description 제출 접수됨 */
+      /** @description 제출 접수됨. 첫 제출·재제출·멱등 재시도가 모두 이 상태다 */
       201: {
         headers: {
           [name: string]: unknown
@@ -15318,7 +16457,7 @@ export interface operations {
           'application/json': components['schemas']['SubmissionResponse']
         }
       }
-      /** @description IDEMPOTENCY_KEY_REQUIRED · IDEMPOTENCY_KEY_INVALID · INVALID_REPOSITORY_URL · UNSUPPORTED_HOST */
+      /** @description IDEMPOTENCY_KEY_REQUIRED · IDEMPOTENCY_KEY_INVALID · INVALID_REPOSITORY_URL · UNSUPPORTED_HOST · VALIDATION_FAILED */
       400: {
         headers: {
           [name: string]: unknown
@@ -15327,7 +16466,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      /** @description UNAUTHENTICATED */
       401: {
         headers: {
           [name: string]: unknown
@@ -15336,7 +16475,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      /** @description ACCESS_DENIED */
       403: {
         headers: {
           [name: string]: unknown
@@ -15363,7 +16502,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description AI_SERVER_UNAVAILABLE */
+      /** @description AI_SERVER_UNAVAILABLE — **재시도하면 된다.** 같은 멱등키를 그대로 쓴다 */
       503: {
         headers: {
           [name: string]: unknown
@@ -15412,7 +16551,7 @@ export interface operations {
           'application/json': components['schemas']['SubmissionResponse']
         }
       }
-      /** @description IDEMPOTENCY_KEY_REQUIRED · IDEMPOTENCY_KEY_INVALID · ARCHIVE_INVALID */
+      /** @description IDEMPOTENCY_KEY_REQUIRED · IDEMPOTENCY_KEY_INVALID · ARCHIVE_INVALID · VALIDATION_FAILED */
       400: {
         headers: {
           [name: string]: unknown
@@ -15421,7 +16560,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      /** @description UNAUTHENTICATED */
       401: {
         headers: {
           [name: string]: unknown
@@ -15430,7 +16569,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      /** @description ACCESS_DENIED */
       403: {
         headers: {
           [name: string]: unknown
@@ -15457,7 +16596,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description FILE_TOO_LARGE */
+      /** @description FILE_TOO_LARGE — 50MB(52,428,800 바이트) 초과 */
       413: {
         headers: {
           [name: string]: unknown
@@ -15475,7 +16614,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description AI_SERVER_UNAVAILABLE */
+      /** @description AI_SERVER_UNAVAILABLE — **재시도하면 된다.** 같은 멱등키를 그대로 쓴다 */
       503: {
         headers: {
           [name: string]: unknown
@@ -16517,6 +17656,127 @@ export interface operations {
       }
     }
   }
+  excludeInterviewCase: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description 면담 케이스 ID */
+        caseId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 제외 완료 */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description INTERVIEW_CASE_NOT_FOUND 담당 범위에서 찾을 수 없음 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /**
+       * @description INTERVIEW_ALREADY_STARTED 이미 시작·종결된 면담
+       *     · INTERVIEW_EXCLUSION_STATE_CONFLICT 이미 제외됨
+       *     · INTERVIEW_ROW_VERSION_CONFLICT 그 사이 상태가 바뀜
+       */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  reincludeInterviewCase: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description 면담 케이스 ID */
+        caseId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 되돌리기 완료 */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description INTERVIEW_CASE_NOT_FOUND 담당 범위에서 찾을 수 없음 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /**
+       * @description INTERVIEW_EXCLUSION_STATE_CONFLICT 제외 상태가 아님
+       *     · INTERVIEW_ROW_VERSION_CONFLICT 그 사이 상태가 바뀜
+       */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
   registerCurriculum: {
     parameters: {
       query: {
@@ -16599,7 +17859,16 @@ export interface operations {
   }
   requestAnalysis: {
     parameters: {
-      query?: never
+      query?: {
+        /**
+         * @description 진행 중 검사를 건너뜁니다. 기본 `false`.
+         *
+         *     `PENDING`에서 오래 멈춘 분석을 강제로 다시 돌릴 때만 씁니다 — 평소에는 보내지
+         *     마세요. 켜면 돌고 있는 분석과 별개로 새 분석이 한 번 더 걸립니다.
+         * @example false
+         */
+        force?: boolean
+      }
       header?: never
       path: {
         /** @description 교안 ID */
@@ -16636,6 +17905,15 @@ export interface operations {
       }
       /** @description CURRICULUM_MATERIAL_NOT_FOUND 교안 원장이 없거나 그 교안에 버전이 하나도 없음 */
       404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description CURRICULUM_ANALYSIS_IN_PROGRESS 이미 분석이 진행 중임 — `?force=true`로 덮어쓸 수 있다(25차 R2) */
+      409: {
         headers: {
           [name: string]: unknown
         }
@@ -16906,7 +18184,7 @@ export interface operations {
         'multipart/form-data': {
           /**
            * Format: binary
-           * @description 첫 행이 '이름,이메일'인 UTF-8 CSV 파일
+           * @description 첫 행에 '이름'·'이메일' 열이 있는 CSV 파일(UTF-8 또는 CP949, 열 순서 무관)
            */
           file: string
         }
@@ -16978,7 +18256,7 @@ export interface operations {
         'multipart/form-data': {
           /**
            * Format: binary
-           * @description 첫 행이 '이름,이메일'인 UTF-8 CSV 파일
+           * @description 첫 행에 '이름'·'이메일' 열이 있는 CSV 파일(UTF-8 또는 CP949, 열 순서 무관)
            */
           file: string
         }
@@ -17554,8 +18832,17 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description COHORT_NOT_FOUND 기수를 찾을 수 없음(다른 기관의 기수 포함) */
+      /** @description COHORT_NOT_FOUND 기수를 찾을 수 없음(다른 기관의 기수 포함) · MANAGER_NOT_FOUND managerIds에 이 기관의 매니저가 아닌 ID가 포함됨(25차 R3) */
       404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description CLASSROOM_NAME_TAKEN 같은 기수에 이미 있는 반 이름(25차 R3 — 동작은 처음부터 이랬고 목록에만 빠져 있었다) */
+      409: {
         headers: {
           [name: string]: unknown
         }
@@ -18128,7 +19415,7 @@ export interface operations {
       }
     }
   }
-  start: {
+  startSession: {
     parameters: {
       query?: never
       header?: never
@@ -18139,7 +19426,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description OK */
+      /** @description 시작됨. 이미 진행 중이었으면 그 상태를 그대로 돌려준다 */
       200: {
         headers: {
           [name: string]: unknown
@@ -18148,7 +19435,7 @@ export interface operations {
           'application/json': components['schemas']['SessionResponse']
         }
       }
-      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      /** @description UNAUTHENTICATED */
       401: {
         headers: {
           [name: string]: unknown
@@ -18157,7 +19444,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      /** @description ACCESS_DENIED */
       403: {
         headers: {
           [name: string]: unknown
@@ -18175,7 +19462,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description SESSION_ALREADY_ENDED */
+      /** @description SESSION_ALREADY_ENDED · STAGE_NOT_FOUND */
       409: {
         headers: {
           [name: string]: unknown
@@ -18186,7 +19473,7 @@ export interface operations {
       }
     }
   }
-  openHint: {
+  openSessionHint: {
     parameters: {
       query?: never
       header?: never
@@ -18197,7 +19484,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description OK */
+      /** @description 힌트 문구. **점수는 깎이지 않는다** — 남은 횟수는 화면 표시용이다 */
       200: {
         headers: {
           [name: string]: unknown
@@ -18206,7 +19493,7 @@ export interface operations {
           'application/json': components['schemas']['HintResponse']
         }
       }
-      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      /** @description UNAUTHENTICATED */
       401: {
         headers: {
           [name: string]: unknown
@@ -18215,7 +19502,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      /** @description ACCESS_DENIED */
       403: {
         headers: {
           [name: string]: unknown
@@ -18224,7 +19511,16 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description HINT_EXHAUSTED · HINT_NOT_AVAILABLE · SESSION_NOT_STARTED */
+      /** @description SESSION_NOT_ACCESSIBLE */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description HINT_EXHAUSTED · HINT_NOT_AVAILABLE · SESSION_NOT_STARTED · SESSION_TIMEOUT */
       409: {
         headers: {
           [name: string]: unknown
@@ -18235,7 +19531,7 @@ export interface operations {
       }
     }
   }
-  submitAnswer: {
+  submitSessionAnswer: {
     parameters: {
       query?: never
       header?: {
@@ -18252,7 +19548,7 @@ export interface operations {
       }
     }
     responses: {
-      /** @description OK */
+      /** @description 채점 완료. **점수·통과 여부는 없다**(정의서 §7) — `outcome`이 다음 화면을 정한다 */
       200: {
         headers: {
           [name: string]: unknown
@@ -18261,7 +19557,7 @@ export interface operations {
           'application/json': components['schemas']['AnswerSubmitResponse']
         }
       }
-      /** @description ANSWER_TEXT_REQUIRED */
+      /** @description ANSWER_TEXT_REQUIRED · VALIDATION_FAILED */
       400: {
         headers: {
           [name: string]: unknown
@@ -18270,7 +19566,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      /** @description UNAUTHENTICATED */
       401: {
         headers: {
           [name: string]: unknown
@@ -18279,76 +19575,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description SESSION_NOT_STARTED · SESSION_TIMEOUT · ANSWER_ALREADY_SUBMITTED */
-      409: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description GRADING_FAILED */
-      503: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  recordActivity: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        sessionId: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['SessionActivityRequest']
-      }
-    }
-    responses: {
-      /** @description OK */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content?: never
-      }
-      /** @description ACTIVITY_SIGNAL_REQUIRED */
-      400: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      /** @description ACCESS_DENIED */
       403: {
         headers: {
           [name: string]: unknown
@@ -18366,7 +19593,154 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description SESSION_NOT_STARTED · SESSION_TIMEOUT · SESSION_ALREADY_ENDED */
+      /** @description SESSION_NOT_STARTED · SESSION_TIMEOUT · ANSWER_ALREADY_SUBMITTED · PROBLEM_TIME_LIMIT_EXCEEDED */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description GRADING_FAILED — **같은 답을 그대로 다시 제출하면 된다** */
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  recordSessionActivity: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        sessionId: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SessionActivityRequest']
+      }
+    }
+    responses: {
+      /** @description 기록됨. **본문이 없다** — 진행 상태는 바뀌지 않는다 */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description ACTIVITY_SIGNAL_REQUIRED · VALIDATION_FAILED */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SESSION_NOT_ACCESSIBLE */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SESSION_NOT_STARTED · SESSION_TIMEOUT · SESSION_ALREADY_ENDED — **끝난 세션의 409는 무시하면 된다.** 재전송할 값이 아니다 */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  openReviewSession: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['ReviewOpenRequest']
+      }
+    }
+    responses: {
+      /** @description 다시 보기 개설됨. 이미 열려 있었으면 그것을 그대로 돌려준다 */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['SessionResponse']
+        }
+      }
+      /** @description VALIDATION_FAILED · reportId가 없다 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description REVIEW_REPORT_NOT_ACCESSIBLE */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description REVIEW_SOURCE_NOT_READY · REVIEW_NOT_ELIGIBLE · REVIEW_ALREADY_COMPLETED */
       409: {
         headers: {
           [name: string]: unknown
@@ -19748,7 +21122,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description CLASSROOM_NOT_FOUND 반을 찾을 수 없거나 지정한 기수에 속하지 않음 */
+      /** @description CLASSROOM_NOT_FOUND 반을 찾을 수 없거나 지정한 기수에 속하지 않음 · MANAGER_NOT_FOUND 이 기관의 매니저가 아닌 ID가 포함됨(전체 거부, 25차 R3) */
       404: {
         headers: {
           [name: string]: unknown
@@ -20891,8 +22265,16 @@ export interface operations {
          * @example spring
          */
         query?: string
-        /** @description 분석 상태 필터. 최신 버전의 가장 최근 분석 시도 기준. `notAnalyzedOnly=true`와 함께 보내면 400이다 */
-        status?: components['schemas']['CurriculumAnalysisStatus']
+        /**
+         * @description 분석 상태 필터. 최신 버전의 가장 최근 분석 시도 기준입니다.
+         *
+         *     **여러 값을 보낼 수 있습니다**(25차 R1). `?status=PENDING&status=RUNNING`처럼 반복해
+         *     보내거나 `?status=PENDING,RUNNING`처럼 콤마로 이어 보내면 **합집합**으로 거릅니다 —
+         *     화면이 `분석 중` 한 라벨로 묶어 쓰는 두 상태를 한 번에 고를 수 있어야 하기 때문입니다.
+         *
+         *     `notAnalyzedOnly=true`와 함께 보내면 400입니다.
+         */
+        status?: components['schemas']['CurriculumAnalysisStatus'][]
         /**
          * @description 한 번도 분석하지 않은 교안만 남깁니다(13차 R2).
          *
@@ -21258,6 +22640,114 @@ export interface operations {
       }
     }
   }
+  findInterviews: {
+    parameters: {
+      query: {
+        /**
+         * @description 조회할 회차 ID
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        assessmentRoundId: string
+        /**
+         * @description 교육생 이름 부분 일치. 공백이면 무시한다
+         * @example 김민준
+         */
+        search?: string
+        /**
+         * @description 상태 필터 `PLANNED` / `DONE` / `EXCLUDED`. 없으면 전체
+         * @example PLANNED
+         */
+        status?: string
+        /**
+         * @description 위험 유형 필터 `INVALID` / `LOW_PERSISTENT` / `DECLINE` / `OBSERVE`. 없으면 전체
+         * @example DECLINE
+         */
+        riskType?: string
+        /** @description 반 필터. 없으면 담당 반 전체 */
+        classId?: string
+      }
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 조회 성공. 대상이 없으면 items가 빈 배열 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['InterviewListResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description 매니저 권한이 없음 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ORGANIZATION_CONTEXT_MISSING 인증 정보에서 organizationId를 확인할 수 없음 */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  findInterviewRoundOptions: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 조회 성공. 담당 기수에 회차가 없으면 빈 배열 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['InterviewRoundOptionResponse'][]
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description 매니저 권한이 없음 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
   findCurriculum: {
     parameters: {
       query?: never
@@ -21299,6 +22789,63 @@ export interface operations {
       }
       /** @description CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(다른 기관의 교안도 여기로 온다) */
       404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  deleteCurriculum: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description 교안 ID(버전이 바뀌어도 유지되는 고정 식별자) */
+        materialId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 교안 삭제 성공 */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(이미 지운 교안·다른 기관의 교안도 여기로 온다) */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description CURRICULUM_MATERIAL_IN_USE 이 교안을 쓰는 회차가 있음 — 연결을 먼저 끊어야 한다 */
+      409: {
         headers: {
           [name: string]: unknown
         }
@@ -22283,7 +23830,45 @@ export interface operations {
       }
     }
   }
-  findProblem: {
+  findCurrentRound: {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 조회 성공(회차 없음도 200) */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CurrentRoundResponse']
+        }
+      }
+      /** @description 액세스 토큰이 없거나 유효하지 않음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description NOT_A_TRAINEE 교육생 계정이 아님 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  findSessionProblem: {
     parameters: {
       query?: never
       header?: never
@@ -22296,7 +23881,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description OK */
+      /** @description 문제 한 벌. 진행 상황에 따라 turns·current가 달라진다 */
       200: {
         headers: {
           [name: string]: unknown
@@ -22305,7 +23890,16 @@ export interface operations {
           'application/json': components['schemas']['ProblemActivityResponse']
         }
       }
-      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      /** @description VALIDATION_FAILED · problemNo가 1~3 밖이다 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED */
       401: {
         headers: {
           [name: string]: unknown
@@ -22314,7 +23908,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      /** @description ACCESS_DENIED */
       403: {
         headers: {
           [name: string]: unknown
@@ -22323,7 +23917,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description PROBLEM_NOT_FOUND */
+      /** @description SESSION_NOT_ACCESSIBLE · PROBLEM_NOT_FOUND */
       404: {
         headers: {
           [name: string]: unknown
@@ -22343,7 +23937,7 @@ export interface operations {
       }
     }
   }
-  findCurrent: {
+  findCurrentSession: {
     parameters: {
       query?: never
       header?: never
@@ -22352,7 +23946,7 @@ export interface operations {
     }
     requestBody?: never
     responses: {
-      /** @description OK */
+      /** @description 이어서 할 세션이 있다. 세 가지 몸 중 하나가 온다 */
       200: {
         headers: {
           [name: string]: unknown
@@ -22361,7 +23955,14 @@ export interface operations {
           'application/json': components['schemas']['SessionResponse']
         }
       }
-      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      /** @description 이어서 할 세션이 없다. **본문이 없다** — 완료·상한 초과로 방금 닫힘·미준비·분석 실패를 구분하지 않는다. 사유는 `GET /assessment-rounds`로 가른다 */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description UNAUTHENTICATED */
       401: {
         headers: {
           [name: string]: unknown
@@ -22370,7 +23971,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      /** @description ACCESS_DENIED */
       403: {
         headers: {
           [name: string]: unknown
@@ -22409,44 +24010,6 @@ export interface operations {
         }
       }
       /** @description 호출자가 교육생(TRAINEE)이 아님 */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  findCurrentRound: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description 조회 성공(회차 없음도 200) */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['CurrentRoundResponse']
-        }
-      }
-      /** @description 액세스 토큰이 없거나 유효하지 않음 */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description NOT_A_TRAINEE 교육생 계정이 아님 */
       403: {
         headers: {
           [name: string]: unknown

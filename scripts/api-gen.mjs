@@ -84,6 +84,28 @@ export function buildIR(spec, tags = {}) {
         summary: (op.summary ?? '').split('|')[0].trim(),
         hasPath: params.some((p) => p.in === 'path'),
         hasQuery: params.some((p) => p.in === 'query'),
+        /*
+          **필수 헤더만 노출한다.** 선택 헤더는 시그니처에 넣지 않는다.
+
+          헤더는 대개 **전송 계층의 것**이다 — `Authorization`은 `_contract/client.ts`가
+          붙이고, 쿠키는 브라우저가 싣는다(아래 `hasCookie`). 그래서 스펙에 `in: header`가
+          있다고 전부 호출자에게 묻는 것은 층을 뒤섞는 일이다. 실제로 스펙이 그렇게 말한다.
+
+            X-Request-Id             "생략 시 서버가 생성합니다"          (13곳)
+            X-Swagger-Client-Origin  "일반 프론트 요청에서는 생략합니다"   ← 노출하면 안 된다
+            X-Trace-Id               관측용
+            Idempotency-Key          "제출 버튼을 누른 순간 하나 만들어
+                                      끝날 때까지 보관. 재시도는 같은 값"  ← 화면만 아는 값
+
+          **필수인 것만 남는 이유**는 타입이 강제하기 때문이기도 하다 — `required: true`면
+          `schema.d.ts`가 `'Idempotency-Key': string`(물음표 없음)으로 내서, 안 넘기면
+          **생성물 자체가 컴파일되지 않는다.**
+
+          값의 **수명**(재시도는 같은 키 · 재제출은 새 키)은 화면 상태만 알 수 있어
+          전송 계층이 대신 만들 수 없다. 그래서 이 한 갈래만 호출자에게 묻는다.
+          다만 **화면이 헤더 이름을 알 필요는 없다** — 도메인 어댑터가 가린다(A1의 「변환」).
+        */
+        hasHeader: params.some((p) => p.in === 'header' && p.required),
         /** 필수 쿼리 파라미터가 하나라도 있으면 인자를 optional로 만들면 안 된다 */
         queryRequired: params.some((p) => p.in === 'query' && p.required),
         /**
@@ -129,7 +151,7 @@ export function renderDomainTypes(ops, cfg) {
     `import type { operations } from '${cfg.imports.schema}'\n`,
     `/*`,
     `  operationId별 타입 별칭. 규칙이 고정이라 스키마 이름을 몰라도 찾을 수 있다:`,
-    `    {operationId}_Body · _Query · _Path · _Response · _Item · _Errors`,
+    `    {operationId}_Body · _Query · _Path · _Header · _Response · _Item · _Errors`,
     `*/\n`,
   ]
   for (const op of ops) {
@@ -138,6 +160,8 @@ export function renderDomainTypes(ops, cfg) {
     if (op.hasPath) lines.push(`export type ${alias(op, 'Path')} = ${O}['parameters']['path']`)
     if (op.hasQuery)
       lines.push(`export type ${alias(op, 'Query')} = NonNullable<${O}['parameters']['query']>`)
+    if (op.hasHeader)
+      lines.push(`export type ${alias(op, 'Header')} = NonNullable<${O}['parameters']['header']>`)
     if (op.hasBody)
       lines.push(
         `export type ${alias(op, 'Body')} = NonNullable<${O}['requestBody']>['content']['${
@@ -194,6 +218,7 @@ export function renderDomainApi(ops, cfg) {
     .flatMap((op) => [
       op.hasPath && alias(op, 'Path'),
       op.hasQuery && alias(op, 'Query'),
+      op.hasHeader && alias(op, 'Header'),
       op.hasBody && alias(op, 'Body'),
       alias(op, 'Response'),
     ])
@@ -203,6 +228,7 @@ export function renderDomainApi(ops, cfg) {
     const args = [
       op.hasPath && `path: ${alias(op, 'Path')}`,
       op.hasQuery && `query${op.queryRequired ? '' : '?'}: ${alias(op, 'Query')}`,
+      op.hasHeader && `header: ${alias(op, 'Header')}`,
       op.hasBody && `body: ${alias(op, 'Body')}`,
     ].filter(Boolean)
 
@@ -211,13 +237,14 @@ export function renderDomainApi(ops, cfg) {
       필수 인자가 없으면 객체 자체에 기본값을 준다 — 안 그러면 빈 객체를 넘겨야 하는 함수가 된다.
       `signal`은 React Query가 넘겨주는 취소 신호다. 화면을 떠나면 요청이 실제로 끊긴다.
     */
-    const allOptional = !op.hasPath && !op.hasBody && !op.queryRequired
+    const allOptional = !op.hasPath && !op.hasBody && !op.hasHeader && !op.queryRequired
     const sig = args.length
       ? `params: { ${args.join('; ')} } & RequestOptions${allOptional ? ' = {}' : ''}`
       : 'params: RequestOptions = {}'
     const paramParts = [
       op.hasPath && 'path: params.path',
       op.hasQuery && (op.queryRequired ? 'query: params.query' : 'query: params.query ?? {}'),
+      op.hasHeader && 'header: params.header',
       // 브라우저가 싣는 값이라 호출자에게 묻지 않는다
       op.hasCookie && 'cookie: undefined as never',
     ].filter(Boolean)
@@ -337,6 +364,7 @@ export function renderMutations(ops, cfg) {
     .flatMap((op) => [
       op.hasPath && alias(op, 'Path'),
       op.hasQuery && alias(op, 'Query'),
+      op.hasHeader && alias(op, 'Header'),
       op.hasBody && alias(op, 'Body'),
       alias(op, 'Response'),
     ])
@@ -346,6 +374,8 @@ export function renderMutations(ops, cfg) {
     const args = [
       op.hasPath && `path: ${alias(op, 'Path')}`,
       op.hasQuery && `query?: ${alias(op, 'Query')}`,
+      // 필수 헤더(`Idempotency-Key`)는 화면이 값을 만들어 넘겨야 한다 — 서버가 요구한다
+      op.hasHeader && `header: ${alias(op, 'Header')}`,
       op.hasBody && `body: ${alias(op, 'Body')}`,
     ].filter(Boolean)
     const varType = args.length ? `{ ${args.join('; ')} }` : 'void'

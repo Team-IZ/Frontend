@@ -3,12 +3,15 @@
 import { izClient, unwrap, type RequestOptions } from '@/api/_contract'
 import type {
   requestAnalysis_Path,
+  requestAnalysis_Query,
   requestAnalysis_Response,
   findOrganizationCurricula_Path,
   findOrganizationCurricula_Query,
   findOrganizationCurricula_Response,
   findCurriculum_Path,
   findCurriculum_Response,
+  deleteCurriculum_Path,
+  deleteCurriculum_Response,
   findSections_Path,
   findSections_Response,
   findUsedProjects_Path,
@@ -20,10 +23,12 @@ import type {
 } from './curriculumTypes'
 
 /** 재분석 요청 — `POST /api/v0/curricula/{materialId}/analyses` */
-export const requestAnalysis = (params: { path: requestAnalysis_Path } & RequestOptions) =>
+export const requestAnalysis = (
+  params: { path: requestAnalysis_Path; query?: requestAnalysis_Query } & RequestOptions,
+) =>
   unwrap<requestAnalysis_Response>(
     izClient.POST('/api/v0/curricula/{materialId}/analyses', {
-      params: { path: params.path },
+      params: { path: params.path, query: params.query ?? {} },
       signal: params.signal,
     }) as never,
   )
@@ -46,6 +51,15 @@ export const findOrganizationCurricula = (
 export const findCurriculum = (params: { path: findCurriculum_Path } & RequestOptions) =>
   unwrap<findCurriculum_Response>(
     izClient.GET('/api/v0/curricula/{materialId}', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 교안 삭제 — `DELETE /api/v0/curricula/{materialId}` */
+export const deleteCurriculum = (params: { path: deleteCurriculum_Path } & RequestOptions) =>
+  unwrap<deleteCurriculum_Response>(
+    izClient.DELETE('/api/v0/curricula/{materialId}', {
       params: { path: params.path },
       signal: params.signal,
     }) as never,

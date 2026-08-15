@@ -293,10 +293,10 @@ export const findCurrentProject = (params: { path: findCurrentProject_Path } & R
     }) as never,
   )
 
-/** 이번 회차 상태 판정 조회 (지금 할 일 하나) — `GET /api/v0/api/v0/bff/me/current-round` */
+/** 이번 회차 상태 판정 조회 (지금 할 일 하나) — `GET /api/v0/bff/me/current-round` */
 export const findCurrentRound = (params: RequestOptions = {}) =>
   unwrap<findCurrentRound_Response>(
-    izClient.GET('/api/v0/api/v0/bff/me/current-round', { signal: params.signal }) as never,
+    izClient.GET('/api/v0/bff/me/current-round', { signal: params.signal }) as never,
   )
 
 /** 팀원 제외 — `DELETE /api/v0/projects/{projectId}/teams/{teamId}/members/{traineeId}` */

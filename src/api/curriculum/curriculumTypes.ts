@@ -4,14 +4,20 @@ import type { operations } from '@/api/schema'
 
 /*
   operationId별 타입 별칭. 규칙이 고정이라 스키마 이름을 몰라도 찾을 수 있다:
-    {operationId}_Body · _Query · _Path · _Response · _Item · _Errors
+    {operationId}_Body · _Query · _Path · _Header · _Response · _Item · _Errors
 */
 
 // POST /api/v0/curricula/{materialId}/analyses — 재분석 요청
 export type requestAnalysis_Path = operations['requestAnalysis']['parameters']['path']
+export type requestAnalysis_Query = NonNullable<
+  operations['requestAnalysis']['parameters']['query']
+>
 export type requestAnalysis_Response = void
 export type requestAnalysis_Errors =
-  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'CURRICULUM_MATERIAL_NOT_FOUND'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'CURRICULUM_MATERIAL_NOT_FOUND'
+  | 'CURRICULUM_ANALYSIS_IN_PROGRESS'
 
 // GET /api/v0/organizations/{organizationId}/curricula — 기관 교안 목록
 export type findOrganizationCurricula_Path =
@@ -37,6 +43,15 @@ export type findCurriculum_Response =
   operations['findCurriculum']['responses'][200]['content']['application/json']
 export type findCurriculum_Errors =
   'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'CURRICULUM_MATERIAL_NOT_FOUND'
+
+// DELETE /api/v0/curricula/{materialId} — 교안 삭제
+export type deleteCurriculum_Path = operations['deleteCurriculum']['parameters']['path']
+export type deleteCurriculum_Response = void
+export type deleteCurriculum_Errors =
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'CURRICULUM_MATERIAL_NOT_FOUND'
+  | 'CURRICULUM_MATERIAL_IN_USE'
 
 // GET /api/v0/curricula/{materialId}/sections — 교안 섹션·개념 조회
 export type findSections_Path = operations['findSections']['parameters']['path']

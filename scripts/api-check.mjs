@@ -165,6 +165,17 @@ export function isNullable(schema) {
 const DENIES_NULL =
   /null(을|은|이|가)?\s*(아닌|아니면|아니라|허용하지\s*않|안\s*됨|불가|아니다|아님|보내지\s*(마|말|않))|항상\s*(값이\s*있|채워)/i
 
+/*
+  **형제 필드를 이름 없이 부르는 말.** `나머지는 null이거나 빈 배열이다` 같은 문장은
+  이 필드가 아니라 **옆 필드들**의 이야기다. 위의 백틱 규칙이 못 잡는 이유는 백틱이
+  `null` 하나만 감싸서 지목된 이름이 안 나오기 때문이다.
+
+  **null 바로 앞의 주어를 본다** — 문장 어디에 있는지가 아니라. `나머지 인원이 없으면
+  이 값은 null`은 "나머지"로 시작하지만 null이 되는 것은 "이 값"이라 자기 얘기다.
+*/
+const REFERS_SIBLINGS =
+  /(나머지|그\s*외|이외|아래|다른)\s*(필드|블록|값|것|항목)?\s*(들)?\s*(은|는|이|가)?\s*(전부|모두|각각)?\s*null/
+
 export function assertsNull(description, field) {
   if (typeof description !== 'string' || !/\bnull\b/i.test(description)) return false
 
@@ -173,7 +184,8 @@ export function assertsNull(description, field) {
     .filter((sentence) => /\bnull\b/i.test(sentence))
     .some((sentence) => {
       // 강조 표기는 뜻을 바꾸지 않는다 — 부정문 판정 전에 걷어낸다
-      if (DENIES_NULL.test(sentence.replace(/[`*_"']/g, ''))) return false
+      const plain = sentence.replace(/[`*_"']/g, '')
+      if (DENIES_NULL.test(plain)) return false
       /*
         백틱으로 **다른** 필드를 지목하는 문장은 그 필드 이야기다. 자기 이름이 섞여 있으면
         자기 얘기로 본다 — `foo`는 `bar`가 null이면 …처럼 둘 다 나오는 문장이 있다.
@@ -181,6 +193,8 @@ export function assertsNull(description, field) {
       const named = [...sentence.matchAll(/`(\w+)`/g)].map((m) => m[1])
       const mentionsOthers = named.length > 0 && !named.some((n) => n.toLowerCase() === 'null')
       if (field && mentionsOthers && !named.includes(field)) return false
+      // 이름 대신 "나머지"로 부르는 경우 — 자기 이름이 나오면 자기 얘기다
+      if (REFERS_SIBLINGS.test(plain) && !named.includes(field)) return false
       return true
     })
 }

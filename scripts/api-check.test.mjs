@@ -74,6 +74,25 @@ test('assertsNull — 남의 필드를 지목한 문장은 이 필드 얘기가 
   assert.ok(assertsNull('`className`은 반 배정이 없으면 null', 'className'))
 })
 
+test('assertsNull — 「나머지는 null」은 이 필드가 아니라 형제 필드 얘기다', () => {
+  /*
+    실제로 걸렸다 — `TraineeTimelineEvent.type`은 required이고 값이 5종인데, 설명이
+    **그 값에 따라 어느 블록이 채워지는지**를 안내하고 있었다. 앞 규칙(백틱으로 남의
+    필드를 지목)이 못 잡은 이유는 백틱이 `null` 하나만 감쌌기 때문이다 — 다른 필드를
+    "나머지"라는 말로 부르면 이름이 안 나온다.
+  */
+  const desc =
+    '`ASSESSMENT`(이해도 확인) · `REPORT`(리포트 발행).\n\n유형마다 아래 블록 중 하나만 채워진다 — 나머지는 `null`이거나 빈 배열이다.'
+  assert.ok(!assertsNull(desc, 'type'))
+
+  assert.ok(!assertsNull('그 외 필드는 null이다', 'kind'))
+  assert.ok(!assertsNull('아래 값들은 null로 온다', 'status'))
+
+  // 자기가 null이 된다고 말하는 문장은 그대로 잡아야 한다
+  assert.ok(assertsNull('배정 전이면 null이다', 'teamId'))
+  assert.ok(assertsNull('나머지 인원이 없으면 이 값은 null', 'leftover'))
+})
+
 test('assertsNull — null 언급이 없으면 대상이 아니다', () => {
   assert.ok(!assertsNull('기관명'))
   assert.ok(!assertsNull(undefined))

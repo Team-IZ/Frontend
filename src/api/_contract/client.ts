@@ -28,6 +28,50 @@ import type { paths } from '@/api/schema'
 /** 재발급 자체가 낸 401로 또 재발급하면 무한 루프가 된다 */
 const REFRESH_PATH = '/api/v0/auth/refresh'
 
+/*
+  ## 응답이 안 오면 영원히 기다린다 — 그래서 예산을 둔다
+
+  `fetch`에는 **기본 타임아웃이 없다.** 브라우저는 서버가 답할 때까지 안 끊는다.
+  이 백엔드는 「없는 것」을 물으면 404가 아니라 **무응답**이고(18차 R1·R7 · 21차 · 25차 R4)
+  실측으로도 로그인 진입에서 60초 넘게 아무 응답이 없었다 — 그동안 조회는 `isPending`에
+  머물고, 그것을 그리는 화면은 **끝나지 않는다.**
+
+  ### 값의 근거는 콜드스타트다 — "빨리 끊기"가 목적이 아니다
+  App Runner가 잠들어 있으면 깨어나는 데 **최대 76초**가 걸린다
+  (`components/common/Loading.tsx`가 "끊지 않는 이유"로 적어 둔 값). 30초에 끊으면
+  **정상적으로 깨어나는 중인 요청을 죽인다** — 실제로 오늘 재 보니 스펙 문서가 13.5초에
+  200을 줬는데, 그 앞의 여러 요청이 서버를 깨우는 데 쓰였다.
+
+  그래서 90초다. 목적은 대기를 짧게 만드는 것이 아니라 **끝나기는 하게** 만드는 것이다.
+  기다리는 동안 무엇을 그릴지는 화면이 정한다(`Loading`이 12초에 "서버가 깨어나는 중"을
+  띄운다).
+*/
+const REQUEST_BUDGET_MS = 90_000
+
+/** 파일은 서버가 받아서 파싱까지 한다 — 조회와 같은 예산이면 멀쩡한 업로드가 죽는다 */
+const UPLOAD_BUDGET_MS = 180_000
+
+/*
+  `FormData`를 본문으로 넘기면 `Request` 생성자가 `multipart/form-data; boundary=…`를
+  **직접 붙인다**(uploads.ts가 헤더를 안 주는 이유이기도 하다). 그래서 업로드 여부를
+  호출부에서 따로 알려줄 필요가 없다 — 본문이 파일이면 예산이 저절로 길어진다.
+*/
+const budgetFor = (request: Request) =>
+  request.headers.get('content-type')?.startsWith('multipart/')
+    ? UPLOAD_BUDGET_MS
+    : REQUEST_BUDGET_MS
+
+/**
+ * 예산이 붙은 `fetch`. **왕복 한 번에 하나씩** 걸린다 — 401 재시도는 자기 예산을 새로 받는다.
+ *
+ * `AbortSignal.any`로 원래 신호를 살려 둔다. 예산 신호만 넘기면 **화면을 떠나 React Query가
+ * 취소한 요청이 계속 살아 있게 된다.**
+ */
+function fetchWithBudget(request: Request) {
+  const signal = AbortSignal.any([request.signal, AbortSignal.timeout(budgetFor(request))])
+  return fetch(request, { signal })
+}
+
 /** 이 요청에 토큰을 실었는가 — 미들웨어가 표시하고 응답에서 읽는다 */
 const sentToken = new WeakMap<Request, boolean>()
 /** 재시도는 1회. 두 번째 401은 그대로 던진다 */
@@ -109,7 +153,7 @@ const authMiddleware: Middleware = {
     const retry = clone ?? request
     retry.headers.set('Authorization', `Bearer ${result.token}`)
     retried.add(retry)
-    return fetch(retry)
+    return fetchWithBudget(retry)
   },
 }
 
@@ -121,6 +165,7 @@ export function createIzClient(options: { baseUrl: string }) {
   const client = createClient<paths>({
     baseUrl: options.baseUrl,
     credentials: 'include', // 리프레시 쿠키
+    fetch: fetchWithBudget, // 응답이 안 와도 끝난다
   })
   client.use(authMiddleware)
   return client

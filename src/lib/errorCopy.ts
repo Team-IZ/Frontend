@@ -161,6 +161,22 @@ export function errorCopy(error: unknown, ctx: Ctx): ErrorCopy {
     }
 
     switch (true) {
+      /*
+        **닿기는 했는데 답이 안 와서 우리가 끊었다.** 아래 `status === 0`과 상태가 같아
+        그냥 두면 *"인터넷 연결을 확인해 주세요"* 가 나가는데, 그건 **거짓말이다** —
+        사용자의 연결은 멀쩡하고 안 답한 것은 서버다. 그 말을 들은 사용자는 자기 와이파이를
+        고치러 간다(4-3 — 확인 못 한 것을 단정하지 않는다).
+
+        재시도는 준다. 서버가 깨어나는 중이면 **다음 번에는 실제로 온다.**
+      */
+      case error.isTimeout:
+        return {
+          title: `${obj(subject)} 불러오지 못했습니다`,
+          description: '서버가 시간 안에 응답하지 않았습니다 — 잠시 후 다시 시도해 주세요.',
+          retry: true,
+          tone: 'failed',
+        }
+
       // 서버에 닿지도 못했다 — 서버 탓으로 쓰면 사용자가 엉뚱한 곳을 기다린다
       case error.status === 0:
         return {

@@ -34,6 +34,17 @@ assert.strictEqual(pending.tone, 'pending', '아직 발행 전은 고장이 아�
 assert.strictEqual(pending.retry, false, '기다려야 생기는 것에 다시 시도를 붙이지 않는다')
 assert.strictEqual(of(api(404, 'NOT_FOUND')).tone, 'failed', '일반 404는 유형 3')
 
+/*
+  ── 예산 초과와 오프라인은 **같은 status(0)인데 다른 말을 해야 한다** ─────
+  둘을 한 문구로 덮으면 서버가 안 답한 것에 "인터넷을 확인하세요"가 나가고,
+  사용자는 멀쩡한 자기 연결을 고치러 간다.
+*/
+const timeout = of(api(0, 'TIMEOUT'))
+const offline = of(api(0, 'NETWORK'))
+assert.notStrictEqual(timeout.description, offline.description, '예산 초과 ≠ 오프라인')
+assert.doesNotMatch(timeout.description, /인터넷/, '서버가 안 답한 것을 인터넷 탓으로 하지 않는다')
+assert.strictEqual(timeout.retry, true, '서버가 깨어나는 중이면 다음엔 온다')
+
 // ── 도메인 코드가 status를 이긴다. 단, 일반 코드는 못 이긴다 ─────
 assert.strictEqual(
   of(api(500, 'INTERNAL_SERVER_ERROR')).description,

@@ -1,5 +1,5 @@
 import StaleBlock from '../../_shared/StaleBlock'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
@@ -59,12 +59,7 @@ const SORT_OPTIONS = [
 ]
 type CurriculumSort = NonNullable<findOrganizationCurricula_Query['sort']>
 
-type Props = {
-  /** 교안 수 — 탭 이름 옆 배지 */
-  onCount: (count: number | null) => void
-}
-
-export default function CurriculaTab({ onCount }: Props) {
+export default function CurriculaTab() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   /*
@@ -114,11 +109,6 @@ export default function CurriculaTab({ onCount }: Props) {
   /** 필터 적용 **후** 수 — 푸터가 쓴다. 헤더의 `totalAll`과 다른 값이다 */
   const total = page.data?.totalElements ?? 0
   const narrowed = query.trim().length > 0 || status !== ALL
-
-  useEffect(() => {
-    // 필터와 무관한 전체를 배지로 올린다 — 검색어를 쳐도 탭 배지가 흔들리면 안 된다
-    if (counts) onCount(totalAll)
-  }, [counts, totalAll, onCount])
 
   return (
     <>
@@ -203,7 +193,7 @@ export default function CurriculaTab({ onCount }: Props) {
           <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
-                {query ? `"${query}"와 맞는 교안이 없습니다` : '조건에 맞는 교안이 없습니다'}
+                {query ? `"${query}"에 맞는 교안이 없습니다` : '조건에 맞는 교안이 없습니다'}
               </EmptyTitle>
               <EmptyDescription>전체 {totalAll}개에서 찾았습니다.</EmptyDescription>
             </EmptyHeader>
@@ -232,7 +222,7 @@ export default function CurriculaTab({ onCount }: Props) {
         )
       ) : (
         /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
-        <StaleBlock stale={page.isPlaceholderData} label="교안을 불러오는 중">
+        <StaleBlock stale={page.isFetching && page.data !== undefined} label="교안을 불러오는 중">
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -290,7 +280,9 @@ export default function CurriculaTab({ onCount }: Props) {
                       목록에서 행마다 부르면 조회가 20건 나간다. 이름은 상세에서 본다.
                     */}
                     <TableCell className="text-fg-muted text-xs">
-                      {c.usedProjectCount > 0 ? `${c.usedProjectCount}개 회차에서 사용 중` : '—'}
+                      {c.usedProjectCount > 0
+                        ? `${c.usedProjectCount}개 프로젝트에서 사용 중`
+                        : '—'}
                     </TableCell>
                     <TableCell>
                       {analyzed ? (

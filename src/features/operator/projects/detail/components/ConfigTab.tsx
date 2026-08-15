@@ -101,7 +101,7 @@ export default function ConfigTab({
                   */}
                   {c.originalFileName ? (
                     <Link
-                      to="/operator/admin/curricula"
+                      to="/operator/curricula"
                       className="hover:text-primary font-semibold hover:underline"
                     >
                       {c.originalFileName}
@@ -164,7 +164,7 @@ export default function ConfigTab({
                       <>
                         {' · '}
                         <Link
-                          to="/operator/admin/curricula"
+                          to="/operator/curricula"
                           className="hover:text-primary hover:underline"
                         >
                           {owner.originalFileName}

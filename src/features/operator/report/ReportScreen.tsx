@@ -92,7 +92,7 @@ const SECTION_VIEW: Record<
     count: () => null,
   },
   round: {
-    meta: (r) => `미니프로젝트 ${r.totalRounds}회 · 회차당 검증 개념 3건`,
+    meta: (r) => `미니프로젝트 ${r.totalRounds}개 · 프로젝트당 검증 개념 3건`,
     count: (r) => (r.status === 'CONFIRMED' ? `${r.rounds.length}` : null),
   },
   concept: {
@@ -104,7 +104,7 @@ const SECTION_VIEW: Record<
     count: () => null,
   },
   top: {
-    meta: () => '미니프로젝트 회차 중 1회 이상 반 상위 · 우수 횟수 순',
+    meta: () => '미니프로젝트 중 1회 이상 반 상위 · 우수 횟수 순',
     count: (r) => (r.status === 'CONFIRMED' ? `${r.topStudents.length}` : null),
   },
 }
@@ -169,7 +169,7 @@ export default function ReportScreen() {
           <EmptyHeader>
             <EmptyTitle>기수가 없습니다</EmptyTitle>
             <EmptyDescription>
-              운영 관리에서 기수를 먼저 만들면 회차가 끝난 뒤 리포트가 발행됩니다.
+              운영 관리에서 기수를 먼저 만들면 프로젝트가 끝난 뒤 리포트가 발행됩니다.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -230,7 +230,7 @@ export default function ReportScreen() {
                     미니프로젝트 {report.data.completedRounds} / {report.data.totalRounds}회 진행
                     중입니다.
                   </b>{' '}
-                  남은 회차가 이 값을 바꿉니다. 확정되기 전에는 내보낼 수 없습니다.
+                  남은 프로젝트가 이 값을 바꿉니다. 확정되기 전에는 내보낼 수 없습니다.
                 </span>
                 <Button
                   variant="ghost"

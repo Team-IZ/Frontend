@@ -142,11 +142,11 @@ export function useDashboard(cohortId: string | undefined) {
     */
     compare: toBlock<ClassCompare>(
       { ...risk, data: risk.data === undefined ? undefined : toCompare(risk.data) },
-      '아직 집계된 회차가 없습니다 — 회차가 끝나고 집계되면 반별 위험 비율이 여기에 쌓입니다',
+      '아직 집계된 프로젝트가 없습니다 — 프로젝트가 끝나고 집계되면 반별 위험 비율이 여기에 쌓입니다',
     ),
     pipeline: toBlock<RoundPipeline>(
       pipeline,
-      '아직 회차가 없습니다 — 프로젝트를 만들면 이번 회차 진행이 여기에 보입니다',
+      '아직 프로젝트가 없습니다 — 프로젝트를 만들면 진행이 여기에 보입니다',
     ),
     todos: toBlock<Todo[]>(todos),
     /** 블록마다 자기 것만 다시 부른다 — 전에는 하나를 누르면 다섯이 다시 나갔다 */

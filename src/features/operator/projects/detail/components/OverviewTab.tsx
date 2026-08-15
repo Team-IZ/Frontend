@@ -74,7 +74,7 @@ export default function OverviewTab({
             (18차 R5). 지어내지 않고 **날짜만 쓴다** — 화면이 `23:59`이라고 말하면
             학생은 그때까지 낼 수 있다고 믿는데 서버는 그 약속을 모른다.
           */
-          note={due?.text ?? (project.endDate ? undefined : '회차가 언제 닫히는지 정해집니다')}
+          note={due?.text ?? (project.endDate ? undefined : '프로젝트가 언제 닫히는지 정해집니다')}
           tone={!project.endDate ? 'warn' : due?.urgent ? 'danger' : undefined}
         />
         {/*
@@ -132,7 +132,7 @@ export default function OverviewTab({
         )}
         {project.status === 'DONE' && (
           <p className="border-border text-fg-muted border-b px-4 py-2 text-xs">
-            종료된 회차라 일정을 바꿀 수 없습니다.
+            종료된 프로젝트라 일정을 바꿀 수 없습니다.
           </p>
         )}
 
@@ -200,12 +200,12 @@ export default function OverviewTab({
           <Node
             label="재시험 창"
             done={!!project.endDate}
-            value="리포트 발행 후 3일 또는 다음 회차 제출일 중 빠른 쪽"
+            value="리포트 발행 후 3일 또는 다음 프로젝트 제출일 중 빠른 쪽"
             note={[
               '도달 0·1단인 개념만 · 같은 문항을 1단부터 다시 · 힌트 없이 · 1회만',
               nextDueAt && nextProjectName
                 ? `${nextProjectName}(${formatDue(nextDueAt, true)})이 먼저면 그날 닫힙니다`
-                : '다음 회차가 없어 3일 규칙만 적용됩니다',
+                : '다음 프로젝트가 없어 3일 규칙만 적용됩니다',
             ].join(' · ')}
             last
           />

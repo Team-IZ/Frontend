@@ -140,7 +140,7 @@ export default function AnalysisScreen() {
     '분석',
     cohortName,
     level === 'team' && teamClassName ? teamClassName : null,
-    level === 'team' && teamClassName ? '팀' : tab === 'rounds' ? '회차 흐름' : '기수 간 비교',
+    level === 'team' && teamClassName ? '팀' : tab === 'rounds' ? '프로젝트 흐름' : '기수 간 비교',
   ]
     .filter(Boolean)
     .join(' › ')
@@ -161,7 +161,7 @@ export default function AnalysisScreen() {
 
       <Tabs value={tab} onValueChange={(v) => setTab(v as AnalysisTab)}>
         <TabsList className="mb-4">
-          <TabsTrigger value="rounds">회차 흐름</TabsTrigger>
+          <TabsTrigger value="rounds">프로젝트 흐름</TabsTrigger>
           <TabsTrigger value="cohorts">기수 간 비교</TabsTrigger>
         </TabsList>
 
@@ -204,7 +204,7 @@ export default function AnalysisScreen() {
               <EmptyHeader>
                 <EmptyTitle>기수가 없습니다</EmptyTitle>
                 <EmptyDescription>
-                  회차가 돌아야 견줄 값이 생깁니다.
+                  프로젝트가 끝나야 견줄 값이 생깁니다.
                   <br />
                   운영 관리에서 기수를 먼저 만드세요.
                 </EmptyDescription>
@@ -230,15 +230,15 @@ export default function AnalysisScreen() {
               <EmptyHeader>
                 <EmptyTitle>
                   {needs === 'ROUND'
-                    ? '어느 회차의 팀을 볼지 골라 주세요'
+                    ? '어느 프로젝트의 팀을 볼지 골라 주세요'
                     : needs === 'CLASS'
                       ? '어느 반의 팀을 볼지 골라 주세요'
-                      : '회차와 반을 골라 주세요'}
+                      : '프로젝트와 반을 골라 주세요'}
                 </EmptyTitle>
                 <EmptyDescription>
                   팀 번호는 반 안에서만 유일하고,{' '}
-                  <b className="font-semibold">팀은 회차마다 다시 짜일 수 있어</b> 회차를 가로질러
-                  같은 팀으로 볼 수 없습니다.
+                  <b className="font-semibold">팀은 프로젝트마다 다시 짜일 수 있어</b> 프로젝트를
+                  가로질러 같은 팀으로 볼 수 없습니다.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -262,15 +262,18 @@ export default function AnalysisScreen() {
             */
             <Empty variant="pending">
               <EmptyHeader>
-                <EmptyTitle>아직 볼 회차가 없습니다</EmptyTitle>
+                <EmptyTitle>아직 볼 프로젝트가 없습니다</EmptyTitle>
                 <EmptyDescription>
-                  프로젝트를 만들고 회차가 끝나면 그 결과가 여기에 쌓입니다.
+                  프로젝트를 만들고 끝나면 그 결과가 여기에 쌓입니다.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
           ) : (
             /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
-            <StaleBlock stale={grid.isPlaceholderData} label="격자를 불러오는 중">
+            <StaleBlock
+              stale={grid.isFetching && grid.data !== undefined}
+              label="격자를 불러오는 중"
+            >
               <Card className="px-5 py-4">
                 <RoundGridTable grid={g} />
               </Card>
@@ -399,12 +402,15 @@ export default function AnalysisScreen() {
                 </EmptyDescription>
               </EmptyHeader>
               <Button variant="ghost" onClick={() => setTab('rounds')}>
-                회차 흐름에서 기수 안의 변화 보기
+                프로젝트 흐름에서 기수 안의 변화 보기
               </Button>
             </Empty>
           ) : (
             /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
-            <StaleBlock stale={compare.isPlaceholderData} label="비교를 불러오는 중">
+            <StaleBlock
+              stale={compare.isFetching && compare.data !== undefined}
+              label="비교를 불러오는 중"
+            >
               <Card className="px-5 py-4">
                 <CohortCompareTable data={compare.data} />
               </Card>

@@ -1,6 +1,6 @@
 import StaleBlock from '../../_shared/StaleBlock'
-import { useEffect, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router'
+import { useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
@@ -34,6 +34,7 @@ import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
 import { ALL, UNASSIGNED, asQuery, withAll } from '../_/filterState'
 import AddRosterDialog from './components/AddRosterDialog'
 import DeactivateTraineeDialog from './components/DeactivateTraineeDialog'
+import AssignPanel from './components/AssignPanel'
 
 /*
   ③ 명단 — 기수의 교육생 전체. 범위는 **선택 기수**다.
@@ -52,11 +53,6 @@ const SORT_OPTIONS = [
   { value: 'NAME', label: '이름순' },
   { value: 'RECENT_ENROLLED', label: '최근 등록순' },
 ]
-
-type Props = {
-  /** 기수 전체 인원 — 탭 이름 옆 배지 */
-  onCount: (count: number | null) => void
-}
 
 type Trainee = TraineeRosterEntry
 type RosterSort = NonNullable<findTraineeRoster_Query['sort']>
@@ -90,8 +86,7 @@ function statusNote(t: Trainee): string {
   return [label, t.inactivatedReason, t.inactivatedAt?.slice(0, 10)].filter(Boolean).join(' · ')
 }
 
-export default function RosterTab({ onCount }: Props) {
-  const navigate = useNavigate()
+export default function RosterTab() {
   const [search, setSearch] = useState('')
   /*
     **입력값과 조회값을 가른다.** 입력칸은 `search`(즉시 반응), 조회는 `query`(멈춘 뒤).
@@ -116,6 +111,11 @@ export default function RosterTab({ onCount }: Props) {
     25행이면 안 느끼지만 배정 모드는 `범위=전체`로 250명을 연다.
   */
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
+  /*
+    반 배정 패널이 열려 있나 — **전체 화면 모드가 아니라 이 표 옆이다**(`AssignPanel` 주석).
+    고른 사람·검색·필터·쪽이 그대로 남으므로 넘길 것이 없다.
+  */
+  const [assignOpen, setAssignOpen] = useState(false)
   const [addOpen, setAddOpen] = useState(false)
   /** 중도 이탈 처리 대상(OP06-7-①). 한 명씩이라 대상 자체를 상태로 둔다 */
   const [deactivating, setDeactivating] = useState<Trainee | null>(null)
@@ -169,10 +169,6 @@ export default function RosterTab({ onCount }: Props) {
   const unassigned = roster.data?.unassignedCount ?? 0
   const narrowed = query.trim().length > 0 || classId !== ALL || account !== ALL
 
-  useEffect(() => {
-    if (roster.data) onCount(cohortTotal)
-  }, [roster.data, cohortTotal, onCount])
-
   /** 지금 쪽 전체 선택 — 250명 전체가 아니다. 보이지 않는 것을 고르게 하지 않는다 */
   const allOnPage = rows.length > 0 && rows.every((t) => selected.has(t.traineeId))
 
@@ -196,7 +192,7 @@ export default function RosterTab({ onCount }: Props) {
       )}
 
       <SectionHeader
-        title="명단"
+        title="교육생"
         /* 헤더는 **필터와 무관한 기수 전체**다 — 걸러 보는 동안 이 수가 따라 움직이면
            지금 보는 것이 전체인지 일부인지 알 수 없다. 필터 결과는 푸터에 있다 */
         count={roster.data ? `${cohortTotal}명` : undefined}
@@ -220,11 +216,11 @@ export default function RosterTab({ onCount }: Props) {
               눌러 보고 완료 화면만 만난다(C6).
             */}
             {unassigned > 0 && (
-              <Button variant="ghost" onClick={() => navigate('/operator/admin/assign')}>
+              <Button variant="ghost" onClick={() => setAssignOpen(true)}>
                 반 배정하기 →
               </Button>
             )}
-            <Button onClick={() => setAddOpen(true)}>+ 명단 추가</Button>
+            <Button onClick={() => setAddOpen(true)}>+ 교육생 추가</Button>
           </>
         }
       />
@@ -242,7 +238,15 @@ export default function RosterTab({ onCount }: Props) {
         필터가 가려지는 것은 손해가 아니다 — 필터를 바꾸면 `narrow()`가 선택을 비우므로
         고른 상태에서는 어차피 쓸 수 없는 컨트롤이었다. 다시 쓰려면 `선택 해제`가 이 줄에 있다.
       */}
-      <div className="mb-3 grid">
+      {/*
+        툴바와 벌크바가 **같은 칸을 겹쳐 쓴다**(`col-start-1 row-start-1`) — 고르는 순간
+        자리가 안 밀리게 하려는 것이다. 그래서 **높이도 둘이 같아야 한다.**
+
+        ⚠ 벌크바에 세로 여백이 아예 없었다(`px-3`만). 글자가 색 띠의 위아래 모서리에
+        붙어서 답답했는데, 여백만 주면 이번엔 툴바보다 커져서 **고를 때마다 표가 내려간다.**
+        그래서 **칸에 최소 높이를 주고 두 층을 가운데 정렬**한다 — 여백이 생기고 흔들림은 없다.
+      */}
+      <div className="mb-3 grid min-h-11 items-center">
         <div
           className={cn(
             'col-start-1 row-start-1 flex flex-wrap items-center gap-2',
@@ -292,17 +296,15 @@ export default function RosterTab({ onCount }: Props) {
         {/* 같은 칸의 다른 층. `visibility:hidden`이라 안 보일 때는 탭 순서에서도 빠진다 */}
         <div
           className={cn(
-            'bg-primary-soft border-primary-border col-start-1 row-start-1 flex items-center gap-2 rounded-md border px-3',
+            'bg-primary-soft border-primary-border col-start-1 row-start-1 flex min-h-11 items-center gap-2 rounded-md border px-3 py-1.5',
             selected.size === 0 && 'invisible',
           )}
         >
           <b className="text-primary text-sm font-semibold">{selected.size}명 선택</b>
           <Button
             size="sm"
-            onClick={() =>
-              // 고른 사람을 들고 모드로 간다 — 리셋되면 방금 한 선택을 다시 해야 한다(§3)
-              navigate('/operator/admin/assign', { state: { traineeIds: [...selected] } })
-            }
+            // 표 옆에서 연다 — 화면을 갈아엎지 않으니 고른 것이 눈앞에 그대로 남는다
+            onClick={() => setAssignOpen(true)}
           >
             반 배정 →
           </Button>
@@ -322,6 +324,18 @@ export default function RosterTab({ onCount }: Props) {
               const targets = rows.filter(
                 (t) => selected.has(t.traineeId) && t.pendingInvitationTokenId !== null,
               )
+              /*
+                ⚠ **아무도 대상이 아니면 보내지 않는다.** 고른 사람이 전부 활성이면
+                `targets`가 비는데, 그대로 보내면 서버가 `400 VALIDATION_FAILED`로
+                거절한다(실측 — 빈 `traineeIds`). 화면에는 「보내지 못했습니다」가 떠서
+                **아무 문제 없는 상황이 실패로 보였다.**
+
+                보낼 것이 없다는 말은 요청 없이도 할 수 있다.
+              */
+              if (targets.length === 0) {
+                action.setResult({ text: '고른 사람 중 초대 대기가 없어 아무것도 보내지 않았어요' })
+                return
+              }
               const done = await action.run(
                 () =>
                   resend.mutateAsync({
@@ -334,6 +348,7 @@ export default function RosterTab({ onCount }: Props) {
                       (r.failures.length > 0 ? ` · ${r.failures.length}명은 보내지 못했어요` : '')
                     : '초대 대기 중인 사람이 없어 아무것도 보내지 않았어요',
                 '초대를 보내지 못했습니다',
+                '교육생',
               )
               // 실패하면 선택을 남긴다 — 다시 시도할 대상이 그것이다
               if (done !== undefined) setSelected(new Set())
@@ -360,7 +375,7 @@ export default function RosterTab({ onCount }: Props) {
       ) : roster.isError ? (
         <ErrorState
           error={roster.error}
-          subject="명단"
+          subject="교육생"
           onRetry={() => void roster.refetch()}
           retrying={roster.isFetching}
         />
@@ -369,7 +384,14 @@ export default function RosterTab({ onCount }: Props) {
           <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
-                {query ? `"${query}"와 맞는 사람이 없습니다` : '조건에 맞는 사람이 없습니다'}
+                {/*
+                  **검색어 뒤에 「와/과」를 붙이지 않는다.** 받침이 있으면 「과」라
+                  `"김"와`가 된다 — 사용자가 넣은 값이라 어느 쪽인지 미리 알 수 없다.
+                  `에`는 받침과 무관하고, 바로 옆 분기(`조건에 맞는`)와도 맞물린다.
+                  이 화면 아래쪽(§비활성화)에서 이미 같은 결론을 냈다 —
+                  이름 뒤에 조사를 붙이지 않는다.
+                */}
+                {query ? `"${query}"에 맞는 사람이 없습니다` : '조건에 맞는 사람이 없습니다'}
               </EmptyTitle>
               {/* **필터 전 모집단**을 적는다 — `total`을 쓰면 `0명에서 찾았습니다`가 된다 */}
               <EmptyDescription>
@@ -397,82 +419,87 @@ export default function RosterTab({ onCount }: Props) {
                 CSV로 한 번에 넣거나 직접 입력할 수 있습니다. 등록과 동시에 활성화 초대가 나갑니다.
               </EmptyDescription>
             </EmptyHeader>
-            <Button onClick={() => setAddOpen(true)}>+ 명단 추가</Button>
+            <Button onClick={() => setAddOpen(true)}>+ 교육생 추가</Button>
           </Empty>
         )
       ) : (
         /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
-        <StaleBlock stale={roster.isPlaceholderData} label="명단을 불러오는 중">
-          <Table className="table-fixed">
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-10">
-                  <Checkbox
-                    checked={allOnPage}
-                    aria-label="이 쪽 전체 선택"
-                    onCheckedChange={() =>
-                      setSelected(allOnPage ? new Set() : new Set(rows.map((t) => t.traineeId)))
-                    }
-                  />
-                </TableHead>
-                {/*
+        <div className={cn('grid gap-4', assignOpen && 'lg:grid-cols-[1fr_300px]')}>
+          <div className="min-w-0">
+            <StaleBlock
+              stale={roster.isFetching && roster.data !== undefined}
+              label="교육생을 불러오는 중"
+            >
+              <Table className="table-fixed">
+                <TableHeader>
+                  <TableRow className="hover:bg-transparent">
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={allOnPage}
+                        aria-label="이 쪽 전체 선택"
+                        onCheckedChange={() =>
+                          setSelected(allOnPage ? new Set() : new Set(rows.map((t) => t.traineeId)))
+                        }
+                      />
+                    </TableHead>
+                    {/*
                   **이메일을 이름 밑에 겹쳐 쓰지 않는다**(E11 — 칸 하나에 값 하나).
                   한 칸에 둘을 쌓으면 행 높이가 두 줄이 되어 한 화면에 들어가는 사람이
                   절반이 되고, **이메일로 훑을 수가 없다** — 세로로 안 맞으니 눈이 매
                   줄마다 이름을 건너뛰어야 한다. 계정 문제를 볼 때 실제로 훑는 것이 그 열이다.
                 */}
-                <TableHead className="w-32">교육생</TableHead>
-                <TableHead className="w-56">이메일</TableHead>
-                <TableHead className="w-32">소속 반</TableHead>
-                <TableHead className="w-28">계정</TableHead>
-                {/*
+                    <TableHead className="w-32">교육생</TableHead>
+                    <TableHead className="w-56">이메일</TableHead>
+                    <TableHead className="w-32">소속 반</TableHead>
+                    <TableHead className="w-28">계정</TableHead>
+                    {/*
                   **정렬 옵션에 `최근 등록순`이 있는데 등록일이 행에 없었다**(E2) — 왜 그
                   순서인지 물을 데가 없다. 기수 탭의 `기간` → `시작 ~ 종료`와 같은 자리다.
                   중도 합류를 가려내는 값이기도 하다 — 개강일이 아닌 사람이 곧 그 사람이다.
                 */}
-                <TableHead className="w-32">등록일</TableHead>
-                {/*
+                    <TableHead className="w-32">등록일</TableHead>
+                    {/*
                   **비고 — 한 칸에 두 줄을 쌓지 않는다**(E11). 비활성 사유·일자를 `계정`
                   배지 밑에 붙였더니 그 행만 두 줄이 되어 표가 들쭉날쭉했다. 값이 드물게
                   차는 열이지만, 드문 값이야말로 **제자리가 있어야** 눈에 걸린다.
                 */}
-                <TableHead className="w-44">비고</TableHead>
-                {/* 마지막 열(액션)이 남는 폭을 흡수한다 */}
-                <TableHead className="text-right">
-                  <span className="sr-only">액션</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((t) => {
-                const checked = selected.has(t.traineeId)
-                return (
-                  <TableRow key={t.traineeId} className={cn(checked && 'bg-primary-soft')}>
-                    <TableCell>
-                      <Checkbox
-                        checked={checked}
-                        aria-label={`${t.name} 선택`}
-                        onCheckedChange={() => toggle(t.traineeId)}
-                      />
-                    </TableCell>
-                    <TableCell className="font-semibold">{t.name}</TableCell>
-                    <TableCell className="text-fg-muted truncate text-xs">{t.email}</TableCell>
-                    <TableCell
-                      className={cn('text-xs', t.className ? 'text-fg-muted' : 'text-warning')}
-                    >
-                      {/*
+                    <TableHead className="w-44">비고</TableHead>
+                    {/* 마지막 열(액션)이 남는 폭을 흡수한다 */}
+                    <TableHead className="text-right">
+                      <span className="sr-only">액션</span>
+                    </TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.map((t) => {
+                    const checked = selected.has(t.traineeId)
+                    return (
+                      <TableRow key={t.traineeId} className={cn(checked && 'bg-primary-soft')}>
+                        <TableCell>
+                          <Checkbox
+                            checked={checked}
+                            aria-label={`${t.name} 선택`}
+                            onCheckedChange={() => toggle(t.traineeId)}
+                          />
+                        </TableCell>
+                        <TableCell className="font-semibold">{t.name}</TableCell>
+                        <TableCell className="text-fg-muted truncate text-xs">{t.email}</TableCell>
+                        <TableCell
+                          className={cn('text-xs', t.className ? 'text-fg-muted' : 'text-warning')}
+                        >
+                          {/*
                         **`A반 · 3팀`에서 팀을 뺐다**(OP06-6). 팀은 프로젝트마다 재편성되는
                         **회차의 속성**이라 사람에 고정으로 붙지 않는다(01-design-checklist).
                         한 기수에 회차가 여럿이면 회차 이름 없는 `3팀`은 무엇도 안 가리킨다.
                         매니저용 명단(MG-05)이 같은 이유로 팀 열을 이미 뺐다.
                       */}
-                      {t.className ?? '미배정'}
-                    </TableCell>
-                    <TableCell>
-                      <AccountStatusBadge status={t.status} />
-                    </TableCell>
-                    <TableCell className="text-fg-muted text-xs tabular-nums">
-                      {/*
+                          {t.className ?? '미배정'}
+                        </TableCell>
+                        <TableCell>
+                          <AccountStatusBadge status={t.status} />
+                        </TableCell>
+                        <TableCell className="text-fg-muted text-xs tabular-nums">
+                          {/*
                         ⚠ **`joinedAt`이 `null`로 온다.** 스펙은 `required` 문자열인데
                         **미배정 교육생에게는 값이 없다**(22차 Q2). `.slice()`를 바로
                         부르다가 **화면이 통째로 죽었다** — 반 필터에서 「미배정」을
@@ -480,53 +507,78 @@ export default function RosterTab({ onCount }: Props) {
 
                         모르는 값이라 `—`로 둔다. 오늘 날짜를 넣으면 등록일을 지어내는 것이다.
                       */}
-                      {t.joinedAt ? t.joinedAt.slice(0, 10) : '—'}
-                    </TableCell>
-                    <TableCell className="text-fg-muted truncate text-xs">
-                      {statusNote(t)}
-                    </TableCell>
-                    {/*
+                          {t.joinedAt ? t.joinedAt.slice(0, 10) : '—'}
+                        </TableCell>
+                        <TableCell className="text-fg-muted truncate text-xs">
+                          {statusNote(t)}
+                        </TableCell>
+                        {/*
                       **비활성 하나만 남겼다.** 반 이동은 여러 명을 한 번에 하는 일이라
                       벌크바의 `반 배정 →`이 맡는다 — 행마다 버튼을 두면 250행에 그 버튼이
                       250개 생기고, 정작 훑어야 하는 값이 밀린다.
                     */}
-                    <TableCell className="text-right">
-                      {/*
+                        <TableCell className="text-right">
+                          {/*
                         **버튼이 없는 행도 같은 높이여야 한다.** 비활성 행에만 버튼이
                         없으니 그 줄만 43px이 되어(다른 줄 53px) 표가 들쭉날쭉했다 —
                         높이를 버튼이 아니라 **칸이** 정하게 한다.
                       */}
-                      <div className="flex h-[30px] items-center justify-end">
-                        {t.status !== 'INACTIVE' && (
-                          <Button variant="ghost" size="sm" onClick={() => setDeactivating(t)}>
-                            비활성
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
+                          <div className="flex h-[30px] items-center justify-end">
+                            {/*
+                          ⚠ **활성인 사람만 비활성으로 보낼 수 있다.** 한때
+                          `!== 'INACTIVE'`라 **초대 대기 행에도 버튼이 떴는데**, 누르면
+                          사유까지 받아 놓고 서버가 `409 TRAINEE_STATUS_NOT_MUTABLE`
+                          (*"초대 대기 상태인 교육생은 상태를 직접 변경할 수 없습니다"*)
+                          로 거절했다 — **못 하는 일을 끝까지 시켜 놓고 마지막에 막았다.**
 
-          {/*
+                          초대 대기를 없애는 것은 「비활성」이 아니라 **초대 취소**다.
+                          그 조작은 아직 화면에 없으므로 여기서는 버튼을 안 그린다.
+                        */}
+                            {t.status === 'ACTIVE' && (
+                              <Button variant="ghost" size="sm" onClick={() => setDeactivating(t)}>
+                                비활성
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
+
+              {/*
             **범위는 응답이 알려준 쪽으로 센다** — 화면이 든 `page`로 세면 옛 값을 그리는
             동안 푸터만 앞서 간다(1쪽 열 줄을 보여주면서 `21–30`이라고 썼다). 쪽 번호가
             바뀌는 시점과 그 쪽 데이터가 오는 시점이 다르기 때문이다.
 
             페이저 자체는 `page`를 쓴다 — 누른 쪽이 바로 눌린 것으로 보여야 한다.
           */}
-          <TableFooterBar
-            range={`${shownPage * ROSTER_PAGE_SIZE + 1}–${
-              shownPage * ROSTER_PAGE_SIZE + rows.length
-            } / ${total}명${selected.size > 0 ? ` · ${selected.size}명 선택` : ''}`}
-            page={page}
-            totalPages={totalPages}
-            // 쪽을 넘겨도 선택은 남긴다 — 여러 쪽에서 골라 한 번에 배정하는 동선이 있다
-            onPageChange={setPage}
-          />
-        </StaleBlock>
+              <TableFooterBar
+                range={`${shownPage * ROSTER_PAGE_SIZE + 1}–${
+                  shownPage * ROSTER_PAGE_SIZE + rows.length
+                } / ${total}명${selected.size > 0 ? ` · ${selected.size}명 선택` : ''}`}
+                page={page}
+                totalPages={totalPages}
+                // 쪽을 넘겨도 선택은 남긴다 — 여러 쪽에서 골라 한 번에 배정하는 동선이 있다
+                onPageChange={setPage}
+              />
+            </StaleBlock>
+          </div>
+
+          {assignOpen && cohortId && (
+            <AssignPanel
+              cohortId={cohortId}
+              picked={selected}
+              rows={rows}
+              onAssigned={() => {
+                setSelected(new Set())
+                void roster.refetch()
+              }}
+              onClose={() => setAssignOpen(false)}
+            />
+          )}
+        </div>
       )}
 
       <DeactivateTraineeDialog

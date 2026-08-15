@@ -227,6 +227,7 @@ git status · git stash list · git worktree list
 | `main`·`develop` 직접 커밋 | `.githooks/pre-commit` | ✅ |
 | `.env` 커밋 | `.gitignore` + `.githooks/pre-commit` | ✅ |
 | **의존성만 커밋하고 lock을 빠뜨림** | `.githooks/pre-commit` | ✅ |
+| **CI에서 깨질 것을 올리기** | `.githooks/pre-push` → `npm run verify:ci` | ✅ |
 | `console.log` 잔존 | `.oxlintrc.json` `no-console` | ✅ |
 | 빌드 통과 | GitHub Actions + ruleset required check | ✅ |
 | `main`·`develop` 직접 **push** | GitHub ruleset `protect-main-develop` | ✅ |
@@ -237,6 +238,15 @@ git status · git stash list · git worktree list
 
 `npm install`이 훅을 자동 설정한다(`prepare` 스크립트). 수동: `git config core.hooksPath .githooks`
 **규칙을 고치면 `sh .githooks/test-hooks.sh`를 먼저 돌린다** — 훅이 팀 커밋을 잘못 막는 사고 방지.
+
+> **`pre-push`만 무겁다(1분 내외).** PR은 푸시된 브랜치에만 열 수 있으니 **푸시가 PR
+> 직전의 마지막 관문**이고, 로컬에서 `npm run lint`를 손으로 도는 것으로는 부족하다 —
+> 그건 커밋 안 된 파일까지 보고 `npm ci`를 안 거친다(#132가 그래서 통과했다가 CI에서
+> 죽었다). `verify:ci`는 임시 워크트리에 **커밋된 상태만** 꺼내 `npm ci`부터 돌린다.
+>
+> 우회 압력을 줄이려고 셋을 건너뛴다 — **같은 커밋 재푸시**(직전 통과 sha를 기록) ·
+> **브랜치 삭제** · **참조 없는 푸시**. 급하면 `git push --no-verify`가 열려 있다.
+> 막으려는 것은 「잊는 것」이지 「판단해서 건너뛰는 것」이 아니다.
 
 > **`guard-worktree.sh`는 이 표에서 유일하게 🔺다.** git에 `pre-stash` 같은 훅이 없어서
 > Claude Code의 `PreToolUse`로 명령 실행 전에 검사하는 방식이다.

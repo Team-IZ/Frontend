@@ -26,7 +26,7 @@ import type {
   findSections_Response,
   findUsedProjects_Response,
 } from '@/api/curriculum/curriculumTypes'
-import Loading from '@/components/common/Loading'
+import CurriculumDetailSkeleton, { SectionListSkeleton } from './CurriculumDetailSkeleton'
 import ErrorState from '@/components/common/ErrorState'
 import { CurriculumStatusBadge } from '../_/components/StatusBadges'
 import ReanalyzeDialog from './components/ReanalyzeDialog'
@@ -70,10 +70,15 @@ export default function CurriculumDetailScreen() {
   const sections = useFindSections({ path: { materialId: id } }, { enabled: !!id })
   const usedProjects = useFindUsedProjects({ path: { materialId: id } }, { enabled: !!id })
 
-  if (curriculum.isLoading)
+  /*
+    ⚠ **판정은 데이터 유무로 한다.** `isLoading`은 `enabled: false`인 동안 `false`라
+    (§1-9) 그 분기가 안 그려지는 사고가 이 저장소에서 여러 번 났다. `id`가 없으면
+    조회가 꺼져 있고, 그때도 보여줄 것은 스켈레톤이다.
+  */
+  if (!curriculum.data && !curriculum.isError)
     return (
       <ConsoleShell role="operator">
-        <Loading label="교안을 불러오는 중" />
+        <CurriculumDetailSkeleton />
       </ConsoleShell>
     )
 
@@ -161,8 +166,8 @@ export default function CurriculumDetailScreen() {
           </TabsList>
 
           <TabsContent value="sections">
-            {sections.isLoading ? (
-              <Loading label="섹션을 불러오는 중" />
+            {!sections.data && !sections.isError ? (
+              <SectionListSkeleton />
             ) : sections.isError ? (
               <ErrorState
                 error={sections.error}
@@ -190,8 +195,8 @@ export default function CurriculumDetailScreen() {
         open={reanalyzeOpen}
         onOpenChange={setReanalyzeOpen}
         materialId={id}
-        title={data.title ?? data.originalFileName}
         inUse={inUse}
+        analysisStatus={data.analysisStatus}
       />
     </ConsoleShell>
   )
@@ -348,7 +353,7 @@ function LinkedTab({ projects }: { projects: findUsedProjects_Response }) {
   if (projects.length === 0)
     return (
       <div className="border-border-strong bg-surface-2 rounded-md border border-dashed p-8 text-center">
-        <p className="text-fg-muted text-sm">이 교안을 쓰는 회차가 아직 없습니다</p>
+        <p className="text-fg-muted text-sm">이 교안을 쓰는 프로젝트가 아직 없습니다</p>
         {/* **0건이 무엇을 뜻하는지**를 같이 쓴다 — 여기서는 좋은 소식이다 */}
         <p className="text-fg-subtle mt-1 text-xs">
           다시 분석해도 이미 발행된 리포트에 영향이 없습니다.
@@ -360,13 +365,13 @@ function LinkedTab({ projects }: { projects: findUsedProjects_Response }) {
     <>
       <p className="text-fg-muted mb-3 text-xs">
         다시 분석하거나 새 버전을 올리기 전에{' '}
-        <b className="font-semibold">어느 회차가 이 교안을 쓰는지</b> 확인합니다 — 쪽 번호가
+        <b className="font-semibold">어느 프로젝트가 이 교안을 쓰는지</b> 확인합니다 — 쪽 번호가
         달라지면 이미 발행된 리포트의 교안 위치가 어긋납니다.
       </p>
       <Table className="table-fixed">
         <TableHeader>
           <TableRow className="hover:bg-transparent">
-            <TableHead className="w-40">회차</TableHead>
+            <TableHead className="w-40">프로젝트</TableHead>
             <TableHead className="w-24">기수</TableHead>
             {/* 흡수 열 — 서술이 가장 길다 */}
             <TableHead>이 교안에서 고른 개념</TableHead>

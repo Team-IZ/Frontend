@@ -6,11 +6,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/Dialog'
-import { Alert, AlertTitle } from '@/components/ui/Alert'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Field, FieldLabel, FieldDescription } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from '@/components/ui/InputGroup'
+import { classroomName } from '../../_/rules'
 import { Spinner } from '@/components/ui/Spinner'
+import { errorCopy } from '@/lib/errorCopy'
 import { useUpdateClassroom } from '@/api/academic/useAcademicMutations'
 import type { findClassrooms_Item } from '@/api/academic/academicTypes'
 import RequiredMark from '../../_/components/RequiredMark'
@@ -42,14 +50,15 @@ export default function EditClassDialog({ target, onOpenChange }: Props) {
   const [editing, setEditing] = useState<string | null>(null)
   const [name, setName] = useState('')
   const [capacity, setCapacity] = useState('')
-  const [failed, setFailed] = useState(false)
+  /** 실패 **원인**을 들고 있는다 — 있고 없고만 알면 화면이 이유를 지어내게 된다 */
+  const [failure, setFailure] = useState<unknown>(null)
   const update = useUpdateClassroom()
 
   if (target && target.classroomId !== editing) {
     setEditing(target.classroomId)
     setName(target.name)
     setCapacity(String(target.capacity))
-    setFailed(false)
+    setFailure(null)
   }
 
   const size = Number(capacity)
@@ -63,19 +72,19 @@ export default function EditClassDialog({ target, onOpenChange }: Props) {
 
   const save = async () => {
     if (!target) return
-    setFailed(false)
+    setFailure(null)
     try {
       await update.mutateAsync({
         path: { cohortId: target.cohortId, classroomId: target.classroomId },
         // 바뀐 것만 — 둘 다 생략하면 서버가 400 `CLASSROOM_UPDATE_EMPTY`로 답한다
         body: {
-          ...(name.trim() !== target.name && { name: name.trim() }),
+          ...(classroomName(name) !== target.name && { name: classroomName(name) }),
           ...(size !== target.capacity && { capacity: size }),
         },
       })
       close(false)
-    } catch {
-      setFailed(true)
+    } catch (e) {
+      setFailure(e)
     }
   }
 
@@ -90,11 +99,22 @@ export default function EditClassDialog({ target, onOpenChange }: Props) {
         </DialogHeader>
 
         <div className="flex flex-col gap-4">
-          {failed && (
-            <Alert variant="danger">
-              <AlertTitle>수정하지 못했습니다. 같은 이름의 반이 있는지 확인해 주세요.</AlertTitle>
-            </Alert>
-          )}
+          {/*
+            ⚠ **원인을 추측하지 않는다.** 한때 실패를 하나로 묶어
+            *"같은 이름의 반이 있는지 확인해 주세요"* 를 고정으로 띄웠는데, 인증이
+            끊겼거나 네트워크가 죽어도 같은 말을 했다 — 사용자가 엉뚱한 것을 고치게 된다.
+            `errorCopy`가 코드·상태를 보고 문구를 정한다.
+          */}
+          {failure !== null &&
+            (() => {
+              const copy = errorCopy(failure, { subject: '반', action: '수정' })
+              return (
+                <Alert variant="danger">
+                  <AlertTitle>{copy.title}</AlertTitle>
+                  <AlertDescription>{copy.description}</AlertDescription>
+                </Alert>
+              )
+            })()}
 
           <div>
             <div className="grid grid-cols-[1fr_auto] gap-2">
@@ -102,11 +122,18 @@ export default function EditClassDialog({ target, onOpenChange }: Props) {
                 <FieldLabel htmlFor="edit-class-name">
                   반 이름 <RequiredMark />
                 </FieldLabel>
-                <Input
-                  id="edit-class-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
+                {/* 추가 모달과 같은 모양 — 「반」은 화면이 붙인다(`rules.classroomName`) */}
+                <InputGroup className="h-9">
+                  <InputGroupInput
+                    id="edit-class-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="K"
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupText>반</InputGroupText>
+                  </InputGroupAddon>
+                </InputGroup>
               </Field>
               <Field className="w-24">
                 <FieldLabel htmlFor="edit-class-capacity">
@@ -123,7 +150,7 @@ export default function EditClassDialog({ target, onOpenChange }: Props) {
             </div>
             <FieldDescription className="mt-1.5">
               {/* 이름을 바꾸면 명단의 `소속 반`도 같이 바뀐다 — 한 사실이 한 곳에서 나온다 */}
-              지금 {target?.traineeCount ?? 0}명이 있습니다. 이름을 바꾸면 명단의 소속 반 표기도
+              지금 {target?.traineeCount ?? 0}명이 있습니다. 이름을 바꾸면 교육생의 소속 반 표기도
               같이 바뀝니다.
             </FieldDescription>
           </div>

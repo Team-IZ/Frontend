@@ -13,11 +13,13 @@ import { cn } from '@/lib/utils/cn'
 import { useFindCohortCost } from '@/api/usage/useUsageQueries'
 import { useGetCurrentMember } from '@/api/member/useMemberQueries'
 import type { findCohortCost_Query } from '@/api/usage/usageTypes'
-import { formatPeriod, formatUsd } from '../_/rules'
+import { formatPeriod, formatUsd, remainingLabel } from '../_/rules'
 import { useCohortScope } from '../_/cohortScope'
 import SectionHeader from '../_/components/SectionHeader'
 import { FilterSelect } from '../_/components/AdminFilters'
-import Loading from '@/components/common/Loading'
+import { SlowNotice } from '@/components/common/Loading'
+import CostSkeleton from './CostSkeleton'
+import StaleBlock from '../../_shared/StaleBlock'
 import ErrorState from '@/components/common/ErrorState'
 
 /*
@@ -34,7 +36,7 @@ import ErrorState from '@/components/common/ErrorState'
   있으므로 각 제목에 그것을 쓴다(스코프 표기 규칙).
 */
 /*
-  `onCount`를 쓰지 않는다 — 이 탭은 **목록이 아니라 금액**이라 셀 것이 없고,
+  탭 배지를 안 쓴다 — 이 탭은 **목록이 아니라 금액**이라 셀 것이 없고,
   여기서 바꾸는 것도 없다(읽기 전용). 레지스트리가 넘겨도 무시된다.
 */
 /*
@@ -61,7 +63,7 @@ const SORT_OPTIONS = [
 
 type ClassCostSort = NonNullable<findCohortCost_Query['sort']>
 
-export default function CostTab(_: { onCount: (count: number | null) => void }) {
+export default function CostTab() {
   const [sort, setSort] = useState<ClassCostSort>('NAME')
   const scope = useCohortScope()
   const { data: me } = useGetCurrentMember()
@@ -78,7 +80,18 @@ export default function CostTab(_: { onCount: (count: number | null) => void }) 
     { enabled: !!organizationId && !!cohortId },
   )
 
-  if (!organizationId || !cohortId || cost.isLoading) return <Loading label="비용을 불러오는 중" />
+  /*
+    ⚠ **판정은 데이터 유무로 한다.** `cost.isLoading`은 `enabled: false`인 동안 `false`라
+    앞의 두 가드가 없으면 어느 분기도 안 탄다(§1-9). 그리고 여섯 탭 중 **여기만
+    스피너**였다 — 같은 화면 안에서 기다리는 모양이 탭마다 다를 이유가 없다.
+  */
+  if (!cost.data && !cost.isError)
+    return (
+      <>
+        <CostSkeleton />
+        <SlowNotice />
+      </>
+    )
   if (cost.isError || !cost.data)
     return (
       <ErrorState
@@ -96,6 +109,11 @@ export default function CostTab(_: { onCount: (count: number | null) => void }) 
     확인). 제목이 지금 보고 있는 기수를 말해야 하는데 비용 유무에 따라 사라지면 안 된다.
   */
   const cohortName = scope.current?.name ?? ''
+  const remaining = remainingLabel(
+    summary.monthsLeft,
+    scope.current?.endDate ?? null,
+    new Date().toISOString().slice(0, 10),
+  )
   const cohortPeriod = formatPeriod(
     scope.current?.startDate ?? null,
     scope.current?.endDate ?? null,
@@ -146,7 +164,7 @@ export default function CostTab(_: { onCount: (count: number | null) => void }) 
   const usedPct = summary.budget ? Math.round((summary.cohortTotal / summary.budget) * 100) : null
 
   return (
-    <>
+    <StaleBlock stale={cost.isFetching && cost.data !== undefined} label="비용을 불러오는 중">
       {/*
         **범위가 기수다**(OP06-17). `기관 전체`라 적고 있었는데 요약도 표도 선택 기수 것이라
         말과 내용이 달랐다 — 정의서도 이 탭을 `선택 기수`로 정의한다(§3).
@@ -229,7 +247,18 @@ export default function CostTab(_: { onCount: (count: number | null) => void }) 
             만드는 판정이라(E8) 재료만 주고 판단은 사람이 한다.
           */}
           <p className="text-fg-subtle text-xs">남은 기간</p>
-          <p className="mt-1 text-2xl font-bold tabular-nums">{summary.monthsLeft}개월</p>
+          {/*
+            ⚠ **`0개월`이 「끝났다」와 「2주 남았다」를 같은 글자로 만든다.** 8월에 보는
+            8월 말 종료 기수가 그렇다 — 한 달을 못 채우면 날짜로 센다(`rules.remainingLabel`).
+          */}
+          <p
+            className={cn(
+              'mt-1 text-2xl font-bold tabular-nums',
+              remaining.ending && 'text-warning',
+            )}
+          >
+            {remaining.text}
+          </p>
           {/*
             **교육생 수를 뺐다.** `CohortResponse.traineeCount`가 항상 0으로 오고(스펙에
             명시 · 실호출 확인) `summary.cohorts`도 비용이 0이면 빈 배열이다 —
@@ -264,7 +293,7 @@ export default function CostTab(_: { onCount: (count: number | null) => void }) 
             */}
             <TableHead>월</TableHead>
             {/* 흡수 열 — 회차 이름이 길고, 서술 열이 흡수하는 것이 표준이다 */}
-            <TableHead className="w-[420px]">회차</TableHead>
+            <TableHead className="w-[420px]">프로젝트</TableHead>
             <TableHead className="w-24 text-right">세션</TableHead>
             <TableHead className="w-28 text-right">비용</TableHead>
           </TableRow>
@@ -283,7 +312,7 @@ export default function CostTab(_: { onCount: (count: number | null) => void }) 
                 {m.projectNames.length > 0 ? (
                   m.projectNames.join(' · ')
                 ) : (
-                  <span className="text-fg-subtle">마감된 회차 없음 · 다시 보기·재응시</span>
+                  <span className="text-fg-subtle">마감된 프로젝트 없음 · 다시 보기·재응시</span>
                 )}
               </TableCell>
               <TableCell className="text-fg-muted text-right text-xs tabular-nums">
@@ -409,6 +438,6 @@ export default function CostTab(_: { onCount: (count: number | null) => void }) 
         10반이 전부라 페이지가 하나다 — 제목의 `10개`로 충분하다.
         E7(*페이지가 하나면 페이저를 그리지 않는다*)의 연장이다.
       */}
-    </>
+    </StaleBlock>
   )
 }

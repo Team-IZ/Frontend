@@ -156,7 +156,7 @@ export default function ClassOps({
         // 유형이라 여기 쓰면 "결과를 기다리는 중"으로 읽힌다(02-layout-system §4)
         <Empty variant="empty">
           <EmptyHeader>
-            <EmptyTitle>반 절반 이상이 미달한 회차가 없습니다</EmptyTitle>
+            <EmptyTitle>반 절반 이상이 미달한 프로젝트가 없습니다</EmptyTitle>
             <EmptyDescription>위험 판정이 모두 개인 사유로 남았습니다.</EmptyDescription>
           </EmptyHeader>
         </Empty>
@@ -172,7 +172,7 @@ export default function ClassOps({
                   데이터가 왼쪽에 붙어 스캔된다(표 열 폭 표준 · OP-03 D22와 같다).
                 */}
                 <TableHead>검증 개념</TableHead>
-                <TableHead className="w-[200px]">회차 · 반</TableHead>
+                <TableHead className="w-[200px]">프로젝트 · 반</TableHead>
                 <TableHead className="w-[116px] text-right">미달</TableHead>
               </TableRow>
             </TableHeader>

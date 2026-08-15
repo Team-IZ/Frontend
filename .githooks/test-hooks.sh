@@ -98,6 +98,33 @@ sed -i.t 's/"scripts": {/"scripts": {\n    "zz:probe": "echo hi",/' package.json
 git add package.json 2>/dev/null
 hook ok "scripts만 수정 + lock 없음"
 
+# ── pre-push ──────────────────────────────────────────────
+# `verify:ci`를 실제로 돌리지 않고 **분기만** 본다 — 그것까지 돌리면 이 스크립트가 1분이 된다.
+push() {
+  want=$1; label=$2; input=$3
+  if printf '%s' "$input" | sh .githooks/pre-push origin https://x >/dev/null 2>&1; then got=ok; else got=ng; fi
+  if [ "$got" = "$want" ]; then pass=$((pass + 1)); else
+    fail=$((fail + 1)); echo "  ✗ $label — 기대 $want, 실제 $got"
+  fi
+}
+
+sha=$(git rev-parse HEAD)
+stamp="$(git rev-parse --git-dir)/verify-ci-passed"
+saved=""
+[ -f "$stamp" ] && saved=$(cat "$stamp")
+
+# 참조가 안 오면(=삭제 푸시) 검사할 것이 없다
+push ok "pre-push: 빈 입력" ""
+# 로컬 sha가 전부 0이면 브랜치 삭제다
+push ok "pre-push: 브랜치 삭제" "refs/heads/x 0000000000000000000000000000000000000000 refs/heads/x $sha
+"
+# 이미 통과한 커밋을 다시 밀면 건너뛴다 (여기서만 ok가 나온다 — verify:ci를 안 돌리므로)
+printf '%s' "$sha" > "$stamp"
+push ok "pre-push: 통과한 sha 재푸시" "refs/heads/x $sha refs/heads/x $sha
+"
+
+if [ -n "$saved" ]; then printf '%s' "$saved" > "$stamp"; else rm -f "$stamp"; fi
+
 echo ""
 echo "통과 $pass · 실패 $fail"
 [ "$fail" -eq 0 ]

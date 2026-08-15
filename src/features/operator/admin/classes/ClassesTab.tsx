@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Link } from 'react-router'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import StaleBlock from '../../_shared/StaleBlock'
 import {
   Table,
   TableHeader,
@@ -51,10 +52,6 @@ import ClassManagersDialog from './components/ClassManagersDialog'
   `ClassroomResponse.managers`가 **배열**이다. 목은 `managerId`·`managerName` 한 쌍이라
   한 명을 전제했는데, 서버는 반 하나에 여럿을 허용한다 — 담당 열이 이름을 `·`로 잇는다.
 */
-type Props = {
-  /** 반 개수 — 탭 이름 옆 배지 */
-  onCount: (count: number | null) => void
-}
 
 type ClassRoom = findClassrooms_Item
 
@@ -64,7 +61,7 @@ const needsManager = (room: ClassRoom) => room.managerAssignmentRequired
 /** 담당자 표기. 여럿이면 `·`로 잇는다 — 가입 전이면 이름이 없어 이메일이 그 자리를 대신한다 */
 const managerNames = (room: ClassRoom) => room.managers.map((m) => m.name ?? m.email).join(' · ')
 
-export default function ClassesTab({ onCount }: Props) {
+export default function ClassesTab() {
   const [search, setSearch] = useState('')
   /** 입력칸은 `search`(즉시 반응), 조회는 `query`(멈춘 뒤) — 한 글자마다 다시 거르지 않는다 */
   const query = useDebounced(search)
@@ -100,10 +97,6 @@ export default function ClassesTab({ onCount }: Props) {
       return true
     })
   }, [all, query, staffing])
-
-  useEffect(() => {
-    if (classes.data) onCount(total)
-  }, [classes.data, total, onCount])
 
   /*
     **반을 고칠 수 있는 기수인가**(OP06-7-② — 개강 전에만). 판정은 `rules.canEditClasses`가
@@ -196,10 +189,16 @@ export default function ClassesTab({ onCount }: Props) {
           <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
-                {query ? `"${query}"와 맞는 반이 없습니다` : '조건에 맞는 반이 없습니다'}
+                {query ? `"${query}"에 맞는 반이 없습니다` : '조건에 맞는 반이 없습니다'}
               </EmptyTitle>
+              {/*
+                **모집단을 말한다** — 다른 네 탭(기수·명단·매니저·교안)이 전부
+                `전체 N개에서 찾았습니다`를 말하는데 여기만 비어 있었다. 「0건」만 보이면
+                *"원래 없는 건가, 내가 좁힌 건가"* 를 화면이 답해 주지 않는다.
+              */}
               <EmptyDescription>
-                {staffing === 'UNSTAFFED' && '담당 없는 반이 없다는 뜻이기도 합니다.'}
+                {cohort?.name ?? '이 기수'} 전체 {total}개에서 찾았습니다.
+                {staffing === 'UNSTAFFED' && ' 담당 없는 반이 없다는 뜻이기도 합니다.'}
               </EmptyDescription>
             </EmptyHeader>
             <Button
@@ -230,12 +229,22 @@ export default function ClassesTab({ onCount }: Props) {
           자를 이유가 없어졌다(02-layout §6은 *진짜 길어지는* 목록에만 내부 스크롤을 준다).
         */
         <>
-          <Table className="table-fixed">
-            <TableHeader>
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-24">반</TableHead>
-                <TableHead className="w-40">담당 매니저</TableHead>
-                {/*
+          {/*
+            **캐시를 보여주는 동안 그 사실을 숨기지 않는다.** 기수를 바꾸면 옛 반 목록이
+            그대로 남은 채 새 조회가 돌았는데, 화면은 아무 말도 안 해서 **다른 기수의 반을
+            이 기수 것으로 읽게** 됐다. `isPlaceholderData`가 아니라 `isFetching`으로 보는
+            이유는, 여기는 「같은 것의 다른 조각」이 아니라 **범위 자체가 바뀌기** 때문이다.
+          */}
+          <StaleBlock
+            stale={classes.isFetching && classes.data !== undefined}
+            label="반을 불러오는 중"
+          >
+            <Table className="table-fixed">
+              <TableHeader>
+                <TableRow className="hover:bg-transparent">
+                  <TableHead className="w-24">반</TableHead>
+                  <TableHead className="w-40">담당 매니저</TableHead>
+                  {/*
                   ⚠ **`담당 시작` 열을 뺐다.** 배정이 기간형 이력이라 *"D반이 6월에 손이
                   바뀌었네"* 가 목록에서 눈에 걸리는 값인데, `ClassroomResponse`에 그
                   필드가 없다 — 서버는 구간을 닫고 열지만 그 시각을 내려주지 않는다.
@@ -243,76 +252,78 @@ export default function ClassesTab({ onCount }: Props) {
                   빈 칸으로 두지 않고 열째 없앤다. 기수 탭의 `반`·`교육생` 열과 같은
                   판단이다(10차 요청 — 오면 되살린다).
                 */}
-                <TableHead className="w-28 text-right">인원</TableHead>
-                {/*
+                  <TableHead className="w-28 text-right">인원</TableHead>
+                  {/*
                   **`상태` 열을 뺐다**(D1 — 한 사실은 한 곳에서). `담당 없음 / 편성 완료`가
                   바로 왼쪽 `담당 매니저` 열과 **행마다 1:1**이라, 같은 경고가 한 화면에
                   네 번(헤더 내역 · 필터 · 빨간 이름 · 배지) 나오고 있었다. 남긴 것은
                   값이 있는 자리 하나 — 담당 열의 `담당 없음`이다.
                 */}
-                {/* 마지막 열(액션)이 남는 폭을 흡수한다 */}
-                <TableHead className="text-right">
-                  <span className="sr-only">액션</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rooms.map((room) => (
-                <TableRow key={room.classroomId}>
-                  <TableCell className="font-semibold">{room.name}</TableCell>
-                  <TableCell
-                    className={cn(
-                      'truncate text-xs',
-                      needsManager(room) ? 'text-warning' : 'text-fg-muted',
-                    )}
-                  >
-                    {needsManager(room) ? '담당 없음' : managerNames(room)}
-                  </TableCell>
-                  {/*
+                  {/* 마지막 열(액션)이 남는 폭을 흡수한다 */}
+                  <TableHead className="text-right">
+                    <span className="sr-only">액션</span>
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rooms.map((room) => (
+                  <TableRow key={room.classroomId}>
+                    <TableCell className="font-semibold">{room.name}</TableCell>
+                    <TableCell
+                      className={cn(
+                        'truncate text-xs',
+                        needsManager(room) ? 'text-warning' : 'text-fg-muted',
+                      )}
+                    >
+                      {needsManager(room) ? '담당 없음' : managerNames(room)}
+                    </TableCell>
+                    {/*
                    **정원을 같이 적는다.** `25명`만 있으면 더 넣어도 되는지 판단할 수 없다(§3).
 
                    **누르면 그 반 명단으로 간다.** 목업 케이스 표는 이 목록이 *"반별 인원 ·
                    담당 매니저 · 명단"* 을 준다고 했는데, 탭을 가른 뒤(OP06-1) 반에서 명단으로
                    가는 길이 없어졌다 — 인원 수를 누르는 것이 그 길이다(그 수가 곧 명단이다).
                   */}
-                  <TableCell className="text-right tabular-nums">
-                    <Link
-                      to={`/operator/admin/roster?class=${room.classroomId}`}
-                      className="hover:text-primary hover:underline"
-                    >
-                      {room.traineeCount}
-                      <span className="text-fg-subtle"> / {room.capacity}</span>
-                    </Link>
-                  </TableCell>
-                  {/*
+                    <TableCell className="text-right tabular-nums">
+                      <Link
+                        to={`/operator/admin/roster?class=${room.classroomId}`}
+                        className="hover:text-primary hover:underline"
+                      >
+                        {room.traineeCount}
+                        <span className="text-fg-subtle"> / {room.capacity}</span>
+                      </Link>
+                    </TableCell>
+                    {/*
                     **개강 전에만 수정·삭제가 붙는다**(OP06-7-②). 잠긴 뒤에도 담당 변경은
                     남는다 — 매니저 퇴사·교체는 운영 중에 계속 일어나는 일이라 잠금
                     규칙이 다르다. 못 하는 일을 흐리게 두지 않는다(C1).
                   */}
-                  <TableCell className="space-x-1 text-right">
-                    <Button variant="ghost" size="sm" onClick={() => setAssigning(room)}>
-                      {needsManager(room) ? '담당 배정' : '담당 변경'}
-                    </Button>
-                    {editable && (
-                      <>
-                        <Button variant="ghost" size="sm" onClick={() => setEditing(room)}>
-                          수정
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setDeleting(room)}>
-                          삭제
-                        </Button>
-                      </>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                    <TableCell className="space-x-1 text-right">
+                      <Button variant="ghost" size="sm" onClick={() => setAssigning(room)}>
+                        {needsManager(room) ? '담당 배정' : '담당 변경'}
+                      </Button>
+                      {editable && (
+                        <>
+                          <Button variant="ghost" size="sm" onClick={() => setEditing(room)}>
+                            수정
+                          </Button>
+                          <Button variant="ghost" size="sm" onClick={() => setDeleting(room)}>
+                            삭제
+                          </Button>
+                        </>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
 
-          {/*
+            {/*
           푸터 — 범위 개수(좌) + 페이저(중앙), 오른쪽은 비운다(E3). 6~10반이라 한 쪽에
           들어가므로 페이저는 `1`만 그려진다(E7 — 누를 수 없는 화살표는 장식이다).
         */}
+          </StaleBlock>
+
           <TableFooterBar
             range={`1–${rooms.length} / ${rooms.length}개`} /* 필터 결과 기준 */
             page={1}
@@ -332,7 +343,7 @@ export default function ClassesTab({ onCount }: Props) {
         title={`반을 삭제할까요? — ${deleting?.name ?? ''}`}
         description={
           (deleting?.traineeCount ?? 0) > 0
-            ? `이 반의 ${deleting?.traineeCount}명은 미배정으로 돌아갑니다. 명단에서 지워지지는 않습니다. 담당 매니저 배정도 함께 풀립니다.`
+            ? `이 반의 ${deleting?.traineeCount}명은 미배정으로 돌아갑니다. 교육생 목록에서 지워지지는 않습니다. 담당 매니저 배정도 함께 풀립니다.`
             : '빈 반이라 되돌릴 것이 없습니다. 담당 매니저 배정은 함께 풀립니다.'
         }
         confirmLabel="반 삭제"

@@ -56,11 +56,11 @@ function byRound(concepts: ConceptDiagnosis[]): Group[] {
  * 회차에 쓰인다). 표 프리미티브는 `projects/list/ProjectListScreen.tsx`·
  * `manager/trainees/TraineeListScreen.tsx`와 같은 공용 컴포넌트다.
  *
- * **묶는 기준을 고른다(교안순 / 회차순).** 필터를 축마다 하나씩 쌓는 대신 컨트롤 하나로
+ * **묶는 기준을 고른다(교안순 / 프로젝트순).** 필터를 축마다 하나씩 쌓는 대신 컨트롤 하나로
  * 같은 데이터를 두 렌즈로 본다 — 값이 빠지지 않으므로 필터가 아니고, 두 렌즈가 서로
  * 다른 질문에 답해 역할이 안 겹친다.
  *   - **교안순** — "어느 교안을 고칠까". 이 문서의 목적(§5②)이자 PDF의 형태다.
- *   - **회차순** — "3차가 왜 나빴나". 앞 섹션(회차별)에서 넘어온 사람의 질문이다.
+ *   - **프로젝트순** — "3차가 왜 나빴나". 앞 섹션(회차별)에서 넘어온 사람의 질문이다.
  *     교안순으로 묶여 있으면 3차의 개념 3건이 서로 다른 교안 표에 흩어져 그 질문에
  *     답할 수 없었다 — 이 토글이 그 끊긴 자리를 잇는다.
  *
@@ -80,7 +80,7 @@ export default function ConceptDistribution({ concepts }: { concepts: ConceptDia
 
   const printGroups = byCurriculum(concepts)
   const groups = groupBy === 'curriculum' ? printGroups : byRound(concepts)
-  const unit = groupBy === 'curriculum' ? '교안' : '회차'
+  const unit = groupBy === 'curriculum' ? '교안' : '프로젝트'
 
   const switchTo = (next: 'curriculum' | 'round') => {
     setGroupBy(next)
@@ -116,7 +116,7 @@ export default function ConceptDistribution({ concepts }: { concepts: ConceptDia
             className="h-[34px] text-sm font-normal"
             onClick={() => switchTo('round')}
           >
-            회차순
+            프로젝트순
           </Button>
         </ButtonGroup>
 
@@ -145,15 +145,15 @@ export default function ConceptDistribution({ concepts }: { concepts: ConceptDia
       </ReportToolbar>
 
       {/*
-        **회차순에서는 숫자의 뜻이 달라진다.** 개념 하나에 분포가 하나뿐이라(계약상
+        **프로젝트순에서는 숫자의 뜻이 달라진다.** 개념 하나에 분포가 하나뿐이라(계약상
         회차별로 쪼개진 값이 없다) 여러 회차에 쓰인 개념은 어느 회차 아래에서든 같은
         값을 보여준다 — 그 회차만의 성적이 아니다. 이걸 안 밝히면 "3차의 57%"로 읽힌다.
         회차별 분해가 필요해지면 계약(`ConceptDiagnosis`)에 회차별 분포가 생겨야 한다.
       */}
       {groupBy === 'round' && (
         <p className="text-fg-subtle mb-3 text-2xs print:hidden">
-          같은 개념이 여러 회차에 쓰이면 회차마다 다시 나옵니다. 숫자는 그 회차만의 값이 아니라 그
-          개념이 쓰인 전 회차 합산입니다.
+          같은 개념이 여러 프로젝트에 쓰이면 프로젝트마다 다시 나옵니다. 숫자는 그 프로젝트만의 값이
+          아니라 그 개념이 쓰인 전 프로젝트 합산입니다.
         </p>
       )}
 

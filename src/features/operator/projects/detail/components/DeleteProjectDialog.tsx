@@ -80,13 +80,13 @@ export default function DeleteProjectDialog({ open, onOpenChange, project, onDel
                   지우면 남의 회차가 깨진다 — 이 회차와의 **연결만** 끊긴다.
                 */
                 <p className="text-fg-subtle mt-2 text-2xs">
-                  교안 파일은 지워지지 않습니다 — 이 회차와의 연결만 끊깁니다.
+                  교안 파일은 지워지지 않습니다 — 이 프로젝트와의 연결만 끊깁니다.
                 </p>
               )}
             </div>
           ) : (
             <p className="border-border-strong text-fg-subtle rounded-md border border-dashed p-4 text-center text-xs">
-              아직 아무것도 설정하지 않은 회차입니다
+              아직 아무것도 설정하지 않은 프로젝트입니다
             </p>
           )}
 
@@ -98,7 +98,7 @@ export default function DeleteProjectDialog({ open, onOpenChange, project, onDel
           */}
           <p className="text-fg-muted text-xs">
             되돌릴 수 없습니다. <b className="font-semibold">같은 이름으로 다시 만들 수 없고</b>,
-            다음 회차 번호는 이 회차의 번호를 건너뜁니다.
+            다음 프로젝트 번호는 이 프로젝트의 번호를 건너뜁니다.
           </p>
         </div>
 

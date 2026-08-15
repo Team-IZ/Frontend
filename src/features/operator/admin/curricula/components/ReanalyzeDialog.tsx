@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { useRequestAnalysis } from '@/api/curriculum/useCurriculumMutations'
 import type { findUsedProjects_Response } from '@/api/curriculum/curriculumTypes'
+import type { CurriculumStatus } from '../../_/api/types'
 
 /*
   다시 분석하기 전에 — **쓰는 회차를 먼저 보여준다**(OP-06 §6).
@@ -37,16 +38,57 @@ type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   materialId: string
-  title: string
   /** **응시가 시작된** 회차만. 비어 있으면 경고 문구가 달라진다 */
   inUse: findUsedProjects_Response
+  /** 지금 분석 상태. 돌고 있는데 또 누르는 경우가 있어 그 사실을 말한다. `null`은 분석 전 */
+  analysisStatus: CurriculumStatus | null
 }
 
-export default function ReanalyzeDialog({ open, onOpenChange, materialId, title, inUse }: Props) {
+export default function ReanalyzeDialog({
+  open,
+  onOpenChange,
+  materialId,
+  inUse,
+  analysisStatus,
+}: Props) {
   const [failed, setFailed] = useState(false)
   const request = useRequestAnalysis()
-  const running = request.isPending
+  const sending = request.isPending
   const attended = inUse.reduce((n, p) => n + p.attendedCount, 0)
+  /*
+    ⚠ **이미 분석이 돌고 있는데 또 누를 수 있다.**
+
+    `POST /curricula/{id}/analyses`에 「이미 진행 중」 에러 코드가 없다 — 스펙의 에러가
+    `NOT_FOUND`·인증 둘뿐이고, 돌고 있어도 **202로 접수한다**(실측). 그래서 서버가
+    막아 주지 않고, 누를 때마다 AI 분석이 한 번 더 걸린다.
+
+    **버튼을 잠그지는 않는다.** 분석이 `PENDING`에서 멈춰 있는 교안이 실제로 있어서,
+    잠그면 그것을 풀 길이 사라진다 — 여기가 유일한 출구다. 대신 **무슨 일이 일어나는지
+    먼저 말한다.**
+  */
+  const analysing = analysisStatus === 'PENDING' || analysisStatus === 'RUNNING'
+
+  /*
+    **이름을 나열하지 않고 기수로 묶는다.**
+
+    한때 회차 이름을 그대로 이어 붙였는데, 이 교안을 여러 기수가 쓰면
+    `미니프로젝트 1차 · 미니프로젝트 2차 · … · 미니프로젝트 1차 · …`가 된다 —
+    실측 18개에 같은 이름이 세 번씩 나왔다(9기·8기·7기). **이름만으로는 어느 것인지
+    구분이 안 되는데 문장만 길어진다.**
+
+    여기서 답할 질문은 *"얼마나 넓게 쓰이나"* 이고, 어느 회차인지는 뒤의
+    **연결된 프로젝트 탭**이 표로 답한다. 기수 이름이 `null`로 올 수 있어(스펙) 그때는
+    묶지 않고 따로 센다.
+  */
+  const byCohort = Object.entries(
+    inUse.reduce<Record<string, number>>((acc, p) => {
+      const key = p.cohortName ?? '기수 미상'
+      acc[key] = (acc[key] ?? 0) + 1
+      return acc
+    }, {}),
+  )
+    .map(([cohort, n]) => `${cohort} ${n}개`)
+    .join(' · ')
 
   const run = async () => {
     setFailed(false)
@@ -71,6 +113,16 @@ export default function ReanalyzeDialog({ open, onOpenChange, materialId, title,
           </Alert>
         )}
 
+        {analysing && (
+          <Alert variant="warning">
+            <AlertTitle>이 교안은 지금 분석 중입니다</AlertTitle>
+            <p className="text-fg-muted mt-1 text-sm">
+              다시 요청하면 <b className="text-fg font-medium">처음부터 다시</b> 분석합니다 — 돌고
+              있는 것이 빨라지지는 않습니다. 오래 멈춰 있을 때만 누르세요.
+            </p>
+          </Alert>
+        )}
+
         {inUse.length > 0 ? (
           <div className="flex gap-3">
             {/* 아이콘 색만 tone을 갖는다 — 카드 배면은 흰색이다(H+ 상태 메시지) */}
@@ -78,8 +130,13 @@ export default function ReanalyzeDialog({ open, onOpenChange, materialId, title,
               <TriangleAlertIcon className="size-5" />
             </div>
             <div className="space-y-2 text-sm">
+              {/*
+                **값 뒤에 조사를 붙이지 않는다.** 한때 `{회차이름}가 {교안명}으로`였는데
+                둘 다 받침에 따라 「이/가」·「으로/로」가 갈린다 — 서버가 주는 이름이라
+                어느 쪽인지 미리 알 수 없다. 고정 명사 뒤로 옮기고 값은 뒤에 나열한다.
+              */}
               <p className="font-semibold">
-                {inUse.map((p) => p.name).join(' · ')}가 {title}으로 응시 중입니다
+                이 교안으로 응시 중인 프로젝트가 {inUse.length}개 있습니다 — {byCohort}
               </p>
               <p className="text-fg-muted">
                 {attended}명이 이미 응시했고, 그 문항은 지금 버전의 쪽 번호와 개념으로
@@ -91,24 +148,24 @@ export default function ReanalyzeDialog({ open, onOpenChange, materialId, title,
               </p>
               <p className="text-fg font-medium">
                 이미 응시한 학생의 문항과 리포트는 그대로 둡니다 — 분석 결과는 다음에 만드는
-                회차부터 적용됩니다.
+                프로젝트부터 적용됩니다.
               </p>
             </div>
           </div>
         ) : (
           <p className="text-fg-muted text-sm">
-            이 교안을 쓰는 회차 중 응시가 시작된 것이 없어 발행된 리포트에 영향이 없습니다. 분석이
-            끝나면 <b className="text-fg font-medium">가르친 항목</b>이 새로 만들어집니다.
+            이 교안을 쓰는 프로젝트 중 응시가 시작된 것이 없어 발행된 리포트에 영향이 없습니다.
+            분석이 끝나면 <b className="text-fg font-medium">가르친 항목</b>이 새로 만들어집니다.
           </p>
         )}
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={running}>
+          <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={sending}>
             취소
           </Button>
-          <Button disabled={running} onClick={run}>
-            {running && <Spinner className="size-3.5" />}
-            {inUse.length > 0 ? '그래도 다시 분석' : '다시 분석'}
+          <Button disabled={sending} onClick={run}>
+            {sending && <Spinner className="size-3.5" />}
+            {inUse.length > 0 || analysing ? '그래도 다시 분석' : '다시 분석'}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -106,7 +106,7 @@ export default function PickConceptsDialog({
           */}
           {measured && (
             <Alert variant="warning">
-              <AlertTitle>이미 응시가 시작된 회차입니다</AlertTitle>
+              <AlertTitle>이미 응시가 시작된 프로젝트입니다</AlertTitle>
             </Alert>
           )}
 

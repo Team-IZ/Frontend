@@ -17,6 +17,7 @@ import {
   capacityPreview,
   checkEmail,
   checkRosterRows,
+  classroomName,
   formatLastSeen,
   formatPeriod,
   formatUsd,
@@ -66,20 +67,65 @@ assert.strictEqual(checkEmail('a@evilgreen.com', DOMAIN), 'DOMAIN_NOT_ALLOWED')
 }
 
 {
-  // 머리글이 없는 파일도 첫 줄을 잃지 않는다 — 규칙이 어휘가 아니라 주소 모양이다
-  const { entries } = parseRosterCsv('한도현,dohyun@green.com', DOMAIN)
-  assert.strictEqual(entries.length, 1, '머리글 없는 파일의 첫 줄')
+  /*
+    **머리글은 서버 규칙대로 `이름,이메일` 두 열 · 그 순서다.**
+
+    한때 열 이름으로 찾아 순서·개수와 무관하게 읽게 했다. 사람들이 실제로 쓰는 파일
+    (`번호 · 이름 · 소속 · 이메일`)을 받으려던 것인데 **서버가 안 받는다** —
+    `CSV_FORMAT_INVALID · "헤더는 '이름', '이메일' 두 열이어야 합니다"`(실측).
+    화면만 관대하면 「유효 2명」이라 해 놓고 등록에서 통째로 튕긴다.
+  */
+  const { entries, invalid } = parseRosterCsv(
+    '번호,이메일,소속,이름\n1,dohyun@green.com,백엔드,한도현',
+    DOMAIN,
+  )
+  assert.strictEqual(entries.length, 0, '열이 더 있으면 서버가 거절한다')
+  assert.deepStrictEqual(invalid, [{ line: 1, reason: 'HEADER_NOT_FOUND' }])
 }
 
 {
-  // 이름이 비면 이메일 앞부분을 쓴다 — 초대는 나가야 하고 이름은 받는 사람이 고친다
-  const { entries } = parseRosterCsv(',dohyun@green.com', DOMAIN)
-  assert.strictEqual(entries[0].name, 'dohyun')
+  // 머리글이 없으면 **파일을 못 읽는다** — 행 오류가 아니라 파일 오류다
+  const { entries, invalid } = parseRosterCsv('한도현,dohyun@green.com', DOMAIN)
+  assert.strictEqual(entries.length, 0)
+  assert.deepStrictEqual(invalid, [{ line: 1, reason: 'HEADER_NOT_FOUND' }])
 }
 
 {
-  // 따옴표로 감싼 CSV도 읽는다(엑셀이 그렇게 내보낸다)
-  const { entries } = parseRosterCsv('"한도현","dohyun@green.com"', DOMAIN)
+  // BOM 은 첫 열 이름을 가린다 — 떼고 읽는다(서버도 BOM 파일은 받는다)
+  const { entries } = parseRosterCsv('\uFEFF이름,이메일\n한도현,dohyun@green.com', DOMAIN)
+  assert.deepStrictEqual(entries, [{ name: '한도현', email: 'dohyun@green.com' }], 'BOM')
+}
+
+{
+  // 따옴표 안의 쉼표를 안 자른다 — 엑셀이 이름에 쉼표를 넣으면 그렇게 내보낸다
+  const { entries } = parseRosterCsv('이름,이메일\n"한, 도현",dohyun@green.com', DOMAIN)
+  assert.deepStrictEqual(
+    entries,
+    [{ name: '한, 도현', email: 'dohyun@green.com' }],
+    '따옴표 안 쉼표',
+  )
+}
+
+{
+  /*
+    이름이 비면 **오류 행이다.**
+
+    한때 이메일 앞부분(`dohyun`)으로 채워 유효로 셌다 — *"초대는 나가야 하고 이름은
+    받는 사람이 고친다"* 가 근거였다. 그런데 **서버는 그 행 하나로 파일 전체를 거절한다**
+    (`400 TRAINEE_NAME_INVALID · "5행의 이름을 입력해야 합니다"` — 실측).
+    화면만 관대하면 `✓ 유효 2명`이라 해 놓고 아무도 안 들어간다.
+  */
+  const { entries, invalid } = parseRosterCsv(
+    '이름,이메일\n한도현,a@green.com\n,dohyun@green.com',
+    DOMAIN,
+  )
+  assert.strictEqual(entries.length, 1, '이름 있는 행만 유효')
+  assert.deepStrictEqual(invalid, [{ line: 3, reason: 'NAME_REQUIRED' }])
+}
+
+{
+  // 따옴표로 감싼 값도 읽는다(엑셀이 그렇게 내보낸다)
+  const { entries } = parseRosterCsv('"이름","이메일"\n"한도현","dohyun@green.com"', DOMAIN)
   assert.deepStrictEqual(entries, [{ name: '한도현', email: 'dohyun@green.com' }])
 }
 
@@ -173,3 +219,19 @@ assert.strictEqual(perTrainee(100, 0), '—', '0으로 나누지 않는다')
 assert.strictEqual(toIsoDate(new Date(2026, 9, 5, 1, 0)), '2026-10-05')
 
 console.warn('✓ 운영 관리 규칙 통과 — CSV · 도메인 · 정원 · 표시값')
+
+// ── 반 이름 — **「반」은 화면이 붙인다** ──────────────────────────
+{
+  /*
+    입력칸 자리표시자가 `K반`이던 동안 사용자가 그 글자를 같이 쳤다. 빠뜨리면 `A`라는
+    반이 생겨 목록에서 혼자 다른 모양이 된다. **저장값은 `A반` 그대로**이고 입력만
+    `A`로 받는다 — 서버 계약도 다른 화면(매니저·교육생)도 안 건드린다.
+  */
+  assert.strictEqual(classroomName('A'), 'A반')
+  assert.strictEqual(classroomName(' B '), 'B반', '앞뒤 공백')
+  assert.strictEqual(classroomName('1'), '1반', '숫자도 같다')
+  assert.strictEqual(classroomName('심화'), '심화반', '한 글자가 아니어도')
+  // 이미 붙어 있으면 그대로 — 안 그러면 `A반반`이 된다
+  assert.strictEqual(classroomName('A반'), 'A반')
+  assert.strictEqual(classroomName(''), '', '빈 값은 빈 값이다(제출은 다른 데서 막는다)')
+}

@@ -38,6 +38,15 @@ export type ErrorCopy = {
 type Ctx = {
   /** 조회 대상. 조사는 받침에 맞춰 붙는다 */
   subject: string
+  /**
+   * **쓰기 화면이 쓰는 동사 어간**(`추가` · `수정` · `삭제`). 생략하면 조회로 본다.
+   *
+   * ⚠ 이 함수는 원래 **조회 전용**이었다. 반 추가 실패에 그대로 썼더니 화면이
+   * *"반을 **불러오지** 못했습니다"* 라고 말했다 — 사용자는 추가를 눌렀는데 읽기가
+   * 실패했다고 읽는다. 코드별 문구(`BY_CODE`)는 그대로 쓰이고, **동사가 나오는
+   * 일반 분기에서만** 이 값이 갈린다.
+   */
+  action?: string
 }
 
 const obj = (s: string) => withParticle(s, '을', '를')
@@ -72,6 +81,66 @@ const BY_CODE: Record<string, (ctx: Ctx) => ErrorCopy> = {
     화면은 분석 안 된 교안을 애초에 못 고르게 막지만(`rules.curriculumBlockedReason`),
     고른 뒤 분석이 만료되거나 다른 사람이 지운 경우가 남는다.
   */
+  /*
+    같은 기수 안에서 반 이름은 겹칠 수 없다.
+
+    ⚠ **한때 화면이 이것을 추측했다.** 반 추가·수정 다이얼로그가 `catch {}`로 실패를
+    묶고 *"같은 이름의 반이 있는지 확인해 주세요"* 를 고정으로 띄웠다 — 인증이 끊겼거나
+    네트워크가 죽어도 같은 말을 했다. **화면이 원인을 지어내는 자리**였다.
+
+    ⚠ **생성 쪽 스펙에는 이 코드가 없다**(수정에만 있다 — 25차 R3으로 요청했다).
+    서버가 실제로 무엇을 주든 여기서 판정하고, 모르는 코드는 아래 상태 기반 분기로
+    내려가 「반을 추가하지 못했습니다」가 된다 — 추측하지 않는다.
+  */
+  /*
+    초대 대기·이미 비활성인 계정은 상태를 직접 못 바꾼다.
+
+    **기다려도 안 되는 것이라 재시도 버튼을 안 준다.** 한때 이 실패에
+    *"잠시 후 다시 시도해 주세요"* 라고 했는데, 몇 번을 눌러도 같은 409다.
+    화면은 애초에 활성인 행에만 버튼을 그리지만(`RosterTab`), 목록을 띄워 둔 사이
+    누가 상태를 바꾸면 여기로 온다.
+  */
+  TRAINEE_STATUS_NOT_MUTABLE: () => ({
+    title: '이 계정은 상태를 바꿀 수 없습니다',
+    description: '초대 대기이거나 이미 비활성입니다 — 초대 대기는 초대를 취소해야 합니다.',
+    retry: false,
+    tone: 'failed',
+  }),
+
+  /*
+    기수에 속하지 않은 교육생을 반에 넣으려 했다.
+
+    **비활성 교육생이 이 코드로 온다**(실측 — `강은우`를 비활성으로 두고 배정하면
+    `400 TRAINEE_NOT_IN_COHORT`). 다시 눌러도 같은 실패라 재시도를 안 준다.
+  */
+  /*
+    DB 제약 위반이 그대로 새어 나온 것이다 — 도메인 코드가 아니다(25차 R7).
+
+    **반 배정에서 이 코드가 나온다.** 이미 어느 반에 있는 사람에게 배정을 부르면
+    유니크 제약에 걸린다. 화면은 옮길 사람을 먼저 풀고 넣도록 고쳤지만(`AssignPanel`),
+    목록을 띄워 둔 사이 누가 배정을 바꾸면 여기로 온다. **다시 눌러도 같은 실패다.**
+  */
+  DATA_INTEGRITY_VIOLATION: () => ({
+    title: '이미 반에 들어가 있는 사람이 섞여 있습니다',
+    description: '목록을 새로 고친 뒤 다시 골라 주세요 — 옮기려면 먼저 지금 반에서 빼야 합니다.',
+    retry: false,
+    tone: 'failed',
+  }),
+
+  TRAINEE_NOT_IN_COHORT: () => ({
+    title: '기수에 없는 교육생이 섞여 있습니다',
+    description: '비활성이거나 다른 기수의 계정입니다 — 목록을 새로 고친 뒤 다시 골라 주세요.',
+    retry: false,
+    tone: 'failed',
+  }),
+
+  CLASSROOM_NAME_TAKEN: () => ({
+    title: '같은 이름의 반이 이미 있습니다',
+    description: '같은 기수 안에서 반 이름은 겹칠 수 없습니다 — 다른 이름을 지어 주세요.',
+    retry: false,
+    tone: 'failed',
+  }),
+
   CURRICULUM_ANALYSIS_NOT_COMPLETED: () => ({
     title: '교안 분석이 아직 끝나지 않았습니다',
     description: '분석이 끝나면 그 교안에서 검증 개념을 고를 수 있습니다.',
@@ -81,7 +150,9 @@ const BY_CODE: Record<string, (ctx: Ctx) => ErrorCopy> = {
 }
 
 export function errorCopy(error: unknown, ctx: Ctx): ErrorCopy {
-  const { subject } = ctx
+  const { subject, action } = ctx
+  /** `반을 추가하지 못했습니다` · 조회면 `반을 불러오지 못했습니다` */
+  const failedLine = `${obj(subject)} ${action ? `${action}하지` : '불러오지'} 못했습니다`
 
   if (isApiError(error)) {
     if (!isGenericCode(error.code)) {
@@ -93,7 +164,7 @@ export function errorCopy(error: unknown, ctx: Ctx): ErrorCopy {
       // 서버에 닿지도 못했다 — 서버 탓으로 쓰면 사용자가 엉뚱한 곳을 기다린다
       case error.status === 0:
         return {
-          title: `${obj(subject)} 불러오지 못했습니다`,
+          title: failedLine,
           description: '인터넷 연결을 확인한 뒤 다시 시도해 주세요.',
           retry: true,
           tone: 'failed',
@@ -114,7 +185,9 @@ export function errorCopy(error: unknown, ctx: Ctx): ErrorCopy {
       // 권한은 다시 눌러도 안 생긴다 — 무엇을 해야 하는지를 쓴다
       case error.status === 403:
         return {
-          title: `${obj(subject)} 볼 수 있는 권한이 없습니다`,
+          title: action
+            ? `${obj(subject)} ${action}할 권한이 없습니다`
+            : `${obj(subject)} 볼 수 있는 권한이 없습니다`,
           description: '필요하다면 담당자에게 권한을 요청하세요.',
           retry: false,
           tone: 'failed',
@@ -141,7 +214,7 @@ export function errorCopy(error: unknown, ctx: Ctx): ErrorCopy {
 
       default:
         return {
-          title: `${obj(subject)} 불러오지 못했습니다`,
+          title: failedLine,
           description: '잠시 후 다시 시도해 주세요.',
           retry: true,
           tone: 'failed',

@@ -1,5 +1,5 @@
 import StaleBlock from '../../_shared/StaleBlock'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { TriangleAlertIcon } from 'lucide-react'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
@@ -80,14 +80,6 @@ type ManagerSort = NonNullable<findManagers_Query['sort']>
 /** 한 페이지에 받는 수. 기관 매니저가 수십 명이라 한 쪽에 들어간다 */
 const PAGE_SIZE = 100
 
-type Props = {
-  /**
-   * ⚠ **아직 목이다.** 실서버로 옮길 때 이 탭의 개수를 여기로 알린다 —
-   * 목 개수를 배지에 쓰면 실제와 다른 수가 탭 이름 옆에 붙는다.
-   */
-  onCount: (count: number | null) => void
-}
-
 type Pending = { kind: 'suspend'; manager: Manager } | { kind: 'cancel'; manager: Manager } | null
 
 /** 지금 맡은 반 이름들 — 확인 문구가 **어느 반이 비는지 이름을 대야** 판단이 된다 */
@@ -96,7 +88,7 @@ const heldClasses = (m: Manager) => m.classroomNames.join(' · ')
 /** 사람을 부르는 이름. 가입 전이면 이름이 없어 이메일이 그 자리를 대신한다 */
 const displayName = (m: Manager) => m.name ?? m.email
 
-export default function ManagersTab({ onCount }: Props) {
+export default function ManagersTab() {
   const [search, setSearch] = useState('')
   /*
     **입력값과 조회값을 가른다.** 입력칸은 `search`(즉시 반응), 조회는 `query`(멈춘 뒤).
@@ -173,10 +165,6 @@ export default function ManagersTab({ onCount }: Props) {
     ? (counts.ACTIVE ?? 0) + (counts.INVITED ?? 0) + (counts.INACTIVE ?? 0)
     : 0
   const narrowed = query.trim().length > 0 || status !== ALL
-
-  useEffect(() => {
-    if (counts) onCount(totalAll)
-  }, [counts, totalAll, onCount])
 
   const updateStatus = useUpdateManagerStatus()
   const resendInvite = useResendManagerInvitation()
@@ -278,7 +266,7 @@ export default function ManagersTab({ onCount }: Props) {
           <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
-                {query ? `"${query}"와 맞는 매니저가 없습니다` : '조건에 맞는 매니저가 없습니다'}
+                {query ? `"${query}"에 맞는 매니저가 없습니다` : '조건에 맞는 매니저가 없습니다'}
               </EmptyTitle>
               <EmptyDescription>전체 {totalAll}명에서 찾았습니다.</EmptyDescription>
             </EmptyHeader>
@@ -306,7 +294,7 @@ export default function ManagersTab({ onCount }: Props) {
         )
       ) : (
         /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
-        <StaleBlock stale={page.isPlaceholderData} label="매니저를 불러오는 중">
+        <StaleBlock stale={page.isFetching && page.data !== undefined} label="매니저를 불러오는 중">
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -339,7 +327,15 @@ export default function ManagersTab({ onCount }: Props) {
               {page.data.content.map((m) => (
                 <TableRow key={m.managerId}>
                   {/* 가입 전이면 이름이 없다 — `—`가 아니라 무엇을 기다리는지 쓴다(F3) */}
-                  <TableCell className="font-semibold">{m.name ?? '가입 대기'}</TableCell>
+                  {/*
+                    ⚠ **이름 자리에 상태를 쓰지 않는다.** 한때 이름이 없으면 `가입 대기`라고
+                    적었는데, 상태는 **오른쪽에 배지로 이미 있다.** 이름 열에 문장이 들어가면
+                    진짜 이름과 섞여 훑을 때 구분이 안 된다 — 그 열은 「누구인가」만 답해야 한다.
+                    모르는 값은 `—`다(F3 — 없는 것과 아직 모르는 것을 같은 기호로 쓴다).
+                  */}
+                  <TableCell className="font-semibold">
+                    {m.name ?? <span className="text-fg-subtle font-normal">—</span>}
+                  </TableCell>
                   <TableCell className="text-fg-muted truncate text-xs">{m.email}</TableCell>
                   {/*
                       소속 기수 — 목록 범위가 곧 이 값이라 모든 행이 같다. **그래도 적는다**:

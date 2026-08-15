@@ -6,14 +6,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/Dialog'
-import { Alert, AlertTitle } from '@/components/ui/Alert'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Field, FieldLabel, FieldDescription } from '@/components/ui/Field'
 import { Input } from '@/components/ui/Input'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from '@/components/ui/InputGroup'
 import { Spinner } from '@/components/ui/Spinner'
+import { errorCopy } from '@/lib/errorCopy'
 import { useCreateClassroom } from '@/api/academic/useAcademicMutations'
 import { useFindManagers } from '@/api/member/useMemberQueries'
-import { DEFAULT_CLASS_CAPACITY } from '../../_/rules'
+import { DEFAULT_CLASS_CAPACITY, classroomName } from '../../_/rules'
 import { useCohortScope } from '../../_/cohortScope'
 import { FilterSelect } from '../../_/components/AdminFilters'
 import { ALL } from '../../_/filterState'
@@ -51,11 +58,26 @@ export default function AddClassDialog({ open, onOpenChange }: Props) {
   const [name, setName] = useState('')
   const [capacity, setCapacity] = useState(String(DEFAULT_CLASS_CAPACITY))
   const [managerId, setManagerId] = useState(ALL)
-  const [failed, setFailed] = useState(false)
+  /** 실패 **원인**을 들고 있는다 — 있고 없고만 알면 화면이 이유를 지어내게 된다 */
+  const [failure, setFailure] = useState<unknown>(null)
 
   const scope = useCohortScope()
   const create = useCreateClassroom()
-  const managers = useFindManagers({ query: { status: 'ACTIVE', size: 100 } }, { enabled: open })
+  /*
+    **이 기수의 활성 매니저만 후보다.**
+
+    ⚠ 두 가지를 같이 건다.
+    ▸ `status: 'ACTIVE'` — 초대 대기·정지는 담당을 맡을 수 없다
+    ▸ `cohortId` — 없이 부르면 **기관 전체 38명**이 온다(실측 · 7·8·9기가 섞인다).
+      9기 반을 만들면서 7기 매니저를 고를 수 있다는 것 자체가 틀린 말이다.
+
+    담당 변경 모달(`ClassManagersDialog`)을 같은 이유로 먼저 고쳤는데 **여기를 놓쳤다** —
+    매니저를 고르게 하는 자리는 둘이다.
+  */
+  const managers = useFindManagers(
+    { query: { status: 'ACTIVE', size: 100, cohortId: scope.cohortId } },
+    { enabled: open && !!scope.cohortId },
+  )
 
   const options = [
     { value: ALL, label: '나중에 배정' },
@@ -75,12 +97,12 @@ export default function AddClassDialog({ open, onOpenChange }: Props) {
 
   const submit = async () => {
     if (!scope.cohortId) return
-    setFailed(false)
+    setFailure(null)
     try {
       await create.mutateAsync({
         path: { cohortId: scope.cohortId },
         body: {
-          name: name.trim(),
+          name: classroomName(name),
           capacity: size,
           // 안 고르면 키를 뺀다 — 빈 배열은 "담당 전체 해제"라 뜻이 다르다
           ...(managerId !== ALL && { managerIds: [managerId] }),
@@ -90,8 +112,8 @@ export default function AddClassDialog({ open, onOpenChange }: Props) {
       setName('')
       setCapacity(String(DEFAULT_CLASS_CAPACITY))
       setManagerId(ALL)
-    } catch {
-      setFailed(true)
+    } catch (e) {
+      setFailure(e)
     }
   }
 
@@ -106,11 +128,22 @@ export default function AddClassDialog({ open, onOpenChange }: Props) {
         </DialogHeader>
 
         <div className="flex flex-col gap-5">
-          {failed && (
-            <Alert variant="danger">
-              <AlertTitle>추가하지 못했습니다. 같은 이름의 반이 있는지 확인해 주세요.</AlertTitle>
-            </Alert>
-          )}
+          {/*
+            ⚠ **원인을 추측하지 않는다.** 한때 실패를 하나로 묶어
+            *"같은 이름의 반이 있는지 확인해 주세요"* 를 고정으로 띄웠는데, 인증이
+            끊겼거나 네트워크가 죽어도 같은 말을 했다 — 사용자가 엉뚱한 것을 고치게 된다.
+            `errorCopy`가 코드·상태를 보고 문구를 정한다.
+          */}
+          {failure !== null &&
+            (() => {
+              const copy = errorCopy(failure, { subject: '반', action: '추가' })
+              return (
+                <Alert variant="danger">
+                  <AlertTitle>{copy.title}</AlertTitle>
+                  <AlertDescription>{copy.description}</AlertDescription>
+                </Alert>
+              )
+            })()}
 
           <div>
             <div className="grid grid-cols-[1fr_auto] gap-2">
@@ -118,12 +151,22 @@ export default function AddClassDialog({ open, onOpenChange }: Props) {
                 <FieldLabel htmlFor="class-name">
                   반 이름 <RequiredMark />
                 </FieldLabel>
-                <Input
-                  id="class-name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="K반"
-                />
+                {/*
+                  **「반」은 우리가 붙인다.** 자리표시자가 `K반`이던 동안 사용자가 그 글자를
+                  같이 쳤고, 빠뜨리면 `A`라는 반이 생겨 목록에서 혼자 다른 모양이 됐다.
+                  칸 오른쪽에 붙는 글자를 **보여 주면서** 받는다 — 저장될 이름이 눈에 있다.
+                */}
+                <InputGroup className="h-9">
+                  <InputGroupInput
+                    id="class-name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="K"
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupText>반</InputGroupText>
+                  </InputGroupAddon>
+                </InputGroup>
               </Field>
               <Field className="w-24">
                 <FieldLabel htmlFor="class-capacity">
@@ -155,9 +198,15 @@ export default function AddClassDialog({ open, onOpenChange }: Props) {
               onChange={setManagerId}
               className="w-full"
             />
+            {/*
+              **후보가 없으면 그 이유를 말한다.** 기수를 새로 만들면 매니저가 0명이라
+              드롭다운에 `나중에 배정` 하나만 남는데, 그것만 보면 **고장인지 없는 건지**
+              알 수 없다 — 「알려 주고 못 찾게 두지 않는다」(검토 기준 ④).
+            */}
             <FieldDescription>
-              비우면 담당 없음으로 만들어지고 목록에 경고가 붙습니다. 나중에 목록에서 배정할 수
-              있고, 배정은 기간형 이력이라 바꿔도 지난 기록은 남습니다.
+              {managers.data && managers.data.content.length === 0
+                ? '이 기수에 활성 매니저가 없습니다 — 매니저 탭에서 초대하면 여기서 고를 수 있습니다.'
+                : '비우면 담당 없음으로 만들어지고 목록에 경고가 붙습니다. 나중에 목록에서 배정할 수 있고, 배정은 기간형 이력이라 바꿔도 지난 기록은 남습니다.'}
             </FieldDescription>
           </Field>
         </div>

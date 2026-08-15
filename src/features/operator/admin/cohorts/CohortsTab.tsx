@@ -1,5 +1,5 @@
 import StaleBlock from '../../_shared/StaleBlock'
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
@@ -76,7 +76,7 @@ function sortCohorts(items: readonly Cohort[], sort: CohortSort): Cohort[] {
   )
 }
 
-export default function CohortsTab({ onCount }: { onCount: (count: number | null) => void }) {
+export default function CohortsTab() {
   const [search, setSearch] = useState('')
   /*
     **입력값과 조회값을 가른다.** 입력칸은 `search`(즉시 반응), 조회는 `query`(멈춘 뒤).
@@ -115,14 +115,6 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
 
   const totalAll = scope.cohorts.length
   const items = useMemo(() => sortCohorts(page.data?.content ?? [], sort), [page.data, sort])
-
-  /*
-    탭 이름 옆 개수 — **필터와 무관한 전체**다. 검색어를 쳐도 배지가 흔들리면 안 된다.
-    렌더 중에 부모 상태를 바꾸면 렌더가 렌더를 부른다 — 커밋된 뒤에 알린다.
-  */
-  useEffect(() => {
-    if (!scope.isLoading) onCount(totalAll)
-  }, [scope.isLoading, totalAll, onCount])
 
   /** 빈 결과가 "아직 없음"인지 "필터에 안 걸림"인지 — 문구가 갈린다 */
   const narrowed = query.trim().length > 0 || status !== ALL
@@ -193,7 +185,7 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
           <Empty variant="empty">
             <EmptyHeader>
               <EmptyTitle>
-                {query ? `"${query}"와 맞는 기수가 없습니다` : '조건에 맞는 기수가 없습니다'}
+                {query ? `"${query}"에 맞는 기수가 없습니다` : '조건에 맞는 기수가 없습니다'}
               </EmptyTitle>
               <EmptyDescription>전체 {totalAll}개에서 찾았습니다.</EmptyDescription>
             </EmptyHeader>
@@ -216,7 +208,7 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
             <EmptyHeader>
               <EmptyTitle>첫 기수를 만드세요</EmptyTitle>
               <EmptyDescription>
-                기수가 있어야 반을 나누고 명단을 넣을 수 있습니다.
+                기수가 있어야 반을 나누고 교육생을 넣을 수 있습니다.
               </EmptyDescription>
             </EmptyHeader>
             <Button onClick={() => setCreateOpen(true)}>+ 기수 생성</Button>
@@ -224,7 +216,7 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
         )
       ) : (
         /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
-        <StaleBlock stale={page.isPlaceholderData} label="기수를 불러오는 중">
+        <StaleBlock stale={page.isFetching && page.data !== undefined} label="기수를 불러오는 중">
           <Table className="table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -326,7 +318,7 @@ export default function CohortsTab({ onCount }: { onCount: (count: number | null
         open={deleting !== null}
         onOpenChange={(v) => !v && setDeleting(null)}
         title={`${deleting?.name ?? ''}를 삭제할까요?`}
-        description="개강 전 기수라 되돌릴 것이 없습니다. 명단·반·회차가 하나라도 만들어졌으면 서버가 막습니다."
+        description="개강 전 기수라 되돌릴 것이 없습니다. 교육생·반·프로젝트가 하나라도 만들어졌으면 서버가 막습니다."
         confirmLabel="기수 삭제"
         destructive
         onConfirm={async () => {

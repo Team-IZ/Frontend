@@ -12,11 +12,11 @@
 */
 export const REPORT_SECTIONS = [
   { key: 'summary', title: '요약', question: '무엇을, 몇 명에게서, 어디까지 셌나' },
-  { key: 'round', title: '회차별', question: '어느 회차가 어려웠나' },
+  { key: 'round', title: '프로젝트별', question: '어느 프로젝트가 어려웠나' },
   {
     key: 'concept',
     title: '개념별 도달 분포',
-    question: '그 회차의 어느 개념에서 갈렸나 — 교안을 고칠 곳',
+    question: '그 프로젝트의 어느 개념에서 갈렸나 — 교안을 고칠 곳',
   },
   { key: 'ops', title: '반 · 집단 미달', question: '특정 반의 문제였나, 개념 자체의 문제였나' },
   { key: 'top', title: '우수 교육생', question: '그럼에도 끝까지 도달한 사람은 누구인가' },

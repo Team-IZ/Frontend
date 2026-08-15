@@ -138,8 +138,8 @@ export default function StatusTab({
                    (`class-progress`)에는 `submissionDueAt`이 있지만, 이 분기는 그 값이
                    오기 **전**(제출 0건)에도 그려지므로 기간 종료일로만 말한다.
                  */
-                `제출이 시작되면 반별 진행이 여기에 쌓입니다. 회차 기간은 ${formatDue(project.endDate)}까지입니다.`
-              : '회차 기간이 정해지지 않아 학생에게 아직 열리지 않았습니다 — 개요 탭에서 일정을 정하세요.'}
+                `제출이 시작되면 반별 진행이 여기에 쌓입니다. 프로젝트 기간은 ${formatDue(project.endDate)}까지입니다.`
+              : '프로젝트 기간이 정해지지 않아 학생에게 아직 열리지 않았습니다 — 개요 탭에서 일정을 정하세요.'}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>

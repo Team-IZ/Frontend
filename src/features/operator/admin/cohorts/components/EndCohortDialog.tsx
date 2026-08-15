@@ -67,8 +67,8 @@ export default function EndCohortDialog({
         <DialogHeader>
           <DialogTitle>{cohort?.name}를 종료할까요?</DialogTitle>
           <DialogDescription>
-            종료하면 새 프로젝트를 만들 수 없고, 진행 중인 회차의 응시 창도 더 열리지 않습니다.
-            명단과 이미 발행된 리포트는 그대로 남습니다.
+            종료하면 새 프로젝트를 만들 수 없고, 진행 중인 프로젝트의 응시 창도 더 열리지 않습니다.
+            교육생과 이미 발행된 리포트는 그대로 남습니다.
           </DialogDescription>
         </DialogHeader>
 

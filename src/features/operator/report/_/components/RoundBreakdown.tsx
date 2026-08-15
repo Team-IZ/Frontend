@@ -23,7 +23,7 @@ export default function RoundBreakdown({ rounds }: { rounds: RoundDiagnosis[] })
         <Table className="table-fixed rounded-none border-0">
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[264px]">회차</TableHead>
+              <TableHead className="w-[264px]">프로젝트</TableHead>
               <TableHead>도달 단계 분포</TableHead>
               <TableHead className="w-[116px] text-right">2단 이하</TableHead>
               {/*

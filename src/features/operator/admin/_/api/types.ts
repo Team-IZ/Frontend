@@ -75,4 +75,13 @@ export type RosterIssue = {
   reason: RosterIssueReason
 }
 
-export type RosterIssueReason = 'INVALID_FORMAT' | 'DOMAIN_NOT_ALLOWED' | 'DUPLICATE_IN_FILE'
+export type RosterIssueReason =
+  | 'INVALID_FORMAT'
+  | 'DOMAIN_NOT_ALLOWED'
+  | 'DUPLICATE_IN_FILE'
+  /** 이름 칸이 비었다 — **서버가 파일 전체를 거절한다**(`TRAINEE_NAME_INVALID`) */
+  | 'NAME_REQUIRED'
+  /** 머리글이 `이름,이메일`이 아니다 — **서버가 파일 전체를 거절한다** */
+  | 'HEADER_NOT_FOUND'
+  /** UTF-8이 아니다(엑셀 기본 CP949) — 서버가 인코딩으로 거절한다 */
+  | 'ENCODING_NOT_UTF8'

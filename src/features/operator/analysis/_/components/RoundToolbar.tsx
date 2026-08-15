@@ -198,7 +198,7 @@ export default function RoundToolbar({
       {level === 'team' && (
         <span className="flex items-center">
           <RoundSelect
-            label="회차"
+            label="프로젝트"
             disabled={noRounds}
             loading={loading}
             value={allRounds.find((r) => r.projectId === teamProjectId)?.no ?? null}
@@ -324,7 +324,7 @@ export default function RoundToolbar({
       {level === 'class' && (
         <span className="flex items-center gap-1.5">
           <RoundSelect
-            label="회차"
+            label="프로젝트"
             disabled={noRounds}
             loading={loading}
             value={fromRound}
@@ -419,7 +419,7 @@ function RoundSelect({
       items={rounds.map((r) => ({ value: String(r.no), label: r.label }))}
     >
       {/* 폭은 가장 긴 문구(`불러오는 중`)에 맞춘다 — 라벨이 붙는 쪽이 더 넓다 */}
-      <SelectTrigger className={label ? 'w-36' : 'w-24'} aria-label="회차" disabled={disabled}>
+      <SelectTrigger className={label ? 'w-36' : 'w-24'} aria-label="프로젝트" disabled={disabled}>
         {label && <ControlLabel>{label}</ControlLabel>}
         <SelectValue placeholder={loading ? '불러오는 중' : '고르세요'} />
       </SelectTrigger>

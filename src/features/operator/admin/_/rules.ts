@@ -39,6 +39,25 @@ export const ROSTER_PAGE_SIZE = 10
  * 새 반의 기본 정원. 목업의 반이 전부 `/ 25`이고, 17번이 스코프를 **250명 · 10반**으로
  * 잡은 그 값이다(`250 ÷ 10`). 입력에서 바꿀 수 있다 — 기본값이지 상한이 아니다.
  */
+/**
+ * 반 이름을 저장할 모양으로 만든다 — **입력은 `A`, 저장은 `A반`.**
+ *
+ * ⚠ **한때 사용자가 「반」까지 쳤다.** 입력칸 자리표시자가 `K반`이라 그렇게 하라는 뜻이
+ * 됐는데, 그러면 **매번 같은 한 글자를 다시 치고** 빠뜨리면 `A`라는 반이 생겨 목록에서
+ * 혼자 다른 모양이 된다.
+ *
+ * **저장값은 지금 그대로 `A반`이다.** 서버는 `name`이 자유 문자열이고(스펙 `example: '1반'`,
+ * 길이 말고 제약 없음) 기존 데이터가 전부 `…반`이다 — 저장 규칙을 바꾸면 매니저·교육생
+ * 화면까지 같은 규칙을 알아야 하고 기존 행도 손봐야 한다. **바뀌는 것은 입력 방식뿐이다.**
+ *
+ * 이미 「반」으로 끝나면 그대로 둔다 — 붙이면 `A반반`이 된다.
+ */
+export function classroomName(input: string): string {
+  const v = input.trim()
+  if (!v) return v
+  return v.endsWith('반') ? v : `${v}반`
+}
+
 export const DEFAULT_CLASS_CAPACITY = 25
 
 /**
@@ -122,21 +141,80 @@ export type ParsedRoster = {
  *
  * 서버 검증을 대신하지 않는다 — 같은 규칙이 서버에도 있어야 한다(우회 가능).
  */
+/*
+  ⚠ **머리글을 서버 규칙대로만 받는다.**
+
+  한때 열 이름을 찾아 순서·개수와 무관하게 읽게 만들었다. 사람들이 실제로 쓰는 파일
+  (`번호 · 이름 · 소속 · 이메일`)을 받으려던 것인데, **서버가 그것을 안 받는다** —
+  실측으로 `CSV_FORMAT_INVALID · "헤더는 '이름', '이메일' 두 열이어야 합니다"`가 온다.
+  화면만 관대하면 「유효 2명」이라 해 놓고 등록에서 통째로 튕긴다. 오늘 고친 사고가
+  그것이라 되돌렸다.
+
+  **열을 유연하게 받으려면 프런트가 정규화해 보내야 한다** — 그 설계는 미뤘다
+  (25차 「CSV·엑셀 현황」 참고).
+*/
+const HEADER = ['이름', '이메일']
+
+/** 한 줄을 칸으로 나눈다 — **따옴표 안의 쉼표를 안 자른다**(엑셀이 그렇게 내보낸다) */
+export function splitCsvLine(line: string): string[] {
+  const cells: string[] = []
+  let cur = ''
+  let quoted = false
+  for (let i = 0; i < line.length; i++) {
+    const c = line[i]
+    if (quoted) {
+      if (c === '"') {
+        if (line[i + 1] === '"') {
+          cur += '"'
+          i++
+        } else quoted = false
+      } else cur += c
+    } else if (c === '"') quoted = true
+    else if (c === ',') {
+      cells.push(cur)
+      cur = ''
+    } else cur += c
+  }
+  cells.push(cur)
+  return cells.map((x) => x.trim())
+}
+
+/**
+ * 명단 CSV를 읽는다. **머리글에서 `이름`·`이메일` 열을 찾아** 그 두 열만 쓴다.
+ *
+ * **한 줄 때문에 전체를 막지 않는다**(OP-06 §6). 오류 행은 번호로 모아 알리고 나머지는
+ * 그대로 등록 후보가 된다 — 수백 명 파일을 통째로 되돌리면 아무도 안 쓴다.
+ *
+ * ▸ **행 번호는 파일의 줄 번호다.** 편집기에서 그 줄을 찾을 수 있어야 한다.
+ * ▸ **파일 안 중복도 잡는다.** 서버는 *이미 등록된* 것만 아는데, 같은 파일에 같은
+ *   주소가 두 번 있으면 어느 쪽이 등록됐는지 알 수 없다.
+ *
+ * 서버 검증을 대신하지 않는다 — 같은 규칙이 서버에도 있어야 한다(우회 가능).
+ */
 export function parseRosterCsv(text: string, domain: string): ParsedRoster {
   const entries: RosterEntry[] = []
   const invalid: RosterIssue[] = []
   const seen = new Set<string>()
 
-  const lines = text.split(/\r?\n/)
-  for (let i = 0; i < lines.length; i++) {
+  // BOM — 엑셀이 UTF-8로 내보내면 맨 앞에 붙는다. 남기면 첫 열 이름이 안 맞는다
+  const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/)
+
+  /** 머리글 줄 — **첫 유효 줄이 `이름,이메일`이어야 한다**(서버 규칙) */
+  const headerLine = lines.findIndex((l) => l.trim())
+  const header = headerLine < 0 ? [] : splitCsvLine(lines[headerLine])
+  if (header.length !== 2 || header[0] !== HEADER[0] || header[1] !== HEADER[1])
+    return { entries, invalid: [{ line: Math.max(headerLine + 1, 1), reason: 'HEADER_NOT_FOUND' }] }
+  const cols = { name: 0, email: 1 }
+
+  for (let i = headerLine + 1; i < lines.length; i++) {
     const raw = lines[i]
     if (!raw.trim()) continue // 빈 줄은 오류가 아니다 — 파일 끝 개행이 늘 붙는다
 
     const line = i + 1
-    const [name = '', email = ''] = raw.split(',').map((cell) => cell.trim().replace(/^"|"$/g, ''))
-
-    // 머리글 — 첫 유효 줄이면서 주소 모양이 아니면 양식의 열 이름으로 본다
-    if (entries.length === 0 && invalid.length === 0 && !isEmailShape(email)) continue
+    const cells = splitCsvLine(raw)
+    const name = (cells[cols.name] ?? '').trim()
+    const email = (cells[cols.email] ?? '').trim()
+    if (!name && !email) continue // 다른 열만 채워진 줄은 우리 것이 아니다
 
     const reason = checkEmail(email, domain)
     if (reason) {
@@ -149,8 +227,16 @@ export function parseRosterCsv(text: string, domain: string): ParsedRoster {
       continue
     }
     seen.add(key)
-    // 이름이 비면 이메일 앞부분을 쓴다 — 초대는 나가야 하고, 이름은 받는 사람이 고친다
-    entries.push({ name: name || email.slice(0, email.indexOf('@')), email })
+    /*
+      ⚠ **이름이 비면 오류다.** 이메일 앞부분으로 채우고 있었는데, 서버는 그 행 하나로
+      **파일 전체를 400으로 거절한다**(`TRAINEE_NAME_INVALID`). 화면만 관대하면
+      「유효 2명」이라 해 놓고 아무도 안 들어간다 — 판정은 서버와 같아야 한다.
+    */
+    if (!name) {
+      invalid.push({ line, reason: 'NAME_REQUIRED' })
+      continue
+    }
+    entries.push({ name, email })
   }
 
   return { entries, invalid }
@@ -176,6 +262,9 @@ export function checkRosterRows(rows: RosterEntry[], domain: string): RosterIssu
   rows.forEach((row, i) => {
     const email = row.email.trim()
     if (!email) return // 아직 안 친 칸은 오류가 아니다
+
+    // CSV와 같은 판정 — 이름 없이 보내면 서버가 거절한다
+    if (!row.name.trim()) return issues.push({ line: i + 1, reason: 'NAME_REQUIRED' })
 
     const reason = checkEmail(email, domain)
     if (reason) return issues.push({ line: i + 1, reason })
@@ -258,6 +347,28 @@ const pad = (n: number) => String(n).padStart(2, '0')
  * 날짜를 안 정하고 만든 기수가 온다 — 있는 쪽만 쓰고 없는 쪽은 `?`로 둔다.
  * 둘 다 없으면 기간 자체가 정해지지 않은 것이라 `—`다.
  */
+/**
+ * 남은 기간 — **끝이 가까우면 개월이 거짓말한다.**
+ *
+ * 서버가 주는 `monthsLeft`는 개월이라, 8월에 보는 8월 말 종료 기수가 `0개월`이 된다.
+ * 이미 끝난 것과 **2주 남은 것이 같은 글자**가 된다. 한 달을 못 채우면 날짜로 센다.
+ *
+ * @param today `YYYY-MM-DD`. 서버 시각을 넣는다
+ */
+export function remainingLabel(
+  monthsLeft: number,
+  endAt: string | null,
+  today: string,
+): { text: string; ending: boolean } {
+  if (monthsLeft >= 2) return { text: `${monthsLeft}개월`, ending: false }
+  if (!endAt) return { text: `${monthsLeft}개월`, ending: false }
+  const days = dayDiff(endAt, today)
+  if (Number.isNaN(days)) return { text: `${monthsLeft}개월`, ending: false }
+  if (days < 0) return { text: '종료됨', ending: true }
+  if (days === 0) return { text: '오늘 종료', ending: true }
+  return { text: `${days}일`, ending: days <= 14 }
+}
+
 export function formatPeriod(startAt: string | null, endAt: string | null): string {
   if (!startAt && !endAt) return '—'
   const start = startAt?.slice(0, 7)
@@ -269,8 +380,26 @@ export function formatPeriod(startAt: string | null, endAt: string | null): stri
 /**
  * 금액. **소수점을 만들지 않는다** — `$412`처럼 자리만 끊는다(A4 — 모르는 정밀도를
  * 아는 척하지 않는다). 1인당처럼 나눈 값만 소수 둘째 자리까지 쓴다.
+ *
+ * ⚠ **0이 아닌데 0으로 보이게 두지 않는다.** `$0.42`를 `$0`으로 끊었더니 화면이
+ * *"지난달 $0 → -100%"* 라고 말했다 — $0에서 $0으로 갔는데 100% 줄었다는 뜻이 되어
+ * 읽는 사람이 어느 쪽을 믿을지 모른다(실측 — 9기 누적 0.415542).
+ *
+ * ⚠ **그렇다고 `<$1`로 쓰지 않는다.** 한때 그렇게 했는데 *"이게 뭐냐"* 는 말을 들었다 —
+ * 「1달러보다 작다」는 **얼마인지를 지운다.** 42센트인지 1센트인지 모른 채 다음 판단을
+ * 못 한다. **1달러 미만이면 센트까지 쓴다**(`$0.42`). 자릿수가 하나 늘 뿐이고,
+ * 0인 기수는 여전히 `$0`이라 **「안 썼다」와 「조금 썼다」가 눈에 갈린다.**
  */
 export function formatUsd(amount: number, fraction = 0): string {
+  if (fraction === 0 && amount !== 0 && Math.abs(amount) < 1) {
+    // 센트로도 0이 되는 값 — 여기서만 「보다 작다」를 쓴다. 자릿수를 더 늘려도 못 읽는다
+    if (Math.abs(amount) < 0.005) return amount > 0 ? '<$0.01' : '>-$0.01'
+    const cents = Math.abs(amount).toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+    return amount < 0 ? `-$${cents}` : `$${cents}`
+  }
   return `$${amount.toLocaleString('en-US', {
     minimumFractionDigits: fraction,
     maximumFractionDigits: fraction,

@@ -141,7 +141,7 @@ export default function ProjectDetailScreen() {
         >
           <ErrorState
             error={project.error}
-            subject="회차"
+            subject="프로젝트"
             onRetry={() => project.refetch()}
             retrying={project.isFetching}
             action={

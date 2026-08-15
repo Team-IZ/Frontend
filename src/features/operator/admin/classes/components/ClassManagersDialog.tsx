@@ -48,13 +48,19 @@ export default function ClassManagersDialog({
 }) {
   const open = room !== null
   /*
-    **기수로 좁히지 않는다.** 매니저 목록의 `cohortId`는 *가장 최근 초대*의 기수라
-    시드 계정처럼 초대 이력이 없으면 `null`이고, 그걸로 거르면 후보가 통째로 사라진다
-    (실측: 9기로 좁히면 7명이지만 그 값은 담당 반에서 파생된 것이다).
-    기관 매니저 전원 중에서 고른다 — 담당은 이 조작으로 정해지는 것이지 미리 정해져
-    있는 것이 아니다.
+    **이 기수의 매니저만 후보다.**
+
+    한때 기관 전체에서 골랐다. 근거는 *"`cohortId`가 가장 최근 초대의 기수라 시드 계정은
+    `null`이고, 좁히면 후보가 사라진다"* 였는데 **지금은 아니다** — 실측으로 기관 전체는
+    37명(7·8·9기가 섞여 있다)이고 `?cohortId=9기`는 9명을 정확히 준다.
+
+    좁히지 않으면 **다른 기수를 맡고 있는 사람이 후보로 뜬다.** 9기 반의 담당을 고르는데
+    7기 매니저가 목록에 있으면, 고를 수 있다는 것 자체가 틀린 말이다.
   */
-  const managers = useFindManagers({ query: { status: 'ACTIVE', size: 100 } }, { enabled: open })
+  const managers = useFindManagers(
+    { query: { status: 'ACTIVE', size: 100, cohortId } },
+    { enabled: open },
+  )
   const update = useUpdateManagers()
 
   /*

@@ -47,8 +47,20 @@ const queryClient = new QueryClient({
         그다음 `errorCopy`가 「인터넷 연결을 확인해 주세요」를 낸다. 지금은 **한 번 튕기면
         그걸로 끝**이라 프록시가 회복돼도 화면이 실패인 채로 남았다.
       */
+      /*
+        ⚠ **예산 초과(`isTimeout`)는 재시도하지 않는다.** 통신 계층이 90초를 기다려 준
+        뒤에 끊은 것이라(`_contract/client.ts`), 같은 규칙으로 3회를 더 보내면 사용자가
+        **6분을 기다린다.** 오프라인은 즉시 실패라 3회가 4초로 끝나지만 이쪽은 아니다 —
+        `status: 0`이 같다고 같은 정책을 쓰면 안 되는 자리다.
+
+        콜드스타트(최대 76초)는 이미 그 90초 예산 **안에서** 흡수된다. 재시도가 그 몫을
+        대신할 필요가 없다.
+      */
       retry: (count, error) =>
-        isApiError(error) && (error.status >= 500 || error.isNetwork) && count < 3,
+        isApiError(error) &&
+        !error.isTimeout &&
+        (error.status >= 500 || error.isNetwork) &&
+        count < 3,
       /*
         **흔들림(jitter)이 핵심이다.** 동시에 죽은 요청들이 **같은 순간에** 재시도하면
         또 겹쳐서 또 죽는다 — 고정 지연으로는 충돌이 그대로 반복된다.

@@ -54,6 +54,16 @@ export const isGenericCode = (code: ErrorCode) => GENERIC_CODES.has(code)
 /** 서버에 닿지 못했을 때. 서버가 준 코드가 아니라 **우리가 만든 값**이라 여기 적어 둔다 */
 export const NETWORK_ERROR_CODE = 'NETWORK'
 
+/*
+  **닿기는 했는데 답이 안 온 것.** 연결은 됐고(TCP 0.05초) 응답만 오지 않는다 — 실측으로
+  이 백엔드에서 가장 흔한 실패 모양이다(18차 R1·R7, 21차, 25차 R4가 전부 같은 증상).
+
+  `NETWORK`와 갈라야 하는 이유는 **화면이 하는 말이 달라지기 때문**이다. 오프라인이면
+  "인터넷 연결을 확인해 주세요"가 맞지만, 서버가 안 답한 것에 그 말을 하면 **사용자가
+  멀쩡한 자기 와이파이를 고치러 간다.**
+*/
+export const TIMEOUT_ERROR_CODE = 'TIMEOUT'
+
 export class ApiError extends Error {
   readonly status: number
   readonly code: ErrorCode
@@ -80,6 +90,16 @@ export class ApiError extends Error {
   get isNetwork() {
     return this.status === 0
   }
+
+  /**
+   * 예산 시간 안에 응답이 없어 우리가 끊은 것인가.
+   *
+   * **재시도 정책이 이 값으로 갈린다.** 예산이 90초라 한 번 더 보내면 사용자가 3분을
+   * 기다린다 — 오프라인(즉시 실패)과 같은 재시도 규칙을 쓸 수 없다(`main.tsx`).
+   */
+  get isTimeout() {
+    return this.code === TIMEOUT_ERROR_CODE
+  }
 }
 
 export function isApiError(e: unknown): e is ApiError {
@@ -105,9 +125,19 @@ export function toApiError(body: unknown, response: Response): ApiError {
 }
 
 export function toNetworkError(cause: unknown): ApiError {
+  /*
+    `AbortSignal.timeout()`이 끊으면 `TimeoutError`, 사용자가·React Query가 끊으면
+    `AbortError`다. 둘을 같은 것으로 묶으면 **화면 이동으로 취소된 요청이 「서버가
+    응답하지 않습니다」로 뜬다.**
+  */
+  const timedOut = cause instanceof DOMException && cause.name === 'TimeoutError'
   return new ApiError({
-    message: cause instanceof Error ? cause.message : '서버에 연결하지 못했습니다',
+    message: timedOut
+      ? '서버가 시간 안에 응답하지 않았습니다'
+      : cause instanceof Error
+        ? cause.message
+        : '서버에 연결하지 못했습니다',
     status: 0,
-    code: NETWORK_ERROR_CODE,
+    code: timedOut ? TIMEOUT_ERROR_CODE : NETWORK_ERROR_CODE,
   })
 }

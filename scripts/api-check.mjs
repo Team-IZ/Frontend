@@ -248,10 +248,24 @@ export const rules = [
     run: (spec) => {
       const live = reachableFromAvailable(spec)
       const partial = patchRequestBodies(spec)
-      return Object.entries(spec.components?.schemas ?? {})
-        .filter(([name, s]) => s.properties && !s.required?.length)
-        .filter(([name]) => live.has(name) && !REQUIRED_EXEMPT.has(name) && !partial.has(name))
-        .map(([name]) => name)
+      return (
+        Object.entries(spec.components?.schemas ?? {})
+          /*
+            **`minProperties`도 답으로 인정한다**(29차 회신 §2-①).
+
+            `SessionActivityRequest`는 세 값이 전부 선택이고 **어느 것을 보낼지는 그때
+            관찰된 신호가 정한다** — 하나를 골라 required로 올리면 스펙이 사실과 달라진다.
+            서버가 실제로 거절하는 것은 「전부 빈 객체」(`{}` → 400)이고, 그것을 그대로
+            적은 것이 `minProperties: 1`이다.
+
+            이 규칙이 잡으려는 것은 *"무엇이 항상 오는지 아무도 안 적었다"* 이지
+            `required`라는 키 자체가 아니다 — 최소 개수를 적었으면 답한 것이다.
+            백엔드 CI도 같은 판정으로 맞춰 두었다고 회신에 적혀 있다.
+          */
+          .filter(([, s]) => s.properties && !s.required?.length && !(s.minProperties >= 1))
+          .filter(([name]) => live.has(name) && !REQUIRED_EXEMPT.has(name) && !partial.has(name))
+          .map(([name]) => name)
+      )
     },
   },
   {

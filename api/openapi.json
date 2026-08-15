@@ -21696,7 +21696,11 @@
           "cachedPriceConsistent": {
             "type": "boolean"
           }
-        }
+        },
+        "required": [
+          "inputPricePerMillionTokens",
+          "outputPricePerMillionTokens"
+        ]
       },
       "UpdateGradingModelRequest": {
         "type": "object",
@@ -22038,7 +22042,7 @@
         "properties": {
           "causes": {
             "type": "array",
-            "description": "고른 원인 분류. 복수 선택이고 **0건도 허용**합니다.\n\n`CONCEPT_GAP`(개념 이해 부족) · `OUT_OF_SCOPE`(담당 범위 밖) ·\n`TIME_SHORTAGE`(구현 시간 부족) · `EXPRESSION`(설명·표현 어려움) ·\n`DIFFICULTY_UP`(난이도 상승) · `TEAM_DEPENDENCE`(팀 의존) · `CONDITION`(컨디션·심리)\n\n⚠️ 원인에서 파생되는 **조치(라우팅 목적지)는 보내지 않습니다** — 화면이 계산합니다.\n",
+            "description": "고른 원인 분류. 복수 선택이고 **0건도 허용**합니다 — 그때는 `[]`를 보내세요.\n\n`CONCEPT_GAP`(개념 이해 부족) · `OUT_OF_SCOPE`(담당 범위 밖) ·\n`TIME_SHORTAGE`(구현 시간 부족) · `EXPRESSION`(설명·표현 어려움) ·\n`DIFFICULTY_UP`(난이도 상승) · `TEAM_DEPENDENCE`(팀 의존) · `CONDITION`(컨디션·심리)\n\n⚠️ 원인에서 파생되는 **조치(라우팅 목적지)는 보내지 않습니다** — 화면이 계산합니다.\n",
             "example": [
               "CONCEPT_GAP",
               "TEAM_DEPENDENCE"
@@ -22049,7 +22053,7 @@
           },
           "why": {
             "type": "string",
-            "description": "상세 사유. 매니저가 타이핑한 서술",
+            "description": "상세 사유. 매니저가 타이핑한 서술. **비워도 저장됩니다**",
             "example": "담당 범위가 좁아 전체 흐름을 볼 기회가 없었다고 함"
           },
           "nextAction": {
@@ -22057,7 +22061,10 @@
             "description": "추후 계획. **비워도 저장됩니다**",
             "example": "담당 기능 흐름 그려오기"
           }
-        }
+        },
+        "required": [
+          "causes"
+        ]
       },
       "BriefItemResponse": {
         "type": "object",
@@ -22167,12 +22174,26 @@
             }
           },
           "priorInterview": {
-            "$ref": "#/components/schemas/PriorInterviewResponse",
-            "description": "지난 면담에서 정한 것. 없으면 null — ①칸의 ⚠ 줄이 통째로 빠진다"
+            "description": "지난 면담에서 정한 것. 없으면 null — ①칸의 ⚠ 줄이 통째로 빠진다",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PriorInterviewResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "savedRecord": {
-            "$ref": "#/components/schemas/SavedRecordResponse",
-            "description": "저장된 매니저 입력. 처음 여는 브리프는 null"
+            "description": "저장된 매니저 입력. 처음 여는 브리프는 null",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SavedRecordResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "concepts": {
             "type": "array",
@@ -22182,8 +22203,15 @@
             }
           },
           "voidEvidence": {
-            "$ref": "#/components/schemas/VoidEvidenceResponse",
-            "description": "\"시스템이 본 것\" — **무효 응시 브리프에서만** 채워집니다(그 외에는 null).\n\n일반 브리프에 띄우지 않는 이유는 면담이 **추궁**이 되기 때문입니다 —\n이 화면이 하려는 일은 \"다음 한 주를 어디에 쓸지\"를 정하는 것입니다(정의서 §6-2).\n\n⚠️ **관찰이지 판정이 아닙니다.** 화면도 \"판단은 하지 않습니다\"로 감싸 보여줍니다.\n"
+            "description": "\"시스템이 본 것\" — **무효 응시 브리프에서만** 채워집니다(그 외에는 null).\n\n일반 브리프에 띄우지 않는 이유는 면담이 **추궁**이 되기 때문입니다 —\n이 화면이 하려는 일은 \"다음 한 주를 어디에 쓸지\"를 정하는 것입니다(정의서 §6-2).\n\n⚠️ **관찰이지 판정이 아닙니다.** 화면도 \"판단은 하지 않습니다\"로 감싸 보여줍니다.\n",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/VoidEvidenceResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -24427,12 +24455,9 @@
             "description": "이 조회는 사실상 READY(시작 전) · IN_PROGRESS(진행 중)만 돌려준다"
           },
           "currentProblemNo": {
-            "type": [
-              "integer",
-              "null"
-            ],
+            "type": "integer",
             "format": "int32",
-            "description": "지금 서 있는 문제 번호. 시작 전이면 null. 생성된 문제만 1부터 세므로 항상\n1~problemTotal 범위이며, 그대로 `GET .../problems/{problemNo}`에 넣으면 된다"
+            "description": "지금 서 있는 문제 번호. 시작 전이면 이 키가 없다. 생성된 문제만 1부터 세므로 항상\n1~problemTotal 범위이며, 그대로 `GET .../problems/{problemNo}`에 넣으면 된다"
           },
           "problemTotal": {
             "type": "integer",
@@ -24452,9 +24477,17 @@
           "reviewDueAt": {
             "type": "string",
             "format": "date-time",
-            "description": "다시 보기 마감. REVIEW에서만 있다"
+            "description": "다시 보기 마감. REVIEW에서만 있다(FIRST면 이 키가 없다)"
           }
-        }
+        },
+        "required": [
+          "mode",
+          "problemTotal",
+          "sessionId",
+          "startedAt",
+          "status",
+          "timeLimitAt"
+        ]
       },
       "HintResponse": {
         "type": "object",
@@ -24550,7 +24583,10 @@
               }
             ]
           }
-        }
+        },
+        "required": [
+          "outcome"
+        ]
       },
       "AutoHint": {
         "type": "object",
@@ -24569,7 +24605,12 @@
             "format": "int32",
             "description": "남은 횟수. 0이면 화면은 버튼을 문구로 바꾼다"
           }
-        }
+        },
+        "required": [
+          "hintText",
+          "hintsLeft",
+          "hintsUsed"
+        ]
       },
       "Highlight": {
         "type": "object",
@@ -24619,11 +24660,19 @@
             "$ref": "#/components/schemas/Highlight",
             "description": "이 질문이 가리키는 코드 구간. 축이 바뀌면 함께 옮겨간다"
           }
-        }
+        },
+        "required": [
+          "axisCode",
+          "hintsUsed",
+          "problemId",
+          "questionText",
+          "sequenceNo"
+        ]
       },
       "SessionActivityRequest": {
         "type": "object",
-        "description": "응시 중 관찰 신호(창 이탈·연결 끊김·첫 타이핑 지연)",
+        "description": "응시 중 관찰 신호(창 이탈·연결 끊김·첫 타이핑 지연).\n\n**세 값 모두 선택이지만 빈 객체는 400이다** — 최소 하나는 담아야 한다.",
+        "minProperties": 1,
         "properties": {
           "awaySeconds": {
             "type": "integer",
@@ -29430,7 +29479,10 @@
             "description": "면담 종결 시각. `DONE`일 때만"
           },
           "nextAction": {
-            "type": "string",
+            "type": [
+              "string",
+              "null"
+            ],
             "description": "지난 면담에서 정한 `다음에 할 것`. 없으면 null",
             "example": "담당 기능 흐름 그려오기"
           }
@@ -29506,8 +29558,15 @@
             }
           },
           "round": {
-            "$ref": "#/components/schemas/RoundResponse",
-            "description": "조회한 회차의 표시용 메타. 담당 밖 회차 ID를 넣으면 null"
+            "description": "조회한 회차의 표시용 메타. 담당 밖 회차 ID를 넣으면 null",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/RoundResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -33103,7 +33162,7 @@
           },
           "shownHints": {
             "type": "array",
-            "description": "이미 연 힌트 문구. 없으면 비어 있다",
+            "description": "이미 연 힌트 문구. 없으면 빈 배열이다",
             "items": {
               "type": "string"
             }
@@ -33126,7 +33185,16 @@
             "type": "boolean",
             "description": "이 답변이 세션의 마지막인지. 버튼 문구가 `답변 제출하고 마치기`로 바뀐다"
           }
-        }
+        },
+        "required": [
+          "highlight",
+          "hintsLeft",
+          "hintsUsed",
+          "lastTurnOfSession",
+          "questionText",
+          "sequenceNo",
+          "shownHints"
+        ]
       },
       "ProblemActivityResponse": {
         "type": "object",
@@ -33152,23 +33220,23 @@
           },
           "turns": {
             "type": "array",
-            "description": "이 문제에서 지금까지 확정된 문답. 화면은 위에서 아래로 쌓는다",
+            "description": "이 문제에서 지금까지 확정된 문답. 화면은 위에서 아래로 쌓는다. 아직 답한 것이 없으면 빈 배열이다",
             "items": {
               "$ref": "#/components/schemas/Turn"
             }
           },
           "current": {
-            "description": "지금 물어보는 질문. 문제가 끝났으면 null",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/CurrentQuestion"
-              },
-              {
-                "type": "null"
-              }
-            ]
+            "$ref": "#/components/schemas/CurrentQuestion",
+            "description": "지금 물어보는 질문. 문제가 끝났으면 이 키가 없다"
           }
-        }
+        },
+        "required": [
+          "code",
+          "problemNo",
+          "problemTotal",
+          "title",
+          "turns"
+        ]
       },
       "Reference": {
         "type": "object",
@@ -33214,11 +33282,8 @@
             "type": "string"
           },
           "hintText": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "이 턴 직전에 보여준 힌트. 첫 시도면 null"
+            "type": "string",
+            "description": "이 턴 직전에 보여준 힌트. 첫 시도면 이 키가 없다"
           },
           "answerText": {
             "type": "string"
@@ -33229,9 +33294,16 @@
           },
           "highlight": {
             "$ref": "#/components/schemas/Highlight",
-            "description": "강조할 구간. 질문마다 옮겨간다"
+            "description": "강조할 구간. 질문마다 옮겨간다. 축별 구간이 없으면 문제의 대표 구간이다"
           }
-        }
+        },
+        "required": [
+          "answerText",
+          "answeredAt",
+          "highlight",
+          "questionText",
+          "sequenceNo"
+        ]
       },
       "AnalysisJobStatus": {
         "type": "string",

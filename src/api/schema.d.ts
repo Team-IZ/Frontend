@@ -8655,12 +8655,12 @@ export interface components {
        *     0은 '무료'를 의미하므로 미설정 용도로 쓰지 말 것.
        * @example 5
        */
-      inputPricePerMillionTokens?: number | null
+      inputPricePerMillionTokens: number | null
       /**
        * @description 100만 토큰당 출력 단가. null이면 단가 미설정.
        * @example 25
        */
-      outputPricePerMillionTokens?: number | null
+      outputPricePerMillionTokens: number | null
       /**
        * @description 100만 토큰당 캐시 입력 단가. 선택.
        * @example 0.5
@@ -8914,7 +8914,7 @@ export interface components {
     /** @description 면담 브리프 저장 요청 */
     SaveInterviewBriefRequest: {
       /**
-       * @description 고른 원인 분류. 복수 선택이고 **0건도 허용**합니다.
+       * @description 고른 원인 분류. 복수 선택이고 **0건도 허용**합니다 — 그때는 `[]`를 보내세요.
        *
        *     `CONCEPT_GAP`(개념 이해 부족) · `OUT_OF_SCOPE`(담당 범위 밖) ·
        *     `TIME_SHORTAGE`(구현 시간 부족) · `EXPRESSION`(설명·표현 어려움) ·
@@ -8926,9 +8926,9 @@ export interface components {
        *       "TEAM_DEPENDENCE"
        *     ]
        */
-      causes?: string[]
+      causes: string[]
       /**
-       * @description 상세 사유. 매니저가 타이핑한 서술
+       * @description 상세 사유. 매니저가 타이핑한 서술. **비워도 저장됩니다**
        * @example 담당 범위가 좁아 전체 흐름을 볼 기회가 없었다고 함
        */
       why?: string
@@ -9011,9 +9011,9 @@ export interface components {
        */
       items: components['schemas']['BriefItemResponse'][]
       /** @description 지난 면담에서 정한 것. 없으면 null — ①칸의 ⚠ 줄이 통째로 빠진다 */
-      priorInterview: components['schemas']['PriorInterviewResponse']
+      priorInterview: components['schemas']['PriorInterviewResponse'] | null
       /** @description 저장된 매니저 입력. 처음 여는 브리프는 null */
-      savedRecord: components['schemas']['SavedRecordResponse']
+      savedRecord: components['schemas']['SavedRecordResponse'] | null
       /** @description ⚠️ **미구현** — 교안 위치·반 문제 판정이 DB 회신 대기입니다. 현재 빈 배열 */
       concepts: components['schemas']['ConceptResponse'][]
       /**
@@ -9024,7 +9024,7 @@ export interface components {
        *
        *     ⚠️ **관찰이지 판정이 아닙니다.** 화면도 "판단은 하지 않습니다"로 감싸 보여줍니다.
        */
-      voidEvidence: components['schemas']['VoidEvidenceResponse']
+      voidEvidence: components['schemas']['VoidEvidenceResponse'] | null
     }
     /** @description 지난 면담 기록 */
     PriorInterviewResponse: {
@@ -10321,39 +10321,39 @@ export interface components {
        * Format: uuid
        * @description 세션 ID
        */
-      sessionId?: string
+      sessionId: string
       /**
        * @description FIRST(1차) · REVIEW(다시 보기). REVIEW는 힌트가 없고 판정에 반영되지 않는다
        * @enum {string}
        */
-      mode?: 'FIRST' | 'REVIEW'
+      mode: 'FIRST' | 'REVIEW'
       /** @description 이 조회는 사실상 READY(시작 전) · IN_PROGRESS(진행 중)만 돌려준다 */
-      status?: components['schemas']['AssessmentSessionStatus']
+      status: components['schemas']['AssessmentSessionStatus']
       /**
        * Format: int32
-       * @description 지금 서 있는 문제 번호. 시작 전이면 null. 생성된 문제만 1부터 세므로 항상
+       * @description 지금 서 있는 문제 번호. 시작 전이면 이 키가 없다. 생성된 문제만 1부터 세므로 항상
        *     1~problemTotal 범위이며, 그대로 `GET .../problems/{problemNo}`에 넣으면 된다
        */
-      currentProblemNo?: number | null
+      currentProblemNo?: number
       /**
        * Format: int32
        * @description 생성된 문제 수. 화면의 `문제 n/N`의 N이다. 코드 근거를 못 찾아 문항이 만들어지지 않은
        *     개념(NOT_GENERATED)이 있으면 3보다 작다 — 그 문제는 세션에 아예 나오지 않는다
        */
-      problemTotal?: number
+      problemTotal: number
       /**
        * Format: date-time
        * @description 세션 시작 시각. 경과 시간 표시의 기산점
        */
-      startedAt?: string
+      startedAt: string
       /**
        * Format: date-time
        * @description 정책 시간 상한. 넘기면 답한 데까지 저장하고 닫는다
        */
-      timeLimitAt?: string
+      timeLimitAt: string
       /**
        * Format: date-time
-       * @description 다시 보기 마감. REVIEW에서만 있다
+       * @description 다시 보기 마감. REVIEW에서만 있다(FIRST면 이 키가 없다)
        */
       reviewDueAt?: string
     }
@@ -10388,8 +10388,7 @@ export interface components {
        *     NEXT_PROBLEM(다음 문제로) · PROBLEM_CLOSED(이 문제는 여기까지) · SESSION_ENDED(세션 종료)
        * @enum {string}
        */
-      outcome?:
-        'RETRY_WITH_HINT' | 'NEXT_TURN' | 'NEXT_PROBLEM' | 'PROBLEM_CLOSED' | 'SESSION_ENDED'
+      outcome: 'RETRY_WITH_HINT' | 'NEXT_TURN' | 'NEXT_PROBLEM' | 'PROBLEM_CLOSED' | 'SESSION_ENDED'
       /**
        * Format: int32
        * @description 다음에 설 문제 번호(1~problemTotal). 세션이 끝났으면 null.
@@ -10406,17 +10405,17 @@ export interface components {
     }
     AutoHint: {
       /** @description 힌트 문구. 분석 시점에 동결된 것을 그대로 준다 */
-      hintText?: string
+      hintText: string
       /**
        * Format: int32
        * @description 지금까지 쓴 힌트 수(1~2)
        */
-      hintsUsed?: number
+      hintsUsed: number
       /**
        * Format: int32
        * @description 남은 횟수. 0이면 화면은 버튼을 문구로 바꾼다
        */
-      hintsLeft?: number
+      hintsLeft: number
     }
     Highlight: {
       path: string
@@ -10427,21 +10426,25 @@ export interface components {
     }
     NextQuestion: {
       /** Format: uuid */
-      problemId?: string
+      problemId: string
       /** @description 이 질문이 서 있는 축(L1~L4) */
-      axisCode?: string
+      axisCode: string
       /** Format: int32 */
-      sequenceNo?: number
-      questionText?: string
+      sequenceNo: number
+      questionText: string
       /**
        * Format: int32
        * @description 지금까지 쓴 힌트 수
        */
-      hintsUsed?: number
+      hintsUsed: number
       /** @description 이 질문이 가리키는 코드 구간. 축이 바뀌면 함께 옮겨간다 */
       highlight?: components['schemas']['Highlight']
     }
-    /** @description 응시 중 관찰 신호(창 이탈·연결 끊김·첫 타이핑 지연) */
+    /**
+     * @description 응시 중 관찰 신호(창 이탈·연결 끊김·첫 타이핑 지연).
+     *
+     *     **세 값 모두 선택이지만 빈 객체는 400이다** — 최소 하나는 담아야 한다.
+     */
     SessionActivityRequest: {
       /**
        * Format: int32
@@ -13287,7 +13290,7 @@ export interface components {
        * @description 지난 면담에서 정한 `다음에 할 것`. 없으면 null
        * @example 담당 기능 흐름 그려오기
        */
-      nextAction: string
+      nextAction: string | null
     }
     /** @description 면담 목록 조회 결과 */
     InterviewListResponse: {
@@ -13331,7 +13334,7 @@ export interface components {
        */
       classes: components['schemas']['ClassOptionResponse'][]
       /** @description 조회한 회차의 표시용 메타. 담당 밖 회차 ID를 넣으면 null */
-      round: components['schemas']['RoundResponse']
+      round: components['schemas']['RoundResponse'] | null
     }
     /** @description 회차 메타 */
     RoundResponse: {
@@ -15401,24 +15404,24 @@ export interface components {
     }
     CurrentQuestion: {
       /** Format: int32 */
-      sequenceNo?: number
-      questionText?: string
-      /** @description 이미 연 힌트 문구. 없으면 비어 있다 */
-      shownHints?: string[]
+      sequenceNo: number
+      questionText: string
+      /** @description 이미 연 힌트 문구. 없으면 빈 배열이다 */
+      shownHints: string[]
       /**
        * Format: int32
        * @description 지금까지 쓴 힌트 수(0~2)
        */
-      hintsUsed?: number
+      hintsUsed: number
       /**
        * Format: int32
        * @description 남은 힌트 수. 다시 보기는 항상 0이다
        */
-      hintsLeft?: number
+      hintsLeft: number
       /** @description 강조할 구간 */
-      highlight?: components['schemas']['Highlight']
+      highlight: components['schemas']['Highlight']
       /** @description 이 답변이 세션의 마지막인지. 버튼 문구가 `답변 제출하고 마치기`로 바뀐다 */
-      lastTurnOfSession?: boolean
+      lastTurnOfSession: boolean
     }
     /** @description 문제 하나의 코드·질문·지금까지의 문답 */
     ProblemActivityResponse: {
@@ -15426,20 +15429,20 @@ export interface components {
        * Format: int32
        * @description 문제 번호. 생성된 문제만 1부터 세므로 항상 1~problemTotal 범위다
        */
-      problemNo?: number
+      problemNo: number
       /**
        * Format: int32
        * @description 생성된 문제 수. 화면의 `문제 n/N`
        */
-      problemTotal?: number
+      problemTotal: number
       /** @description 문제 제목. 검증하는 교안 개념 이름이다 */
-      title?: string
+      title: string
       /** @description 코드 패널 */
-      code?: components['schemas']['Code']
-      /** @description 이 문제에서 지금까지 확정된 문답. 화면은 위에서 아래로 쌓는다 */
-      turns?: components['schemas']['Turn'][]
-      /** @description 지금 물어보는 질문. 문제가 끝났으면 null */
-      current?: components['schemas']['CurrentQuestion'] | null
+      code: components['schemas']['Code']
+      /** @description 이 문제에서 지금까지 확정된 문답. 화면은 위에서 아래로 쌓는다. 아직 답한 것이 없으면 빈 배열이다 */
+      turns: components['schemas']['Turn'][]
+      /** @description 지금 물어보는 질문. 문제가 끝났으면 이 키가 없다 */
+      current?: components['schemas']['CurrentQuestion']
     }
     /** @description 코드 근거 하나 */
     Reference: {
@@ -15458,15 +15461,15 @@ export interface components {
        * Format: int32
        * @description 질문 순번. 화면의 `◆ 질문 2`
        */
-      sequenceNo?: number
-      questionText?: string
-      /** @description 이 턴 직전에 보여준 힌트. 첫 시도면 null */
-      hintText?: string | null
-      answerText?: string
+      sequenceNo: number
+      questionText: string
+      /** @description 이 턴 직전에 보여준 힌트. 첫 시도면 이 키가 없다 */
+      hintText?: string
+      answerText: string
       /** Format: date-time */
-      answeredAt?: string
-      /** @description 강조할 구간. 질문마다 옮겨간다 */
-      highlight?: components['schemas']['Highlight']
+      answeredAt: string
+      /** @description 강조할 구간. 질문마다 옮겨간다. 축별 구간이 없으면 문제의 대표 구간이다 */
+      highlight: components['schemas']['Highlight']
     }
     /**
      * @description 코드 분석 작업 상태. QUEUED · RUNNING · SUCCEEDED · PARTIAL(일부 개념만 생성) · FAILED

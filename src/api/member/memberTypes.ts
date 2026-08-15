@@ -106,7 +106,7 @@ export type registerTrainees_Body = NonNullable<
   operations['registerTrainees']['requestBody']
 >['content']['application/json']
 export type registerTrainees_Response =
-  operations['registerTrainees']['responses'][201]['content']['application/json']
+  operations['registerTrainees']['responses'][202]['content']['application/json']
 export type registerTrainees_Item = NonNullable<registerTrainees_Response['failures']>[number]
 export type registerTrainees_Errors =
   | 'VALIDATION_FAILED'
@@ -208,6 +208,50 @@ export type findManagers_Response =
 export type findManagers_Item = NonNullable<findManagers_Response['content']>[number]
 export type findManagers_Errors =
   'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'ORGANIZATION_CONTEXT_MISSING'
+
+// GET /api/v0/cohorts/{cohortId}/trainees/{traineeId} — 교육생 상세 조회
+export type findManagerTraineeDetail_Path =
+  operations['findManagerTraineeDetail']['parameters']['path']
+export type findManagerTraineeDetail_Response =
+  operations['findManagerTraineeDetail']['responses'][200]['content']['application/json']
+export type findManagerTraineeDetail_Errors =
+  | 'UNAUTHENTICATED'
+  | 'MANAGER_ROLE_REQUIRED'
+  | 'MANAGER_VIEWER_NOT_ACTIVE'
+  | 'ACCESS_DENIED'
+  | 'MANAGER_SCOPE_NOT_FOUND'
+  | 'TRAINEE_NOT_FOUND'
+
+// GET /api/v0/cohorts/{cohortId}/trainees/{traineeId}/timeline — 교육생 통합 타임라인 조회
+export type findManagerTraineeTimeline_Path =
+  operations['findManagerTraineeTimeline']['parameters']['path']
+export type findManagerTraineeTimeline_Query = NonNullable<
+  operations['findManagerTraineeTimeline']['parameters']['query']
+>
+export type findManagerTraineeTimeline_Response =
+  operations['findManagerTraineeTimeline']['responses'][200]['content']['application/json']
+export type findManagerTraineeTimeline_Item = NonNullable<
+  findManagerTraineeTimeline_Response['rounds']
+>[number]
+export type findManagerTraineeTimeline_Errors =
+  | 'TIMELINE_CURSOR_INVALID'
+  | 'VALIDATION_FAILED'
+  | 'UNAUTHENTICATED'
+  | 'MANAGER_ROLE_REQUIRED'
+  | 'MANAGER_VIEWER_NOT_ACTIVE'
+  | 'ACCESS_DENIED'
+  | 'MANAGER_SCOPE_NOT_FOUND'
+
+// GET /api/v0/cohorts/{cohortId}/trainees/registrations/{batchRequestId} — 교육생 일괄 등록 진행률 조회
+export type findTraineeRegistrationProgress_Path =
+  operations['findTraineeRegistrationProgress']['parameters']['path']
+export type findTraineeRegistrationProgress_Response =
+  operations['findTraineeRegistrationProgress']['responses'][200]['content']['application/json']
+export type findTraineeRegistrationProgress_Errors =
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'REGISTRATION_BATCH_NOT_FOUND'
+  | 'ORGANIZATION_CONTEXT_MISSING'
 
 // DELETE /api/v0/members/organizations/{organizationId}/manager-invitations/{tokenId} — 매니저 초대 취소
 export type cancelManagerInvitation_Path =

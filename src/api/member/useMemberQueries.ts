@@ -2,7 +2,15 @@
 
 import { useQuery } from '@tanstack/react-query'
 import type { QueryOptions } from '@/api/_contract'
-import { getMyCommitEmail, findTraineeRoster, getCurrentMember, findManagers } from './memberApi'
+import {
+  getMyCommitEmail,
+  findTraineeRoster,
+  getCurrentMember,
+  findManagers,
+  findManagerTraineeDetail,
+  findManagerTraineeTimeline,
+  findTraineeRegistrationProgress,
+} from './memberApi'
 import { memberKeys } from './memberKeys'
 import type {
   getMyCommitEmail_Response,
@@ -12,6 +20,13 @@ import type {
   getCurrentMember_Response,
   findManagers_Query,
   findManagers_Response,
+  findManagerTraineeDetail_Path,
+  findManagerTraineeDetail_Response,
+  findManagerTraineeTimeline_Path,
+  findManagerTraineeTimeline_Query,
+  findManagerTraineeTimeline_Response,
+  findTraineeRegistrationProgress_Path,
+  findTraineeRegistrationProgress_Response,
 } from './memberTypes'
 
 /** 내 커밋 이메일 조회 */
@@ -52,6 +67,42 @@ export function useFindManagers(
   return useQuery({
     queryKey: memberKeys.findManagers(params),
     queryFn: ({ signal }) => findManagers({ ...params, signal }),
+    ...options,
+  })
+}
+
+/** 교육생 상세 조회 */
+export function useFindManagerTraineeDetail(
+  params: { path: findManagerTraineeDetail_Path },
+  options?: QueryOptions<findManagerTraineeDetail_Response>,
+) {
+  return useQuery({
+    queryKey: memberKeys.findManagerTraineeDetail(params),
+    queryFn: ({ signal }) => findManagerTraineeDetail({ ...params, signal }),
+    ...options,
+  })
+}
+
+/** 교육생 통합 타임라인 조회 */
+export function useFindManagerTraineeTimeline(
+  params: { path: findManagerTraineeTimeline_Path; query?: findManagerTraineeTimeline_Query },
+  options?: QueryOptions<findManagerTraineeTimeline_Response>,
+) {
+  return useQuery({
+    queryKey: memberKeys.findManagerTraineeTimeline(params),
+    queryFn: ({ signal }) => findManagerTraineeTimeline({ ...params, signal }),
+    ...options,
+  })
+}
+
+/** 교육생 일괄 등록 진행률 조회 */
+export function useFindTraineeRegistrationProgress(
+  params: { path: findTraineeRegistrationProgress_Path },
+  options?: QueryOptions<findTraineeRegistrationProgress_Response>,
+) {
+  return useQuery({
+    queryKey: memberKeys.findTraineeRegistrationProgress(params),
+    queryFn: ({ signal }) => findTraineeRegistrationProgress({ ...params, signal }),
     ...options,
   })
 }

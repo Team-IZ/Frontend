@@ -4,6 +4,10 @@ import type {
   findTraineeRoster_Path,
   findTraineeRoster_Query,
   findManagers_Query,
+  findManagerTraineeDetail_Path,
+  findManagerTraineeTimeline_Path,
+  findManagerTraineeTimeline_Query,
+  findTraineeRegistrationProgress_Path,
 } from './memberTypes'
 
 /*
@@ -19,4 +23,18 @@ export const memberKeys = {
   getCurrentMember: () => [...memberKeys.all, 'getCurrentMember'] as const,
   findManagers: (params: { query?: findManagers_Query }) =>
     [...memberKeys.all, 'findManagers', params.query ?? null] as const,
+  findManagerTraineeDetail: (params: { path: findManagerTraineeDetail_Path }) =>
+    [...memberKeys.all, 'findManagerTraineeDetail', params.path ?? null] as const,
+  findManagerTraineeTimeline: (params: {
+    path: findManagerTraineeTimeline_Path
+    query?: findManagerTraineeTimeline_Query
+  }) =>
+    [
+      ...memberKeys.all,
+      'findManagerTraineeTimeline',
+      params.path ?? null,
+      params.query ?? null,
+    ] as const,
+  findTraineeRegistrationProgress: (params: { path: findTraineeRegistrationProgress_Path }) =>
+    [...memberKeys.all, 'findTraineeRegistrationProgress', params.path ?? null] as const,
 }

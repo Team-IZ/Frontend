@@ -3,20 +3,27 @@
 import { useQuery } from '@tanstack/react-query'
 import type { QueryOptions } from '@/api/_contract'
 import {
+  findTeams,
   findProjects,
   findProject,
+  findProjectsForManager,
   findRounds,
   findConceptCandidates,
   findProjectClassProgress,
   findCurrentProject,
+  findCurrentRound,
 } from './projectExecutionApi'
 import { projectExecutionKeys } from './projectExecutionKeys'
 import type {
+  findTeams_Path,
+  findTeams_Response,
   findProjects_Path,
   findProjects_Query,
   findProjects_Response,
   findProject_Path,
   findProject_Response,
+  findProjectsForManager_Query,
+  findProjectsForManager_Response,
   findRounds_Path,
   findRounds_Response,
   findConceptCandidates_Path,
@@ -26,7 +33,20 @@ import type {
   findProjectClassProgress_Response,
   findCurrentProject_Path,
   findCurrentProject_Response,
+  findCurrentRound_Response,
 } from './projectExecutionTypes'
+
+/** 팀 목록 조회 */
+export function useFindTeams(
+  params: { path: findTeams_Path },
+  options?: QueryOptions<findTeams_Response>,
+) {
+  return useQuery({
+    queryKey: projectExecutionKeys.findTeams(params),
+    queryFn: ({ signal }) => findTeams({ ...params, signal }),
+    ...options,
+  })
+}
 
 /** 기수 프로젝트 목록 */
 export function useFindProjects(
@@ -48,6 +68,18 @@ export function useFindProject(
   return useQuery({
     queryKey: projectExecutionKeys.findProject(params),
     queryFn: ({ signal }) => findProject({ ...params, signal }),
+    ...options,
+  })
+}
+
+/** 담당 반 프로젝트 목록 */
+export function useFindProjectsForManager(
+  params: { query?: findProjectsForManager_Query } = {},
+  options?: QueryOptions<findProjectsForManager_Response>,
+) {
+  return useQuery({
+    queryKey: projectExecutionKeys.findProjectsForManager(params),
+    queryFn: ({ signal }) => findProjectsForManager({ ...params, signal }),
     ...options,
   })
 }
@@ -96,6 +128,15 @@ export function useFindCurrentProject(
   return useQuery({
     queryKey: projectExecutionKeys.findCurrentProject(params),
     queryFn: ({ signal }) => findCurrentProject({ ...params, signal }),
+    ...options,
+  })
+}
+
+/** 이번 회차 상태 판정 조회 (지금 할 일 하나) */
+export function useFindCurrentRound(options?: QueryOptions<findCurrentRound_Response>) {
+  return useQuery({
+    queryKey: projectExecutionKeys.findCurrentRound(),
+    queryFn: ({ signal }) => findCurrentRound({ signal }),
     ...options,
   })
 }

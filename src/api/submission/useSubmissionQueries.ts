@@ -2,7 +2,12 @@
 
 import { useQuery } from '@tanstack/react-query'
 import type { QueryOptions } from '@/api/_contract'
-import { getAnalysis, getAnalysisResult, findProjectSubmissionStatus } from './submissionApi'
+import {
+  getAnalysis,
+  getAnalysisResult,
+  findProjectSubmissionStatus,
+  findMySubmission,
+} from './submissionApi'
 import { submissionKeys } from './submissionKeys'
 import type {
   getAnalysis_Path,
@@ -12,6 +17,8 @@ import type {
   findProjectSubmissionStatus_Path,
   findProjectSubmissionStatus_Query,
   findProjectSubmissionStatus_Response,
+  findMySubmission_Path,
+  findMySubmission_Response,
 } from './submissionTypes'
 
 /** 코드 분석 진행 상태·실패 사유 조회 */
@@ -46,6 +53,18 @@ export function useFindProjectSubmissionStatus(
   return useQuery({
     queryKey: submissionKeys.findProjectSubmissionStatus(params),
     queryFn: ({ signal }) => findProjectSubmissionStatus({ ...params, signal }),
+    ...options,
+  })
+}
+
+/** 내 팀의 제출 현황 조회 */
+export function useFindMySubmission(
+  params: { path: findMySubmission_Path },
+  options?: QueryOptions<findMySubmission_Response>,
+) {
+  return useQuery({
+    queryKey: submissionKeys.findMySubmission(params),
+    queryFn: ({ signal }) => findMySubmission({ ...params, signal }),
     ...options,
   })
 }

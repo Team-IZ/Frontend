@@ -51,3 +51,10 @@ export type findProjectSubmissionStatus_Errors =
   | 'MANAGER_ROLE_REQUIRED'
   | 'PROJECT_ROUND_NOT_FOUND'
   | 'MANAGER_SCOPE_NOT_FOUND'
+
+// GET /api/v0/projects/{projectId}/my-submission — 내 팀의 제출 현황 조회
+export type findMySubmission_Path = operations['findMySubmission']['parameters']['path']
+export type findMySubmission_Response =
+  operations['findMySubmission']['responses'][200]['content']['application/json']
+export type findMySubmission_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'SUBMISSION_ROUND_NOT_ACCESSIBLE'

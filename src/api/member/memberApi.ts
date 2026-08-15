@@ -34,6 +34,13 @@ import type {
   getCurrentMember_Response,
   findManagers_Query,
   findManagers_Response,
+  findManagerTraineeDetail_Path,
+  findManagerTraineeDetail_Response,
+  findManagerTraineeTimeline_Path,
+  findManagerTraineeTimeline_Query,
+  findManagerTraineeTimeline_Response,
+  findTraineeRegistrationProgress_Path,
+  findTraineeRegistrationProgress_Response,
   cancelManagerInvitation_Path,
   cancelManagerInvitation_Response,
 } from './memberTypes'
@@ -176,6 +183,42 @@ export const findManagers = (params: { query?: findManagers_Query } & RequestOpt
   unwrap<findManagers_Response>(
     izClient.GET('/api/v0/managers', {
       params: { query: params.query ?? {} },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 교육생 상세 조회 — `GET /api/v0/cohorts/{cohortId}/trainees/{traineeId}` */
+export const findManagerTraineeDetail = (
+  params: { path: findManagerTraineeDetail_Path } & RequestOptions,
+) =>
+  unwrap<findManagerTraineeDetail_Response>(
+    izClient.GET('/api/v0/cohorts/{cohortId}/trainees/{traineeId}', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 교육생 통합 타임라인 조회 — `GET /api/v0/cohorts/{cohortId}/trainees/{traineeId}/timeline` */
+export const findManagerTraineeTimeline = (
+  params: {
+    path: findManagerTraineeTimeline_Path
+    query?: findManagerTraineeTimeline_Query
+  } & RequestOptions,
+) =>
+  unwrap<findManagerTraineeTimeline_Response>(
+    izClient.GET('/api/v0/cohorts/{cohortId}/trainees/{traineeId}/timeline', {
+      params: { path: params.path, query: params.query ?? {} },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 교육생 일괄 등록 진행률 조회 — `GET /api/v0/cohorts/{cohortId}/trainees/registrations/{batchRequestId}` */
+export const findTraineeRegistrationProgress = (
+  params: { path: findTraineeRegistrationProgress_Path } & RequestOptions,
+) =>
+  unwrap<findTraineeRegistrationProgress_Response>(
+    izClient.GET('/api/v0/cohorts/{cohortId}/trainees/registrations/{batchRequestId}', {
+      params: { path: params.path },
       signal: params.signal,
     }) as never,
   )

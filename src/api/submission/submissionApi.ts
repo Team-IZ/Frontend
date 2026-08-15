@@ -11,6 +11,8 @@ import type {
   findProjectSubmissionStatus_Path,
   findProjectSubmissionStatus_Query,
   findProjectSubmissionStatus_Response,
+  findMySubmission_Path,
+  findMySubmission_Response,
 } from './submissionTypes'
 
 /** 저장소 주소 사전 확인 — `POST /api/v0/submissions/repository-checks` */
@@ -50,6 +52,15 @@ export const findProjectSubmissionStatus = (
   unwrap<findProjectSubmissionStatus_Response>(
     izClient.GET('/api/v0/projects/{projectId}/submissions', {
       params: { path: params.path, query: params.query ?? {} },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 내 팀의 제출 현황 조회 — `GET /api/v0/projects/{projectId}/my-submission` */
+export const findMySubmission = (params: { path: findMySubmission_Path } & RequestOptions) =>
+  unwrap<findMySubmission_Response>(
+    izClient.GET('/api/v0/projects/{projectId}/my-submission', {
+      params: { path: params.path },
       signal: params.signal,
     }) as never,
   )

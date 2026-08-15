@@ -29,6 +29,61 @@ export type confirmConcepts_Errors =
   | 'ACCESS_DENIED'
   | 'PROJECT_NOT_FOUND'
 
+// GET /api/v0/projects/{projectId}/teams — 팀 목록 조회
+export type findTeams_Path = operations['findTeams']['parameters']['path']
+export type findTeams_Response =
+  operations['findTeams']['responses'][200]['content']['application/json']
+export type findTeams_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'PROJECT_NOT_FOUND'
+
+// POST /api/v0/projects/{projectId}/teams — 팀 생성
+export type createTeam_Path = operations['createTeam']['parameters']['path']
+export type createTeam_Body = NonNullable<
+  operations['createTeam']['requestBody']
+>['content']['application/json']
+export type createTeam_Response =
+  operations['createTeam']['responses'][201]['content']['application/json']
+export type createTeam_Errors =
+  | 'VALIDATION_FAILED'
+  | 'MANAGER_CLASSROOM_AMBIGUOUS'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'PROJECT_NOT_FOUND'
+
+// POST /api/v0/projects/{projectId}/teams/{teamId}/members — 팀원 배정
+export type assignTeamMember_Path = operations['assignTeamMember']['parameters']['path']
+export type assignTeamMember_Body = NonNullable<
+  operations['assignTeamMember']['requestBody']
+>['content']['application/json']
+export type assignTeamMember_Response = void
+export type assignTeamMember_Errors =
+  | 'VALIDATION_FAILED'
+  | 'PROJECT_MEMBERSHIP_NOT_FOUND'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'TEAM_NOT_FOUND'
+
+// POST /api/v0/projects/{projectId}/teams/confirm — 팀 편성 확정
+export type confirmTeams_Path = operations['confirmTeams']['parameters']['path']
+export type confirmTeams_Response = void
+export type confirmTeams_Errors =
+  'NO_TEAMS_TO_CONFIRM' | 'TEAMS_NOT_READY' | 'UNAUTHENTICATED' | 'ACCESS_DENIED'
+
+// POST /api/v0/projects/{projectId}/teams/auto-assign — 팀 자동 배분 실행
+export type autoAssignTeams_Path = operations['autoAssignTeams']['parameters']['path']
+export type autoAssignTeams_Body = NonNullable<
+  operations['autoAssignTeams']['requestBody']
+>['content']['application/json']
+export type autoAssignTeams_Response =
+  operations['autoAssignTeams']['responses'][200]['content']['application/json']
+export type autoAssignTeams_Errors =
+  | 'VALIDATION_FAILED'
+  | 'NO_MEMBERS_TO_ASSIGN'
+  | 'MANAGER_CLASSROOM_AMBIGUOUS'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'PROJECT_NOT_FOUND'
+  | 'AUTO_ASSIGN_NOT_ALLOWED'
+
 // POST /api/v0/projects/{projectId}/curricula — 프로젝트 교안 연결
 export type linkCurriculum_Path = operations['linkCurriculum']['parameters']['path']
 export type linkCurriculum_Body = NonNullable<
@@ -53,7 +108,8 @@ export type findProjects_Query = NonNullable<operations['findProjects']['paramet
 export type findProjects_Response =
   operations['findProjects']['responses'][200]['content']['application/json']
 export type findProjects_Item = NonNullable<findProjects_Response['projects']>[number]
-export type findProjects_Errors = 'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED'
+export type findProjects_Errors =
+  'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND'
 
 // POST /api/v0/cohorts/{cohortId}/projects — 프로젝트 생성
 export type createProject_Path = operations['createProject']['parameters']['path']
@@ -87,6 +143,20 @@ export type updateSchedule_Response =
 export type updateSchedule_Errors =
   'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'PROJECT_NOT_FOUND'
 
+// PATCH /api/v0/projects/{projectId}/teams/{teamId} — 팀 정보 수정
+export type updateTeam_Path = operations['updateTeam']['parameters']['path']
+export type updateTeam_Body = NonNullable<
+  operations['updateTeam']['requestBody']
+>['content']['application/json']
+export type updateTeam_Response = void
+export type updateTeam_Errors =
+  'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'TEAM_NOT_FOUND'
+
+// PATCH /api/v0/projects/{projectId}/teams/reopen — 팀 편성 다시 열기
+export type reopenTeams_Path = operations['reopenTeams']['parameters']['path']
+export type reopenTeams_Response = void
+export type reopenTeams_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
+
 // PATCH /api/v0/projects/{projectId}/rounds/{roundId} — 프로젝트 회차 일정 수정
 export type updateRoundSchedule_Path = operations['updateRoundSchedule']['parameters']['path']
 export type updateRoundSchedule_Body = NonNullable<
@@ -96,6 +166,18 @@ export type updateRoundSchedule_Response =
   operations['updateRoundSchedule']['responses'][200]['content']['application/json']
 export type updateRoundSchedule_Errors =
   'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'PROJECT_NOT_FOUND'
+
+// GET /api/v0/projects — 담당 반 프로젝트 목록
+export type findProjectsForManager_Query = NonNullable<
+  operations['findProjectsForManager']['parameters']['query']
+>
+export type findProjectsForManager_Response =
+  operations['findProjectsForManager']['responses'][200]['content']['application/json']
+export type findProjectsForManager_Item = NonNullable<
+  findProjectsForManager_Response['projects']
+>[number]
+export type findProjectsForManager_Errors =
+  'PROJECT_LIST_SCOPE_AMBIGUOUS' | 'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // GET /api/v0/projects/{projectId}/rounds — 프로젝트 회차 목록
 export type findRounds_Path = operations['findRounds']['parameters']['path']
@@ -127,12 +209,28 @@ export type findProjectClassProgress_Errors =
   | 'PROJECT_CROSS_ORGANIZATION'
   | 'ACCESS_DENIED'
   | 'PROJECT_ROUND_NOT_FOUND'
+  | 'PROJECT_ROUND_NOT_CREATED'
 
 // GET /api/v0/cohorts/{cohortId}/projects/current — 기수의 이번 회차 조회
 export type findCurrentProject_Path = operations['findCurrentProject']['parameters']['path']
 export type findCurrentProject_Response =
   operations['findCurrentProject']['responses'][200]['content']['application/json']
-export type findCurrentProject_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
+export type findCurrentProject_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND'
+
+// GET /api/v0/api/v0/bff/me/current-round — 이번 회차 상태 판정 조회 (지금 할 일 하나)
+export type findCurrentRound_Response =
+  operations['findCurrentRound']['responses'][200]['content']['application/json']
+export type findCurrentRound_Errors = 'UNAUTHENTICATED' | 'NOT_A_TRAINEE' | 'ACCESS_DENIED'
+
+// DELETE /api/v0/projects/{projectId}/teams/{teamId}/members/{traineeId} — 팀원 제외
+export type removeTeamMember_Path = operations['removeTeamMember']['parameters']['path']
+export type removeTeamMember_Response = void
+export type removeTeamMember_Errors =
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'TEAM_NOT_FOUND'
+  | 'PROJECT_MEMBERSHIP_NOT_FOUND'
+  | 'TEAM_MEMBERSHIP_NOT_FOUND'
 
 // DELETE /api/v0/projects/{projectId}/curricula/{projectCurriculumId} — 프로젝트 교안 연결 해제
 export type unlinkCurriculum_Path = operations['unlinkCurriculum']['parameters']['path']

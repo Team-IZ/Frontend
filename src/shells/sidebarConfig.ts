@@ -59,6 +59,15 @@ export const OPERATOR_SIDEBAR: SidebarGroup[] = [
     { icon: ChartLineIcon, label: '분석', to: '/operator/analysis' },
   ],
   [
+    /*
+      **교안이 프로젝트 앞이다** — 교안이 재료고 프로젝트가 그걸 쓰고 리포트가 결과라,
+      순서가 곧 흐름이다(그룹에 라벨을 안 다는 이유가 이것이다).
+
+      `운영 관리` 탭이 아니라 여기 있다 — 그쪽은 기수 스코프 화면인데 교안은 기관
+      자산이다(CurriculaScreen 주석에 실측 근거). 아이콘은 매니저의 `교안`과 같은
+      것을 쓴다 — 같은 것을 가리키는 자리다.
+    */
+    { icon: BookOpenIcon, label: '교안', to: '/operator/curricula' },
     { icon: FolderKanbanIcon, label: '프로젝트', to: '/operator/projects' },
     { icon: FileTextIcon, label: '리포트', to: '/operator/report' },
   ],

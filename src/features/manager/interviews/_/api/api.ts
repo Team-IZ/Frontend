@@ -15,6 +15,7 @@ import type {
   findInterviews_Response,
 } from '@/api/intervention/interventionTypes'
 import { listQueryOptions } from '@/lib/listQuery'
+import { stripSeverityTag } from '@/lib/riskSummary'
 import type { Brief, InterviewCase, InterviewListView, RoundOption } from './types'
 
 /*
@@ -136,7 +137,7 @@ function toCase(c: NonNullable<ListServer['items']>[number]): InterviewCase {
     className: c.className,
     status: c.status as InterviewCase['status'],
     riskType: c.riskType,
-    riskSummary: c.riskSummary,
+    riskSummary: stripSeverityTag(c.riskSummary),
     briefState: c.briefState as InterviewCase['briefState'],
     attemptId: c.attemptId,
     voidConfirmed: c.voidConfirmed,
@@ -156,7 +157,7 @@ function toBrief(res: BriefServer): Brief {
     name: res.name,
     className: res.className,
     riskType: res.riskType,
-    riskSummary: res.riskSummary,
+    riskSummary: stripSeverityTag(res.riskSummary),
     isVoid: res.isVoid,
     firstInterview: res.firstInterview,
     briefState: state,
@@ -183,7 +184,15 @@ function toBrief(res: BriefServer): Brief {
     savedRecord: res.savedRecord
       ? {
           causes: res.savedRecord.causes ?? [],
-          why: res.savedRecord.why ?? null,
+          /*
+            🔴 **서버가 빈 상세 사유를 `(기록 없음)`으로 바꿔 저장한다**(실측 · 32차 R8).
+            그대로 입력칸에 넣으면 매니저가 이어서 쓰려고 그 글자를 **먼저 지워야 하고**,
+            안 지우고 저장하면 「안 쓴 것」이 「그렇게 쓴 것」으로 굳는다.
+
+            스펙은 `why`가 「매니저가 타이핑한 서술」이라 이 값은 사용자 입력이 아니다 —
+            빈 값으로 되돌린다. 서버가 그대로 저장하게 바뀌면 이 줄만 지운다.
+          */
+          why: emptyIfPlaceholder(res.savedRecord.why),
           nextAction: res.savedRecord.nextAction ?? null,
         }
       : null,
@@ -194,4 +203,11 @@ function toBrief(res: BriefServer): Brief {
     })),
     voidEvidence: (res.voidEvidence ?? null) as Brief['voidEvidence'],
   }
+}
+
+/** 서버가 빈 값 대신 넣는 문구 — 사용자 입력이 아니므로 입력칸에 그리지 않는다(32차 R8) */
+const SERVER_EMPTY_PLACEHOLDER = '(기록 없음)'
+
+function emptyIfPlaceholder(v: string | null | undefined): string | null {
+  return !v || v.trim() === SERVER_EMPTY_PLACEHOLDER ? null : v
 }

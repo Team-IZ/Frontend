@@ -13,6 +13,13 @@ import type { operations } from '@/api/schema'
 */
 type CsvUploadResponse =
   operations['registerTraineesFromCsv']['responses'][202]['content']['application/json']
+/*
+  **미리보기는 등록과 다른 스키마다.** 한동안 같은 것을 가리켰는데, 그건 설계가 아니라
+  스펙에서 두 이름이 겹쳐 있던 사고였다(30차 회신 §2). 이름이 갈리며 여기서 컴파일이
+  깨져서 알았다 — 미리보기에는 `registeredCount`가 없고 `registrableCount`가 있다.
+*/
+type CsvPreviewResponse =
+  operations['previewTraineesFromCsv']['responses'][200]['content']['application/json']
 type RegisterCurriculumResponse =
   operations['registerCurriculum']['responses'][201]['content']['application/json']
 /*
@@ -63,11 +70,11 @@ export const registerTraineesFromCsv = (params: CsvUpload) =>
 /**
  * CSV 명단 사전 검증(드라이런) — `POST /api/v0/cohorts/{cohortId}/trainees/preview`
  *
- * **아무것도 만들지 않는다.** 응답이 등록과 같은 스키마라 화면이 미리보기와 등록 결과를
- * 한 컴포넌트로 그린다 — 다만 `invitationSentCount`는 항상 0이다.
+ * **아무것도 만들지 않는다.** 그래서 응답도 등록과 다르다 — 몇 명을 **등록할 수 있는지**
+ * (`registrableCount`)를 주고, 등록 건수·초대 발송 수·배치 ID는 없다.
  */
 export const previewTraineesFromCsv = (params: CsvUpload) =>
-  unwrap<CsvUploadResponse>(
+  unwrap<CsvPreviewResponse>(
     izClient.POST('/api/v0/cohorts/{cohortId}/trainees/preview', {
       params: { path: params.path },
       body: csvBody(params.file) as never,

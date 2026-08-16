@@ -89,6 +89,8 @@ function toCurrent(res: Server, className: string | null): CurrentRound {
     assessmentCloseAt: earlier(c.assessmentCloseAt, c.roundAssessmentDueAt),
     submittedAt: c.submittedAt ?? null,
 
+    problemCount: c.preparedProblemCount ?? null,
+
     /*
       다시 볼 개념 수를 **서버가 숫자로 주지 않는다.** `reviewStatus`(상태)와
       `completedReviewCount`(완료 건수)만 온다.

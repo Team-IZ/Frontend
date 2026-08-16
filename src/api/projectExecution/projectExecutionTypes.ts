@@ -217,11 +217,6 @@ export type findCurrentProject_Response =
   operations['findCurrentProject']['responses'][200]['content']['application/json']
 export type findCurrentProject_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND'
 
-// GET /api/v0/bff/me/current-round — 이번 회차 상태 판정 조회 (지금 할 일 하나)
-export type findCurrentRound_Response =
-  operations['findCurrentRound']['responses'][200]['content']['application/json']
-export type findCurrentRound_Errors = 'UNAUTHENTICATED' | 'NOT_A_TRAINEE' | 'ACCESS_DENIED'
-
 // DELETE /api/v0/projects/{projectId}/teams/{teamId}/members/{traineeId} — 팀원 제외
 export type removeTeamMember_Path = operations['removeTeamMember']['parameters']['path']
 export type removeTeamMember_Response = void

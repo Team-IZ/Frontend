@@ -318,9 +318,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -467,9 +467,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -979,9 +979,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -1961,9 +1961,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -2267,9 +2267,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -2748,9 +2748,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -2906,9 +2906,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -3173,9 +3173,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -3391,9 +3391,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -3568,9 +3568,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -5343,9 +5343,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -5668,9 +5668,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -5799,9 +5799,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -6094,9 +6094,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -6394,7 +6394,7 @@
           "Member"
         ],
         "summary": "CSV 교육생 명단 사전 검증(드라이런) | ✅ 사용 가능",
-        "description": "**아무것도 만들지 않고** 무엇이 걸리는지만 돌려준다(9차 Q3-③).\n200명을 붙여 넣고 나서야 30명이 중복이라는 걸 알게 되는 것을 없앤다.\n\n**요청** (multipart/form-data) — 등록(`POST /cohorts/{cohortId}/trainees`)과 완전히 같다.\n- cohortId (경로) · file: 첫 행에 `이름`·`이메일` 열이 있는 CSV\n  (UTF-8·CP949 둘 다 되고 열 순서는 상관없다 — 등록 API와 같은 파서다, 25차 Q1)\n\n**응답 (200)** — 등록 응답과 **같은 스키마**다(`RegisterTraineesResponse`).\n화면이 미리보기와 등록 결과를 한 컴포넌트로 그릴 수 있다.\n\n| 필드 | 미리보기에서의 뜻 |\n|---|---|\n| `requestedCount` | 검사한 행 수 |\n| `registeredCount` | **등록될 수 있는** 행 수(= requestedCount − failures.length) |\n| `invitationSentCount` | **항상 0** — 아무것도 보내지 않았다 |\n| `failures[]` | 걸린 행. `row`·`email`·`status`는 등록과 같은 의미 |\n\n## 판정은 등록과 **같은 규칙**이다\n\n행별 사유(1=형식 오류, 2=요청 내 중복, 3=기관에 이미 있는 이메일)를 등록 경로와\n**한 메서드**에서 판정하므로, 미리보기가 통과시킨 행을 등록이 거절하는 일이 없다.\n\n이름이 비어 있거나 200자를 넘으면 등록과 똑같이 **요청 전체가 400**이다 —\n미리보기에서만 통과시키면 미리보기의 뜻이 없어진다.\n\n⚠️ **미리보기가 통과했다고 등록이 반드시 성공하지는 않는다.** 두 호출 사이에 다른 운영자가\n같은 주소를 등록할 수 있다. 등록 응답의 `failures`는 그대로 확인해야 한다.\n\n💡 **형식 오류·기관 도메인 밖 주소는 화면이 그 자리에서 걸러도 된다**(`rules.parseRosterCsv`).\n이 API가 꼭 필요한 것은 **이미 등록된 이메일**이며, 명단 전량을 받아야 셀 수 있어 서버여야 한다.\n",
+        "description": "**아무것도 만들지 않고** 무엇이 걸리는지만 돌려준다(9차 Q3-③).\n200명을 붙여 넣고 나서야 30명이 중복이라는 걸 알게 되는 것을 없앤다.\n\n**요청** (multipart/form-data) — 등록(`POST /cohorts/{cohortId}/trainees`)과 완전히 같다.\n- cohortId (경로) · file: 첫 행에 `이름`·`이메일` 열이 있는 CSV\n  (UTF-8·CP949 둘 다 되고 열 순서는 상관없다 — 등록 API와 같은 파서다, 25차 Q1)\n\n**응답 (200)** — 등록과 **다른 스키마**다(`PreviewTraineesResponse`, 31차 R2).\n종전에는 등록 응답을 그대로 돌려줬는데, `registeredCount`라는 이름이 「등록됐다」로 읽혀\n미리보기가 진짜 등록을 했는지 명단을 뒤지게 만들었다. **이 응답의 수는 전부 「그렇게 될 것」이다.**\n\n| 필드 | 뜻 |\n|---|---|\n| `requestedCount` | 검사한 행 수 |\n| `registrableCount` | **등록될 수 있는** 행 수(= requestedCount − failures.length) |\n| `failures[]` | 걸린 행. `row`·`email`·`status`는 등록과 같은 의미 |\n\n`invitationSentCount`·`batchRequestId`는 **없다** — 보낸 메일도 폴링할 잡도 없어\n각각 0·null로 고정돼 있던 자리다. 실패 목록(`Failure`)만 등록과 같은 형을 그대로 쓴다.\n\n## 판정은 등록과 **같은 규칙**이다\n\n행별 사유(1=형식 오류, 2=요청 내 중복, 3=기관에 이미 있는 이메일)를 등록 경로와\n**한 메서드**에서 판정하므로, 미리보기가 통과시킨 행을 등록이 거절하는 일이 없다.\n\n이름이 비어 있거나 200자를 넘으면 등록과 똑같이 **요청 전체가 400**이다 —\n미리보기에서만 통과시키면 미리보기의 뜻이 없어진다.\n\n⚠️ **미리보기가 통과했다고 등록이 반드시 성공하지는 않는다.** 두 호출 사이에 다른 운영자가\n같은 주소를 등록할 수 있다. 등록 응답의 `failures`는 그대로 확인해야 한다.\n\n💡 **형식 오류·기관 도메인 밖 주소는 화면이 그 자리에서 걸러도 된다**(`rules.parseRosterCsv`).\n이 API가 꼭 필요한 것은 **이미 등록된 이메일**이며, 명단 전량을 받아야 셀 수 있어 서버여야 한다.\n",
         "operationId": "previewTraineesFromCsv",
         "parameters": [
           {
@@ -6430,11 +6430,11 @@
         },
         "responses": {
           "200": {
-            "description": "사전 검증 완료; 등록될 수 있는 수와 걸린 행을 응답(아무것도 만들지 않음)",
+            "description": "사전 검증 완료; 등록될 수 있는 수(registrableCount)와 걸린 행을 응답(아무것도 만들지 않음)",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RegisterTraineesResponse"
+                  "$ref": "#/components/schemas/PreviewTraineesResponse"
                 }
               }
             }
@@ -6646,9 +6646,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -6862,9 +6862,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -6998,7 +6998,7 @@
           "Member"
         ],
         "summary": "직접 입력 교육생 명단 사전 검증(드라이런) | ✅ 사용 가능",
-        "description": "CSV 대신 화면에서 직접 입력한 명단을 **등록하지 않고** 검사한다(9차 Q3-③).\n판정 규칙과 응답 형식은 CSV 사전 검증(`POST /cohorts/{cohortId}/trainees/preview`)과 완전히 같다.\n\n**요청** (application/json) — 등록(`POST …/trainees/invitations`)과 같은 본문이다.\n- trainees[] (필수, 1건 이상): name(필수, 최대 200자) · email\n\n**응답 (200)** — `registeredCount`는 **등록될 수 있는 수**이고 `invitationSentCount`는 항상 0이다.\n`failures[].row`는 1부터 시작하는 배열 순번이다(CSV와 달리 헤더가 없다).\n",
+        "description": "CSV 대신 화면에서 직접 입력한 명단을 **등록하지 않고** 검사한다(9차 Q3-③).\n판정 규칙과 응답 형식은 CSV 사전 검증(`POST /cohorts/{cohortId}/trainees/preview`)과 완전히 같다.\n\n**요청** (application/json) — 등록(`POST …/trainees/invitations`)과 같은 본문이다.\n- trainees[] (필수, 1건 이상): name(필수, 최대 200자) · email\n\n**응답 (200)** — `PreviewTraineesResponse`. `registrableCount`는 **등록될 수 있는 수**이며\n아직 등록되지 않았다. `failures[].row`는 1부터 시작하는 배열 순번이다(CSV와 달리 헤더가 없다).\n",
         "operationId": "previewTrainees",
         "parameters": [
           {
@@ -7025,11 +7025,11 @@
         },
         "responses": {
           "200": {
-            "description": "사전 검증 완료; 등록될 수 있는 수와 걸린 행을 응답(아무것도 만들지 않음)",
+            "description": "사전 검증 완료; 등록될 수 있는 수(registrableCount)와 걸린 행을 응답(아무것도 만들지 않음)",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/RegisterTraineesResponse"
+                  "$ref": "#/components/schemas/PreviewTraineesResponse"
                 }
               }
             }
@@ -7052,9 +7052,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -7278,9 +7278,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -7422,9 +7422,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -7796,9 +7796,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -8418,9 +8418,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -8502,9 +8502,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -8895,9 +8895,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -9187,9 +9187,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -9209,7 +9209,7 @@
           "Assessment"
         ],
         "summary": "세션 시작(인트로 동의) | ✅ 사용 가능",
-        "description": "시작 전 안내에서 `전체화면으로 시작하기`를 눌렀을 때 부른다. `READY → IN_PROGRESS`로 옮기고\n**인트로 고지 동의를 함께 남긴다** — 무효 응시 검토에서 \"그때 무엇을 고지받았나\"를 이 기록으로\n되짚기 때문에 선택이 아니다.\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `sessionId` | 필수 | UUID | `GET /current`가 준 값 |\n\n본문은 없다.\n\n## 응답 (200)\n\n`GET /current`와 **같은 구조**(`SessionResponse`)다. `status`가 `IN_PROGRESS`로 바뀌고\n`startedAt`·`timeLimitAt`이 채워진다. 커서는 첫 문제의 L1에 선다.\n\n### 성공 몸이 두 가지다\n\n| 상황 | 무엇이 다른가 |\n|---|---|\n| 처음 눌렀다 | `startedAt`이 방금 시각. `currentProblemNo=1` |\n| 이미 진행 중이었다 | **그대로 돌려준다.** `startedAt`은 최초 시각이고 `currentProblemNo`는 서 있던 자리 |\n\n두 번째가 있는 이유는 새로고침 후 다시 눌러도 커서가 처음으로 돌아가지 않아야 하기\n때문이다. 화면은 둘을 구분할 필요가 없다 — 받은 커서로 그리면 된다.\n\n## 오류\n\n| 코드 | 상태 | 언제 |\n|---|---|---|\n| `SESSION_NOT_ACCESSIBLE` | 404 | 없거나 남의 세션 |\n| `SESSION_ALREADY_ENDED` | 409 | 이미 끝난 세션 |\n| `STAGE_NOT_FOUND` | 409 | 세울 단계가 없다. 문항이 하나도 만들어지지 않은 세션이다 |\n\n`STAGE_NOT_FOUND`는 문제 3개가 전부 `NOT_GENERATED`일 때 나온다. 200을 받고 전체화면으로\n넘어갔는데 서버는 시작되지 않은 상태로 남는 것을 막기 위해, 갱신 건수가 아니라 **최종 상태를\n다시 읽어** 판정한다.",
+        "description": "시작 전 안내에서 `전체화면으로 시작하기`를 눌렀을 때 부른다. `READY → IN_PROGRESS`로 옮기고\n**인트로 고지 동의를 함께 남긴다** — 무효 응시 검토에서 \"그때 무엇을 고지받았나\"를 이 기록으로\n되짚기 때문에 선택이 아니다.\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `sessionId` | 필수 | UUID | `GET /current`가 준 값 |\n\n본문은 없다.\n\n## 응답 (200)\n\n`GET /current`와 **같은 구조**(`SessionResponse`)다. `status`가 `IN_PROGRESS`로 바뀌고\n`startedAt`·`timeLimitAt`이 채워진다. 커서는 첫 문제의 L1에 선다.\n\n### 성공 몸이 두 가지다\n\n| 상황 | 무엇이 다른가 |\n|---|---|\n| 처음 눌렀다 | `startedAt`이 방금 시각. `currentProblemNo=1` |\n| 이미 진행 중이었다 | **그대로 돌려준다.** `startedAt`은 최초 시각이고 `currentProblemNo`는 서 있던 자리 |\n\n두 번째가 있는 이유는 새로고침 후 다시 눌러도 커서가 처음으로 돌아가지 않아야 하기\n때문이다. 화면은 둘을 구분할 필요가 없다 — 받은 커서로 그리면 된다.\n\n## 오류\n\n| 코드 | 상태 | 언제 |\n|---|---|---|\n| `SESSION_NOT_ACCESSIBLE` | 404 | 없거나 남의 세션 |\n| `SESSION_ALREADY_ENDED` | 409 | 이미 끝난 세션 |\n| `ASSESSMENT_WINDOW_CLOSED` | 409 | 개인 응시 창(`assessmentCloseAt`)이 닫혔다. **시작할 수 없다** |\n| `REVIEW_DUE_AT_PASSED` | 409 | 다시 보기 마감(`reviewDueAt`)이 지났다 |\n| `STAGE_NOT_FOUND` | 409 | 세울 단계가 없다. 문항이 하나도 만들어지지 않은 세션이다 |\n\n`STAGE_NOT_FOUND`는 문제 3개가 전부 `NOT_GENERATED`일 때 나온다. 200을 받고 전체화면으로\n넘어갔는데 서버는 시작되지 않은 상태로 남는 것을 막기 위해, 갱신 건수가 아니라 **최종 상태를\n다시 읽어** 판정한다.",
         "operationId": "startSession",
         "parameters": [
           {
@@ -9326,7 +9326,7 @@
             }
           },
           "409": {
-            "description": "SESSION_ALREADY_ENDED · STAGE_NOT_FOUND",
+            "description": "SESSION_ALREADY_ENDED · ASSESSMENT_WINDOW_CLOSED · REVIEW_DUE_AT_PASSED · STAGE_NOT_FOUND",
             "content": {
               "application/json": {
                 "schema": {
@@ -9341,6 +9341,26 @@
                       "error": "CONFLICT",
                       "code": "SESSION_ALREADY_ENDED",
                       "message": "이미 끝난 세션입니다."
+                    }
+                  },
+                  "ASSESSMENT_WINDOW_CLOSED": {
+                    "summary": "ASSESSMENT_WINDOW_CLOSED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "code": "ASSESSMENT_WINDOW_CLOSED",
+                      "message": "응시 창이 닫혀 더 진행할 수 없습니다."
+                    }
+                  },
+                  "REVIEW_DUE_AT_PASSED": {
+                    "summary": "REVIEW_DUE_AT_PASSED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "code": "REVIEW_DUE_AT_PASSED",
+                      "message": "다시 보기 마감이 지났습니다."
                     }
                   },
                   "STAGE_NOT_FOUND": {
@@ -9372,7 +9392,7 @@
           "Assessment"
         ],
         "summary": "다시 설명(힌트) 요청 | ✅ 사용 가능",
-        "description": "`다시 설명해 주세요`를 눌렀을 때 부른다. **AI를 부르지 않는다** — 힌트 문구는 코드 분석 시점에\n이미 동결돼 DB에 있고 세션은 꺼내 보여줄 뿐이다(\"힌트는 재진술만 — 질문을 다르게 말할 뿐\n코드 위치·선택지·답의 방향을 주지 않는다\"). 즉답이다.\n\n💡 **힌트가 열리는 경로는 둘이다.** 답변이 3점 미만이면 `POST /answers`의 응답에\n`hint`로 **자동으로** 열려 내려오고, 학생이 원할 때는 이 경로로 **직접** 연다.\n둘은 같은 횟수(질문당 2회)를 나눠 쓰며 같은 UPDATE를 탄다.\n\n답변란이 비어 있어도 부를 수 있다 — 질문을 이해하지 못했을 때 미리 보는 용도다.\n반대로 **끝난 질문에는 열리지 않는다**(통과했거나, 마지막 힌트까지 쓰고 미달이라\n`NOT_PASSED`로 닫혔다).\n\n⚠️ `POST /answers`가 `hint`를 함께 준 뒤에 이 경로를 또 부르면 **두 번째 힌트가 열린다.**\n자동으로 받은 힌트는 이미 소진된 것이므로 화면은 그것을 그리기만 하고 다시 부르지 않는다.\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `sessionId` | 필수 | UUID | 세션 식별자 |\n\n본문은 없다. 어느 질문의 힌트인지는 서버 커서가 정한다.\n\n## 응답\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `problemId` | UUID | 이 힌트가 속한 문제 |\n| `axisCode` | enum | `L1` · `L2` · `L3` · `L4` |\n| `hintText` | string | 힌트 문구. 분석 시점에 동결된 것을 그대로 준다 |\n| `hintsUsed` | int | 지금까지 쓴 힌트 수(1~2) |\n| `hintsLeft` | int | 남은 횟수. `0`이면 화면은 버튼을 문구로 바꾼다 |\n\n⚠️ **써도 점수가 깎이지 않는다.** 남은 횟수를 내려보내는 것은 화면이 `2번 남음`을 그리기\n위해서이지 불이익을 알리기 위해서가 아니다.\n\n## 오류\n\n| 코드 | 상태 | 언제 |\n|---|---|---|\n| `HINT_EXHAUSTED` | 409 | 단계당 2회를 다 썼다 |\n| `HINT_NOT_AVAILABLE` | 409 | 다시 보기이거나, 이미 답을 제출한 질문이다 |\n| `SESSION_NOT_STARTED` | 409 | `POST /start`를 아직 부르지 않았다 |\n\n다시 보기에서 막는 근거는 정의서 §6+다 — \"이번에는 다시 설명해 드리지 않아요. 지난번과 같은\n질문이라 이미 한 번 들었어요.\"\n\nAI를 안 부르는데도 서버를 타는 이유는 **표시 시각을 남기기 위해서다.** 그 기록이 없으면\n힌트를 열어 둔 채 새로고침했을 때 사용 횟수가 0으로 되돌아가 학생이 힌트를 세 번, 네 번 쓴다.\n\n## 성공 몸이 두 가지다\n\n`hintsLeft`가 `1`이냐 `0`이냐로 갈린다. `0`이면 화면은 버튼을 눌리지 않는 문구로 바꾼다 —\n그대로 두면 다음 클릭이 `409 HINT_EXHAUSTED`로 떨어진다.",
+        "description": "`다시 설명해 주세요`를 눌렀을 때 부른다. **AI를 부르지 않는다** — 힌트 문구는 코드 분석 시점에\n이미 동결돼 DB에 있고 세션은 꺼내 보여줄 뿐이다(\"힌트는 재진술만 — 질문을 다르게 말할 뿐\n코드 위치·선택지·답의 방향을 주지 않는다\"). 즉답이다.\n\n💡 **힌트가 열리는 경로는 둘이다.** 답변이 3점 미만이면 `POST /answers`의 응답에\n`hint`로 **자동으로** 열려 내려오고, 학생이 원할 때는 이 경로로 **직접** 연다.\n둘은 같은 횟수(질문당 2회)를 나눠 쓰며 같은 UPDATE를 탄다.\n\n답변란이 비어 있어도 부를 수 있다 — 질문을 이해하지 못했을 때 미리 보는 용도다.\n반대로 **끝난 질문에는 열리지 않는다**(통과했거나, 마지막 힌트까지 쓰고 미달이라\n`NOT_PASSED`로 닫혔다).\n\n⚠️ `POST /answers`가 `hint`를 함께 준 뒤에 이 경로를 또 부르면 **두 번째 힌트가 열린다.**\n자동으로 받은 힌트는 이미 소진된 것이므로 화면은 그것을 그리기만 하고 다시 부르지 않는다.\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `sessionId` | 필수 | UUID | 세션 식별자 |\n\n본문은 없다. 어느 질문의 힌트인지는 서버 커서가 정한다.\n\n## 응답\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `problemId` | UUID | 이 힌트가 속한 문제 |\n| `axisCode` | enum | `L1` · `L2` · `L3` · `L4` |\n| `hintText` | string | 힌트 문구. 분석 시점에 동결된 것을 그대로 준다 |\n| `hintsUsed` | int | 지금까지 쓴 힌트 수(1~2) |\n| `hintsLeft` | int | 남은 횟수. `0`이면 화면은 버튼을 문구로 바꾼다 |\n\n⚠️ **써도 점수가 깎이지 않는다.** 남은 횟수를 내려보내는 것은 화면이 `2번 남음`을 그리기\n위해서이지 불이익을 알리기 위해서가 아니다.\n\n## 오류\n\n| 코드 | 상태 | 언제 |\n|---|---|---|\n| `HINT_EXHAUSTED` | 409 | 단계당 2회를 다 썼다 |\n| `HINT_NOT_AVAILABLE` | 409 | 다시 보기이거나, 이미 답을 제출한 질문이다 |\n| `SESSION_NOT_STARTED` | 409 | `POST /start`를 아직 부르지 않았다 |\n| `ASSESSMENT_WINDOW_CLOSED` | 409 | 개인 응시 창이 닫혔다 |\n\n다시 보기에서 막는 근거는 정의서 §6+다 — \"이번에는 다시 설명해 드리지 않아요. 지난번과 같은\n질문이라 이미 한 번 들었어요.\"\n\nAI를 안 부르는데도 서버를 타는 이유는 **표시 시각을 남기기 위해서다.** 그 기록이 없으면\n힌트를 열어 둔 채 새로고침했을 때 사용 횟수가 0으로 되돌아가 학생이 힌트를 세 번, 네 번 쓴다.\n\n## 성공 몸이 두 가지다\n\n`hintsLeft`가 `1`이냐 `0`이냐로 갈린다. `0`이면 화면은 버튼을 눌리지 않는 문구로 바꾼다 —\n그대로 두면 다음 클릭이 `409 HINT_EXHAUSTED`로 떨어진다.",
         "operationId": "openSessionHint",
         "parameters": [
           {
@@ -9551,7 +9571,7 @@
           "Assessment"
         ],
         "summary": "답변 제출 → 채점 → 다음 질문 | ✅ 사용 가능",
-        "description": "답변을 AI에 보내 채점하고 다음 자리를 정한다.\n\n## 요청 (본문)\n\n| 필드 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `answerText` | 필수 | string | 학생이 쓴 답변 원문 |\n\n⚠️ **어느 문제의 어느 질문인지는 싣지 않는다.** 진행 위치는 서버 커서가 정본이다 —\n클라이언트가 지목하게 두면 계단을 건너뛰거나 이미 닫힌 문제에 답을 붙이는 요청이 만들어지고,\n서버는 그것이 진짜 화면 상태인지 알 방법이 없다.\n\n길이 하한도 없다. 정의서 §6 — 짧은 답변은 알리되 막지 않는다(\"강제하면 의미 없는 글자를\n채운다\"). 15자 미만 안내는 화면이 한다.\n\n## 요청 (헤더)\n\n| 헤더 | 필수 | 설명 |\n|---|---|---|\n| `X-Request-Id` | 선택 | 분산 추적 ID. AI로 그대로 넘어가 `ai_usage.trace_id`로 돌아온다 |\n\n## 응답\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `outcome` | enum | `RETRY_WITH_HINT` · `NEXT_TURN` · `NEXT_PROBLEM` · `PROBLEM_CLOSED` · `SESSION_ENDED` |\n| `nextProblemNo` | int? | 다음에 설 문제 번호. 세션이 끝났으면 `null` |\n| `next` | object? | 다음 질문. 세션이 끝났으면 `null` |\n| `hint` | object? | 3점 미만이라 **자동으로 열린** 힌트. 아니면 `null` |\n\n**hint** — `{ hintText, hintsUsed, hintsLeft }`\n\n⚠️ **`hint`가 오면 같은 질문에 다시 답하는 것이다.** 화면은 새 질문 말풍선을 쌓지 말고\n힌트를 덧붙인 뒤 같은 자리에서 답을 다시 받는다(`outcome=RETRY_WITH_HINT`).\n`POST /hints`와 **같은 UPDATE로 표시 시각까지 남긴 뒤** 내려오므로, 이 응답을 받고\n`POST /hints`를 따로 부르면 힌트를 두 개 쓰게 된다.\n\n`hint`가 `null`인 경우는 넷 — 통과했다 · 힌트를 다 썼다 · AI가 이 질문을 닫았다 ·\n다시 보기다. 앞의 셋은 `outcome`으로 갈린다.\n\n💡 **이것이 점수를 알려주지 않으면서 미달을 전하는 유일한 신호다.** 점수·통과 여부는\n응답에 없다(정의서 §7).\n\n## 한 질문의 수명\n\n```\n답변 ─3점 이상→ 통과. AI가 정한 다음 자리로 (NEXT_TURN · NEXT_PROBLEM · SESSION_ENDED)\n     └3점 미만→ 힌트 자동 공개 + 같은 질문 재도전 (RETRY_WITH_HINT)  ← 최대 2회\n                └ 힌트 2개 다 쓰고도 미달 → **다음 문제로** (PROBLEM_CLOSED)\n```\n\n⚠️ **마지막 줄은 축과 무관하다.** `L1`에서 힌트 2개를 쓰고 미달이어도 `L2`를 묻지 않고\n곧바로 다음 문제로 넘어간다 — 두 번 설명하고도 닿지 않았으면 같은 코드에 더 물어도\n얻을 것이 없다는 학습 정책이다. **이 판정만 백엔드가 AI 커서를 덮어쓴다**(나머지\n진행은 전부 AI가 정한다). 접힌 문제의 남은 축은 `NOT_REACHED`로 닫힌다.\n\n다음 문제가 없으면 `SESSION_ENDED`다.\n\n**next**\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `problemId` | UUID | 다음 질문이 속한 문제 |\n| `axisCode` | enum | 이 질문이 서 있는 축. `L1` · `L2` · `L3` · `L4` |\n| `sequenceNo` | int | 질문 순번 |\n| `questionText` | string | 질문 원문 |\n| `hintsUsed` | int | 새 자리의 힌트 사용 수(보통 `0`) |\n| `highlight` | object? | `{ path, lineStart, lineEnd }`. 이 질문이 가리키는 코드 구간 |\n\n💡 **질문마다 강조 구간이 다르다.** 축이 올라가면(`L1`→`L2`) 같은 파일의 다른 블록을\n가리킨다 — 예: 질문 1은 `graph.py:5–8`, 질문 2는 `graph.py:39–41`. 화면은\n`next.highlight`로 왼쪽 패널의 강조만 옮기면 된다. 코드 원문(`code.snippet`)은 파일\n전체라 `NEXT_TURN`에서는 다시 받을 필요가 없다.\n\n`highlight`가 `null`인 경우는 AI가 준 `problemId`를 우리 행과 대조하지 못한 때뿐이다.\n그때는 `GET /{sessionId}/problems/{problemNo}`를 다시 불러 채운다.\n\n`outcome`이 화면 전환을 정한다 — `NEXT_PROBLEM`은 `다음 문제로`, `PROBLEM_CLOSED`는\n`이 문제는 여기까지 볼게요`, `SESSION_ENDED`는 종료 화면이다.\n앞의 둘은 **문제가 바뀌므로** `GET /{sessionId}/problems/{nextProblemNo}`로 새 코드 패널을\n받아야 한다. `NEXT_TURN`은 재조회 없이 `next`만으로 그린다.\n\n⚠️ **응답에 점수가 없다**(정의서 §7). 저장은 이미 끝났고 여기서는 흐름만 알려준다.\n\n## 오류\n\n| 코드 | 상태 | 언제 |\n|---|---|---|\n| `ANSWER_TEXT_REQUIRED` | 400 | 본문이 비었다 |\n| `SESSION_NOT_STARTED` | 409 | `POST /start`를 아직 부르지 않았다 |\n| `SESSION_TIMEOUT` | 409 | 세션 상한(기본 60분) 초과. 답한 데까지 저장하고 세션을 닫는다 |\n| `PROBLEM_TIME_LIMIT_EXCEEDED` | 409 | 이 문제의 상한(기본 20분) 초과. **이미 다음 문제로 넘어갔다** |\n| `ANSWER_ALREADY_SUBMITTED` | 409 | 같은 자리에 이미 제출됐다(낙관적 잠금). 다시 불러오면 된다 |\n| `GRADING_FAILED` | 503 | AI 채점 실패. **같은 답을 그대로 다시 제출하면 된다** |\n\n### 🔴 시간 상한 두 개는 결과가 다르다\n\n| | 상한 | 넘기면 | 그다음 |\n|---|---|---|---|\n| 세션 | `timeLimitAt`(기본 60분) | 세션이 `INTERRUPTED`로 닫힌다 | `GET /current`가 **204** |\n| 문제 | 지금 문제 시작 + 20분 | 그 문제만 접고 **다음 문제로 커서가 옮겨진다** | `GET /current`가 새 `currentProblemNo` |\n\n⚠️ **둘 다 409를 받은 시점에 서버 상태는 이미 바뀌어 있다.** 이 응답에는 다음 자리가 실리지\n않으므로 화면은 `GET /current`를 다시 불러 커서를 읽는다 — 200이면 그 문제로 이동하고,\n204면 종료 화면이다. `PROBLEM_TIME_LIMIT_EXCEEDED`가 마지막 문제에서 나면 세션이 함께\n끝나므로 204가 온다.\n\n접힌 문제의 남은 축은 `NOT_REACHED`로 닫히고, 다음 문제의 20분은 **그 문제로 옮겨간\n시점부터** 새로 센다.\n\n⚠️ AI 채점에 **4.5~7.7초**가 걸린다. 클라이언트 타임아웃을 짧게 잡지 말 것.\n재전송이 안전한 이유는 서버가 자리마다 고정된 멱등키를 만들어 보내기 때문이다 —\n같은 자리 재시도는 AI가 처음 응답을 그대로 돌려주므로 LLM 비용이 두 번 나가지 않는다.\n\n## 🔴 성공 몸이 다섯 가지다 — `outcome`이 전부를 가른다\n\n| `outcome` | `next` | `nextProblemNo` | `hint` | 화면이 할 일 |\n|---|---|---|---|---|\n| `RETRY_WITH_HINT` | 키 없음 | 키 없음 | **있다** | 힌트를 덧붙이고 같은 자리에서 다시 받는다 |\n| `NEXT_TURN` | 다음 질문 | 같은 번호 | 키 없음 | 말풍선을 쌓고 강조만 옮긴다. 재조회 불필요 |\n| `NEXT_PROBLEM` | 다음 문제 첫 질문 | 다음 번호 | 키 없음 | `문제 조회`를 다시 불러 코드 패널을 바꾼다 |\n| `PROBLEM_CLOSED` | 다음 문제 첫 질문 | 다음 번호 | 키 없음 | `이 문제는 여기까지 볼게요` 후 위와 같다 |\n| `SESSION_ENDED` | 키 없음 | 키 없음 | 키 없음 | 종료 화면 |\n\n값이 없는 필드는 `null`이 아니라 **키가 빠진다**(`NON_NULL` 직렬화).",
+        "description": "답변을 AI에 보내 채점하고 다음 자리를 정한다.\n\n## 요청 (본문)\n\n| 필드 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `answerText` | 필수 | string | 학생이 쓴 답변 원문 |\n\n⚠️ **어느 문제의 어느 질문인지는 싣지 않는다.** 진행 위치는 서버 커서가 정본이다 —\n클라이언트가 지목하게 두면 계단을 건너뛰거나 이미 닫힌 문제에 답을 붙이는 요청이 만들어지고,\n서버는 그것이 진짜 화면 상태인지 알 방법이 없다.\n\n길이 하한도 없다. 정의서 §6 — 짧은 답변은 알리되 막지 않는다(\"강제하면 의미 없는 글자를\n채운다\"). 15자 미만 안내는 화면이 한다.\n\n## 요청 (헤더)\n\n| 헤더 | 필수 | 설명 |\n|---|---|---|\n| `X-Request-Id` | 선택 | 분산 추적 ID. AI로 그대로 넘어가 `ai_usage.trace_id`로 돌아온다 |\n\n## 응답\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `outcome` | enum | `RETRY_WITH_HINT` · `NEXT_TURN` · `NEXT_PROBLEM` · `PROBLEM_CLOSED` · `SESSION_ENDED` |\n| `nextProblemNo` | int? | 다음에 설 문제 번호. 세션이 끝났으면 `null` |\n| `next` | object? | 다음 질문. 세션이 끝났으면 `null` |\n| `hint` | object? | 3점 미만이라 **자동으로 열린** 힌트. 아니면 `null` |\n\n**hint** — `{ hintText, hintsUsed, hintsLeft }`\n\n⚠️ **`hint`가 오면 같은 질문에 다시 답하는 것이다.** 화면은 새 질문 말풍선을 쌓지 말고\n힌트를 덧붙인 뒤 같은 자리에서 답을 다시 받는다(`outcome=RETRY_WITH_HINT`).\n`POST /hints`와 **같은 UPDATE로 표시 시각까지 남긴 뒤** 내려오므로, 이 응답을 받고\n`POST /hints`를 따로 부르면 힌트를 두 개 쓰게 된다.\n\n`hint`가 `null`인 경우는 넷 — 통과했다 · 힌트를 다 썼다 · AI가 이 질문을 닫았다 ·\n다시 보기다. 앞의 셋은 `outcome`으로 갈린다.\n\n💡 **이것이 점수를 알려주지 않으면서 미달을 전하는 유일한 신호다.** 점수·통과 여부는\n응답에 없다(정의서 §7).\n\n## 한 질문의 수명\n\n```\n답변 ─3점 이상→ 통과. AI가 정한 다음 자리로 (NEXT_TURN · NEXT_PROBLEM · SESSION_ENDED)\n     └3점 미만→ 힌트 자동 공개 + 같은 질문 재도전 (RETRY_WITH_HINT)  ← 최대 2회\n                └ 힌트 2개 다 쓰고도 미달 → **다음 문제로** (PROBLEM_CLOSED)\n```\n\n⚠️ **마지막 줄은 축과 무관하다.** `L1`에서 힌트 2개를 쓰고 미달이어도 `L2`를 묻지 않고\n곧바로 다음 문제로 넘어간다 — 두 번 설명하고도 닿지 않았으면 같은 코드에 더 물어도\n얻을 것이 없다는 학습 정책이다. **이 판정만 백엔드가 AI 커서를 덮어쓴다**(나머지\n진행은 전부 AI가 정한다). 접힌 문제의 남은 축은 `NOT_REACHED`로 닫힌다.\n\n다음 문제가 없으면 `SESSION_ENDED`다.\n\n**next**\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `problemId` | UUID | 다음 질문이 속한 문제 |\n| `axisCode` | enum | 이 질문이 서 있는 축. `L1` · `L2` · `L3` · `L4` |\n| `sequenceNo` | int | 질문 순번 |\n| `questionText` | string | 질문 원문 |\n| `hintsUsed` | int | 새 자리의 힌트 사용 수(보통 `0`) |\n| `highlight` | object? | `{ path, lineStart, lineEnd }`. 이 질문이 가리키는 코드 구간 |\n\n💡 **질문마다 강조 구간이 다르다.** 축이 올라가면(`L1`→`L2`) 같은 파일의 다른 블록을\n가리킨다 — 예: 질문 1은 `graph.py:5–8`, 질문 2는 `graph.py:39–41`. 화면은\n`next.highlight`로 왼쪽 패널의 강조만 옮기면 된다. 코드 원문(`code.snippet`)은 파일\n전체라 `NEXT_TURN`에서는 다시 받을 필요가 없다.\n\n`highlight`가 `null`인 경우는 AI가 준 `problemId`를 우리 행과 대조하지 못한 때뿐이다.\n그때는 `GET /{sessionId}/problems/{problemNo}`를 다시 불러 채운다.\n\n`outcome`이 화면 전환을 정한다 — `NEXT_PROBLEM`은 `다음 문제로`, `PROBLEM_CLOSED`는\n`이 문제는 여기까지 볼게요`, `SESSION_ENDED`는 종료 화면이다.\n앞의 둘은 **문제가 바뀌므로** `GET /{sessionId}/problems/{nextProblemNo}`로 새 코드 패널을\n받아야 한다. `NEXT_TURN`은 재조회 없이 `next`만으로 그린다.\n\n⚠️ **응답에 점수가 없다**(정의서 §7). 저장은 이미 끝났고 여기서는 흐름만 알려준다.\n\n## 오류\n\n| 코드 | 상태 | 언제 |\n|---|---|---|\n| `ANSWER_TEXT_REQUIRED` | 400 | 본문이 비었다 |\n| `SESSION_NOT_STARTED` | 409 | `POST /start`를 아직 부르지 않았다 |\n| `ASSESSMENT_WINDOW_CLOSED` | 409 | 개인 응시 창이 닫혔다. **답변이 더는 받아들여지지 않는다** |\n| `REVIEW_DUE_AT_PASSED` | 409 | 다시 보기 마감이 지났다 |\n| `SESSION_TIMEOUT` | 409 | 세션 상한(기본 60분) 초과. 답한 데까지 저장하고 세션을 닫는다 |\n| `PROBLEM_TIME_LIMIT_EXCEEDED` | 409 | 이 문제의 상한(기본 20분) 초과. **이미 다음 문제로 넘어갔다** |\n| `ANSWER_ALREADY_SUBMITTED` | 409 | 같은 자리에 이미 제출됐다(낙관적 잠금). 다시 불러오면 된다 |\n| `GRADING_FAILED` | 503 | AI 채점 실패. **같은 답을 그대로 다시 제출하면 된다** |\n\n### 🔴 시간 상한 두 개는 결과가 다르다\n\n| | 상한 | 넘기면 | 그다음 |\n|---|---|---|---|\n| 세션 | `timeLimitAt`(기본 60분) | 세션이 `INTERRUPTED`로 닫힌다 | `GET /current`가 **204** |\n| 문제 | 지금 문제 시작 + 20분 | 그 문제만 접고 **다음 문제로 커서가 옮겨진다** | `GET /current`가 새 `currentProblemNo` |\n\n⚠️ **둘 다 409를 받은 시점에 서버 상태는 이미 바뀌어 있다.** 이 응답에는 다음 자리가 실리지\n않으므로 화면은 `GET /current`를 다시 불러 커서를 읽는다 — 200이면 그 문제로 이동하고,\n204면 종료 화면이다. `PROBLEM_TIME_LIMIT_EXCEEDED`가 마지막 문제에서 나면 세션이 함께\n끝나므로 204가 온다.\n\n접힌 문제의 남은 축은 `NOT_REACHED`로 닫히고, 다음 문제의 20분은 **그 문제로 옮겨간\n시점부터** 새로 센다.\n\n⚠️ AI 채점에 **4.5~7.7초**가 걸린다. 클라이언트 타임아웃을 짧게 잡지 말 것.\n재전송이 안전한 이유는 서버가 자리마다 고정된 멱등키를 만들어 보내기 때문이다 —\n같은 자리 재시도는 AI가 처음 응답을 그대로 돌려주므로 LLM 비용이 두 번 나가지 않는다.\n\n## 🔴 성공 몸이 다섯 가지다 — `outcome`이 전부를 가른다\n\n| `outcome` | `next` | `nextProblemNo` | `hint` | 화면이 할 일 |\n|---|---|---|---|---|\n| `RETRY_WITH_HINT` | 키 없음 | 키 없음 | **있다** | 힌트를 덧붙이고 같은 자리에서 다시 받는다 |\n| `NEXT_TURN` | 다음 질문 | 같은 번호 | 키 없음 | 말풍선을 쌓고 강조만 옮긴다. 재조회 불필요 |\n| `NEXT_PROBLEM` | 다음 문제 첫 질문 | 다음 번호 | 키 없음 | `문제 조회`를 다시 불러 코드 패널을 바꾼다 |\n| `PROBLEM_CLOSED` | 다음 문제 첫 질문 | 다음 번호 | 키 없음 | `이 문제는 여기까지 볼게요` 후 위와 같다 |\n| `SESSION_ENDED` | 키 없음 | 키 없음 | 키 없음 | 종료 화면 |\n\n값이 없는 필드는 `null`이 아니라 **키가 빠진다**(`NON_NULL` 직렬화).",
         "operationId": "submitSessionAnswer",
         "parameters": [
           {
@@ -9710,9 +9730,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -9788,7 +9808,7 @@
             }
           },
           "409": {
-            "description": "SESSION_NOT_STARTED · SESSION_TIMEOUT · ANSWER_ALREADY_SUBMITTED · PROBLEM_TIME_LIMIT_EXCEEDED",
+            "description": "SESSION_NOT_STARTED · ASSESSMENT_WINDOW_CLOSED · REVIEW_DUE_AT_PASSED · SESSION_TIMEOUT · ANSWER_ALREADY_SUBMITTED · PROBLEM_TIME_LIMIT_EXCEEDED",
             "content": {
               "application/json": {
                 "schema": {
@@ -9803,6 +9823,26 @@
                       "error": "CONFLICT",
                       "code": "SESSION_NOT_STARTED",
                       "message": "아직 시작하지 않은 세션입니다."
+                    }
+                  },
+                  "ASSESSMENT_WINDOW_CLOSED": {
+                    "summary": "ASSESSMENT_WINDOW_CLOSED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "code": "ASSESSMENT_WINDOW_CLOSED",
+                      "message": "응시 창이 닫혀 더 진행할 수 없습니다."
+                    }
+                  },
+                  "REVIEW_DUE_AT_PASSED": {
+                    "summary": "REVIEW_DUE_AT_PASSED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "code": "REVIEW_DUE_AT_PASSED",
+                      "message": "다시 보기 마감이 지났습니다."
                     }
                   },
                   "SESSION_TIMEOUT": {
@@ -9931,9 +9971,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -10131,9 +10171,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -10544,9 +10584,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -10692,9 +10732,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -10925,9 +10965,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -11576,9 +11616,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -11939,9 +11979,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -12620,9 +12660,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -12820,9 +12860,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -13118,9 +13158,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -13297,9 +13337,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -13453,9 +13493,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -13609,9 +13649,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -13821,7 +13861,7 @@
           "Submission"
         ],
         "summary": "코드 분석 진행 상태·실패 사유 조회 | ✅ 사용 가능",
-        "description": "제출 후 화면이 초 단위로 도는 폴링 대상이다. 폴링 대상이 `code_analysis`가 아니라\n`analysis_job`인 이유는, 전자가 성공했을 때에만 생기는 결과물이라 \"진행 중\"과 \"분석 없음\"을\n구분할 수 없고 실패 사유도 갖지 않기 때문이다.\n\n**분석 실행 API는 교육생에게 제공하지 않는다.** 실행 주체는 제출 이벤트를 받는 배치뿐이고,\n아직 집어가기 전이라면 정상적으로 `phase=NOT_STARTED`를 반환한다.\n\n제출은 팀 단위라 같은 팀이면 누가 조회해도 같은 결과가 나온다. 다만 **세션 준비 여부만은\n조회자 본인 기준**이다 — 아래 `SESSION_PREPARATION_FAILED` 참고.\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n| --- | --- | --- | --- |\n| `submissionId` | 필수 | UUID | 조회할 제출. 같은 팀의 제출만 볼 수 있다 |\n\n쿼리 파라미터는 없다.\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `submissionId` | UUID | 조회한 제출 |\n| `phase` | enum | `NOT_STARTED` · `QUEUED` · `RUNNING` · `SUCCEEDED` · `PARTIAL` · `FAILED` |\n| `analysisJobId` | UUID? | 분석 실행. 시작 전이면 `null` |\n| `executionNo` | int? | 재시도 회차(1부터). 시작 전이면 `null` |\n| `startedAt` | datetime? | 분석 시작 시각 |\n| `completedAt` | datetime? | 분석 종료 시각 |\n| `failureCode` | string? | `FAILED`일 때만. 아래 표 참고 |\n| `failureReason` | string? | 실패 사유 원문 |\n| `codeAnalysisId` | UUID? | 성공 시 생성된 분석 결과. 그 외에는 `null` |\n\n### phase\n\n| 값 | 뜻 |\n| --- | --- |\n| `NOT_STARTED` | 배치가 아직 이 제출을 집어가지 않았다. 제출 직후의 정상 상태다 |\n| `QUEUED` | AI 서버가 요청을 접수했다 |\n| `RUNNING` | 분석 중. 실측 5분 안팎이다 |\n| `SUCCEEDED` | 분석 완료. 결과는 `.../analysis/result`로 읽는다 |\n| `PARTIAL` | 일부 개념만 문항을 만들었다. 결과는 있으므로 성공과 같게 다룬다 |\n| `FAILED` | 실패. `failureCode`로 사유를 가른다 |\n\n### failureCode\n\n분석 실행 실패 6종과 저장소·ZIP 접근 실패를 합해 15종이다. 저장소 주소 오류도 제출이 아니라\n여기로 드러난다.\n\n| 묶음 | 값 |\n| --- | --- |\n| 분석 실행 | `TEMPORARY_ERROR` · `ANALYSIS_TIMEOUT` · `MODEL_ERROR` · `SOURCE_UNREACHABLE` · `UNSUPPORTED_LANGUAGE` |\n| 저장소 접근 | `INVALID_REPOSITORY_URL` · `REPO_NOT_FOUND` · `REPOSITORY_ACCESS_DENIED` · `BRANCH_NOT_FOUND` · `UNSUPPORTED_HOST` |\n| ZIP 검증 | `FILE_TOO_LARGE` · `ARCHIVE_INVALID` · `EMPTY_CODE` · `PROHIBITED_FILE` · `GIT_LOG_MISSING` |\n\n🔴 **`SESSION_PREPARATION_FAILED`만 예외다.** `analysis_job.failure_code`에 없는 값이며\n서버가 조회 시점에 판정해 내려 준다. **분석은 성공했지만 이 교육생의 세션·문항이 준비되지\n않아 응시를 시작할 수 없다**는 뜻이다(응시 행이 없거나, 팀 배정이 끊겼거나, AI가 4축 질문·\n힌트를 온전히 주지 않아 문항이 통째로 스킵된 경우). 이때 `phase=FAILED`, `codeAnalysisId=null`로\n내려가며 원장의 job은 `SUCCEEDED`로 남는다 — 분석 자체는 실제로 성공했고 비용도 이미 나갔기\n때문이다. 화면은 재제출을 안내하면 된다.\n\n🔴 **`EXTERNAL_JOB_ID_LOST`도 `analysis_job.failure_code`에 없는 값이다.** 분석 행은\n아직 진행 중(`QUEUED`·`RUNNING`)인데 AI가 발급한 작업 ID가 사라져 상태를 더 따라갈 수\n없다는 뜻이며, 이때 `phase=FAILED`, `codeAnalysisId=null`로 내려간다. 서버 폴러가 1분 안에\n같은 실행을 `MODEL_ERROR`로 닫고 재시도 여지가 남아 있으면 다시 요청하므로, 폴링을 계속하면\n새 실행의 `QUEUED`가 이어질 수 있다. 화면은 재제출을 안내하면 된다.\n\n## 오류\n\n| 코드 | 상태 | 언제 |\n| --- | --- | --- |\n| `SUBMISSION_NOT_FOUND` | 404 | 그런 제출이 없다 |\n| `SUBMISSION_ACCESS_DENIED` | 403 | 다른 팀의 제출이다 |",
+        "description": "제출 후 화면이 초 단위로 도는 폴링 대상이다. 폴링 대상이 `code_analysis`가 아니라\n`analysis_job`인 이유는, 전자가 성공했을 때에만 생기는 결과물이라 \"진행 중\"과 \"분석 없음\"을\n구분할 수 없고 실패 사유도 갖지 않기 때문이다.\n\n**분석 실행 API는 교육생에게 제공하지 않는다.** 실행 주체는 제출 이벤트를 받는 배치뿐이고,\n아직 집어가기 전이라면 정상적으로 `phase=NOT_STARTED`를 반환한다.\n\n제출은 팀 단위라 같은 팀이면 누가 조회해도 같은 결과가 나온다. 다만 **세션 준비 여부만은\n조회자 본인 기준**이다 — 아래 `SESSION_PREPARATION_FAILED` 참고.\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n| --- | --- | --- | --- |\n| `submissionId` | 필수 | UUID | 조회할 제출. 같은 팀의 제출만 볼 수 있다 |\n\n쿼리 파라미터는 없다.\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `submissionId` | UUID | 조회한 제출 |\n| `phase` | enum | `NOT_STARTED` · `QUEUED` · `RUNNING` · `SUCCEEDED` · `PARTIAL` · `FAILED` |\n| `analysisJobId` | UUID? | 분석 실행. 시작 전이면 `null` |\n| `executionNo` | int? | 재시도 회차(1부터). 시작 전이면 `null` |\n| `startedAt` | datetime? | 분석 시작 시각 |\n| `completedAt` | datetime? | 분석 종료 시각 |\n| `failureCode` | string? | `FAILED`일 때만. 아래 표 참고 |\n| `failureReason` | string? | 실패 사유 원문 |\n| `codeAnalysisId` | UUID? | 성공 시 생성된 분석 결과. 그 외에는 `null` |\n\n### phase\n\n| 값 | 뜻 |\n| --- | --- |\n| `NOT_STARTED` | 배치가 아직 이 제출을 집어가지 않았다. 제출 직후의 정상 상태다 |\n| `QUEUED` | AI 서버가 요청을 접수했다 |\n| `RUNNING` | 분석 중. 실측 5분 안팎이다 |\n| `SUCCEEDED` | 분석 완료. 결과는 `.../analysis/result`로 읽는다 |\n| `PARTIAL` | 일부 개념만 문항을 만들었다. 결과는 있으므로 성공과 같게 다룬다 |\n| `FAILED` | 실패. `failureCode`로 사유를 가른다 |\n\n### failureCode\n\n분석 실행 실패와 저장소 접근 실패, ZIP 내용 검증을 합해 **12종**이다. 저장소 주소 오류도\n제출이 아니라 여기로 드러난다.\n\n| 묶음 | 값 |\n| --- | --- |\n| 분석 실행 | `TEMPORARY_ERROR` · `ANALYSIS_TIMEOUT` · `MODEL_ERROR` · `SOURCE_UNREACHABLE` · `UNSUPPORTED_LANGUAGE` |\n| 저장소 접근 | `INVALID_REPOSITORY_URL` · `REPO_NOT_FOUND` · `REPOSITORY_ACCESS_DENIED` · `BRANCH_NOT_FOUND` · `UNSUPPORTED_HOST` |\n| ZIP 내용 | `EMPTY_CODE` · `GIT_LOG_MISSING` |\n\n⚠️ 종전 설명은 15종이라 적고 ZIP 묶음에 `FILE_TOO_LARGE`·`ARCHIVE_INVALID`·`PROHIBITED_FILE`을\n함께 실었는데 **셋 다 이 필드로 올 수 없다**(2026-08-16 정정). ZIP 파일 자체의 문제라 업로드가\n`400 ARCHIVE_INVALID`·`413 FILE_TOO_LARGE`로 먼저 거절하고 제출 행조차 만들지 않으므로 분석이\n시작되지 않는다 — 그 셋은 **제출 API의 에러 응답**에서 받는다.\n\n🔴 **`SESSION_PREPARATION_FAILED`만 예외다.** `analysis_job.failure_code`에 없는 값이며\n서버가 조회 시점에 판정해 내려 준다. **분석은 성공했지만 이 교육생의 세션·문항이 준비되지\n않아 응시를 시작할 수 없다**는 뜻이다(응시 행이 없거나, 팀 배정이 끊겼거나, AI가 4축 질문·\n힌트를 온전히 주지 않아 문항이 통째로 스킵된 경우). 이때 `phase=FAILED`, `codeAnalysisId=null`로\n내려가며 원장의 job은 `SUCCEEDED`로 남는다 — 분석 자체는 실제로 성공했고 비용도 이미 나갔기\n때문이다. 화면은 재제출을 안내하면 된다.\n\n🔴 **`EXTERNAL_JOB_ID_LOST`도 `analysis_job.failure_code`에 없는 값이다.** 분석 행은\n아직 진행 중(`QUEUED`·`RUNNING`)인데 AI가 발급한 작업 ID가 사라져 상태를 더 따라갈 수\n없다는 뜻이며, 이때 `phase=FAILED`, `codeAnalysisId=null`로 내려간다. 서버 폴러가 1분 안에\n같은 실행을 `MODEL_ERROR`로 닫고 재시도 여지가 남아 있으면 다시 요청하므로, 폴링을 계속하면\n새 실행의 `QUEUED`가 이어질 수 있다. 화면은 재제출을 안내하면 된다.\n\n## 오류\n\n| 코드 | 상태 | 언제 |\n| --- | --- | --- |\n| `SUBMISSION_NOT_FOUND` | 404 | 그런 제출이 없다 |\n| `SUBMISSION_ACCESS_DENIED` | 403 | 다른 팀의 제출이다 |",
         "operationId": "getAnalysis",
         "parameters": [
           {
@@ -14516,9 +14556,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -14653,9 +14693,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -15067,9 +15107,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -16183,9 +16223,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -16788,9 +16828,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -17723,9 +17763,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -18004,9 +18044,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -19861,88 +19901,6 @@
         "x-readiness": "available"
       }
     },
-    "/api/v0/bff/me/current-round": {
-      "get": {
-        "tags": [
-          "Project Execution"
-        ],
-        "summary": "이번 회차 상태 판정 조회 (지금 할 일 하나) | ✅ 사용 가능",
-        "description": "TR-01(교육생 홈)이 보여줄 상태 하나를 조회한다. 진행 중인 회차가 없으면\nstatus=NO_ACTIVE_ROUND로 200을 내려준다 — 빈 상태는 에러가 아니다.\n\n**상태 파생 규칙 안내**: 여러 프로젝트에서 동시에 회차가 열려 있을 때 어느 걸\n보여줄지, SESSION_INCOMPLETE(중단) 처리 방식 등은 아직 프론트와 확정되지 않았다.\nstatus 종류는 CurrentRoundStatus 스키마 설명을 참고할 것.\n\n**응답 (200)**\n- status: 지금 상태 하나(SUBMISSION_MISSING · SUBMISSION_DEADLINE_PASSED ·\n  ANALYZING · ANALYSIS_FAILED · ASSESSMENT_AVAILABLE · ASSESSMENT_IN_PROGRESS ·\n  ASSESSMENT_WINDOW_CLOSED · COMPLETED_AWAITING_REPORT · REVIEW_AVAILABLE ·\n  NO_ACTIVE_ROUND)\n- 그 외 필드는 status에 따라 의미 있는 것만 채워지고 나머지는 null\n",
-        "operationId": "findCurrentRound",
-        "responses": {
-          "200": {
-            "description": "조회 성공(회차 없음도 200)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CurrentRoundResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "액세스 토큰이 없거나 유효하지 않음",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "UNAUTHENTICATED": {
-                    "summary": "UNAUTHENTICATED",
-                    "value": {
-                      "timestamp": "2026-08-15T04:21:33.512Z",
-                      "status": 401,
-                      "error": "Unauthenticated",
-                      "code": "UNAUTHENTICATED",
-                      "message": "로그인이 필요합니다."
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "NOT_A_TRAINEE 교육생 계정이 아님",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                },
-                "examples": {
-                  "NOT_A_TRAINEE": {
-                    "summary": "NOT_A_TRAINEE",
-                    "value": {
-                      "timestamp": "2026-08-15T04:21:33.512Z",
-                      "status": 403,
-                      "error": "FORBIDDEN",
-                      "code": "NOT_A_TRAINEE",
-                      "message": "요청을 처리할 수 없습니다."
-                    }
-                  },
-                  "ACCESS_DENIED": {
-                    "summary": "ACCESS_DENIED",
-                    "value": {
-                      "timestamp": "2026-08-15T04:21:33.512Z",
-                      "status": 403,
-                      "error": "Access Denied",
-                      "code": "ACCESS_DENIED",
-                      "message": "접근 권한이 없습니다."
-                    }
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearerAuth": []
-          }
-        ],
-        "x-readiness": "available"
-      }
-    },
     "/api/v0/assessment-sessions/{sessionId}/problems/{problemNo}": {
       "get": {
         "tags": [
@@ -20133,9 +20091,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
+                          "code": "NOT_BLANK",
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -20257,7 +20215,7 @@
           "Assessment"
         ],
         "summary": "지금 이어서 할 세션 조회 | ✅ 사용 가능",
-        "description": "TR-03 진입과 **복귀**를 함께 처리한다. 진행 중인 세션이 있으면 그것을, 없으면 시작할 수 있는\n세션을 준다 — 새로고침·브라우저 종료 후 재접속이 이 경로 하나로 해결되므로 별도 복구 API가 없다.\n\n## 요청\n\n파라미터가 없다. 대상은 **액세스 토큰의 사용자**에서 도출한다(경로로 받지 않는다).\n\n요청 본문도 없다.\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `sessionId` | UUID | 이후 네 경로가 모두 이 값을 쓴다 |\n| `mode` | enum | `FIRST`(1차) · `REVIEW`(다시 보기). REVIEW는 힌트가 없고 판정에 반영되지 않는다 |\n| `status` | enum | `READY`(시작 전 안내) · `IN_PROGRESS`(진행 중) |\n| `currentProblemNo` | int? | 지금 서 있는 문제 번호(1~`problemTotal`). 시작 전이면 `null` |\n| `problemTotal` | int | 생성된 문제 수. 화면의 `문제 n/N`의 N |\n| `startedAt` | date-time? | 경과 시간 표시의 기산점. 시작 전이면 `null` |\n| `timeLimitAt` | date-time? | 정책 시간 상한. 상한이 없으면 `null` |\n| `reviewDueAt` | date-time? | 다시 보기 마감. `mode=FIRST`이면 `null` |\n\n### 🔴 `null`인 필드는 키 자체가 없다\n\n이 응답은 `NON_NULL` 직렬화라 값이 없는 필드가 `\"startedAt\": null`로 오지 않고 **키가 통째로\n빠진다.** 화면은 `response.startedAt === null`이 아니라 `== null`(undefined 포함)로 판정해야\n한다 — 아래 세 예시가 같은 스키마의 서로 다른 모양이다.\n\n### 상황에 따라 세 가지 몸이 온다\n\n| 상황 | `status` | 무엇이 다른가 |\n|---|---|---|\n| 시작 전 | `READY` | `currentProblemNo`·`startedAt`·`timeLimitAt` 키가 없다 |\n| 진행 중 복귀 | `IN_PROGRESS` | 커서와 시각이 모두 채워져 있다 |\n| 다시 보기 | `READY`·`IN_PROGRESS` | `mode=REVIEW`이고 `reviewDueAt`이 붙는다 |\n\n⚠️ `problemTotal`은 **3이 아닐 수 있다.** 코드에 근거가 없어 문항이 만들어지지 않은 개념\n(`NOT_GENERATED`)에는 단계를 만들지 않으므로 화면의 `n/3` 하드코딩은 틀린다.\n\n💡 **번호는 생성된 문제만 1부터 센다.** 원본 `assessment_problem.problem_no`에는 빈틈이\n생길 수 있으나(1번이 `NOT_GENERATED`면 2·3만 남는다) 세션 API는 그것을 다시 매겨\n`1~problemTotal`을 준다. 그래서 화면은 **받은 번호를 그대로** 쓰면 되고, 생성되지 않은\n문제는 애초에 열 수 없다.\n\n진행 중인 세션을 다시 보기보다 먼저 고른다. 둘 다 없으면 **`204 No Content`**이며 화면은\n`진행 중인 회차 없음`으로 그린다.\n\n## 🔴 이 조회가 시간 상한을 정리한다\n\n조회이지만 **읽기만 하지 않는다.** 상한을 넘긴 세션·문제를 이 자리에서 닫고, 그 결과를\n반영한 상태를 돌려준다.\n\n| 넘긴 상한 | 이 조회가 하는 일 | 응답 |\n|---|---|---|\n| 세션(`timeLimitAt`) | 세션을 `INTERRUPTED`로 닫는다 | **204**(다른 살아 있는 세션이 없으면) |\n| 문제(시작 + 20분) | 그 문제를 접고 다음 문제로 커서를 옮긴다 | 200. `currentProblemNo`가 다음 번호 |\n\n그래서 **학생이 아무것도 제출하지 않고 새로고침만 해도** 상한이 반영된다. 종전에는 쓰기\n요청만 상한을 봐서, 끝났어야 할 세션이 계속 진행 중으로 내려가고 남은 시간이 음수인 화면이\n그려졌다(2026-08-15 교정).\n\n마지막 문제가 상한을 넘기면 그 자리에서 세션이 끝나므로 **204**가 온다.\n\n## 204를 \"응시 완료\"로 읽지 말 것\n\n204는 **살아 있는 세션(`READY`·`IN_PROGRESS`·`PAUSED`)이 하나도 없다**는 뜻일 뿐이고 그 이유는\n다섯 가지다 — 이미 완료했다 · **방금 상한을 넘겨 닫혔다** · 아직 분석이 끝나지 않아 세션이\n만들어지지 않았다 · 분석이 실패했다 · 팀 배정이 끊겼다. 이들을 가르는 것은\n`GET /assessment-rounds`의 `representativeStatus`이며, 완료는 그중 `ASSESSMENT_COMPLETED`\n하나다. 상한 초과로 닫힌 세션은 응시가 `SESSION_INCOMPLETE`로 끝나 `initialSessionStatus`가\n`INTERRUPTED`다.\n\n⚠️ **응시 창(`assessmentCloseAt`)이 닫혀도 204가 아니다.** 여기서 보는 것은 세션의 정책\n시간 상한이지 응시 창이 아니다 — 창이 지난 `READY` 세션은 여전히 200으로 내려온다.\n\n## 오류\n\n| 상태 | 언제 |\n|---|---|\n| 401 | 액세스 토큰이 없거나 만료됐다 |\n| 403 | 호출자가 교육생(`TRAINEE`)이 아니다 |",
+        "description": "TR-03 진입과 **복귀**를 함께 처리한다. 진행 중인 세션이 있으면 그것을, 없으면 시작할 수 있는\n세션을 준다 — 새로고침·브라우저 종료 후 재접속이 이 경로 하나로 해결되므로 별도 복구 API가 없다.\n\n## 요청\n\n파라미터가 없다. 대상은 **액세스 토큰의 사용자**에서 도출한다(경로로 받지 않는다).\n\n요청 본문도 없다.\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `sessionId` | UUID | 이후 네 경로가 모두 이 값을 쓴다 |\n| `mode` | enum | `FIRST`(1차) · `REVIEW`(다시 보기). REVIEW는 힌트가 없고 판정에 반영되지 않는다 |\n| `status` | enum | `READY`(시작 전 안내) · `IN_PROGRESS`(진행 중) |\n| `currentProblemNo` | int? | 지금 서 있는 문제 번호(1~`problemTotal`). 시작 전이면 `null` |\n| `problemTotal` | int | 생성된 문제 수. 화면의 `문제 n/N`의 N |\n| `startedAt` | date-time? | 경과 시간 표시의 기산점. 시작 전이면 `null` |\n| `timeLimitAt` | date-time? | 정책 시간 상한. 상한이 없으면 `null` |\n| `reviewDueAt` | date-time? | 다시 보기 마감. `mode=FIRST`이면 `null` |\n\n### 🔴 `null`인 필드는 키 자체가 없다\n\n이 응답은 `NON_NULL` 직렬화라 값이 없는 필드가 `\"startedAt\": null`로 오지 않고 **키가 통째로\n빠진다.** 화면은 `response.startedAt === null`이 아니라 `== null`(undefined 포함)로 판정해야\n한다 — 아래 세 예시가 같은 스키마의 서로 다른 모양이다.\n\n### 상황에 따라 세 가지 몸이 온다\n\n| 상황 | `status` | 무엇이 다른가 |\n|---|---|---|\n| 시작 전 | `READY` | `currentProblemNo`·`startedAt`·`timeLimitAt` 키가 없다 |\n| 진행 중 복귀 | `IN_PROGRESS` | 커서와 시각이 모두 채워져 있다 |\n| 다시 보기 | `READY`·`IN_PROGRESS` | `mode=REVIEW`이고 `reviewDueAt`이 붙는다 |\n\n⚠️ `problemTotal`은 **3이 아닐 수 있다.** 코드에 근거가 없어 문항이 만들어지지 않은 개념\n(`NOT_GENERATED`)에는 단계를 만들지 않으므로 화면의 `n/3` 하드코딩은 틀린다.\n\n💡 **번호는 생성된 문제만 1부터 센다.** 원본 `assessment_problem.problem_no`에는 빈틈이\n생길 수 있으나(1번이 `NOT_GENERATED`면 2·3만 남는다) 세션 API는 그것을 다시 매겨\n`1~problemTotal`을 준다. 그래서 화면은 **받은 번호를 그대로** 쓰면 되고, 생성되지 않은\n문제는 애초에 열 수 없다.\n\n진행 중인 세션을 다시 보기보다 먼저 고른다. 둘 다 없으면 **`204 No Content`**이며 화면은\n`진행 중인 회차 없음`으로 그린다.\n\n## 🔴 이 조회가 시간 상한을 정리한다\n\n조회이지만 **읽기만 하지 않는다.** 상한을 넘긴 세션·문제를 이 자리에서 닫고, 그 결과를\n반영한 상태를 돌려준다.\n\n| 넘긴 상한 | 이 조회가 하는 일 | 응답 |\n|---|---|---|\n| 세션(`timeLimitAt`) | 세션을 `INTERRUPTED`로 닫는다 | **204**(다른 살아 있는 세션이 없으면) |\n| 문제(시작 + 20분) | 그 문제를 접고 다음 문제로 커서를 옮긴다 | 200. `currentProblemNo`가 다음 번호 |\n\n그래서 **학생이 아무것도 제출하지 않고 새로고침만 해도** 상한이 반영된다. 종전에는 쓰기\n요청만 상한을 봐서, 끝났어야 할 세션이 계속 진행 중으로 내려가고 남은 시간이 음수인 화면이\n그려졌다(2026-08-15 교정).\n\n마지막 문제가 상한을 넘기면 그 자리에서 세션이 끝나므로 **204**가 온다.\n\n## 204를 \"응시 완료\"로 읽지 말 것\n\n204는 **살아 있는 세션(`READY`·`IN_PROGRESS`·`PAUSED`)이 하나도 없다**는 뜻일 뿐이고 그 이유는\n여섯 가지다 — 이미 완료했다 · **방금 상한을 넘겨 닫혔다** · **응시 창이 닫혔다** ·\n아직 분석이 끝나지 않아 세션이 만들어지지 않았다 · 분석이 실패했다 · 팀 배정이 끊겼다.\n이들을 가르는 것은 `GET /assessment-rounds`의 `representativeStatus`이며, 완료는 그중\n`ASSESSMENT_COMPLETED` 하나다. 상한 초과로 닫힌 세션은 응시가 `SESSION_INCOMPLETE`로 끝나\n`initialSessionStatus`가 `INTERRUPTED`다.\n\n**응시 창(`assessmentCloseAt`)이 닫혔으면 204다**(2026-08-16 변경). 종전에는 창이 지난\n`READY` 세션을 200으로 내려줬는데, 화면이 시작할 수 없는 세션을 \"지금 할 일\"로 그려 놓고\n`POST /start`에서만 막히는 상태였다. 다시 보기도 같다 — `reviewDueAt`이 지나면 204다.\n그 회차의 홈 카드는 `ASSESSMENT_WINDOW_CLOSED` · CTA `NONE`으로 나간다.\n\n## 오류\n\n| 상태 | 언제 |\n|---|---|\n| 401 | 액세스 토큰이 없거나 만료됐다 |\n| 403 | 호출자가 교육생(`TRAINEE`)이 아니다 |",
         "operationId": "findCurrentSession",
         "responses": {
           "200": {
@@ -20377,7 +20335,7 @@
           "Assessment"
         ],
         "summary": "교육생 홈 3구획 조회 | ✅ 사용 가능",
-        "description": "교육생 홈이 한 화면에 세 구획(지금 할 일 · 예정 · 지난 회차)을 그리므로 요청 하나로 묶는다.\n원천은 `trainee_home_round_view` 단일 조회이며 스코프는 경로가 아니라 **액세스 토큰에서\n도출**한다.\n\n**구획별 필드 집합이 다르다** — 클라이언트 표시 방식이 달라 공유하지 않는다.\n`current` 35필드 · `upcoming` 7필드 · `past` 8필드.\n\n## 요청\n\n경로·쿼리 파라미터가 **없다.** 조회 대상 교육생은 `Authorization` 헤더의 액세스 토큰에서\n정한다.\n\n**페이지네이션도 없다.** 한 기수의 회차가 10건 미만이라 전량 반환한다.\n\n## 응답 (200)\n\n**빈 결과라는 것은 없다.** 진행 회차가 없거나 기수에 소속되지 않았어도 네 필드가 모두 온다.\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `membership` | object | 기수·반 소속. 객체 자체는 항상 존재 |\n| `current` | object | 지금 할 일 카드. 진행 회차가 없으면 `NO_ACTIVE_ROUND` 합성 카드 |\n| `upcoming[]` | array | 예정 회차. 없으면 빈 배열 |\n| `past[]` | array | 지난 회차. 없으면 빈 배열 |\n\n### membership (object)\n\n**팀은 여기 없다.** 교육생은 회차마다 팀이 바뀌고(`team.project_id`가 NOT NULL) View가 회차의\n`submission_due_at` 시점으로 소속을 확정하므로, 팀은 회차 스코프인 `current`에 둔다.\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `cohortId` | UUID? | 기수 ID. 기수 미소속이면 이 객체의 전 필드가 `null` |\n| `cohortName` | string? | 기수 표시명. 예: `7기` |\n| `classId` | UUID? | 반 ID. 반 미배정이면 `null` |\n| `className` | string? | 반 표시명. 예: `A반` |\n\n### current (object) — 35필드\n\n회차가 없으면 서버가 합성 카드를 만든다. 이때 식별·일정 필드는 전부 `null`이고\n`representativeStatus=NO_ACTIVE_ROUND` · `defaultActionCode=NONE` · `analysisPhase=NOT_SUBMITTED`\n가 된다. **View는 이 상태를 만들지 못한다** — 진행 중인 프로젝트가 없으면 원천이 0행이다.\n\n**회차·프로젝트**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID? | 합성 카드일 때만 `null` |\n| `roundNo` | int? | 회차 번호 |\n| `roundName` | string? | 회차명. 예: `미프 3차` |\n| `roundStatus` | enum? | 실제 회차면 항상 `OPEN` |\n| `projectId` | UUID? | 프로젝트 ID |\n| `projectName` | string? | 프로젝트명 |\n| `projectCategory` | enum? | `MINI_PROJECT` · `BIG_PROJECT` |\n| `curriculumNames[]` | array | 교안 표시명. 없으면 빈 배열 |\n\n**팀 (회차 스코프)**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `teamId` | UUID? | 팀 미편성이면 `null` |\n| `teamNumber` | string? | 팀 번호. 예: `3` |\n| `teamName` | string? | 팀명. 예: `3팀` |\n\n**대표 상태·액션**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `representativeStatus` | enum | 카드 배지. 값 집합은 아래 표 |\n| `defaultActionCode` | enum | 기본 버튼. 값 집합은 아래 표 |\n| `actionUnavailableReasonCode` | enum? | `SUBMISSION_DEADLINE_PASSED` · `ASSESSMENT_WINDOW_CLOSED`. 없으면 `null` |\n| `warningCodes[]` | array | 경고 배지. 없으면 빈 배열. 값 집합은 아래 표 |\n\n**제출**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `commitEmailStatus` | enum? | **`null`은 미등록**을 뜻한다. 아래 배너 규칙 참고 |\n| `availableSubmissionMethods[]` | array | 기관 정책이 허용한 수단. `GITHUB_URL` · `ZIP_WITH_GITLOG` |\n| `submissionMethod` | enum? | 실제 제출 수단. 미제출이면 `null` |\n| `submissionStatus` | enum? | `VALIDATING` · `ACCEPTED` · `FETCH_FAILED` · `INVALID` |\n| `submittedAt` | datetime? | 제출 시각 (ISO-8601 UTC) |\n| `canSubmit` | boolean | 마감 전이고 아직 세션을 시작하지 않았으면 `true` |\n| `canResubmit` | boolean | 위 조건 + 이미 제출이 있으면 `true` |\n\n**분석**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `analysisPhase` | enum | `NOT_SUBMITTED` · `ANALYZING` · `FAILED` · `COMPLETED` · `WAITING` |\n| `analysisJobStatus` | enum? | `QUEUED` · `RUNNING` · `SUCCEEDED` · `PARTIAL` · `FAILED` |\n| `analysisFailureCode` | string? | 분석 실패 사유. 15종. 상세는 Submission API 참고 |\n\n**이해도 확인·다시 보기**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `initialAttemptStatus` | enum? | `NOT_STARTED` · `SUBMITTED` · `ANALYZING` · `SESSION_READY` · `SESSION_IN_PROGRESS` · `COMPLETED` · `FAILED` · `EXPIRED` |\n| `initialSessionStatus` | enum? | `READY` · `IN_PROGRESS` · `PAUSED` · `COMPLETED` 등 |\n| `preparedProblemCount` | int | 실제로 출제된 문제 수 `0`~`3`. ⚠️ **`3`이 아닐 수 있다** |\n| `reviewStatus` | enum? | 다시 보기 상태. 배정이 없으면 `null` |\n| `completedReviewCount` | int | 완료한 다시 보기 건수 |\n\n⚠️ **`preparedProblemCount`를 `3`으로 가정하지 말 것.** 검증 개념은 항상 3건이 계획되지만\n코드에 근거가 없는 개념은 문항이 만들어지지 않고(`NOT_GENERATED`) 세션에도 나오지 않는다.\n이 값은 **교육생이 실제로 받게 될 문제 수**이며 세션 API의 `problemTotal`과 같다.\n세션이 열리기 전(분석 중·분석 실패)에는 `0`이다.\n\n**리포트**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `reportId` | UUID? | 리포트 식별자 |\n| `reportPublishStatus` | enum | `PUBLISHED` · `GENERATING` · `NOT_PUBLISHED` |\n| `traineeReleaseStatus` | enum | 리포트 행이 없으면 `NOT_CONFIGURED`로 정규화한다 |\n| `canViewReport` | boolean | `traineeReleaseStatus=RELEASED`일 때만 `true` |\n| `explanationStatus` | enum | `UNAVAILABLE` · `PARTIAL` · `AVAILABLE` |\n\n**일정**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `submissionDueAt` | datetime? | 제출 마감 |\n| `roundAssessmentOpenAt` | datetime? | 회차 응시 창 시작. `OPEN` 회차면 DB가 non-null을 보장 |\n| `roundAssessmentDueAt` | datetime? | 회차 응시 창 종료. 위와 같음 |\n| `assessmentOpenAt` | datetime? | **개인** 응시 창 시작. 응시 생성 전이면 `null` |\n| `assessmentCloseAt` | datetime? | **개인** 응시 창 종료. 응시 생성 전이면 `null` |\n| `initialTerminalAt` | datetime? | 응시 종료 시각 |\n| `reportPublishMode` | enum? | `ROUND_BATCH` |\n| `reportPublishNotBeforeAt` | datetime? | 이 시각 이전에는 발행하지 않는다 |\n\n**기타**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `manager` | object? | `{ userId, name }`. 반에 활성 배정이 없으면 객체 자체가 `null` |\n| `asOfAt` | datetime | 서버 조회 시각 |\n\n#### representativeStatus 값 집합\n\n위에서부터 먼저 맞는 것 하나로 정해진다.\n\n| 값 | 언제 |\n| --- | --- |\n| `REVIEW_REQUIRED` | 다시 보기 배정이 있고 아직 끝나지 않았다 |\n| `ASSESSMENT_COMPLETED` | 응시를 완료했다 |\n| `ASSESSMENT_WINDOW_CLOSED` | 미응시·중단이거나 개인 응시 창이 닫혔다 |\n| `ASSESSMENT_IN_PROGRESS` | 세션을 풀고 있거나 일시정지했다 |\n| `ASSESSMENT_AVAILABLE` | 응시할 수 있다 |\n| `ANALYSIS_FAILED` | 분석이 실패했다 |\n| `SUBMISSION_MISSED` | 마감까지 제출하지 않았다 |\n| `SUBMISSION_REQUIRED` | 아직 제출하지 않았다(마감 전) |\n| `ANALYZING` | 위 어디에도 해당하지 않는다(제출 후 분석 중) |\n| `NO_ACTIVE_ROUND` | 진행 회차가 없다. **서버 합성 카드 전용** |\n\n#### defaultActionCode 값 집합\n\n| 값 | 화면 동작 |\n| --- | --- |\n| `VIEW_REPORT` | 리포트 보기 |\n| `WAIT_FOR_REPORT` | 리포트 발행 대기 |\n| `START_REVIEW` | 다시 보기 시작 |\n| `RESUME_ASSESSMENT` | 응시 이어하기 |\n| `START_ASSESSMENT` | 응시 시작 |\n| `RESUBMIT_REPOSITORY` | 저장소 재제출 (분석 실패 + 마감 전) |\n| `RESUBMIT_ZIP` | ZIP 재업로드 (분석 실패 + 마감 전) |\n| `CONTACT_MANAGER` | 매니저 문의 (복구 경로가 없다) |\n| `SUBMIT_CODE` | 코드 제출 |\n| `WAIT_FOR_ANALYSIS` | 분석 대기 |\n| `NONE` | 할 일이 없다 |\n\n#### warningCodes 값 집합\n\n배열이므로 **여러 개가 동시에 올 수 있다.**\n\n| 값 | 언제 |\n| --- | --- |\n| `SUBMISSION_DEADLINE_PASSED` | 제출 마감이 지났다 |\n| `ANALYSIS_FAILED` | 분석이 실패했다 |\n| `ASSESSMENT_WINDOW_CLOSED` | 응시 창이 닫혔는데 완료하지 못했다 |\n| `PROBLEM_NOT_GENERATED` | 코드 근거가 부족해 문항을 만들지 못했다 |\n\n### upcoming[] 각 항목 — 7필드\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID | 회차 ID |\n| `roundNo` | int | 회차 번호 |\n| `roundName` | string | 회차명. 예: `미프 4차` |\n| `roundStatus` | enum | 항상 `PLANNED` |\n| `submissionDueAt` | datetime | 제출 마감 |\n| `roundAssessmentOpenAt` | datetime? | 이해도 확인 시작. **`PLANNED`에서는 `null`일 수 있다** |\n| `roundAssessmentDueAt` | datetime? | 이해도 확인 종료. 위와 같은 이유로 `null` 가능 |\n\n⚠️ 두 일정이 `null`일 수 있는 이유는 `ck_project_assessment_round_assessment_window_required`가\n`PLANNED` 회차만 면제하기 때문이다.\n\n### past[] 각 항목 — 8필드\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID | 회차 ID |\n| `roundNo` | int | 회차 번호 |\n| `roundName` | string | 회차명. 예: `미프 2차` |\n| `representativeStatus` | enum | 세션 완료 여부 판정용. `ASSESSMENT_COMPLETED`이면 완료 |\n| `reviewStatus` | enum? | 다시 보기 상태. 배정이 없으면 `null` |\n| `completedReviewCount` | int | 완료한 다시 보기 건수 |\n| `reportId` | UUID? | 리포트 식별자 |\n| `canViewReport` | boolean | `traineeReleaseStatus=RELEASED`일 때만 `true` |\n\n⚠️ \"완료 여부\" boolean은 **일부러 두지 않는다.** `representativeStatus`가 완료와 미완료 사유를\n이미 구분하므로, 파생값을 더하면 계약이 둘로 갈린다.\n\n## 화면 규칙\n\n### 4단계 진행 표시\n\n파생 필드 없이 원시 상태값으로 클라이언트가 판정한다.\n\n| 단계 | 완료 조건 |\n| --- | --- |\n| ① 코드 제출 | `submissionStatus = 'ACCEPTED'` |\n| ② 코드 분석 | `analysisPhase = 'COMPLETED'` |\n| ③ 이해도 확인 | `initialAttemptStatus = 'COMPLETED'` |\n| ④ 리포트 | `canViewReport = true` |\n\n### 리포트 열람\n\n**`canViewReport`의 판정 근거는 `traineeReleaseStatus` 하나다.** `reportPublishStatus`는 리포트\n발행 진행 상태라 열람 판정에 넣지 않는다.\n\n### 커밋 이메일 배너\n\n`commitEmailStatus !== \"VERIFIED\"`일 때 띄운다. `null`은 미등록을 뜻하며, 미등록·미검증이\n제출을 막지는 않는다. 다만 빅프로젝트(`projectCategory = 'BIG_PROJECT'`)에서는 커밋 귀속이\n비어 문제가 생성되지 않으므로 배너 강도를 `projectCategory`로 구분한다.\n\n## 오류\n\n| 상태 | 언제 |\n| --- | --- |\n| 401 | 액세스 토큰이 없거나 인증 사용자를 찾을 수 없다 |\n| 403 | 호출자가 교육생(`TRAINEE`)이 아니다 |\n",
+        "description": "교육생 홈이 한 화면에 세 구획(지금 할 일 · 예정 · 지난 회차)을 그리므로 요청 하나로 묶는다.\n원천은 `trainee_home_round_view` 단일 조회이며 스코프는 경로가 아니라 **액세스 토큰에서\n도출**한다.\n\n**구획별 필드 집합이 다르다** — 클라이언트 표시 방식이 달라 공유하지 않는다.\n`current` 35필드 · `upcoming` 7필드 · `past` 8필드.\n\n## 요청\n\n경로·쿼리 파라미터가 **없다.** 조회 대상 교육생은 `Authorization` 헤더의 액세스 토큰에서\n정한다.\n\n**페이지네이션도 없다.** 한 기수의 회차가 10건 미만이라 전량 반환한다.\n\n## 응답 (200)\n\n**빈 결과라는 것은 없다.** 진행 회차가 없거나 기수에 소속되지 않았어도 네 필드가 모두 온다.\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `membership` | object | 기수·반 소속. 객체 자체는 항상 존재 |\n| `current` | object | 지금 할 일 카드. 진행 회차가 없으면 `NO_ACTIVE_ROUND` 합성 카드 |\n| `upcoming[]` | array | 예정 회차. 없으면 빈 배열 |\n| `past[]` | array | 지난 회차. 없으면 빈 배열 |\n\n### membership (object)\n\n**팀은 여기 없다.** 교육생은 회차마다 팀이 바뀌고(`team.project_id`가 NOT NULL) View가 회차의\n`submission_due_at` 시점으로 소속을 확정하므로, 팀은 회차 스코프인 `current`에 둔다.\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `cohortId` | UUID? | 기수 ID. 기수 미소속이면 이 객체의 전 필드가 `null` |\n| `cohortName` | string? | 기수 표시명. 예: `7기` |\n| `classId` | UUID? | 반 ID. 반 미배정이면 `null` |\n| `className` | string? | 반 표시명. 예: `A반` |\n\n### current (object) — 35필드\n\n회차가 없으면 서버가 합성 카드를 만든다. 이때 식별·일정 필드는 전부 `null`이고\n`representativeStatus=NO_ACTIVE_ROUND` · `defaultActionCode=NONE` · `analysisPhase=NOT_SUBMITTED`\n가 된다. **View는 이 상태를 만들지 못한다** — 진행 중인 프로젝트가 없으면 원천이 0행이다.\n\n**회차·프로젝트**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID? | 합성 카드일 때만 `null` |\n| `roundNo` | int? | 회차 번호 |\n| `roundName` | string? | 회차명. 예: `미프 3차` |\n| `roundStatus` | enum? | 실제 회차면 항상 `OPEN` |\n| `projectId` | UUID? | 프로젝트 ID |\n| `projectName` | string? | 프로젝트명 |\n| `projectCategory` | enum? | `MINI_PROJECT` · `BIG_PROJECT` |\n| `curriculumNames[]` | array | 교안 표시명. 없으면 빈 배열 |\n\n**팀 (회차 스코프)**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `teamId` | UUID? | 팀 미편성이면 `null` |\n| `teamNumber` | string? | 팀 번호. 예: `3` |\n| `teamName` | string? | 팀명. 예: `3팀` |\n\n**대표 상태·액션**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `representativeStatus` | enum | 카드 배지. 값 집합은 아래 표 |\n| `defaultActionCode` | enum | 기본 버튼. 값 집합은 아래 표 |\n| `actionUnavailableReasonCode` | enum? | `SUBMISSION_DEADLINE_PASSED` · `ASSESSMENT_WINDOW_CLOSED`. 없으면 `null` |\n| `warningCodes[]` | array | 경고 배지. 없으면 빈 배열. 값 집합은 아래 표 |\n\n**제출**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `commitEmailStatus` | enum? | **`null`은 미등록**을 뜻한다. 아래 배너 규칙 참고 |\n| `availableSubmissionMethods[]` | array | 기관 정책이 허용한 수단. `GITHUB_URL` · `ZIP_WITH_GITLOG` |\n| `submissionMethod` | enum? | 실제 제출 수단. 미제출이면 `null` |\n| `submissionStatus` | enum? | `VALIDATING` · `ACCEPTED` · `FETCH_FAILED` · `INVALID` |\n| `submittedAt` | datetime? | 제출 시각 (ISO-8601 UTC) |\n| `canSubmit` | boolean | 마감 전이고 아직 세션을 시작하지 않았으면 `true` |\n| `canResubmit` | boolean | 위 조건 + 이미 제출이 있으면 `true` |\n\n**분석**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `analysisPhase` | enum | `NOT_SUBMITTED` · `ANALYZING` · `FAILED` · `COMPLETED` · `WAITING` |\n| `analysisJobStatus` | enum? | `QUEUED` · `RUNNING` · `SUCCEEDED` · `PARTIAL` · `FAILED` |\n| `analysisFailureCode` | string? | 실패했는가만 알린다. 값은 `ANALYSIS_FAILED` 하나. **사유는 TR-02에 있다** |\n\n**이해도 확인·다시 보기**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `initialAttemptStatus` | enum? | `NOT_STARTED` · `SUBMITTED` · `ANALYZING` · `SESSION_READY` · `SESSION_IN_PROGRESS` · `COMPLETED` · `FAILED` · `EXPIRED` |\n| `initialSessionStatus` | enum? | `READY` · `IN_PROGRESS` · `PAUSED` · `COMPLETED` 등 |\n| `preparedProblemCount` | int | 실제로 출제된 문제 수 `0`~`3`. ⚠️ **`3`이 아닐 수 있다** |\n| `reviewStatus` | enum? | 다시 보기 상태. 배정이 없으면 `null` |\n| `completedReviewCount` | int | 완료한 다시 보기 건수 |\n\n⚠️ **`preparedProblemCount`를 `3`으로 가정하지 말 것.** 검증 개념은 항상 3건이 계획되지만\n코드에 근거가 없는 개념은 문항이 만들어지지 않고(`NOT_GENERATED`) 세션에도 나오지 않는다.\n이 값은 **교육생이 실제로 받게 될 문제 수**이며 세션 API의 `problemTotal`과 같다.\n세션이 열리기 전(분석 중·분석 실패)에는 `0`이다.\n\n**리포트**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `reportId` | UUID? | 리포트 식별자 |\n| `reportPublishStatus` | enum | `PUBLISHED` · `GENERATING` · `NOT_PUBLISHED` |\n| `traineeReleaseStatus` | enum | 리포트 행이 없으면 `NOT_CONFIGURED`로 정규화한다 |\n| `canViewReport` | boolean | `traineeReleaseStatus=RELEASED`일 때만 `true` |\n| `explanationStatus` | enum | `UNAVAILABLE` · `PARTIAL` · `AVAILABLE` |\n\n**일정**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `submissionDueAt` | datetime? | 제출 마감 |\n| `roundAssessmentOpenAt` | datetime? | 🔴 **폐기. 언제나 `null`**(2026-08-16) |\n| `roundAssessmentDueAt` | datetime? | 🔴 **폐기. 언제나 `null`**(2026-08-16) |\n| `assessmentOpenAt` | datetime? | **개인** 응시 창 시작. 응시 생성 전이면 `null`. **응시 가능 판정은 이것뿐** |\n| `assessmentCloseAt` | datetime? | **개인** 응시 창 종료. 응시 생성 전이면 `null`. ⚠️ `min(…, roundAssessmentDueAt)` 금지 — JS에서 1970년이 된다 |\n| `initialTerminalAt` | datetime? | 응시 종료 시각 |\n| `reportPublishMode` | enum? | `ROUND_BATCH` |\n| `reportPublishNotBeforeAt` | datetime? | 이 시각 이전에는 발행하지 않는다 |\n\n**기타**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `manager` | object? | `{ userId, name }`. 반에 활성 배정이 없으면 객체 자체가 `null` |\n| `asOfAt` | datetime | 서버 조회 시각 |\n\n#### representativeStatus 값 집합\n\n위에서부터 먼저 맞는 것 하나로 정해진다.\n\n| 값 | 언제 |\n| --- | --- |\n| `REVIEW_REQUIRED` | 다시 보기 배정이 있고 아직 끝나지 않았다 |\n| `ASSESSMENT_COMPLETED` | 응시를 완료했다 |\n| `ASSESSMENT_WINDOW_CLOSED` | 미응시·중단이거나 개인 응시 창이 닫혔다 |\n| `ASSESSMENT_IN_PROGRESS` | 세션을 풀고 있거나 일시정지했다 |\n| `ASSESSMENT_AVAILABLE` | 응시할 수 있다 |\n| `ANALYSIS_FAILED` | 분석이 실패했다 |\n| `SUBMISSION_MISSED` | 마감까지 제출하지 않았다 |\n| `SUBMISSION_REQUIRED` | 아직 제출하지 않았다(마감 전) |\n| `ANALYZING` | 위 어디에도 해당하지 않는다(제출 후 분석 중) |\n| `NO_ACTIVE_ROUND` | 진행 회차가 없다. **서버 합성 카드 전용** |\n\n#### defaultActionCode 값 집합\n\n| 값 | 화면 동작 |\n| --- | --- |\n| `VIEW_REPORT` | 리포트 보기 |\n| `WAIT_FOR_REPORT` | 리포트 발행 대기 |\n| `START_REVIEW` | 다시 보기 시작 |\n| `RESUME_ASSESSMENT` | 응시 이어하기 |\n| `START_ASSESSMENT` | 응시 시작 |\n| `RESUBMIT_REPOSITORY` | 저장소 재제출 (분석 실패 + 마감 전) |\n| `RESUBMIT_ZIP` | ZIP 재업로드 (분석 실패 + 마감 전) |\n| `CONTACT_MANAGER` | 매니저 문의 (복구 경로가 없다) |\n| `SUBMIT_CODE` | 코드 제출 |\n| `WAIT_FOR_ANALYSIS` | 분석 대기 |\n| `NONE` | 할 일이 없다 |\n\n#### warningCodes 값 집합\n\n배열이므로 **여러 개가 동시에 올 수 있다.**\n\n| 값 | 언제 |\n| --- | --- |\n| `SUBMISSION_DEADLINE_PASSED` | 제출 마감이 지났다 |\n| `ANALYSIS_FAILED` | 분석이 실패했다 |\n| `ASSESSMENT_WINDOW_CLOSED` | 응시 창이 닫혔는데 완료하지 못했다 |\n| `PROBLEM_NOT_GENERATED` | 코드 근거가 부족해 문항을 만들지 못했다 |\n\n### upcoming[] 각 항목 — 7필드\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID | 회차 ID |\n| `roundNo` | int | 회차 번호 |\n| `roundName` | string | 회차명. 예: `미프 4차` |\n| `roundStatus` | enum | 항상 `PLANNED` |\n| `submissionDueAt` | datetime | 제출 마감 |\n| `roundAssessmentOpenAt` | datetime? | 이해도 확인 시작. **`PLANNED`에서는 `null`일 수 있다** |\n| `roundAssessmentDueAt` | datetime? | 이해도 확인 종료. 위와 같은 이유로 `null` 가능 |\n\n⚠️ 두 일정이 `null`일 수 있는 이유는 `ck_project_assessment_round_assessment_window_required`가\n`PLANNED` 회차만 면제하기 때문이다.\n\n### past[] 각 항목 — 8필드\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID | 회차 ID |\n| `roundNo` | int | 회차 번호 |\n| `roundName` | string | 회차명. 예: `미프 2차` |\n| `representativeStatus` | enum | 세션 완료 여부 판정용. `ASSESSMENT_COMPLETED`이면 완료 |\n| `reviewStatus` | enum? | 다시 보기 상태. 배정이 없으면 `null` |\n| `completedReviewCount` | int | 완료한 다시 보기 건수 |\n| `reportId` | UUID? | 리포트 식별자 |\n| `canViewReport` | boolean | `traineeReleaseStatus=RELEASED`일 때만 `true` |\n\n⚠️ \"완료 여부\" boolean은 **일부러 두지 않는다.** `representativeStatus`가 완료와 미완료 사유를\n이미 구분하므로, 파생값을 더하면 계약이 둘로 갈린다.\n\n## 화면 규칙\n\n### 4단계 진행 표시\n\n파생 필드 없이 원시 상태값으로 클라이언트가 판정한다.\n\n| 단계 | 완료 조건 |\n| --- | --- |\n| ① 코드 제출 | `submissionStatus = 'ACCEPTED'` |\n| ② 코드 분석 | `analysisPhase = 'COMPLETED'` |\n| ③ 이해도 확인 | `initialAttemptStatus = 'COMPLETED'` |\n| ④ 리포트 | `canViewReport = true` |\n\n### 리포트 열람\n\n**`canViewReport`의 판정 근거는 `traineeReleaseStatus` 하나다.** `reportPublishStatus`는 리포트\n발행 진행 상태라 열람 판정에 넣지 않는다.\n\n### 커밋 이메일 배너\n\n`commitEmailStatus !== \"VERIFIED\"`일 때 띄운다. `null`은 미등록을 뜻하며, 미등록·미검증이\n제출을 막지는 않는다. 다만 빅프로젝트(`projectCategory = 'BIG_PROJECT'`)에서는 커밋 귀속이\n비어 문제가 생성되지 않으므로 배너 강도를 `projectCategory`로 구분한다.\n\n## 오류\n\n| 상태 | 언제 |\n| --- | --- |\n| 401 | 액세스 토큰이 없거나 인증 사용자를 찾을 수 없다 |\n| 403 | 호출자가 교육생(`TRAINEE`)이 아니다 |\n",
         "operationId": "getMyAssessmentRounds",
         "responses": {
           "200": {
@@ -21225,13 +21183,16 @@
         "description": "공개 범위별 본문 필드 노출 여부",
         "properties": {
           "said": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "축별 서술(`said`)이 학생에게 열리는가. SUMMARY 이상이면 true"
           },
           "curriculumRef": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "교안 위치(`chapter`·`pages`·`title`)가 열리는가. SUMMARY 이상이면 true"
           },
           "qa": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "문답 원문이 열리는가 — `[내 답변] 펼침`이 이 값으로 열린다. FULL에서만 true"
           }
         },
         "required": [
@@ -21689,12 +21650,6 @@
             "format": "int32",
             "description": "단가의 기준 토큰 수. 생략하면 1,000,000을 사용한다.\n공급자가 다른 기준으로 고지하는 경우에만 바꾼다.",
             "example": 1000000
-          },
-          "pricePairConsistent": {
-            "type": "boolean"
-          },
-          "cachedPriceConsistent": {
-            "type": "boolean"
           }
         },
         "required": [
@@ -21731,9 +21686,6 @@
             "type": "boolean",
             "description": "전 기관 재캘리브레이션이 발생하고 되돌릴 수 없음을 확인했다는 표시.\n**true가 아니면 400으로 거절한다** — 화면 확인 모달을 우회한 호출을 막기 위한 안전장치다.",
             "example": true
-          },
-          "recalibrationAcknowledged": {
-            "type": "boolean"
           }
         },
         "required": [
@@ -23517,7 +23469,7 @@
               "string",
               "null"
             ],
-            "description": "이 일괄 등록의 진행률 조회 식별자입니다. `GET /cohorts/{cohortId}/trainees/registrations/{batchRequestId}`에 그대로 넣습니다. 등록된 행이 하나도 없거나 사전 검증(미리보기) 응답이면 폴링할 대상이 없어 null입니다.",
+            "description": "이 일괄 등록의 진행률 조회 식별자입니다. `GET /cohorts/{cohortId}/trainees/registrations/{batchRequestId}`에 그대로 넣습니다. 등록된 행이 하나도 없으면 폴링할 대상이 없어 null입니다. 사전 검증(미리보기)은 이 필드가 아예 없는 `PreviewTraineesResponse`로 답합니다.",
             "example": "trainee-batch-001"
           },
           "failures": {
@@ -23533,6 +23485,36 @@
           "failures",
           "invitationSentCount",
           "registeredCount",
+          "requestedCount"
+        ]
+      },
+      "PreviewTraineesResponse": {
+        "type": "object",
+        "description": "교육생 명단 사전 검증(드라이런) 결과.\n\n**이 호출은 계정도 초대도 만들지 않는다** — 수는 전부 「그렇게 될 것」이지 「그렇게 됐다」가 아니다.",
+        "properties": {
+          "requestedCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "검사 대상으로 받은 전체 교육생 행 수",
+            "example": 3
+          },
+          "registrableCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "지금 등록을 요청하면 **등록될 수 있는** 행 수(= requestedCount − failures.length). 아직 등록되지 않았습니다. 두 호출 사이에 다른 운영자가 같은 주소를 등록할 수 있어 이 수가 등록 결과를 보장하지는 않습니다.",
+            "example": 2
+          },
+          "failures": {
+            "type": "array",
+            "description": "지금 등록하면 걸릴 입력 행별 목록. 판정 규칙과 status 값은 등록과 같습니다.",
+            "items": {
+              "$ref": "#/components/schemas/Failure"
+            }
+          }
+        },
+        "required": [
+          "failures",
+          "registrableCount",
           "requestedCount"
         ]
       },
@@ -24697,9 +24679,6 @@
             "example": 3500,
             "maximum": 86400000,
             "minimum": 0
-          },
-          "empty": {
-            "type": "boolean"
           }
         }
       },
@@ -24775,9 +24754,6 @@
             ],
             "description": "변경 사유(감사 로그용, 선택)",
             "example": "퇴사 처리"
-          },
-          "mutableStatus": {
-            "type": "boolean"
           }
         },
         "required": [
@@ -24817,9 +24793,6 @@
             ],
             "description": "변경 사유(감사 로그용, 선택)",
             "example": "퇴사 처리"
-          },
-          "mutableStatus": {
-            "type": "boolean"
           }
         },
         "required": [
@@ -25036,9 +25009,6 @@
             ],
             "description": "변경 사유(감사 로그용, 선택)",
             "example": "퇴사 처리"
-          },
-          "mutableStatus": {
-            "type": "boolean"
           }
         },
         "required": [
@@ -25901,7 +25871,8 @@
             "type": "string"
           },
           "asked": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "물었는가. **`false`면 그 학생 코드에 이 개념이 없어 문항 자체가 만들어지지 않았다** —\n`level`을 포함한 아래 값들이 전부 빠진다.\n\n🔴 `level=0`(물었는데 통과한 축이 없다)과 **합치면 안 된다.** 섞으면 화면이 학생에게\n\"못했다\"고 말하게 되는데 사실은 묻지 않은 것이다."
           },
           "level": {
             "type": [
@@ -25918,7 +25889,8 @@
             "type": "string"
           },
           "isRetryTarget": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "다시 보기 대상인가. 대상은 **물었는데 2단 미만**인 개념이라\n`asked=false`면 항상 `false`다 — 다시 볼 문항이 없다."
           },
           "curriculumRef": {
             "$ref": "#/components/schemas/CurriculumRefResponse"
@@ -26002,7 +25974,8 @@
             "type": "string"
           },
           "hasPendingRetry": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "아직 하지 않은 다시 보기가 있는가. 레일에 점으로 표시된다"
           }
         },
         "required": [
@@ -27397,7 +27370,7 @@
           },
           "failureCode": {
             "type": "string",
-            "description": "실패 코드 15종. `REPO_NOT_FOUND`·`REPOSITORY_ACCESS_DENIED`면 화면이 ZIP 전환을 안내한다.\n`ANALYSIS_FAILED`에서만이고 그 외에는 키가 빠진다",
+            "description": "실패 코드 **12종**. `REPO_NOT_FOUND`·`REPOSITORY_ACCESS_DENIED`면 화면이 ZIP 전환을 안내한다.\n`ANALYSIS_FAILED`에서만이고 그 외에는 키가 빠진다.\n\n⚠️ 종전 설명은 15종이라고 적고 `FILE_TOO_LARGE`·`ARCHIVE_INVALID`·`PROHIBITED_FILE`을\n함께 실었는데 **셋 다 이 필드로 올 수 없습니다**(2026-08-16 정정). ZIP 파일 자체의 문제라\n업로드 시점에 `400 ARCHIVE_INVALID` / `413 FILE_TOO_LARGE`로 거절되고 제출 행조차 만들어지지\n않아 분석이 시작되지 않습니다 — 그 셋은 **제출 API의 에러 응답**에서 받으시면 됩니다.\n\n반대로 `EMPTY_CODE`(분석할 코드가 없다)와 `GIT_LOG_MISSING`(커밋 기록이 없다)은 AI가\n분석 중에 판정해 돌려주므로 **이 필드로 옵니다.**",
             "enum": [
               "SOURCE_UNREACHABLE",
               "UNSUPPORTED_LANGUAGE",
@@ -27409,10 +27382,7 @@
               "REPOSITORY_ACCESS_DENIED",
               "BRANCH_NOT_FOUND",
               "UNSUPPORTED_HOST",
-              "FILE_TOO_LARGE",
-              "ARCHIVE_INVALID",
               "EMPTY_CODE",
-              "PROHIBITED_FILE",
               "GIT_LOG_MISSING"
             ]
           },
@@ -27700,7 +27670,8 @@
             "example": 2
           },
           "passed": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "이 단계를 통과했는가. `helpCount`와 **따로** 읽는다 — 힌트를 받고 통과한 경우도 true다"
           },
           "helpCount": {
             "type": "integer",
@@ -30706,7 +30677,8 @@
             "description": "다음 페이지 커서. 없으면 null"
           },
           "hasNext": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "더 가져올 회차가 남았는가. `nextCursor`와 짝이며 페이저는 이 값으로만 다음 장을 판단한다"
           }
         },
         "required": [
@@ -30963,10 +30935,12 @@
             "format": "date-time"
           },
           "resolved": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "이미 해소된 항목인가. 기본 조회에서는 빠지고 `includeResolved=true`일 때만 섞여 온다"
           },
           "reminderEligible": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "지금 독촉을 보낼 수 있는 항목인가. **`resolved`의 반대가 아니다** —\n해소되지 않았어도 독촉 대상이 아닌 항목(무효 검토·인터뷰)이 있어 둘을 따로 읽어야 한다."
           }
         },
         "required": [
@@ -32704,411 +32678,6 @@
           "traineeCount"
         ]
       },
-      "CurrentRoundResponse": {
-        "type": "object",
-        "description": "지금 할 일 카드. 회차가 없으면 NO_ACTIVE_ROUND 합성 카드가 들어간다.",
-        "properties": {
-          "assessmentRoundId": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "uuid",
-            "description": "합성 카드일 때만 null"
-          },
-          "roundNo": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "format": "int32"
-          },
-          "roundName": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "example": "미프 3차"
-          },
-          "roundStatus": {
-            "description": "실제 회차면 항상 OPEN",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/AssessmentRoundStatus"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "projectId": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "uuid"
-          },
-          "projectName": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
-          "projectCategory": {
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/ProjectCategory"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "curriculumNames": {
-            "type": "array",
-            "description": "교안 표시명. 없으면 빈 배열",
-            "items": {
-              "type": "string"
-            }
-          },
-          "teamId": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "uuid",
-            "description": "회차 스코프 팀. 팀 미편성이면 null"
-          },
-          "teamNumber": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "example": "3"
-          },
-          "teamName": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "example": "3팀"
-          },
-          "representativeStatus": {
-            "$ref": "#/components/schemas/TraineeRepresentativeStatus",
-            "description": "View 계약값 10종",
-            "example": "ANALYZING"
-          },
-          "defaultActionCode": {
-            "$ref": "#/components/schemas/TraineeDefaultActionCode",
-            "description": "View 계약값 11종",
-            "example": "WAIT_FOR_ANALYSIS"
-          },
-          "actionUnavailableReasonCode": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "없으면 null",
-            "enum": [
-              "SUBMISSION_DEADLINE_PASSED",
-              "ASSESSMENT_WINDOW_CLOSED"
-            ]
-          },
-          "warningCodes": {
-            "type": "array",
-            "description": "없으면 빈 배열",
-            "items": {
-              "type": "string",
-              "enum": [
-                "SUBMISSION_DEADLINE_PASSED",
-                "ANALYSIS_FAILED",
-                "ASSESSMENT_WINDOW_CLOSED",
-                "PROBLEM_NOT_GENERATED"
-              ]
-            }
-          },
-          "commitEmailStatus": {
-            "description": "커밋 이메일 상태. **null은 미등록**을 뜻한다. 배너 노출 조건은 `commitEmailStatus !== \"VERIFIED\"`이며 빅프로젝트에서는 미등록이 기여 귀속 실패로 이어진다.",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/CommitEmailStatus"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "availableSubmissionMethods": {
-            "type": "array",
-            "description": "기관 정책이 허용한 제출 수단",
-            "items": {
-              "$ref": "#/components/schemas/SubmissionMethod"
-            }
-          },
-          "submissionMethod": {
-            "description": "실제 제출 수단. 미제출이면 null",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/SubmissionMethod"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "submissionStatus": {
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/SubmissionStatus"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "submittedAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "canSubmit": {
-            "type": "boolean"
-          },
-          "canResubmit": {
-            "type": "boolean"
-          },
-          "analysisPhase": {
-            "type": "string",
-            "description": "View가 계산한 5값. 미제출이면 NOT_SUBMITTED",
-            "enum": [
-              "NOT_SUBMITTED",
-              "ANALYZING",
-              "FAILED",
-              "COMPLETED",
-              "WAITING"
-            ],
-            "example": "ANALYZING"
-          },
-          "analysisJobStatus": {
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/AnalysisJobStatus"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "analysisFailureCode": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "description": "분석 실패 사유. 15종. 상세는 Submission API 참고"
-          },
-          "initialAttemptStatus": {
-            "description": "첫 응시 상태. **세션 상태가 아니다**",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/MeasurementAttemptStatus"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "initialSessionStatus": {
-            "description": "첫 응시의 세션 상태. 문제를 푸는 구간만 가리킨다",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/AssessmentSessionStatus"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "preparedProblemCount": {
-            "type": "integer",
-            "format": "int32",
-            "description": "실제로 출제된 문제 수(`0`~`3`). 세션 API의 `problemTotal`과 같다.\n\n⚠️ **`3`으로 가정하지 말 것.** 코드에 근거가 없는 검증 개념은 문항이 만들어지지 않아\n(`NOT_GENERATED`) 세션에 나오지 않는다. 세션이 열리기 전에는 `0`이다.",
-            "example": 1
-          },
-          "reviewStatus": {
-            "description": "다시 보기 응시 상태. **배정이 없으면 null**",
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/MeasurementAttemptStatus"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "completedReviewCount": {
-            "type": "integer",
-            "format": "int32"
-          },
-          "reportId": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "uuid"
-          },
-          "reportPublishStatus": {
-            "type": "string",
-            "enum": [
-              "PUBLISHED",
-              "GENERATING",
-              "NOT_PUBLISHED"
-            ]
-          },
-          "traineeReleaseStatus": {
-            "$ref": "#/components/schemas/TraineeReleaseStatus",
-            "description": "리포트 행이 없으면 NOT_CONFIGURED로 정규화한다"
-          },
-          "canViewReport": {
-            "type": "boolean",
-            "description": "traineeReleaseStatus = RELEASED일 때만 true"
-          },
-          "explanationStatus": {
-            "type": "string",
-            "enum": [
-              "UNAVAILABLE",
-              "PARTIAL",
-              "AVAILABLE"
-            ]
-          },
-          "submissionDueAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "roundAssessmentOpenAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time",
-            "description": "회차 공통 응시 창 시작(운영자가 정한 일정). OPEN 회차면 DB가 non-null을 보장한다.\n\n**응시 가능 판정에 함께 쓰인다** — 개인 창과의 관계는 `assessmentCloseAt` 설명 참고."
-          },
-          "roundAssessmentDueAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time",
-            "description": "회차 공통 응시 창 마감(운영자가 정한 일정). OPEN 회차면 DB가 non-null을 보장한다.\n\n**응시 가능 판정에 함께 쓰인다** — 개인 창과의 관계는 `assessmentCloseAt` 설명 참고."
-          },
-          "assessmentOpenAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time",
-            "description": "개인 응시 창 시작. 분석이 끝나 세션이 열린 시각이며, 수행 생성 전이면 null이다."
-          },
-          "assessmentCloseAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time",
-            "description": "개인 응시 창 종료. 세션이 열린 시각부터 24시간이며(`assessment.window-hours`),\n수행 생성 전이면 null이다.\n\n## 🔴 두 응시 창은 교집합이다 — 가장 좁은 것이 이긴다\n\n응시 창이 두 개 온다. **둘 다 열려 있을 때만 응시할 수 있다.**\n\n```\n열림  = max(assessmentOpenAt,  roundAssessmentOpenAt)\n닫힘  = min(assessmentCloseAt, roundAssessmentDueAt)\n```\n\n| | 무엇 |\n|---|---|\n| 개인 창 | 분석이 끝나 세션이 열린 시각부터 24시간. 사람마다 다르다 |\n| 회차 창 | 운영자가 정한 회차 일정. 기수 전체가 같다 |\n\n⚠️ **어긋날 수 있다.** 마감 직전에 제출해 분석이 늦게 끝나면 개인 창이 회차 창보다\n뒤에 닫히는데, 그때는 **회차 창이 먼저 닫히므로 24시간을 다 쓰지 못한다.**\n반대로 회차 일정을 나중에 옮기면 개인 창이 먼저 닫힐 수 있다.\n\n남은 시간 문구는 **두 값 중 이른 쪽**으로 그린다."
-          },
-          "initialTerminalAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "reportPublishMode": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "enum": [
-              "ROUND_BATCH"
-            ],
-            "example": "ROUND_BATCH"
-          },
-          "reportPublishNotBeforeAt": {
-            "type": [
-              "string",
-              "null"
-            ],
-            "format": "date-time"
-          },
-          "manager": {
-            "oneOf": [
-              {
-                "$ref": "#/components/schemas/ManagerResponse"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "asOfAt": {
-            "type": "string",
-            "format": "date-time",
-            "description": "서버 조회 시각"
-          }
-        },
-        "required": [
-          "actionUnavailableReasonCode",
-          "analysisFailureCode",
-          "analysisJobStatus",
-          "analysisPhase",
-          "asOfAt",
-          "assessmentCloseAt",
-          "assessmentOpenAt",
-          "assessmentRoundId",
-          "availableSubmissionMethods",
-          "canResubmit",
-          "canSubmit",
-          "canViewReport",
-          "commitEmailStatus",
-          "completedReviewCount",
-          "curriculumNames",
-          "defaultActionCode",
-          "explanationStatus",
-          "initialAttemptStatus",
-          "initialSessionStatus",
-          "initialTerminalAt",
-          "manager",
-          "preparedProblemCount",
-          "projectCategory",
-          "projectId",
-          "projectName",
-          "reportId",
-          "reportPublishMode",
-          "reportPublishNotBeforeAt",
-          "reportPublishStatus",
-          "representativeStatus",
-          "reviewStatus",
-          "roundAssessmentDueAt",
-          "roundAssessmentOpenAt",
-          "roundName",
-          "roundNo",
-          "roundStatus",
-          "submissionDueAt",
-          "submissionMethod",
-          "submissionStatus",
-          "submittedAt",
-          "teamId",
-          "teamName",
-          "teamNumber",
-          "traineeReleaseStatus",
-          "warningCodes"
-        ]
-      },
       "Code": {
         "type": "object",
         "description": "코드 패널. snippet은 파일 전체이며 자를 위치는 화면이 정한다",
@@ -33360,6 +32929,416 @@
           "upcoming"
         ]
       },
+      "CurrentRoundResponse": {
+        "type": "object",
+        "description": "지금 할 일 카드. 회차가 없으면 NO_ACTIVE_ROUND 합성 카드가 들어간다.",
+        "properties": {
+          "assessmentRoundId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "합성 카드일 때만 null"
+          },
+          "roundNo": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32"
+          },
+          "roundName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "미프 3차"
+          },
+          "roundStatus": {
+            "description": "실제 회차면 항상 OPEN",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AssessmentRoundStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "projectId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "projectName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "projectCategory": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ProjectCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "curriculumNames": {
+            "type": "array",
+            "description": "교안 표시명. 없으면 빈 배열",
+            "items": {
+              "type": "string"
+            }
+          },
+          "teamId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid",
+            "description": "회차 스코프 팀. 팀 미편성이면 null"
+          },
+          "teamNumber": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "3"
+          },
+          "teamName": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "example": "3팀"
+          },
+          "representativeStatus": {
+            "$ref": "#/components/schemas/TraineeRepresentativeStatus",
+            "description": "View 계약값 10종",
+            "example": "ANALYZING"
+          },
+          "defaultActionCode": {
+            "$ref": "#/components/schemas/TraineeDefaultActionCode",
+            "description": "View 계약값 11종",
+            "example": "WAIT_FOR_ANALYSIS"
+          },
+          "actionUnavailableReasonCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "없으면 null",
+            "enum": [
+              "SUBMISSION_DEADLINE_PASSED",
+              "ASSESSMENT_WINDOW_CLOSED"
+            ]
+          },
+          "warningCodes": {
+            "type": "array",
+            "description": "없으면 빈 배열",
+            "items": {
+              "type": "string",
+              "enum": [
+                "SUBMISSION_DEADLINE_PASSED",
+                "ANALYSIS_FAILED",
+                "ASSESSMENT_WINDOW_CLOSED",
+                "PROBLEM_NOT_GENERATED"
+              ]
+            }
+          },
+          "commitEmailStatus": {
+            "description": "커밋 이메일 상태. **null은 미등록**을 뜻한다. 배너 노출 조건은 `commitEmailStatus !== \"VERIFIED\"`이며 빅프로젝트에서는 미등록이 기여 귀속 실패로 이어진다.",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/CommitEmailStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "availableSubmissionMethods": {
+            "type": "array",
+            "description": "기관 정책이 허용한 제출 수단",
+            "items": {
+              "$ref": "#/components/schemas/SubmissionMethod"
+            }
+          },
+          "submissionMethod": {
+            "description": "실제 제출 수단. 미제출이면 null",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SubmissionMethod"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "submissionStatus": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/SubmissionStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "submittedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "canSubmit": {
+            "type": "boolean",
+            "description": "마감 전이고 아직 세션을 시작하지 않았는가. 제출 버튼을 여는 값이다"
+          },
+          "canResubmit": {
+            "type": "boolean",
+            "description": "위 조건에 더해 **이미 제출이 있는가.** 버튼 문구를 「제출」과 「재제출」로 가른다"
+          },
+          "analysisPhase": {
+            "type": "string",
+            "description": "View가 계산한 5값. 미제출이면 NOT_SUBMITTED",
+            "enum": [
+              "NOT_SUBMITTED",
+              "ANALYZING",
+              "FAILED",
+              "COMPLETED",
+              "WAITING"
+            ],
+            "example": "ANALYZING"
+          },
+          "analysisJobStatus": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AnalysisJobStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "analysisFailureCode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "분석이 실패했는가만 알린다. 값은 `ANALYSIS_FAILED` **한 종류**이고 실패하지 않았으면 `null`이다.\n\n⚠️ 사유 코드가 아니다. `trainee_home_round_view`가\n`CASE WHEN analysis_status='FAILED' THEN 'ANALYSIS_FAILED' ELSE NULL END`로 만든 상수다.\n**실제 사유는 TR-02(`GET /projects/{projectId}/submissions/me`)의 `analysisFailureCode`에 있다** —\n사유 문구를 두 화면에 복제하면 같은 실패가 화면마다 다르게 설명된다.",
+            "enum": [
+              "ANALYSIS_FAILED"
+            ]
+          },
+          "initialAttemptStatus": {
+            "description": "첫 응시 상태. **세션 상태가 아니다**",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/MeasurementAttemptStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "initialSessionStatus": {
+            "description": "첫 응시의 세션 상태. 문제를 푸는 구간만 가리킨다",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AssessmentSessionStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "preparedProblemCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "실제로 출제된 문제 수(`0`~`3`). 세션 API의 `problemTotal`과 같다.\n\n⚠️ **`3`으로 가정하지 말 것.** 코드에 근거가 없는 검증 개념은 문항이 만들어지지 않아\n(`NOT_GENERATED`) 세션에 나오지 않는다. 세션이 열리기 전에는 `0`이다.",
+            "example": 1
+          },
+          "reviewStatus": {
+            "description": "다시 보기 응시 상태. **배정이 없으면 null**",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/MeasurementAttemptStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "completedReviewCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "reportId": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "uuid"
+          },
+          "reportPublishStatus": {
+            "type": "string",
+            "enum": [
+              "PUBLISHED",
+              "GENERATING",
+              "NOT_PUBLISHED"
+            ]
+          },
+          "traineeReleaseStatus": {
+            "$ref": "#/components/schemas/TraineeReleaseStatus",
+            "description": "리포트 행이 없으면 NOT_CONFIGURED로 정규화한다"
+          },
+          "canViewReport": {
+            "type": "boolean",
+            "description": "traineeReleaseStatus = RELEASED일 때만 true"
+          },
+          "explanationStatus": {
+            "type": "string",
+            "enum": [
+              "UNAVAILABLE",
+              "PARTIAL",
+              "AVAILABLE"
+            ]
+          },
+          "submissionDueAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "roundAssessmentOpenAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "🔴 **폐기된 필드. 언제나 `null`이다**(2026-08-16).\n\n회차 공통 응시 창 시작이었다. 컬럼이 폐기돼 `project_assessment_round`의 전 행이\n`null`이며, 다시 채우는 코드 경로도 없다. 계약은 화면이 깨지지 않도록 남겨 두지만\n**응시 가능 판정에 쓰지 말 것** — 개인 창(`assessmentOpenAt`)만 보면 된다."
+          },
+          "roundAssessmentDueAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "🔴 **폐기된 필드. 언제나 `null`이다**(2026-08-16). `roundAssessmentOpenAt`과 같다.\n\n응시 마감은 개인 창(`assessmentCloseAt`) 하나로 정해진다."
+          },
+          "assessmentOpenAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "개인 응시 창 시작. 분석이 끝나 세션이 열린 시각이며, 수행 생성 전이면 null이다.\n\n**응시 가능 여부를 정하는 것은 이 값과 `assessmentCloseAt`뿐이다.**"
+          },
+          "assessmentCloseAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "개인 응시 창 종료. 세션이 열린 시각부터 24시간이며(`assessment.window-hours`),\n수행 생성 전이면 null이다.\n\n## 🔴 응시 창은 이제 하나다 — 개인 창이 정본\n\n종전에는 개인 창과 회차 창의 **교집합**으로 판정하라고 적었다. 회차 창\n(`roundAssessmentOpenAt`·`roundAssessmentDueAt`)이 2026-08-16에 폐기돼 **언제나 `null`**\n이므로 그 식은 성립하지 않는다.\n\n```\n열림  = assessmentOpenAt\n닫힘  = assessmentCloseAt\n```\n\n⚠️ **`min(assessmentCloseAt, roundAssessmentDueAt)`을 그대로 쓰면 안 된다.**\nJS에서 `Math.min(x, null)`은 `null`을 `0`으로 바꿔 **마감이 1970-01-01로 그려진다.**\n회차 창을 참조하는 코드가 남아 있으면 걷어낼 것.\n\n남은 시간 문구는 `assessmentCloseAt` 하나로 그린다. 서버도 같은 값으로 막는다 —\n창이 지난 뒤 세션 API는 409 `ASSESSMENT_WINDOW_CLOSED`를 낸다."
+          },
+          "initialTerminalAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "reportPublishMode": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "enum": [
+              "ROUND_BATCH"
+            ],
+            "example": "ROUND_BATCH"
+          },
+          "reportPublishNotBeforeAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "manager": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ManagerResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "asOfAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "서버 조회 시각"
+          }
+        },
+        "required": [
+          "actionUnavailableReasonCode",
+          "analysisFailureCode",
+          "analysisJobStatus",
+          "analysisPhase",
+          "asOfAt",
+          "assessmentCloseAt",
+          "assessmentOpenAt",
+          "assessmentRoundId",
+          "availableSubmissionMethods",
+          "canResubmit",
+          "canSubmit",
+          "canViewReport",
+          "commitEmailStatus",
+          "completedReviewCount",
+          "curriculumNames",
+          "defaultActionCode",
+          "explanationStatus",
+          "initialAttemptStatus",
+          "initialSessionStatus",
+          "initialTerminalAt",
+          "manager",
+          "preparedProblemCount",
+          "projectCategory",
+          "projectId",
+          "projectName",
+          "reportId",
+          "reportPublishMode",
+          "reportPublishNotBeforeAt",
+          "reportPublishStatus",
+          "representativeStatus",
+          "reviewStatus",
+          "roundAssessmentDueAt",
+          "roundAssessmentOpenAt",
+          "roundName",
+          "roundNo",
+          "roundStatus",
+          "submissionDueAt",
+          "submissionMethod",
+          "submissionStatus",
+          "submittedAt",
+          "teamId",
+          "teamName",
+          "teamNumber",
+          "traineeReleaseStatus",
+          "warningCodes"
+        ]
+      },
       "ManagerResponse": {
         "type": "object",
         "description": "담당 매니저. 반에 활성 배정이 없으면 객체 자체가 null이다.",
@@ -33558,7 +33537,7 @@
               "null"
             ],
             "format": "date-time",
-            "description": "이해도 확인 시작일자. **PLANNED 회차에서는 null일 수 있다** — ck_project_assessment_round_assessment_window_required가 PLANNED만 면제하기 때문이다."
+            "description": "🔴 **폐기된 필드. 언제나 `null`이다**(2026-08-16). 회차 공통 응시 창은 더 이상 쓰지 않으며 응시 가능 여부는 개인 창이 정한다. 계약은 화면이 깨지지 않도록 남겨 둔다."
           },
           "roundAssessmentDueAt": {
             "type": [
@@ -33566,7 +33545,7 @@
               "null"
             ],
             "format": "date-time",
-            "description": "이해도 확인 종료일자. 위와 같은 이유로 null 가능"
+            "description": "🔴 **폐기된 필드. 언제나 `null`이다**(2026-08-16). 위와 같다."
           }
         },
         "required": [

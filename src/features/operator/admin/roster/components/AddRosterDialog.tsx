@@ -16,7 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import { useGetCurrentMember } from '@/api/member/useMemberQueries'
 import { useRegisterTrainees, usePreviewTrainees } from '@/api/member/useMemberMutations'
 import { registerTraineesFromCsv, previewTraineesFromCsv } from '@/api/uploads'
-import type { registerTrainees_Response } from '@/api/member/memberTypes'
+import type { registerTrainees_Response, previewTrainees_Response } from '@/api/member/memberTypes'
 import { checkRosterRows, MAX_TRAINEE_INVITE, type ParsedRoster } from '../../_/rules'
 import { ROSTER_ISSUE_LABEL } from '../../_/labels'
 import { useCohortScope } from '../../_/cohortScope'
@@ -65,7 +65,13 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
   const [parsed, setParsed] = useState<ParsedRoster | null>(null)
   /** 고른 파일 자체 — CSV 등록이 multipart라 텍스트가 아니라 파일을 보낸다 */
   const [file, setFile] = useState<File | null>(null)
-  const [preview, setPreview] = useState<registerTrainees_Response | null>(null)
+  /*
+    ⚠ **미리보기와 등록은 다른 타입이다**(31차 R2 반영). 한때 서버가 둘에 같은 응답을
+    줘서 이 자리도 `registerTrainees_Response`였고, 아래에서 **`registeredCount`(등록된
+    수)를 미리보기 결과로 읽고** 있었다 — 아무것도 안 만든 호출인데 「n명 등록됨」이라고
+    말하는 셈이었다. 지금은 `registrableCount`(「그렇게 될 것」)뿐이라 타입이 막는다.
+  */
+  const [preview, setPreview] = useState<previewTrainees_Response | null>(null)
   const [rows, setRows] = useState<RosterEntry[]>([emptyRow()])
   const [submitting, setSubmitting] = useState(false)
   /** 서버가 준 원본 에러 — previewFailure와 같은 방식으로 `errorCopy`가 문구를 정한다 */
@@ -332,7 +338,7 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
                 entries.length > 0 && (
                   <p className="text-success text-xs">
                     ✓ 유효{' '}
-                    <b className="font-semibold">{preview?.registeredCount ?? entries.length}명</b>{' '}
+                    <b className="font-semibold">{preview?.registrableCount ?? entries.length}명</b>{' '}
                     — 등록하면 활성화 초대가 나갑니다
                   </p>
                 )

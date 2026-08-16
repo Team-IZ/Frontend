@@ -49,5 +49,4 @@ export const projectExecutionKeys = {
     ] as const,
   findCurrentProject: (params: { path: findCurrentProject_Path }) =>
     [...projectExecutionKeys.all, 'findCurrentProject', params.path ?? null] as const,
-  findCurrentRound: () => [...projectExecutionKeys.all, 'findCurrentRound'] as const,
 }

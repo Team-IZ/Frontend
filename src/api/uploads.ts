@@ -13,6 +13,19 @@ import type { operations } from '@/api/schema'
 */
 type CsvUploadResponse =
   operations['registerTraineesFromCsv']['responses'][202]['content']['application/json']
+/*
+  **미리보기는 등록과 다른 스키마가 됐다**(31차 R2 반영 · `PreviewTraineesResponse`).
+
+  한때 둘이 같은 응답이라 미리보기가 `registeredCount: 1`이라고 답했다 — 아무것도 안
+  만드는 호출인데 「등록했다」고 말하는 것이라, 우리도 그 수를 보고 기수 명단을 뒤졌다.
+  지금은 `registrableCount`(「그렇게 될 것」)이고 등록에만 있는 `invitationSentCount`·
+  `batchRequestId`가 아예 없다.
+
+  타입을 가르면 **화면이 둘을 헷갈릴 수 없다** — 미리보기 결과에서 발송 수를 읽으려 하면
+  컴파일이 막는다.
+*/
+type CsvPreviewResponse =
+  operations['previewTraineesFromCsv']['responses'][200]['content']['application/json']
 type RegisterCurriculumResponse =
   operations['registerCurriculum']['responses'][201]['content']['application/json']
 /*
@@ -63,11 +76,11 @@ export const registerTraineesFromCsv = (params: CsvUpload) =>
 /**
  * CSV 명단 사전 검증(드라이런) — `POST /api/v0/cohorts/{cohortId}/trainees/preview`
  *
- * **아무것도 만들지 않는다.** 응답이 등록과 같은 스키마라 화면이 미리보기와 등록 결과를
- * 한 컴포넌트로 그린다 — 다만 `invitationSentCount`는 항상 0이다.
+ * **아무것도 만들지 않는다.** 수는 전부 「그렇게 될 것」이지 「그렇게 됐다」가 아니다 —
+ * 스펙 설명도 그렇게 적혀 있고, 필드도 `registrableCount`다(31차 R2).
  */
 export const previewTraineesFromCsv = (params: CsvUpload) =>
-  unwrap<CsvUploadResponse>(
+  unwrap<CsvPreviewResponse>(
     izClient.POST('/api/v0/cohorts/{cohortId}/trainees/preview', {
       params: { path: params.path },
       body: csvBody(params.file) as never,

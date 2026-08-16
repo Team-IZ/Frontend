@@ -103,9 +103,16 @@ export default function ModelChangeDialog({
           modelId,
           calibrationVersionCode: versionCode,
           changeReason: reason.trim() || null,
-          // 사용자가 위 경고를 읽고 켠 값만 보낸다 — 하드코딩하면 안전장치가 무의미해진다
+          /*
+            사용자가 위 경고를 읽고 켠 값만 보낸다 — 하드코딩하면 안전장치가 무의미해진다.
+
+            ⚠ **한때 같은 값을 두 이름으로 같이 보냈다**(`recalibrationAcknowledged`도).
+            연동 당시 서버가 어느 쪽을 읽는지 확실하지 않아 양쪽에 실은 것인데, 스펙이
+            `acknowledgeRecalibration` 하나로 정리되면서(`required`) 나머지가 타입에서
+            빠졌다. 둘을 계속 보내면 **어느 쪽이 실제로 동의를 전달하는지 아무도 모르는
+            상태**가 굳는다 — 스펙이 답한 지금 지운다.
+          */
           acknowledgeRecalibration: acknowledged,
-          recalibrationAcknowledged: acknowledged,
         },
       })
       onOpenChange(false)

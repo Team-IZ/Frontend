@@ -1,62 +1,56 @@
 import { Link } from 'react-router'
-import Badge from '@/components/ui/Badge'
 import { REACH_STYLE, NA_PATTERN } from '@/components/common/reach'
 import { cn } from '@/lib/utils/cn'
-import {
-  BADGE_LABEL,
-  type AggCell,
-  type AggRow,
-  type HeatmapResult,
-  type PersonRow,
-} from '../mockData'
+import type { HeatmapCell, HeatmapRow, HeatmapView } from '../_/api/types'
 
 /*
   히트맵 표 — y축·셀 폭을 `<colgroup>`으로 고정한다(`table-fixed`만으로는 행마다
-  내용 길이가 달라 흔들린다) · 평균 행(테두리 강조) → 그룹 안내 행 → 상세 행. 셀
-  색은 `@/components/common/reach`의 `REACH_STYLE`을 그대로 쓴다(원래
-  `trainees/lib/reach.ts`에서 바로 가져왔는데, oxlint의 feature 간 교차 import
-  금지에 걸려 공용 위치로 승격했다 — `reach.ts` 머리말 참고) — 반·팀 평균(연속값)은
-  반올림한 정수로 색을 고르고, 개인 셀은 도달 단계 그대로 쓴다(정의서 "개인은 원값").
+  내용 길이가 달라 흔들린다) · 평균 행(테두리 강조) → 상세 행. 셀 색은
+  `@/components/common/reach`의 `REACH_STYLE`을 쓴다 — 반·팀 평균(연속값)은 반올림한
+  정수로 색을 고르고, 개인 셀도 같은 스케일을 쓴다.
 
-  **집단 미달**(9-6)은 그 행 자체가 전원의 절반 이상 2단 이하일 때 테두리(ring)로
-  표시한다 — 반별 비교 행이든 팀별 비교 행이든 각자의 스코프 기준으로 계산된다.
+  **집단 미달**(9-6)은 서버가 셀·개념마다 `groupShortfall`로 판정해 준다. 목일 때는
+  화면이 「인원 절반 이상이 2단 이하」를 직접 셌는데, 그 규칙이 이제 서버 것이다 —
+  계층마다 판정 집단이 다르고(CLASS는 담당 반 전체, TEAM·TRAINEE는 그 스코프) 그
+  규칙을 화면이 다시 갖고 있으면 반드시 한쪽만 바뀐다.
+
+  ⚠ **셀 하나로 합쳤다.** 목은 반·팀 평균 셀(`AggCell`)과 개인 셀(`PersonCell`)을
+  다른 타입으로 뒀는데 서버는 `cells[]` 하나다 — 계층이 달라도 같은 모양이고,
+  다른 것은 값의 뜻(평균이냐 도달이냐)뿐이다. 그래서 표기만 계층으로 가른다.
 
   ⚠ 취약·주의 글자 라벨과 2단 이하 밑줄은 뺐다(렌더 확인 후 사용자 지시) — 색과
-  집단 미달 테두리만으로 판정을 표시한다. 숫자를 셀 한가운데 세로로도 정확히
-  가운데 오게 한 줄만 남겼다(라벨 자리를 비워 두던 두 번째 줄이 없어져 `align-middle`
-  하나로 충분해졌다).
+  집단 미달 테두리만으로 판정을 표시한다.
 
-  ⚠ 셀 폭은 정의서 §3 제안값(92px)의 2배(렌더 확인 후 사용자 지시 — "너무 한쪽에
-  몰려 좁아 보인다")에서 다시 조정됐다. y축 폭은 300 → 220으로 줄였다 — "A반"·
-  "1팀" 같은 짧은 이름이 표(색칠된 셀)에서 너무 멀어 보인다는 지적(렌더 확인 후).
-  "담당 반"·그룹 안내 행처럼 같은 열을 쓰는 다른 행도 같이 가까워지는데, 그 텍스트
-  자체는 바꾸지 않았다 — 사용자가 지적한 건 간격이지 문구가 아니다.
+  ⚠ 셀 폭은 정의서 §3 제안값(92px)의 2배(렌더 확인 후 사용자 지시), y축은 220px.
 
-  ⚠ **클릭 가능 텍스트에 지속적인 링크 스타일**(렌더 확인 후 사용자 지시) — 원래는
-  `cursor-pointer hover:text-primary`(호버 전에는 평범한 글자와 구분이 안 됨)와
-  옅은 `›`(`text-fg-subtle`) 하나였는데, "처음 봤을 때 안 눌러볼 것 같다"는 지적을
-  받았다. 반·팀 드릴 행 라벨(`AggRowLine`)과 개인 이름(`PersonRowLine`의 `Link`)
-  둘 다 **호버 여부와 무관하게** `text-primary` + 옅은 밑줄(`decoration-primary/40`)
-  을 항상 깔고, 호버 시 밑줄만 진해지게(`hover:decoration-primary`) 바꿨다 — 색만
-  쓰지 않고 밑줄을 같이 준 건 색각 이상 사용자도 "이건 링크다"를 구분할 수 있게
-  하려는 것(전통적인 하이퍼링크 관례). `›`도 옅은 회색 대신 굵은 `text-primary`로
-  맞춰 같은 신호로 보이게 했다. 평균 행("반 전체")·개인 셀처럼 클릭할 수 없는
-  요소는 이 스타일이 안 붙는다 — `onClick`이 있을 때만 적용되는 조건부 클래스라
-  자동으로 갈린다.
+  ⚠ **클릭 가능 텍스트에 지속적인 링크 스타일**(렌더 확인 후 사용자 지시) — 호버
+  전에도 `text-primary` + 옅은 밑줄을 깔아 「이건 링크다」를 색 말고도 알린다.
 */
-const Y_COL_W = 220 // y축(반/팀/이름) 열 폭
-const CELL_COL_W = 184 // 개념 셀 열 폭
+const Y_COL_W = 220
+const CELL_COL_W = 184
 
-function colorLevel(avg: number): 0 | 1 | 2 | 3 | 4 {
-  return Math.min(4, Math.max(0, Math.round(avg))) as 0 | 1 | 2 | 3 | 4
+function colorLevel(v: number): 0 | 1 | 2 | 3 | 4 {
+  return Math.min(4, Math.max(0, Math.round(v))) as 0 | 1 | 2 | 3 | 4
 }
 
-function AggCellView({ cell }: { cell: AggCell }) {
-  if (cell.kind === 'na') {
+/**
+ * 그릴 값이 없는 셀 — **`validCount === 0`이 근거다.**
+ *
+ * `value`가 0인 것과 구분해야 한다(0단을 받은 것과 아무도 안 본 것은 다르다).
+ * 파생값이 아니라 원인이 되는 값으로 판정한다(screen-hardening §자주 나오는 함정).
+ */
+const isEmptyCell = (c: HeatmapCell) => c.validCount === 0
+
+function CellView({ cell, level }: { cell: HeatmapCell; level: HeatmapView['level'] }) {
+  const person = level === 'TRAINEE'
+  const h = person ? 'h-11' : 'h-14'
+
+  if (isEmptyCell(cell)) {
     return (
       <td
         style={NA_PATTERN}
-        className="h-14 rounded text-center align-middle text-2xs font-normal text-fg-subtle"
+        className={cn(h, 'rounded text-center align-middle text-2xs font-normal text-fg-subtle')}
+        title={emptyReason(cell)}
       >
         ―
       </td>
@@ -65,251 +59,159 @@ function AggCellView({ cell }: { cell: AggCell }) {
   return (
     <td
       className={cn(
-        'h-14 rounded text-center align-middle font-bold tabular-nums',
-        REACH_STYLE[colorLevel(cell.avg)],
-        cell.flagged && 'outline outline-2 outline-warning outline-offset-[-2px]',
+        h,
+        'rounded text-center align-middle font-bold tabular-nums',
+        REACH_STYLE[colorLevel(cell.value)],
+        cell.groupShortfall && 'outline outline-2 outline-warning outline-offset-[-2px]',
       )}
+      title={countsLabel(cell)}
     >
-      <span className="text-[21px]">{cell.avg.toFixed(1)}</span>
+      {/* 개인은 도달 단계 그대로, 반·팀은 평균이라 소수 한 자리 */}
+      <span className="text-xl">
+        {person ? `${colorLevel(cell.value)}단` : cell.value.toFixed(1)}
+      </span>
     </td>
   )
 }
 
-function PersonCellView({ level }: { level: 0 | 1 | 2 | 3 | 4 | null }) {
-  if (level === null) {
-    return (
-      <td
-        style={NA_PATTERN}
-        className="h-11 rounded text-center align-middle text-2xs font-normal text-fg-subtle"
-      >
-        ―
-      </td>
-    )
-  }
-  return (
-    <td
-      className={cn(
-        'h-11 rounded text-center align-middle font-bold tabular-nums',
-        REACH_STYLE[level],
-      )}
-    >
-      <span className="text-[21px]">{level}단</span>
-    </td>
-  )
+/** 왜 비었나 — 서버가 인원을 셋으로 갈라 준다. 화면이 다시 세지 않는다 */
+function emptyReason(c: HeatmapCell) {
+  const parts = [
+    c.notAttendedCount > 0 && `미응시 ${c.notAttendedCount}`,
+    c.invalidCount > 0 && `무효 ${c.invalidCount}`,
+    c.interruptedCount > 0 && `중단 ${c.interruptedCount}`,
+  ].filter(Boolean)
+  return parts.length > 0 ? parts.join(' · ') : '아직 결과가 없습니다'
 }
 
-function AggRowLine({
+function countsLabel(c: HeatmapCell) {
+  return [`유효 ${c.validCount}`, emptyReason(c)].filter(Boolean).join(' · ')
+}
+
+function RowLine({
   row,
+  level,
   onClick,
-  isAvgRow,
+  isSummary,
+  traineePath,
+  className,
 }: {
-  row: AggRow
+  row: HeatmapRow
+  level: HeatmapView['level']
   onClick?: () => void
-  isAvgRow?: boolean
+  isSummary?: boolean
+  traineePath?: (id: string) => string
+  className?: string
 }) {
+  const label = isSummary ? '전체' : (row.rowName ?? '—')
+  const count = row.memberCount !== null ? `${row.memberCount}명` : ''
+  /* 개인 행의 이름은 상세로 가는 링크다 — 반·팀 행은 드릴다운(클릭) */
+  const asLink = level === 'TRAINEE' && !isSummary && row.rowId && traineePath
+
   return (
-    <tr>
+    <tr className={className}>
       <td
-        onClick={onClick}
+        onClick={asLink ? undefined : onClick}
         style={{ width: Y_COL_W }}
         className={cn(
           'py-1 pr-3 text-sm font-medium whitespace-nowrap text-fg',
-          isAvgRow && 'font-bold',
-          onClick &&
+          isSummary && 'font-bold',
+          !asLink &&
+            onClick &&
             'cursor-pointer text-primary underline decoration-primary/40 underline-offset-2 hover:decoration-primary',
         )}
       >
-        {row.label} <small className="text-2xs font-normal text-fg-subtle">{row.countLabel}</small>
-        {onClick && <span className="ml-0.5 font-bold text-primary no-underline">›</span>}
+        {asLink ? (
+          <Link
+            to={traineePath(row.rowId!)}
+            className="text-primary underline decoration-primary/40 underline-offset-2 hover:decoration-primary"
+          >
+            {label}
+          </Link>
+        ) : (
+          label
+        )}
+        {count && <small className="ml-1 text-2xs font-normal text-fg-subtle">{count}</small>}
+        {!asLink && onClick && (
+          <span className="ml-0.5 font-bold text-primary no-underline">›</span>
+        )}
       </td>
-      {row.cells.map((c, i) => (
-        <AggCellView key={i} cell={c} />
+      {row.cells.map((c) => (
+        <CellView key={c.problemNo} cell={c} level={level} />
       ))}
-    </tr>
-  )
-}
-
-/*
-  이름 칸에 배지를 같이 넣는다(따로 열을 만들지 않는다) — 열을 하나 더 만들면
-  개인 뷰만 반·팀 뷰보다 표가 넓어져 계층을 오갈 때 히트맵 크기·위치가 흔들린다
-  (렌더 확인 후 발견 — 반·팀·개인 셋 다 y축 150px + 셀 92px×3, 총 4열로 통일).
-*/
-function PersonRowLine({
-  row,
-  traineePath,
-}: {
-  row: PersonRow
-  traineePath: (id: string) => string
-}) {
-  const nameCell = (
-    <td
-      style={{ width: Y_COL_W }}
-      className="py-1 pr-3 align-top text-sm font-medium whitespace-nowrap text-fg"
-    >
-      <Link
-        to={traineePath(row.id)}
-        className="text-primary underline decoration-primary/40 underline-offset-2 hover:decoration-primary"
-      >
-        {row.name}
-      </Link>
-      {row.badge && (
-        <Badge
-          variant={row.badge === 'DECLINE' ? 'warning' : 'danger'}
-          className="ml-1.5 align-middle"
-        >
-          {BADGE_LABEL[row.badge]}
-        </Badge>
-      )}
-    </td>
-  )
-
-  if (!row.cells) {
-    return (
-      <tr>
-        {nameCell}
-        {/* bg-surface-2는 카드 배경(흰색)과 명도 차이가 거의 없어 안 보였다(렌더
-            확인 후 지적) — Badge neutral 변형과 같은 bg-neutral-soft로 바꿨다.
-            결석·미응시는 텍스트 말고는 구분할 다른 시각 요소가 없어(렌더 확인 후
-            질문 — "구분할 수 있는지") "미응시"로 통일했다. 원인(`row.status`
-            ABSENT/NOT_STARTED)은 데이터에 그대로 남아 있어, 나중에 실제로 구분
-            표시가 필요해지면 여기 텍스트만 다시 갈라 쓰면 된다. */}
-        <td
-          colSpan={3}
-          className="h-11 rounded bg-neutral-soft text-center align-middle text-2xs text-fg-muted"
-        >
-          미응시
-        </td>
-      </tr>
-    )
-  }
-  return (
-    <tr>
-      {nameCell}
-      {row.cells.map((c, i) => (
-        <PersonCellView key={i} level={c.level} />
-      ))}
-    </tr>
-  )
-}
-
-/*
-  ⚠ "⚠ 반: 위험"·"⚠ 팀: 위험"·"⚠ 팀원: 위험" 토글이 결과를 전부 걸러내면(위험한
-  행이 하나도 없으면) 행이 0개가 되는데, 그동안은 표가 그냥 조용히 비어 보였다
-  (렌더 확인 후 사용자 지적 — "변화가 없는 것 같다"·"문구가 없는 게 어색하다",
-  필터가 실제로는 동작하고 있었지만 빈 결과에 아무 설명이 없어 고장난 것처럼
-  보였다). 0행일 때 이 안내 행을 대신 그린다.
-
-  ⚠ **y축 칸은 비워 두고 개념 3칸만 `colSpan`으로 합친다**(렌더 확인 후 사용자
-  지시) — 처음엔 4칸을 통째로 합쳐 `text-center`를 줬는데, y축 열(220px)까지
-  가운데 정렬 기준에 포함돼 메시지가 실제 히트맵(색칠된 3칸)보다 왼쪽으로 치우쳐
-  보였다("히트맵에 중간선을 그었을 때 같은 선상에 있으면 좋겠다"). y축 칸을
-  빈 `<td>`로 남겨 `colgroup` 폭만 차지하게 하고, 나머지 3칸만 합쳐 가운데
-  정렬하면 메시지 중심이 히트맵 3칸의 중심과 정확히 겹친다.
-*/
-function EmptyFilterRow({ message }: { message: string }) {
-  return (
-    <tr>
-      <td aria-hidden="true" />
-      <td colSpan={3} className="py-6 text-center text-xs text-fg-subtle">
-        {message}
-      </td>
     </tr>
   )
 }
 
 export default function HeatmapTable({
-  result,
-  onDrillTeam,
-  onDrillPerson,
+  view,
+  onDrill,
   traineePath,
 }: {
-  result: HeatmapResult
-  onDrillTeam: (classFilter: string) => void
-  onDrillPerson: (classFilter: string, teamFilter: string) => void
+  view: HeatmapView
+  /** 반·팀 행을 눌러 한 단 내려간다. 개인 계층에서는 안 준다 */
+  onDrill?: (rowId: string) => void
   traineePath: (id: string) => string
 }) {
-  const { concepts, axis, avgRow, groupText, flaggedConcepts } = result
-  if (!concepts) return null // 아직 결과가 없다 — 상위에서 Empty를 그린다
+  const concepts = view.concepts
 
   return (
-    <div className="overflow-x-auto rounded-md border border-border bg-surface p-3">
-      {/*
-        `w-full`을 안 준다 — 표가 컨테이너 폭에 맞춰 늘어나면 `colgroup` 픽셀 값이
-        비율로만 반영돼 반별·팀·개인을 오갈 때 셀 크기·표 위치가 흔들린다(렌더 확인
-        후 발견). 열 개수도 반·팀·개인 셋 다 4열(이름/팀명 + 개념 3)로 고정해 뒀다
-        — 배지는 이름 칸 안으로 옮겨 개인 뷰만 표가 넓어지는 일이 없게 했다.
-
-        가운데 정렬은 한 번 넣었다가 뺐다(렌더 확인 후) — 왼쪽에 빈 공간이 커 보인다는
-        지적. 왼쪽 정렬(기본값)로 되돌리고, 대신 y축 폭을 줄여 표 자체가 카드에 더
-        붙게 했다.
-      */}
-      <table className="table-fixed border-separate [border-spacing:3px] text-sm">
+    <div className="overflow-x-auto">
+      <table className="border-separate border-spacing-1">
         <colgroup>
           <col style={{ width: Y_COL_W }} />
-          <col style={{ width: CELL_COL_W }} />
-          <col style={{ width: CELL_COL_W }} />
-          <col style={{ width: CELL_COL_W }} />
+          {concepts.map((c) => (
+            <col key={c.problemNo} style={{ width: CELL_COL_W }} />
+          ))}
         </colgroup>
         <thead>
           <tr>
-            <th style={{ width: Y_COL_W }} className="px-0 pb-0.5 text-left align-bottom">
-              {/* "세로: X" → "세로 : X"(콜론 양옆 1칸)로 맞췄다(렌더 확인 후
-                  사용자 지시) — 아래 위험 토글 라벨과 같은 간격 규칙 */}
-              <span className="block text-2xs font-bold text-fg-muted">
-                <i className="font-semibold text-fg-subtle not-italic">세로</i> : {axis.vertical}
-              </span>
-              <span className="block text-2xs font-bold text-fg-muted">
-                <i className="font-semibold text-fg-subtle not-italic">가로</i> : {axis.horizontal}
-              </span>
+            <th className="pr-3 text-left text-2xs font-normal text-fg-subtle">
+              {view.level === 'CLASS' ? '반' : view.level === 'TEAM' ? '팀' : '교육생'}
             </th>
-            {concepts.map((c, i) => (
-              <th key={i} className="px-1 pb-0.5 text-center align-bottom">
-                <span className="block text-2xs font-semibold text-fg-subtle">개념 {i + 1}</span>
-                <span className={cn('text-[13px] font-bold', flaggedConcepts[i] && 'text-warning')}>
-                  {c}
-                  {flaggedConcepts[i] && ' ⚠'}
-                </span>
+            {concepts.map((c) => (
+              <th
+                key={c.problemNo}
+                className="px-1 pb-1 text-center text-xs font-semibold text-fg-muted"
+              >
+                {/* 집단 미달은 서버 판정이다 — 화면이 세지 않는다 */}
+                {c.groupShortfall && <span className="mr-1 text-warning">⚠</span>}
+                {c.conceptName}
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          <AggRowLine row={avgRow} isAvgRow />
-          <tr>
-            <td colSpan={4} className="pt-4 pb-1 text-2xs font-semibold text-fg-muted">
-              {groupText}
-            </td>
-          </tr>
-          {result.level === 'person' ? (
-            result.rows.length > 0 ? (
-              result.rows.map((row) => (
-                <PersonRowLine key={row.id} row={row} traineePath={traineePath} />
-              ))
-            ) : (
-              <EmptyFilterRow message="위험에 해당하는 팀원이 없습니다." />
-            )
-          ) : result.level === 'class' ? (
-            result.rows.length > 0 ? (
-              result.rows.map((row) => (
-                <AggRowLine
-                  key={row.id}
-                  row={row}
-                  onClick={() => onDrillTeam(row.drillTo!.classFilter)}
-                />
-              ))
-            ) : (
-              <EmptyFilterRow message="위험에 해당하는 반이 없습니다." />
-            )
-          ) : result.rows.length > 0 ? (
-            result.rows.map((row) => (
-              <AggRowLine
-                key={row.id}
+          {/*
+            🔴 합계 행을 `<tr>`로 한 번 더 감싸고 있었다 — `RowLine`이 이미 `<tr>`을
+            돌려주는데 그 안에 또 넣어 **중첩 tr**이 됐고, 브라우저가 복구하면서
+            `<colgroup>` 폭이 안 먹어 합계 셀만 좁게 그려졌다(렌더에서 잡았다).
+            테두리는 행 자체에 준다.
+          */}
+          {view.summary && (
+            <RowLine
+              row={view.summary}
+              level={view.level}
+              isSummary
+              className="[&>td]:border-b [&>td]:border-border"
+            />
+          )}
+          {view.rows.length === 0 ? (
+            <tr>
+              <td colSpan={concepts.length + 1} className="py-8 text-center text-sm text-fg-subtle">
+                이 범위에는 아직 결과가 없습니다.
+              </td>
+            </tr>
+          ) : (
+            view.rows.map((row) => (
+              <RowLine
+                key={row.rowId ?? row.rowName}
                 row={row}
-                onClick={() => onDrillPerson(row.drillTo!.classFilter, row.drillTo!.teamFilter!)}
+                level={view.level}
+                onClick={onDrill && row.rowId ? () => onDrill(row.rowId!) : undefined}
+                traineePath={traineePath}
               />
             ))
-          ) : (
-            <EmptyFilterRow message="위험에 해당하는 팀이 없습니다." />
           )}
         </tbody>
       </table>

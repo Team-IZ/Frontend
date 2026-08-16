@@ -1,7 +1,10 @@
 import { useState } from 'react'
 import { ChevronRight } from 'lucide-react'
+import type { UseQueryResult } from '@tanstack/react-query'
 import { cn } from '@/lib/utils/cn'
 import { Badge } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
+import { Spinner } from '@/components/ui/Spinner'
 import {
   Table,
   TableBody,
@@ -11,71 +14,82 @@ import {
   TableRow,
 } from '@/components/ui/Table'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import { formatDateTime, formatCoarse } from '@/lib/format'
 import {
   ATTENDANCE_LABEL,
-  ROSTER,
-  requirementTally,
-  type PersonAttendance,
-  type ProjectDetail,
-  type Team,
-} from '../mockData'
+  type AttendanceStatus,
+  type ClassProgressView,
+  type SubmissionMember,
+  type SubmissionStatus,
+  type SubmissionTeam,
+} from '../_/api/types'
 
 /*
   MG-08 제출 현황 탭 — 팀 그룹 + 개인 행 2계층(정의서 §3). 팀이 한 명이라도
   내면 팀원 전원이 같은 코드를 쓰므로 제출·분석·요구사항은 **팀 행**에,
-  응시·다시 보기는 **개인 행**에 붙는다.
+  응시는 **개인 행**에 붙는다. 서버 응답이 정확히 그 모양이다.
 
-  팀 편성이 안 끝났으면(편성 전·편성 중·전원 배정) 제출 자체가 안 열린다 —
-  빈 상태로 그 이유를 말한다. 확정(④)부터 표가 나온다.
+  팀 편성이 안 끝났으면 제출 자체가 안 열린다 — 빈 상태로 그 이유를 말한다.
+  **`submissionOpened` 하나로 판정한다**(스펙 명시) — 목은 단계 이름 둘을 화면이
+  다시 봤다.
 
-  요구사항 판정은 **팀 행을 펼쳐서** 본다(모달 아님) — `showReq`로 그 팀만 토글.
+  요구사항 판정은 **팀 행을 펼쳐서** 본다(모달 아님).
 
-  ⚠ [연락함] 제거(사용자 지적, 2026-08-08) — D56 D절에서 상단 일괄 모달
-  (`NudgeDialog`)을 행마다 [연락함] 버튼으로 바꿨었는데, 다시 검토해 아예
-  없앴다. 대시보드의 [연락함]과 달리 이 탭은 "지난 방문 이후" 같은 스코프
-  분리가 없는 한 프로젝트짜리 좁은 명단(팀 몇 개·인원 수십 명)이라, 누구를
-  이미 연락했는지는 바로 옆 "제출"·"응시" 열(제출 시각·"응시 전 / D-2" 등)만
-  봐도 충분히 판단된다 — 대시보드는 여러 날에 걸친 여러 유형의 백로그를
-  다뤄서 "이미 손댔다" 표시가 따로 필요했지만, 이 탭은 그 정도로 오래 쌓이지
-  않는다. 미제출 팀에 연락함을 누르면 빈 제출 레코드를 만들어 상태만 얹는
-  구조(`markTeamContacted`)도 이 화면 하나를 위해 치르기엔 비용이 커
-  보였다 — 실제 제출·응시가 반영되면 그 자체로 "확인됐다"는 신호가 된다.
+  ⚠ **분석 상태가 5종이다**(`QUEUED·RUNNING·SUCCEEDED·PARTIAL·FAILED`). 목은
+  3종(`PENDING·DONE·FAILED`)이었다. **`PARTIAL`을 완료로 접지 않는다** — 스펙이
+  「실패도 완료도 아닌 팀이 어느 열에도 안 잡히고 사라진다」고 못박았다.
 
-  요구사항 펼침에도 파일:줄 근거(`evidence`)를 한 줄 더 붙였다 — 이 화면
-  제목 자체가 "구현 근거"라 판정이 어느 코드에서 나왔는지 보여야 한다.
+  ⚠ **요구사항 판정이 3종이다**(`PENDING·PASS·FAIL`). 목의 `UNUSED·EMPTY·NOMATCH`
+  구분(왜 못 채웠는가)은 서버에 없고, 대신 `evidence` 한 줄과 `judgedByAi`가 온다.
 
-  ⚠ 컬럼 재구성(사용자 지시) — "제출 · 분석"·"응시" 2개 헤더가 실제로는
-  "제출 시각"과 "분석 결과"라는 서로 다른 축을 한 헤더에 욱여넣고 있었다.
-  **"제출"**(팀 행=제출 시각, 개인 행=그 사람이 응시를 마친 시각)과
-  **"분석 · 응시"**(팀 행=분석 배지, 개인 행=응시 상태)로 갈랐다 — 팀 행의
-  이름 칸에 colSpan으로 붙어 있던 제출 시각·분석 배지를 각자 칸으로 뺐다.
-  "레포 · 제출자"처럼 고유 칸을 가지니 줄도 맞는다(전엔 이름 칸에 텍스트로
-  욱여넣어 왼쪽으로 쏠려 보였다).
+  ⚠ **잔여 기한 문구는 화면이 만든다** — 서버는 `assessmentCloseAt`(ISO)만 준다.
+  스펙에 「`D-2`·`19시간 남음` 같은 표시 문구는 화면이 만듭니다」라고 적혀 있다.
+
+  ⚠ **반별 진행 줄이 생겼다** — `class-progress`가 반마다 제출→분석→응시 깔때기를
+  준다. 목에는 이 조회가 없어 팀 표만 있었다.
 */
 
 type Props = {
-  projectId: string
-  detail: ProjectDetail
-  onReload: () => void
+  query: UseQueryResult<SubmissionStatus>
+  classProgress: ClassProgressView | undefined
 }
 
-const ROSTER_NAME: Record<string, string> = Object.fromEntries(ROSTER.map((p) => [p.id, p.name]))
-
-const REQ_ICON: Record<string, string> = { MET: '✓', UNUSED: '✗', EMPTY: '✗', NOMATCH: '✗' }
-
-export default function SubmissionTab({ detail }: Props) {
+export default function SubmissionTab({ query, classProgress }: Props) {
   const [expandedReq, setExpandedReq] = useState<Set<string>>(new Set())
 
-  const { teamPhase, teams, locked } = detail
-  const opened = teamPhase === 'LOCKED' || teamPhase === 'SUBMITTING'
+  if (query.isPending) {
+    return (
+      <div className="flex justify-center py-16">
+        <Spinner className="size-6" aria-label="제출 현황을 불러오는 중" />
+      </div>
+    )
+  }
 
-  if (!opened) {
+  if (query.isError || !query.data) {
+    return (
+      <Empty>
+        <EmptyHeader>
+          <EmptyTitle>제출 현황을 불러오지 못했습니다</EmptyTitle>
+          <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
+        </EmptyHeader>
+        <Button variant="ghost" onClick={() => void query.refetch()}>
+          다시 시도
+        </Button>
+      </Empty>
+    )
+  }
+
+  const d = query.data
+
+  if (!d.submissionOpened) {
     return (
       <Empty>
         <EmptyHeader>
           <EmptyTitle>팀 편성이 끝나면 제출 현황이 열립니다</EmptyTitle>
           <EmptyDescription>
-            아직 팀 편성 중이에요 — 팀 탭에서 편성을 마치면 이 탭이 채워집니다.
+            {d.unassignedMemberCount > 0
+              ? `미배정 ${d.unassignedMemberCount}명이 남아 있어요 — 팀 탭에서 배정을 마치면 이 탭이 채워집니다.`
+              : '아직 팀 편성 중이에요 — 팀 탭에서 편성을 마치면 이 탭이 채워집니다.'}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>
@@ -89,14 +103,31 @@ export default function SubmissionTab({ detail }: Props) {
     setExpandedReq(next)
   }
 
-  const submittedCount = teams.filter((t) => detail.submissions[t.id]?.submittedAt).length
-
   return (
     <div className="flex flex-col gap-3">
       <p className="text-fg-subtle text-xs">
-        제출 {submittedCount}/{teams.length}팀
-        {locked && <span className="ml-2">· 종료된 회차라 팀 이동을 할 수 없습니다</span>}
+        제출 {d.summary.submittedTeamCount}/{d.summary.teamCount}팀
+        {d.summary.analysisFailedTeamCount > 0 && (
+          <span className="text-danger ml-2">
+            · 분석 실패 {d.summary.analysisFailedTeamCount}팀
+          </span>
+        )}
+        {d.locked && <span className="ml-2">· 종료된 회차라 팀 이동을 할 수 없습니다</span>}
       </p>
+
+      {classProgress && classProgress.classes.length > 0 && (
+        <div className="border-border flex flex-wrap gap-x-6 gap-y-1.5 rounded-md border p-3 text-xs">
+          {classProgress.classes.map((c) => (
+            <span key={c.classId} className="text-fg-subtle">
+              <b className="text-fg font-bold">{c.className}</b> 제출 {c.submittedCount}/
+              {c.targetTraineeCount} · 분석 {c.analysisSucceededCount} · 응시 {c.assessedCount}
+              {c.analysisFailedCount > 0 && (
+                <span className="text-danger"> · 실패 {c.analysisFailedCount}</span>
+              )}
+            </span>
+          ))}
+        </div>
+      )}
 
       <Table>
         <TableHeader>
@@ -105,19 +136,18 @@ export default function SubmissionTab({ detail }: Props) {
             <TableHead>제출</TableHead>
             <TableHead>레포 · 제출자</TableHead>
             <TableHead>요구사항</TableHead>
-            {/* "응시 가능 19시간 남음"처럼 시간 단위 잔여값이 "D-N일"보다 길어서 w-32(128px)로는
+            {/* "19시간 남음"처럼 시간 단위 잔여값이 "D-N일"보다 길어 w-32(128px)로는
                 실측 오버플로가 났다(D22 기준 — px을 짐작하지 않고 실측) */}
             <TableHead className="w-40">분석 · 응시</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {teams.map((team) => (
+          {d.teams.map((team) => (
             <TeamRows
-              key={team.id}
+              key={team.teamId}
               team={team}
-              detail={detail}
-              reqExpanded={expandedReq.has(team.id)}
-              onToggleReq={() => toggleReq(team.id)}
+              reqExpanded={expandedReq.has(team.teamId)}
+              onToggleReq={() => toggleReq(team.teamId)}
             />
           ))}
         </TableBody>
@@ -128,61 +158,59 @@ export default function SubmissionTab({ detail }: Props) {
 
 function TeamRows({
   team,
-  detail,
   reqExpanded,
   onToggleReq,
 }: {
-  team: Team
-  detail: ProjectDetail
+  team: SubmissionTeam
   reqExpanded: boolean
   onToggleReq: () => void
 }) {
-  const submission = detail.submissions[team.id]
-  // 레코드 존재가 아니라 `submittedAt`으로 판정한다 — 제출 전이면 아직 아무 값도
-  // 없다는 뜻이라 "제출됨"으로 오판하면 안 된다.
-  const submitted = !!submission?.submittedAt
-  const tally = submitted ? requirementTally(submission!.requirements) : null
+  /* 레코드 존재가 아니라 `submission`이 null인지로 판정한다(스펙 명시) */
+  const submitted = !!team.submission
+  const judged = team.requirementResults.filter((r) => r.result !== 'PENDING')
+  const met = judged.filter((r) => r.result === 'PASS').length
 
   return (
     <>
       <TableRow className="bg-surface-2">
         <TableCell className="font-bold">
           <div className="flex items-center gap-2">
-            <span>{team.name}</span>
+            {/* 반이 여럿이면 팀 번호가 겹친다(30차 R4) — 반 이름을 함께 적는다 */}
+            <span>
+              {team.className} {team.teamName}
+            </span>
             {!submitted && <Badge variant="warning">미제출 ⚠</Badge>}
           </div>
         </TableCell>
         <TableCell className="text-fg-muted text-xs">
-          {submitted ? (
-            submission!.submittedAt!.replace('T', ' ')
+          {team.submission ? (
+            formatDateTime(team.submission.submittedAt)
           ) : (
             <span className="text-fg-subtle">—</span>
           )}
         </TableCell>
-        {/* 레포 URL이 길어서 무제한으로 두면 표 전체가 컨테이너보다 넓어져(실측 712px vs
-            669px) "응시" 열의 잔여 시간 라벨이 가로 스크롤 밖으로 밀려 잘렸다(D22 기준,
-            실측 후 조정). URL만 줄이고 제출자 이름은 끝까지 보이게 flex로 나눴다 —
-            통째로 자르면 이름까지 같이 잘려서 누가 냈는지 안 보였다 */}
+        {/* 레포 URL이 길어 무제한으로 두면 표가 컨테이너보다 넓어져 오른쪽 열이 잘렸다
+            (D22 기준, 실측 후 조정). URL만 줄이고 제출자 이름은 끝까지 보이게 나눴다 */}
         <TableCell className="text-fg-muted max-w-40 text-xs">
-          {submission?.repoUrl ? (
+          {team.submission ? (
             <span className="flex min-w-0 items-center">
-              <span className="min-w-0 truncate" title={submission.repoUrl}>
-                {submission.repoUrl}
+              <span className="min-w-0 truncate" title={team.submission.repositoryUrl ?? ''}>
+                {team.submission.repositoryUrl ?? 'ZIP 제출'}
               </span>
-              <span className="shrink-0">&nbsp;· {submission.submitterName}</span>
+              <span className="shrink-0">&nbsp;· {team.submission.submittedByName}</span>
             </span>
           ) : (
             <span className="text-fg-subtle">아직 아무도 제출하지 않았어요</span>
           )}
         </TableCell>
         <TableCell>
-          {tally ? (
+          {judged.length > 0 ? (
             <button
               type="button"
               onClick={onToggleReq}
               className="text-fg inline-flex items-center gap-1 text-xs font-semibold hover:underline"
             >
-              ✓ {tally.met} · ✗ {tally.unmet}
+              ✓ {met} · ✗ {judged.length - met}
               <ChevronRight
                 className={cn('size-3 transition-transform', reqExpanded && 'rotate-90')}
               />
@@ -192,35 +220,39 @@ function TeamRows({
           )}
         </TableCell>
         <TableCell>
-          {submission?.analysisStatus === 'FAILED' && <Badge variant="danger">분석 실패</Badge>}
-          {submission?.analysisStatus === 'DONE' && <Badge variant="success">분석 완료</Badge>}
-          {/* 위 `tally`와 같은 이유 — 레코드 존재가 아니라 `analysisStatus` 유무로 판정한다.
-              존재로 판정하면 미제출 팀에 [연락함]을 누른 뒤 이 칸이 "—"도 배지도 없는
-              빈 칸이 된다(분석 결과가 사라진 것처럼 보인다) */}
-          {!submission?.analysisStatus && <span className="text-fg-subtle text-xs">—</span>}
+          <AnalysisBadge status={team.analysis?.status} />
         </TableCell>
       </TableRow>
 
-      {reqExpanded && submission && submission.requirements.length > 0 && (
+      {reqExpanded && team.requirementResults.length > 0 && (
         <TableRow className="bg-primary-soft hover:bg-primary-soft">
           <TableCell colSpan={5}>
             <div className="flex flex-col gap-2.5 py-1">
-              {submission.requirements.map((r) => (
-                <div key={r.name} className="flex gap-2 text-xs">
+              {team.requirementResults.map((r) => (
+                <div key={r.requirementId} className="flex gap-2 text-xs">
                   <span
                     className={cn(
                       'flex-none font-bold',
-                      r.status === 'MET' ? 'text-success' : 'text-danger',
+                      r.result === 'PASS'
+                        ? 'text-success'
+                        : r.result === 'FAIL'
+                          ? 'text-danger'
+                          : 'text-fg-subtle',
                     )}
                   >
-                    {REQ_ICON[r.status]}
+                    {r.result === 'PASS' ? '✓' : r.result === 'FAIL' ? '✗' : '…'}
                   </span>
                   <div className="flex-1">
                     <p>
-                      <b className="font-semibold">{r.name}</b>{' '}
-                      <span className="text-fg-muted">{r.detail}</span>
+                      <b className="font-semibold">{r.title}</b>
+                      {/* 사람이 뒤집은 판정인지 밝힌다 — AI 판정과 같은 무게로 읽히면 안 된다 */}
+                      {!r.judgedByAi && (
+                        <span className="text-fg-subtle ml-1.5 text-2xs">직접 판정</span>
+                      )}
                     </p>
-                    <p className="text-fg-subtle mt-0.5 font-mono text-2xs">{r.evidence}</p>
+                    {r.evidence && (
+                      <p className="text-fg-subtle mt-0.5 font-mono text-2xs">{r.evidence}</p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -229,57 +261,54 @@ function TeamRows({
         </TableRow>
       )}
 
-      {team.memberIds.map((id) => {
-        const attendance = detail.attendance[id] ?? {
-          status: 'BLOCKED' as const,
-          deadlineLabel: null,
-          completedAt: null,
-        }
-        return (
-          <TableRow key={id}>
-            <TableCell className="pl-8 text-sm">{ROSTER_NAME[id] ?? id}</TableCell>
-            {/* "제출" 열 — 팀 행은 제출 시각, 개인 행은 그 사람이 응시를 마친 시각(사용자 지시).
-                아직 안 봤으면(OPEN·MISSED·BLOCKED) 대시 — 응시 상태 자체는 옆 칸에 있다 */}
-            <TableCell className="text-fg-muted text-xs">
-              {attendance.completedAt ? (
-                attendance.completedAt.replace('T', ' ')
-              ) : (
-                <span className="text-fg-subtle">—</span>
-              )}
-            </TableCell>
-            <TableCell />
-            {/* 요구사항은 팀 전원이 같은 코드를 쓰는 팀 단위 값이라 위 팀 행에만 둔다 —
-                여기 또 찍으면 사람마다 같은 값이 반복돼 무엇을 보라는 건지 헷갈린다.
-                개인 행에선 원래 항상 비던 칸이다([연락함]을 없애며 다시 원래대로) */}
-            <TableCell />
-            <TableCell>
-              <AttendanceCell attendance={attendance} />
-            </TableCell>
-          </TableRow>
-        )
-      })}
+      {team.members.map((m) => (
+        <TableRow key={m.userId}>
+          <TableCell className="pl-8 text-sm">{m.name}</TableCell>
+          {/* "제출" 열 — 팀 행은 제출 시각, 개인 행은 그 사람이 응시를 마친 시각 */}
+          <TableCell className="text-fg-muted text-xs">
+            {m.completedAt ? (
+              formatDateTime(m.completedAt)
+            ) : (
+              <span className="text-fg-subtle">—</span>
+            )}
+          </TableCell>
+          <TableCell />
+          {/* 요구사항은 팀 전원이 같은 코드를 쓰는 팀 단위 값이라 위 팀 행에만 둔다 */}
+          <TableCell />
+          <TableCell>
+            <AttendanceCell member={m} />
+          </TableCell>
+        </TableRow>
+      ))}
     </>
   )
 }
 
-function AttendanceCell({ attendance }: { attendance: PersonAttendance }) {
-  if (attendance.status === 'BLOCKED') return <span className="text-fg-subtle text-xs">—</span>
-  const tone =
-    attendance.status === 'DONE'
-      ? 'text-success'
-      : attendance.status === 'OPEN'
-        ? 'text-fg'
-        : 'text-fg-subtle'
+/** 5종을 접지 않는다 — `PARTIAL`은 실패도 완료도 아니다(스펙 🔴) */
+function AnalysisBadge({ status }: { status: string | undefined }) {
+  if (!status) return <span className="text-fg-subtle text-xs">—</span>
+  if (status === 'FAILED') return <Badge variant="danger">분석 실패</Badge>
+  if (status === 'SUCCEEDED') return <Badge variant="success">분석 완료</Badge>
+  if (status === 'PARTIAL') return <Badge variant="warning">일부만 분석됨</Badge>
+  return <Badge variant="neutral">분석 중</Badge>
+}
+
+function AttendanceCell({ member }: { member: SubmissionMember }) {
+  const status = member.attendanceStatus as AttendanceStatus
+  if (status === 'BLOCKED') return <span className="text-fg-subtle text-xs">—</span>
+
+  const tone = status === 'DONE' ? 'text-success' : status === 'OPEN' ? 'text-fg' : 'text-fg-subtle'
+
+  /* 기한은 `OPEN`에만 붙는다 — 마감 후(`MISSED`)엔 붙일 값이 없다(D56 B절) */
+  const remain =
+    status === 'OPEN' && member.assessmentCloseAt
+      ? formatCoarse(new Date(member.assessmentCloseAt).getTime() - Date.now())
+      : null
+
   return (
     <span className={cn('text-xs font-semibold', tone)}>
-      {ATTENDANCE_LABEL[attendance.status]}
-      {/* "D-2일"→"D-2"로 줄이면서 라벨과 헷갈리지 않게 "/"로 갈랐다(사용자 지시,
-          "응시 전 / D-2") — "19시간 남음"도 같은 구분자를 쓴다. 기한은 `OPEN`에만
-          붙는다 — 마감 후(`MISSED`)는 `deadlineLabel`이 null이라 "미응시" 한 마디로
-          끝나고, 그 유무가 마감 전/후를 라벨 없이도 갈라 준다(결정 로그 D56 B절) */}
-      {attendance.deadlineLabel && (
-        <span className="ml-1 font-normal">/ {attendance.deadlineLabel}</span>
-      )}
+      {ATTENDANCE_LABEL[status]}
+      {remain && <span className="ml-1 font-normal">/ {remain} 남음</span>}
     </span>
   )
 }

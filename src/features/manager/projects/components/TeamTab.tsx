@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Lock, LockOpen, AlertTriangle, Trash2 } from 'lucide-react'
+import { Lock, LockOpen, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Spinner } from '@/components/ui/Spinner'
@@ -13,124 +13,122 @@ import {
   TableHead,
   TableRow,
 } from '@/components/ui/Table'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogMedia,
-  AlertDialogTitle,
-} from '@/components/ui/AlertDialog'
-import {
-  TEAM_PHASE_LABEL,
-  ROSTER,
-  confirmTeamFormation,
-  reopenTeamFormation,
-  createTeam,
-  deleteTeam,
-  withParticle,
-  type ProjectDetail,
-  type Team,
-} from '../mockData'
+import { useTeams, useCreateTeam, useConfirmTeams, useReopenTeams } from '../_/api/api'
+import { TEAM_STAGE_LABEL, type Team, type TeamFormationStage } from '../_/api/types'
 import TeamEditDialog from './TeamEditDialog'
 import TeamAutoAssignDialog from './TeamAutoAssignDialog'
-
-const ROSTER_NAME: Record<string, string> = Object.fromEntries(ROSTER.map((p) => [p.id, p.name]))
 
 /*
   MG-08 팀 편성 탭 — 5국면 상태머신(정의서 §3·§6).
 
   국면별로 무엇이 가능한지가 전부 다르다:
-  ① 편성 전(팀 0)      자동 배분 · 팀 추가 — 제출 잠김
-  ② 편성 중(미배정 有)  팀 편집 자유 — `팀 편성 완료` 비활성 — 제출 잠김
-  ③ 전원 배정          팀 편집 자유 — `팀 편성 완료` 활성 — 제출 잠김
-  ④ 확정됨             🔒 · `편성 다시 열기` — 제출 열림(아직 아무도 안 냄)
-  ⑤ 제출 시작됨        🔒 · `편성 다시 열기` 버튼 자체가 사라진다 — 팀 이동만
+  ① 편성 전(NOT_STARTED)     자동 배분 · 팀 추가 — 제출 잠김
+  ② 편성 중(FORMING)         팀 편집 자유 — `팀 편성 완료` 비활성 — 제출 잠김
+  ③ 전원 배정(READY_TO_CONFIRM) 팀 편집 자유 — `팀 편성 완료` 활성 — 제출 잠김
+  ④ 확정됨(CONFIRMED)        🔒 · `편성 다시 열기` — 제출 열림
+  ⑤ 종료(CLOSED)             🔒 · 편성 액션 전부 잠김
 
   "자동 배분"은 팀이 하나도 없을 때만 보인다(정의서 §5) — 이미 짜인 팀을
   뒤엎는 액션을 상시 노출하지 않는다.
 
-  ⚠ 렌더 비교 반영 — 팀 목록을 카드 그리드에서 **표**(팀/인원/팀원/제출/편집)로
-  바꿨다. 와이어프레임이 표로 그린다(CLAUDE.md §6 "리스트는 표" 표준과도 맞는다).
-  자동 배분도 버튼 한 번에 바로 실행하지 않고 모달(`TeamAutoAssignDialog`)을
-  띄운다 — 와이어프레임 "자동 배분 모달"(팀 크기·섞는 방법·겹침 회피)을 그대로.
+  ⚠ **국면을 서버가 준다**(`teamFormationStage`) — 목은 `teams.length`·
+  `unassigned.length`에서 화면이 파생했다. 목의 5국면과 값이 1:1인데 ⑤만 다르다:
+  목의 `SUBMITTING`(제출 시작됨)이 서버에는 없고 대신 `CLOSED`(종료된 회차)가 있다.
+  제출이 시작됐는지는 `submissionOpened`로 따로 오므로 국면에 섞지 않는다.
+
+  🔴 **팀 삭제 버튼을 뺐다.** 서버에 삭제 오퍼레이션이 없다(팀 생성·수정·확정·
+  다시 열기·자동 배분·팀원 배정/해제만 있다). 목에는 `deleteTeam`이 있었지만
+  화면이 지어낸 성공은 새로 고치면 사라진다. 32차 요청서로 올린다.
+
+  ⚠ **반 열이 생겼다.** 담당 반이 여럿이면 팀 번호가 반마다 1부터 다시 시작해
+  한 목록에 `1팀`이 반 수만큼 나온다(30차 R4). 반 없이는 팀을 구분할 수 없다.
 */
 
 type Props = {
   projectId: string
-  detail: ProjectDetail
-  onReload: () => void
+  /** 제출 현황이 준다 — 아직 못 읽었으면 없다 */
+  stage: string | undefined
+  locked: boolean
 }
 
-export default function TeamTab({ projectId, detail, onReload }: Props) {
+export default function TeamTab({ projectId, stage, locked }: Props) {
   const [autoAssignOpen, setAutoAssignOpen] = useState(false)
-  const [confirming, setConfirming] = useState(false)
-  const [conflicted, setConflicted] = useState<string[]>([])
   const [editTeam, setEditTeam] = useState<Team | null>(null)
   const [addingTeam, setAddingTeam] = useState(false)
   const [newTeamName, setNewTeamName] = useState('')
-  const [deleteTarget, setDeleteTarget] = useState<Team | null>(null)
-  const [deleting, setDeleting] = useState(false)
 
-  const { teamPhase, teams, unassigned, locked } = detail
+  const teamList = useTeams(projectId)
+  const createTeam = useCreateTeam()
+  const confirmTeams = useConfirmTeams()
+  const reopenTeams = useReopenTeams()
+
+  if (teamList.isPending) {
+    return (
+      <div className="flex justify-center py-16">
+        <Spinner className="size-6" aria-label="팀을 불러오는 중" />
+      </div>
+    )
+  }
+
+  if (teamList.isError || !teamList.data) {
+    return (
+      <Empty>
+        <EmptyHeader>
+          <EmptyTitle>팀을 불러오지 못했습니다</EmptyTitle>
+          <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
+        </EmptyHeader>
+        <Button variant="ghost" onClick={() => void teamList.refetch()}>
+          다시 시도
+        </Button>
+      </Empty>
+    )
+  }
+
+  const { unassignedMembers, unassignedCount } = teamList.data
+  const phase = (stage ?? 'NOT_STARTED') as TeamFormationStage
+
+  /*
+    🔴 **정렬은 화면이 한다.** 렌더에서 7·2·5·1·4·6·3팀 순으로 나왔다 — `findTeams`는
+    순서를 약속하지 않는다(제출 현황만 "반 이름 → 팀 번호 순"이라고 스펙에 적혀 있다).
+    표에 적힌 번호 그대로 못 읽는 목록은 쓸 수 없어 같은 기준으로 세운다. 서버가 낸
+    판정을 뒤집는 게 아니라 표시 순서라 경계 문제가 아니다(정렬 파라미터도 없다).
+  */
+  const teams = [...teamList.data.teams].sort(
+    (a, b) =>
+      (a.className ?? '').localeCompare(b.className ?? '') ||
+      Number(a.teamNumber) - Number(b.teamNumber),
+  )
+
   const canEdit =
-    !locked && (teamPhase === 'BEFORE' || teamPhase === 'FORMING' || teamPhase === 'READY')
-  const canMoveOnly = !locked && teamPhase === 'SUBMITTING'
-  const submissionsVisible = teamPhase === 'LOCKED' || teamPhase === 'SUBMITTING'
+    !locked && (phase === 'NOT_STARTED' || phase === 'FORMING' || phase === 'READY_TO_CONFIRM')
 
-  function handleAutoAssigned(c: string[]) {
-    setConflicted(c)
-    onReload()
-  }
+  /* 담당 반이 여럿이면 자동 배분이 400(MANAGER_CLASSROOM_AMBIGUOUS)이다 */
+  const classIds = new Set(teams.map((t) => t.classId))
+  const autoAssignAmbiguous = classIds.size > 1
 
-  async function handleConfirm() {
-    setConfirming(true)
-    try {
-      await confirmTeamFormation(projectId)
-      onReload()
-    } finally {
-      setConfirming(false)
-    }
-  }
-
-  async function handleReopen() {
-    await reopenTeamFormation(projectId)
-    onReload()
-  }
-
-  async function handleCreateTeam() {
+  function handleCreateTeam() {
     const name = newTeamName.trim() || `${teams.length + 1}팀`
-    await createTeam(projectId, name)
-    setNewTeamName('')
-    setAddingTeam(false)
-    onReload()
-  }
-
-  async function handleDeleteTeam() {
-    if (!deleteTarget) return
-    setDeleting(true)
-    try {
-      await deleteTeam(projectId, deleteTarget.id)
-      setDeleteTarget(null)
-      onReload()
-    } finally {
-      setDeleting(false)
-    }
+    createTeam.mutate(
+      { path: { projectId }, body: { name } },
+      {
+        onSuccess: () => {
+          setNewTeamName('')
+          setAddingTeam(false)
+        },
+      },
+    )
   }
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2">
-        <PhaseBadge phase={teamPhase} locked={locked} />
+        <PhaseBadge phase={phase} locked={locked} />
         <span className="text-fg-subtle text-xs">
-          {teams.length}팀 · 미배정 {unassigned.length}명
+          {teams.length}팀 · 미배정 {unassignedCount}명
         </span>
 
         <div className="ml-auto flex gap-2">
-          {!locked && teamPhase === 'BEFORE' && (
+          {!locked && phase === 'NOT_STARTED' && (
             <>
               <Button variant="ghost" size="sm" onClick={() => setAddingTeam(true)}>
                 팀 추가
@@ -140,22 +138,27 @@ export default function TeamTab({ projectId, detail, onReload }: Props) {
               </Button>
             </>
           )}
-          {!locked && (teamPhase === 'FORMING' || teamPhase === 'READY') && (
+          {!locked && (phase === 'FORMING' || phase === 'READY_TO_CONFIRM') && (
             <>
               <Button variant="ghost" size="sm" onClick={() => setAddingTeam(true)}>
                 팀 추가
               </Button>
               <Button
                 size="sm"
-                onClick={handleConfirm}
-                disabled={teamPhase !== 'READY' || confirming}
+                onClick={() => confirmTeams.mutate({ path: { projectId } })}
+                disabled={phase !== 'READY_TO_CONFIRM' || confirmTeams.isPending}
               >
-                {confirming ? '확정 중…' : '팀 편성 완료'}
+                {confirmTeams.isPending ? '확정 중…' : '팀 편성 완료'}
               </Button>
             </>
           )}
-          {!locked && teamPhase === 'LOCKED' && (
-            <Button variant="ghost" size="sm" onClick={handleReopen}>
+          {!locked && phase === 'CONFIRMED' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={reopenTeams.isPending}
+              onClick={() => reopenTeams.mutate({ path: { projectId } })}
+            >
               <LockOpen className="size-3.5" />
               편성 다시 열기
             </Button>
@@ -163,7 +166,7 @@ export default function TeamTab({ projectId, detail, onReload }: Props) {
         </div>
       </div>
 
-      {!locked && teamPhase === 'READY' && (
+      {!locked && phase === 'READY_TO_CONFIRM' && (
         <Alert variant="warning">
           <AlertTriangle />
           <AlertTitle>확정하면 학생들이 코드를 제출할 수 있게 되고, 팀은 잠깁니다</AlertTitle>
@@ -173,25 +176,12 @@ export default function TeamTab({ projectId, detail, onReload }: Props) {
         </Alert>
       )}
 
-      {conflicted.length > 0 && (
+      {!locked && unassignedCount > 0 && phase !== 'NOT_STARTED' && (
         <Alert variant="warning">
           <AlertTriangle />
-          <AlertTitle>
-            {withParticle(conflicted.join(', '), '은', '는')} 직전 회차와 겹치는 인원을 완전히 못
-            피했습니다
-          </AlertTitle>
+          <AlertTitle>미배정 {unassignedCount}명이 남아 있어 제출이 열리지 않습니다</AlertTitle>
           <AlertDescription>
-            20회 재추첨해도 겹침이 남아 그대로 두었습니다. 필요하면 팀 편집으로 직접 조정하세요.
-          </AlertDescription>
-        </Alert>
-      )}
-
-      {!locked && unassigned.length > 0 && teamPhase !== 'BEFORE' && (
-        <Alert variant="warning">
-          <AlertTriangle />
-          <AlertTitle>미배정 {unassigned.length}명이 남아 있어 제출이 열리지 않습니다</AlertTitle>
-          <AlertDescription>
-            {unassigned.map((p) => p.name).join(', ')} — 팀을 눌러 편집하면 여기서 배정할 수
+            {unassignedMembers.map((p) => p.name).join(', ')} — 팀을 눌러 편집하면 여기서 배정할 수
             있습니다.
           </AlertDescription>
         </Alert>
@@ -208,58 +198,42 @@ export default function TeamTab({ projectId, detail, onReload }: Props) {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-20">반</TableHead>
               <TableHead className="w-20">팀</TableHead>
               <TableHead className="w-16">인원</TableHead>
               <TableHead>팀원</TableHead>
-              {submissionsVisible && <TableHead className="w-24">제출</TableHead>}
-              <TableHead className="w-32" />
+              <TableHead className="w-24">상태</TableHead>
+              <TableHead className="w-20" />
             </TableRow>
           </TableHeader>
           <TableBody>
-            {teams.map((team) => {
-              const submitted = !!detail.submissions[team.id]?.submittedAt
-              const canEditThis = canEdit || canMoveOnly
-              return (
-                <TableRow key={team.id}>
-                  <TableCell className="font-bold">{team.name}</TableCell>
-                  <TableCell className="text-fg-muted text-xs">{team.memberIds.length}명</TableCell>
-                  <TableCell className="text-fg-muted text-xs">
-                    {team.memberIds.map((id) => ROSTER_NAME[id] ?? id).join(' · ')}
-                  </TableCell>
-                  {submissionsVisible && (
-                    <TableCell>
-                      <Badge variant={submitted ? 'success' : 'warning'}>
-                        {submitted ? '제출됨' : '미제출'}
-                      </Badge>
-                    </TableCell>
-                  )}
-                  <TableCell>
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        disabled={!canEditThis}
-                        onClick={() => setEditTeam(team)}
-                      >
-                        편집
-                      </Button>
-                      {/* 삭제는 확정 전에만 — canMoveOnly(제출 시작됨)는 팀이 이미 잠긴 뒤라 뺀다 */}
-                      {canEdit && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-danger hover:bg-danger-soft p-1.5"
-                          aria-label={`${team.name} 삭제`}
-                          onClick={() => setDeleteTarget(team)}
-                        >
-                          <Trash2 className="size-3.5" />
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
+            {teams.map((team) => (
+              <TableRow key={team.teamId}>
+                <TableCell className="text-fg-muted text-xs">{team.className ?? '—'}</TableCell>
+                <TableCell className="font-bold">{team.name}</TableCell>
+                <TableCell className="text-fg-muted text-xs">{team.memberCount}명</TableCell>
+                <TableCell className="text-fg-muted text-xs">
+                  {team.members.map((m) => m.name).join(' · ') || '—'}
+                </TableCell>
+                <TableCell>
+                  <Badge variant={team.status === 'CONFIRMED' ? 'info' : 'neutral'}>
+                    {team.status === 'CONFIRMED' ? '확정됨' : '편성 중'}
+                  </Badge>
+                </TableCell>
+                <TableCell>
+                  <div className="flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={!canEdit}
+                      onClick={() => setEditTeam(team)}
+                    >
+                      편집
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       )}
@@ -270,9 +244,7 @@ export default function TeamTab({ projectId, detail, onReload }: Props) {
           onOpenChange={(o) => !o && setEditTeam(null)}
           projectId={projectId}
           team={editTeam}
-          detail={detail}
-          moveOnly={canMoveOnly}
-          onSaved={onReload}
+          unassigned={unassignedMembers}
         />
       )}
 
@@ -280,41 +252,15 @@ export default function TeamTab({ projectId, detail, onReload }: Props) {
         open={autoAssignOpen}
         onOpenChange={setAutoAssignOpen}
         projectId={projectId}
-        unassignedCount={unassigned.length}
-        canMixByReach={unassigned.some((p) => p.prevReach !== null)}
-        onAssigned={handleAutoAssigned}
+        unassignedCount={unassignedCount}
+        ambiguousClassroom={autoAssignAmbiguous}
       />
-
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={(o) => !o && !deleting && setDeleteTarget(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogMedia className="bg-danger-soft text-danger">
-              <Trash2 />
-            </AlertDialogMedia>
-            <AlertDialogTitle>{deleteTarget?.name}을 삭제할까요?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {deleteTarget && deleteTarget.memberIds.length > 0
-                ? `팀원 ${deleteTarget.memberIds.length}명은 미배정으로 돌아갑니다 — 다른 팀에 다시 넣을 수 있습니다.`
-                : '아직 팀원이 없어 되돌릴 것 없이 바로 지워집니다.'}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>취소</AlertDialogCancel>
-            <AlertDialogAction variant="danger" disabled={deleting} onClick={handleDeleteTeam}>
-              {deleting && <Spinner className="size-3.5" />}
-              삭제
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
 
       {addingTeam && (
         <NewTeamPrompt
           value={newTeamName}
           onChange={setNewTeamName}
+          pending={createTeam.isPending}
           onCancel={() => {
             setAddingTeam(false)
             setNewTeamName('')
@@ -326,7 +272,7 @@ export default function TeamTab({ projectId, detail, onReload }: Props) {
   )
 }
 
-function PhaseBadge({ phase, locked }: { phase: ProjectDetail['teamPhase']; locked: boolean }) {
+function PhaseBadge({ phase, locked }: { phase: TeamFormationStage; locked: boolean }) {
   if (locked) {
     return (
       <Badge variant="neutral">
@@ -335,11 +281,11 @@ function PhaseBadge({ phase, locked }: { phase: ProjectDetail['teamPhase']; lock
       </Badge>
     )
   }
-  const variant = phase === 'LOCKED' || phase === 'SUBMITTING' ? 'info' : 'neutral'
+  const sealed = phase === 'CONFIRMED' || phase === 'CLOSED'
   return (
-    <Badge variant={variant}>
-      {(phase === 'LOCKED' || phase === 'SUBMITTING') && <Lock className="size-3" />}
-      {TEAM_PHASE_LABEL[phase]}
+    <Badge variant={sealed ? 'info' : 'neutral'}>
+      {sealed && <Lock className="size-3" />}
+      {TEAM_STAGE_LABEL[phase]}
     </Badge>
   )
 }
@@ -347,11 +293,13 @@ function PhaseBadge({ phase, locked }: { phase: ProjectDetail['teamPhase']; lock
 function NewTeamPrompt({
   value,
   onChange,
+  pending,
   onCancel,
   onConfirm,
 }: {
   value: string
   onChange: (v: string) => void
+  pending: boolean
   onCancel: () => void
   onConfirm: () => void
 }) {
@@ -364,10 +312,11 @@ function NewTeamPrompt({
         placeholder="예: 9팀"
         className="border-border-strong bg-surface flex-1 rounded-md border px-3 py-1.5 text-sm"
       />
-      <Button variant="ghost" size="sm" onClick={onCancel}>
+      <Button variant="ghost" size="sm" onClick={onCancel} disabled={pending}>
         취소
       </Button>
-      <Button size="sm" onClick={onConfirm}>
+      <Button size="sm" onClick={onConfirm} disabled={pending}>
+        {pending && <Spinner className="size-3.5" />}
         추가
       </Button>
     </div>

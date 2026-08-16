@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/Card'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import { Spinner } from '@/components/ui/Spinner'
 import { ApiError } from '@/api/_contract/errors'
-import { staleProps } from '@/features/operator/_shared/listQuery'
+import { staleProps } from '@/lib/listQuery'
 import {
   MANAGER_COLS,
   MANAGERS,

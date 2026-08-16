@@ -78,7 +78,15 @@ export type findComparableCohorts_Response =
   operations['findComparableCohorts']['responses'][200]['content']['application/json']
 export type findComparableCohorts_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND'
 
-// GET /api/v0/cohorts/{cohortId}/curricula — 기수 연결 교안 목록
+// GET /api/v0/cohorts/{cohortId}/linked-curricula — 기수에 연결된 교안 목록
+export type findCohortLinkedCurricula_Path =
+  operations['findCohortLinkedCurricula']['parameters']['path']
+export type findCohortLinkedCurricula_Response =
+  operations['findCohortLinkedCurricula']['responses'][200]['content']['application/json']
+export type findCohortLinkedCurricula_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'COHORT_NOT_FOUND'
+
+// GET /api/v0/cohorts/{cohortId}/curricula — 회차에 연결할 수 있는 교안 후보
 export type findLinkableCurricula_Path = operations['findLinkableCurricula']['parameters']['path']
 export type findLinkableCurricula_Response =
   operations['findLinkableCurricula']['responses'][200]['content']['application/json']

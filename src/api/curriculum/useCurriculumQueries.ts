@@ -8,6 +8,7 @@ import {
   findSections,
   findUsedProjects,
   findComparableCohorts,
+  findCohortLinkedCurricula,
   findLinkableCurricula,
 } from './curriculumApi'
 import { curriculumKeys } from './curriculumKeys'
@@ -23,6 +24,8 @@ import type {
   findUsedProjects_Response,
   findComparableCohorts_Query,
   findComparableCohorts_Response,
+  findCohortLinkedCurricula_Path,
+  findCohortLinkedCurricula_Response,
   findLinkableCurricula_Path,
   findLinkableCurricula_Response,
 } from './curriculumTypes'
@@ -87,7 +90,19 @@ export function useFindComparableCohorts(
   })
 }
 
-/** 기수 연결 교안 목록 */
+/** 기수에 연결된 교안 목록 */
+export function useFindCohortLinkedCurricula(
+  params: { path: findCohortLinkedCurricula_Path },
+  options?: QueryOptions<findCohortLinkedCurricula_Response>,
+) {
+  return useQuery({
+    queryKey: curriculumKeys.findCohortLinkedCurricula(params),
+    queryFn: ({ signal }) => findCohortLinkedCurricula({ ...params, signal }),
+    ...options,
+  })
+}
+
+/** 회차에 연결할 수 있는 교안 후보 */
 export function useFindLinkableCurricula(
   params: { path: findLinkableCurricula_Path },
   options?: QueryOptions<findLinkableCurricula_Response>,

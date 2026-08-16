@@ -18,6 +18,8 @@ import type {
   findUsedProjects_Response,
   findComparableCohorts_Query,
   findComparableCohorts_Response,
+  findCohortLinkedCurricula_Path,
+  findCohortLinkedCurricula_Response,
   findLinkableCurricula_Path,
   findLinkableCurricula_Response,
 } from './curriculumTypes'
@@ -94,7 +96,18 @@ export const findComparableCohorts = (
     }) as never,
   )
 
-/** 기수 연결 교안 목록 — `GET /api/v0/cohorts/{cohortId}/curricula` */
+/** 기수에 연결된 교안 목록 — `GET /api/v0/cohorts/{cohortId}/linked-curricula` */
+export const findCohortLinkedCurricula = (
+  params: { path: findCohortLinkedCurricula_Path } & RequestOptions,
+) =>
+  unwrap<findCohortLinkedCurricula_Response>(
+    izClient.GET('/api/v0/cohorts/{cohortId}/linked-curricula', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 회차에 연결할 수 있는 교안 후보 — `GET /api/v0/cohorts/{cohortId}/curricula` */
 export const findLinkableCurricula = (
   params: { path: findLinkableCurricula_Path } & RequestOptions,
 ) =>

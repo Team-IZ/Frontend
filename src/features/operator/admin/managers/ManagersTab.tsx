@@ -13,7 +13,7 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { useDebounced } from '@/lib/useDebounced'
-import { listQueryOptions } from '../../_shared/listQuery'
+import { listQueryOptions } from '@/lib/listQuery'
 import { useFindManagers } from '@/api/member/useMemberQueries'
 import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useGetCurrentMember } from '@/api/member/useMemberQueries'
@@ -118,7 +118,7 @@ export default function ManagersTab() {
         size: PAGE_SIZE,
       },
     },
-    /* 조건·페이지를 바꿔도 표를 비우지 않는다 — `_shared/listQuery` 주석 참고 */
+    /* 조건·페이지를 바꿔도 표를 비우지 않는다 — `lib/listQuery` 주석 참고 */
     listQueryOptions,
   )
 
@@ -293,7 +293,7 @@ export default function ManagersTab() {
           </Empty>
         )
       ) : (
-        /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
+        /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `lib/listQuery` */
         <StaleBlock stale={page.isFetching && page.data !== undefined} label="매니저를 불러오는 중">
           <Table className="table-fixed">
             <TableHeader>

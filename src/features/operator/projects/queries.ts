@@ -41,7 +41,7 @@ import { findSections } from '@/api/curriculum/curriculumApi'
 import { findCohort, findClassrooms } from '@/api/academic/academicApi'
 import { academicKeys } from '@/api/academic/academicKeys'
 import { curriculumKeys } from '@/api/curriculum/curriculumKeys'
-import { listQueryOptions } from '../_shared/listQuery'
+import { listQueryOptions } from '@/lib/listQuery'
 import type {
   findProjects_Response,
   findProjectClassProgress_Response,

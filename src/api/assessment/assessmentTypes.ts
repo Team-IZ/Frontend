@@ -16,6 +16,8 @@ export type startSession_Errors =
   | 'ACCESS_DENIED'
   | 'SESSION_NOT_ACCESSIBLE'
   | 'SESSION_ALREADY_ENDED'
+  | 'ASSESSMENT_WINDOW_CLOSED'
+  | 'REVIEW_DUE_AT_PASSED'
   | 'STAGE_NOT_FOUND'
 
 // POST /api/v0/assessment-sessions/{sessionId}/hints — 다시 설명(힌트) 요청
@@ -45,6 +47,8 @@ export type submitSessionAnswer_Errors =
   | 'ACCESS_DENIED'
   | 'SESSION_NOT_ACCESSIBLE'
   | 'SESSION_NOT_STARTED'
+  | 'ASSESSMENT_WINDOW_CLOSED'
+  | 'REVIEW_DUE_AT_PASSED'
   | 'SESSION_TIMEOUT'
   | 'ANSWER_ALREADY_SUBMITTED'
   | 'PROBLEM_TIME_LIMIT_EXCEEDED'

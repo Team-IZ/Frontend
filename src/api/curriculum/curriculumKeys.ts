@@ -7,6 +7,7 @@ import type {
   findSections_Path,
   findUsedProjects_Path,
   findComparableCohorts_Query,
+  findCohortLinkedCurricula_Path,
   findLinkableCurricula_Path,
 } from './curriculumTypes'
 
@@ -35,6 +36,8 @@ export const curriculumKeys = {
     [...curriculumKeys.all, 'findUsedProjects', params.path ?? null] as const,
   findComparableCohorts: (params: { query?: findComparableCohorts_Query }) =>
     [...curriculumKeys.all, 'findComparableCohorts', params.query ?? null] as const,
+  findCohortLinkedCurricula: (params: { path: findCohortLinkedCurricula_Path }) =>
+    [...curriculumKeys.all, 'findCohortLinkedCurricula', params.path ?? null] as const,
   findLinkableCurricula: (params: { path: findLinkableCurricula_Path }) =>
     [...curriculumKeys.all, 'findLinkableCurricula', params.path ?? null] as const,
 }

@@ -10,7 +10,7 @@
   조립. 화면이 하면 격자 컴포넌트가 서버 응답 구조를 알게 된다.
 */
 import { useQuery } from '@tanstack/react-query'
-import { listQueryOptions } from '../../../_shared/listQuery'
+import { listQueryOptions } from '@/lib/listQuery'
 import { findCohortRiskTraineeRates, findCohortComparison } from '@/api/analytics/analyticsApi'
 import { analyticsKeys } from '@/api/analytics/analyticsKeys'
 import type { findCohortRiskTraineeRates_Response } from '@/api/analytics/analyticsTypes'
@@ -137,9 +137,9 @@ export function useRoundGrid(q: RoundQuery | undefined) {
     queryFn: () => loadRoundGrid(q!),
     /*
       **툴바를 만져도 격자를 비우지 않는다.** 조건이 곧 키라 바뀌는 순간 캐시가 없어져
-      화면이 통째로 비었다 — 반 하나를 더 고를 때마다 표가 사라졌다(`_shared/listQuery`).
+      화면이 통째로 비었다 — 반 하나를 더 고를 때마다 표가 사라졌다(`lib/listQuery`).
 
-      ⚠ **다만 계층이 바뀌면 유지하지 않는다.** `_shared/listQuery`의 규칙 그대로다 —
+      ⚠ **다만 계층이 바뀌면 유지하지 않는다.** `lib/listQuery`의 규칙 그대로다 —
       *"같은 것의 다른 조각"* 은 유지하고 *"다른 것"* 은 유지하지 않는다. 반별 격자와 팀
       격자는 **행도 열도 기준선도 다른 표**라, 그대로 두면 팀을 고르는 동안 반별 표가
       보이고 반별로 돌아와도 팀 표가 남는다(실측).
@@ -327,7 +327,7 @@ export function useCohortCompare(q: CohortQuery | undefined) {
     queryKey: [...analyticsKeys.all, 'cohort-compare', q],
     enabled: !!q,
     queryFn: () => loadCohortCompare(q!),
-    /* 비교 기수를 바꿔도 표를 비우지 않는다 — `_shared/listQuery` 주석 참고 */
+    /* 비교 기수를 바꿔도 표를 비우지 않는다 — `lib/listQuery` 주석 참고 */
     ...listQueryOptions,
     ...REFRESH_ON_RETURN,
   })

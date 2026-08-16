@@ -160,9 +160,12 @@ export default function Header({ user, scope }: Props) {
 
       <div className="text-fg-muted flex shrink-0 items-center gap-3 text-sm">
         {SHOW_DEV_ROLE_SWITCHER && <DevRoleSwitcher />}
-        <span className="hidden sm:inline">
-          {user.name} · {user.role}
-        </span>
+        {/* 세션이 오기 전에는 이름·역할이 빈 문자열이라 ` · `만 남는다 — 줄째 접는다 */}
+        {user.name && (
+          <span className="hidden sm:inline">
+            {user.name} · {user.role}
+          </span>
+        )}
         <Avatar aria-hidden="true" size="sm">
           <AvatarFallback className="bg-primary-soft text-primary font-semibold">
             {user.name.slice(0, 1)}

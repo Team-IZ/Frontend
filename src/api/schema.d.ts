@@ -867,9 +867,27 @@ export interface paths {
      *     - projectId (경로): 대상 프로젝트 ID
      *
      *     **응답 (200)**
-     *     - teams[]: 팀 목록(teamId · teamNumber · name · status · memberCount)
-     *     - unassignedCount: 아직 어느 팀에도 속하지 않은 인원 수 —
+     *     - teams[]: 팀 목록(teamId · **classId** · **className** · teamNumber · name ·
+     *       status · memberCount · **members[]**)
+     *     - unassignedMembers[] / unassignedCount: 아직 어느 팀에도 속하지 않은 인원 —
      *       화면의 "팀에 들어가지 않은 사람이 n명 있어요" 배너가 이 값을 쓴다
+     *
+     *     ## 🔴 30차 R3 — 담당 반만 온다
+     *
+     *     **매니저의 담당 반에 속한 팀만** 내려간다. 제출 현황(`findProjectSubmissionStatus`)·
+     *     반별 진행(`findClassProgress`)과 같은 모집단이다. 담당 반이 없으면 빈 배열이다.
+     *
+     *     종전에는 기수 전체(48팀)가 나왔다. 이 조회는 매니저 전용이라 오퍼레이터 갈래가 없다.
+     *
+     *     ## 🔴 30차 R4 — 반 이름과 구성원
+     *
+     *     `teamNumber`는 **반 안에서만** 유일하다. 반이 여덟이면 `1팀`이 여덟 번 나오므로
+     *     `className` 없이는 목록에서 팀을 구분할 수 없다. 담당 반이 둘 이상인 매니저가 있어
+     *     담당 반으로 좁힌 뒤에도 이 값이 필요하다.
+     *
+     *     `members[]`는 `unassignedMembers[]`와 **같은 모양**(projectMembershipId · userId ·
+     *     name)이다 — 편성 화면이 사람을 두 목록 사이로 끌어다 옮기는 자리라 한 컴포넌트로
+     *     다룰 수 있어야 한다. `memberCount`는 이 배열의 길이다.
      *
      *     ⚠️ 팀 편성 화면의 5단계(편성 전·편성 중·전원 배정·확정·제출 시작)를 이 응답 하나로
      *     전부 판정할 수는 없다 — "제출 시작됨" 여부는 Submission 도메인(미착수)이 있어야
@@ -1855,6 +1873,7 @@ export interface paths {
      *     | `totalPages` | int | 전체 페이지 수 |
      *     | `unassignedCount` | int | 반 배정이 없는 교육생 수. 화면 상단 `미배정 N` 배지. **매니저는 늘 `0`** |
      *     | `cohortTotal` | int | 기수 전체 교육생 수. 화면 상단 `명단 393명` |
+     *     | `activeCount`·`invitedCount`·`inactiveCount` | int | 계정 상태별 인원. 화면 머리글의 `활성 24 · 초대 대기 1 · 비활성 1`. 셋을 더하면 `cohortTotal`이다(30차 R7) |
      *     | `rounds[]` | array | **`회차 · 미프 N차` 드롭다운 선택지.** 차수 오름차순이라 마지막이 가장 최근 |
      *     | `assessmentRoundId` | UUID? | **실제로 조회에 쓴 회차.** 드롭다운의 선택 상태를 이 값에 맞춘다. 회차가 없으면 `null` |
      *
@@ -1905,10 +1924,10 @@ export interface paths {
      *     | `roundResultStatus` | enum? | 응시 시도 상태. `NOT_STARTED`(미시작) · `SUBMITTED` · `ANALYZING` · `SESSION_READY` · `SESSION_IN_PROGRESS` · `COMPLETED`(완료) · `FAILED` · `EXPIRED` |
      *     | `conceptResultItems` | string? | 문항별 결과의 JSON 배열(문자열로 직렬화됨). 각 항목은 `problemId`·`problemNo`·`conceptId`·`generationStatus`·`reachLevel`(0~4단, 미생성·무응답이면 `null`)을 가진다 |
      *     | `expectedConceptCount` | int? | `저단계 개수`의 분모. 실제로 생성된(`generationStatus='GENERATED'`) 문항 수이며 사람마다 다르다 |
-     *     | `lowStageConceptCount` | int? | 도달 단계 0~2단(저단계)인 문항 수. 응답한 문항이 하나도 없으면 `null`(화면의 `—`) |
+     *     | `lowStageConceptCount` | int? | 도달 단계 **2단 미만(0~1단)** 인 문항 수. 응답한 문항이 하나도 없으면 `null`(화면의 `—`) |
      *     | `excellentOccurrenceCount` | int? | 이 교육생이 우수로 발견된 누적 횟수 |
      *     | `excellentAssessmentSequenceNos` | int[] | 우수로 발견된 프로젝트 차수(`analysis_sequence_no`) 전부. **조회 회차를 포함**하므로 이 배열에 조회 차수가 있으면 이번 회차도 우수다. 최신 차수부터 내림차순, 근거 없으면 빈 배열 |
-     *     | `matchedRiskTypeCodes` | string? | 이번 회차에 걸린 위험 유형 코드 배열(문자열로 직렬화됨). `STAGE_DECLINE`(단계 하락) · `PERSISTENT_LOW`(지속 저점) · `INVALID_ATTEMPT`(무효 응시) · `CONTRIBUTION_UNDERSTANDING_GAP`(기여·이해도 괴리) · `LOW_PARTICIPATION`(저기여) 중 동시에 여러 개가 걸릴 수 있다. 해소(`RESOLVED`)된 사유는 들어오지 않는다 |
+     *     | `matchedRiskTypeCodes` | string[]? | 이번 회차에 걸린 위험 유형 코드 **배열**. `STAGE_DECLINE`(단계 하락) · `PERSISTENT_LOW`(지속 저점) · `INVALID_ATTEMPT`(무효 응시) · `CONTRIBUTION_UNDERSTANDING_GAP`(기여·이해도 괴리) · `LOW_PARTICIPATION`(저기여) 중 동시에 여러 개가 걸릴 수 있다. 해소(`RESOLVED`)된 사유는 들어오지 않는다. **`null`(지표 없음)과 `[]`(위험 없음)은 뜻이 다르다.** 30차 R6까지는 `"{}"` 같은 PostgreSQL 배열 리터럴 문자열이었다 |
      *     | `roundPrimaryStatusCode` | enum? | 배지 한 칸에 넣을 **단일** 코드. 1층 응시상태(`NOT_ATTENDED` 미응시 → `SESSION_INCOMPLETE` 응시 중단 → `INVALID_ATTEMPT` 무효 응시)가 있으면 2층 위험 유형(`LOW_PARTICIPATION` → `CONTRIBUTION_UNDERSTANDING_GAP` → `STAGE_DECLINE` → `PERSISTENT_LOW`)은 보지 않는다. 걸린 것이 없으면 `null`(정상). 중도 이탈은 여기 들어오지 않는다 — 계정 상태의 비활성화 사유로 이미 드러난다 |
      *     | `roundTerminalAt` | date-time? | `roundPrimaryStatusCode`가 `NOT_ATTENDED`·`SESSION_INCOMPLETE`일 때만 값이 있는 시각. 화면이 `우수 누적` 칸에 정상 결과 대신 `세션 중단 · 07-14`처럼 사유·일자를 그릴 때 쓴다 |
      *     | `rowAggregationStatus` | string? | 이 행의 지표 집계 상태. 현재는 항상 `COMPLETE`다 |
@@ -1923,7 +1942,7 @@ export interface paths {
      *     | `SECURITY_ACTION` | 보안 조치 |
      *     | `OTHER` | 기타 |
      *
-     *     ⚠️ **`unassignedCount`·`cohortTotal`은 필터와 무관한 기수 전체 기준**이라 `totalElements`와 다르다.
+     *     ⚠️ **`unassignedCount`·`cohortTotal`·계정 상태별 3종은 필터와 무관한 기수 전체 기준**이라 `totalElements`와 다르다.
      *     검색 결과가 없을 때의 `7기 393명에서 찾았습니다`도 `cohortTotal`이며, 두 값이 같은 모집단이라
      *     `393명 중 미배정 12`가 그대로 성립한다.
      *
@@ -2024,15 +2043,18 @@ export interface paths {
      *     - cohortId (경로) · file: 첫 행에 `이름`·`이메일` 열이 있는 CSV
      *       (UTF-8·CP949 둘 다 되고 열 순서는 상관없다 — 등록 API와 같은 파서다, 25차 Q1)
      *
-     *     **응답 (200)** — 등록 응답과 **같은 스키마**다(`RegisterTraineesResponse`).
-     *     화면이 미리보기와 등록 결과를 한 컴포넌트로 그릴 수 있다.
+     *     **응답 (200)** — 등록과 **다른 스키마**다(`PreviewTraineesResponse`, 31차 R2).
+     *     종전에는 등록 응답을 그대로 돌려줬는데, `registeredCount`라는 이름이 「등록됐다」로 읽혀
+     *     미리보기가 진짜 등록을 했는지 명단을 뒤지게 만들었다. **이 응답의 수는 전부 「그렇게 될 것」이다.**
      *
-     *     | 필드 | 미리보기에서의 뜻 |
+     *     | 필드 | 뜻 |
      *     |---|---|
      *     | `requestedCount` | 검사한 행 수 |
-     *     | `registeredCount` | **등록될 수 있는** 행 수(= requestedCount − failures.length) |
-     *     | `invitationSentCount` | **항상 0** — 아무것도 보내지 않았다 |
+     *     | `registrableCount` | **등록될 수 있는** 행 수(= requestedCount − failures.length) |
      *     | `failures[]` | 걸린 행. `row`·`email`·`status`는 등록과 같은 의미 |
+     *
+     *     `invitationSentCount`·`batchRequestId`는 **없다** — 보낸 메일도 폴링할 잡도 없어
+     *     각각 0·null로 고정돼 있던 자리다. 실패 목록(`Failure`)만 등록과 같은 형을 그대로 쓴다.
      *
      *     ## 판정은 등록과 **같은 규칙**이다
      *
@@ -2181,8 +2203,8 @@ export interface paths {
      *     **요청** (application/json) — 등록(`POST …/trainees/invitations`)과 같은 본문이다.
      *     - trainees[] (필수, 1건 이상): name(필수, 최대 200자) · email
      *
-     *     **응답 (200)** — `registeredCount`는 **등록될 수 있는 수**이고 `invitationSentCount`는 항상 0이다.
-     *     `failures[].row`는 1부터 시작하는 배열 순번이다(CSV와 달리 헤더가 없다).
+     *     **응답 (200)** — `PreviewTraineesResponse`. `registrableCount`는 **등록될 수 있는 수**이며
+     *     아직 등록되지 않았다. `failures[].row`는 1부터 시작하는 배열 순번이다(CSV와 달리 헤더가 없다).
      */
     post: operations['previewTrainees']
     delete?: never
@@ -2898,6 +2920,8 @@ export interface paths {
      *     |---|---|---|
      *     | `SESSION_NOT_ACCESSIBLE` | 404 | 없거나 남의 세션 |
      *     | `SESSION_ALREADY_ENDED` | 409 | 이미 끝난 세션 |
+     *     | `ASSESSMENT_WINDOW_CLOSED` | 409 | 개인 응시 창(`assessmentCloseAt`)이 닫혔다. **시작할 수 없다** |
+     *     | `REVIEW_DUE_AT_PASSED` | 409 | 다시 보기 마감(`reviewDueAt`)이 지났다 |
      *     | `STAGE_NOT_FOUND` | 409 | 세울 단계가 없다. 문항이 하나도 만들어지지 않은 세션이다 |
      *
      *     `STAGE_NOT_FOUND`는 문제 3개가 전부 `NOT_GENERATED`일 때 나온다. 200을 받고 전체화면으로
@@ -2965,6 +2989,7 @@ export interface paths {
      *     | `HINT_EXHAUSTED` | 409 | 단계당 2회를 다 썼다 |
      *     | `HINT_NOT_AVAILABLE` | 409 | 다시 보기이거나, 이미 답을 제출한 질문이다 |
      *     | `SESSION_NOT_STARTED` | 409 | `POST /start`를 아직 부르지 않았다 |
+     *     | `ASSESSMENT_WINDOW_CLOSED` | 409 | 개인 응시 창이 닫혔다 |
      *
      *     다시 보기에서 막는 근거는 정의서 §6+다 — "이번에는 다시 설명해 드리지 않아요. 지난번과 같은
      *     질문이라 이미 한 번 들었어요."
@@ -3085,6 +3110,8 @@ export interface paths {
      *     |---|---|---|
      *     | `ANSWER_TEXT_REQUIRED` | 400 | 본문이 비었다 |
      *     | `SESSION_NOT_STARTED` | 409 | `POST /start`를 아직 부르지 않았다 |
+     *     | `ASSESSMENT_WINDOW_CLOSED` | 409 | 개인 응시 창이 닫혔다. **답변이 더는 받아들여지지 않는다** |
+     *     | `REVIEW_DUE_AT_PASSED` | 409 | 다시 보기 마감이 지났다 |
      *     | `SESSION_TIMEOUT` | 409 | 세션 상한(기본 60분) 초과. 답한 데까지 저장하고 세션을 닫는다 |
      *     | `PROBLEM_TIME_LIMIT_EXCEEDED` | 409 | 이 문제의 상한(기본 20분) 초과. **이미 다음 문제로 넘어갔다** |
      *     | `ANSWER_ALREADY_SUBMITTED` | 409 | 같은 자리에 이미 제출됐다(낙관적 잠금). 다시 불러오면 된다 |
@@ -4499,14 +4526,19 @@ export interface paths {
      *
      *     ### failureCode
      *
-     *     분석 실행 실패 6종과 저장소·ZIP 접근 실패를 합해 15종이다. 저장소 주소 오류도 제출이 아니라
-     *     여기로 드러난다.
+     *     분석 실행 실패와 저장소 접근 실패, ZIP 내용 검증을 합해 **12종**이다. 저장소 주소 오류도
+     *     제출이 아니라 여기로 드러난다.
      *
      *     | 묶음 | 값 |
      *     | --- | --- |
      *     | 분석 실행 | `TEMPORARY_ERROR` · `ANALYSIS_TIMEOUT` · `MODEL_ERROR` · `SOURCE_UNREACHABLE` · `UNSUPPORTED_LANGUAGE` |
      *     | 저장소 접근 | `INVALID_REPOSITORY_URL` · `REPO_NOT_FOUND` · `REPOSITORY_ACCESS_DENIED` · `BRANCH_NOT_FOUND` · `UNSUPPORTED_HOST` |
-     *     | ZIP 검증 | `FILE_TOO_LARGE` · `ARCHIVE_INVALID` · `EMPTY_CODE` · `PROHIBITED_FILE` · `GIT_LOG_MISSING` |
+     *     | ZIP 내용 | `EMPTY_CODE` · `GIT_LOG_MISSING` |
+     *
+     *     ⚠️ 종전 설명은 15종이라 적고 ZIP 묶음에 `FILE_TOO_LARGE`·`ARCHIVE_INVALID`·`PROHIBITED_FILE`을
+     *     함께 실었는데 **셋 다 이 필드로 올 수 없다**(2026-08-16 정정). ZIP 파일 자체의 문제라 업로드가
+     *     `400 ARCHIVE_INVALID`·`413 FILE_TOO_LARGE`로 먼저 거절하고 제출 행조차 만들지 않으므로 분석이
+     *     시작되지 않는다 — 그 셋은 **제출 API의 에러 응답**에서 받는다.
      *
      *     🔴 **`SESSION_PREPARATION_FAILED`만 예외다.** `analysis_job.failure_code`에 없는 값이며
      *     서버가 조회 시점에 판정해 내려 준다. **분석은 성공했지만 이 교육생의 세션·문항이 준비되지
@@ -5397,7 +5429,7 @@ export interface paths {
      *
      *     | 필드 | 타입 | 설명 |
      *     |---|---|---|
-     *     | `targetTraineeCount` | long | 이번 회차 수행 대상 교육생 수(기수 총원). 제출률의 분모 |
+     *     | `targetTraineeCount` | long | 이번 회차 수행 대상 교육생 수. 제출률의 분모. **오퍼레이터는 기수 총원, 매니저는 담당 반 총원**(30차 R3) |
      *     | `submittedCount` | long | 제출을 마친 교육생 수 |
      *     | `analysisTargetCount` | long | 분석 대상 교육생 수. `submittedCount`와 값이 같습니다 — 단계별 분모를 필드 이름으로도 드러내려고 따로 둡니다 |
      *     | `analysisSucceededCount` | long | 분석이 성공한 교육생 수 |
@@ -5458,6 +5490,27 @@ export interface paths {
      *     그때 만들어져 회차가 없는 프로젝트는 **`PROJECT_ROUND_NOT_CREATED`(404)** 로 답한다.
      *     `PROJECT_ROUND_NOT_FOUND`와 나눈 이유는 화면이 할 일이 다르기 때문이다 —
      *     이쪽은 「회차 준비 중」이고, 그쪽은 없는 번호를 물은 것이라 드롭다운을 되돌려야 한다.
+     *
+     *     ## 🔴 30차 R3 — 매니저는 담당 반만 본다
+     *
+     *     **역할이 모집단을 가른다.** 명단(`findTraineeRoster`)·반 목록과 같은 규칙이다.
+     *
+     *     | 역할 | `summary` · `classes[]` · `conceptMatches[]` · `failedTeams[]` |
+     *     |---|---|
+     *     | 오퍼레이터 | 기수 전체 |
+     *     | 매니저 | **담당 반만** |
+     *
+     *     네 값이 **모두 같은 모집단**이다. `summary`만 기수 전체로 두면 같은 응답 안에서
+     *     합계와 반 행이 다른 것을 세게 된다.
+     *
+     *     ⚠️ **매니저가 담당 반이 하나도 없는 기수의 프로젝트를 열면 `MANAGER_SCOPE_NOT_FOUND`(404)**
+     *     다. 좁히기만 하면 그 화면은 `반 0개 · 인원 0명`이 되어, 권한이 없다는 사실이
+     *     「아직 데이터가 없다」로 보인다. 제출 현황(`findProjectSubmissionStatus`)·명단·상세가
+     *     같은 자리에서 같은 코드를 쓴다.
+     *
+     *     💡 30차까지는 이 조회가 역할을 보지 않아 매니저에게도 기수 전체가 나갔다.
+     *     프로젝트 상세 한 화면 위에서 「제출 현황」 탭은 담당 반 26명인데 「반별 진행」 탭은
+     *     208명이었고, `managerNames[]`에 다른 매니저 이름까지 실려 나갔다.
      */
     get: operations['findProjectClassProgress']
     put?: never
@@ -6177,12 +6230,30 @@ export interface paths {
      *     **응답 (200)**
      *     - enrollments[].cohortId: 기수 ID
      *     - enrollments[].cohortName: 기수명
+     *     - enrollments[].status: 기수 상태 `PLANNED` / `RUNNING` / `CLOSED`
      *     - enrollments[].classroom: 현재 배정된 반. 아직 배정 전이면 null
      *     - enrollments[].classroom.classroomId / name: 반 ID·이름
      *
-     *     **아직 채워지지 않는 값** — 반 배정 전이면 classroom은 null이다. 오퍼레이터가
-     *     `PATCH /cohorts/{cohortId}/classrooms/trainee-assignments`를 실행하기 전 구간에서
-     *     정상적으로 발생하는 상태다.
+     *     ## 🔴 30차 R9 — 순서가 정의돼 있다
+     *
+     *     **진행 중(`RUNNING`) → 개설 예정(`PLANNED`) → 종료(`CLOSED`)** 순이고, 같은 상태
+     *     안에서는 **최근 시작한 기수가 먼저**다. 화면은 `enrollments[0]`을 그대로 열면
+     *     오퍼레이터 화면과 같은 규칙(*진행 중을 고른다*)이 된다.
+     *
+     *     종전에는 정렬이 없어 `cohort_member` 조회 순서 그대로 나갔다. 담당 기수가 하나면
+     *     드러나지 않지만, 진행 중 기수와 막 끝난 기수를 함께 맡은 매니저가 생기면 화면이
+     *     무엇을 기본으로 열지 정할 근거가 없었다.
+     *
+     *     💡 **매니저는 이 조회를 쓰는 편이 낫다.** `GET /cohorts`는 기관의 기수를 전부 주므로
+     *     담당하지 않는 기수가 상단 스위처에 뜨고, 고르는 순간 하위 조회가 빈 결과가 된다.
+     *
+     *     ⚠️ **매니저에게 `classroom`은 언제나 null이다.** 이 값의 원장은 교육생 배정
+     *     (`class_membership`)이고 매니저 배정은 `manager_assignment`라는 다른 원장이다.
+     *     매니저의 담당 반은 `GET /cohorts/{cohortId}/classrooms`가 담당 반만 돌려준다.
+     *
+     *     **아직 채워지지 않는 값** — 교육생도 반 배정 전이면 classroom은 null이다.
+     *     오퍼레이터가 `PATCH /cohorts/{cohortId}/classrooms/trainee-assignments`를 실행하기
+     *     전 구간에서 정상적으로 발생하는 상태다.
      */
     get: operations['findMyEnrollments']
     put?: never
@@ -6694,7 +6765,7 @@ export interface paths {
      *     | `classroomId`·`className` | | 현재 소속 반. 배정이 없으면 `null` |
      *     | `inactivatedReasonCode`·`inactivatedReason`·`inactivatedAt` | | 비활성 사유·일자. 활성이면 `null` |
      *     | `riskTypeCode` | string? | 헤더 위험 배지. **가장 최근에 응시한 회차** 하나의 판정 |
-     *     | `riskReasonSummary` | string? | 그 배지의 판정식(`2단 이하 0 → 2`) |
+     *     | `riskReasonSummary` | string? | 그 배지의 판정식이며 그대로 표시하는 완성된 문장이다(`평균 도달 단계 2.33 → 1.67. 2단 미만 2개.`). **대괄호 태그는 붙지 않는다**(30차 R8) |
      *     | `excellentOccurrenceCount`·`excellentAssessmentSequenceNos` | | 우수 누적 |
      *     | `rounds[]` | array | 회차별 도달 단계 격자. **차수 오름차순** |
      *
@@ -6711,7 +6782,7 @@ export interface paths {
      *     | `matchedRiskTypeCodes` | array | 그 회차에 걸린 위험 유형 전부 |
      *     | `riskReasonSummary` | string? | 그 회차 판정식 |
      *     | `terminalAt` | date-time? | `세션 중단 · 07-14`의 일자 |
-     *     | `expectedConceptCount`·`lowStageConceptCount` | | `2단 이하` 칸의 분모·분자 |
+     *     | `expectedConceptCount`·`lowStageConceptCount` | | `2단 미만` 칸의 분모·분자 |
      *     | `excellent` | boolean | 이번 회차도 우수인가 |
      *     | `teamId` | UUID? | 회차 당시 팀 |
      *     | `concepts[]` | array | 격자 한 줄의 칸들. **문항 번호 오름차순** |
@@ -6823,7 +6894,7 @@ export interface paths {
      *     답한 문항이 없으면 `REVIEW`가, 창이 아직 열려 있으면 `REVIEW_CLOSED`가 생기지 않는다.
      *
      *     💡 **`reviewTargetCount`의 기준은 2단 미만(0~1단)이다.** 정책상 재시험 대상이며
-     *     명단(MG-05)의 `2단 이하` 분자와 같은 산식이다 — 2단은 게이트 밖이라 세지 않는다.
+     *     명단(MG-05) `lowStageConceptCount`와 같은 산식이다 — 2단은 게이트 밖이라 세지 않는다.
      *
      *     💡 **커서는 회차 차수다.** 손으로 만들지 말고 응답의 `nextCursor`를 그대로 돌려준다.
      */
@@ -6988,6 +7059,68 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v0/cohorts/{cohortId}/linked-curricula': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 기수에 연결된 교안 목록 | ✅ 사용 가능
+     * @description 이 기수의 회차들이 **실제로 연결한** 교안만 조회한다(MG-09 교안 화면).
+     *     읽기 전용이며 등록·재분석은 오퍼레이터 소관이라 이 화면에 쓰기 액션이 없다.
+     *
+     *     ## 🔴 30차 Q2 — 이 목록을 주는 조회가 없었다
+     *
+     *     네 후보 모두 다른 값을 주고 있었다.
+     *
+     *     | 조회 | 실제로 주던 것 |
+     *     |---|---|
+     *     | `GET /cohorts/{cohortId}/curricula` | **연결 가능한 후보**(기관 전체). 이름이 뜻과 어긋나 있었다 |
+     *     | `GET /organizations/{organizationId}/curricula` | 기관 전체(페이지네이션) |
+     *     | `GET /projects`의 `curriculumNames[]` | **이름만**. 상세로 갈 `materialId`가 없다 |
+     *     | `GET /projects/{projectId}`의 `curricula[]` | 정확하지만 **회차 수만큼** 불러야 모인다 |
+     *
+     *     마지막 모양을 피하려고 만든 조회다 — 기수당 회차가 여섯이면 여섯 콜이 되고,
+     *     회차가 늘면 그만큼 늘어난다.
+     *
+     *     ## 요청
+     *
+     *     | 파라미터 | 위치 | 필수 | 설명 |
+     *     |---|---|---|---|
+     *     | `cohortId` | 경로 | **필수** | 조회할 기수. **이번에는 실제로 목록을 좁힌다** |
+     *
+     *     ## 응답 (200)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     |---|---|---|
+     *     | `versionId`·`materialId` | UUID | 교안 버전 ID·원장 ID. 상세로 갈 때 쓴다 |
+     *     | `versionNo`·`originalFileName` | | 버전 번호·파일명 |
+     *     | `pageCount` | int? | 페이지 수. 분석 전이면 null |
+     *     | `analysisStatus` | enum? | 최근 분석 시도 상태. **한 번도 안 했으면 null**이며 `FAILED`와 다르다 |
+     *     | `teachesCount` | int | 승인된 가르친 항목 수 |
+     *     | `createdAt` | date-time | 등록 시각 |
+     *     | `linkedProjects[]` | array | **이 교안을 쓴 회차들**. `projectId` · `projectName` · `sequenceNo` |
+     *
+     *     **한 교안이 여러 회차에 걸리면 한 번만 나오고** `linkedProjects[]`에 그 회차가 모두
+     *     담긴다. 이 배열이 이 화면의 맥락 전부라 비어 있는 채로 나오는 일은 없다 —
+     *     연결이 있어야 목록에 들어오기 때문이다.
+     *
+     *     회차 차수는 `sequenceNo`다. 미니프로젝트는 `round_no`가 늘 1이라 그것으로는
+     *     차수를 셀 수 없다.
+     *
+     *     연결이 하나도 없으면 빈 배열이다(기수가 아직 교안을 붙이지 않은 상태이며 정상이다).
+     */
+    get: operations['findCohortLinkedCurricula']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v0/cohorts/{cohortId}/curricula': {
     parameters: {
       query?: never
@@ -6996,11 +7129,19 @@ export interface paths {
       cookie?: never
     }
     /**
-     * 기수 연결 교안 목록 | ✅ 사용 가능
-     * @description 기관 범위의 활성 교안 버전 목록을 조회한다.
+     * 회차에 연결할 수 있는 교안 후보 | ✅ 사용 가능
+     * @description 회차에 **붙일 수 있는** 교안 버전 후보를 조회한다(회차 생성·교안 연결 모달).
+     *     **기관 전체가 맞다** — 후보는 기수로 좁힐 것이 없다.
+     *
+     *     🔴 **30차 Q2 — 이름이 뜻과 어긋나 있었다.** 이 조회의 예전 요약은 「기수 연결 교안
+     *     목록」이었는데 실제로 주는 것은 **연결 가능한 후보**다. 경로에 `cohortId`가 있는데
+     *     목록을 좁히지 않는 것도 같은 오해를 키웠다 — 그 값은 **존재 검증**에만 쓴다(22차 R7).
+     *
+     *     💡 **이미 연결된 것**을 보려면 `GET /cohorts/{cohortId}/linked-curricula`를 쓴다.
+     *     매니저 교안 화면이 보는 것은 그쪽이다.
      *
      *     **요청**
-     *     - cohortId (경로): 현재 미검증(항상 토큰의 기관 범위로 조회)
+     *     - cohortId (경로): 목록을 좁히지 않는다. 존재하지 않으면 404다
      *
      *     **응답 (200)**
      *     - versionId / materialId: 교안 버전 ID / 원장 ID
@@ -7714,38 +7855,6 @@ export interface paths {
     patch?: never
     trace?: never
   }
-  '/api/v0/bff/me/current-round': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * 이번 회차 상태 판정 조회 (지금 할 일 하나) | ✅ 사용 가능
-     * @description TR-01(교육생 홈)이 보여줄 상태 하나를 조회한다. 진행 중인 회차가 없으면
-     *     status=NO_ACTIVE_ROUND로 200을 내려준다 — 빈 상태는 에러가 아니다.
-     *
-     *     **상태 파생 규칙 안내**: 여러 프로젝트에서 동시에 회차가 열려 있을 때 어느 걸
-     *     보여줄지, SESSION_INCOMPLETE(중단) 처리 방식 등은 아직 프론트와 확정되지 않았다.
-     *     status 종류는 CurrentRoundStatus 스키마 설명을 참고할 것.
-     *
-     *     **응답 (200)**
-     *     - status: 지금 상태 하나(SUBMISSION_MISSING · SUBMISSION_DEADLINE_PASSED ·
-     *       ANALYZING · ANALYSIS_FAILED · ASSESSMENT_AVAILABLE · ASSESSMENT_IN_PROGRESS ·
-     *       ASSESSMENT_WINDOW_CLOSED · COMPLETED_AWAITING_REPORT · REVIEW_AVAILABLE ·
-     *       NO_ACTIVE_ROUND)
-     *     - 그 외 필드는 status에 따라 의미 있는 것만 채워지고 나머지는 null
-     */
-    get: operations['findCurrentRound']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   '/api/v0/assessment-sessions/{sessionId}/problems/{problemNo}': {
     parameters: {
       query?: never
@@ -7756,6 +7865,19 @@ export interface paths {
     /**
      * 문제 하나의 코드·질문·문답 조회 | ✅ 사용 가능
      * @description 왼쪽 코드 패널과 오른쪽 대화가 이 한 번의 조회로 채워진다.
+     *
+     *     ## 🔴 교육생 본인 전용이다 (30차 Q1)
+     *
+     *     **매니저는 부를 수 없다.** 두 겹으로 막혀 있다 — 컨트롤러 전체가 `TRAINEE` 역할을
+     *     요구하고(403), 통과하더라도 서비스가 **세션 소유자 본인**인지 확인한다.
+     *     `사용 가능` 표시는 "교육생 화면에서 쓸 수 있다"는 뜻이었고 역할을 적지 않은 것은
+     *     누락이다.
+     *
+     *     💡 **매니저가 「개념별 근거 한 줄」을 찾고 있다면 다른 조회에 이미 있다** —
+     *     `GET /projects/{projectId}/evaluations/{userId}`(`findTraineeEvaluationDetail`,
+     *     매니저 전용)의 `concepts[].steps[].note`가 축(L1~L4)별 채점 근거다.
+     *     교육생 한 명당 **1콜**이며 문항 수만큼 부를 필요가 없다.
+     *     `note`는 회차 리포트 발행 전에는 `null`이다(`reportPublished`로 분기).
      *
      *     ## 요청 (경로 파라미터)
      *
@@ -7921,14 +8043,16 @@ export interface paths {
      *     ## 204를 "응시 완료"로 읽지 말 것
      *
      *     204는 **살아 있는 세션(`READY`·`IN_PROGRESS`·`PAUSED`)이 하나도 없다**는 뜻일 뿐이고 그 이유는
-     *     다섯 가지다 — 이미 완료했다 · **방금 상한을 넘겨 닫혔다** · 아직 분석이 끝나지 않아 세션이
-     *     만들어지지 않았다 · 분석이 실패했다 · 팀 배정이 끊겼다. 이들을 가르는 것은
-     *     `GET /assessment-rounds`의 `representativeStatus`이며, 완료는 그중 `ASSESSMENT_COMPLETED`
-     *     하나다. 상한 초과로 닫힌 세션은 응시가 `SESSION_INCOMPLETE`로 끝나 `initialSessionStatus`가
-     *     `INTERRUPTED`다.
+     *     여섯 가지다 — 이미 완료했다 · **방금 상한을 넘겨 닫혔다** · **응시 창이 닫혔다** ·
+     *     아직 분석이 끝나지 않아 세션이 만들어지지 않았다 · 분석이 실패했다 · 팀 배정이 끊겼다.
+     *     이들을 가르는 것은 `GET /assessment-rounds`의 `representativeStatus`이며, 완료는 그중
+     *     `ASSESSMENT_COMPLETED` 하나다. 상한 초과로 닫힌 세션은 응시가 `SESSION_INCOMPLETE`로 끝나
+     *     `initialSessionStatus`가 `INTERRUPTED`다.
      *
-     *     ⚠️ **응시 창(`assessmentCloseAt`)이 닫혀도 204가 아니다.** 여기서 보는 것은 세션의 정책
-     *     시간 상한이지 응시 창이 아니다 — 창이 지난 `READY` 세션은 여전히 200으로 내려온다.
+     *     **응시 창(`assessmentCloseAt`)이 닫혔으면 204다**(2026-08-16 변경). 종전에는 창이 지난
+     *     `READY` 세션을 200으로 내려줬는데, 화면이 시작할 수 없는 세션을 "지금 할 일"로 그려 놓고
+     *     `POST /start`에서만 막히는 상태였다. 다시 보기도 같다 — `reviewDueAt`이 지나면 204다.
+     *     그 회차의 홈 카드는 `ASSESSMENT_WINDOW_CLOSED` · CTA `NONE`으로 나간다.
      *
      *     ## 오류
      *
@@ -8046,7 +8170,7 @@ export interface paths {
      *     | --- | --- | --- |
      *     | `analysisPhase` | enum | `NOT_SUBMITTED` · `ANALYZING` · `FAILED` · `COMPLETED` · `WAITING` |
      *     | `analysisJobStatus` | enum? | `QUEUED` · `RUNNING` · `SUCCEEDED` · `PARTIAL` · `FAILED` |
-     *     | `analysisFailureCode` | string? | 분석 실패 사유. 15종. 상세는 Submission API 참고 |
+     *     | `analysisFailureCode` | string? | 실패했는가만 알린다. 값은 `ANALYSIS_FAILED` 하나. **사유는 TR-02에 있다** |
      *
      *     **이해도 확인·다시 보기**
      *
@@ -8078,10 +8202,10 @@ export interface paths {
      *     | 필드 | 타입 | 설명 |
      *     | --- | --- | --- |
      *     | `submissionDueAt` | datetime? | 제출 마감 |
-     *     | `roundAssessmentOpenAt` | datetime? | 회차 응시 창 시작. `OPEN` 회차면 DB가 non-null을 보장 |
-     *     | `roundAssessmentDueAt` | datetime? | 회차 응시 창 종료. 위와 같음 |
-     *     | `assessmentOpenAt` | datetime? | **개인** 응시 창 시작. 응시 생성 전이면 `null` |
-     *     | `assessmentCloseAt` | datetime? | **개인** 응시 창 종료. 응시 생성 전이면 `null` |
+     *     | `roundAssessmentOpenAt` | datetime? | 🔴 **폐기. 언제나 `null`**(2026-08-16) |
+     *     | `roundAssessmentDueAt` | datetime? | 🔴 **폐기. 언제나 `null`**(2026-08-16) |
+     *     | `assessmentOpenAt` | datetime? | **개인** 응시 창 시작. 응시 생성 전이면 `null`. **응시 가능 판정은 이것뿐** |
+     *     | `assessmentCloseAt` | datetime? | **개인** 응시 창 종료. 응시 생성 전이면 `null`. ⚠️ `min(…, roundAssessmentDueAt)` 금지 — JS에서 1970년이 된다 |
      *     | `initialTerminalAt` | datetime? | 응시 종료 시각 |
      *     | `reportPublishMode` | enum? | `ROUND_BATCH` |
      *     | `reportPublishNotBeforeAt` | datetime? | 이 시각 이전에는 발행하지 않는다 |
@@ -8451,8 +8575,11 @@ export interface components {
     TraineeReleaseStatus: 'NOT_CONFIGURED' | 'WITHHELD' | 'RELEASED'
     /** @description 공개 범위별 본문 필드 노출 여부 */
     VisibleFields: {
+      /** @description 축별 서술(`said`)이 학생에게 열리는가. SUMMARY 이상이면 true */
       said: boolean
+      /** @description 교안 위치(`chapter`·`pages`·`title`)가 열리는가. SUMMARY 이상이면 true */
       curriculumRef: boolean
+      /** @description 문답 원문이 열리는가 — `[내 답변] 펼침`이 이 값으로 열린다. FULL에서만 true */
       qa: boolean
     }
     /** @description 프로젝트 요구사항 전체 교체 요청 */
@@ -8673,8 +8800,6 @@ export interface components {
        * @example 1000000
        */
       priceUnitTokenCount?: number | null
-      pricePairConsistent?: boolean
-      cachedPriceConsistent?: boolean
     }
     /** @description 채점 모델 변경 요청 (전 기관 재캘리브레이션 유발) */
     UpdateGradingModelRequest: {
@@ -8700,7 +8825,6 @@ export interface components {
        * @example true
        */
       acknowledgeRecalibration: boolean
-      recalibrationAcknowledged?: boolean
     }
     /**
      * @description 매니저 담당 반 전체 교체 요청.
@@ -8981,8 +9105,9 @@ export interface components {
        */
       riskType: string
       /**
-       * @description 판정 근거 문구
-       * @example 2단 이하 1 → 2
+       * @description 판정 근거 문구이며 그대로 표시한다.
+       *     **대괄호 태그(`[SEVERE]` 등)는 붙지 않는다**(30차 R8).
+       * @example 평균 도달 단계 2.33 → 1.67. 2단 미만 2개.
        */
       riskSummary: string
       /**
@@ -9000,9 +9125,13 @@ export interface components {
       /**
        * @description **★ AI가 생성한 여는 말.** 화면 ①칸에 그대로 표시한다.
        *     1~3문장 구어체이고 점수·단계·위험 유형을 직접 언급하지 않는다.
+       *
+       *     ⚠️ **`briefState`가 `FAILED`·`NONE`이면 `null`이다** — 생성에 실패했거나 아직
+       *     만들지 않은 브리프다. 그때는 `items`도 빈 배열이므로 `briefState`로 먼저 갈라
+       *     "브리프를 만들지 못했습니다"를 그리면 된다.
        * @example 지난 회차엔 3개 중 1개만 막혔었는데, 이번엔 2개나 막혔더라고요. 편하게 무슨 일이 있었는지 들어보고 싶어서 불렀어요.
        */
-      openingRemark: string
+      openingRemark: string | null
       /**
        * @description **★ AI가 생성한 질문 체크리스트.** 4~8개(첫 면담이면 6~8개)입니다.
        *
@@ -9178,6 +9307,24 @@ export interface components {
        */
       name: string
     }
+    /** @description 팀에 배정된 사람 한 명 */
+    TeamMemberResponse: {
+      /**
+       * Format: uuid
+       * @description 배정·해제에 쓰는 프로젝트 참여 ID
+       */
+      projectMembershipId: string
+      /**
+       * Format: uuid
+       * @description 사용자 ID
+       */
+      userId: string
+      /**
+       * @description 이름
+       * @example 김민준
+       */
+      name: string
+    }
     /** @description 팀 정보 */
     TeamResponse: {
       /**
@@ -9186,7 +9333,18 @@ export interface components {
        */
       teamId: string
       /**
-       * @description 표시용 번호
+       * Format: uuid
+       * @description 이 팀이 속한 반 ID
+       */
+      classId: string
+      /**
+       * @description 반 이름입니다. **팀 번호만으로는 팀을 구분할 수 없습니다**(30차 R4) — 번호가 반마다
+       *     1부터 다시 시작해서 한 기수에 `1팀`이 반 수만큼 있습니다. 반이 지워졌으면 null입니다.
+       * @example C반
+       */
+      className: string | null
+      /**
+       * @description 표시용 번호이며 반 안에서만 유일합니다.
        * @example 3
        */
       teamNumber: string
@@ -9199,9 +9357,16 @@ export interface components {
       status: 'DRAFT' | 'CONFIRMED'
       /**
        * Format: int32
-       * @description 현재 유효 인원 수
+       * @description 현재 유효 인원 수이며 `members`의 길이와 같습니다.
        */
       memberCount: number
+      /**
+       * @description 지금 이 팀에 속한 사람들이며 이름 오름차순입니다. 편성 화면이 사람을 끌어다 옮기는
+       *     자리에 씁니다 — `unassignedMembers`와 **같은 모양**이라 한 컴포넌트로 다룰 수 있습니다.
+       *
+       *     팀을 막 만든 직후처럼 아직 아무도 없으면 빈 배열입니다.
+       */
+      members: components['schemas']['TeamMemberResponse'][]
     }
     /** @description 팀원 배정 요청 */
     AssignTeamMemberRequest: {
@@ -9757,18 +9922,35 @@ export interface components {
        */
       invitationSentCount: number
       /**
-       * @description 이 일괄 등록의 진행률 조회 식별자입니다. `GET /cohorts/{cohortId}/trainees/registrations/{batchRequestId}`에 그대로 넣습니다. 등록된 행이 하나도 없거나 사전 검증(미리보기) 응답이면 폴링할 대상이 없어 null입니다.
+       * @description 이 일괄 등록의 진행률 조회 식별자입니다. `GET /cohorts/{cohortId}/trainees/registrations/{batchRequestId}`에 그대로 넣습니다. 등록된 행이 하나도 없으면 폴링할 대상이 없어 null입니다. 사전 검증(미리보기)은 이 필드가 아예 없는 `PreviewTraineesResponse`로 답합니다.
        * @example trainee-batch-001
        */
       batchRequestId: string | null
       /** @description 수정 또는 재처리가 필요한 입력 행별 실패 목록 */
       failures: components['schemas']['Failure'][]
     }
-    RegisterTraineesRequest: {
-      /** @description 직접 입력으로 등록·초대할 교육생 목록. 각 행은 독립적으로 처리됩니다. */
-      trainees: components['schemas']['Trainee'][]
+    /**
+     * @description 교육생 명단 사전 검증(드라이런) 결과.
+     *
+     *     **이 호출은 계정도 초대도 만들지 않는다** — 수는 전부 「그렇게 될 것」이지 「그렇게 됐다」가 아니다.
+     */
+    PreviewTraineesResponse: {
+      /**
+       * Format: int32
+       * @description 검사 대상으로 받은 전체 교육생 행 수
+       * @example 3
+       */
+      requestedCount: number
+      /**
+       * Format: int32
+       * @description 지금 등록을 요청하면 **등록될 수 있는** 행 수(= requestedCount − failures.length). 아직 등록되지 않았습니다. 두 호출 사이에 다른 운영자가 같은 주소를 등록할 수 있어 이 수가 등록 결과를 보장하지는 않습니다.
+       * @example 2
+       */
+      registrableCount: number
+      /** @description 지금 등록하면 걸릴 입력 행별 목록. 판정 규칙과 status 값은 등록과 같습니다. */
+      failures: components['schemas']['Failure'][]
     }
-    Trainee: {
+    RegisterTraineeItem: {
       /**
        * @description 교육생 명단에 저장할 필수 이름
        * @example 홍길동
@@ -9779,6 +9961,10 @@ export interface components {
        * @example trainee@example.com
        */
       email?: string | null
+    }
+    RegisterTraineesRequest: {
+      /** @description 직접 입력으로 등록·초대할 교육생 목록. 각 행은 독립적으로 처리됩니다. */
+      trainees: components['schemas']['RegisterTraineeItem'][]
     }
     /** @description 교육생 초대 재발송 요청 */
     ResendTraineeInvitationsRequest: {
@@ -10467,7 +10653,6 @@ export interface components {
        * @example 3500
        */
       firstKeystrokeDelayMs?: number
-      empty?: boolean
     }
     /** @description 다시 보기 개설 */
     ReviewOpenRequest: {
@@ -10528,7 +10713,6 @@ export interface components {
        * @example 퇴사 처리
        */
       reason?: string | null
-      mutableStatus?: boolean
     }
     UpdateOrganizationRequest: {
       /** @description 새 기관명. null·빈 값이면 이름을 바꾸지 않는다. */
@@ -10549,7 +10733,6 @@ export interface components {
        * @example 퇴사 처리
        */
       reason?: string | null
-      mutableStatus?: boolean
     }
     /**
      * @description 기관 운영 설정 부분 수정 요청.
@@ -10672,7 +10855,6 @@ export interface components {
        * @example 퇴사 처리
        */
       reason?: string | null
-      mutableStatus?: boolean
     }
     /** @description 기수 수정 요청(부분 수정) */
     UpdateCohortRequest: {
@@ -10834,7 +11016,7 @@ export interface components {
       conceptResultItems: string | null
       /**
        * Format: int32
-       * @description `2단 이하` 칸의 **분모**이며 그 회차에 이 교육생에게 실제로 만들어진 문항 수입니다.
+       * @description `2단 미만` 칸의 **분모**이며 그 회차에 이 교육생에게 실제로 만들어진 문항 수입니다.
        *     사람마다 다릅니다 — 코드에 근거가 없어 문항이 생성되지 않은(`NOT_GENERATED`) 개념은
        *     검증 세션에서도 물을 수 없어 분모에서 빠집니다. 화면의 `1/2`가 이 값입니다.
        *     지표가 붙지 않은 행은 null입니다.
@@ -10843,7 +11025,11 @@ export interface components {
       expectedConceptCount: number | null
       /**
        * Format: int32
-       * @description 도달 단계 0~2단(저단계)인 문항 수입니다. 응답한 문항이 하나도 없으면 null이며 화면은 그때 `—`를 그립니다.
+       * @description 도달 단계 **2단 미만(0~1단)** 인 문항 수입니다. 2단(설계 논리)이 합격선이라
+       *     다시 보기 대상 판정(`Concept.retryTarget`)과 같은 기준입니다.
+       *
+       *     응답한 문항이 하나도 없으면 null이며 화면은 그때 `—`를 그립니다 — 전부 통과한
+       *     `0`과 구분해야 합니다.
        * @example 1
        */
       lowStageConceptCount: number | null
@@ -10870,10 +11056,16 @@ export interface components {
        *     `STAGE_DECLINE`(단계 하락) · `PERSISTENT_LOW`(지속 저점) · `INVALID_ATTEMPT`(무효 응시) ·
        *     `CONTRIBUTION_UNDERSTANDING_GAP`(기여·이해도 괴리) · `LOW_PARTICIPATION`(저기여) 5종이며
        *     동시에 여러 개가 걸릴 수 있습니다. 해소(`RESOLVED`)된 사유는 들어오지 않습니다.
-       *     지표가 붙지 않은 행은 null입니다 — 위험이 없다는 뜻의 빈 배열과 다릅니다.
-       * @example {INVALID_ATTEMPT}
+       *
+       *     교육생 상세(`.../trainees/{traineeId}`)의 `rounds[].matchedRiskTypeCodes`와
+       *     **같은 타입·같은 값**입니다.
+       *
+       *     ⚠️ 지표가 붙지 않은 행은 null입니다 — 위험이 없다는 뜻의 빈 배열과 다릅니다.
+       * @example [
+       *       "INVALID_ATTEMPT"
+       *     ]
        */
-      matchedRiskTypeCodes: string | null
+      matchedRiskTypeCodes: string[] | null
       /**
        * @description 배지 한 칸에 넣을 **단일** 코드입니다. 정책 문서 §7의 2층 구조를 그대로 담습니다 —
        *     1층 응시상태(`NOT_ATTENDED` 미응시 → `SESSION_INCOMPLETE` 응시 중단 →
@@ -11036,6 +11228,18 @@ export interface components {
        */
       codeAnalysisId: string | null
     }
+    AnalysisRequirementResult: {
+      requirementKey: string
+      title: string
+      /**
+       * @description PENDING · PASS · FAIL
+       * @example PASS
+       */
+      result: string
+      evidence: string
+      /** @description AI 판정이면 true, 사람이 판정했으면 false다. */
+      judgedByAi: boolean
+    }
     HeadCommit: {
       commitHash: string
       commitMessage: string
@@ -11065,18 +11269,6 @@ export interface components {
       lineEnd: number | null
       /** @description 문제 출제에 쓰인 코드 원문. NOT_GENERATED 슬롯은 null이다. */
       codeSnippet: string | null
-    }
-    RequirementResult: {
-      requirementKey: string
-      title: string
-      /**
-       * @description PENDING · PASS · FAIL
-       * @example PASS
-       */
-      result: string
-      evidence: string
-      /** @description AI 판정이면 true, 사람이 판정했으면 false다. */
-      judgedByAi: boolean
     }
     Session: {
       /** Format: uuid */
@@ -11122,7 +11314,7 @@ export interface components {
       /** @description 문제 슬롯. 근거를 찾지 못한 슬롯도 NOT_GENERATED로 함께 온다. */
       problems: components['schemas']['Problem'][]
       /** @description 요구사항 P/F 판정. */
-      requirementResults: components['schemas']['RequirementResult'][]
+      requirementResults: components['schemas']['AnalysisRequirementResult'][]
       /**
        * @description 조회한 교육생 본인의 세션. 분석이 끝나면 READY로 열려 있다. 팀원 각자 다른 세션을 가지므로
        *     같은 제출을 조회해도 이 값만 사람마다 다르다.
@@ -11138,6 +11330,13 @@ export interface components {
     ConceptReportResponse: {
       problemId: string | null
       name: string
+      /**
+       * @description 물었는가. **`false`면 그 학생 코드에 이 개념이 없어 문항 자체가 만들어지지 않았다** —
+       *     `level`을 포함한 아래 값들이 전부 빠진다.
+       *
+       *     🔴 `level=0`(물었는데 통과한 축이 없다)과 **합치면 안 된다.** 섞으면 화면이 학생에게
+       *     "못했다"고 말하게 되는데 사실은 묻지 않은 것이다.
+       */
       asked: boolean
       /**
        * Format: int32
@@ -11159,6 +11358,10 @@ export interface components {
        */
       level?: number | null
       said?: string
+      /**
+       * @description 다시 보기 대상인가. 대상은 **물었는데 2단 미만**인 개념이라
+       *     `asked=false`면 항상 `false`다 — 다시 볼 문항이 없다.
+       */
       isRetryTarget: boolean
       curriculumRef?: components['schemas']['CurriculumRefResponse']
       qa?: components['schemas']['QaEntryResponse'][]
@@ -11183,6 +11386,7 @@ export interface components {
     RoundListItem: {
       id: string
       label: string
+      /** @description 아직 하지 않은 다시 보기가 있는가. 레일에 점으로 표시된다 */
       hasPendingRetry: boolean
     }
     RoundReportResponse: {
@@ -11698,7 +11902,7 @@ export interface components {
     }
     /** @description 팀 목록 응답 */
     TeamListResponse: {
-      /** @description 팀 목록 */
+      /** @description 팀 목록입니다. **매니저의 담당 반만** 옵니다(30차 R3). */
       teams: components['schemas']['TeamResponse'][]
       /** @description 아직 어느 팀에도 속하지 않은 인원 목록 */
       unassignedMembers: components['schemas']['UnassignedMemberResponse'][]
@@ -11828,11 +12032,11 @@ export interface components {
        * @example 0
        */
       unassignedMemberCount: number
-      summary: components['schemas']['Summary']
+      summary: components['schemas']['SubmissionStatusSummary']
       /** @description 이 프로젝트가 정의한 요구사항이며 sequenceNo 오름차순입니다. */
       requirements: components['schemas']['Requirement'][]
       /** @description 팀 행 목록이며 반 이름 → 팀 번호 순입니다. */
-      teams: components['schemas']['Team'][]
+      teams: components['schemas']['SubmissionStatusTeam'][]
     }
     Requirement: {
       /** Format: uuid */
@@ -11877,12 +12081,39 @@ export interface components {
       repositoryUrl: string | null
     }
     /**
+     * @description 요구사항 판정 한 건.
+     *
+     *     필드 이름은 `GET /submissions/{submissionId}/analysis/result`의 것과 같습니다 —
+     *     같은 값이 두 API에서 다른 이름으로 나가지 않게 맞췄습니다. 다만 **스키마는 따로**입니다
+     *     (`AnalysisRequirementResult`) — 필드가 같다고 한 정의를 공유하면 한쪽이 한 칸 늘 때
+     *     다른 쪽 스펙이 조용히 함께 바뀝니다.
+     */
+    SubmissionStatusRequirementResult: {
+      /** Format: uuid */
+      requirementId: string
+      requirementKey: string
+      title: string
+      /**
+       * @description PENDING · PASS · FAIL
+       * @example PASS
+       */
+      result: string
+      /** @description 그 판정이 어느 코드에서 나왔는지를 사람이 읽는 한 줄입니다. */
+      evidence: string | null
+      /** @description AI 판정이면 true, 사람이 판정했으면 false입니다. */
+      judgedByAi: boolean
+    }
+    /**
      * @description 탭 머리의 `제출 6/8` 카운트.
      *
      *     teamCount = submittedTeamCount + unsubmittedTeamCount 입니다. analysisFailedTeamCount는
      *     제출한 팀 중 최신 분석이 FAILED인 팀이라 이 등식과 별개입니다.
+     *
+     *     ⚠️ **`class-progress`의 `summary`와 다른 스키마입니다**(30차 R2①). 이쪽은 **팀** 기준
+     *     4필드이고 그쪽은 **인원** 기준 6필드입니다. 30차까지 두 오퍼레이션이 스펙에서 같은
+     *     `Summary` 하나를 가리켰던 것은 이름을 명시하지 않아 생긴 사고입니다.
      */
-    Summary: {
+    SubmissionStatusSummary: {
       /**
        * Format: int64
        * @description 조회 범위의 팀 수
@@ -11909,7 +12140,7 @@ export interface components {
       analysisFailedTeamCount: number
     }
     /** @description 팀 한 행. 제출·분석이 없으면 submission·analysis가 null입니다. */
-    Team: {
+    SubmissionStatusTeam: {
       /** Format: uuid */
       teamId: string
       /** Format: uuid */
@@ -11931,7 +12162,7 @@ export interface components {
       /** @description 제출에 매인 최신 분석 시도입니다. 제출이 없거나 아직 분석이 걸리지 않았으면 null입니다. */
       analysis: components['schemas']['Analysis'] | null
       /** @description 요구사항 P/F 판정이며 sequenceNo 오름차순입니다. 분석 전이면 빈 배열입니다. */
-      requirementResults: components['schemas']['RequirementResult'][]
+      requirementResults: components['schemas']['SubmissionStatusRequirementResult'][]
       /** @description 팀원 개인 행이며 이름 오름차순입니다. */
       members: components['schemas']['Member'][]
     }
@@ -12007,8 +12238,16 @@ export interface components {
        */
       failureReason?: string
       /**
-       * @description 실패 코드 15종. `REPO_NOT_FOUND`·`REPOSITORY_ACCESS_DENIED`면 화면이 ZIP 전환을 안내한다.
-       *     `ANALYSIS_FAILED`에서만이고 그 외에는 키가 빠진다
+       * @description 실패 코드 **12종**. `REPO_NOT_FOUND`·`REPOSITORY_ACCESS_DENIED`면 화면이 ZIP 전환을 안내한다.
+       *     `ANALYSIS_FAILED`에서만이고 그 외에는 키가 빠진다.
+       *
+       *     ⚠️ 종전 설명은 15종이라고 적고 `FILE_TOO_LARGE`·`ARCHIVE_INVALID`·`PROHIBITED_FILE`을
+       *     함께 실었는데 **셋 다 이 필드로 올 수 없습니다**(2026-08-16 정정). ZIP 파일 자체의 문제라
+       *     업로드 시점에 `400 ARCHIVE_INVALID` / `413 FILE_TOO_LARGE`로 거절되고 제출 행조차 만들어지지
+       *     않아 분석이 시작되지 않습니다 — 그 셋은 **제출 API의 에러 응답**에서 받으시면 됩니다.
+       *
+       *     반대로 `EMPTY_CODE`(분석할 코드가 없다)와 `GIT_LOG_MISSING`(커밋 기록이 없다)은 AI가
+       *     분석 중에 판정해 돌려주므로 **이 필드로 옵니다.**
        * @enum {string}
        */
       failureCode?:
@@ -12022,10 +12261,7 @@ export interface components {
         | 'REPOSITORY_ACCESS_DENIED'
         | 'BRANCH_NOT_FOUND'
         | 'UNSUPPORTED_HOST'
-        | 'FILE_TOO_LARGE'
-        | 'ARCHIVE_INVALID'
         | 'EMPTY_CODE'
-        | 'PROHIBITED_FILE'
         | 'GIT_LOG_MISSING'
       /**
        * @description 제출 내용. **제출 수단에 따라 둘 중 하나**이고, 미제출이면 키가 빠진다.
@@ -12101,10 +12337,70 @@ export interface components {
       /** @description 코드에 없던 사람 명단 */
       notInCode: components['schemas']['Person'][]
     }
+    /**
+     * @description 사람 × 개념의 도달 결과.
+     *
+     *     `inCode=false`면 그 개념이 코드에 없어 묻지 못한 것이라 `reachLevel`·`retryTarget`을 읽지 않습니다.
+     */
+    ConceptOutcome: {
+      /** Format: uuid */
+      conceptId: string
+      concept: string
+      /** Format: int32 */
+      displayOrder: number
+      /** @description 그 개념이 코드에 있어 문제가 만들어졌는지 */
+      inCode: boolean
+      /**
+       * Format: int32
+       * @description 통과한 축 중 가장 높은 단계(0~4). 한 축이라도 미달하면 문제가 끝나므로 연속 통과 수와 같습니다.
+       * @example 3
+       */
+      reachLevel: number
+      /** @description 2단 미달이라 다시 보기 대상인 개념인지. 코드에 없던 개념은 대상이 아닙니다. */
+      retryTarget: boolean
+    }
     Person: {
       /** Format: uuid */
       userId: string
       name: string
+    }
+    /**
+     * @description 요약 카드 3장의 원자 값.
+     *
+     *     `retryTargetCount`(다시 보기 대상)는 화면이 `failedCount + notAttendedCount`로 만듭니다 —
+     *     발행 전에는 이 합을 보여주지 않기로 한 화면 규칙이 있어 서버가 미리 더하지 않습니다.
+     */
+    ProjectEvaluationSummary: {
+      /**
+       * Format: int64
+       * @description 회차 대상 인원(담당 반 기준)
+       * @example 25
+       */
+      totalCount: number
+      /**
+       * Format: int64
+       * @description 최초 응시를 마친 인원
+       * @example 23
+       */
+      attendedCount: number
+      /**
+       * Format: int64
+       * @description 개념 하나 이상에서 2단 미달인 인원(불합격). 응시를 마친 사람만 셉니다.
+       * @example 4
+       */
+      failedCount: number
+      /**
+       * Format: int64
+       * @description 응시 창이 닫히도록 끝내 안 본 인원(확정 미응시). 아직 창이 열려 있는 사람은 세지 않습니다.
+       * @example 2
+       */
+      notAttendedCount: number
+      /**
+       * Format: int64
+       * @description 무효 확정된 수행 인원. 집계 분모에서 빠집니다.
+       * @example 0
+       */
+      invalidCount: number
     }
     /**
      * @description 프로젝트 회차의 채점 결과 종합과 교육생 목록.
@@ -12145,7 +12441,7 @@ export interface components {
        *     "팀 편성·제출·응시가 끝나야 개념별 집계가 생깁니다" 빈 상태를 보여줍니다.
        */
       resultAvailable: boolean
-      summary: components['schemas']['Summary']
+      summary: components['schemas']['ProjectEvaluationSummary']
       /**
        * @description 집단 미달 경고. 한 개념에서 **유효 응시자의 절반을 넘는 인원**이 막히면 담습니다.
        *
@@ -12156,9 +12452,40 @@ export interface components {
       /** @description 개념별 집계이며 표시 순서 오름차순입니다. */
       conceptAggregates: components['schemas']['ConceptAggregate'][]
       /** @description 교육생 목록이며 이름 오름차순입니다. 왼쪽 목록이 이 배열입니다. */
-      trainees: components['schemas']['Trainee'][]
+      trainees: components['schemas']['ProjectEvaluationTrainee'][]
     }
-    Concept: {
+    /** @description 교육생 한 명. 목록에 필요한 만큼만 담고 축별 단계는 상세 조회에서 옵니다. */
+    ProjectEvaluationTrainee: {
+      /** Format: uuid */
+      userId: string
+      name: string
+      /** Format: uuid */
+      classId: string
+      className: string
+      /**
+       * @description | 값 | 뜻 |
+       *     |---|---|
+       *     | `AVAILABLE` | 응시를 마쳐 결과가 있다 |
+       *     | `IN_PROGRESS` | 아직 응시 중이거나 시작 전이다 |
+       *     | `INCOMPLETE` | 끝내지 못한 채 응시 창이 닫혔다(중단) |
+       *     | `NOT_ATTENDED` | 창이 닫히도록 아예 안 봤다 |
+       *     | `INVALID` | 무효 확정된 수행이다 |
+       *
+       *     🔴 **`AVAILABLE`이 아니면 합격·불합격을 말하지 않습니다.** 아직 풀지 않은 문제는 도달
+       *     단계가 0이라, 판정을 걸면 응시 중인 사람이 전부 불합격으로 잡힙니다.
+       * @example AVAILABLE
+       */
+      resultStatus: string
+      /**
+       * Format: int64
+       * @description 코드에 있는데 2단 미달인 개념 수. 목록의 '막힘 N' 배지이며 `AVAILABLE`이 아니면 항상 0입니다.
+       * @example 1
+       */
+      stuckConceptCount: number
+      /** @description 개념별 도달 결과이며 표시 순서 오름차순입니다. */
+      concepts: components['schemas']['ConceptOutcome'][]
+    }
+    TraineeEvaluationConcept: {
       /** Format: uuid */
       conceptId: string
       concept: string
@@ -12178,41 +12505,7 @@ export interface components {
        * @description **실제로 물은 단계만** 옵니다. 앞 단계에서 멈추면 뒤 단계는 아예 배열에 없고,
        *     화면은 그 자리를 '미도달' 빈 칸으로 그립니다 — 0점이나 불합격과 구분해야 합니다.
        */
-      steps: components['schemas']['Step'][]
-    }
-    /**
-     * @description 축 한 단계의 판정.
-     *
-     *     `passed`와 `helpCount`를 **따로** 읽어야 합니다. 힌트를 2회까지 받고도 통과할 수 있고,
-     *     2회 받고도 기준을 못 넘으면 불합격입니다. 화면의 4범주(합격 · 합격(도움 1회) ·
-     *     합격(도움 2회) · 불합격)는 이 둘을 조합해 만듭니다.
-     */
-    Step: {
-      /**
-       * @description L1 · L2 · L3 · L4
-       * @example L2
-       */
-      axisCode: string
-      /**
-       * Format: int32
-       * @description 축 순서 1~4. L1=코드이해, L2=설계논리, L3=대안비교, L4=반례대응입니다.
-       * @example 2
-       */
-      stepNo: number
-      passed: boolean
-      /**
-       * Format: int32
-       * @description 힌트를 받고 답한 횟수 0~2
-       * @example 1
-       */
-      helpCount: number
-      /**
-       * Format: int32
-       * @description 0~5점 원점수. 화면에는 노출하지 않는 내부 값이며 아직 채점되지 않았으면 null입니다.
-       */
-      score: number | null
-      /** @description 채점 근거 한 줄. 리포트 생성 전에는 null입니다. */
-      note: string | null
+      steps: components['schemas']['TraineeEvaluationStep'][]
     }
     /**
      * @description 교육생 한 명의 채점 결과 상세. 결과 탭에서 사람을 클릭했을 때 오른쪽에 그리는 값이다.
@@ -12246,7 +12539,42 @@ export interface components {
        */
       resultStatus: string
       /** @description 개념별 결과이며 표시 순서 오름차순입니다. */
-      concepts: components['schemas']['Concept'][]
+      concepts: components['schemas']['TraineeEvaluationConcept'][]
+    }
+    /**
+     * @description 축 한 단계의 판정.
+     *
+     *     `passed`와 `helpCount`를 **따로** 읽어야 합니다. 힌트를 2회까지 받고도 통과할 수 있고,
+     *     2회 받고도 기준을 못 넘으면 불합격입니다. 화면의 4범주(합격 · 합격(도움 1회) ·
+     *     합격(도움 2회) · 불합격)는 이 둘을 조합해 만듭니다.
+     */
+    TraineeEvaluationStep: {
+      /**
+       * @description L1 · L2 · L3 · L4
+       * @example L2
+       */
+      axisCode: string
+      /**
+       * Format: int32
+       * @description 축 순서 1~4. L1=코드이해, L2=설계논리, L3=대안비교, L4=반례대응입니다.
+       * @example 2
+       */
+      stepNo: number
+      /** @description 이 단계를 통과했는가. `helpCount`와 **따로** 읽는다 — 힌트를 받고 통과한 경우도 true다 */
+      passed: boolean
+      /**
+       * Format: int32
+       * @description 힌트를 받고 답한 횟수 0~2
+       * @example 1
+       */
+      helpCount: number
+      /**
+       * Format: int32
+       * @description 0~5점 원점수. 화면에는 노출하지 않는 내부 값이며 아직 채점되지 않았으면 null입니다.
+       */
+      score: number | null
+      /** @description 채점 근거 한 줄. 리포트 생성 전에는 null입니다. */
+      note: string | null
     }
     /** @description 검증개념 후보 하나 */
     ConceptCandidateResponse: {
@@ -12420,11 +12748,59 @@ export interface components {
       /** @description 이 회차 리포트가 발행됐는지 여부입니다. false면 화면에 '미발행'을 표시합니다. */
       reportPublished: boolean
       /** @description 회차 전체 진행 현황 합계입니다. classes[]를 합산한 것이 아니라 회차 단위로 직접 집계합니다. */
-      summary: components['schemas']['Summary']
+      summary: components['schemas']['ClassProgressSummary']
       /** @description 반 행 목록이며 반 이름 오름차순입니다. */
       classes: components['schemas']['ClassProgress'][]
       /** @description 검증 개념별 코드 매칭 현황입니다. */
       conceptMatches: components['schemas']['ConceptMatch'][]
+    }
+    /**
+     * @description 회차 전체 합계.
+     *
+     *     analysisTargetCount는 submittedCount와, assessmentTargetCount는 analysisSucceededCount와
+     *     값이 같습니다 — 단계별 분모를 필드 이름으로도 드러내기 위해 따로 둡니다.
+     *     제출률은 submittedCount / targetTraineeCount, 응시율은 assessedCount / analysisTargetCount 입니다.
+     */
+    ClassProgressSummary: {
+      /**
+       * Format: int64
+       * @description 이번 회차 수행 대상 교육생 수이며 제출률의 분모입니다.
+       *
+       *     **모집단은 역할이 정합니다**(30차 R3) — 오퍼레이터는 기수 총원, 매니저는 담당 반
+       *     총원입니다. `classes[]`를 합한 값과 항상 같습니다.
+       * @example 250
+       */
+      targetTraineeCount: number
+      /**
+       * Format: int64
+       * @description 제출을 마친 교육생 수
+       * @example 231
+       */
+      submittedCount: number
+      /**
+       * Format: int64
+       * @description 분석 대상 교육생 수이며 submittedCount와 같습니다.
+       * @example 231
+       */
+      analysisTargetCount: number
+      /**
+       * Format: int64
+       * @description 분석이 성공한 교육생 수
+       * @example 223
+       */
+      analysisSucceededCount: number
+      /**
+       * Format: int64
+       * @description 응시 대상 교육생 수이며 analysisSucceededCount와 같습니다.
+       * @example 223
+       */
+      assessmentTargetCount: number
+      /**
+       * Format: int64
+       * @description 응시(INITIAL 완료)를 마친 교육생 수
+       * @example 198
+       */
+      assessedCount: number
     }
     /**
      * @description 검증 개념별 코드 매칭.
@@ -13103,7 +13479,7 @@ export interface components {
       emailDomain: string | null
     }
     /** @description 현재 반 정보 */
-    Classroom: {
+    EnrollmentClassroom: {
       /**
        * Format: uuid
        * @description 반 ID
@@ -13120,7 +13496,7 @@ export interface components {
       /** @description 로그인한 사용자가 현재 유효하게 소속된 기수 전체. 소속이 없으면 빈 배열 */
       enrollments: components['schemas']['EnrollmentResponse'][]
     }
-    /** @description 교육생 개인의 소속 기수 하나(현재 반 배정 포함) */
+    /** @description 사용자의 소속 기수 하나(현재 반 배정 포함) */
     EnrollmentResponse: {
       /**
        * Format: uuid
@@ -13132,8 +13508,21 @@ export interface components {
        * @example 7기
        */
       cohortName: string
-      /** @description 현재 배정된 반. 아직 배정 전이면 null */
-      classroom: components['schemas']['Classroom'] | null
+      /**
+       * @description 기수 진행 상태입니다. 담당·소속 기수가 둘 이상일 때 **어느 기수를 기본으로 열지**
+       *     고르는 근거입니다 — 오퍼레이터 화면과 같은 규칙(*진행 중을 고른다*)을 쓰시면 됩니다.
+       *
+       *     💡 목록이 이미 그 순서로 옵니다(`enrollments[0]`이 곧 그 답입니다).
+       */
+      status: components['schemas']['CohortStatus']
+      /**
+       * @description 현재 배정된 반이며 아직 배정 전이면 null입니다.
+       *
+       *     ⚠️ **매니저에게는 언제나 null입니다.** 이 값의 원장은 교육생 배정(`class_membership`)이고
+       *     매니저 배정은 `manager_assignment`라는 다른 원장입니다. 매니저의 담당 반은
+       *     `GET /cohorts/{cohortId}/classrooms`가 담당 반만 돌려줍니다.
+       */
+      classroom: components['schemas']['EnrollmentClassroom'] | null
     }
     /**
      * @description 매니저 목록 정렬 기준. NAME(이름순) · ASSIGNED_TRAINEE_COUNT(담당 인원순)
@@ -13242,8 +13631,9 @@ export interface components {
        */
       riskType: string
       /**
-       * @description 판정 근거 문구. 서버가 만든 문장을 그대로 표시한다
-       * @example 2단 이하 1 → 2
+       * @description 판정 근거 문구. 서버가 만든 문장을 그대로 표시한다.
+       *     **대괄호 태그(`[SEVERE]` 등)는 붙지 않는다**(30차 R8).
+       * @example 평균 도달 단계 2.33 → 1.67. 2단 미만 2개.
        */
       riskSummary: string
       /**
@@ -13585,6 +13975,29 @@ export interface components {
        */
       cohortTotal: number
       /**
+       * Format: int32
+       * @description 계정 상태가 **활성**인 교육생 수입니다. `cohortTotal`과 같은 모집단이며
+       *     **필터를 적용하지 않습니다** — 검색어·반 필터를 바꿔도 변하지 않습니다.
+       *
+       *     `activeCount + invitedCount + inactiveCount = cohortTotal`입니다.
+       * @example 24
+       */
+      activeCount: number
+      /**
+       * Format: int32
+       * @description **초대만 받고 아직 들어오지 않은** 교육생 수입니다(계정 상태 `INVITED`).
+       *     `cohortTotal`과 같은 모집단이며 필터를 적용하지 않습니다.
+       * @example 1
+       */
+      invitedCount: number
+      /**
+       * Format: int32
+       * @description 계정 상태가 **비활성**인 교육생 수입니다. `cohortTotal`과 같은 모집단이며
+       *     필터를 적용하지 않습니다.
+       * @example 1
+       */
+      inactiveCount: number
+      /**
        * @description **매니저 교육생 목록(MG-05)** 의 '회차 · 미프 N차' 드롭다운에 그대로 넣는 이 기수의
        *     평가 회차 전부입니다(22차 Q1).
        *
@@ -13749,10 +14162,15 @@ export interface components {
        */
       riskTypeCode: string | null
       /**
-       * @description 위험 배지 옆 판정식이며 `2단 이하 0 → 2`가 이 값입니다.
+       * @description 위험 배지 옆 판정식이며 **화면에 그대로 표시하는 완성된 문장**입니다.
        *     원장은 `interview_candidate_reason.reason_summary`이고 `riskTypeCode`와 **같은 회차**에서
        *     읽습니다. 위험이 없으면 null입니다.
-       * @example 2단 이하 0 → 2
+       *
+       *     ⚠️ **`[SEVERE]` 같은 대괄호 태그는 붙지 않습니다.** 현 정책에는 심각도라는 축이
+       *     없고(판정은 위험 유형 단위입니다), 심각도를 화면에 드러내는 것은 위험 배지
+       *     (`riskTypeCode` · `roundPrimaryStatusCode`)의 몫입니다. 태그가 섞인 값을 보셨다면
+       *     정책 v1 이전에 적재된 더미 데이터입니다.
+       * @example 평균 도달 단계 2.33 → 1.67. 2단 미만 2개.
        */
       riskReasonSummary: string | null
       /**
@@ -13847,7 +14265,7 @@ export interface components {
       terminalAt: string | null
       /**
        * Format: int32
-       * @description `2단 이하` 칸의 **분모**이며 그 회차에 이 교육생에게 실제로 만들어진 문항 수입니다.
+       * @description `2단 미만` 칸의 **분모**이며 그 회차에 이 교육생에게 실제로 만들어진 문항 수입니다.
        *     코드에 근거가 없어 문항이 생성되지 않은(`NOT_GENERATED`) 개념은 물을 수 없어 빠지므로
        *     사람마다 다릅니다.
        * @example 3
@@ -13939,8 +14357,13 @@ export interface components {
       sourceStatus: string | null
       /**
        * Format: uuid
-       * @description 검증 세션 ID. `자세히`가 `GET /assessment-sessions/{sessionId}/problems/{problemNo}`를
-       *     부를 때 쓴다. 세션이 없으면 null이며 그때는 `expandable`도 false다.
+       * @description 검증 세션 ID. 세션이 없으면 null이며 그때는 `expandable`도 false다.
+       *
+       *     ⚠️ **매니저는 이 id로 문답 전문을 열 수 없다.**
+       *     `GET /assessment-sessions/{sessionId}/problems/{problemNo}`는 **교육생 본인 전용**이다.
+       *     매니저 화면이 개념별 채점 근거를 그리려면
+       *     `GET /projects/{projectId}/evaluations/{userId}`의 `concepts[].steps[].note`를 쓴다 —
+       *     교육생 한 명당 1콜이다.
        */
       sessionId: string | null
       /** @description `자세히`를 켤지 여부. 세션이 없는 이해도 확인은 false다 */
@@ -13961,7 +14384,7 @@ export interface components {
        * Format: int32
        * @description **REPORT 전용.** 다시 보기로 지정된 문항 수이며 화면의 `다시 보기 2건 지정`이다.
        *     기준은 그 회차에서 도달 **2단 미만**(0~1단)인 문항 수다 — 정책상 재시험 대상이며
-       *     명단(MG-05)의 `2단 이하` 분자와 같은 산식이다. 2단은 게이트 밖이라 세지 않는다.
+       *     명단(MG-05) `lowStageConceptCount`와 같은 산식이다. 2단은 게이트 밖이라 세지 않는다.
        * @example 2
        */
       reviewTargetCount: number | null
@@ -14078,6 +14501,7 @@ export interface components {
       rounds: components['schemas']['TraineeTimelineRound'][]
       /** @description 다음 페이지 커서. 없으면 null */
       nextCursor: string | null
+      /** @description 더 가져올 회차가 남았는가. `nextCursor`와 짝이며 페이저는 이 값으로만 다음 장을 판단한다 */
       hasNext: boolean
     }
     /** @description 다시 보기로 바뀐 문항 하나 */
@@ -14223,13 +14647,100 @@ export interface components {
       deadlineAt: string
       /** Format: date-time */
       occurredAt: string
+      /** @description 이미 해소된 항목인가. 기본 조회에서는 빠지고 `includeResolved=true`일 때만 섞여 온다 */
       resolved: boolean
+      /**
+       * @description 지금 독촉을 보낼 수 있는 항목인가. **`resolved`의 반대가 아니다** —
+       *     해소되지 않았어도 독촉 대상이 아닌 항목(무효 검토·인터뷰)이 있어 둘을 따로 읽어야 한다.
+       */
       reminderEligible: boolean
     }
     /** @description 매니저 대시보드 인박스 */
     NotificationInboxResponse: {
       items: components['schemas']['InboxItem'][]
       nextCursor: string
+    }
+    /**
+     * @description 교안을 연결한 회차 하나. 미니프로젝트는 `round_no`가 늘 1이라 차수는 `sequenceNo`로 셉니다 —
+     *     화면의 `미프 3차`가 이 값입니다.
+     */
+    CohortCurriculumLinkedProject: {
+      /**
+       * Format: uuid
+       * @description 회차(프로젝트) ID
+       */
+      projectId: string
+      /**
+       * @description 회차 이름
+       * @example 미니프로젝트 3차
+       */
+      projectName: string
+      /**
+       * Format: int32
+       * @description 기수 안의 차수
+       * @example 3
+       */
+      sequenceNo: number
+    }
+    /**
+     * @description 이 기수의 회차에 **실제로 연결된** 교안 한 건입니다(30차 Q2).
+     *
+     *     `GET /cohorts/{cohortId}/curricula`(연결 가능한 후보)와 다릅니다 — 그쪽은 오퍼레이터가
+     *     회차에 붙일 수 있는 기관 전체 목록이고, 이쪽은 이미 붙어 있는 것만입니다.
+     */
+    CohortCurriculumResponse: {
+      /**
+       * Format: uuid
+       * @description curriculum_version_id — 교안 상세로 갈 때 쓰는 ID
+       */
+      versionId: string
+      /**
+       * Format: uuid
+       * @description 교안 원장 ID. 「쓰인 회차」 조회가 이 축을 받습니다
+       */
+      materialId: string
+      /**
+       * Format: int32
+       * @description 버전 번호
+       * @example 2
+       */
+      versionNo: number
+      /**
+       * @description 원본 파일명
+       * @example AI_LLMOps_v2.pdf
+       */
+      originalFileName: string
+      /**
+       * Format: int32
+       * @description 페이지 수. 분석 전이거나 확정되지 않았으면 null
+       * @example 84
+       */
+      pageCount: number | null
+      /**
+       * @description 가장 최근 분석 **시도**의 상태입니다. **한 번도 분석하지 않았으면 `null`**이며
+       *     실패(`FAILED`)와 구분해야 해서 값을 만들어 넣지 않습니다.
+       */
+      analysisStatus: components['schemas']['CurriculumAnalysisStatus'] | null
+      /**
+       * Format: int32
+       * @description 승인된(ACTIVE) 가르친 항목 수
+       * @example 34
+       */
+      teachesCount: number
+      /**
+       * Format: date-time
+       * @description 등록 시각
+       */
+      createdAt: string
+      /**
+       * @description 이 교안을 연결한 **회차들**이며 차수 오름차순입니다. **비어 있지 않습니다** —
+       *     연결이 있어야 이 목록에 들어옵니다.
+       *
+       *     한 교안이 여러 회차에 걸리면 교안은 한 번만 나오고 그 회차들이 여기 모입니다.
+       *     이 값이 없으면 기관 전체 교안 목록과 구분되지 않습니다 — 「이 교안이 3차에 쓰였다」가
+       *     이 화면의 맥락 전부입니다.
+       */
+      linkedProjects: components['schemas']['CohortCurriculumLinkedProject'][]
     }
     /** @description 기수 반 목록 응답 */
     ClassroomListResponse: {
@@ -14545,7 +15056,7 @@ export interface components {
       /** Format: date-time */
       detectedAt: string
     }
-    Cell: {
+    HeatmapCell: {
       /** Format: int32 */
       problemNo: number
       value: number
@@ -14576,6 +15087,80 @@ export interface components {
        */
       delta?: number
     }
+    HeatmapClassroom: {
+      /** Format: uuid */
+      classroomId: string
+      classroomName: string
+      /** Format: int32 */
+      memberCount: number
+    }
+    HeatmapConcept: {
+      /**
+       * Format: int32
+       * @description 가로축 순번이며 격자 열 순서다
+       * @example 1
+       */
+      problemNo: number
+      /** Format: uuid */
+      teachesId: string
+      /**
+       * @description 화면의 **열 이름**이다
+       * @example API 응답 계약 설계
+       */
+      conceptName: string
+      /**
+       * @description 이 개념이 집단 미달이라 열 머리에 ⚠를 붙일지 여부다. 판정 기준 집단은 계층마다
+       *     다르다 — CLASS는 담당 반 전체, TEAM·TRAINEE는 `scope`의 그 반이다.
+       */
+      groupShortfall: boolean
+    }
+    /**
+     * @description 계층을 바꾸는 툴바 셀렉터 데이터입니다.
+     *
+     *     ⚠️ **`level=CLASS`에서는 두 배열이 모두 빕니다**(의도된 동작입니다) — 그 계층에서는
+     *     `rows[]`가 곧 반 목록이라 같은 값을 두 번 싣지 않습니다. 첫 화면의 반 셀렉터는
+     *     `rows[]`로 만드시면 됩니다.
+     *
+     *     `level=TEAM`이면 `classrooms`가 차고, `level=TRAINEE`면 `teams`까지 찹니다.
+     */
+    HeatmapNavigation: {
+      classrooms: components['schemas']['HeatmapClassroom'][]
+      teams: components['schemas']['HeatmapTeam'][]
+    }
+    HeatmapRow: {
+      /**
+       * Format: uuid
+       * @description 합계 행에서는 키가 빠진다
+       */
+      rowId?: string
+      /** @description 합계 행에서는 키가 빠진다 */
+      rowName?: string
+      /**
+       * Format: int32
+       * @description 개인 행은 인원 개념이 없어 키가 빠진다
+       */
+      memberCount?: number
+      cells: components['schemas']['HeatmapCell'][]
+    }
+    HeatmapScope: {
+      /** Format: uuid */
+      classroomId: string
+      classroomName: string
+      /**
+       * Format: uuid
+       * @description TEAM·CLASS 계층에서는 키가 빠진다
+       */
+      teamId?: string
+      /** @description TEAM·CLASS 계층에서는 키가 빠진다 */
+      teamName?: string
+    }
+    HeatmapTeam: {
+      /** Format: uuid */
+      teamId: string
+      teamName: string
+      /** Format: int32 */
+      memberCount: number
+    }
     ManagerHeatmapResponse: {
       /** Format: uuid */
       cohortId: string
@@ -14593,43 +15178,12 @@ export interface components {
        */
       asOfAt?: string
       /** @description CLASS 계층은 고정 상위가 없어 키가 빠진다 */
-      scope?: components['schemas']['Scope']
-      concepts: components['schemas']['Concept'][]
+      scope?: components['schemas']['HeatmapScope']
+      concepts: components['schemas']['HeatmapConcept'][]
       /** @description 집계 대상 셀이 하나도 없으면 키가 빠진다 */
-      summary?: components['schemas']['Row']
-      rows: components['schemas']['Row'][]
-      navigation: components['schemas']['Navigation']
-    }
-    Navigation: {
-      classrooms: components['schemas']['Classroom'][]
-      teams: components['schemas']['Team'][]
-    }
-    Row: {
-      /**
-       * Format: uuid
-       * @description 합계 행에서는 키가 빠진다
-       */
-      rowId?: string
-      /** @description 합계 행에서는 키가 빠진다 */
-      rowName?: string
-      /**
-       * Format: int32
-       * @description 개인 행은 인원 개념이 없어 키가 빠진다
-       */
-      memberCount?: number
-      cells: components['schemas']['Cell'][]
-    }
-    Scope: {
-      /** Format: uuid */
-      classroomId: string
-      classroomName: string
-      /**
-       * Format: uuid
-       * @description TEAM·CLASS 계층에서는 키가 빠진다
-       */
-      teamId?: string
-      /** @description TEAM·CLASS 계층에서는 키가 빠진다 */
-      teamName?: string
+      summary?: components['schemas']['HeatmapRow']
+      rows: components['schemas']['HeatmapRow'][]
+      navigation: components['schemas']['HeatmapNavigation']
     }
     /**
      * @description 기수 전체의 집단 미달 목록.
@@ -15223,166 +15777,6 @@ export interface components {
        */
       traineeCount: number
     }
-    /** @description 지금 할 일 카드. 회차가 없으면 NO_ACTIVE_ROUND 합성 카드가 들어간다. */
-    CurrentRoundResponse: {
-      /**
-       * Format: uuid
-       * @description 합성 카드일 때만 null
-       */
-      assessmentRoundId: string | null
-      /** Format: int32 */
-      roundNo: number | null
-      /** @example 미프 3차 */
-      roundName: string | null
-      /** @description 실제 회차면 항상 OPEN */
-      roundStatus: components['schemas']['AssessmentRoundStatus'] | null
-      /** Format: uuid */
-      projectId: string | null
-      projectName: string | null
-      projectCategory: components['schemas']['ProjectCategory'] | null
-      /** @description 교안 표시명. 없으면 빈 배열 */
-      curriculumNames: string[]
-      /**
-       * Format: uuid
-       * @description 회차 스코프 팀. 팀 미편성이면 null
-       */
-      teamId: string | null
-      /** @example 3 */
-      teamNumber: string | null
-      /** @example 3팀 */
-      teamName: string | null
-      /**
-       * @description View 계약값 10종
-       * @example ANALYZING
-       */
-      representativeStatus: components['schemas']['TraineeRepresentativeStatus']
-      /**
-       * @description View 계약값 11종
-       * @example WAIT_FOR_ANALYSIS
-       */
-      defaultActionCode: components['schemas']['TraineeDefaultActionCode']
-      /**
-       * @description 없으면 null
-       * @enum {string|null}
-       */
-      actionUnavailableReasonCode: 'SUBMISSION_DEADLINE_PASSED' | 'ASSESSMENT_WINDOW_CLOSED' | null
-      /** @description 없으면 빈 배열 */
-      warningCodes: (
-        | 'SUBMISSION_DEADLINE_PASSED'
-        | 'ANALYSIS_FAILED'
-        | 'ASSESSMENT_WINDOW_CLOSED'
-        | 'PROBLEM_NOT_GENERATED'
-      )[]
-      /** @description 커밋 이메일 상태. **null은 미등록**을 뜻한다. 배너 노출 조건은 `commitEmailStatus !== "VERIFIED"`이며 빅프로젝트에서는 미등록이 기여 귀속 실패로 이어진다. */
-      commitEmailStatus: components['schemas']['CommitEmailStatus'] | null
-      /** @description 기관 정책이 허용한 제출 수단 */
-      availableSubmissionMethods: components['schemas']['SubmissionMethod'][]
-      /** @description 실제 제출 수단. 미제출이면 null */
-      submissionMethod: components['schemas']['SubmissionMethod'] | null
-      submissionStatus: components['schemas']['SubmissionStatus'] | null
-      /** Format: date-time */
-      submittedAt: string | null
-      canSubmit: boolean
-      canResubmit: boolean
-      /**
-       * @description View가 계산한 5값. 미제출이면 NOT_SUBMITTED
-       * @example ANALYZING
-       * @enum {string}
-       */
-      analysisPhase: 'NOT_SUBMITTED' | 'ANALYZING' | 'FAILED' | 'COMPLETED' | 'WAITING'
-      analysisJobStatus: components['schemas']['AnalysisJobStatus'] | null
-      /** @description 분석 실패 사유. 15종. 상세는 Submission API 참고 */
-      analysisFailureCode: string | null
-      /** @description 첫 응시 상태. **세션 상태가 아니다** */
-      initialAttemptStatus: components['schemas']['MeasurementAttemptStatus'] | null
-      /** @description 첫 응시의 세션 상태. 문제를 푸는 구간만 가리킨다 */
-      initialSessionStatus: components['schemas']['AssessmentSessionStatus'] | null
-      /**
-       * Format: int32
-       * @description 실제로 출제된 문제 수(`0`~`3`). 세션 API의 `problemTotal`과 같다.
-       *
-       *     ⚠️ **`3`으로 가정하지 말 것.** 코드에 근거가 없는 검증 개념은 문항이 만들어지지 않아
-       *     (`NOT_GENERATED`) 세션에 나오지 않는다. 세션이 열리기 전에는 `0`이다.
-       * @example 1
-       */
-      preparedProblemCount: number
-      /** @description 다시 보기 응시 상태. **배정이 없으면 null** */
-      reviewStatus: components['schemas']['MeasurementAttemptStatus'] | null
-      /** Format: int32 */
-      completedReviewCount: number
-      /** Format: uuid */
-      reportId: string | null
-      /** @enum {string} */
-      reportPublishStatus: 'PUBLISHED' | 'GENERATING' | 'NOT_PUBLISHED'
-      /** @description 리포트 행이 없으면 NOT_CONFIGURED로 정규화한다 */
-      traineeReleaseStatus: components['schemas']['TraineeReleaseStatus']
-      /** @description traineeReleaseStatus = RELEASED일 때만 true */
-      canViewReport: boolean
-      /** @enum {string} */
-      explanationStatus: 'UNAVAILABLE' | 'PARTIAL' | 'AVAILABLE'
-      /** Format: date-time */
-      submissionDueAt: string | null
-      /**
-       * Format: date-time
-       * @description 회차 공통 응시 창 시작(운영자가 정한 일정). OPEN 회차면 DB가 non-null을 보장한다.
-       *
-       *     **응시 가능 판정에 함께 쓰인다** — 개인 창과의 관계는 `assessmentCloseAt` 설명 참고.
-       */
-      roundAssessmentOpenAt: string | null
-      /**
-       * Format: date-time
-       * @description 회차 공통 응시 창 마감(운영자가 정한 일정). OPEN 회차면 DB가 non-null을 보장한다.
-       *
-       *     **응시 가능 판정에 함께 쓰인다** — 개인 창과의 관계는 `assessmentCloseAt` 설명 참고.
-       */
-      roundAssessmentDueAt: string | null
-      /**
-       * Format: date-time
-       * @description 개인 응시 창 시작. 분석이 끝나 세션이 열린 시각이며, 수행 생성 전이면 null이다.
-       */
-      assessmentOpenAt: string | null
-      /**
-       * Format: date-time
-       * @description 개인 응시 창 종료. 세션이 열린 시각부터 24시간이며(`assessment.window-hours`),
-       *     수행 생성 전이면 null이다.
-       *
-       *     ## 🔴 두 응시 창은 교집합이다 — 가장 좁은 것이 이긴다
-       *
-       *     응시 창이 두 개 온다. **둘 다 열려 있을 때만 응시할 수 있다.**
-       *
-       *     ```
-       *     열림  = max(assessmentOpenAt,  roundAssessmentOpenAt)
-       *     닫힘  = min(assessmentCloseAt, roundAssessmentDueAt)
-       *     ```
-       *
-       *     | | 무엇 |
-       *     |---|---|
-       *     | 개인 창 | 분석이 끝나 세션이 열린 시각부터 24시간. 사람마다 다르다 |
-       *     | 회차 창 | 운영자가 정한 회차 일정. 기수 전체가 같다 |
-       *
-       *     ⚠️ **어긋날 수 있다.** 마감 직전에 제출해 분석이 늦게 끝나면 개인 창이 회차 창보다
-       *     뒤에 닫히는데, 그때는 **회차 창이 먼저 닫히므로 24시간을 다 쓰지 못한다.**
-       *     반대로 회차 일정을 나중에 옮기면 개인 창이 먼저 닫힐 수 있다.
-       *
-       *     남은 시간 문구는 **두 값 중 이른 쪽**으로 그린다.
-       */
-      assessmentCloseAt: string | null
-      /** Format: date-time */
-      initialTerminalAt: string | null
-      /**
-       * @example ROUND_BATCH
-       * @enum {string|null}
-       */
-      reportPublishMode: 'ROUND_BATCH' | null
-      /** Format: date-time */
-      reportPublishNotBeforeAt: string | null
-      manager: components['schemas']['ManagerResponse'] | null
-      /**
-       * Format: date-time
-       * @description 서버 조회 시각
-       */
-      asOfAt: string
-    }
     /** @description 코드 패널. snippet은 파일 전체이며 자를 위치는 화면이 정한다 */
     Code: {
       path: string
@@ -15493,6 +15887,178 @@ export interface components {
       upcoming: components['schemas']['UpcomingRoundResponse'][]
       /** @description 배열 자체는 항상 존재한다. 없으면 빈 배열 */
       past: components['schemas']['PastRoundResponse'][]
+    }
+    /** @description 지금 할 일 카드. 회차가 없으면 NO_ACTIVE_ROUND 합성 카드가 들어간다. */
+    CurrentRoundResponse: {
+      /**
+       * Format: uuid
+       * @description 합성 카드일 때만 null
+       */
+      assessmentRoundId: string | null
+      /** Format: int32 */
+      roundNo: number | null
+      /** @example 미프 3차 */
+      roundName: string | null
+      /** @description 실제 회차면 항상 OPEN */
+      roundStatus: components['schemas']['AssessmentRoundStatus'] | null
+      /** Format: uuid */
+      projectId: string | null
+      projectName: string | null
+      projectCategory: components['schemas']['ProjectCategory'] | null
+      /** @description 교안 표시명. 없으면 빈 배열 */
+      curriculumNames: string[]
+      /**
+       * Format: uuid
+       * @description 회차 스코프 팀. 팀 미편성이면 null
+       */
+      teamId: string | null
+      /** @example 3 */
+      teamNumber: string | null
+      /** @example 3팀 */
+      teamName: string | null
+      /**
+       * @description View 계약값 10종
+       * @example ANALYZING
+       */
+      representativeStatus: components['schemas']['TraineeRepresentativeStatus']
+      /**
+       * @description View 계약값 11종
+       * @example WAIT_FOR_ANALYSIS
+       */
+      defaultActionCode: components['schemas']['TraineeDefaultActionCode']
+      /**
+       * @description 없으면 null
+       * @enum {string|null}
+       */
+      actionUnavailableReasonCode: 'SUBMISSION_DEADLINE_PASSED' | 'ASSESSMENT_WINDOW_CLOSED' | null
+      /** @description 없으면 빈 배열 */
+      warningCodes: (
+        | 'SUBMISSION_DEADLINE_PASSED'
+        | 'ANALYSIS_FAILED'
+        | 'ASSESSMENT_WINDOW_CLOSED'
+        | 'PROBLEM_NOT_GENERATED'
+      )[]
+      /** @description 커밋 이메일 상태. **null은 미등록**을 뜻한다. 배너 노출 조건은 `commitEmailStatus !== "VERIFIED"`이며 빅프로젝트에서는 미등록이 기여 귀속 실패로 이어진다. */
+      commitEmailStatus: components['schemas']['CommitEmailStatus'] | null
+      /** @description 기관 정책이 허용한 제출 수단 */
+      availableSubmissionMethods: components['schemas']['SubmissionMethod'][]
+      /** @description 실제 제출 수단. 미제출이면 null */
+      submissionMethod: components['schemas']['SubmissionMethod'] | null
+      submissionStatus: components['schemas']['SubmissionStatus'] | null
+      /** Format: date-time */
+      submittedAt: string | null
+      /** @description 마감 전이고 아직 세션을 시작하지 않았는가. 제출 버튼을 여는 값이다 */
+      canSubmit: boolean
+      /** @description 위 조건에 더해 **이미 제출이 있는가.** 버튼 문구를 「제출」과 「재제출」로 가른다 */
+      canResubmit: boolean
+      /**
+       * @description View가 계산한 5값. 미제출이면 NOT_SUBMITTED
+       * @example ANALYZING
+       * @enum {string}
+       */
+      analysisPhase: 'NOT_SUBMITTED' | 'ANALYZING' | 'FAILED' | 'COMPLETED' | 'WAITING'
+      analysisJobStatus: components['schemas']['AnalysisJobStatus'] | null
+      /**
+       * @description 분석이 실패했는가만 알린다. 값은 `ANALYSIS_FAILED` **한 종류**이고 실패하지 않았으면 `null`이다.
+       *
+       *     ⚠️ 사유 코드가 아니다. `trainee_home_round_view`가
+       *     `CASE WHEN analysis_status='FAILED' THEN 'ANALYSIS_FAILED' ELSE NULL END`로 만든 상수다.
+       *     **실제 사유는 TR-02(`GET /projects/{projectId}/submissions/me`)의 `analysisFailureCode`에 있다** —
+       *     사유 문구를 두 화면에 복제하면 같은 실패가 화면마다 다르게 설명된다.
+       * @enum {string|null}
+       */
+      analysisFailureCode: 'ANALYSIS_FAILED' | null
+      /** @description 첫 응시 상태. **세션 상태가 아니다** */
+      initialAttemptStatus: components['schemas']['MeasurementAttemptStatus'] | null
+      /** @description 첫 응시의 세션 상태. 문제를 푸는 구간만 가리킨다 */
+      initialSessionStatus: components['schemas']['AssessmentSessionStatus'] | null
+      /**
+       * Format: int32
+       * @description 실제로 출제된 문제 수(`0`~`3`). 세션 API의 `problemTotal`과 같다.
+       *
+       *     ⚠️ **`3`으로 가정하지 말 것.** 코드에 근거가 없는 검증 개념은 문항이 만들어지지 않아
+       *     (`NOT_GENERATED`) 세션에 나오지 않는다. 세션이 열리기 전에는 `0`이다.
+       * @example 1
+       */
+      preparedProblemCount: number
+      /** @description 다시 보기 응시 상태. **배정이 없으면 null** */
+      reviewStatus: components['schemas']['MeasurementAttemptStatus'] | null
+      /** Format: int32 */
+      completedReviewCount: number
+      /** Format: uuid */
+      reportId: string | null
+      /** @enum {string} */
+      reportPublishStatus: 'PUBLISHED' | 'GENERATING' | 'NOT_PUBLISHED'
+      /** @description 리포트 행이 없으면 NOT_CONFIGURED로 정규화한다 */
+      traineeReleaseStatus: components['schemas']['TraineeReleaseStatus']
+      /** @description traineeReleaseStatus = RELEASED일 때만 true */
+      canViewReport: boolean
+      /** @enum {string} */
+      explanationStatus: 'UNAVAILABLE' | 'PARTIAL' | 'AVAILABLE'
+      /** Format: date-time */
+      submissionDueAt: string | null
+      /**
+       * Format: date-time
+       * @description 🔴 **폐기된 필드. 언제나 `null`이다**(2026-08-16).
+       *
+       *     회차 공통 응시 창 시작이었다. 컬럼이 폐기돼 `project_assessment_round`의 전 행이
+       *     `null`이며, 다시 채우는 코드 경로도 없다. 계약은 화면이 깨지지 않도록 남겨 두지만
+       *     **응시 가능 판정에 쓰지 말 것** — 개인 창(`assessmentOpenAt`)만 보면 된다.
+       */
+      roundAssessmentOpenAt: string | null
+      /**
+       * Format: date-time
+       * @description 🔴 **폐기된 필드. 언제나 `null`이다**(2026-08-16). `roundAssessmentOpenAt`과 같다.
+       *
+       *     응시 마감은 개인 창(`assessmentCloseAt`) 하나로 정해진다.
+       */
+      roundAssessmentDueAt: string | null
+      /**
+       * Format: date-time
+       * @description 개인 응시 창 시작. 분석이 끝나 세션이 열린 시각이며, 수행 생성 전이면 null이다.
+       *
+       *     **응시 가능 여부를 정하는 것은 이 값과 `assessmentCloseAt`뿐이다.**
+       */
+      assessmentOpenAt: string | null
+      /**
+       * Format: date-time
+       * @description 개인 응시 창 종료. 세션이 열린 시각부터 24시간이며(`assessment.window-hours`),
+       *     수행 생성 전이면 null이다.
+       *
+       *     ## 🔴 응시 창은 이제 하나다 — 개인 창이 정본
+       *
+       *     종전에는 개인 창과 회차 창의 **교집합**으로 판정하라고 적었다. 회차 창
+       *     (`roundAssessmentOpenAt`·`roundAssessmentDueAt`)이 2026-08-16에 폐기돼 **언제나 `null`**
+       *     이므로 그 식은 성립하지 않는다.
+       *
+       *     ```
+       *     열림  = assessmentOpenAt
+       *     닫힘  = assessmentCloseAt
+       *     ```
+       *
+       *     ⚠️ **`min(assessmentCloseAt, roundAssessmentDueAt)`을 그대로 쓰면 안 된다.**
+       *     JS에서 `Math.min(x, null)`은 `null`을 `0`으로 바꿔 **마감이 1970-01-01로 그려진다.**
+       *     회차 창을 참조하는 코드가 남아 있으면 걷어낼 것.
+       *
+       *     남은 시간 문구는 `assessmentCloseAt` 하나로 그린다. 서버도 같은 값으로 막는다 —
+       *     창이 지난 뒤 세션 API는 409 `ASSESSMENT_WINDOW_CLOSED`를 낸다.
+       */
+      assessmentCloseAt: string | null
+      /** Format: date-time */
+      initialTerminalAt: string | null
+      /**
+       * @example ROUND_BATCH
+       * @enum {string|null}
+       */
+      reportPublishMode: 'ROUND_BATCH' | null
+      /** Format: date-time */
+      reportPublishNotBeforeAt: string | null
+      manager: components['schemas']['ManagerResponse'] | null
+      /**
+       * Format: date-time
+       * @description 서버 조회 시각
+       */
+      asOfAt: string
     }
     /** @description 담당 매니저. 반에 활성 배정이 없으면 객체 자체가 null이다. */
     ManagerResponse: {
@@ -15629,12 +16195,12 @@ export interface components {
       submissionDueAt: string
       /**
        * Format: date-time
-       * @description 이해도 확인 시작일자. **PLANNED 회차에서는 null일 수 있다** — ck_project_assessment_round_assessment_window_required가 PLANNED만 면제하기 때문이다.
+       * @description 🔴 **폐기된 필드. 언제나 `null`이다**(2026-08-16). 회차 공통 응시 창은 더 이상 쓰지 않으며 응시 가능 여부는 개인 창이 정한다. 계약은 화면이 깨지지 않도록 남겨 둔다.
        */
       roundAssessmentOpenAt: string | null
       /**
        * Format: date-time
-       * @description 이해도 확인 종료일자. 위와 같은 이유로 null 가능
+       * @description 🔴 **폐기된 필드. 언제나 `null`이다**(2026-08-16). 위와 같다.
        */
       roundAssessmentDueAt: string | null
     }
@@ -18263,13 +18829,13 @@ export interface operations {
       }
     }
     responses: {
-      /** @description 사전 검증 완료; 등록될 수 있는 수와 걸린 행을 응답(아무것도 만들지 않음) */
+      /** @description 사전 검증 완료; 등록될 수 있는 수(registrableCount)와 걸린 행을 응답(아무것도 만들지 않음) */
       200: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['RegisterTraineesResponse']
+          'application/json': components['schemas']['PreviewTraineesResponse']
         }
       }
       /** @description CSV_FORMAT_INVALID CSV 파일·헤더·인코딩·열 구성 오류 · TRAINEE_NAME_INVALID 이름이 비었거나 200자 초과 */
@@ -18485,13 +19051,13 @@ export interface operations {
       }
     }
     responses: {
-      /** @description 사전 검증 완료; 등록될 수 있는 수와 걸린 행을 응답(아무것도 만들지 않음) */
+      /** @description 사전 검증 완료; 등록될 수 있는 수(registrableCount)와 걸린 행을 응답(아무것도 만들지 않음) */
       200: {
         headers: {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['RegisterTraineesResponse']
+          'application/json': components['schemas']['PreviewTraineesResponse']
         }
       }
       /** @description VALIDATION_FAILED 교육생 목록이 비었음 · TRAINEE_NAME_INVALID 이름이 비었거나 200자 초과 */
@@ -19462,7 +20028,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description SESSION_ALREADY_ENDED · STAGE_NOT_FOUND */
+      /** @description SESSION_ALREADY_ENDED · ASSESSMENT_WINDOW_CLOSED · REVIEW_DUE_AT_PASSED · STAGE_NOT_FOUND */
       409: {
         headers: {
           [name: string]: unknown
@@ -19593,7 +20159,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description SESSION_NOT_STARTED · SESSION_TIMEOUT · ANSWER_ALREADY_SUBMITTED · PROBLEM_TIME_LIMIT_EXCEEDED */
+      /** @description SESSION_NOT_STARTED · ASSESSMENT_WINDOW_CLOSED · REVIEW_DUE_AT_PASSED · SESSION_TIMEOUT · ANSWER_ALREADY_SUBMITTED · PROBLEM_TIME_LIMIT_EXCEEDED */
       409: {
         headers: {
           [name: string]: unknown
@@ -22039,7 +22605,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description PROJECT_ROUND_NOT_FOUND 그 프로젝트에 그 번호의 회차가 없음 · PROJECT_ROUND_NOT_CREATED 회차가 아직 하나도 없음(22차 R6) */
+      /** @description PROJECT_ROUND_NOT_FOUND 그 프로젝트에 그 번호의 회차가 없음 · PROJECT_ROUND_NOT_CREATED 회차가 아직 하나도 없음(22차 R6) · MANAGER_SCOPE_NOT_FOUND 매니저가 이 기수에서 담당하는 반이 없음(30차 R3) */
       404: {
         headers: {
           [name: string]: unknown
@@ -23345,6 +23911,56 @@ export interface operations {
       }
     }
   }
+  findCohortLinkedCurricula: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description 기수 ID. **이 값으로 목록을 좁힌다** */
+        cohortId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 조회 성공(연결이 없으면 빈 배열) */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CohortCurriculumResponse'][]
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED 오퍼레이터·매니저가 아님 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description COHORT_NOT_FOUND 기수를 찾을 수 없음(다른 기관의 기수·삭제된 기수 포함) */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
   findLinkableCurricula: {
     parameters: {
       query?: never
@@ -23821,44 +24437,6 @@ export interface operations {
       }
       /** @description COHORT_NOT_FOUND 조회할 기수를 찾을 수 없음 */
       404: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  findCurrentRound: {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description 조회 성공(회차 없음도 200) */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['CurrentRoundResponse']
-        }
-      }
-      /** @description 액세스 토큰이 없거나 유효하지 않음 */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description NOT_A_TRAINEE 교육생 계정이 아님 */
-      403: {
         headers: {
           [name: string]: unknown
         }

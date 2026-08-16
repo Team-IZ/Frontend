@@ -1,6 +1,6 @@
-import { ROUND_OPTIONS, ROUND_CONCEPTS, type RoundId, type RoundRecord } from '../mockData'
-import { REACH_STYLE, NA_PATTERN } from '../lib/reach'
+import { REACH_STYLE, NA_PATTERN } from '@/components/common/reach'
 import { cn } from '@/lib/utils/cn'
+import type { DetailRound } from '../_/api/types'
 
 const LEGEND_BG: Record<0 | 1 | 2 | 3 | 4, string> = {
   0: 'bg-reach-0',
@@ -11,15 +11,17 @@ const LEGEND_BG: Record<0 | 1 | 2 | 3 | 4, string> = {
 }
 
 /*
-  헤더 격자 — MG-02 히트맵의 그 행을 잘라 쓴다(§3). 여기서 회차×개념을 새로 그리지
-  않는다 — TraineeRow.rounds가 유일한 정보원이라 REACH_STYLE·roundBadgeKind와 함께
-  lib/reach.ts에 둔 스케일을 그대로 쓴다.
+  헤더 격자 — MG-02 히트맵의 그 행을 잘라 쓴다(§3).
 
-  ponytail: "이 회차 반에서 보기 ↗"(MG-02로 가는 링크)는 MG-02 화면이 아직 없어
-  뺐다 — 갈 곳이 생기면 그때 붙인다.
+  ⚠ **개념 이름이 회차 응답 안에 있다.** 목일 때는 `ROUND_CONCEPTS` 상수(회차 → 개념
+  3건)를 따로 뒀는데, 서버는 회차마다 `concepts[]`를 통째로 준다 — 사람마다 문항이
+  다를 수 있어서(코드에 근거가 없으면 안 만들어진다) 회차 단위 상수로는 애초에 표현이
+  안 된다. 칸 수도 3 고정이 아니다.
+
+  ponytail: "이 회차 반에서 보기 ↗"(MG-02로 가는 링크)는 히트맵이 붙으면 그때 단다.
 */
-export function RoundReachGrid({ rounds }: { rounds: Partial<Record<RoundId, RoundRecord>> }) {
-  const attended = ROUND_OPTIONS.filter((o) => rounds[o.value]?.status === 'ATTENDED').slice(-3)
+export function RoundReachGrid({ rounds }: { rounds: DetailRound[] }) {
+  const attended = rounds.filter((r) => r.attended).slice(-3)
 
   if (attended.length === 0) {
     return (
@@ -49,14 +51,11 @@ export function RoundReachGrid({ rounds }: { rounds: Partial<Record<RoundId, Rou
       </div>
 
       <div className="flex items-start overflow-x-auto">
-        {attended.map((o, i) => {
-          const record = rounds[o.value]
-          const levels = record?.status === 'ATTENDED' ? record.levels : [null, null, null]
-          const concepts = ROUND_CONCEPTS[o.value]
+        {attended.map((round, i) => {
           const isCurrent = i === attended.length - 1
           return (
             <div
-              key={o.value}
+              key={round.assessmentRoundId}
               className={cn(
                 'shrink-0 px-5 first:pl-0 last:pr-0',
                 i > 0 && 'border-l border-dashed border-border-strong',
@@ -68,14 +67,19 @@ export function RoundReachGrid({ rounds }: { rounds: Partial<Record<RoundId, Rou
                   isCurrent && 'font-bold text-fg',
                 )}
               >
-                {o.label}
+                {round.label}
               </p>
               <div className="flex gap-1">
-                {levels.map((level, j) =>
-                  level === null ? (
+                {round.concepts.map((c) =>
+                  /* null은 0단이 아니다 — 문항이 없거나 한 축도 답하지 않은 것이다 */
+                  c.level === null ? (
                     <span
-                      key={j}
-                      title={concepts[j]}
+                      key={c.problemNo}
+                      title={
+                        c.notGenerated
+                          ? `${c.conceptName} · 코드에 근거가 없어 못 물었습니다`
+                          : c.conceptName
+                      }
                       style={NA_PATTERN}
                       className="flex h-10 w-[78px] items-center justify-center rounded-md text-sm text-fg-subtle"
                     >
@@ -83,26 +87,26 @@ export function RoundReachGrid({ rounds }: { rounds: Partial<Record<RoundId, Rou
                     </span>
                   ) : (
                     <span
-                      key={j}
-                      title={concepts[j]}
+                      key={c.problemNo}
+                      title={c.conceptName}
                       className={cn(
                         'flex h-10 w-[78px] items-center justify-center rounded-md text-sm font-bold tabular-nums',
-                        REACH_STYLE[level],
+                        REACH_STYLE[c.level],
                       )}
                     >
-                      {level}단
+                      {c.level}단
                     </span>
                   ),
                 )}
               </div>
               <div className="mt-1 flex gap-1">
-                {concepts.map((c) => (
+                {round.concepts.map((c) => (
                   <span
-                    key={c}
-                    title={c}
+                    key={c.problemNo}
+                    title={c.conceptName}
                     className="w-[78px] truncate text-center text-2xs text-fg-subtle"
                   >
-                    {c}
+                    {c.conceptName}
                   </span>
                 ))}
               </div>

@@ -175,11 +175,27 @@ export default function InterviewListScreen() {
       onCohortChange={selectCohort}
     >
       <PageHeader
-        breadcrumb={`면담 › ${cohortName ?? ''} › 담당 반`}
+        /*
+          **있는 것만 잇는다.** `?? ''`로 채우고 이으면 기수가 오기 전 1.5초 동안
+          `면담 › › 담당 반`이 된다 — 구분자만 남아 조각이 빠진 것이 드러난다
+          (플로우 관찰에서 잡았다, screen-hardening §자주 나오는 것).
+        */
+        breadcrumb={['면담', cohortName, '담당 반'].filter(Boolean).join(' › ')}
         title="면담"
-        count={data ? `${data.total}명` : undefined}
+        /*
+          🔴 **결과 전이면 개수도 말하지 않는다.** 서버가 `resultStatus: PENDING`(위험
+          판정 자체가 없는 상태)이라면서 `items`·`counts`는 채워 보내는 회차가 있다
+          (실측 5차 — PENDING인데 대상 4명). 그대로 그리면 머리글은 `1명 · 예정 1`,
+          본문은 `이 회차는 아직 결과가 없어요`가 되어 **화면이 자기모순**이 된다.
+
+          본문 쪽을 기준으로 맞춘다 — 스펙이 「PENDING이면 그 안내를 그린다」이고,
+          아직 뒤집힐 수 있는 판정을 숫자로 단언하는 쪽이 더 나쁘다. 서버 모순 자체는
+          요청서로 나간다(mg-03-situations §5).
+        */
+        count={data && !resultPending ? `${data.total}명` : undefined}
         breakdown={
-          data && (
+          data &&
+          !resultPending && (
             <span className="text-fg-muted flex items-center gap-3">
               <span>
                 예정 <b className="text-fg font-bold">{data.counts.PLANNED ?? 0}</b>
@@ -283,15 +299,24 @@ export default function InterviewListScreen() {
       ) : (
         /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `lib/listQuery` */
         <div {...staleProps(list.isPlaceholderData)}>
-          <Table className="table-fixed">
+          <Table className="w-full table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead className="w-20">상태</TableHead>
-                <TableHead className="w-40">이름</TableHead>
-                <TableHead className="w-28">위험 유형</TableHead>
-                <TableHead className="w-44">판정 근거</TableHead>
-                <TableHead>마지막 활동</TableHead>
-                <TableHead className="w-44 text-right">액션</TableHead>
+                {/*
+                  🔴 **폭 합이 컨테이너를 넘어 액션 열이 잘렸다**(실측 표 1120px ·
+                  본문 1016px). `table-fixed`인데 마지막 활동만 폭을 안 줘서, 서버
+                  판정 근거 문장이 목보다 길어지자 그 열이 밀려 나갔다 — 제외·되돌리기
+                  버튼을 **아예 못 누르는 상태**였다.
+
+                  모든 열에 폭을 준다(합 = 100%). 긴 문장은 열 안에서 줄바꿈한다 —
+                  잘라내면 판정 근거가 무슨 말인지 알 수 없다.
+                */}
+                <TableHead className="w-[8%]">상태</TableHead>
+                <TableHead className="w-[14%]">이름</TableHead>
+                <TableHead className="w-[11%]">위험 유형</TableHead>
+                <TableHead className="w-[27%]">판정 근거</TableHead>
+                <TableHead className="w-[24%]">마지막 활동</TableHead>
+                <TableHead className="w-[16%] text-right">액션</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

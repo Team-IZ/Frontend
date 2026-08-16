@@ -221,7 +221,8 @@ export default function TraineeListScreen() {
         페이지당 20명씩 오므로 세면 그 쪽 안에서만 맞는 숫자가 된다.
       */}
       <PageHeader
-        breadcrumb={`교육생 › ${cohortName ?? ''} › 담당 반`}
+        /* 있는 것만 잇는다 — 기수가 오기 전 `교육생 › › 담당 반`이 된다(MG-03과 같은 건) */
+        breadcrumb={['교육생', cohortName, '담당 반'].filter(Boolean).join(' › ')}
         title="교육생"
         count={view ? `${view.scopeTotal}명` : undefined}
         breakdown={

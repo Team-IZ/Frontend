@@ -1,5 +1,7 @@
 import { izClient, unwrap, type RequestOptions } from '@/api/_contract'
 import type { operations } from '@/api/schema'
+/* 상한은 의존성 없는 잎 모듈에 있다 — CI 가드가 별칭 없이 읽어 검산한다 */
+export { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL, tooLargeToUpload } from '@/api/uploadLimits'
 
 /*
   ⚠ **생성된 타입 파일이 아니라 스펙 원본(`schema.d.ts`)에서 직접 뽑는다.** 태그별

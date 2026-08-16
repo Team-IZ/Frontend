@@ -169,6 +169,12 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
     setPreview(null)
     setRows([emptyRow()])
     setSubmitFailure(null)
+    /*
+      ⚠ **`previewFailure`가 빠져 있었다.** 나머지는 다 지우면서 이것만 남겨서, 서버가
+      거절한 파일(`2행의 이름을 입력해야 합니다`)의 배너가 **닫았다 다시 열어도 그대로**
+      떠 있었다 — 파일도 판정도 비어 있는 화면에 실패 문구만 남는다(실측).
+    */
+    setPreviewFailure(null)
     // pending 상태에서 닫혔을 수 있다 — 닫혔다 다시 열었을 때 스피너가 안 남게 같이 지운다
     setSubmitting(false)
   }
@@ -235,7 +241,15 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
             value={mode}
             onValueChange={(v) => {
               setMode(v as string)
+              /*
+                **판정도 실패도 그 탭의 입력에 딸린 것이다.** `preview`만 지우고 있어서
+                CSV가 거절당한 배너가 **직접 입력 탭까지 따라왔다** — 그 탭에는 아직
+                아무것도 안 넣었는데 「교육생을 확인하지 못했습니다」가 떠 있었다(실측).
+                입력이 바뀌면 그 입력에 대한 답도 같이 버린다.
+              */
               setPreview(null)
+              setPreviewFailure(null)
+              setSubmitFailure(null)
             }}
           >
             <TabsList>

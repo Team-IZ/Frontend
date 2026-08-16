@@ -137,9 +137,11 @@ export default function InterviewBriefScreen() {
   }
 
   /*
-    🔴 생성이 실패한 브리프 — `openingRemark`가 `null`, `items`가 빈 배열로 온다
-    (스펙은 `required`인데 실제로는 null, 30차 R2③). **`briefState`로 먼저 가른다** —
-    그 자리를 빈 채로 그리면 매니저가 "할 말이 없구나"로 읽는다.
+    생성이 실패한 브리프 — `openingRemark`가 `null`, `items`가 빈 배열로 온다.
+    스펙에 `nullable` 표기가 붙어 타입도 이제 그렇게 말한다(30차 R2③).
+
+    **`briefState`로 먼저 가른다** — 그 자리를 빈 채로 그리면 매니저가 "할 말이
+    없구나"로 읽는다. 백엔드도 이 방어를 그대로 두어도 좋다고 했다.
   */
   if (brief.data.briefState === 'FAILED') {
     return shell(
@@ -160,7 +162,32 @@ export default function InterviewBriefScreen() {
     )
   }
 
-  return shell(<BriefSheet brief={brief.data} cohortName={cohortName ?? ''} />)
+  /*
+    🔴 **`key`가 없으면 저장한 값이 안 보인다.**
+
+    저장 → 목록 복귀 → 다시 열기를 실제로 눌러 보니 입력칸이 전부 비어 있었다.
+    목록은 `다음에 할 것 — "…"`를 정확히 말하는데 브리프만 빈 값이었고, **저장
+    버튼은 `저장`**(= `savedRecord`가 있다는 뜻)이라 **버튼과 입력칸이 서로 다른
+    데이터를 보고 있었다.**
+
+    원인은 캐시다. 저장이 `interventionKeys.all`을 무효화하면 캐시는 stale이 되지만
+    **데이터는 남아 있어** 다시 열 때 옛 응답(`savedRecord: null`)이 즉시 반환된다.
+    `BriefSheet`가 그것으로 마운트되며 `useState` 초기값이 빈 값으로 굳고, 새 응답이
+    도착해도 초기값은 다시 잡히지 않는다.
+
+    저장된 값이 바뀌면 리마운트해 초기값을 다시 잡는다. 타이핑 중에는 `savedRecord`가
+    바뀌지 않으므로 입력이 날아가지 않는다.
+
+    ⚠ **주소로 들어가면 안 나온다** — 캐시가 없어 처음부터 새 응답으로 마운트된다.
+    목록에서 **눌러서** 왕복해야 재현된다(screen-hardening §5).
+  */
+  return shell(
+    <BriefSheet
+      key={JSON.stringify(brief.data.savedRecord)}
+      brief={brief.data}
+      cohortName={cohortName ?? ''}
+    />,
+  )
 }
 
 function BriefSheet({ brief, cohortName }: { brief: Brief; cohortName: string }) {

@@ -134,7 +134,7 @@ function QuestionBubble({
   refText: string
   active?: boolean
 }) {
-  const label = mode === 'RETRY' ? `다시 보기 · ${LEVEL_LABEL[level]}` : LEVEL_LABEL[level]
+  const label = mode === 'REVIEW' ? `다시 보기 · ${LEVEL_LABEL[level]}` : LEVEL_LABEL[level]
   return (
     <div
       className={cn(

@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useReducer, useState } from 'react'
-import { useSearchParams } from 'react-router'
+import { Link, useSearchParams } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/Empty'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/Resizable'
 import { Spinner } from '@/components/ui/Spinner'
 import { formatClock } from '@/lib/format'
 import { useAsync } from '@/lib/useAsync'
+import { useCurrentSession, useNoSessionReason } from './_/api/api'
 import { getSession, requestHint, submitAnswer } from './api'
 import { sessionReducer } from './sessionReducer'
 import CodePane from './components/CodePane'
@@ -33,11 +34,42 @@ import { MAX_HINTS, hintsUsed, type SessionMode, type SessionState } from './typ
 */
 export default function SessionScreen() {
   const [searchParams] = useSearchParams()
-  const mode: SessionMode = searchParams.get('retry') === '1' ? 'RETRY' : 'FIRST'
   const previewKey = searchParams.get('state') ?? undefined
 
+  /*
+    **실서버 세션이 먼저다.** 시작 전 안내(`READY`)와 진행 중 복귀(`IN_PROGRESS`)를
+    이 조회 하나가 가른다 — 새로고침 복원도 여기서 끝난다(별도 복구 API가 없다).
+
+    🔴 **이 조회는 읽기만 하지 않는다.** 상한을 넘긴 세션·문제를 그 자리에서 닫는다
+    (스펙 명시·실측 확인). 진입만 해도 상태가 바뀔 수 있다.
+  */
+  const session = useCurrentSession()
+
+  // `204`의 사유는 홈 대표 상태가 갖고 있다 — 목에는 없던 의존이다
+  const noSessionReason = useNoSessionReason()
+
+  const mode: SessionMode = session.data?.mode ?? 'FIRST'
+
+  /*
+    아직 목으로 도는 구간(문제·답변·힌트)이 남아 있다. `POST /start` 이후를 붙이면서
+    이 목을 지운다 — 그때까지 실서버 값으로 그리는 것은 시작 전 안내까지다.
+    훅은 조건부로 부를 수 없어 세션 판정보다 위에 둔다.
+  */
   const load = useCallback(() => getSession(mode, previewKey), [mode, previewKey])
   const page = useAsync(load)
+
+  // 세션이 없으면 사유를 홈에서 읽어야 하므로 그 조회까지 기다린다
+  if (session.isPending || (session.noSession && noSessionReason.isPending)) {
+    return (
+      <div className="flex h-svh items-center justify-center">
+        <Spinner className="size-6" aria-label="세션을 불러오는 중" />
+      </div>
+    )
+  }
+
+  if (session.noSession) {
+    return <NoSessionScreen status={noSessionReason.status} />
+  }
 
   if (page.loading) {
     return (
@@ -68,12 +100,19 @@ export default function SessionScreen() {
   // 이 화면 하나가 최초로 전체화면을 쓰는 화면이라 지금까지 드러나지 않았다.
   return (
     <div className="h-svh">
-      <SessionRunner initial={page.data} />
+      <SessionRunner initial={page.data} problemTotal={session.data?.problemTotal ?? null} />
     </div>
   )
 }
 
-function SessionRunner({ initial }: { initial: SessionState }) {
+function SessionRunner({
+  initial,
+  problemTotal,
+}: {
+  initial: SessionState
+  /** 서버가 준 실제 출제 수. 목이 쓰던 `3` 고정을 대신한다 */
+  problemTotal: number | null
+}) {
   const [state, dispatch] = useReducer(sessionReducer, initial)
   const [submitting, setSubmitting] = useState(false)
   const [offlineDismissed, setOfflineDismissed] = useState(false)
@@ -107,7 +146,13 @@ function SessionRunner({ initial }: { initial: SessionState }) {
   }, [online])
 
   if (state.phase === 'INTRO') {
-    return <IntroScreen mode={state.mode} onStart={() => dispatch({ type: 'START' })} />
+    return (
+      <IntroScreen
+        mode={state.mode}
+        problemTotal={problemTotal}
+        onStart={() => dispatch({ type: 'START' })}
+      />
+    )
   }
 
   if (state.phase === 'ENDED') {
@@ -277,7 +322,7 @@ function TopBar({
             />
           ))}
         </span>
-        {state.mode === 'RETRY' && (
+        {state.mode === 'REVIEW' && (
           <span className="rounded-full bg-info-soft px-2 py-0.5 text-xs font-medium text-info">
             기록에만 남아요
           </span>
@@ -304,4 +349,62 @@ function TopBar({
       </span>
     </div>
   )
+}
+
+/*
+  세션이 없다(`204`). **사유가 여섯 가지인데 본문이 없다** — 완료·방금 상한 초과·
+  응시 창 닫힘·분석 전·분석 실패·팀 배정 끊김. 스펙이 *"204를 응시 완료로 읽지 말 것"*
+  이라고 못박았고, 가르는 값은 홈의 대표 상태다.
+
+  여기서 화면이 다시 판정하지 않는다 — 상태 하나를 문장으로 옮기기만 한다.
+*/
+function NoSessionScreen({ status }: { status: string | null }) {
+  const { title, description } = noSessionMessage(status)
+  return (
+    <div className="flex h-svh items-center justify-center p-6">
+      <Empty className="max-w-[460px] border-solid">
+        <EmptyHeader>
+          <EmptyTitle>{title}</EmptyTitle>
+          <EmptyDescription>{description}</EmptyDescription>
+        </EmptyHeader>
+        <Button variant="ghost" nativeButton={false} render={<Link to="/trainee/home" />}>
+          홈으로
+        </Button>
+      </Empty>
+    </div>
+  )
+}
+
+function noSessionMessage(status: string | null) {
+  switch (status) {
+    case 'ASSESSMENT_COMPLETED':
+      return {
+        title: '이해도 확인을 마쳤어요',
+        description: '리포트는 회차 마감 후 한꺼번에 발행됩니다.',
+      }
+    case 'ASSESSMENT_WINDOW_CLOSED':
+      return {
+        title: '응시 기한이 지났어요',
+        description: '이번 회차는 미응시로 기록됩니다. 사정이 있었다면 매니저에게 알려 주세요.',
+      }
+    case 'ANALYZING':
+      return {
+        title: '아직 분석이 끝나지 않았어요',
+        description: '분석이 끝나면 홈에서 시작할 수 있어요.',
+      }
+    case 'ANALYSIS_FAILED':
+      return {
+        title: '코드를 분석하지 못했어요',
+        description: '제출 화면에서 이유를 확인하고 다시 제출해 주세요.',
+      }
+    case 'SUBMISSION_REQUIRED':
+    case 'SUBMISSION_MISSED':
+      return {
+        title: '아직 코드를 제출하지 않았어요',
+        description: '제출하고 분석이 끝나야 이해도 확인이 열려요.',
+      }
+    default:
+      // 팀 배정이 끊긴 경우 등 — 지어내지 않고 홈으로 보낸다
+      return { title: '지금 진행할 이해도 확인이 없어요', description: '홈에서 확인해 주세요.' }
+  }
 }

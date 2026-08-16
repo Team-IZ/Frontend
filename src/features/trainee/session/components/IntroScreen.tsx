@@ -41,7 +41,19 @@ import type { SessionMode } from '../types'
 */
 type Group = { label: string; rows: { icon: LucideIcon; body: React.ReactNode }[] }
 
-export default function IntroScreen({ mode, onStart }: { mode: SessionMode; onStart: () => void }) {
+export default function IntroScreen({
+  mode,
+  problemTotal,
+  onStart,
+}: {
+  mode: SessionMode
+  /**
+   * 실제로 출제된 문제 수. **`3`으로 가정하지 않는다** — 코드에 근거가 없는 개념은
+   * 문항이 만들어지지 않아 세션에 나오지 않는다(스펙 명시). 모르면 수를 빼고 말한다.
+   */
+  problemTotal: number | null
+  onStart: () => void
+}) {
   const [ready, setReady] = useState(false)
 
   const groups: Group[] =
@@ -210,13 +222,14 @@ export default function IntroScreen({ mode, onStart }: { mode: SessionMode; onSt
       <Card className="w-full max-w-[640px] gap-5 p-8 shadow-card">
         <div>
           <h2 className="text-2xl font-bold text-fg">
-            {mode === 'RETRY' ? '다시 보기 시작하기 전에' : '시작하기 전에'}
+            {mode === 'REVIEW' ? '다시 보기 시작하기 전에' : '시작하기 전에'}
           </h2>
           <p className="mt-2 text-fg-muted">
             {mode === 'FIRST' ? (
               <>
-                내가 쓴 코드 <b className="text-fg">3군데</b>에 대해 왜 그렇게 했는지 이야기하는
-                시간이에요.
+                내가 쓴 코드{' '}
+                {problemTotal ? <b className="text-fg">{problemTotal}군데</b> : '몇 군데'}에 대해 왜
+                그렇게 했는지 이야기하는 시간이에요.
               </>
             ) : (
               <>

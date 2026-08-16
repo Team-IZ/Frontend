@@ -39,7 +39,7 @@ const scoreOf = (answer: string): Score =>
   Math.min(5, Math.floor(answer.trim().length / 25)) as Score
 
 /** 재시험 대상 — 실제로는 서버가 도달 단계로 정한다. 목은 마지막 개념 하나로 고정 */
-const RETRY_CONCEPT_INDEX = 2
+const REVIEW_CONCEPT_INDEX = 2
 
 function baseState(mode: SessionMode, concepts: Concept[], now: number): SessionState {
   return {
@@ -74,7 +74,7 @@ export function getSession(
   now = Date.now(),
 ): Promise<SessionState> {
   // ===== Mock 버전 (현재 활성) =====
-  const concepts = mode === 'RETRY' ? [SESSION_SCRIPT[RETRY_CONCEPT_INDEX]] : SESSION_SCRIPT
+  const concepts = mode === 'REVIEW' ? [SESSION_SCRIPT[REVIEW_CONCEPT_INDEX]] : SESSION_SCRIPT
   const state = baseState(mode, concepts, now)
   if (!previewKey) return delay(state)
   return delay(applyPreview(state, previewKey))

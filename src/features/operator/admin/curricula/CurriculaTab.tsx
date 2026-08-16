@@ -1,6 +1,6 @@
 import StaleBlock from '../../_shared/StaleBlock'
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useLocation, useNavigate } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import {
@@ -18,6 +18,7 @@ import { useFindOrganizationCurricula } from '@/api/curriculum/useCurriculumQuer
 import type { findOrganizationCurricula_Query } from '@/api/curriculum/curriculumTypes'
 import { CURRICULUM_STATUS_LABEL } from '../_/labels'
 import SectionHeader from '../_/components/SectionHeader'
+import PageHeader from '@/components/common/PageHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
 import TableSkeleton from '@/components/common/TableSkeleton'
 import ErrorState from '@/components/common/ErrorState'
@@ -32,13 +33,21 @@ import RegisterCurriculumDialog from './components/RegisterCurriculumDialog'
   교안을 연결해야 `가르친 항목`이 나오고, 프로젝트가 그중 3건을 골라 그 회차 모든 학생의
   문항을 만든다(14번 4-3). 그래서 여기가 비어 있으면 OP-03에서 프로젝트를 만들 수 없다.
 
-  범위가 **기관 전체**다 — 여러 기수가 같은 교안을 쓴다. 상단 스위처와 무관하다.
+  범위가 **기관 전체**다 — 여러 기수가 같은 교안을 쓴다(`Spring 백엔드 설계` 하나가 4개
+  기수 26개 프로젝트에 걸려 있다). **상단 스위처가 이 목록을 안 거른다** — 그 값은 상세의
+  `연결된 프로젝트`를 가르는 데 쓰이므로 링크에 실어 보낸다(`detailPath`).
 
   **파이프라인 산출 중 화면에 남기는 것은 둘뿐이다**(OP-06 §3) — 섹션 이름 + 페이지 범위,
   항목 이름 + 정의 한 줄. 노드·관계 수, extractor 이름 같은 것은 운영자가 그 숫자로 할
   일이 없어 버린다.
 */
-const detailPath = (id: string) => `/operator/admin/curricula/${id}`
+/*
+  ⚠ **`?cohort=`를 같이 들고 간다.** 안 넘기면 상세가 *"고른 기수가 없다"* 로 읽어
+  기본값(진행 중 기수)으로 되돌아간다 — 상세의 `연결된 프로젝트`가 **그 값으로 「지금
+  기수 · 나머지」를 가르므로**, 8기를 보다 들어간 사람이 9기 기준으로 갈린 표를 받는다.
+  운영 관리 탭이 같은 이유로 쿼리를 이어 붙인다(`AdminScreen`).
+*/
+const detailPath = (id: string, query: string) => `/operator/curricula/${id}${query}`
 
 /** 한 페이지에 받는 수. 서버 상한이 100이다 */
 const PAGE_SIZE = 100
@@ -80,8 +89,21 @@ const SORT_OPTIONS = [
 ]
 type CurriculumSort = NonNullable<findOrganizationCurricula_Query['sort']>
 
-export default function CurriculaTab() {
+/*
+  ⏳ **`standalone`은 이사 중에만 있는 문이다.** 같은 목록이 지금 두 곳에서 그려진다 —
+  사이드바 최상위 `교안`(새 집)과 `운영 관리 › 교안` 탭(옛 집). 탭을 지울 때 이 prop과
+  `SectionHeader` 갈래를 같이 지운다.
+
+  **머리 태그가 달라서 나눈다.** 탭 안에서는 `운영 관리`가 `<h1>`이라 여기는 `<h2>`여야
+  하고(SectionHeader), 최상위 화면에서는 여기가 그 화면의 `<h1>`이다(PageHeader).
+  `<h1>`이 한 화면에 둘이면 스크린리더의 문서 구조가 깨진다 — 보이는 크기 문제가 아니다.
+  두 컴포넌트는 prop 모양이 같아서 갈래가 한 줄로 끝난다.
+*/
+export default function CurriculaTab({ standalone = false }: { standalone?: boolean }) {
+  const Header = standalone ? PageHeader : SectionHeader
   const navigate = useNavigate()
+  /* 이름이 겹친다 — 아래 `search`는 검색어 입력값이고 이쪽은 주소의 쿼리다 */
+  const { search: urlQuery } = useLocation()
   const [search, setSearch] = useState('')
   /*
     **입력값과 조회값을 가른다.** 입력칸은 `search`(즉시 반응), 조회는 `query`(멈춘 뒤).
@@ -133,7 +155,7 @@ export default function CurriculaTab() {
 
   return (
     <>
-      <SectionHeader
+      <Header
         title="교안"
         count={counts ? `${totalAll}개` : undefined}
         breakdown={
@@ -271,7 +293,7 @@ export default function CurriculaTab() {
                   <TableRow
                     key={c.materialId}
                     className="hover:bg-surface-2 cursor-pointer"
-                    onClick={() => navigate(detailPath(c.materialId))}
+                    onClick={() => navigate(detailPath(c.materialId, urlQuery))}
                   >
                     <TableCell>
                       {/*
@@ -279,7 +301,7 @@ export default function CurriculaTab() {
                         하나 두면 Tab·Enter로 닿고 새 탭·주소 복사도 따라온다.
                       */}
                       <Link
-                        to={detailPath(c.materialId)}
+                        to={detailPath(c.materialId, urlQuery)}
                         className="text-fg hover:text-primary truncate font-semibold hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >

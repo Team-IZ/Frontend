@@ -189,6 +189,19 @@ const BY_CODE: Record<string, (ctx: Ctx) => ErrorCopy> = {
     retry: false,
     tone: 'pending',
   }),
+
+  /*
+    CSV 파일 자체가 스펙에 안 맞는다 — 한 번에 최대 1000명 제한(8/13 실측, 5000명 업로드가
+    이 코드로 거절됨) 초과나 행 형식·인코딩 문제. **서버가 어느 행이 왜 틀렸는지를
+    `message`에 담아 준다**(스펙 명시) — `AddRosterDialog`가 `error.message`를 그대로
+    보여주고, 여기 `description`은 message가 없을 때만 쓰는 fallback이다.
+  */
+  CSV_FORMAT_INVALID: () => ({
+    title: 'CSV 파일 형식이 올바르지 않습니다',
+    description: '한 번에 최대 1000명까지 등록할 수 있습니다 — 파일 형식을 확인해 주세요.',
+    retry: false,
+    tone: 'failed',
+  }),
 }
 
 export function errorCopy(error: unknown, ctx: Ctx): ErrorCopy {

@@ -120,6 +120,14 @@ export function checkEmail(value: string, domain: string): RosterIssueReason | n
 }
 
 // ── CSV ────────────────────────────────────────────────────
+/**
+ * 한 번에 등록할 수 있는 최대 인원 — **서버도 같은 값을 검증한다**
+ * (`CSV_FORMAT_INVALID · "한 번에 최대 1000명의 교육생을 초대할 수 있습니다"`,
+ * 8/13 실측 — 5000명 업로드가 이 코드로 거절됨). 넘으면 서버에 물어볼 것도 없이
+ * 화면에서 먼저 막는다 — 어차피 실패할 요청은 아예 보내지 않는다.
+ */
+export const MAX_TRAINEE_INVITE = 1000
+
 export type ParsedRoster = {
   /** 등록 후보. 서버가 여기서 **이미 등록된 이메일**을 다시 걸러낸다 */
   entries: RosterEntry[]

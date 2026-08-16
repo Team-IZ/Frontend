@@ -36,3 +36,7 @@ dist-ssr
 
 # 세션 간 인수인계 메모 (로컬 전용, 공유 안 함)
 docs/dev/handoff.md
+
+# 개인 포트폴리오용 메모 (비공개, 공유 안 함)
+docs/dev/portfolio-notes.md
+docs/dev/portfolio-security-notes.md

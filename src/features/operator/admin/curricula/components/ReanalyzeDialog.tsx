@@ -39,8 +39,15 @@ type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   materialId: string
-  /** **응시가 시작된** 회차만. 비어 있으면 경고 문구가 달라진다 */
-  inUse: findUsedProjects_Response
+  /**
+   * **응시가 시작된** 회차만. 비어 있으면 경고 문구가 달라진다.
+   *
+   * ⚠ **`undefined`는 「없다」가 아니라 「아직 모른다」다.** 한때 부모가 `?? []`로
+   * 메워서, 조회가 도착하기 전에 이 다이얼로그를 열면 **「영향이 없습니다」라고
+   * 단언**했다 — 실제로는 3521명이 이미 응시한 교안이었다(실측). 되돌릴 수 없는
+   * 행동을 **안전하다고 말하면서** 권하는 자리라 셋을 갈라 받는다.
+   */
+  inUse: findUsedProjects_Response | undefined
   /** 지금 분석 상태. 돌고 있는데 또 누르는 경우가 있어 그 사실을 말한다. `null`은 분석 전 */
   analysisStatus: CurriculumStatus | null
 }
@@ -56,7 +63,7 @@ export default function ReanalyzeDialog({
   const [failed, setFailed] = useState<unknown>(null)
   const request = useRequestAnalysis()
   const sending = request.isPending
-  const attended = inUse.reduce((n, p) => n + p.attendedCount, 0)
+  const attended = inUse?.reduce((n, p) => n + p.attendedCount, 0) ?? 0
   /*
     ⚠ **이미 분석이 돌고 있는데 또 누를 수 있다.**
 
@@ -83,7 +90,7 @@ export default function ReanalyzeDialog({
     묶지 않고 따로 센다.
   */
   const byCohort = Object.entries(
-    inUse.reduce<Record<string, number>>((acc, p) => {
+    (inUse ?? []).reduce<Record<string, number>>((acc, p) => {
       const key = p.cohortName ?? '기수 미상'
       acc[key] = (acc[key] ?? 0) + 1
       return acc
@@ -145,7 +152,19 @@ export default function ReanalyzeDialog({
           </Alert>
         )}
 
-        {inUse.length > 0 ? (
+        {/*
+          **모르면 모른다고 한다.** 아래 「영향이 없습니다」는 *확인한 결과*라야 하는데,
+          한때 조회 전·실패까지 그 문구를 냈다. 여기서 막지는 않는다 — 멈춘 분석을 푸는
+          유일한 출구가 이 버튼이라(§5-6) 잠그면 그 길이 사라진다. **사실만 바꾼다.**
+        */}
+        {inUse === undefined ? (
+          <p className="text-fg-muted text-sm">
+            이 교안을 쓰는 프로젝트를{' '}
+            <b className="text-fg font-medium">아직 확인하지 못했습니다</b> — 응시가 시작된 회차가
+            있으면 이미 발행된 리포트의 교안 위치가 어긋날 수 있습니다. 급하지 않다면 목록을 불러온
+            뒤에 다시 시도해 주세요.
+          </p>
+        ) : inUse.length > 0 ? (
           <div className="flex gap-3">
             {/* 아이콘 색만 tone을 갖는다 — 카드 배면은 흰색이다(H+ 상태 메시지) */}
             <div className="bg-warning-soft text-warning flex size-10 shrink-0 items-center justify-center rounded-md">
@@ -187,7 +206,8 @@ export default function ReanalyzeDialog({
           </Button>
           <Button disabled={sending} onClick={run}>
             {sending && <Spinner className="size-3.5" />}
-            {analysing ? '처음부터 다시' : inUse.length > 0 ? '그래도 다시 분석' : '다시 분석'}
+            {/* 모르는 동안에는 「그래도」를 안 붙인다 — 무엇을 무릅쓰는지 못 말한다 */}
+            {analysing ? '처음부터 다시' : inUse?.length ? '그래도 다시 분석' : '다시 분석'}
           </Button>
         </DialogFooter>
       </DialogContent>

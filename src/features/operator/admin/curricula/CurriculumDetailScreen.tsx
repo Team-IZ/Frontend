@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router'
+import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import {
   ChevronLeftIcon,
+  ChevronRightIcon,
   PlayIcon,
   RefreshCwIcon,
   Trash2Icon,
@@ -32,6 +33,10 @@ import type {
   findSections_Response,
   findUsedProjects_Response,
 } from '@/api/curriculum/curriculumTypes'
+import { useCohortScope } from '../_/cohortScope'
+import { COHORT_STATUS_LABEL } from '../_/labels'
+import { Skeleton } from '@/components/ui/Skeleton'
+import TableSkeleton from '@/components/common/TableSkeleton'
 import CurriculumDetailSkeleton, { SectionListSkeleton } from './CurriculumDetailSkeleton'
 import ErrorState from '@/components/common/ErrorState'
 import { CurriculumStatusBadge } from '../_/components/StatusBadges'
@@ -70,13 +75,39 @@ import DeleteCurriculumDialog from './components/DeleteCurriculumDialog'
 export default function CurriculumDetailScreen() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
+  /* 목록으로 돌아갈 때 **`?cohort=`를 그대로 들고 간다** — 안 그러면 8기를 보다 들어왔다
+     나가는 순간 목록이 기본값(진행 중 기수)으로 되돌아간다(`CurriculaTab.detailPath`) */
+  const { search: urlQuery } = useLocation()
+  const listPath = `/operator/curricula${urlQuery}`
   const [reanalyzeOpen, setReanalyzeOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
   const { data: me } = useGetCurrentMember()
+  /*
+    **여기서는 스코프가 실제 일을 한다** — 연결된 프로젝트를 「지금 기수 먼저 · 나머지는
+    접어서」 가르는 기준이다(LinkedTab). 목록 화면과 같은 `?cohort=`를 읽으므로 목록에서
+    고른 기수가 그대로 따라 들어온다.
+  */
+  const scope = useCohortScope()
   const curriculum = useFindCurriculum({ path: { materialId: id } }, { enabled: !!id })
   const sections = useFindSections({ path: { materialId: id } }, { enabled: !!id })
   const usedProjects = useFindUsedProjects({ path: { materialId: id } }, { enabled: !!id })
+
+  /*
+    셸 설정을 한 번만 쓴다 — 아래 세 갈래(스켈레톤·오류·본문)가 모두 같은 머리를 그려야
+    한다. 갈래마다 적었더니 **스켈레톤에만 스위처가 빠져** 도착하는 순간 줄이 튀었다.
+  */
+  const shell = {
+    role: 'operator' as const,
+    /* 목록이 오기 전에는 비운다 — 자리값(`7기`)을 그리면 실제 기수인 척한다 */
+    cohort: scope.cohortId ?? '',
+    cohorts: scope.cohorts.map((c) => ({
+      value: c.cohortId,
+      label: c.name,
+      detail: COHORT_STATUS_LABEL[c.status],
+    })),
+    onCohortChange: scope.setCohort,
+  }
 
   /*
     ⚠ **판정은 데이터 유무로 한다.** `isLoading`은 `enabled: false`인 동안 `false`라
@@ -85,38 +116,54 @@ export default function CurriculumDetailScreen() {
   */
   if (!curriculum.data && !curriculum.isError)
     return (
-      <ConsoleShell role="operator">
+      <ConsoleShell {...shell}>
         <CurriculumDetailSkeleton />
       </ConsoleShell>
     )
 
   if (curriculum.isError || !curriculum.data)
     return (
-      <ConsoleShell role="operator">
+      <ConsoleShell {...shell}>
         <ErrorState
           error={curriculum.error}
           subject="교안"
           onRetry={() => void curriculum.refetch()}
           retrying={curriculum.isFetching}
         />
-        <Button
-          variant="ghost"
-          className="mt-3"
-          onClick={() => navigate('/operator/admin/curricula')}
-        >
+        <Button variant="ghost" className="mt-3" onClick={() => navigate(listPath)}>
           교안 목록으로
         </Button>
       </ConsoleShell>
     )
 
   const data = curriculum.data
-  const used = usedProjects.data ?? []
+  /*
+    ⚠ **`?? []`를 쓰지 않는다 — 「모른다」와 「없다」는 다른 말이다.**
+
+    한때 `usedProjects.data ?? []`였다. 조회가 도착하기 전과 실패했을 때 빈 배열이 되어,
+    화면이 **모르는 것을 「없다」고 단언했다.** 26개 프로젝트가 쓰는 교안에서 실측한 것:
+
+    | | 로딩 중·실패 때 화면이 한 말 | 사실 |
+    |---|---|---|
+    | 탭 | `연결된 프로젝트 0` | 26 |
+    | 패널 | 「쓰는 프로젝트가 아직 없습니다」 | 26개가 쓴다 |
+    | **삭제 버튼** | **떠 있었다**(`used.length === 0`) | 서버가 409로 막는다 |
+    | **다시 분석** | **「영향이 없습니다」** | **3521명이 이미 응시했다** |
+
+    마지막 둘이 위험하다 — 되돌릴 수 없는 행동을 **안전하다고 말하면서** 권한다.
+    조회가 4초 안에 안 오면 그 사이에 연 다이얼로그가 그렇게 말했다(실측).
+
+    그래서 `undefined`를 그대로 들고 다닌다. 쓰는 쪽이 **셋을 갈라야만** 컴파일된다.
+  */
+  const used = usedProjects.data
   /*
     **응시가 시작된 회차만 경고 대상이다**(11차 R3). `attendedCount`는 완료가 아니라
     **시작** 기준이라, 진행 중인 응시가 있는 회차도 잡힌다 — 이미 문항을 받은 학생이
     있는데 쪽 번호가 바뀌면 그 리포트가 어긋난다.
+
+    `used`가 `undefined`면 이것도 `undefined`다 — 모른다는 사실이 그대로 전달된다.
   */
-  const inUse = used.filter((p) => p.attendedCount > 0)
+  const inUse = used?.filter((p) => p.attendedCount > 0)
   /*
     **분석을 한 번도 안 한 교안은 `analysisStatus`가 `null`이다** — 실패와 다르다.
     그 상태에서는 섹션이 없고 `다시 분석`이 아니라 `분석 시작`이 할 일이다.
@@ -125,10 +172,10 @@ export default function CurriculumDetailScreen() {
   const failed = data.analysisStatus === 'FAILED'
 
   return (
-    <ConsoleShell role="operator" cohort="" user={{ name: me?.name ?? '', role: '오퍼레이터' }}>
+    <ConsoleShell {...shell} user={{ name: me?.name ?? '', role: '오퍼레이터' }}>
       <div className="mb-4">
         <Link
-          to="/operator/admin/curricula"
+          to={listPath}
           className="text-fg-subtle hover:text-fg inline-flex items-center gap-1 text-xs"
         >
           <ChevronLeftIcon className="size-3.5" />
@@ -173,8 +220,13 @@ export default function CurriculumDetailScreen() {
               걸러 낸 값이라(재분석 경고용) 연결만 되고 아직 응시 전인 프로젝트가 빠진다 —
               그걸로 판정하면 **버튼이 보이는데 서버가 거절**한다. 스펙도 판정 기준을
               `usedProjectCount`라고 적어 뒀다.
+
+              ⚠ **`used?.length === 0`이다 — 모르는 동안에는 안 그린다.** `?? []`였을 때
+              조회가 도착하기 전과 실패했을 때 `[]`가 되어 **26개가 쓰는 교안에도 삭제
+              버튼이 떴다**(실측). 되돌릴 수 없는 행동은 **아는 상태에서만** 권한다 —
+              모를 때 감추는 쪽이 안전한 기본값이고, 도착하면 그때 나타난다.
             */}
-            {used.length === 0 && (
+            {used?.length === 0 && (
               <Button variant="danger" onClick={() => setDeleteOpen(true)}>
                 <Trash2Icon />
                 삭제
@@ -187,18 +239,21 @@ export default function CurriculumDetailScreen() {
       {failed ? (
         <FailedState data={data} onReanalyze={() => setReanalyzeOpen(true)} />
       ) : (
+        /*
+          ⚠ **탭 이름 옆 숫자를 걷어냈다** — 운영 관리 탭 줄에서 배지를 없앤 것과 같은
+          이유다(`AdminScreen` 주석).
+
+          `연결된 프로젝트`의 수는 **조회가 도착해야 아는 값**인데, 탭 줄은 진입 즉시
+          그려진다. `?? []`로 메우니 **26개가 쓰는 교안이 `연결된 프로젝트 0`으로** 떴다
+          (실측). `undefined`로 바꿔도 이번엔 숫자가 늦게 나타나 **탭 줄 폭이 튄다.**
+
+          없애도 잃는 것이 없다 — 두 수는 **탭을 열면 머리가 크게 말한다**(`7개 섹션 ·
+          120쪽` · 기수별 섹션 머리). 탭 줄은 *"어디로 갈 수 있나"* 만 답하면 된다.
+        */
         <Tabs defaultValue="sections">
           <TabsList className="mb-4">
-            <TabsTrigger value="sections">
-              섹션
-              <span className="text-fg-subtle ml-1.5 text-2xs font-normal">
-                {data.sectionCount}
-              </span>
-            </TabsTrigger>
-            <TabsTrigger value="linked">
-              연결된 프로젝트
-              <span className="text-fg-subtle ml-1.5 text-2xs font-normal">{used.length}</span>
-            </TabsTrigger>
+            <TabsTrigger value="sections">섹션</TabsTrigger>
+            <TabsTrigger value="linked">연결된 프로젝트</TabsTrigger>
           </TabsList>
 
           <TabsContent value="sections">
@@ -222,7 +277,30 @@ export default function CurriculumDetailScreen() {
           </TabsContent>
 
           <TabsContent value="linked">
-            <LinkedTab projects={used} />
+            {/*
+              **셋을 가른다 — 옆 탭과 같은 모양이다.** 여기만 상태 없이 `?? []`로 그리고
+              있어서 로딩·실패가 전부 「아직 없습니다」로 나왔다(async-states §1-2).
+
+              판정을 `isLoading`이 아니라 **데이터 유무**로 한다 — `enabled: false`인 동안
+              `isLoading`은 `false`라(§1-9) 그 분기가 안 그려지는 사고가 이 저장소에서
+              여러 번 났다.
+            */}
+            {!used && !usedProjects.isError ? (
+              <LinkedTabSkeleton />
+            ) : usedProjects.isError || !used ? (
+              <ErrorState
+                error={usedProjects.error}
+                subject="연결된 프로젝트"
+                onRetry={() => void usedProjects.refetch()}
+                retrying={usedProjects.isFetching}
+              />
+            ) : (
+              <LinkedTab
+                projects={used}
+                cohortId={scope.cohortId}
+                cohortName={scope.current?.name}
+              />
+            )}
           </TabsContent>
         </Tabs>
       )}
@@ -233,7 +311,7 @@ export default function CurriculumDetailScreen() {
         materialId={id}
         title={data.title ?? data.originalFileName}
         /* 지운 것을 계속 보고 있을 수 없다 — 목록으로 돌아간다 */
-        onDeleted={() => navigate('/operator/admin/curricula')}
+        onDeleted={() => navigate(listPath)}
       />
 
       <ReanalyzeDialog
@@ -394,7 +472,15 @@ function SectionsTab({
  * 여기서 고치지 않는다 — 회차 이름을 누르면 프로젝트 화면으로 넘어갈 뿐이다.
  * 다시 분석하거나 새 버전을 올리기 전에 **어느 회차가 이 교안을 쓰는지**를 보는 자리다.
  */
-function LinkedTab({ projects }: { projects: findUsedProjects_Response }) {
+function LinkedTab({
+  projects,
+  cohortId,
+  cohortName,
+}: {
+  projects: findUsedProjects_Response
+  cohortId: string | undefined
+  cohortName: string | undefined
+}) {
   if (projects.length === 0)
     return (
       <div className="border-border-strong bg-surface-2 rounded-md border border-dashed p-8 text-center">
@@ -406,60 +492,204 @@ function LinkedTab({ projects }: { projects: findUsedProjects_Response }) {
       </div>
     )
 
+  /*
+    **지금 기수를 앞으로 꺼내고 나머지는 접는다.**
+
+    한 교안을 여러 기수가 돌려 쓴다 — 실측에서 `Spring 백엔드 설계` 하나가 **4개 기수
+    26개 프로젝트**에 걸려 있었다. 그걸 서버 순서대로 쏟으니 첫 열이
+    `미니프로젝트 1차 · 2차 … 1차 · 2차 …`로 **같은 이름이 네 번 반복돼 버그처럼 보였다**
+    (구분하는 값인 기수는 둘째 열에 있었다).
+
+    운영자가 이 표를 여는 이유는 *"다시 분석하면 누가 깨지나"* 이고, 그 답에서 **지금
+    운영 중인 기수가 압도적으로 급하다** — 지난 기수는 이미 리포트가 나갔고 다음 기수는
+    아직 응시가 없다. 그래서 지금 기수만 펴 두고 나머지는 `<details>`로 접는다.
+
+    기수를 못 고른 동안(`cohortId`가 아직 없다)은 **가르지 않는다** — 그때 나누면 전부가
+    「다른 기수」로 접혀서, 있는 것을 없는 것처럼 보여준다.
+  */
+  const mine = cohortId ? projects.filter((p) => p.cohortId === cohortId) : projects
+  const others = cohortId ? projects.filter((p) => p.cohortId !== cohortId) : []
+  const risky = mine.filter((p) => p.attendedCount > 0).length
+
+  /*
+    **다른 기수는 한 뭉치가 아니라 기수마다 접는다.**
+
+    처음엔 `다른 기수 18개` 하나로 접었는데, 펼치면 **18행이 한꺼번에 쏟아졌다** — 접기
+    전과 같은 문제(같은 이름이 세 번 반복)가 한 단계 미뤄졌을 뿐이었다. 여기서 답할
+    질문은 *"어느 **기수**가 영향을 받나"* 라서 **기수가 묶음의 단위**여야 한다.
+
+    닫힌 줄이 이미 답을 준다 — `8기 6개 · 응시 시작 6개`. 표를 펴야 아는 것은 *"그중
+    어느 회차인지"* 뿐이고, 그건 정말 파고들 때만 필요하다.
+
+    ▸ **최근 기수부터**(`9기` 앞에 `10기`) — 이름에서 숫자를 뽑아 내림차순. 이름이
+      바뀌거나 숫자가 없으면 그것들끼리 이름순으로 뒤에 붙인다.
+    ▸ 기수 이름이 `null`로 올 수 있다(스펙) — 묶지 않고 `기수 미상`으로 따로 센다.
+  */
+  const groups = new Map<string, findUsedProjects_Response>()
+  for (const p of others) {
+    const key = p.cohortName ?? '기수 미상'
+    groups.set(key, [...(groups.get(key) ?? []), p])
+  }
+  const cohortNo = (name: string) => Number(name.match(/\d+/)?.[0] ?? NaN)
+  const otherGroups = [...groups.entries()].sort(([a], [b]) => {
+    const [x, y] = [cohortNo(a), cohortNo(b)]
+    if (Number.isNaN(x) && Number.isNaN(y)) return a.localeCompare(b, 'ko')
+    if (Number.isNaN(x)) return 1
+    if (Number.isNaN(y)) return -1
+    return y - x
+  })
+
   return (
     <>
-      <p className="text-fg-muted mb-3 text-xs">
+      <p className="text-fg-muted mb-4 text-xs">
         다시 분석하거나 새 버전을 올리기 전에{' '}
         <b className="font-semibold">어느 프로젝트가 이 교안을 쓰는지</b> 확인합니다 — 쪽 번호가
         달라지면 이미 발행된 리포트의 교안 위치가 어긋납니다.
       </p>
-      <Table className="table-fixed">
-        <TableHeader>
-          <TableRow className="hover:bg-transparent">
-            <TableHead className="w-40">프로젝트</TableHead>
-            <TableHead className="w-24">기수</TableHead>
-            {/* 흡수 열 — 서술이 가장 길다 */}
-            <TableHead>이 교안에서 고른 개념</TableHead>
-            <TableHead className="w-28 text-right">응시</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {projects.map((p) => (
-            <TableRow key={p.projectId}>
-              <TableCell>
-                {/* 여기서 고치지 않는다 — 프로젝트 화면으로 넘어갈 뿐이다 */}
-                <Link
-                  to={`/operator/projects/${p.projectId}`}
-                  className="text-fg hover:text-primary font-semibold hover:underline"
-                >
-                  {p.name}
-                </Link>
-              </TableCell>
+
+      <section>
+        <h3 className="mb-2 flex items-baseline gap-2 text-sm font-bold">
+          {cohortName ?? '연결된 프로젝트'}
+          <span className="text-fg-subtle text-xs font-normal">{mine.length}개</span>
+          {/* 지금 기수에서 **응시가 시작된 회차**가 곧 재분석 위험이다 — 세어서 앞에 둔다 */}
+          {risky > 0 && (
+            <span className="text-warning text-xs font-semibold">응시 시작 {risky}개</span>
+          )}
+        </h3>
+        {mine.length > 0 ? (
+          <LinkedProjectTable projects={mine} showCohort={!cohortId} />
+        ) : (
+          <p className="border-border-strong bg-surface-2 text-fg-muted rounded-md border border-dashed p-4 text-center text-xs">
+            {cohortName}는 이 교안을 안 씁니다 — 다시 분석해도 이 기수 리포트에는 영향이 없습니다.
+          </p>
+        )}
+      </section>
+
+      {otherGroups.length > 0 && (
+        <section className="mt-6">
+          <h3 className="text-fg-subtle mb-2 text-xs font-semibold">다른 기수</h3>
+          <div className="border-border divide-border divide-y rounded-md border">
+            {otherGroups.map(([cohort, rows]) => {
+              const started = rows.filter((p) => p.attendedCount > 0).length
+              return (
+                /*
+                  **기수 하나가 `<details>` 하나다** — 열기 전에는 표를 안 그린다.
+                  네이티브라 키보드·스크린리더가 그냥 되고(`Enter`로 열림), 여는 상태를
+                  화면이 따로 들고 있지 않아도 된다. 저장소가 이미 두 곳에서 쓴다.
+                */
+                <details key={cohort} className="group/c">
+                  <summary className="hover:bg-surface-2 flex cursor-pointer list-none items-center gap-2 px-3 py-2.5 text-xs">
+                    <ChevronRightIcon className="text-fg-subtle size-3.5 shrink-0 transition-transform group-open/c:rotate-90" />
+                    <b className="text-fg font-semibold">{cohort}</b>
+                    <span className="text-fg-muted">{rows.length}개</span>
+                    {/*
+                      **닫힌 줄이 이미 답한다.** 재분석 위험은 「응시가 시작됐나」 하나라
+                      그 수를 여기 둔다 — 펴 보지 않고도 어느 기수가 급한지 알 수 있다.
+                    */}
+                    {started > 0 && (
+                      <span className="text-warning font-semibold">응시 시작 {started}개</span>
+                    )}
+                  </summary>
+                  {/* 기수 열은 안 그린다 — 이 줄이 이미 그 기수라고 말했다 */}
+                  <div className="px-3 pb-3">
+                    <LinkedProjectTable projects={rows} showCohort={false} />
+                  </div>
+                </details>
+              )
+            })}
+          </div>
+        </section>
+      )}
+    </>
+  )
+}
+
+/**
+ * 연결된 프로젝트가 오는 동안 **그 표 모양으로** 자리를 잡는다.
+ *
+ * 여기만 상태 없이 `?? []`로 그려서 로딩이 「아직 없습니다」로 보였다. 옆(섹션) 탭은
+ * 처음부터 스켈레톤이라, 같은 화면 안에서 기다리는 모양이 탭마다 다를 이유가 없다.
+ *
+ * **높이는 실제 화면에서 잰 값이다** — 안내 문구 16px(top 213.6) · 섹션 머리 18.6px
+ * (top 245.6) · 표 헤더 38.5px(top 273.1) · 본문 행 41.6px.
+ *
+ * **행은 6개다.** 한 기수의 회차 수가 보통 그쯤이고(실측 9기 8 · 나머지 각 6), 지금
+ * 기수 섹션만 펴져 있으므로 그 표 하나의 크기와 맞춘다.
+ */
+function LinkedTabSkeleton() {
+  return (
+    <div aria-hidden>
+      <Skeleton className="h-4 w-[28rem]" />
+      <Skeleton className="mt-4 h-[18.6px] w-32" />
+      <div className="mt-2">
+        <TableSkeleton rows={6} cols={['w-40', null, 'w-28']} rowH={41.6} footerH={0} />
+      </div>
+    </div>
+  )
+}
+
+/**
+ * 두 섹션이 같은 표를 쓴다 — `showCohort`만 다르다.
+ *
+ * 지금 기수 섹션에서는 **기수 열이 전부 같은 값이라 지운다.** 머리글이 이미 `9기`라고
+ * 말하고 있어서, 그 아래 `9기`가 여덟 번 반복되면 읽을 것이 아니라 소음이다.
+ */
+function LinkedProjectTable({
+  projects,
+  showCohort,
+}: {
+  projects: findUsedProjects_Response
+  showCohort: boolean
+}) {
+  return (
+    <Table className="table-fixed">
+      <TableHeader>
+        <TableRow className="hover:bg-transparent">
+          <TableHead className="w-40">프로젝트</TableHead>
+          {showCohort && <TableHead className="w-24">기수</TableHead>}
+          {/* 흡수 열 — 서술이 가장 길다 */}
+          <TableHead>이 교안에서 고른 개념</TableHead>
+          <TableHead className="w-28 text-right">응시</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {projects.map((p) => (
+          <TableRow key={p.projectId}>
+            <TableCell>
+              {/* 여기서 고치지 않는다 — 프로젝트 화면으로 넘어갈 뿐이다 */}
+              <Link
+                to={`/operator/projects/${p.projectId}`}
+                className="text-fg hover:text-primary font-semibold hover:underline"
+              >
+                {p.name}
+              </Link>
+            </TableCell>
+            {showCohort && (
               <TableCell className="text-fg-muted text-xs">{p.cohortName ?? '—'}</TableCell>
-              <TableCell className="text-fg-muted truncate text-xs">
-                {p.conceptNames.length > 0 ? (
-                  p.conceptNames.join(' · ')
-                ) : (
-                  /* 아직 안 고른 것과 없는 것은 다르다(F3) */
-                  <span className="text-warning">개념 미확정</span>
-                )}
-              </TableCell>
-              {/*
+            )}
+            <TableCell className="text-fg-muted truncate text-xs">
+              {p.conceptNames.length > 0 ? (
+                p.conceptNames.join(' · ')
+              ) : (
+                /* 아직 안 고른 것과 없는 것은 다르다(F3) */
+                <span className="text-warning">개념 미확정</span>
+              )}
+            </TableCell>
+            {/*
                 **응시가 시작된 회차가 재분석 위험이다.** 0이면 다시 분석해도 안전하다 —
                 그 구분이 이 표의 존재 이유라 숫자를 그대로 보여준다.
               */}
-              <TableCell className="text-right tabular-nums">
-                {p.attendedCount > 0 ? (
-                  <b className="text-warning font-semibold">{p.attendedCount}명</b>
-                ) : (
-                  <span className="text-fg-subtle">—</span>
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </>
+            <TableCell className="text-right tabular-nums">
+              {p.attendedCount > 0 ? (
+                <b className="text-warning font-semibold">{p.attendedCount}명</b>
+              ) : (
+                <span className="text-fg-subtle">—</span>
+              )}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   )
 }
 

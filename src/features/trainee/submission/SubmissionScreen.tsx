@@ -114,9 +114,17 @@ function SubmissionBody({
 
       {banner && <StateBanner {...banner} />}
 
+      {/*
+        🔴 **"다시 시도해 주세요"를 뺐다.** 지금 제출은 서버에 닿지도 못한다 — 스펙이
+        필수로 요구하는 멱등키 헤더가 CORS 허용 목록에 없어 브라우저가 요청을 보내기 전에
+        막는다(33차 R1). 다시 눌러도 같은 자리에서 같게 실패하므로, 될 때까지 누르라고
+        말하면 학생은 헛수고를 반복하고 그동안 마감이 지나간다.
+
+        서버가 헤더 한 줄을 열면 이 문구를 원래대로(재시도 안내) 되돌린다.
+      */}
       {failed && (
         <div className="rounded-md bg-danger-soft px-4 py-3 text-sm text-danger">
-          제출하지 못했어요. 잠시 후 다시 시도해 주세요.
+          지금은 제출이 접수되지 않아요. 다시 눌러도 같은 문제가 반복되니 매니저에게 알려 주세요.
         </div>
       )}
 
@@ -131,7 +139,6 @@ function SubmissionBody({
         <SubmissionForm
           submitting={submitting}
           availableMethods={view.availableMethods}
-          submissionDueAt={view.submissionDueAt}
           onSubmit={onSubmit}
         />
       )}
@@ -156,7 +163,6 @@ function SubmissionBody({
             <SubmissionForm
               submitting={submitting}
               availableMethods={view.availableMethods}
-              submissionDueAt={view.submissionDueAt}
               onSubmit={onSubmit}
             />
           </div>

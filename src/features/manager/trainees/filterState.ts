@@ -1,4 +1,4 @@
-import { ROUND_OPTIONS, type AccountStatus, type RoundId } from './mockData'
+import type { AccountStatus } from './_/api/types'
 
 /*
   목록 필터의 값. UI(`TraineeListScreen.tsx`)와 파일을 가른 이유는 OP-03
@@ -8,28 +8,34 @@ import { ROUND_OPTIONS, type AccountStatus, type RoundId } from './mockData'
 
 export const ALL = 'ALL'
 
-export type TraineeSort = 'NAME' | 'CLASS' | 'ACE_COUNT' | 'LOW_COUNT'
+/**
+ * 정렬 — **서버가 가진 4종 그대로다**(`TraineeRosterSort`).
+ *
+ * 목에 있던 `반`·`2단 이하` 정렬은 없앴다. 서버에 없는 기준이라 화면이 정렬하면
+ * **그 쪽 안에서만 맞는 정렬**이 되고(26명이 두 쪽으로 갈린다), 담당 반은 매니저마다
+ * 하나뿐인 경우가 많아 반 정렬은 애초에 할 일이 없다. `위험`이 `2단 이하 많은 순`을
+ * 대체한다 — 서버가 위험 유형까지 보고 정렬한다.
+ */
+export type TraineeSort = 'NAME' | 'RECENT_ENROLLED' | 'RISK' | 'EXCELLENCE'
 
 export type FilterValues = {
-  round: RoundId
+  /** `null`이면 **서버가 「이번 회차」를 고른다**(첫 진입). 응답으로 실제 값이 돌아온다 */
+  round: string | null
   search: string
   classFilter: string
   accountFilter: 'ALL' | AccountStatus
   sort: TraineeSort
+  /** 0부터 시작 */
+  page: number
 }
 
-/**
- * 기본 회차 — **가장 마지막에 생성된 회차**(면담 MG-04와 같은 지시, `ROUND_OPTIONS`
- * 끝값). 회차가 늘어도 안 깨지게 동적으로 둔다.
- */
-export const DEFAULT_ROUND: RoundId = ROUND_OPTIONS[ROUND_OPTIONS.length - 1].value
-
 export const INITIAL_FILTERS: FilterValues = {
-  round: DEFAULT_ROUND,
+  round: null,
   search: '',
   classFilter: ALL,
   accountFilter: 'ACTIVE',
   sort: 'NAME',
+  page: 0,
 }
 
 /**
@@ -38,7 +44,7 @@ export const INITIAL_FILTERS: FilterValues = {
  * 전환에서는 살아있고 새로고침(F5)하면 사라진다.
  *
  * 면담과 달리 **회차를 바꿔도 다른 필터는 초기화하지 않는다** — 면담은 회차마다
- * 케이스 구성 자체가 달라지지만, 교육생 명부는 회차를 바꿔도 모집단(21명)이 그대로고
+ * 케이스 구성 자체가 달라지지만, 교육생 명부는 회차를 바꿔도 모집단이 그대로고
  * 그 회차의 도달·응시 열만 바뀐다. 검색·반·계정 필터를 지울 이유가 없다.
  */
 let sessionFilters: FilterValues | null = null

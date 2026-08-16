@@ -1,5 +1,5 @@
 import { Badge } from '@/components/ui/Badge'
-import type { AccountStatus } from '../mockData'
+import type { AccountStatus } from '../_/api/types'
 
 const LABEL: Record<AccountStatus, string> = {
   ACTIVE: '활성',

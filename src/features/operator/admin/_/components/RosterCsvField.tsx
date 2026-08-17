@@ -40,19 +40,34 @@ const template = (domain: string) => `이름,이메일\n홍길동,gildong@${doma
   문자열이 나온다). 그러면 화면은 머리글을 못 찾은 이유를 *"이름 열이 없다"* 로 잘못
   말한다 — 진짜 이유는 **인코딩**이다.
 
-  ⚠ **윈도우 엑셀의 「CSV(쉼표로 분리)」는 CP949다.** 그리고 **서버는 UTF-8만 받는다**
-  (실측 — `CSV_FORMAT_INVALID · "CSV 파일은 UTF-8 인코딩이어야 합니다"`). 그래서 여기서
-  euc-kr로 **읽어서 통과시키면 안 된다** — 미리보기는 멀쩡한데 등록이 튕긴다.
-
-  엄격 모드로 UTF-8을 시도해 **아니라는 것만 알아내고**, 그 사실을 그대로 알린다.
-  나중에 프런트가 UTF-8로 정규화해 보내게 되면 그때 euc-kr을 실제로 읽으면 된다.
+  ⚠ **윈도우 엑셀의 「CSV(쉼표로 분리)」는 CP949다.** 한때 서버가 UTF-8만 받아서 여기서도
+  막았는데(*"미리보기는 멀쩡한데 등록이 튕긴다"*), **서버가 둘 다 받게 됐다**(29차 회신
+  Q1 「나」). 그래서 지금은 UTF-8 → CP949 순으로 **엄격 모드로 두 번 시도한다.**
 */
 async function readSheet(file: File): Promise<string | null> {
   const buf = await file.arrayBuffer()
   try {
     return new TextDecoder('utf-8', { fatal: true }).decode(buf)
   } catch {
-    return null // UTF-8이 아니다 — 서버도 안 받는다
+    /*
+      **UTF-8이 아니면 CP949로 읽는다** — 서버가 둘 다 받게 됐다(29차 회신 Q1).
+
+      전에는 여기서 `null`을 돌려 「UTF-8이 아님」이라고 막았다. 서버가 UTF-8만 받던
+      때라 **euc-kr로 읽어서 통과시키면 미리보기는 멀쩡한데 등록이 튕겼기** 때문이다.
+      그 이유가 사라졌다 — 실측으로 CP949 파일이 그대로 200이다.
+
+      ⚠ **정규화하지 않는다.** 여기서 읽는 것은 **미리보기용**이고, 서버로는 고른
+      `File`이 그대로 간다(`AddRosterDialog`). 우리가 UTF-8로 다시 인코딩해 보낼
+      필요가 없다 — 서버가 원본을 읽는다.
+
+      `fatal`을 켠 채로 시도한다. 둘 다 실패하면 우리가 모르는 인코딩이라, 그때는
+      **추측해서 깨진 글자를 보여주지 않고** 그 사실을 말한다.
+    */
+    try {
+      return new TextDecoder('euc-kr', { fatal: true }).decode(buf)
+    } catch {
+      return null
+    }
   }
 }
 
@@ -105,7 +120,13 @@ export default function RosterCsvField({ domain, onChange }: Props) {
           {fileName ?? 'CSV 파일 고르기'}
         </Button>
         <p className="text-fg-subtle mt-2 text-2xs">
-          끌어다 놓아도 됩니다 · 열 = 이름, 이메일 (2열) ·{' '}
+          {/*
+            **안내가 규칙보다 좁으면 사람들이 안 되는 줄 안다.** 「(2열)」은 서버가 두 열만
+            받던 때의 문구다 — 지금은 `이름`·`이메일`만 있으면 순서도 다른 열도 상관없고,
+            엑셀이 그냥 「CSV」로 저장한 CP949도 받는다(29차 회신 Q1). 그래서 **엑셀에서
+            바로 저장해도 된다**는 것을 여기서 말한다.
+          */}
+          끌어다 놓아도 됩니다 · 「이름」·「이메일」 열만 있으면 됩니다(순서·다른 열 무관) ·{' '}
           <a
             className="underline"
             download="교육생-양식.csv"

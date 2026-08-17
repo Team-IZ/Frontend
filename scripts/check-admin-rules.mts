@@ -11,6 +11,7 @@
  *   · 최근 접속  `오늘`이 어제 것을 가리킨다
  */
 import assert from 'node:assert'
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from '../src/api/uploadLimits.ts'
 import {
   assignPolicy,
   canEditClasses,
@@ -68,18 +69,40 @@ assert.strictEqual(checkEmail('a@evilgreen.com', DOMAIN), 'DOMAIN_NOT_ALLOWED')
 
 {
   /*
-    **머리글은 서버 규칙대로 `이름,이메일` 두 열 · 그 순서다.**
+    **머리글은 이름으로 찾는다 — 순서도 개수도 안 따진다.**
 
-    한때 열 이름으로 찾아 순서·개수와 무관하게 읽게 했다. 사람들이 실제로 쓰는 파일
-    (`번호 · 이름 · 소속 · 이메일`)을 받으려던 것인데 **서버가 안 받는다** —
-    `CSV_FORMAT_INVALID · "헤더는 '이름', '이메일' 두 열이어야 합니다"`(실측).
-    화면만 관대하면 「유효 2명」이라 해 놓고 등록에서 통째로 튕긴다.
+    한때 `이름,이메일` 두 열·그 순서만 받았다. 서버가 그것만 받았기 때문이다
+    (`CSV_FORMAT_INVALID · "헤더는 '이름', '이메일' 두 열이어야 합니다"`).
+    **서버가 넓어져서 같이 넓혔다**(29차 회신 Q1 · 2026-08-16 실측):
+
+        번호,이메일,소속,이름 (CP949)  →  200
+        이메일,이름           (UTF-8)  →  200
+
+    사람들이 실제로 쓰는 파일이 그대로 올라간다.
   */
   const { entries, invalid } = parseRosterCsv(
     '번호,이메일,소속,이름\n1,dohyun@green.com,백엔드,한도현',
     DOMAIN,
   )
-  assert.strictEqual(entries.length, 0, '열이 더 있으면 서버가 거절한다')
+  assert.deepStrictEqual(
+    entries,
+    [{ name: '한도현', email: 'dohyun@green.com' }],
+    '열이 더 있어도 읽는다',
+  )
+  assert.deepStrictEqual(invalid, [])
+}
+
+{
+  // 엑셀이 쉼표 뒤에 공백을 남기는 파일이 흔하다 — 머리글 칸도 trim 한다
+  const { entries, invalid } = parseRosterCsv('이름, 이메일\n한도현, dohyun@green.com', DOMAIN)
+  assert.deepStrictEqual(entries, [{ name: '한도현', email: 'dohyun@green.com' }], '머리글 공백')
+  assert.deepStrictEqual(invalid, [])
+}
+
+{
+  // 두 열 중 하나라도 없으면 그 파일로는 아무것도 못 한다 — 서버도 400이다
+  const { entries, invalid } = parseRosterCsv('이메일\ndohyun@green.com', DOMAIN)
+  assert.strictEqual(entries.length, 0, '이름 열이 없으면 파일 오류')
   assert.deepStrictEqual(invalid, [{ line: 1, reason: 'HEADER_NOT_FOUND' }])
 }
 
@@ -234,4 +257,25 @@ console.warn('✓ 운영 관리 규칙 통과 — CSV · 도메인 · 정원 · 
   // 이미 붙어 있으면 그대로 — 안 그러면 `A반반`이 된다
   assert.strictEqual(classroomName('A반'), 'A반')
   assert.strictEqual(classroomName(''), '', '빈 값은 빈 값이다(제출은 다른 데서 막는다)')
+}
+
+{
+  /*
+    **업로드 상한은 계산값이다 — 눈으로 적은 숫자가 아니다.**
+
+    앞단(Lambda Function URL)이 요청 6,291,456바이트에서 자르고, 바이너리 본문을
+    base64로 감싸므로(×4/3) 실을 수 있는 바이트는 그 3/4다. 거기서 multipart
+    경계·헤더·파일명 몫을 뺀다.
+
+    실측(이분 탐색 · 2026-08-16 · 짧은 파일명):
+
+        4,715,625 B  →  통과        4,717,187 B  →  413
+
+    **상한이 이 사이에 있어야 한다.** 위로 새면 사용자가 413을 보고, 너무 아래로
+    내리면 올릴 수 있는 파일을 막는다. 사람이 보는 문구(`MAX_UPLOAD_LABEL`)도 같은
+    값에서 나오므로 둘이 어긋날 수 없다.
+  */
+  assert.ok(MAX_UPLOAD_BYTES < 4_717_187, '상한이 실측 차단선을 넘으면 사용자가 413을 본다')
+  assert.ok(MAX_UPLOAD_BYTES > 4_600_000, '너무 낮으면 올릴 수 있는 파일을 막는다')
+  assert.strictEqual(MAX_UPLOAD_LABEL, '4.5MB', '문구도 같은 값에서 나온다')
 }

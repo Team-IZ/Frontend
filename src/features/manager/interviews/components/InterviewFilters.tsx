@@ -12,15 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select'
-import {
-  CLASS_OPTIONS,
-  RISK_LABEL,
-  RISK_TYPE_OPTIONS,
-  ROUND_OPTIONS,
-  STATUS_LABEL,
-  type CaseRisk,
-  type InterviewCounts,
-} from '../mockData'
+import { STATUS_LABEL } from './InterviewStatusBadge'
+import type { RoundOption } from '../_/api/types'
 import { ALL, type FilterValues } from '../filterState'
 
 /*
@@ -45,15 +38,28 @@ import { ALL, type FilterValues } from '../filterState'
 const items = (prefix: string, options: { value: string; label: string }[]) =>
   Object.fromEntries(options.map((o) => [o.value, `${prefix} · ${o.label}`]))
 
+/**
+ * 위험 유형 라벨 — `RiskBadge`와 같은 값이지만 **여기 옵션은 서버 `riskCounts`의
+ * 키에서 나온다.** 서버가 유형을 늘리면 필터에 저절로 나타난다(라벨만 코드로 뜬다).
+ */
+const RISK_LABEL: Record<string, string> = {
+  INVALID: '무효 응시',
+  LOW_PERSISTENT: '지속 저점',
+  DECLINE: '단계 하락',
+  OBSERVE: '관찰',
+}
+
 type Props = FilterValues & {
-  counts?: InterviewCounts
-  riskCounts?: Record<CaseRisk['type'], number>
+  /** 회차 선택지 — 별개 조회에서 온다 */
+  rounds: RoundOption[]
+  /** 담당 반 — 매니저마다 달라 서버가 준다 */
+  classes: { classId: string; className: string }[]
+  counts?: Record<string, number>
+  riskCounts?: Record<string, number>
   onChange: (patch: Partial<FilterValues>) => void
 }
 
-const sum = (c: InterviewCounts) => c.PLANNED + c.DONE + c.EXCLUDED
-const sumRisk = (c: Record<CaseRisk['type'], number>) =>
-  c.INVALID + c.LOW_PERSISTENT + c.DECLINE + c.OBSERVE
+const sum = (c: Record<string, number>) => Object.values(c).reduce((a, b) => a + b, 0)
 
 export default function InterviewFilters({
   round,
@@ -61,29 +67,34 @@ export default function InterviewFilters({
   status,
   riskType,
   classFilter,
+  rounds,
+  classes,
   counts,
   riskCounts,
   onChange,
 }: Props) {
+  const roundOptions = rounds.map((r) => ({ value: r.assessmentRoundId, label: r.label }))
+
   const statusOptions = [
     { value: ALL, label: counts ? `전체 (${sum(counts)})` : '전체' },
     ...(Object.keys(STATUS_LABEL) as (keyof typeof STATUS_LABEL)[]).map((s) => ({
       value: s,
-      label: counts ? `${STATUS_LABEL[s]} (${counts[s]})` : STATUS_LABEL[s],
+      label: counts ? `${STATUS_LABEL[s]} (${counts[s] ?? 0})` : STATUS_LABEL[s],
     })),
   ]
 
+  /* 유형 목록도 서버가 정한다 — `riskCounts`의 키가 곧 이 회차에 있을 수 있는 유형이다 */
   const riskOptions = [
-    { value: ALL, label: riskCounts ? `전체 (${sumRisk(riskCounts)})` : '전체' },
-    ...RISK_TYPE_OPTIONS.map((t) => ({
+    { value: ALL, label: riskCounts ? `전체 (${sum(riskCounts)})` : '전체' },
+    ...Object.entries(riskCounts ?? {}).map(([t, n]) => ({
       value: t,
-      label: riskCounts ? `${RISK_LABEL[t]} (${riskCounts[t]})` : RISK_LABEL[t],
+      label: `${RISK_LABEL[t] ?? t} (${n})`,
     })),
   ]
 
   const classOptions = [
     { value: ALL, label: '전체' },
-    ...CLASS_OPTIONS.map((c) => ({ value: c, label: c })),
+    ...classes.map((c) => ({ value: c.classId, label: c.className })),
   ]
 
   return (
@@ -91,9 +102,11 @@ export default function InterviewFilters({
       <FilterSelect
         label="회차"
         value={round}
-        options={ROUND_OPTIONS}
-        onChange={(v) => onChange({ round: v as FilterValues['round'] })}
-        className="w-44"
+        options={roundOptions}
+        onChange={(v) => onChange({ round: v })}
+        /* 서버 라벨이 `미니프로젝트 3차 이해도 확인`이라 목의 `미프 3차`보다 훨씬 길다 —
+           문자열을 자르는 대신 트리거를 넓힌다(렌더에서 잘려 보였다) */
+        className="w-64"
       />
 
       <InputGroup className="h-9 w-60">

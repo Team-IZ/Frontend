@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router'
 import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { SignalHero } from './SignalHero'
-import type { RoundBadgeKind } from '../mockData'
+import type { RoundBadgeKind } from '../_/api/types'
 
 /*
   헤더 — 남는 건 이름·위험 배지·판정식뿐이다(MG-06 §3). 계정 상태·참여 프로젝트·팀은
@@ -19,14 +19,17 @@ import type { RoundBadgeKind } from '../mockData'
 */
 export function DetailHeader({
   name,
+  cohortName,
   className,
   riskKind,
   why,
 }: {
   name: string
-  className: string
-  riskKind: Extract<RoundBadgeKind, 'DECLINE' | 'LOW_PERSISTENT'> | null
-  why?: string
+  cohortName: string
+  /** 반 배정 전이면 null */
+  className: string | null
+  riskKind: RoundBadgeKind | null
+  why?: string | null
 }) {
   const navigate = useNavigate()
   return (
@@ -43,7 +46,10 @@ export function DetailHeader({
       <div className="flex flex-1 flex-wrap items-baseline gap-x-3 gap-y-1">
         <h1 className="text-xl leading-tight font-bold tracking-[-0.01em]">{name}</h1>
         <SignalHero kind={riskKind} />
-        <span className="text-sm text-fg-muted">7기 · {className}</span>
+        {/* 반 배정 전이면 기수만 — `9기 · null`이 되지 않게 여기서 접는다 */}
+        <span className="text-sm text-fg-muted">
+          {[cohortName, className].filter(Boolean).join(' · ')}
+        </span>
         {why && <span className="ml-auto text-xs text-fg-subtle">{why}</span>}
       </div>
     </div>

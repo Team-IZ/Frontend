@@ -105,12 +105,8 @@ export default function ModelChangeDialog({
           changeReason: reason.trim() || null,
           /*
             사용자가 위 경고를 읽고 켠 값만 보낸다 — 하드코딩하면 안전장치가 무의미해진다.
-
-            ⚠ **한때 같은 값을 두 이름으로 같이 보냈다**(`recalibrationAcknowledged`도).
-            연동 당시 서버가 어느 쪽을 읽는지 확실하지 않아 양쪽에 실은 것인데, 스펙이
-            `acknowledgeRecalibration` 하나로 정리되면서(`required`) 나머지가 타입에서
-            빠졌다. 둘을 계속 보내면 **어느 쪽이 실제로 동의를 전달하는지 아무도 모르는
-            상태**가 굳는다 — 스펙이 답한 지금 지운다.
+            종전에는 이름이 확실치 않아 `recalibrationAcknowledged`도 같이 보냈는데,
+            스펙에 `acknowledgeRecalibration` 하나만 남아 그 보험을 뗐다.
           */
           acknowledgeRecalibration: acknowledged,
         },

@@ -42,6 +42,7 @@ export type createTeam_Body = NonNullable<
 >['content']['application/json']
 export type createTeam_Response =
   operations['createTeam']['responses'][201]['content']['application/json']
+export type createTeam_Item = NonNullable<createTeam_Response['members']>[number]
 export type createTeam_Errors =
   | 'VALIDATION_FAILED'
   | 'MANAGER_CLASSROOM_AMBIGUOUS'
@@ -210,6 +211,7 @@ export type findProjectClassProgress_Errors =
   | 'ACCESS_DENIED'
   | 'PROJECT_ROUND_NOT_FOUND'
   | 'PROJECT_ROUND_NOT_CREATED'
+  | 'MANAGER_SCOPE_NOT_FOUND'
 
 // GET /api/v0/cohorts/{cohortId}/projects/current — 기수의 이번 회차 조회
 export type findCurrentProject_Path = operations['findCurrentProject']['parameters']['path']

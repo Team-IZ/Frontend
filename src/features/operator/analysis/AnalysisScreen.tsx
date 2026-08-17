@@ -269,7 +269,7 @@ export default function AnalysisScreen() {
               </EmptyHeader>
             </Empty>
           ) : (
-            /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
+            /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `lib/listQuery` */
             <StaleBlock
               stale={grid.isFetching && grid.data !== undefined}
               label="격자를 불러오는 중"
@@ -406,7 +406,7 @@ export default function AnalysisScreen() {
               </Button>
             </Empty>
           ) : (
-            /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `_shared/listQuery` */
+            /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `lib/listQuery` */
             <StaleBlock
               stale={compare.isFetching && compare.data !== undefined}
               label="비교를 불러오는 중"

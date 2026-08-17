@@ -16,15 +16,9 @@ export { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL, tooLargeToUpload } from '@/api/uplo
 type CsvUploadResponse =
   operations['registerTraineesFromCsv']['responses'][202]['content']['application/json']
 /*
-  **미리보기는 등록과 다른 스키마가 됐다**(31차 R2 반영 · `PreviewTraineesResponse`).
-
-  한때 둘이 같은 응답이라 미리보기가 `registeredCount: 1`이라고 답했다 — 아무것도 안
-  만드는 호출인데 「등록했다」고 말하는 것이라, 우리도 그 수를 보고 기수 명단을 뒤졌다.
-  지금은 `registrableCount`(「그렇게 될 것」)이고 등록에만 있는 `invitationSentCount`·
-  `batchRequestId`가 아예 없다.
-
-  타입을 가르면 **화면이 둘을 헷갈릴 수 없다** — 미리보기 결과에서 발송 수를 읽으려 하면
-  컴파일이 막는다.
+  **미리보기는 등록과 다른 스키마다.** 한동안 같은 것을 가리켰는데, 그건 설계가 아니라
+  스펙에서 두 이름이 겹쳐 있던 사고였다(30차 회신 §2). 이름이 갈리며 여기서 컴파일이
+  깨져서 알았다 — 미리보기에는 `registeredCount`가 없고 `registrableCount`가 있다.
 */
 type CsvPreviewResponse =
   operations['previewTraineesFromCsv']['responses'][200]['content']['application/json']
@@ -78,8 +72,8 @@ export const registerTraineesFromCsv = (params: CsvUpload) =>
 /**
  * CSV 명단 사전 검증(드라이런) — `POST /api/v0/cohorts/{cohortId}/trainees/preview`
  *
- * **아무것도 만들지 않는다.** 수는 전부 「그렇게 될 것」이지 「그렇게 됐다」가 아니다 —
- * 스펙 설명도 그렇게 적혀 있고, 필드도 `registrableCount`다(31차 R2).
+ * **아무것도 만들지 않는다.** 그래서 응답도 등록과 다르다 — 몇 명을 **등록할 수 있는지**
+ * (`registrableCount`)를 주고, 등록 건수·초대 발송 수·배치 ID는 없다.
  */
 export const previewTraineesFromCsv = (params: CsvUpload) =>
   unwrap<CsvPreviewResponse>(

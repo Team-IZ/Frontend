@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import Header from './Header'
 import Sidebar from './Sidebar'
 import { SIDEBAR_BY_ROLE, type Role } from './sidebarConfig'
+import { useSession } from '@/features/auth/useSession'
 
 /*
   4역할 공용 셸 — 유일한 셸 컴포넌트다. Header + Sidebar + 콘텐츠를 조립하고,
@@ -15,9 +16,18 @@ import { SIDEBAR_BY_ROLE, type Role } from './sidebarConfig'
   값을 넘겨도 무시한다 — role이 스코프 유무를 결정하지, prop이 있고 없고로
   화면마다 다르게 조립하지 않는다.
 
-  user·cohort 기본값 — 인증이 없는 지금은 화면 25개 전부 같은 자리값을 쓴다.
-  기본값이 없으면 화면 파일마다 똑같은 자리값을 반복해서 넘겨야 하고,
-  인증이 붙을 때 25곳을 고쳐야 한다. 여기 한 곳만 실제 세션으로 바꾸면 된다.
+  user — **인증이 붙어 여기 한 곳을 실제 세션으로 바꿨다**(예고해 둔 그 자리다).
+  종전에는 화면 25개가 전부 `김도현 · 역할`이라는 자리값을 그렸고, 실제로 로그인한
+  사람이 `이담`이어도 헤더는 남의 이름을 말했다. `useSession()`은 `GET /members/me`를
+  react-query로 읽으므로 화면마다 요청이 늘지 않는다(같은 키를 공유한다).
+
+  화면이 `user`를 넘기면 그것이 이긴다 — 지금 그런 화면은 없고, 앞으로도 「다른 사람으로
+  보기」 같은 것이 생길 때만 쓴다.
+
+  cohort — **자리값을 두지 않는다.** 예전에는 `'7기'`가 기본이라 아직 연동 안 된 화면이
+  9기 계정에서도 `7기`를 그렸고, 연동된 화면과 오가면 기수가 바뀐 것처럼 보였다.
+  값이 없으면 스코프 칩을 아예 안 그린다 — 없는 것이 틀린 것보다 낫다. 각 화면은
+  연동될 때 자기 스코프 훅(`stores/cohortScope`)에서 받아 넘긴다.
 
   높이 — 목업은 `.app{height:var(--screen-h)}` + `.content{overflow:hidden}`이다.
   헤더·사이드바가 뷰포트 밖으로 스크롤되지 않고, 내용이 길면 콘텐츠 영역
@@ -46,11 +56,18 @@ import { SIDEBAR_BY_ROLE, type Role } from './sidebarConfig'
   — 실제 모바일 IA를 정하는 별도 설계가 필요하다.
 */
 const COHORT_SCOPED_ROLES: Role[] = ['operator', 'manager']
-const PLACEHOLDER_USER = { name: '김도현', role: '역할' }
-const PLACEHOLDER_COHORT = '7기'
+
+/** 서버 역할 코드 → 헤더에 그릴 말 */
+const ROLE_LABEL: Record<string, string> = {
+  SUPER_ADMIN: '슈퍼 어드민',
+  OPERATOR: '오퍼레이터',
+  MANAGER: '매니저',
+  TRAINEE: '교육생',
+}
 
 type Props = {
   role: Role
+  /** 넘기면 세션보다 우선한다 — 지금 그런 화면은 없다 */
   user?: { name: string; role: string }
   /** 헤더 스코프에 보일 지금 기수 이름. 빈 문자열이면 스코프 자리를 그리지 않는다 */
   cohort?: string
@@ -62,12 +79,22 @@ type Props = {
 
 export default function ConsoleShell({
   role,
-  user = PLACEHOLDER_USER,
-  cohort = PLACEHOLDER_COHORT,
+  user,
+  cohort,
   cohorts,
   onCohortChange,
   children,
 }: Props) {
+  /*
+    **로그인한 사람은 서버가 안다.** 아직 안 왔으면 이름 자리를 비워 둔다 — 남의 이름을
+    잠깐 보여줬다 바꾸는 것보다 낫다(async-states §1-3, 자리는 그대로 두고 값만 채운다).
+  */
+  const { user: me } = useSession()
+  const shown = user ?? {
+    name: me?.name ?? '',
+    role: me ? (ROLE_LABEL[me.role] ?? me.role) : '',
+  }
+
   const sidebar = SIDEBAR_BY_ROLE[role]
   const scope =
     COHORT_SCOPED_ROLES.includes(role) && cohort
@@ -86,7 +113,7 @@ export default function ConsoleShell({
         본문으로 건너뛰기
       </a>
 
-      <Header user={user} scope={scope} />
+      <Header user={shown} scope={scope} />
 
       <div className="flex min-h-0 min-w-0 flex-1 print:block">
         <Sidebar sidebar={sidebar} />

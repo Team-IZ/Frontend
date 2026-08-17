@@ -150,18 +150,25 @@ export type ParsedRoster = {
  * 서버 검증을 대신하지 않는다 — 같은 규칙이 서버에도 있어야 한다(우회 가능).
  */
 /*
-  ⚠ **머리글을 서버 규칙대로만 받는다.**
+  **서버가 넓어져서 화면도 같이 넓혔다**(29차 회신 Q1 「나」 · 2026-08-16 실측).
 
-  한때 열 이름을 찾아 순서·개수와 무관하게 읽게 만들었다. 사람들이 실제로 쓰는 파일
-  (`번호 · 이름 · 소속 · 이메일`)을 받으려던 것인데, **서버가 그것을 안 받는다** —
-  실측으로 `CSV_FORMAT_INVALID · "헤더는 '이름', '이메일' 두 열이어야 합니다"`가 온다.
-  화면만 관대하면 「유효 2명」이라 해 놓고 등록에서 통째로 튕긴다. 오늘 고친 사고가
-  그것이라 되돌렸다.
+  한때 열 이름을 찾아 순서·개수와 무관하게 읽다가, 서버가 그것을 안 받아서
+  (`CSV_FORMAT_INVALID · "헤더는 '이름', '이메일' 두 열이어야 합니다"`) 되돌렸었다.
+  화면만 관대하면 「유효 2명」이라 해 놓고 등록에서 통째로 튕기기 때문이다.
 
-  **열을 유연하게 받으려면 프런트가 정규화해 보내야 한다** — 그 설계는 미뤘다
-  (25차 「CSV·엑셀 현황」 참고).
+  **지금은 서버가 받는다.** 스펙 설명도 그렇게 바뀌었다 —
+  *"첫 행에 '이름'·'이메일' 열이 있는 CSV 파일(UTF-8 또는 CP949, 열 순서 무관)"*.
+
+      번호,이메일,소속,이름   (CP949)  →  200 ✅
+      이메일,이름            (UTF-8)  →  200 ✅
+      이메일만                        →  400  CSV_FORMAT_INVALID
+      이름이 빈칸                      →  400  TRAINEE_NAME_INVALID
+
+  그래서 **이름으로 찾는다** — 사람들이 실제로 쓰는 파일(`번호 · 이름 · 소속 · 이메일`)이
+  그대로 올라간다. 판정 기준은 여전히 서버와 같다: 두 열이 **있기만** 하면 되고, 없으면
+  파일 오류다.
 */
-const HEADER = ['이름', '이메일']
+const HEADER = { name: '이름', email: '이메일' } as const
 
 /** 한 줄을 칸으로 나눈다 — **따옴표 안의 쉼표를 안 자른다**(엑셀이 그렇게 내보낸다) */
 export function splitCsvLine(line: string): string[] {
@@ -207,12 +214,22 @@ export function parseRosterCsv(text: string, domain: string): ParsedRoster {
   // BOM — 엑셀이 UTF-8로 내보내면 맨 앞에 붙는다. 남기면 첫 열 이름이 안 맞는다
   const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/)
 
-  /** 머리글 줄 — **첫 유효 줄이 `이름,이메일`이어야 한다**(서버 규칙) */
+  /*
+    머리글 줄 — **`이름`·`이메일` 열을 이름으로 찾는다.** 순서도 개수도 안 따진다(서버
+    규칙과 같다). 둘 중 하나라도 없으면 그 파일로는 아무것도 할 수 없어 파일 오류다.
+
+    ⚠ **머리글 칸도 `trim()`한다.** 엑셀이 `이름, 이메일`처럼 쉼표 뒤 공백을 남기는
+    파일이 흔한데, 그대로 비교하면 `" 이메일" !== "이메일"`이라 **열이 있는데 없다고**
+    한다. BOM은 위에서 이미 뗐다.
+  */
   const headerLine = lines.findIndex((l) => l.trim())
-  const header = headerLine < 0 ? [] : splitCsvLine(lines[headerLine])
-  if (header.length !== 2 || header[0] !== HEADER[0] || header[1] !== HEADER[1])
+  const header = headerLine < 0 ? [] : splitCsvLine(lines[headerLine]).map((c) => c.trim())
+  const cols = {
+    name: header.indexOf(HEADER.name),
+    email: header.indexOf(HEADER.email),
+  }
+  if (cols.name < 0 || cols.email < 0)
     return { entries, invalid: [{ line: Math.max(headerLine + 1, 1), reason: 'HEADER_NOT_FOUND' }] }
-  const cols = { name: 0, email: 1 }
 
   for (let i = headerLine + 1; i < lines.length; i++) {
     const raw = lines[i]

@@ -35,13 +35,21 @@ export function useCurriculumHead(materialId: string) {
  * 🔴 **분석 전 교안은 409다**(`CURRICULUM_ANALYSIS_NOT_COMPLETED`, 18차 R1) —
  * 실패가 아니라 「아직 분석이 안 끝났다」는 뜻이다. 재시도해도 달라지지 않으므로
  * 재시도를 끄고, 화면은 이 상태를 **빈 상태로** 그린다(에러 문구가 아니다).
+ *
+ * 🔴 **나머지는 전역 규칙을 그대로 쓴다.** 처음엔 `!isAnalysisIncomplete(error)`만
+ * 돌려줬는데 그러면 `count`를 안 봐서 **5xx가 무한 재시도**가 된다(하드닝 실측 —
+ * 500을 가로채니 6회까지 세다가 멈추지 않았다). `main.tsx`가 이미 「5xx·네트워크만
+ * 3회, 타임아웃은 안 함」을 정해 뒀으므로 그 판단을 여기서 다시 만들지 않는다.
  */
+const GLOBAL_RETRY = (count: number, error: unknown) =>
+  isApiError(error) && !error.isTimeout && (error.status >= 500 || error.isNetwork) && count < 3
+
 export function useSections(materialId: string) {
   return useFindSections(
     { path: { materialId } },
     {
       enabled: !!materialId,
-      retry: (_count, error) => !isAnalysisIncomplete(error),
+      retry: (count, error) => !isAnalysisIncomplete(error) && GLOBAL_RETRY(count, error),
     },
   )
 }

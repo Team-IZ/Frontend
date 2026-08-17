@@ -107,10 +107,14 @@ export default function ProjectDetailScreen() {
           <TabsTrigger value="submission">
             제출 현황{' '}
             <span className="text-fg-subtle ml-1 font-normal">
-              {/* 잠김 판정은 서버 값 하나로 한다 — 단계 이름으로 다시 세지 않는다 */}
+              {/*
+                잠김 판정은 서버 값 하나로 한다 — 단계 이름으로 다시 세지 않는다.
+                다만 **제출이 실제로 있으면 개수를 말한다**(`SubmissionTab`의 방어와
+                같은 근거 · 32차) — 5팀이 냈는데 배지가 「잠김」이면 탭을 안 연다.
+              */}
               {!sub
                 ? '—'
-                : sub.submissionOpened
+                : sub.submissionOpened || sub.summary.submittedTeamCount > 0
                   ? `제출 ${sub.summary.submittedTeamCount}/${sub.summary.teamCount}`
                   : '잠김'}
             </span>
@@ -124,7 +128,12 @@ export default function ProjectDetailScreen() {
         </TabsList>
 
         <TabsContent value="team">
-          <TeamTab projectId={id} stage={sub?.teamFormationStage} locked={sub?.locked ?? false} />
+          <TeamTab
+            projectId={id}
+            stage={sub?.teamFormationStage}
+            locked={sub?.locked ?? false}
+            submittedTeamCount={sub?.summary.submittedTeamCount ?? 0}
+          />
         </TabsContent>
 
         <TabsContent value="submission">

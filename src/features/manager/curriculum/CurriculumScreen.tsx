@@ -13,6 +13,7 @@ import {
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
+import { SlowNotice } from '@/components/common/Loading'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import {
   Pagination,
@@ -86,8 +87,11 @@ export default function CurriculumScreen() {
 
   if (query.isPending) {
     return shell(
-      <div className="flex justify-center py-16">
-        <Spinner className="size-6" aria-label="교안을 불러오는 중" />
+      <div className="py-16">
+        <div className="flex justify-center">
+          <Spinner className="size-6" aria-label="교안을 불러오는 중" />
+        </div>
+        <SlowNotice />
       </div>,
     )
   }

@@ -13,6 +13,7 @@ import {
   TableHead,
   TableRow,
 } from '@/components/ui/Table'
+import { errorCopy } from '@/lib/errorCopy'
 import { useTeams, useCreateTeam, useConfirmTeams, useReopenTeams } from '../_/api/api'
 import { TEAM_STAGE_LABEL, type Team, type TeamFormationStage } from '../_/api/types'
 import TeamEditDialog from './TeamEditDialog'
@@ -36,6 +37,11 @@ import TeamAutoAssignDialog from './TeamAutoAssignDialog'
   목의 `SUBMITTING`(제출 시작됨)이 서버에는 없고 대신 `CLOSED`(종료된 회차)가 있다.
   제출이 시작됐는지는 `submissionOpened`로 따로 오므로 국면에 섞지 않는다.
 
+  🔴 **쓰기가 실패하면 말한다**(하드닝 실측). 확정을 가로채 409를 만들었더니 화면이
+  **아무 말도 안 했다** — 눌렀고, 실패했고, 버튼만 원래대로 돌아갔다. 사용자는 됐는지
+  안 됐는지 알 수 없다. `lib/errorCopy`가 코드·상태를 보고 문구를 정한다(원인을
+  추측해 하나로 묶지 않는다 — OP 반 추가에서 이미 겪은 것).
+
   🔴 **팀 삭제 버튼을 뺐다.** 서버에 삭제 오퍼레이션이 없다(팀 생성·수정·확정·
   다시 열기·자동 배분·팀원 배정/해제만 있다). 목에는 `deleteTeam`이 있었지만
   화면이 지어낸 성공은 새로 고치면 사라진다. 32차 요청서로 올린다.
@@ -49,9 +55,11 @@ type Props = {
   /** 제출 현황이 준다 — 아직 못 읽었으면 없다 */
   stage: string | undefined
   locked: boolean
+  /** 이미 제출한 팀 수 — 확정 경고 문구가 이 값으로 갈린다(아래) */
+  submittedTeamCount: number
 }
 
-export default function TeamTab({ projectId, stage, locked }: Props) {
+export default function TeamTab({ projectId, stage, locked, submittedTeamCount }: Props) {
   const [autoAssignOpen, setAutoAssignOpen] = useState(false)
   const [editTeam, setEditTeam] = useState<Team | null>(null)
   const [addingTeam, setAddingTeam] = useState(false)
@@ -105,6 +113,16 @@ export default function TeamTab({ projectId, stage, locked }: Props) {
   /* 담당 반이 여럿이면 자동 배분이 400(MANAGER_CLASSROOM_AMBIGUOUS)이다 */
   const classIds = new Set(teams.map((t) => t.classId))
   const autoAssignAmbiguous = classIds.size > 1
+
+  /* 쓰기 넷 중 마지막으로 실패한 것 — 하나만 띄운다(연달아 누르면 마지막 것이 맞다) */
+  const failure = confirmTeams.error ?? reopenTeams.error ?? createTeam.error
+  const failureAction = confirmTeams.error
+    ? '확정'
+    : reopenTeams.error
+      ? '다시 열기'
+      : createTeam.error
+        ? '추가'
+        : undefined
 
   function handleCreateTeam() {
     const name = newTeamName.trim() || `${teams.length + 1}팀`
@@ -166,13 +184,45 @@ export default function TeamTab({ projectId, stage, locked }: Props) {
         </div>
       </div>
 
+      {failure !== null &&
+        failureAction !== undefined &&
+        (() => {
+          const copy = errorCopy(failure, { subject: '팀', action: failureAction })
+          return (
+            <Alert variant="danger">
+              <AlertTitle>{copy.title}</AlertTitle>
+              <AlertDescription>{copy.description}</AlertDescription>
+            </Alert>
+          )
+        })()}
+
+      {/*
+        🔴 **제출이 이미 들어왔으면 다른 말을 한다**(하드닝 실측 · 32차).
+
+        원래 문구는 「확정하면 학생들이 코드를 제출할 수 있게 되고」 · 「제출이
+        시작되기 전까지는 되돌릴 수 있습니다」였는데, 실서버에 **확정 전 단계인데
+        5팀이 이미 제출한** 회차가 있다. 그 상태에서 이 문구는 둘 다 사실이 아니고,
+        「되돌려도 된다」고 읽혀 위험하다 — 되돌리면 이미 낸 팀이 어떻게 되는지를
+        화면이 모른다.
+      */}
       {!locked && phase === 'READY_TO_CONFIRM' && (
         <Alert variant="warning">
           <AlertTriangle />
-          <AlertTitle>확정하면 학생들이 코드를 제출할 수 있게 되고, 팀은 잠깁니다</AlertTitle>
-          <AlertDescription>
-            제출이 시작되기 전까지는 `편성 다시 열기`로 되돌릴 수 있습니다.
-          </AlertDescription>
+          {submittedTeamCount > 0 ? (
+            <>
+              <AlertTitle>확정 전인데 이미 {submittedTeamCount}팀이 제출했습니다</AlertTitle>
+              <AlertDescription>
+                편성을 바꾸면 낸 코드와 팀이 어긋날 수 있습니다. 확정만 하고 팀은 건드리지 마세요.
+              </AlertDescription>
+            </>
+          ) : (
+            <>
+              <AlertTitle>확정하면 학생들이 코드를 제출할 수 있게 되고, 팀은 잠깁니다</AlertTitle>
+              <AlertDescription>
+                제출이 시작되기 전까지는 `편성 다시 열기`로 되돌릴 수 있습니다.
+              </AlertDescription>
+            </>
+          )}
         </Alert>
       )}
 

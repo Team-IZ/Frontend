@@ -7,8 +7,10 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import { Spinner } from '@/components/ui/Spinner'
+import { SlowNotice } from '@/components/common/Loading'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import { errorCopy } from '@/lib/errorCopy'
 import { formatDate } from '@/lib/format'
 import { useManagerCohort } from '@/stores/cohortScope'
 import { useCurriculumHead, useSections, useUsedProjects, isAnalysisIncomplete } from './_/api/api'
@@ -51,8 +53,18 @@ export default function CurriculumDetailScreen() {
 
   if (head.isPending) {
     return shell(
-      <div className="flex justify-center py-16">
-        <Spinner className="size-6" aria-label="교안을 불러오는 중" />
+      /*
+        🔴 **없는 `materialId`는 404가 아니라 매달린다**(하드닝 실측 · 32차).
+        형식이 틀리면 400을 1.7초에 주는데, 형식은 맞고 없는 UUID면 65초를 기다려도
+        답이 없다. 예산이 90초라 그동안 화면은 스피너만 돈다 — 지워진 교안 링크를
+        열면 그렇게 된다. `SlowNotice`가 12초에 그 사실을 말한다(끊지는 않는다 —
+        잠든 서버는 깨는 데 76초).
+      */
+      <div className="py-16">
+        <div className="flex justify-center">
+          <Spinner className="size-6" aria-label="교안을 불러오는 중" />
+        </div>
+        <SlowNotice />
       </div>,
     )
   }
@@ -109,8 +121,11 @@ export default function CurriculumDetailScreen() {
 
         <TabsContent value="sections">
           {sections.isPending ? (
-            <div className="flex justify-center py-16">
-              <Spinner className="size-6" aria-label="섹션을 불러오는 중" />
+            <div className="py-16">
+              <div className="flex justify-center">
+                <Spinner className="size-6" aria-label="섹션을 불러오는 중" />
+              </div>
+              <SlowNotice />
             </div>
           ) : isAnalysisIncomplete(sections.error) ? (
             /* 아직 분석이 안 끝난 것 — 실패와 다른 말을 한다 */
@@ -125,19 +140,29 @@ export default function CurriculumDetailScreen() {
               </EmptyHeader>
             </Empty>
           ) : sections.isError ? (
-            <Empty>
-              <EmptyHeader>
-                <EmptyTitle>구조를 추출하지 못했습니다</EmptyTitle>
-                <EmptyDescription>
-                  이 교안은 섹션·가르친 항목을 보여줄 수 없습니다.
-                  <br />
-                  <b className="text-fg-muted">재분석은 오퍼레이터(OP-06)가 진행합니다.</b>
-                </EmptyDescription>
-              </EmptyHeader>
-              <Button variant="ghost" onClick={() => void sections.refetch()}>
-                다시 시도
-              </Button>
-            </Empty>
+            /*
+              🔴 **교안 탓을 하지 않는다**(하드닝 실측). 500을 가로챘더니 화면이
+              「구조를 추출하지 못했습니다 · 재분석은 오퍼레이터가 진행합니다」라고
+              말했다 — 서버가 실패한 것을 **교안 분석이 실패한 것으로** 옮겨
+              읽히고, 매니저가 오퍼레이터에게 재분석을 요청하게 된다.
+              `lib/errorCopy`가 코드·상태를 보고 문구를 정한다.
+            */
+            (() => {
+              const copy = errorCopy(sections.error, { subject: '섹션' })
+              return (
+                <Empty>
+                  <EmptyHeader>
+                    <EmptyTitle>{copy.title}</EmptyTitle>
+                    <EmptyDescription>{copy.description}</EmptyDescription>
+                  </EmptyHeader>
+                  {copy.retry && (
+                    <Button variant="ghost" onClick={() => void sections.refetch()}>
+                      다시 시도
+                    </Button>
+                  )}
+                </Empty>
+              )
+            })()
           ) : (
             <SectionExplorer
               curriculumLabel={label}
@@ -150,8 +175,11 @@ export default function CurriculumDetailScreen() {
 
         <TabsContent value="used">
           {used.isPending ? (
-            <div className="flex justify-center py-16">
-              <Spinner className="size-6" aria-label="쓰인 회차를 불러오는 중" />
+            <div className="py-16">
+              <div className="flex justify-center">
+                <Spinner className="size-6" aria-label="쓰인 회차를 불러오는 중" />
+              </div>
+              <SlowNotice />
             </div>
           ) : (
             <UsedRoundsTable rounds={used.data ?? []} />
@@ -355,57 +383,70 @@ function UsedRoundsTable({ rounds }: { rounds: UsedProject[] }) {
   }
 
   return (
-    <div className="border-border overflow-hidden rounded-md border">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="bg-surface-2 border-border border-b">
-            <th className="text-fg-muted px-4 py-2.5 text-left text-xs font-semibold">회차</th>
-            <th className="text-fg-muted px-4 py-2.5 text-left text-xs font-semibold">검증 개념</th>
-            <th className="text-fg-muted px-4 py-2.5 text-right text-xs font-semibold">
-              응시 시작
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rounds.map((r) => (
-            <tr key={r.projectId} className="border-border border-b last:border-0">
-              <td className="px-4 py-3 font-bold">
-                <Link
-                  to={`/manager/projects/${r.projectId}`}
-                  className="hover:text-primary hover:underline"
-                >
-                  {r.roundLabel ?? r.name}
-                </Link>
-              </td>
-              <td className="px-4 py-3">
-                {/* 확정 전이면 빈 배열이다(스펙 명시) — null이 아니라 길이로 가른다 */}
-                {r.conceptNames.length === 0 ? (
-                  <Badge variant="neutral">검증 개념 미확정</Badge>
-                ) : (
-                  <div className="flex flex-wrap gap-1.5">
-                    {r.conceptNames.map((c) => (
-                      <Badge key={c} variant="warning">
-                        ★ {c}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-              </td>
-              {/*
+    <div className="flex flex-col gap-2">
+      {/*
+        🔴 **범위가 목록과 다르다고 말한다**(하드닝 실측). 목록 행은 「이 기수가 연결한
+        회차」라 8이었는데 이 탭 배지는 26이다 — 같은 교안인데 숫자가 3배로 뛴다.
+        둘 다 맞지만(다른 질문이다) 화면이 안 말하면 어느 쪽이 틀린 것처럼 보인다.
+      */}
+      <p className="text-fg-subtle text-xs">
+        이 교안을 쓴 <b className="text-fg-muted font-bold">모든 기수의 회차</b>입니다 — 목록의
+        「쓰인 회차」는 이 기수 것만 셉니다.
+      </p>
+      <div className="border-border overflow-hidden rounded-md border">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="bg-surface-2 border-border border-b">
+              <th className="text-fg-muted px-4 py-2.5 text-left text-xs font-semibold">회차</th>
+              <th className="text-fg-muted px-4 py-2.5 text-left text-xs font-semibold">
+                검증 개념
+              </th>
+              <th className="text-fg-muted px-4 py-2.5 text-right text-xs font-semibold">
+                응시 시작
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rounds.map((r) => (
+              <tr key={r.projectId} className="border-border border-b last:border-0">
+                <td className="px-4 py-3 font-bold">
+                  <Link
+                    to={`/manager/projects/${r.projectId}`}
+                    className="hover:text-primary hover:underline"
+                  >
+                    {r.roundLabel ?? r.name}
+                  </Link>
+                </td>
+                <td className="px-4 py-3">
+                  {/* 확정 전이면 빈 배열이다(스펙 명시) — null이 아니라 길이로 가른다 */}
+                  {r.conceptNames.length === 0 ? (
+                    <Badge variant="neutral">검증 개념 미확정</Badge>
+                  ) : (
+                    <div className="flex flex-wrap gap-1.5">
+                      {r.conceptNames.map((c) => (
+                        <Badge key={c} variant="warning">
+                          ★ {c}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </td>
+                {/*
                 **완료가 아니라 시작한 인원이다**(스펙 명시) — 재분석하면 리포트가
                 어긋나는지 판단하는 문턱이라 진행 중인 응시도 세야 한다
               */}
-              <td className="text-fg-muted px-4 py-3 text-right text-xs tabular-nums">
-                {r.attendedCount === 0 ? (
-                  <span className="text-fg-subtle">—</span>
-                ) : (
-                  `${r.attendedCount}명`
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                <td className="text-fg-muted px-4 py-3 text-right text-xs tabular-nums">
+                  {r.attendedCount === 0 ? (
+                    <span className="text-fg-subtle">—</span>
+                  ) : (
+                    `${r.attendedCount}명`
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

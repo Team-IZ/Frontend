@@ -6,8 +6,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/Dialog'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { Button } from '@/components/ui/Button'
+import { errorCopy } from '@/lib/errorCopy'
 import { useAssignTeamMember, useRemoveTeamMember } from '../_/api/api'
 import type { Team, UnassignedMember } from '../_/api/types'
 
@@ -26,6 +28,9 @@ import type { Team, UnassignedMember } from '../_/api/types'
   들고 있던 값인데 `TeamMemberResponse`·`UnassignedMemberResponse` 둘 다 이름과
   ID만 준다. 실력 섞기는 이제 서버가 하므로(`skillBalanced`) 화면이 그 값을
   보여줄 근거도 없다.
+
+  🔴 **실패하면 말한다**(하드닝 실측). 체크해서 눌렀는데 서버가 거절하면 체크만
+  풀리고 아무 말이 없었다 — 배정된 줄 알고 닫게 된다.
 
   ⚠ **배정과 해제가 쓰는 ID가 다르다** — 배정은 `projectMembershipId`(참여 ID),
   해제는 `traineeId`(사용자 ID)다. 한 사람이 두 ID를 갖고 있어 섞으면 404가 난다.
@@ -46,6 +51,8 @@ export default function TeamEditDialog({ open, onOpenChange, projectId, team, un
   const assign = useAssignTeamMember()
   const remove = useRemoveTeamMember()
   const busy = assign.isPending || remove.isPending
+  const failure = assign.error ?? remove.error
+  const failureAction = assign.error ? '배정' : remove.error ? '해제' : undefined
 
   function toggle(set: Set<string>, setSet: (s: Set<string>) => void, id: string) {
     const next = new Set(set)
@@ -74,6 +81,18 @@ export default function TeamEditDialog({ open, onOpenChange, projectId, team, un
         <DialogHeader>
           <DialogTitle>{team.name} 편집</DialogTitle>
         </DialogHeader>
+
+        {failure !== null &&
+          failureAction !== undefined &&
+          (() => {
+            const copy = errorCopy(failure, { subject: '팀원', action: failureAction })
+            return (
+              <Alert variant="danger">
+                <AlertTitle>{copy.title}</AlertTitle>
+                <AlertDescription>{copy.description}</AlertDescription>
+              </Alert>
+            )
+          })()}
 
         <div className="grid min-h-0 flex-1 grid-cols-2 gap-3 overflow-hidden">
           <div className="border-border flex flex-col overflow-hidden rounded-md border">

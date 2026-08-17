@@ -225,6 +225,80 @@ const BY_CODE: Record<string, (ctx: Ctx) => ErrorCopy> = {
     `message`에 담아 준다**(스펙 명시) — `AddRosterDialog`가 `error.message`를 그대로
     보여주고, 여기 `description`은 message가 없을 때만 쓰는 fallback이다.
   */
+  /*
+    ── 팀 편성(MG-08) ───────────────────────────────────────────
+    여덟 코드가 전부 「잠시 후 다시 시도해 주세요」로 뭉쳐 있었다(MG-08 하드닝
+    실측). **다시 눌러도 안 되는 것들이라** 그 말은 사용자를 헛돌게 한다 —
+    무엇을 해야 풀리는지가 코드마다 다르다.
+  */
+
+  /** 확정할 팀이 하나도 없다 — 먼저 만들어야 한다 */
+  NO_TEAMS_TO_CONFIRM: () => ({
+    title: '확정할 팀이 없습니다',
+    description: '팀을 먼저 만들거나 자동 배분을 실행한 뒤에 확정할 수 있습니다.',
+    retry: false,
+    tone: 'failed',
+  }),
+
+  /** 미배정이 남았거나 팀이 비어 있다 */
+  TEAMS_NOT_READY: () => ({
+    title: '아직 확정할 수 없습니다',
+    description:
+      '미배정 인원이 남아 있거나 비어 있는 팀이 있습니다 — 편성을 마친 뒤 다시 확정해 주세요.',
+    retry: false,
+    tone: 'failed',
+  }),
+
+  /**
+   * 담당 반이 둘 이상이라 서버가 어느 반에 배분할지 정할 수 없다.
+   * 재시도가 아니라 **반을 하나로 좁혀야** 풀린다.
+   */
+  MANAGER_CLASSROOM_AMBIGUOUS: () => ({
+    title: '담당 반이 여럿이라 자동으로 정할 수 없습니다',
+    description: '반마다 팀을 직접 추가해 편성해 주세요.',
+    retry: false,
+    tone: 'failed',
+  }),
+
+  NO_MEMBERS_TO_ASSIGN: () => ({
+    title: '배분할 인원이 없습니다',
+    description: '미배정 인원이 없어 자동 배분이 할 일이 없습니다.',
+    retry: false,
+    tone: 'failed',
+  }),
+
+  AUTO_ASSIGN_NOT_ALLOWED: () => ({
+    title: '지금은 자동 배분을 쓸 수 없습니다',
+    description: '이미 편성이 확정됐거나 종료된 회차입니다 — 편성을 다시 열어야 바꿀 수 있습니다.',
+    retry: false,
+    tone: 'failed',
+  }),
+
+  /*
+    아래 셋은 **누가 화면을 열어 둔 사이에 사라진 것**이다. 다시 눌러도 같은 결과라
+    새로 고쳐서 지금 상태를 보게 한다.
+  */
+  TEAM_NOT_FOUND: () => ({
+    title: '그 팀을 찾을 수 없습니다',
+    description: '다른 곳에서 지워졌을 수 있습니다 — 새로 고친 뒤 다시 시도해 주세요.',
+    retry: false,
+    tone: 'failed',
+  }),
+
+  PROJECT_MEMBERSHIP_NOT_FOUND: () => ({
+    title: '그 교육생을 이 회차에서 찾을 수 없습니다',
+    description: '명단에서 빠졌을 수 있습니다 — 새로 고친 뒤 다시 시도해 주세요.',
+    retry: false,
+    tone: 'failed',
+  }),
+
+  TEAM_MEMBERSHIP_NOT_FOUND: () => ({
+    title: '이미 그 팀에서 빠져 있습니다',
+    description: '다른 곳에서 먼저 처리됐습니다 — 새로 고치면 지금 상태가 보입니다.',
+    retry: false,
+    tone: 'failed',
+  }),
+
   CSV_FORMAT_INVALID: () => ({
     title: 'CSV 파일 형식이 올바르지 않습니다',
     description: '한 번에 최대 1000명까지 등록할 수 있습니다 — 파일 형식을 확인해 주세요.',

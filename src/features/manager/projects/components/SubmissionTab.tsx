@@ -81,7 +81,27 @@ export default function SubmissionTab({ query, classProgress }: Props) {
 
   const d = query.data
 
-  if (!d.submissionOpened) {
+  /*
+    🔴 **서버가 자기모순일 때의 방어**(하드닝 실측, 32차로 올린다).
+
+    스펙은 「화면은 `submissionOpened`만 보고 표를 그릴지 빈 상태를 보여줄지 정한다」고
+    했고 그대로 따랐는데, 실제 응답이 자기 자신과 어긋난다:
+
+        submissionOpened   false   (teamFormationStage = READY_TO_CONFIRM)
+        submittedTeamCount 5 / 7   ← 이미 제출했다
+        analysis           5팀 SUCCEEDED
+        개인 응시          DONE 18 · OPEN 2 · MISSED 1 · BLOCKED 5
+
+    그 말을 그대로 믿으면 화면이 「아직 팀 편성 중이에요」라고 하면서 **제출 5건과
+    응시 18명을 통째로 숨긴다.** 매니저가 이 탭을 여는 이유가 그 값들인데.
+
+    그래서 **그릴 것이 실제로 있으면 그린다.** 판정 규칙을 다시 만드는 것이 아니라
+    (여전히 `submissionOpened`를 본다) 그 값이 데이터와 어긋날 때만 데이터를 택한다.
+    서버가 맞춰 주면 이 분기는 저절로 안 타므로 그때 지운다.
+  */
+  const hasSubmissionData = d.teams.some((t) => t.submission || t.members.length > 0)
+
+  if (!d.submissionOpened && !hasSubmissionData) {
     return (
       <Empty>
         <EmptyHeader>

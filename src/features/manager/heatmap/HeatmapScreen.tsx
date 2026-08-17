@@ -7,7 +7,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { staleProps } from '@/lib/listQuery'
 import { useManagerCohort } from '@/stores/cohortScope'
 import { useHeatmap, useHeatmapRounds } from './_/api/api'
-import type { AttemptView, HeatmapLevel } from './_/api/types'
+import type { AttemptView, HeatmapLevel, ScopeOption } from './_/api/types'
 import { getSessionView, setSessionView } from './viewState'
 import HeatmapToolbar from './components/HeatmapToolbar'
 import HeatmapLegend from './components/HeatmapLegend'
@@ -19,11 +19,14 @@ import HeatmapTable from './components/HeatmapTable'
   목일 때는 `mockData.ts`가 평균과 집단 미달을 계산했다.
 
   **드릴다운은 두 갈래다** — 표의 행 클릭(아래로 한 단만) vs 툴바 버튼(어느 단으로든).
-  버튼으로 팀·팀원에 들어가면 아직 반을 안 골랐을 수 있어 **서버가 준 첫 선택지**를
-  기본값으로 둔다 — 서버가 `classroomId`를 필수로 요구하므로(400) 빈 채로 못 부른다.
+  버튼으로 내려갈 때는 **스코프를 먼저 채우고** 계층을 바꾼다. 서버가 `TEAM`에 반을,
+  `TRAINEE`에 반과 팀을 필수로 요구해서(400) 빈 채로는 못 부른다.
 
-  ⚠ **계층을 바꾸면 아래 스코프를 비운다.** 반이 바뀌면 이전 팀은 다른 반 소속일 수
-  있고, 그대로 두면 서버가 400을 낸다.
+  ⚠ **스코프를 언제 비우나** — 셋 다 하드닝 실측에서 정해졌다.
+  · 계층을 올리면 아래 스코프는 뜻을 잃는다
+  · 반을 바꾸면 이전 팀은 다른 반 소속이다(400)
+  · **회차를 바꾸면 팀은 뜻을 잃는다** — 팀은 프로젝트에 매인다. 이건 400도 아니라
+    200 + 빈 결과가 와서, 안 비우면 화면이 「결과 없음」이라고 거짓말한다
 */
 const traineePath = (id: string) => `/manager/trainees/${id}`
 
@@ -38,6 +41,9 @@ export default function HeatmapScreen() {
   const [classroomId, setClassroomId] = useState(initial.classroomId)
   const [teamId, setTeamId] = useState(initial.teamId)
   const [attemptView, setAttemptView] = useState<AttemptView>(initial.attemptView)
+  /* 본 적 있는 반·팀 — 아래 `useEffect` 주석 참고 */
+  const [knownClassrooms, setKnownClassrooms] = useState<ScopeOption[]>([])
+  const [knownTeams, setKnownTeams] = useState<ScopeOption[]>([])
 
   const rounds = useHeatmapRounds(cohortId)
   const roundList = rounds.data ?? []
@@ -62,17 +68,42 @@ export default function HeatmapScreen() {
   const view = heatmap.data
 
   /*
-    스코프가 비어 있으면 **서버가 준 첫 선택지로 채운다.** 툴바 버튼으로 팀·팀원에
-    바로 들어오면 반을 안 고른 상태인데, 그대로 부르면 400이다.
+    🔴 **본 계층의 `rows[]`도 선택지다**(하드닝 실측에서 잡았다).
+
+    `navigation`은 **지금 계층보다 위**의 선택지만 준다 — `CLASS`에서는 통째로 비어
+    온다. 아래 단계 항목은 `rows[]`에 있고 그 `rowId`가 곧 `classroomId`·`teamId`다.
+
+    이걸 몰라서 툴바 「팀」·「팀원」 버튼이 **400에서 빠져나오지 못했다.** 계층만
+    바꾸면 스코프가 빈 채로 나가 `HEATMAP_SCOPE_INVALID`가 되고, 채울 값을 빈
+    `navigation`에서 찾으니 영영 안 채워진다. 실측:
+
+        level=TEAM     반 없이  → 400 HEATMAP_SCOPE_INVALID
+        level=TRAINEE  팀 없이  → 400 (반만으로는 부족하다)
+
+    그래서 **본 것을 기억한다.** 반·팀 목록은 자주 바뀌지 않고, 계층을 오갈 때마다
+    다시 받을 수도 없다(그 요청이 바로 스코프를 요구한다).
   */
   useEffect(() => {
-    if (level !== 'CLASS' && !classroomId && view?.navigation.classrooms[0]) {
-      setClassroomId(view.navigation.classrooms[0].classroomId)
+    if (!view) return
+    const fromRows = view.rows
+      .filter((r) => r.rowId)
+      .map((r) => ({ id: r.rowId!, name: r.rowName ?? '', memberCount: r.memberCount }))
+
+    if (view.level === 'CLASS') {
+      setKnownClassrooms(fromRows)
+    } else if (view.level === 'TEAM') {
+      setKnownTeams(fromRows)
+      if (view.navigation.classrooms.length > 0) {
+        setKnownClassrooms(
+          view.navigation.classrooms.map((c) => ({
+            id: c.classroomId,
+            name: c.classroomName,
+            memberCount: c.memberCount,
+          })),
+        )
+      }
     }
-    if (level === 'TRAINEE' && !teamId && view?.navigation.teams[0]) {
-      setTeamId(view.navigation.teams[0].teamId)
-    }
-  }, [level, classroomId, teamId, view])
+  }, [view])
 
   useEffect(() => {
     setSessionView({
@@ -84,20 +115,58 @@ export default function HeatmapScreen() {
     })
   }, [picked, level, classroomId, teamId, attemptView])
 
+  /**
+   * 계층 버튼 — **내려갈 때는 스코프를 먼저 채우고 바꾼다.** 비운 채 바꾸면 400이다.
+   *
+   * `TRAINEE`는 반과 팀이 둘 다 있어야 하는데, 팀 목록은 `TEAM` 계층을 한 번
+   * 봐야 생긴다 — 아직 모르면 그 버튼을 잠그고 왜인지 말한다(툴바). 여기서
+   * 임의로 `TEAM`에 내려놓으면 사용자가 누른 것과 다른 화면이 뜬다.
+   */
   function changeLevel(next: HeatmapLevel) {
-    setLevel(next)
-    /* 위로 올라가면 아래 스코프는 뜻을 잃는다 — 비워서 서버 선택지로 다시 채운다 */
     if (next === 'CLASS') {
       setClassroomId('')
       setTeamId('')
-    } else if (next === 'TEAM') {
-      setTeamId('')
+    } else {
+      const cls = classroomId || knownClassrooms[0]?.id
+      if (!cls) return
+      setClassroomId(cls)
+      if (next === 'TEAM') {
+        setTeamId('')
+      } else {
+        const team = teamId || knownTeams[0]?.id
+        if (!team) return
+        setTeamId(team)
+      }
     }
+    setLevel(next)
   }
 
+  /**
+   * 반을 바꾸면 이전 팀은 **다른 반 소속**이라 못 쓴다.
+   *
+   * 그래서 `TRAINEE`에 머물 수 없다 — 새 반의 팀 목록을 아직 모르고, 그걸 알려면
+   * 그 반의 `TEAM` 격자를 한 번 받아야 한다. 빈 팀으로 밀어 넣으면 400이다.
+   */
   function changeClass(next: string) {
     setClassroomId(next)
-    setTeamId('') // 반이 바뀌면 이전 팀은 다른 반 소속이다
+    setTeamId('')
+    setKnownTeams([])
+    if (level === 'TRAINEE') setLevel('TEAM')
+  }
+
+  /**
+   * 회차를 바꾸면 **팀은 뜻을 잃는다** — 팀은 프로젝트에 매인 것이라 회차마다 다시
+   * 짠다. 반은 기수 소속이라 그대로 쓴다.
+   *
+   * 🔴 이걸 안 비우면 **화면이 거짓말을 한다.** 다른 회차의 `teamId`를 넣어도 서버가
+   * 400이 아니라 **200 + 빈 결과**를 준다(하드닝 실측) — 그러면 화면이 「이 범위에는
+   * 아직 결과가 없습니다」라고 말하는데, 사실은 그 팀이 이 회차에 없는 것이다.
+   */
+  function changeRound(next: string) {
+    setRound(next)
+    setTeamId('')
+    setKnownTeams([])
+    if (level === 'TRAINEE') setLevel('TEAM')
   }
 
   /** 행을 눌러 한 단 내려간다 */
@@ -133,8 +202,9 @@ export default function HeatmapScreen() {
         attemptView={attemptView}
         classroomId={view?.scope?.classroomId ?? classroomId}
         teamId={view?.scope?.teamId ?? teamId}
-        navigation={view?.navigation ?? { classrooms: [], teams: [] }}
-        onRoundChange={setRound}
+        classrooms={knownClassrooms}
+        teams={knownTeams}
+        onRoundChange={changeRound}
         onLevelChange={changeLevel}
         onClassChange={changeClass}
         onTeamChange={setTeamId}

@@ -72,6 +72,20 @@ export type HeatmapView = {
   asOfAt: string | null
 }
 
+/**
+ * 반·팀 선택지 한 줄 — `navigation`에서 오기도 하고 `rows[]`에서 오기도 한다.
+ *
+ * 🔴 **`navigation`은 지금 계층보다 위의 선택지만 준다**(하드닝 실측). `CLASS`에서는
+ * 통째로 비어 오고, 그 계층의 반 목록은 `rows[]`에 있다(`rowId`가 곧 `classroomId`).
+ * 두 출처가 같은 모양이라 화면이 한 타입으로 다룬다.
+ */
+export type ScopeOption = {
+  id: string
+  name: string
+  /** 개인 행에는 없다 */
+  memberCount: number | null
+}
+
 /** 회차 선택지 — 명부 응답의 `rounds[]`를 그대로 쓴다(히트맵 전용 조회가 없다) */
 export type RoundOption = {
   assessmentRoundId: string

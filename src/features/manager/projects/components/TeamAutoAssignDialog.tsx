@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select'
+import { errorCopy } from '@/lib/errorCopy'
 import { useAutoAssignTeams } from '../_/api/api'
 
 /*
@@ -78,6 +79,18 @@ export default function TeamAutoAssignDialog({
         </DialogHeader>
 
         <div className="flex flex-col gap-5">
+          {/* 🔴 실패를 말한다(하드닝 실측) — 배분이 거절돼도 모달만 열려 있었다 */}
+          {autoAssign.error !== null &&
+            (() => {
+              const copy = errorCopy(autoAssign.error, { subject: '팀', action: '배분' })
+              return (
+                <Alert variant="danger">
+                  <AlertTitle>{copy.title}</AlertTitle>
+                  <AlertDescription>{copy.description}</AlertDescription>
+                </Alert>
+              )
+            })()}
+
           {ambiguousClassroom && (
             <Alert variant="warning">
               <AlertTriangle />

@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from '@/components/ui/Select'
 import { cn } from '@/lib/utils/cn'
-import type { AttemptView, HeatmapLevel, HeatmapView, RoundOption } from '../_/api/types'
+import type { AttemptView, HeatmapLevel, RoundOption, ScopeOption } from '../_/api/types'
 
 /*
   툴바 — 프로젝트 select가 이 화면의 변수라 맨 왼쪽·크게 둔다(정의서 "회차 비교
@@ -58,7 +58,8 @@ export default function HeatmapToolbar({
   attemptView,
   classroomId,
   teamId,
-  navigation,
+  classrooms,
+  teams,
   onRoundChange,
   onLevelChange,
   onClassChange,
@@ -71,8 +72,9 @@ export default function HeatmapToolbar({
   attemptView: AttemptView
   classroomId: string
   teamId: string
-  /** 드릴다운 선택지 — 서버가 계층마다 채워 준다 */
-  navigation: HeatmapView['navigation']
+  /** 본 적 있는 반·팀 — 화면이 기억한다(`HeatmapScreen`의 주석 참고) */
+  classrooms: ScopeOption[]
+  teams: ScopeOption[]
   onRoundChange: (assessmentRoundId: string) => void
   onLevelChange: (level: HeatmapLevel) => void
   onClassChange: (classroomId: string) => void
@@ -80,12 +82,21 @@ export default function HeatmapToolbar({
   onAttemptViewChange: (v: AttemptView) => void
 }) {
   const roundItems = Object.fromEntries(rounds.map((r) => [r.assessmentRoundId, r.label]))
-  const classItems = Object.fromEntries(
-    navigation.classrooms.map((c) => [c.classroomId, `반 · ${c.classroomName}`]),
-  )
-  const teamItems = Object.fromEntries(
-    navigation.teams.map((t) => [t.teamId, `팀 · ${t.teamName}`]),
-  )
+  const classItems = Object.fromEntries(classrooms.map((c) => [c.id, `반 · ${c.name}`]))
+  const teamItems = Object.fromEntries(teams.map((t) => [t.id, `팀 · ${t.name}`]))
+
+  /*
+    🔴 **갈 수 없는 계층은 잠근다**(하드닝 실측). 서버가 `TEAM`에 반을, `TRAINEE`에
+    반과 팀을 **필수로** 요구한다(`HEATMAP_SCOPE_INVALID`). 팀 목록은 반 격자를
+    한 번 봐야 생기므로, 그 전에는 「팀원」을 눌러도 400밖에 안 나온다.
+    막는 대신 왜인지 말한다(integration-process §7과 같은 원칙).
+  */
+  const blocked = (l: HeatmapLevel) =>
+    l !== 'CLASS' && classrooms.length === 0
+      ? '반 격자를 먼저 불러와야 합니다'
+      : l === 'TRAINEE' && !teamId && teams.length === 0
+        ? '팀을 먼저 고르세요 — 팀 격자에서 팀을 누르면 열립니다'
+        : undefined
 
   return (
     <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -107,47 +118,52 @@ export default function HeatmapToolbar({
       </Select>
 
       <ButtonGroup aria-label="계층">
-        {LEVELS.map((l) => (
-          <Button
-            key={l.value}
-            size="sm"
-            variant={level === l.value ? 'primary' : 'ghost'}
-            aria-pressed={level === l.value}
-            onClick={() => onLevelChange(l.value)}
-          >
-            {l.label}
-          </Button>
-        ))}
+        {LEVELS.map((l) => {
+          const why = blocked(l.value)
+          return (
+            <Button
+              key={l.value}
+              size="sm"
+              variant={level === l.value ? 'primary' : 'ghost'}
+              aria-pressed={level === l.value}
+              disabled={!!why && level !== l.value}
+              title={why}
+              onClick={() => onLevelChange(l.value)}
+            >
+              {l.label}
+            </Button>
+          )
+        })}
       </ButtonGroup>
 
       {/*
         반·팀 select는 **그 계층에 필요할 때만** 그린다. 서버가 `TEAM`·`TRAINEE`에서
         `classroomId`를 필수로 요구하므로(400) 없는 채로 부르지 않는다.
       */}
-      {level !== 'CLASS' && navigation.classrooms.length > 0 && (
+      {level !== 'CLASS' && classrooms.length > 0 && (
         <Select value={classroomId} onValueChange={(v) => v && onClassChange(v)} items={classItems}>
           <SelectTrigger className="h-9 w-32" aria-label="반 선택">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {navigation.classrooms.map((c) => (
-              <SelectItem key={c.classroomId} value={c.classroomId}>
-                반 · {c.classroomName}
+            {classrooms.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                반 · {c.name}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
       )}
 
-      {level === 'TRAINEE' && navigation.teams.length > 0 && (
+      {level === 'TRAINEE' && teams.length > 0 && (
         <Select value={teamId} onValueChange={(v) => v && onTeamChange(v)} items={teamItems}>
           <SelectTrigger className="h-9 w-32" aria-label="팀 선택">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {navigation.teams.map((t) => (
-              <SelectItem key={t.teamId} value={t.teamId}>
-                팀 · {t.teamName}
+            {teams.map((t) => (
+              <SelectItem key={t.id} value={t.id}>
+                팀 · {t.name}
               </SelectItem>
             ))}
           </SelectContent>

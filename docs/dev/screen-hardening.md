@@ -385,11 +385,16 @@ export const listQueryOptions = { placeholderData: keepPreviousData }
 check:design       색·간격 토큰 · 대비
 check:async        조회 분기에 isPending 금지 등
 check:error-copy   실패 문구 규칙(retry 포함)
-check:korean-input 조합 중 Enter
 check:pagination   페이저 접기
 check:admin        운영 관리 도메인 규칙 · 업로드 상한
 check:project      검증 개념 3건
 ```
+
+⚠ **가드는 「돌아야」 가드다.** `scripts/check-korean-input.mts`는 파일로 있는데
+**`package.json`에 스크립트가 없어 아무도 안 돌린다**(2026-08-17 확인). 손으로 돌려 보니
+실패한다 — `superadmin/orgs/.../OperatorInviteDialog.tsx`가 조합 중 Enter를 안 막는다.
+**규칙을 적고 스크립트로 만들어 놓고 배선을 빠뜨리면, 있는 줄 알면서 안 지켜진다.**
+가드를 더할 때는 `package.json`과 `verify-ci.mjs` 둘 다 확인한다.
 
 **새 화면에서 같은 종류의 사고를 고쳤으면 여기에 한 줄 더한다** — 그래야 다음 사람이 안
 밟는다. 「문서에 적었다」는 재발을 못 막는다.

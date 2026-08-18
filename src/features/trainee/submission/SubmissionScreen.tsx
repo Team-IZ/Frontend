@@ -7,7 +7,13 @@ import { Spinner } from '@/components/ui/Spinner'
 import { isApiError } from '@/api/_contract'
 import { formatDateTime } from '@/lib/format'
 import ConsoleShell from '@/shells/ConsoleShell'
-import { useSubmission, useSubmitZip } from './_/api/api'
+import {
+  useRepositoryCheck,
+  useSubmission,
+  useSubmitGithub,
+  useSubmitZip,
+  type RepoCheck,
+} from './_/api/api'
 import type { SubmissionView } from './_/api/types'
 import { buildStateBanner, submitFailureOf, type SubmitFailure } from './labels'
 import StateBanner from './components/StateBanner'
@@ -23,9 +29,15 @@ import SubmittedContentCard from './components/SubmittedContentCard'
   **낙관적 전환을 걷어냈다.** 목은 제출 즉시 화면이 `ANALYZING` 카드를 지어냈는데, 지금은
   서버가 접수만 하고 분석을 비동기로 돌리므로 **제출 후 다시 읽어** 서버가 준 상태를 그린다.
 */
+/** 두 제출 수단 중 실제로 실패한 쪽의 사유. 아무 일 없으면 `null` */
+const failureOf = (e: unknown): SubmitFailure | null =>
+  e == null ? null : submitFailureOf(isApiError(e) ? e.code : null)
+
 export default function SubmissionScreen() {
   const { data, isPending, isError, refetch } = useSubmission()
   const submit = useSubmitZip()
+  const github = useSubmitGithub()
+  const repoCheck = useRepositoryCheck()
   const [resubmitting, setResubmitting] = useState(false)
 
   const handleSubmit = async (file: File) => {
@@ -40,6 +52,16 @@ export default function SubmissionScreen() {
       idempotencyKey: crypto.randomUUID(),
       file,
     })
+    setResubmitting(false)
+  }
+
+  /*
+    저장소 제출은 멱등키가 없다 — 파일을 올리는 것이 아니라 주소를 남기는 것이라
+    같은 주소를 두 번 내도 같은 결과다(ZIP은 재전송이 곧 재업로드라 키가 필요했다).
+  */
+  const handleSubmitRepository = async (repositoryUrl: string, branch: string) => {
+    if (!data) return
+    await github.submit({ assessmentRoundId: data.assessmentRoundId, repositoryUrl, branch })
     setResubmitting(false)
   }
 
@@ -73,15 +95,14 @@ export default function SubmissionScreen() {
           <SubmissionBody
             view={data}
             resubmitting={resubmitting}
-            submitting={submit.isPending}
-            failure={
-              submit.isError
-                ? submitFailureOf(isApiError(submit.error) ? submit.error.code : null)
-                : null
-            }
+            submitting={submit.isPending || github.isPending}
+            failure={failureOf(submit.error ?? github.error)}
             onResubmitClick={() => setResubmitting(true)}
             onCancelResubmit={() => setResubmitting(false)}
             onSubmit={handleSubmit}
+            onSubmitRepository={handleSubmitRepository}
+            onCheckRepository={repoCheck.check}
+            checking={repoCheck.isPending}
           />
         )}
       </div>
@@ -97,6 +118,9 @@ function SubmissionBody({
   onResubmitClick,
   onCancelResubmit,
   onSubmit,
+  onSubmitRepository,
+  onCheckRepository,
+  checking,
 }: {
   view: SubmissionView
   resubmitting: boolean
@@ -106,6 +130,9 @@ function SubmissionBody({
   onResubmitClick: () => void
   onCancelResubmit: () => void
   onSubmit: (file: File) => void
+  onSubmitRepository: (repositoryUrl: string, branch: string) => void
+  onCheckRepository: (repoUrl: string) => Promise<RepoCheck>
+  checking: boolean
 }) {
   // 재제출 폼을 펴면 "분석이 끝났어요" 성공 배너를 감춘다 — 지금 하려는 일과 반대되는
   // 메시지("시작하세요")가 폼 위에 남으면 서로 부딪힌다.
@@ -143,6 +170,9 @@ function SubmissionBody({
           submitting={submitting}
           availableMethods={view.availableMethods}
           onSubmit={onSubmit}
+          onSubmitRepository={onSubmitRepository}
+          onCheckRepository={onCheckRepository}
+          checking={checking}
         />
       )}
 
@@ -167,6 +197,9 @@ function SubmissionBody({
               submitting={submitting}
               availableMethods={view.availableMethods}
               onSubmit={onSubmit}
+              onSubmitRepository={onSubmitRepository}
+              onCheckRepository={onCheckRepository}
+              checking={checking}
             />
           </div>
         ) : (

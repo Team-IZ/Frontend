@@ -1,7 +1,6 @@
 import { createBrowserRouter, Navigate, Outlet } from 'react-router'
 import type { RouteObject } from 'react-router'
 import UiPreviewScreen from '@/app/UiPreviewScreen'
-import TraineeCaseIndex from '@/app/TraineeCaseIndex'
 import AsyncStatesPreview from '@/app/AsyncStatesPreview'
 import RosterProgressPreview from '@/app/RosterProgressPreview'
 import RouteNotFound from '@/app/RouteNotFound'
@@ -49,7 +48,6 @@ export const router = createBrowserRouter([
       // 클라이언트는 역할→화면 매핑을 갖지 않는다.
       { path: '/', element: <Navigate to="/shared/login" replace /> },
       { path: '/ui-preview', element: <UiPreviewScreen /> },
-      { path: '/trainee/__cases', element: <TraineeCaseIndex /> },
       // 비동기 상태 표준을 눈으로 보는 자리(dev) — docs/dev/async-states.md
       { path: '/operator/__async', element: <AsyncStatesPreview /> },
       // 등록 진행률 폴링(이슈 224, mock-first)을 눈으로 보는 자리(dev)

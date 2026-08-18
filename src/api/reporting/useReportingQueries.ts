@@ -2,12 +2,14 @@
 
 import { useQuery } from '@tanstack/react-query'
 import type { QueryOptions } from '@/api/_contract'
-import { findMyReports, findMyReport, findClassDiagnosis } from './reportingApi'
+import { findMyReports, findMyReport, findManagedReports, findClassDiagnosis } from './reportingApi'
 import { reportingKeys } from './reportingKeys'
 import type {
   findMyReports_Response,
   findMyReport_Path,
   findMyReport_Response,
+  findManagedReports_Query,
+  findManagedReports_Response,
   findClassDiagnosis_Query,
   findClassDiagnosis_Response,
 } from './reportingTypes'
@@ -29,6 +31,18 @@ export function useFindMyReport(
   return useQuery({
     queryKey: reportingKeys.findMyReport(params),
     queryFn: ({ signal }) => findMyReport({ ...params, signal }),
+    ...options,
+  })
+}
+
+/** 담당 반 리포트 목록 조회 (매니저) */
+export function useFindManagedReports(
+  params: { query?: findManagedReports_Query } = {},
+  options?: QueryOptions<findManagedReports_Response>,
+) {
+  return useQuery({
+    queryKey: reportingKeys.findManagedReports(params),
+    queryFn: ({ signal }) => findManagedReports({ ...params, signal }),
     ...options,
   })
 }

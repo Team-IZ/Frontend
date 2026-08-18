@@ -25,6 +25,9 @@ import type {
   previewTrainees_Path,
   previewTrainees_Body,
   previewTrainees_Response,
+  updateLoginLock_Path,
+  updateLoginLock_Body,
+  updateLoginLock_Response,
   updateManagerStatus_Path,
   updateManagerStatus_Body,
   updateManagerStatus_Response,
@@ -142,6 +145,18 @@ export const previewTrainees = (
 ) =>
   unwrap<previewTrainees_Response>(
     izClient.POST('/api/v0/cohorts/{cohortId}/trainees/invitations/preview', {
+      params: { path: params.path },
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 계정 로그인 차단 / 해제 — `PATCH /api/v0/members/organizations/{organizationId}/users/{userId}/login-lock` */
+export const updateLoginLock = (
+  params: { path: updateLoginLock_Path; body: updateLoginLock_Body } & RequestOptions,
+) =>
+  unwrap<updateLoginLock_Response>(
+    izClient.PATCH('/api/v0/members/organizations/{organizationId}/users/{userId}/login-lock', {
       params: { path: params.path },
       body: params.body,
       signal: params.signal,

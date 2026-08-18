@@ -104,15 +104,19 @@ export default function DeactivateTraineeDialog({ target, cohortId, onOpenChange
 
         {/* **무엇이 일어나는지 쓴다**(G4) — `정말 하시겠습니까?`는 판단 근거를 안 준다 */}
         <p className="text-fg-muted text-xs">
-          계정이 막혀 더는 로그인할 수 없습니다. 교육생 목록과 소속 반에는 그대로 남고, 이미 응시한
-          기록과 리포트도 남습니다.{' '}
+          비활성화 할 시 교육생은 계정이 막혀 더는 로그인할 수 없습니다.
+          <br />
+          교육생 목록과 소속 반에는 그대로 남고,
+          <br />
+          이미 응시한 기록과 리포트도 남습니다.
+          <br />
           <b className="text-danger font-semibold">다시 활성으로 되돌릴 수 없습니다.</b>
         </p>
 
         <div className="mt-1">
           <label htmlFor="deactivate-reason" className="mb-1 block text-xs font-semibold">
-            사유
-            <RequiredMark />
+            사유(
+            <RequiredMark />)
           </label>
           <Input
             id="deactivate-reason"
@@ -122,7 +126,9 @@ export default function DeactivateTraineeDialog({ target, cohortId, onOpenChange
           />
           {/* 일자는 서버가 찍는다 — 매니저 화면이 `중도 이탈 2026-08-04`로 읽는다 */}
           <p className="text-fg-subtle mt-1 text-2xs">
-            사유와 오늘 날짜가 교육생 목록에 남고, 담당 매니저 화면에도 그대로 보입니다.
+            비활성화 사유와 날짜가 교육생 목록에 남고,
+            <br />
+            담당 매니저가 확인할 수 있습니다.
           </p>
         </div>
 

@@ -55,9 +55,9 @@ export type CurriculumStatus = NonNullable<findOrganizationCurricula_Item['analy
 
 // ── CSV 판정 ── **서버 계약이 아니다** ─────────────────────────
 /*
-  명단을 보내기 전에 화면이 그 자리에서 거른다(`rules.ts`). 형식·기관 도메인·파일 안
-  중복은 서버를 안 거쳐도 알 수 있고, 등록을 누른 뒤에 알려주면 수백 명짜리 파일을
-  다시 만들게 된다.
+  명단을 보내기 전에 화면이 그 자리에서 거른다(`rules.ts`). 형식·파일 안 중복은 서버를
+  안 거쳐도 알 수 있고, 등록을 누른 뒤에 알려주면 수백 명짜리 파일을 다시 만들게 된다.
+  (기관 도메인 제한은 8/18에 없앴다 — 매니저 초대와 같은 결정.)
 
   *이미 등록된 이메일*은 여기 없다 — 명단 전량을 받아야 셀 수 있어 서버가 판정하고
   (드라이런 · 9차 Q3-③) 그 결과는 `Failure.status`로 온다.
@@ -77,7 +77,6 @@ export type RosterIssue = {
 
 export type RosterIssueReason =
   | 'INVALID_FORMAT'
-  | 'DOMAIN_NOT_ALLOWED'
   | 'DUPLICATE_IN_FILE'
   /** 이름 칸이 비었다 — **서버가 파일 전체를 거절한다**(`TRAINEE_NAME_INVALID`) */
   | 'NAME_REQUIRED'

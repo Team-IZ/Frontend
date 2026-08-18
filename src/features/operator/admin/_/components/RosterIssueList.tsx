@@ -7,8 +7,8 @@ import type { RosterIssue } from '../api/types'
   이유별로 묶는다. `3행 · 17행 · 42행`처럼 번호만 늘어놓으면 무엇이 잘못됐는지 모르고,
   줄마다 한 문장씩 쓰면 오류 30건짜리 파일에서 모달이 스크롤로 가득 찬다.
 
-  **이유마다 고칠 곳이 다르다** — 형식은 그 줄을, 도메인은 주소 자체를, 파일 안 중복은
-  둘 중 하나를 지워야 한다(labels.ts).
+  **이유마다 고칠 곳이 다르다** — 형식은 그 줄을, 파일 안 중복은 둘 중 하나를 지워야
+  한다(labels.ts).
 */
 export default function RosterIssueList({ issues }: { issues: RosterIssue[] }) {
   if (issues.length === 0) return null

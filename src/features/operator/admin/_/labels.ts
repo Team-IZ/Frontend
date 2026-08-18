@@ -69,12 +69,11 @@ export const CURRICULUM_STATUS_LABEL: Record<CurriculumStatus, string> = {
 /**
  * 명단 오류 행 문구.
  *
- * **이유마다 고칠 곳이 다르다.** 형식은 그 줄을, 도메인은 주소 자체를, 파일 안 중복은
- * 둘 중 하나를 지워야 한다 — 하나로 합치면 화면이 무엇을 하라고 할지 정할 수 없다.
+ * **이유마다 고칠 곳이 다르다.** 형식은 그 줄을, 파일 안 중복은 둘 중 하나를 지워야
+ * 한다 — 하나로 합치면 화면이 무엇을 하라고 할지 정할 수 없다.
  */
 export const ROSTER_ISSUE_LABEL: Record<RosterIssueReason, string> = {
   INVALID_FORMAT: '이메일 형식 오류',
-  DOMAIN_NOT_ALLOWED: '기관 도메인 밖 주소',
   /*
     **`파일 안에서 중복`이 아니다.** 같은 판정을 직접 입력에서도 쓰는데 거기엔 파일이
     없어서, 두 줄에 같은 주소를 치면 `파일 안에서 중복`이라는 말이 나왔다 —

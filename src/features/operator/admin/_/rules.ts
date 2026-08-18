@@ -100,22 +100,17 @@ export function assignPolicy(
 
 // ── 이메일 ──────────────────────────────────────────────────
 /*
-  기관 도메인 밖 주소는 등록되지 않는다(OP-06 §3 · 케이스 `DOMAIN_NOT_ALLOWED`).
+  **기관 도메인 제한은 없앴다(8/18 결정, 매니저 초대와 같은 판단).** 예전엔 기관 도메인
+  밖 주소가 등록되지 않았다(OP-06 §3 · 케이스 `DOMAIN_NOT_ALLOWED`) — 그 판정을 지웠다.
 
   형식 검사는 **최소한만** 한다. RFC를 흉내 낸 정규식은 실제로 유효한 주소를 떨어뜨리고,
   진짜 판정은 초대 메일이 도착하는지로 갈린다 — 여기서 막을 것은 `이름만 적힌 칸`처럼
   명백히 주소가 아닌 것이다.
 */
 
-/** 기관 도메인 주소인가. 대소문자를 가리지 않는다 — 사용자는 섞어 친다 */
-export function isOrgEmail(value: string, domain: string): boolean {
-  return value.toLowerCase().endsWith(`@${domain.toLowerCase()}`)
-}
-
 /** 화면이 쓰는 판정 하나 — 이 주소를 등록할 수 있나. 못 하면 이유가 곧 문구가 된다 */
-export function checkEmail(value: string, domain: string): RosterIssueReason | null {
+export function checkEmail(value: string): RosterIssueReason | null {
   if (!isEmailShape(value)) return 'INVALID_FORMAT'
-  if (!isOrgEmail(value, domain)) return 'DOMAIN_NOT_ALLOWED'
   return null
 }
 
@@ -206,7 +201,7 @@ export function splitCsvLine(line: string): string[] {
  *
  * 서버 검증을 대신하지 않는다 — 같은 규칙이 서버에도 있어야 한다(우회 가능).
  */
-export function parseRosterCsv(text: string, domain: string): ParsedRoster {
+export function parseRosterCsv(text: string): ParsedRoster {
   const entries: RosterEntry[] = []
   const invalid: RosterIssue[] = []
   const seen = new Set<string>()
@@ -241,7 +236,7 @@ export function parseRosterCsv(text: string, domain: string): ParsedRoster {
     const email = (cells[cols.email] ?? '').trim()
     if (!name && !email) continue // 다른 열만 채워진 줄은 우리 것이 아니다
 
-    const reason = checkEmail(email, domain)
+    const reason = checkEmail(email)
     if (reason) {
       invalid.push({ line, reason })
       continue
@@ -280,7 +275,7 @@ export function parseRosterCsv(text: string, domain: string): ParsedRoster {
  *
  * @param rows 빈 행을 **포함한** 입력칸 전체. 번호가 칸과 맞아야 해서 거르지 않고 받는다
  */
-export function checkRosterRows(rows: RosterEntry[], domain: string): RosterIssue[] {
+export function checkRosterRows(rows: RosterEntry[]): RosterIssue[] {
   const issues: RosterIssue[] = []
   const seen = new Set<string>()
 
@@ -291,7 +286,7 @@ export function checkRosterRows(rows: RosterEntry[], domain: string): RosterIssu
     // CSV와 같은 판정 — 이름 없이 보내면 서버가 거절한다
     if (!row.name.trim()) return issues.push({ line: i + 1, reason: 'NAME_REQUIRED' })
 
-    const reason = checkEmail(email, domain)
+    const reason = checkEmail(email)
     if (reason) return issues.push({ line: i + 1, reason })
 
     const key = email.toLowerCase()

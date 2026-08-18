@@ -10,6 +10,7 @@ import type { AuthState } from './authStates'
 import { useCapsLockWarning } from './useCapsLockWarning'
 import { QUICK_LOGIN_ACCOUNTS } from './quickLoginAccounts'
 import BrandPanel from './components/BrandPanel'
+import CaseAccountPicker from './components/CaseAccountPicker'
 import AuthForm from './components/AuthForm'
 import TextLink from './components/TextLink'
 import Loading from '@/components/common/Loading'
@@ -175,6 +176,12 @@ export default function LoginScreen() {
                   ),
                 )}
               </div>
+
+              {/*
+                교육생 상태별 계정은 **접어 둔다.** 수십 개라 펼쳐 두면 위 역할 버튼과
+                아래 입력 칸이 밀린다 — 찾을 때만 여는 것이 맞다.
+              */}
+              <CaseAccountPicker disabled={isSubmitting} onPick={handleQuickLogin} />
             </div>
           )}
 
@@ -260,39 +267,29 @@ export default function LoginScreen() {
             </div>
           </form>
 
-          <div className="mt-4 text-center">
+          {/* 폼의 일부로 읽히게 붙여 둔다 — 아래 dev 블록과 같은 무게로 보이면 안 된다 */}
+          <div className="mt-5 text-center">
             <TextLink to="/shared/password-reset">비밀번호를 잊으셨나요?</TextLink>
           </div>
 
           {/*
-            개발용 안내 — 실제 배포 시 제거.
+            **dev 안내를 지웠다.** 실서버 연동 여부·차단 정책·재설정 토큰 같은 설명이
+            넉 줄 쌓여 있었는데, 그 내용은 화면이 실제로 알려 주거나(차단되면 서버가 남은
+            시간을 말한다) 이미 다른 곳에 적혀 있다. 두 곳에 적으면 한쪽이 반드시 낡는다.
 
-            로그인·비밀번호 재설정은 **실서버에 붙어 있다.** 계정은 위 「발표용 · 역할별
-            바로 입장」 버튼이 들고 있으므로 여기 다시 적지 않는다 — 두 곳에 적으면 한쪽이
-            반드시 낡는다. 재설정은 토큰이 실제 메일로만 오므로(이슈 178로 mock 토큰
-            제거) 여기서 케이스별 딥링크를 못 남긴다 — 요청 단계만 아래에서 바로 시도할 수
-            있다. 아래에 남긴 것은 **아직 목으로 도는 흐름**(AU-02 초대)뿐이다.
+            남긴 것은 **아직 목으로 도는 초대 흐름** 링크 둘뿐이다 — 그건 눌러 봐야만
+            갈 수 있고 다른 진입 경로가 없다.
           */}
           {SHOW_DEV_UI && (
-            <div className="mt-8 rounded-md bg-canvas px-3 py-2.5 text-[11px] leading-relaxed text-fg-subtle">
-              <b className="text-fg-muted">로그인</b> · 실서버 연동됨. 위 버튼으로 역할별 입장
-              <br />
-              연속 실패 시 잠시 차단된다(잠금 아님) — 서버가 남은 시간을 알려준다
-              <br />
-              <b className="text-fg-muted">초대 링크(AU-02)</b> · <span>아직 목</span> ·{' '}
+            <div className="mt-8 flex items-center justify-center gap-2 border-t border-border pt-4 text-[11px] text-fg-subtle">
+              <span>초대 링크(목)</span>
               <Link to="/invite/mgr-8f3a" className="text-primary hover:underline">
                 매니저 가입
-              </Link>{' '}
-              ·{' '}
+              </Link>
+              <span aria-hidden="true">·</span>
               <Link to="/invite/stu-4c19" className="text-primary hover:underline">
                 교육생 활성화
               </Link>
-              <br />
-              <b className="text-fg-muted">비밀번호 재설정(AU-03)</b> · 실서버 연동됨 ·{' '}
-              <Link to="/shared/password-reset" className="text-primary hover:underline">
-                요청 화면 열기
-              </Link>{' '}
-              — 토큰은 실제 메일로만 오므로 케이스별 딥링크는 없다
             </div>
           )}
         </AuthForm>

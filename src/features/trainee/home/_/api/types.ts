@@ -47,6 +47,13 @@ export type Membership = {
  * null이고 `status`만 의미를 갖는다.
  */
 export type CurrentRound = {
+  /**
+   * 이 회차의 식별자. 리포트 화면이 **회차로** 찾으므로 링크에 이 값을 넘긴다.
+   *
+   * ⚠️ `reportId`와 다른 값이다 — 그 둘을 섞으면 리포트 화면이 회차를 못 찾는다.
+   * 회차가 없는 합성 카드(`NO_ACTIVE_ROUND`)에서는 `null`이다.
+   */
+  id: string | null
   status: RoundStatus
   action: ActionCode
   /** 비어 있으면 경고 없음 */

@@ -53,7 +53,15 @@ export default function MyReportScreen() {
   const page = useReports()
 
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const effectiveSelectedId = selectedId ?? initialRoundId ?? page.data?.rounds[0]?.id ?? null
+  /*
+    **모르는 회차 id는 버린다.** `?round=`는 주소창에 있어 사람이 고칠 수 있고, 실제로
+    홈이 한동안 `reportId`(회차 id가 아닌 값)를 넘기고 있었다 — 그때 이 화면이
+    `reportsById[없는 키]`를 그리다 통째로 터졌다. 모르면 최신 회차를 연다.
+  */
+  const known = (id: string | null | undefined) =>
+    id != null && page.data?.reportsById[id] != null ? id : null
+  const effectiveSelectedId =
+    known(selectedId) ?? known(initialRoundId) ?? page.data?.rounds[0]?.id ?? null
 
   return (
     <ConsoleShell role="trainee">

@@ -56,7 +56,8 @@ export default function DeleteCurriculumDialog({
         <DialogHeader>
           <DialogTitle>
             교안을 지울까요?
-            <span className="text-fg-subtle text-xs font-normal"> · {title}</span>
+            <br />
+            <span className="text-fg-subtle text-xs font-normal">{title}</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -74,8 +75,11 @@ export default function DeleteCurriculumDialog({
 
         {/* **무엇이 일어나는지 쓴다**(G4) — `정말 하시겠습니까?`는 판단 근거를 안 준다 */}
         <p className="text-fg-muted text-xs">
-          목록에서 사라지고 프로젝트를 만들 때 더는 고를 수 없습니다. 올린 파일과 분석 결과도 같이
-          지워집니다. <b className="text-danger font-semibold">되돌릴 수 없습니다.</b>
+          교안 목록에서 사라지고 프로젝트를 만들 때 선택할 수 없습니다.
+          <br />
+          업로드한 파일과 분석 결과도 같이 삭제됩니다.
+          <br />
+          <b className="text-danger font-semibold">삭제 작업 후 복구할 수 없습니다.</b>
         </p>
 
         <DialogFooter>

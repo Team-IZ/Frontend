@@ -284,7 +284,8 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
                 }}
               />
               <p className="text-fg-subtle mt-2 text-2xs">
-                수십~수백 명을 한 번에 넣을 때 씁니다. 반 배정은 등록한 뒤 배정 모드에서 합니다.
+                최대 {MAX_TRAINEE_INVITE.toLocaleString()}명을 한 번에 등록할 때 씁니다. 반 배정은
+                등록 후 배정 모드에서 따로 진행돼요.
               </p>
             </TabsContent>
 

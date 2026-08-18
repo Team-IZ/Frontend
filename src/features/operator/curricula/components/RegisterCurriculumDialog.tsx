@@ -14,7 +14,7 @@ import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
 import { useQueryClient } from '@tanstack/react-query'
 import { registerCurriculum, tooLargeToUpload, MAX_UPLOAD_LABEL } from '@/api/uploads'
-import { useRequestAnalysis } from '@/api/curriculum/useCurriculumMutations'
+import { requestAnalysis } from '@/api/curriculum/curriculumApi'
 import { curriculumKeys } from '@/api/curriculum/curriculumKeys'
 import { isApiError } from '@/api/_contract'
 import { errorCopy } from '@/lib/errorCopy'
@@ -70,9 +70,10 @@ export default function RegisterCurriculumDialog({ open, onOpenChange }: Props) 
     문구를 정하고, 제목 중복은 아래에서 입력란까지 짚는다.
   */
   const [failed, setFailed] = useState<unknown>(null)
+  /** 진행 중인 등록·분석 요청 — 닫으면서 취소할 수 있게 들고 있는다 */
+  const submitAbortRef = useRef<AbortController | null>(null)
 
   const queryClient = useQueryClient()
-  const requestAnalysis = useRequestAnalysis()
 
   /*
     ⚠ **크기는 서버가 아니라 앞단(Lambda)이 막는다** — 그리고 그 실패는 우리 에러 코드가
@@ -93,9 +94,18 @@ export default function RegisterCurriculumDialog({ open, onOpenChange }: Props) 
     setName('')
     setFailed(null)
     setAnalysisFailed(false)
+    // pending 상태에서 닫혔을 수 있다 — 닫혔다 다시 열었을 때 스피너가 안 남게 같이 지운다
+    setSubmitting(false)
   }
 
+  /*
+    **닫으면 진행 중인 요청을 취소한다.** 등록·분석은 이어지는 두 번의 호출이라(아래
+    `submit` 주석), 업로드나 분석 요청이 도는 중에 닫으면(X·ESC·바깥 클릭) 그대로 뒀을 때
+    뒤늦게 도착한 응답이 이미 리셋된 다이얼로그 상태(`failed`·`analysisFailed`)를 다시
+    채울 수 있다 — `AddRosterDialog`가 같은 이유로 먼저 고친 것과 같은 문제다.
+  */
   const close = (next: boolean) => {
+    if (!next) submitAbortRef.current?.abort()
     onOpenChange(next)
     if (!next) reset()
   }
@@ -105,10 +115,19 @@ export default function RegisterCurriculumDialog({ open, onOpenChange }: Props) 
     setSubmitting(true)
     setFailed(null)
     setAnalysisFailed(false)
+    const controller = new AbortController()
+    submitAbortRef.current = controller
     try {
-      const created = await registerCurriculum({ query: { title: name.trim() }, file })
+      const created = await registerCurriculum({
+        query: { title: name.trim() },
+        file,
+        signal: controller.signal,
+      })
       try {
-        await requestAnalysis.mutateAsync({ path: { materialId: created.materialId } })
+        await requestAnalysis({
+          path: { materialId: created.materialId },
+          signal: controller.signal,
+        })
       } catch (e) {
         /*
           ⚠ **「이미 분석 중」은 실패가 아니다 — 우리가 원하던 그 상태다.**
@@ -126,6 +145,8 @@ export default function RegisterCurriculumDialog({ open, onOpenChange }: Props) 
           그래서 이 호출을 지우지 않는다: 서버가 자동으로 안 걸어 주는 경로가 남아 있어도
           여기서 채운다. 이미 돌고 있으면 그대로 성공으로 친다.
         */
+        // 닫으면서 우리가 취소한 것 — 이미 닫힌 다이얼로그에 실패를 띄울 필요는 없다
+        if (controller.signal.aborted) return
         if (!(isApiError(e) && e.code === 'CURRICULUM_ANALYSIS_IN_PROGRESS')) {
           // 교안은 올라갔다 — 목록에서 `다시 분석`으로 이어갈 수 있다
           setAnalysisFailed(true)
@@ -136,10 +157,13 @@ export default function RegisterCurriculumDialog({ open, onOpenChange }: Props) 
       await queryClient.invalidateQueries({ queryKey: curriculumKeys.all })
       close(false)
     } catch (e) {
+      // 닫으면서 우리가 취소한 것 — 이미 닫힌 다이얼로그에 실패를 띄울 필요는 없다
+      if (controller.signal.aborted) return
       // 원본을 그대로 둔다 — 문구는 `errorCopy`가 코드로 정한다(아래 배너)
       setFailed(e)
     } finally {
       setSubmitting(false)
+      submitAbortRef.current = null
     }
   }
 
@@ -256,8 +280,8 @@ export default function RegisterCurriculumDialog({ open, onOpenChange }: Props) 
           </Field>
 
           <p className="text-fg-subtle text-xs">
-            등록하면 분석이 시작됩니다. 분석이 끝나야 <b>가르친 항목</b>이 나오고, 그 전에는
-            프로젝트에 연결할 수 없습니다.
+            등록하면 분석이 시작됩니다. 분석이 끝난 후 <b>가르친 항목</b>이 생성됩니다.
+            <br />그 전까지는 프로젝트에 연결할 수 없습니다.
           </p>
         </div>
 

@@ -73,21 +73,49 @@ function parseAccounts(raw: string | undefined): QuickLoginAccount[] {
 export const QUICK_LOGIN_ACCOUNTS = parseAccounts(import.meta.env.VITE_DEV_ACCOUNTS)
 
 /*
-  `dev-accounts.json`은 **없을 수 있다**(gitignore 대상이고 스크립트를 돌려야 생긴다).
-  Vite는 없는 모듈을 정적 import하면 빌드를 실패시키므로 glob으로 읽는다 —
-  `eager: true`라 번들 시점에 값이 박히고, 파일이 없으면 빈 객체가 된다.
+  ## 두 곳에서 읽는다 — 파일이 먼저, 없으면 환경변수
 
-  ⚠️ 이 값은 **번들에 들어간다.** 그래서 노출을 막는 것은 호출부의 `SHOW_DEV_UI`가
-  아니라 파일이 없다는 사실이다 — 배포 환경에는 이 파일을 두지 않는다.
+  ```
+  로컬     dev-accounts.json          스크립트를 돌리면 생긴다
+  배포     VITE_CASE_ACCOUNTS         Vercel 환경변수에 넣는다
+  ```
+
+  **파일 하나로는 배포본에서 목록이 영영 안 나온다.** 자격 증명이라 저장소에 못 넣는데
+  저장소에 없으면 번들에도 없기 때문이다 — 실제로 develop 배포에서 고르개가 통째로
+  사라졌다. 그런데 테스트하는 팀원 다섯은 로컬이 아니라 배포 주소로 들어온다.
+
+  그래서 역할 버튼(`VITE_DEV_ACCOUNTS`)이 쓰던 길을 그대로 쓴다. 파일을 먼저 보는 이유는
+  로컬에서 엑셀을 다시 돌렸을 때 **환경변수에 박힌 낡은 목록이 이기면 안 되기** 때문이다.
+
+  ⚠️ **이 값은 번들에 들어간다.** 배포 번들을 받으면 계정과 비밀번호를 볼 수 있다는 뜻이다.
+  노출을 줄이는 것은 이 파일이 아니라 **어디에 값을 넣느냐**다 — 운영 환경에는 넣지 않는다.
 */
 const caseModules = import.meta.glob<{ measuredAt?: string; groups?: CaseGroup[] }>(
   '/dev-accounts.json',
   { eager: true },
 )
 
+type CaseData = { measuredAt?: string; groups?: CaseGroup[] }
+
+function readCaseData(): CaseData {
+  const fromFile = Object.values(caseModules)[0]
+  if (Array.isArray(fromFile?.groups)) return fromFile
+
+  const raw = import.meta.env.VITE_CASE_ACCOUNTS
+  if (!raw) return {}
+  try {
+    return JSON.parse(raw) as CaseData
+  } catch (e) {
+    // 조용히 빈 목록이 되면 "왜 목록이 없지"로 시간을 쓴다
+    console.warn('[dev] VITE_CASE_ACCOUNTS를 읽지 못했습니다 — scripts/dev-accounts.mjs 출력', e)
+    return {}
+  }
+}
+
+const caseData = readCaseData()
+
 function readCaseGroups(): CaseGroup[] {
-  const mod = Object.values(caseModules)[0]
-  const groups = mod?.groups
+  const groups = caseData.groups
   if (!Array.isArray(groups)) return []
   return groups.filter(
     (g): g is CaseGroup =>
@@ -104,7 +132,7 @@ export const CASE_ACCOUNT_GROUPS = readCaseGroups()
  * 적힌 계정이 하루 뒤에는 전부 `창 닫힘`이 된다(실측으로 확인). 라벨만 보여주면
  * 눌러 보고 나서야 알게 되므로 잰 날짜를 함께 말한다.
  */
-export const CASE_ACCOUNT_MEASURED_AT = Object.values(caseModules)[0]?.measuredAt ?? null
+export const CASE_ACCOUNT_MEASURED_AT = caseData.measuredAt ?? null
 
 /** 고른 계정 총수 — 토글 라벨이 "N개"를 말하려면 필요하다 */
 export const CASE_ACCOUNT_TOTAL = CASE_ACCOUNT_GROUPS.reduce((n, g) => n + g.accounts.length, 0)

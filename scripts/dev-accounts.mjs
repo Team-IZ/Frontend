@@ -343,7 +343,21 @@ for (const [sheet, rows] of sheets) {
   24시간이라 `응시 가능` 계정은 하루가 지나면 전부 `창 닫힘`이 된다(실측). 화면이
   라벨만 보여주고 날짜를 숨기면 눌러 보고 나서야 알게 된다.
 */
-writeFileSync(out, JSON.stringify({ measuredAt: new Date().toISOString(), groups }, null, 2) + '\n')
+const data = { measuredAt: new Date().toISOString(), groups }
+writeFileSync(out, JSON.stringify(data, null, 2) + '\n')
+
+/*
+  **배포본에도 넣을 수 있게 한 줄짜리도 같이 낸다.**
+
+  위 JSON은 gitignore 대상이라 저장소에 없고, 저장소에 없으면 번들에도 없어서 **배포된
+  화면에서는 목록이 통째로 안 나온다**(실제로 그렇게 됐다). 그런데 테스트하는 팀원은
+  로컬이 아니라 배포 주소로 들어온다.
+
+  그래서 역할 버튼이 쓰던 길(`VITE_DEV_ACCOUNTS`)을 그대로 쓴다 — 이 파일을 Vercel
+  환경변수에 붙여 넣으면 배포본에서도 목록이 나온다. 출력도 gitignore 대상이다.
+*/
+const envOut = out.replace(/\.json$/, '') + '.env'
+writeFileSync(envOut, `VITE_CASE_ACCOUNTS='${JSON.stringify(data)}'\n`)
 
 const taken = groups.reduce((n, g) => n + g.accounts.length, 0)
 console.log(`✓ ${out}`)
@@ -360,4 +374,8 @@ for (const g of groups) {
 }
 for (const e of empty) console.log(`     0      ${e.label.padEnd(14)} ⚠️  ${e.why}`)
 
-console.log('\n⚠️  이 파일은 자격 증명을 담습니다 — gitignore 대상인지 확인하세요.')
+console.log(`\n✓ ${envOut}`)
+console.log('  배포본(Vercel)에도 목록을 띄우려면 이 한 줄을 환경변수에 넣으세요.')
+console.log('  넣지 않으면 로컬에서만 보입니다 — 저장소에는 계정이 안 들어갑니다.')
+
+console.log('\n⚠️  두 파일 다 자격 증명을 담습니다 — gitignore 대상인지 확인하세요.')

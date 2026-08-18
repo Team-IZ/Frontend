@@ -4,7 +4,7 @@ import Wordmark from '@/components/common/Wordmark'
 interface Props {
   /** 마케팅 리드 — 화면마다 다름 */
   title?: ReactNode
-  description?: string
+  description?: ReactNode
   meta?: string
 }
 
@@ -24,7 +24,12 @@ export default function BrandPanel({
       검증합니다
     </>
   ),
-  description = '제출한 코드의 특정 지점을 두고 왜 그렇게 했는지 묻습니다. 그 자리에서 설명할 수 있는지가 이해도입니다.',
+  description = (
+    <>
+      제출한 코드에서 한 지점을 짚어 왜 그렇게 작성했는지 묻습니다.
+      <br />그 자리에서 바로 설명할 수 있는 능력이 이해도입니다.
+    </>
+  ),
   meta = '교육 운영기관 전용 · 초대 기반 계정',
 }: Props) {
   return (

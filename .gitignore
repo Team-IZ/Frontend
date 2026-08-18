@@ -42,4 +42,6 @@ docs/dev/portfolio-notes.md
 docs/dev/portfolio-security-notes.md
 
 # dev 전용 테스트 계정 — 자격 증명이 들어 있다(scripts/dev-accounts.mjs가 만든다)
+# .env는 같은 내용을 Vercel 환경변수에 붙여 넣을 한 줄이다
 dev-accounts.json
+dev-accounts.env

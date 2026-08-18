@@ -237,7 +237,10 @@ function buildGuide(round: CurrentRound): GuideLine[] {
         },
         {
           icon: ArrowRightIcon,
-          text: '리포트는 회차 마감 후 한꺼번에 발행됩니다. 발행되면 알려드릴게요.',
+          // 이미 열렸으면 기다리라고 하지 않는다 — 버튼이 눌리는데 문장이 말리면 안 누른다
+          text: reportReady(round)
+            ? '개념별로 어디까지 설명했는지 확인할 수 있어요.'
+            : '리포트는 회차 마감 후 한꺼번에 발행됩니다. 발행되면 알려드릴게요.',
         },
       ]
     case 'REVIEW_REQUIRED':
@@ -315,10 +318,24 @@ const BLOCKED_LABELS: Record<NonNullable<CurrentRound['blockedReason']>, string>
   ASSESSMENT_WINDOW_CLOSED: '응시 창이 닫혔어요',
 }
 
+/*
+  **제목은 상태가 정하고 버튼은 액션이 정한다** — 그래서 둘이 어긋나는 조합이 하나 있다.
+
+  리포트가 발행되면 상태는 `ASSESSMENT_COMPLETED` 그대로인데 액션만 `VIEW_REPORT`로
+  바뀐다. 그러면 *"리포트를 기다리는 중이에요 · 발행되면 알려드릴게요"* 라고 말하면서
+  **누를 수 있는 「내 리포트」 버튼**을 함께 그린다(실측). 학생은 기다리라는 문장을 읽고
+  버튼을 안 누른다.
+
+  상태만으로 제목을 정할 수 없는 자리라 여기서 액션을 함께 본다.
+*/
+const reportReady = (round: CurrentRound) =>
+  round.status === 'ASSESSMENT_COMPLETED' && round.action === 'VIEW_REPORT'
+
 export function buildStatusContent(round: CurrentRound, now: number): StatusContent {
   return {
-    title:
-      round.status === 'REVIEW_REQUIRED' && round.reviewPendingCount > 0
+    title: reportReady(round)
+      ? '리포트가 나왔어요'
+      : round.status === 'REVIEW_REQUIRED' && round.reviewPendingCount > 0
         ? `다시 볼 수 있는 문제가 ${round.reviewPendingCount}개 있어요`
         : TITLES[round.status],
     steps: STEPS[round.status] ?? null,

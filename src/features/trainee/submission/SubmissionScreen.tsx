@@ -3,7 +3,6 @@ import { Link } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/Empty'
-import { Spinner } from '@/components/ui/Spinner'
 import { isApiError } from '@/api/_contract'
 import { formatDateTime } from '@/lib/format'
 import ConsoleShell from '@/shells/ConsoleShell'
@@ -14,6 +13,7 @@ import {
   useSubmitZip,
   type RepoCheck,
 } from './_/api/api'
+import SubmissionSkeleton from './components/SubmissionSkeleton'
 import type { SubmissionView } from './_/api/types'
 import { buildStateBanner, submitFailureOf, type SubmitFailure } from './labels'
 import StateBanner from './components/StateBanner'
@@ -78,9 +78,7 @@ export default function SubmissionScreen() {
         </Link>
 
         {isPending ? (
-          <div className="flex justify-center py-16">
-            <Spinner className="size-6" aria-label="제출 현황을 불러오는 중" />
-          </div>
+          <SubmissionSkeleton />
         ) : isError || !data ? (
           <Empty className="border-solid bg-danger-soft border-danger-border">
             <EmptyHeader>

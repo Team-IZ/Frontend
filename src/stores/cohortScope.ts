@@ -1,5 +1,9 @@
 import { useSearchParams } from 'react-router'
-import { useFindCohorts, useFindMyEnrollments } from '@/api/academic/useAcademicQueries'
+import {
+  useFindClassrooms,
+  useFindCohorts,
+  useFindMyEnrollments,
+} from '@/api/academic/useAcademicQueries'
 
 /** 기수 스코프를 쓰는 화면이 헤더 스위처에 그대로 넘기는 모양 */
 export type CohortScope = {
@@ -96,10 +100,26 @@ export function useCohortId(): CohortScope {
  * 화면이 다시 고르면 그 규칙이 두 곳에 생기고, 오퍼레이터 쪽(`useCohortId`)이 `RUNNING`을
  * 직접 찾는 것과 달리 여기서는 서버가 이미 답을 줬다.
  *
- * ⚠ **담당 반은 여기서 안 온다.** `enrollments[].classroom`은 매니저에게 늘 `null`이다
- * (반 배정은 교육생 소속이고, 매니저 배정은 `manager_assignment`라는 다른 원장이다).
- * 담당 반이 필요한 화면은 `GET /cohorts/{cohortId}/classrooms`를 부른다 — 그 조회가
+ * ⚠ **담당 반은 `enrollments`에 안 온다.** `enrollments[].classroom`은 매니저에게 늘
+ * `null`이다(반 배정은 교육생 소속이고, 매니저 배정은 `manager_assignment`라는 다른
+ * 원장이다). 담당 반은 `GET /cohorts/{cohortId}/classrooms`가 준다 — 그 조회가
  * 매니저에게는 **담당 반만** 돌려준다(실계정: `C반` 하나).
+ *
+ * ─── 담당 반을 여기서 미리 받는다 ─────────────────────────────
+ * 그 조회를 **화면이 아니라 여기서 시작한다.** 반 목록은 필터 선택지라 툴바와 함께
+ * 그려지는데, 조회가 늦으면 **필터가 멀쩡해 보이면서 안이 비어 있다** — 매니저가 열어
+ * 보고 「내 담당 반이 없나」로 읽는다.
+ *
+ * ```
+ * 툴바 그려짐 3.2초 → 반 목록 도착 6.0초 → 표 11.1초     (명부 · 실측)
+ *             └──────── 2.8초 동안 필터에 「전체」뿐 ────┘
+ * ```
+ *
+ * 화면에서 부르면 그 창이 화면마다 다시 생긴다. 여기서 부르면 **대시보드에 머무는
+ * 동안 이미 받아 두므로** 목록으로 넘어갈 때 창이 0이다(같은 쿼리 키라 캐시된다).
+ *
+ * 값을 안 쓰는 화면(교안·브리프)에서도 한 번 나가지만, **기수당 한 번이고 그 뒤로는
+ * 캐시**다. 「담당 반이 무엇인가」는 매니저 스코프 그 자체라 이 파일의 질문이 맞다.
  */
 export function useManagerCohort(): CohortScope {
   const { data, isError } = useFindMyEnrollments()
@@ -108,6 +128,9 @@ export function useManagerCohort(): CohortScope {
 
   const picked = (fromUrl ? list.find((e) => e.cohortId === fromUrl) : undefined) ?? list[0]
 
+  /* 담당 반을 미리 받아 둔다 — 결과는 안 쓴다(캐시를 채우는 것이 목적이다) */
+  useManagedClassrooms(picked?.cohortId)
+
   return {
     cohortId: picked?.cohortId,
     cohortName: picked?.cohortName,
@@ -115,6 +138,18 @@ export function useManagerCohort(): CohortScope {
     cohorts: list.map((e) => ({ value: e.cohortId, label: e.cohortName })),
     selectCohort,
   }
+}
+
+/**
+ * 매니저의 **담당 반** — 필터 선택지이자 조회 스코프다.
+ *
+ * 서버가 매니저에게는 담당 반만 돌려준다. 명부·프로젝트·면담이 각자 이 훅을 복제해
+ * 갖고 있었는데(D14 「세 번째에 올린다」), 같은 쿼리 키라 **캐시는 이미 공유**되고 있었다
+ * — 중복된 것은 선언뿐이었다. `useManagerCohort`가 이것을 미리 부르므로 화면은 대개
+ * 캐시를 읽는다.
+ */
+export function useManagedClassrooms(cohortId: string | undefined) {
+  return useFindClassrooms({ path: { cohortId: cohortId ?? '' } }, { enabled: !!cohortId })
 }
 
 /** 고른 기수는 **주소가 갖는다**(`?cohort=`) — 두 역할이 같은 규약을 쓴다 */

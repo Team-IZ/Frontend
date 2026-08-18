@@ -24,13 +24,6 @@ import {
   InputGroupInput,
 } from '@/components/ui/InputGroup'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/Select'
-import {
   Pagination,
   PaginationContent,
   PaginationItem,
@@ -41,9 +34,10 @@ import { RoundBadge } from './components/RoundBadge'
 import { maskEmail } from '@/lib/utils/mask'
 import { cn } from '@/lib/utils/cn'
 import { NA_PATTERN, REACH_STYLE } from '@/components/common/reach'
+import FilterSelect from '@/components/common/FilterSelect'
 import { useDebounced } from '@/lib/useDebounced'
-import { useManagerCohort } from '@/stores/cohortScope'
-import { PAGE_SIZE, useManagedClassrooms, useRoster } from './_/api/api'
+import { useManagedClassrooms, useManagerCohort } from '@/stores/cohortScope'
+import { PAGE_SIZE, useRoster } from './_/api/api'
 import type { AccountStatus, ConceptReach, TraineeRow } from './_/api/types'
 import {
   ALL,
@@ -70,7 +64,6 @@ const ACCOUNT_OPTIONS: { value: 'ALL' | AccountStatus; label: string }[] = [
   { value: 'INVITED', label: '초대 대기' },
   { value: 'INACTIVE', label: '비활성' },
 ]
-const ACCOUNT_ITEMS = Object.fromEntries(ACCOUNT_OPTIONS.map((o) => [o.value, `계정 · ${o.label}`]))
 const ACCOUNT_LABEL = Object.fromEntries(ACCOUNT_OPTIONS.map((o) => [o.value, o.label]))
 
 const SORT_OPTIONS: { value: TraineeSort; label: string }[] = [
@@ -79,7 +72,6 @@ const SORT_OPTIONS: { value: TraineeSort; label: string }[] = [
   { value: 'RISK', label: '위험' },
   { value: 'EXCELLENCE', label: '우수' },
 ]
-const SORT_ITEMS = Object.fromEntries(SORT_OPTIONS.map((o) => [o.value, `정렬 · ${o.label}`]))
 
 function ConceptReachCell({ reach }: { reach: ConceptReach[] }) {
   if (reach.length === 0) {
@@ -201,12 +193,6 @@ export default function TraineeListScreen() {
   const classOptions = classrooms.data?.classrooms
   /* 서버가 「이번 회차」를 골라 줬으면 드롭다운이 그 값을 그린다(첫 진입) */
   const selectedRound = round ?? view?.roundId ?? ''
-  const roundItems = Object.fromEntries(
-    (view?.rounds ?? []).map((r) => [r.assessmentRoundId, `회차 · ${r.label}`]),
-  )
-  const classItems: Record<string, string> = { ALL: '반 · 전체' }
-  for (const c of classOptions ?? []) classItems[c.classroomId] = `반 · ${c.name}`
-
   const narrowed =
     !!settledSearch || classFilter !== ALL || accountFilter !== ALL || (view?.total ?? 0) === 0
 
@@ -245,26 +231,20 @@ export default function TraineeListScreen() {
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
-        <Select
+        {/*
+          🔴 **`disabled={!view}`였다.** 명부 조회가 5.4초라 그동안 회차 선택기가
+          **잠긴 채 아무 말도 안 했다** — 흐려지기만 하고 왜 잠겼는지 알 길이 없다.
+          이제 이름표(`회차`)가 늘 보이고, 목록이 오기 전에는 메뉴가 그렇다고 말한다.
+        */}
+        <FilterSelect
+          label="회차"
           value={selectedRound}
-          onValueChange={(v) => v && changeFilters({ round: v })}
-          items={roundItems}
-        >
-          <SelectTrigger
-            className="h-9 min-w-44 text-sm font-semibold"
-            aria-label="회차 선택"
-            disabled={!view}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {(view?.rounds ?? []).map((r) => (
-              <SelectItem key={r.assessmentRoundId} value={r.assessmentRoundId}>
-                회차 · {r.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          onChange={(v) => v && changeFilters({ round: v })}
+          options={view?.rounds.map((r) => ({ value: r.assessmentRoundId, label: r.label }))}
+          failed={roster.isError}
+          onRetry={() => void roster.refetch()}
+          className="min-w-44"
+        />
 
         <InputGroup className="h-9 w-60">
           <InputGroupAddon>
@@ -289,59 +269,33 @@ export default function TraineeListScreen() {
           )}
         </InputGroup>
 
-        <Select
+        {/*
+          선택지가 서버에서 온다 — 아직 안 왔으면 메뉴가 그렇다고 말한다.
+          「전체」는 상수라 목록을 안 기다린다(그동안에도 고를 수 있다).
+        */}
+        <FilterSelect
+          label="반"
           value={classFilter}
-          onValueChange={(v) => changeFilters({ classFilter: v ?? ALL })}
-          items={classItems}
-        >
-          <SelectTrigger className="h-9 min-w-32" aria-label="반 필터">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">반 · 전체</SelectItem>
-            {(classOptions ?? []).map((c) => (
-              <SelectItem key={c.classroomId} value={c.classroomId}>
-                반 · {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          onChange={(v) => changeFilters({ classFilter: v })}
+          fixed={[{ value: ALL, label: '전체' }]}
+          options={classOptions?.map((c) => ({ value: c.classroomId, label: c.name }))}
+          failed={classrooms.isError}
+          onRetry={() => void classrooms.refetch()}
+        />
 
-        <Select
+        {/* 계정·정렬은 **코드가 갖는 선택지**라 늦게 올 일이 없다 — 바로 넘긴다 */}
+        <FilterSelect
+          label="계정"
           value={accountFilter}
-          onValueChange={(v) =>
-            changeFilters({ accountFilter: v as FilterValues['accountFilter'] })
-          }
-          items={ACCOUNT_ITEMS}
-        >
-          <SelectTrigger className="h-9 min-w-32" aria-label="계정 필터">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {ACCOUNT_OPTIONS.map((o) => (
-              <SelectItem key={o.value} value={o.value}>
-                계정 · {o.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
+          onChange={(v) => changeFilters({ accountFilter: v as FilterValues['accountFilter'] })}
+          options={ACCOUNT_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+        />
+        <FilterSelect
+          label="정렬"
           value={sort}
-          onValueChange={(v) => changeFilters({ sort: v as TraineeSort })}
-          items={SORT_ITEMS}
-        >
-          <SelectTrigger className="h-9 min-w-32" aria-label="정렬">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SORT_OPTIONS.map((o) => (
-              <SelectItem key={o.value} value={o.value}>
-                정렬 · {o.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          onChange={(v) => changeFilters({ sort: v as TraineeSort })}
+          options={SORT_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+        />
       </div>
 
       {cohortFailed ? (

@@ -182,7 +182,7 @@ export function ProgressColCell({
   if (status === 'CLOSED' && !progress) {
     return (
       <div className="text-sm">
-        <span className="text-fg-subtle block text-2xs font-bold tracking-wide">회차</span>
+        <span className="text-fg-subtle block text-2xs font-bold tracking-wide">프로젝트</span>
         <span className="text-fg-muted font-bold">종료</span>
       </div>
     )

@@ -7,7 +7,7 @@ import type { components } from '@/api/schema'
   목과 갈린 것 셋(integration-process §3).
 
   ① 이름까지 같다 — 섹션(제목·페이지 범위·항목) · 가르친 항목(이름·정의문·페이지) ·
-     ★ 검증 개념 표시 · 쓰인 회차
+     ★ 검증 개념 표시 · 쓰인 프로젝트
 
   ② **서버가 낫다**
      · `analysisStatus`가 4종 + **`null`**이다. 목은 `DONE`·`FAILED` 둘뿐이었는데
@@ -16,8 +16,8 @@ import type { components } from '@/api/schema'
        넣지 않는다」고 못박았다. 목이었다면 미분석 교안이 "분석 실패"로 보였다
      · `definitionMissing`이 따로 온다. 목은 `definition === null`로 판정하고
        원인은 `isSummary`로 갈랐다 — 두 사정이 한 필드에 겹쳐 있었다
-     · `usedRoundLabels[]`가 **배열**이다. 목 `verifiedAs`는 회차 하나만 담을 수
-       있어, 한 항목이 두 회차의 검증 개념이면 하나를 버려야 했다
+     · `usedRoundLabels[]`가 **배열**이다. 목 `verifiedAs`는 프로젝트 하나만 담을 수
+       있어, 한 항목이 두 프로젝트의 검증 개념이면 하나를 버려야 했다
 
   ③ **목이 지어냈다 — 서버에 자리가 없다**
      · `verifiedAs.index`(`개념 3`) — 회차 안 몇 번째인지. 순번이 오지 않는다

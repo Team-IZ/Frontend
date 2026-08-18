@@ -226,13 +226,13 @@ const BY_CODE: Record<string, (ctx: Ctx) => ErrorCopy> = {
     보여주고, 여기 `description`은 message가 없을 때만 쓰는 fallback이다.
   */
   /**
-   * 담당 밖 회차·자원을 가리켰다(32차 R3). 한때 이 자리가 **200 + 빈 목록**이라
+   * 담당 밖 프로젝트·자원을 가리켰다(32차 R3). 한때 이 자리가 **200 + 빈 목록**이라
    * 화면이 「대상이 없습니다」라고 말했다 — 권한이 없는 것과 정말 없는 것이 같아 보였다.
    * 재시도해도 같으니 주지 않는다.
    */
   MANAGER_SCOPE_NOT_FOUND: () => ({
     title: '담당 범위 밖입니다',
-    description: '담당하지 않는 반·회차입니다 — 주소가 맞는지 확인해 주세요.',
+    description: '담당하지 않는 반·프로젝트입니다 — 주소가 맞는지 확인해 주세요.',
     retry: false,
     tone: 'failed',
   }),
@@ -292,7 +292,8 @@ const BY_CODE: Record<string, (ctx: Ctx) => ErrorCopy> = {
 
   AUTO_ASSIGN_NOT_ALLOWED: () => ({
     title: '지금은 자동 배분을 쓸 수 없습니다',
-    description: '이미 편성이 확정됐거나 종료된 회차입니다 — 편성을 다시 열어야 바꿀 수 있습니다.',
+    description:
+      '이미 편성이 확정됐거나 종료된 프로젝트입니다 — 편성을 다시 열어야 바꿀 수 있습니다.',
     retry: false,
     tone: 'failed',
   }),
@@ -309,18 +310,18 @@ const BY_CODE: Record<string, (ctx: Ctx) => ErrorCopy> = {
   }),
 
   /*
-    회차 목록 조회에 스코프(`cohort`·`classId`)를 안 보냈거나 둘 다 보냈다 — **화면
+    프로젝트 목록 조회에 스코프(`cohort`·`classId`)를 안 보냈거나 둘 다 보냈다 — **화면
     버그**다. 다시 눌러도 같은 요청이 나가므로 재시도를 주지 않는다(MG-07 하드닝).
   */
   PROJECT_LIST_SCOPE_AMBIGUOUS: () => ({
-    title: '회차 목록을 불러오지 못했습니다',
+    title: '프로젝트 목록을 불러오지 못했습니다',
     description: '조회 범위가 정해지지 않았습니다 — 새로 고쳐도 같으면 알려 주세요.',
     retry: false,
     tone: 'failed',
   }),
 
   PROJECT_MEMBERSHIP_NOT_FOUND: () => ({
-    title: '그 교육생을 이 회차에서 찾을 수 없습니다',
+    title: '그 교육생을 이 프로젝트에서 찾을 수 없습니다',
     description: '명단에서 빠졌을 수 있습니다 — 새로 고친 뒤 다시 시도해 주세요.',
     retry: false,
     tone: 'failed',

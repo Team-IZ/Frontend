@@ -17,7 +17,7 @@ import { useCurriculumHead, useSections, useUsedProjects, isAnalysisIncomplete }
 import { analysisLabel, versionLabel, type Section, type UsedProject } from './_/api/types'
 
 /*
-  MG-09 교안 상세 — 섹션(좌 목록 → 우 가르친 항목) · 쓰인 회차 2개 서브탭.
+  MG-09 교안 상세 — 섹션(좌 목록 → 우 가르친 항목) · 쓰인 프로젝트 2개 서브탭.
   오퍼레이터 화면(OP-06)과 같은 구조를 쓰되 등록·재분석·주제 편집이 전부 빠졌다
   (정의서 §4·§6) — 그래서 v1 CurriculumDetailScreen과 달리 편집 상태를 갖지 않는다.
 
@@ -199,7 +199,7 @@ export default function CurriculumDetailScreen() {
 
       {/*
         **탭은 주소가 갖는다**(규칙 J) — 새로고침·뒤로가기가 따라오고, 다른 화면이
-        「이 교안의 쓰인 회차」로 보낼 수 있다. 모르는 값이면 첫 탭으로 떨어진다.
+        「이 교안의 쓰인 프로젝트」로 보낼 수 있다. 모르는 값이면 첫 탭으로 떨어진다.
       */}
       <Tabs
         value={
@@ -227,7 +227,7 @@ export default function CurriculumDetailScreen() {
         */}
         <TabsList className="mb-4">
           <TabsTrigger value="sections">섹션 {c.sectionCount}</TabsTrigger>
-          <TabsTrigger value="used">쓰인 회차 {c.usedProjectCount}</TabsTrigger>
+          <TabsTrigger value="used">쓰인 프로젝트 {c.usedProjectCount}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="sections">
@@ -289,14 +289,14 @@ export default function CurriculumDetailScreen() {
             /*
               🔴 **실패를 「아직 없다」로 그리고 있었다.** 분기가 `isPending`과 그
               나머지뿐이라, 조회가 500이면 `used.data`가 `undefined`가 되고
-              `?? []`가 빈 배열로 만들어 **「이 교안을 쓰는 회차가 아직 없습니다」**가
-              떴다. 26개 회차가 쓰고 있는 교안인데 화면이 하나도 없다고 말한다.
+              `?? []`가 빈 배열로 만들어 **「이 교안을 쓰는 프로젝트가 아직 없습니다」**가
+              떴다. 26개 프로젝트가 쓰고 있는 교안인데 화면이 하나도 없다고 말한다.
 
               규칙 I — **「아직」과 「실패」는 다르다.** 재분석 판단의 근거가 이 표라
               「없다」로 읽히면 매니저가 마음 놓고 재분석을 요청하게 된다.
             */
             (() => {
-              const copy = errorCopy(used.error, { subject: '쓰인 회차' })
+              const copy = errorCopy(used.error, { subject: '쓰인 프로젝트' })
               return (
                 <Empty>
                   <EmptyHeader>
@@ -464,28 +464,28 @@ function SectionExplorer({
                   <div className="flex flex-wrap items-baseline gap-1.5">
                     <b className="text-sm font-bold">{item.extractedName}</b>
                     {/*
-                      ★는 **회차마다** 붙는다 — 서버가 라벨 배열을 준다. 목은 회차
-                      하나만 담을 수 있어 한 항목이 두 회차에 쓰이면 하나를 버렸다.
-                      회차 안 순번(`개념 3`)은 오지 않아 뺐다(32차).
+                      ★는 **프로젝트마다** 붙는다 — 서버가 라벨 배열을 준다. 목은 프로젝트
+                      하나만 담을 수 있어 한 항목이 두 프로젝트에 쓰이면 하나를 버렸다.
+                      프로젝트 안 순번(`개념 3`)은 오지 않아 뺐다(32차).
 
                       🔴 **배지를 하나로 접었다**(렌더에서 잡았다). 한 항목이 7기~10기
                       **열한 회차**의 검증 개념이라 배지가 두 줄로 깔리며 정작 항목
                       이름을 덮었다 — 이 화면이 답하는 질문은 "가르친 것 중 무엇이
-                      문항이 됐나"라 **쓰였다는 사실**이 먼저고 어느 회차인지는 그
-                      다음이다. 회차 목록은 마우스를 올리면 나오고, 전체는 옆
-                      `쓰인 회차` 탭이 갖고 있다.
+                      문항이 됐나"라 **쓰였다는 사실**이 먼저고 어느 프로젝트인지는 그
+                      다음이다. 프로젝트 목록은 마우스를 올리면 나오고, 전체는 옆
+                      `쓰인 프로젝트` 탭이 갖고 있다.
                     */}
                     {item.usedAsVerificationConcept && (
                       /*
-                        마우스를 올리면 나오는 회차 목록도 **서버 순서가 뒤죽박죽**이다
+                        마우스를 올리면 나오는 프로젝트 목록도 **서버 순서가 뒤죽박죽**이다
                         (실측: `9기 미프 4차 · 7기 미프 5차 · 7기 미프 6차 · 8기 미프 5차 …`).
                         열네 개가 그 순서로 한 줄에 이어지면 읽을 수 없어 같은 기준으로
-                        세운다 — 아래 `쓰인 회차` 표와 같은 정렬이다.
+                        세운다 — 아래 `쓰인 프로젝트` 표와 같은 정렬이다.
                       */
                       <Badge variant="warning" title={sortRoundLabels(item.usedRoundLabels)}>
                         ★ 검증 개념
                         {item.usedRoundLabels.length > 0 &&
-                          ` · ${item.usedRoundLabels.length}개 회차`}
+                          ` · ${item.usedRoundLabels.length}개 프로젝트`}
                       </Badge>
                     )}
                     <span className="text-fg-subtle ml-auto text-2xs tabular-nums">
@@ -514,7 +514,7 @@ function SectionExplorer({
 }
 
 /*
-  쓰인 회차 — **다른 기수 회차도 온다.** 이 조회는 교안 축이라 기수로 좁혀지지
+  쓰인 프로젝트 — **다른 기수 프로젝트도 온다.** 이 조회는 교안 축이라 기수로 좁혀지지
   않는다. 서버가 `roundLabel`(기수를 포함한 라벨)과 `cohortName`을 함께 주는 이유가
   그것이라(스펙 명시) 화면이 거르지 않고 라벨 그대로 그린다 — 같은 교안을 다른
   기수가 어떻게 쓰고 있는지가 재분석 판단의 근거다.
@@ -561,8 +561,8 @@ function UsedRoundsTable({ rounds: raw }: { rounds: UsedProject[] }) {
     return (
       <Empty>
         <EmptyHeader>
-          <EmptyTitle>이 교안을 쓰는 회차가 아직 없습니다</EmptyTitle>
-          <EmptyDescription>회차에 연결되면 여기에 나타납니다.</EmptyDescription>
+          <EmptyTitle>이 교안을 쓰는 프로젝트가 아직 없습니다</EmptyTitle>
+          <EmptyDescription>프로젝트에 연결되면 여기에 나타납니다.</EmptyDescription>
         </EmptyHeader>
       </Empty>
     )
@@ -572,18 +572,20 @@ function UsedRoundsTable({ rounds: raw }: { rounds: UsedProject[] }) {
     <div className="flex flex-col gap-2">
       {/*
         🔴 **범위가 목록과 다르다고 말한다**(하드닝 실측). 목록 행은 「이 기수가 연결한
-        회차」라 8이었는데 이 탭 배지는 26이다 — 같은 교안인데 숫자가 3배로 뛴다.
+        프로젝트」라 8이었는데 이 탭 배지는 26이다 — 같은 교안인데 숫자가 3배로 뛴다.
         둘 다 맞지만(다른 질문이다) 화면이 안 말하면 어느 쪽이 틀린 것처럼 보인다.
       */}
       <p className="text-fg-subtle text-xs">
-        이 교안을 쓴 <b className="text-fg-muted font-bold">모든 기수의 회차</b>입니다 — 목록의
-        「쓰인 회차」는 이 기수 것만 셉니다.
+        이 교안을 쓴 <b className="text-fg-muted font-bold">모든 기수의 프로젝트</b>입니다 — 목록의
+        「쓰인 프로젝트」는 이 기수 것만 셉니다.
       </p>
       <div className="border-border overflow-hidden rounded-md border">
         <table className="w-full text-sm">
           <thead>
             <tr className="bg-surface-2 border-border border-b">
-              <th className="text-fg-muted px-4 py-2.5 text-left text-xs font-semibold">회차</th>
+              <th className="text-fg-muted px-4 py-2.5 text-left text-xs font-semibold">
+                프로젝트
+              </th>
               <th className="text-fg-muted px-4 py-2.5 text-left text-xs font-semibold">
                 검증 개념
               </th>

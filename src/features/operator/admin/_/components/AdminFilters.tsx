@@ -5,15 +5,6 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@/components/ui/InputGroup'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/Select'
-import ControlLabel from '@/components/common/ControlLabel'
-import type { FilterOption } from '../filterState'
 
 /*
   툴바 조각 — 검색과 필터 드롭다운. **전부 왼쪽에 둔다**(E3 표 3단 배치). 오른쪽을
@@ -80,37 +71,13 @@ export function SearchBox({
  *
  * 드롭다운에 사용법 문장을 쓰지 않는다(E10) — 컨트롤 모양이 이미 그 말이다.
  */
-export function FilterSelect({
-  label,
-  value,
-  options,
-  onChange,
-  className = 'min-w-28',
-}: {
-  label: string
-  value: string
-  options: FilterOption[]
-  onChange: (value: string) => void
-  className?: string
-}) {
-  const items = Object.fromEntries(options.map((o) => [o.value, o.label]))
-  return (
-    <Select
-      value={value}
-      onValueChange={(v) => onChange((v as string | null) ?? options[0].value)}
-      items={items}
-    >
-      <SelectTrigger className={`h-9 ${className}`} aria-label={`${label} 필터`}>
-        <ControlLabel>{label}</ControlLabel>
-        <SelectValue className="truncate" />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
-            {o.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  )
-}
+/*
+  **필터 셀렉트는 `components/common/FilterSelect`가 갖는다.** 여기 있던 구현과 같은
+  것이 매니저 쪽에도 두 벌 더 있었고(D14 「세 번째에 올린다」), 공용 쪽은 **선택지가
+  서버에서 오는 경우**까지 다룬다 — 아직 안 왔으면 메뉴가 그렇게 말하고, 실패하면
+  「다시 시도」를 준다.
+
+  이 세 탭(기수·반·명단·매니저)의 선택지는 **대부분 코드가 갖는 상수**라 그 상태를
+  안 쓰지만, 컨트롤 모양이 갈리지 않게 같은 것을 쓴다.
+*/
+export { default as FilterSelect } from '@/components/common/FilterSelect'

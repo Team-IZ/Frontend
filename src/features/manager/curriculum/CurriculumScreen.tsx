@@ -35,8 +35,8 @@ import { analysisLabel, versionLabel } from './_/api/types'
   그대로다(30차 Q2). 대신 `가르친 항목`(`teachesCount`)은 목록에 있어 그대로 쓴다.
   32차 요청서로 올린다.
 
-  ⚠ **`쓰인 회차`가 이제 링크다.** 목은 이름 문자열만 갖고 있었는데 서버가
-  `projectId`를 함께 준다 — 교안에서 회차로 바로 건너갈 수 있다.
+  ⚠ **`쓰인 프로젝트`가 이제 링크다.** 목은 이름 문자열만 갖고 있었는데 서버가
+  `projectId`를 함께 준다 — 교안에서 프로젝트로 바로 건너갈 수 있다.
 */
 
 export default function CurriculumScreen() {
@@ -60,8 +60,8 @@ export default function CurriculumScreen() {
         count={list ? `${list.length}개` : undefined}
         breakdown={
           <>
-            이 기수 회차에 연결된 것만 ·{' '}
-            <b className="text-fg-muted font-bold">등록·재분석은 오퍼레이터</b>
+            이 기수 프로젝트에 연결된 것만{' '}
+            {/* <b className="text-fg-muted font-bold">등록·재분석은 오퍼레이터</b> */}
           </>
         }
       />
@@ -127,7 +127,7 @@ export default function CurriculumScreen() {
     return shell(
       <Empty>
         <EmptyHeader>
-          <EmptyTitle>이 기수 회차에 연결된 교안이 없습니다</EmptyTitle>
+          <EmptyTitle>이 기수 프로젝트에 연결된 교안이 없습니다</EmptyTitle>
           <EmptyDescription>
             프로젝트가 만들어지고 교안이 연결되면 여기에 나타납니다.
             <br />
@@ -148,7 +148,7 @@ export default function CurriculumScreen() {
               <TableHead className="w-20">버전</TableHead>
               <TableHead className="w-20 text-right">쪽</TableHead>
               <TableHead className="w-28 text-right">가르친 항목</TableHead>
-              <TableHead>쓰인 회차</TableHead>
+              <TableHead>쓰인 프로젝트</TableHead>
               <TableHead className="w-28">분석</TableHead>
             </TableRow>
           </TableHeader>
@@ -181,11 +181,11 @@ export default function CurriculumScreen() {
                   </TableCell>
                   <TableCell className="w-28 text-right tabular-nums">{c.teachesCount}</TableCell>
                   {/*
-                    🔴 **회차 이름을 다 늘어놓지 않는다**(렌더에서 잡았다). 목은 이 칸에
-                    회차 1~2개만 있었는데 실데이터는 한 교안이 **회차 여덟 개 이상**에
+                    🔴 **프로젝트 이름을 다 늘어놓지 않는다**(렌더에서 잡았다). 목은 이 칸에
+                    프로젝트 1~2개만 있었는데 실데이터는 한 교안이 **프로젝트 여덟 개 이상**에
                     걸린다 — 그대로 이으니 표가 컨테이너를 넘겨 오른쪽 `분석` 열이
                     통째로 잘렸다. 앞 둘만 링크로 두고 나머지는 개수로 접는다.
-                    전체 목록은 상세의 `쓰인 회차` 탭이 이미 갖고 있다.
+                    전체 목록은 상세의 `쓰인 프로젝트` 탭이 이미 갖고 있다.
                   */}
                   <TableCell className="text-fg-muted truncate text-xs">
                     {c.linkedProjects.slice(0, 2).map((p, i) => (

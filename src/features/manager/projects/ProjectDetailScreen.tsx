@@ -103,7 +103,7 @@ export default function ProjectDetailScreen() {
     return shell(
       <Empty>
         <EmptyHeader>
-          <EmptyTitle>회차를 찾을 수 없습니다</EmptyTitle>
+          <EmptyTitle>프로젝트를 찾을 수 없습니다</EmptyTitle>
           <EmptyDescription>지워졌거나 주소가 잘못됐을 수 있습니다.</EmptyDescription>
         </EmptyHeader>
         <Button variant="ghost" onClick={() => navigate('/manager/projects')}>
@@ -128,7 +128,7 @@ export default function ProjectDetailScreen() {
 
       {/*
         **탭은 주소가 갖는다**(화면 규칙 J) — 새로고침·뒤로가기가 따라오고, 다른 화면이
-        「이 회차의 결과 탭」으로 보낼 수 있다. `?tab=`이 없거나 모르는 값이면 회차 상태가
+        「이 프로젝트의 결과 탭」으로 보낼 수 있다. `?tab=`이 없거나 모르는 값이면 프로젝트 상태가
         고르는 기본 탭으로 떨어진다(남이 보낸 링크가 낡았을 수 있다).
 
         `replace`로 바꾼다 — 탭을 다섯 번 누르고 뒤로가기를 다섯 번 하게 만들지 않는다.
@@ -168,7 +168,7 @@ export default function ProjectDetailScreen() {
         <TabsContent value="team">
           {/*
             ⚠ **`?? false` · `?? 0`으로 메우지 않는다**(규칙 E). 제출 현황은 팀 목록보다
-            늦게 오는데, 그 사이 `locked`를 `false`로 두면 **종료된 회차에서 3.8초 동안
+            늦게 오는데, 그 사이 `locked`를 `false`로 두면 **종료된 프로젝트에서 3.8초 동안
             [팀 추가]·[자동 배분]이 열려 있었다**(실측). `undefined`를 그대로 넘기고
             모르는 동안에는 `TeamTab`이 액션 줄을 안 그린다.
           */}

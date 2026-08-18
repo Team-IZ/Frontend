@@ -1,6 +1,5 @@
 import { useMemo } from 'react'
 import { useFindProjectsForManager } from '@/api/projectExecution/useProjectExecutionQueries'
-import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import type { findProjectsForManager_Response } from '@/api/projectExecution/projectExecutionTypes'
 import { listQueryOptions } from '@/lib/listQuery'
 import type { ProjectListView, ProjectRow, ProjectSort, ProjectStatus } from './listTypes'
@@ -64,14 +63,6 @@ export function useProjectList(params: ProjectListQuery | undefined) {
   )
   const data = useMemo(() => (query.data ? toListView(query.data) : undefined), [query.data])
   return { ...query, data }
-}
-
-/**
- * 반 필터의 선택지 — **매니저에게는 담당 반만 온다**(서버가 좁힌다).
- * MG-05가 쓰는 것과 같은 조회라 캐시를 공유한다.
- */
-export function useManagedClassrooms(cohortId: string | undefined) {
-  return useFindClassrooms({ path: { cohortId: cohortId ?? '' } }, { enabled: !!cohortId })
 }
 
 function toServerQuery(p: ProjectListQuery | undefined) {

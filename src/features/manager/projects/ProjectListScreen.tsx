@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
-import { useManagerCohort } from '@/stores/cohortScope'
+import { useManagedClassrooms, useManagerCohort } from '@/stores/cohortScope'
 import PageHeader from '@/components/common/PageHeader'
 import StaleBlock from '@/components/common/StaleBlock'
 import TableSkeleton from '@/components/common/TableSkeleton'
@@ -17,7 +17,7 @@ import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/u
 import { Button } from '@/components/ui/Button'
 import { errorCopy } from '@/lib/errorCopy'
 import { useDebounced } from '@/lib/useDebounced'
-import { useProjectList, useManagedClassrooms } from './_/api/list'
+import { useProjectList } from './_/api/list'
 import { STATUS_LABEL, type ProjectSort, type ProjectStatus } from './_/api/listTypes'
 import {
   ALL,
@@ -124,6 +124,8 @@ export default function ProjectListScreen() {
       <ProjectFilters
         {...filters}
         classes={classOptions}
+        classesFailed={classrooms.isError}
+        onRetryClasses={() => void classrooms.refetch()}
         counts={view?.counts}
         onChange={(patch) => setFilters((f) => ({ ...f, ...patch }))}
       />

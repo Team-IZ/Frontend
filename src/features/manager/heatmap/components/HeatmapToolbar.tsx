@@ -9,13 +9,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from '@/components/ui/Popover'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/Select'
+import FilterSelect from '@/components/common/FilterSelect'
 import { cn } from '@/lib/utils/cn'
 import type { HeatmapLevel, RoundOption, ScopeOption } from '../_/api/types'
 
@@ -73,10 +67,6 @@ export default function HeatmapToolbar({
   onClassChange: (classroomId: string) => void
   onTeamChange: (teamId: string) => void
 }) {
-  const roundItems = Object.fromEntries(rounds.map((r) => [r.assessmentRoundId, r.label]))
-  const classItems = Object.fromEntries(classrooms.map((c) => [c.id, `반 · ${c.name}`]))
-  const teamItems = Object.fromEntries(teams.map((t) => [t.id, `팀 · ${t.name}`]))
-
   /*
     🔴 **갈 수 없는 계층은 잠근다**(하드닝 실측). 서버가 `TEAM`에 반을, `TRAINEE`에
     반과 팀을 **필수로** 요구한다(`HEATMAP_SCOPE_INVALID`). 팀 목록은 반 격자를
@@ -101,22 +91,21 @@ export default function HeatmapToolbar({
 
   return (
     <div className="mb-4 flex flex-wrap items-center gap-2">
-      <Select value={round} onValueChange={(v) => v && onRoundChange(v)} items={roundItems}>
-        <SelectTrigger
-          className="h-9 min-w-52 text-sm font-semibold"
-          aria-label="회차 선택"
-          disabled={rounds.length === 0}
-        >
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {rounds.map((r) => (
-            <SelectItem key={r.assessmentRoundId} value={r.assessmentRoundId}>
-              {r.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      {/*
+        🔴 **`disabled={rounds.length === 0}`이었다** — 잠기기만 하고 왜 잠겼는지
+        말할 자리가 없었다. 이제 이름표(`회차`)가 늘 보이고 메뉴가 상태를 말한다.
+      */}
+      <FilterSelect
+        label="회차"
+        value={round}
+        onChange={(v) => v && onRoundChange(v)}
+        options={
+          rounds.length === 0
+            ? undefined
+            : rounds.map((r) => ({ value: r.assessmentRoundId, label: r.label }))
+        }
+        className="min-w-52"
+      />
 
       <ButtonGroup aria-label="계층">
         {LEVELS.map((l) => {
@@ -142,33 +131,21 @@ export default function HeatmapToolbar({
         `classroomId`를 필수로 요구하므로(400) 없는 채로 부르지 않는다.
       */}
       {level !== 'CLASS' && classrooms.length > 0 && (
-        <Select value={classroomId} onValueChange={(v) => v && onClassChange(v)} items={classItems}>
-          <SelectTrigger className="h-9 w-32" aria-label="반 선택">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {classrooms.map((c) => (
-              <SelectItem key={c.id} value={c.id}>
-                반 · {c.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <FilterSelect
+          label="반"
+          value={classroomId}
+          onChange={(v) => v && onClassChange(v)}
+          options={classrooms.map((c) => ({ value: c.id, label: c.name }))}
+        />
       )}
 
       {level === 'TRAINEE' && teams.length > 0 && (
-        <Select value={teamId} onValueChange={(v) => v && onTeamChange(v)} items={teamItems}>
-          <SelectTrigger className="h-9 w-32" aria-label="팀 선택">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {teams.map((t) => (
-              <SelectItem key={t.id} value={t.id}>
-                팀 · {t.name}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <FilterSelect
+          label="팀"
+          value={teamId}
+          onChange={(v) => v && onTeamChange(v)}
+          options={teams.map((t) => ({ value: t.id, label: t.name }))}
+        />
       )}
 
       <Popover>

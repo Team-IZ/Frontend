@@ -4,7 +4,6 @@ import {
   useFindManagerTraineeTimeline,
   useFindTraineeRoster,
 } from '@/api/member/useMemberQueries'
-import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useFindTraineeEvaluationDetail } from '@/api/evaluation/useEvaluationQueries'
 import type {
   findManagerTraineeDetail_Response,
@@ -72,15 +71,6 @@ export function useRoster(params: RosterQuery | undefined) {
   )
   const data = useMemo(() => (query.data ? toRosterView(query.data) : undefined), [query.data])
   return { ...query, data }
-}
-
-/**
- * 반 필터의 선택지 — **매니저에게는 담당 반만 온다**(서버가 `manager_assignment`로
- * 좁힌다). 명단이 담당 반으로 좁혀져 있는데 드롭다운만 기수 전체면 고를 수 있는데
- * 결과가 0건인 반이 생긴다.
- */
-export function useManagedClassrooms(cohortId: string | undefined) {
-  return useFindClassrooms({ path: { cohortId: cohortId ?? '' } }, { enabled: !!cohortId })
 }
 
 function toServerQuery(p: RosterQuery | undefined) {

@@ -5,14 +5,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@/components/ui/InputGroup'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/Select'
-import ControlLabel from '@/components/common/ControlLabel'
+import FilterSelect from '@/components/common/FilterSelect'
 import { STATUS_LABEL } from '../../labels'
 import type { Curriculum, ProjectSort, ProjectStatus } from '../../types'
 import { ALL, type FilterValues } from '../filterState'
@@ -78,14 +71,6 @@ type Props = FilterValues & {
   onChange: (patch: Partial<FilterValues>) => void
 }
 
-/**
- * 트리거에 그릴 값 맵. **이름표를 값에 섞지 않는다** — 이름표는 컨트롤 안 왼쪽
- * (`ControlLabel`)이 갖는다. 한때 `교안 · <값>`이었는데, 파일명이 그대로 들어가는
- * 교안에서 트리거가 580px까지 늘어나 **툴바가 두 줄로 접히고 표가 44px 내려갔다**.
- */
-const items = (options: { value: string; label: string }[]) =>
-  Object.fromEntries(options.map((o) => [o.value, o.label]))
-
 export default function ProjectFilters({
   search,
   curriculumId,
@@ -114,19 +99,20 @@ export default function ProjectFilters({
   ]
 
   /*
-    교안 선택지 — **아직 못 고르는 이유를 「전체」 자리에 쓴다.** 셀렉트를 잠그면
-    왜 잠겼는지 말할 곳이 없어서, 잠그는 대신 트리거가 상태를 말하게 한다.
+    🔴 **「전체」 라벨을 상태 메시지로 바꾸고 있었다** — 그러면 선택지가 상태로 변신한다.
+    트리거에 「교안 · 불러오는 중」이 뜨면 *필터가 로딩 중*으로 읽히는데, 실제로는
+    필터는 멀쩡히 걸려 있다(「전체」가 적용돼 정상 동작 중). 그 항목을 누르면
+    「불러오는 중」을 고른 셈이 되기도 했다.
+
+    공용 `FilterSelect`가 **메뉴 안에서** 말한다 — 트리거는 고른 값만 그린다.
+    `disabled`도 함께 걷어냈다(잠그면 왜 잠겼는지 말할 자리가 없다).
   */
-  const curriculumOptions = [
-    {
-      value: ALL,
-      label: curriculaLoading ? '불러오는 중' : curriculaFailed ? '불러오지 못했습니다' : '전체',
-    },
-    ...curricula.map((c) => ({
-      value: c.versionId,
-      label: `${c.originalFileName} v${c.versionNo}`,
-    })),
-  ]
+  const curriculumOptions = curriculaLoading
+    ? undefined
+    : curricula.map((c) => ({
+        value: c.versionId,
+        label: `${c.originalFileName} v${c.versionNo}`,
+      }))
 
   return (
     <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -167,8 +153,9 @@ export default function ProjectFilters({
       <FilterSelect
         label="교안"
         value={curriculumId}
-        disabled={curriculaLoading || curriculaFailed}
+        fixed={[{ value: ALL, label: '전체' }]}
         options={curriculumOptions}
+        failed={curriculaFailed}
         onChange={(v) => onChange({ curriculumId: v })}
         /*
           **늘어나지 않게 폭을 박는다.** 교안 이름은 업로드한 파일명이라 길이를 우리가
@@ -189,54 +176,5 @@ export default function ProjectFilters({
         className="w-48"
       />
     </div>
-  )
-}
-
-/** 필터 드롭다운 하나. 셋이 같은 모양이라 여기서 한 번만 조립한다 */
-function FilterSelect({
-  label,
-  value,
-  options,
-  onChange,
-  disabled,
-  className = 'w-40',
-}: {
-  label: string
-  value: string
-  options: { value: string; label: string }[]
-  onChange: (value: string) => void
-  disabled?: boolean
-  className?: string
-}) {
-  return (
-    <Select
-      disabled={disabled}
-      value={value}
-      onValueChange={(v) => onChange(v ?? options[0].value)}
-      items={items(options)}
-    >
-      {/* 잘린 이름은 hover로 전체를 본다 — 교안 파일명이 대개 트리거 폭을 넘는다 */}
-      <SelectTrigger
-        className={`h-9 ${className}`}
-        aria-label={`${label} 필터`}
-        title={options.find((o) => o.value === value)?.label}
-      >
-        <ControlLabel>{label}</ControlLabel>
-        {/* 긴 이름은 자른다 — 트리거가 자라면 툴바가 접힌다(§2-2) */}
-        <SelectValue className="truncate" />
-      </SelectTrigger>
-      {/*
-        **팝업은 트리거 폭을 따르지 않는다.** 트리거를 좁힌 것은 툴바가 접히지 않게
-        하려는 것인데(§2-2), 팝업까지 좁아지면 **열어 봐도 어떤 교안인지 모른다** —
-        폭을 박은 직후 실제로 그랬다. 팝업은 떠 있는 것이라 넓어도 아무것도 안 민다.
-      */}
-      <SelectContent className="w-auto max-w-[min(620px,calc(100vw-2rem))] min-w-(--anchor-width)">
-        {options.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
-            {o.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
   )
 }

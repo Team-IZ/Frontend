@@ -432,6 +432,18 @@ function RoundSelect({
             {!r.published && <span className="text-fg-subtle ml-1.5 text-2xs">미발행</span>}
           </SelectItem>
         ))}
+        {/*
+          로딩 중에 열면 **메뉴가 비어 있었다.** 자리표시자가 트리거에서 「불러오는 중」
+          이라고 말하지만, 열어 본 사람에게는 그 말이 안 보인다(팝업이 트리거를 덮는다).
+
+          이 셀렉트는 항목마다 회차명·미발행 배지가 붙어 공용 `FilterSelect`로 못 옮긴다 —
+          상태 행만 같은 모양으로 넣는다.
+        */}
+        {loading && rounds.length === 0 && (
+          <SelectItem value="__loading" disabled className="text-fg-subtle">
+            불러오는 중…
+          </SelectItem>
+        )}
       </SelectContent>
     </Select>
   )

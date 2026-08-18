@@ -5,13 +5,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@/components/ui/InputGroup'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/Select'
+import FilterSelect from '@/components/common/FilterSelect'
 import { STATUS_LABEL } from './InterviewStatusBadge'
 import type { RoundOption } from '../_/api/types'
 import { ALL, type FilterValues } from '../filterState'
@@ -34,9 +28,6 @@ import { ALL, type FilterValues } from '../filterState'
   없는 것 같다"고 지적했고 맞는 지적이라 판단해 지웠다(고르지도 못하는 값을
   굳이 문구로 설명할 필요는 없다 — 이상하면 필요할 때 표에서 직접 확인하면 된다).
 */
-
-const items = (prefix: string, options: { value: string; label: string }[]) =>
-  Object.fromEntries(options.map((o) => [o.value, `${prefix} · ${o.label}`]))
 
 /**
  * 위험 유형 라벨 — `RiskBadge`와 같은 값이지만 **여기 옵션은 서버 `riskCounts`의
@@ -96,22 +87,20 @@ export default function InterviewFilters({
     })),
   ]
 
-  const classOptions = [
-    { value: ALL, label: '전체' },
-    ...(classes ?? []).map((c) => ({ value: c.classId, label: c.className })),
-  ]
-
   return (
     <div className="mb-3 flex flex-wrap items-center gap-2">
+      {/*
+        🔴 **잠그고 있었다** — 열어 봐야 빈 목록이라는 판단은 맞았는데, 잠그면 **왜
+        잠겼는지 말할 자리가 없다.** 이제 메뉴가 「불러오는 중…」이라고 말한다.
+
+        서버 라벨이 `미니프로젝트 3차 이해도 확인`이라 목의 `미프 3차`보다 훨씬 길다 —
+        문자열을 자르는 대신 트리거를 넓힌다(렌더에서 잘려 보였다).
+      */}
       <FilterSelect
         label="회차"
         value={round}
-        options={roundOptions}
-        /* 아직 안 온 동안은 잠근다 — 열어 봐야 빈 목록이고, 그게 「없다」로 읽힌다 */
-        disabled={rounds === undefined}
+        options={rounds === undefined ? undefined : roundOptions}
         onChange={(v) => onChange({ round: v })}
-        /* 서버 라벨이 `미니프로젝트 3차 이해도 확인`이라 목의 `미프 3차`보다 훨씬 길다 —
-           문자열을 자르는 대신 트리거를 넓힌다(렌더에서 잘려 보였다) */
         className="w-64"
       />
 
@@ -149,8 +138,8 @@ export default function InterviewFilters({
       <FilterSelect
         label="반"
         value={classFilter}
-        options={classOptions}
-        disabled={classes === undefined}
+        fixed={[{ value: ALL, label: '전체' }]}
+        options={classes?.map((c) => ({ value: c.classId, label: c.className }))}
         onChange={(v) => onChange({ classFilter: v })}
         className="w-28"
       />
@@ -163,45 +152,5 @@ export default function InterviewFilters({
         className="w-60"
       />
     </div>
-  )
-}
-
-function FilterSelect({
-  label,
-  value,
-  options,
-  onChange,
-  className = 'w-28',
-  disabled,
-}: {
-  label: string
-  value: string
-  options: { value: string; label: string }[]
-  onChange: (value: string) => void
-  className?: string
-  /** 선택지를 **아직 모르는** 동안 잠근다(빈 목록을 「없다」로 읽지 않게) */
-  disabled?: boolean
-}) {
-  return (
-    <Select
-      value={value}
-      onValueChange={(v) => onChange(v ?? options[0].value)}
-      items={items(label, options)}
-    >
-      <SelectTrigger
-        className={`h-9 ${className}`}
-        aria-label={`${label} 필터`}
-        disabled={disabled}
-      >
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
-            {label} · {o.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
   )
 }

@@ -5,14 +5,8 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@/components/ui/InputGroup'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/Select'
 import { SORT_LABEL, STATUS_LABEL, type ProjectSort, type ProjectStatus } from '../_/api/listTypes'
+import ServerFilterSelect from '@/components/common/FilterSelect'
 import { ALL, type FilterValues } from '../filterState'
 
 /*
@@ -41,9 +35,6 @@ import { ALL, type FilterValues } from '../filterState'
   회피, 4차 반영과 같은 판단).
 */
 
-const items = (prefix: string, options: { value: string; label: string }[]) =>
-  Object.fromEntries(options.map((o) => [o.value, `${prefix} · ${o.label}`]))
-
 type ClassOption = { classroomId: string; name: string }
 
 type Props = FilterValues & {
@@ -52,6 +43,9 @@ type Props = FilterValues & {
    * 없다」로 읽히는데, 담당 반이 0개인 매니저는 이 화면 자체를 못 본다.
    */
   classes: ClassOption[] | undefined
+  /** 반 목록 조회가 실패했나 — 메뉴가 그 사실과 「다시 시도」를 그린다 */
+  classesFailed?: boolean
+  onRetryClasses?: () => void
   /** 상태별 개수 — 필터와 무관한 전체 모집단 기준(`counts`) */
   counts?: Record<string, number>
   onChange: (patch: Partial<FilterValues>) => void
@@ -70,6 +64,8 @@ export default function ProjectFilters({
   classFilter,
   sort,
   classes,
+  classesFailed,
+  onRetryClasses,
   counts,
   onChange,
 }: Props) {
@@ -79,11 +75,6 @@ export default function ProjectFilters({
       value: s,
       label: counts ? `${STATUS_LABEL[s]} (${counts[s] ?? 0})` : STATUS_LABEL[s],
     })),
-  ]
-  /* 값이 **반 이름이 아니라 `classroomId`**다 — 반 이름은 기수마다 바뀐다 */
-  const classOptions = [
-    { value: ALL, label: '전체' },
-    ...(classes ?? []).map((c) => ({ value: c.classroomId, label: c.name })),
   ]
 
   return (
@@ -111,19 +102,25 @@ export default function ProjectFilters({
         )}
       </InputGroup>
 
-      <FilterSelect
+      <ServerFilterSelect
         label="상태"
         value={status}
         options={statusOptions}
         onChange={(v) => onChange({ status: v })}
         className="w-44"
       />
-      <FilterSelect
+      {/*
+        선택지가 서버에서 온다 — 늦거나 실패하면 **메뉴가** 말한다(공용 `FilterSelect`).
+        값이 반 이름이 아니라 `classroomId`인 것은 반 이름이 기수마다 바뀌기 때문이다.
+      */}
+      <ServerFilterSelect
         label="반"
         value={classFilter}
-        options={classOptions}
         onChange={(v) => onChange({ classFilter: v })}
-        className="w-32"
+        fixed={[{ value: ALL, label: '전체' }]}
+        options={classes?.map((c) => ({ value: c.classroomId, label: c.name }))}
+        failed={classesFailed}
+        onRetry={onRetryClasses}
       />
       {/*
         🔴 **교안 필터를 잠시 뺐다.** 서버는 `curriculumId`(UUID)를 받는데 선택지를 줄
@@ -133,7 +130,7 @@ export default function ProjectFilters({
 
       <span className="bg-border mx-1 h-5 w-px" />
 
-      <FilterSelect
+      <ServerFilterSelect
         label="정렬"
         value={sort}
         options={SORT_OPTIONS}
@@ -141,38 +138,5 @@ export default function ProjectFilters({
         className="w-48"
       />
     </div>
-  )
-}
-
-function FilterSelect({
-  label,
-  value,
-  options,
-  onChange,
-  className = 'w-28',
-}: {
-  label: string
-  value: string
-  options: { value: string; label: string }[]
-  onChange: (value: string) => void
-  className?: string
-}) {
-  return (
-    <Select
-      value={value}
-      onValueChange={(v) => onChange(v ?? options[0].value)}
-      items={items(label, options)}
-    >
-      <SelectTrigger className={`h-9 ${className}`} aria-label={`${label} 필터`}>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
-            {label} · {o.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
   )
 }

@@ -86,11 +86,114 @@ AU-01에서 고친 `onFocus` 배선(E3 — 재포커스 시 미탐지)이 `passw
 
 ---
 
-## 미검증으로 남긴 것 (2단계·5단계 — 로컬 Claude Code CLI + Playwright 필요)
+## 2단계·5단계로 확정된 것
 
-- curl 실측: 4개 에러 코드(`INVITATION_EXPIRED`·`INVITATION_ALREADY_ACCEPTED`·`INVITATION_INVALID`·
-  `INVITATION_NOT_IN_ROSTER`) 전부 실서버 응답과 일치하는지.
-- 실제 렌더: 변형 A/B 각각 정상 흐름 · 재수강생(A3) 흐름 · C3 수정이 실제 클릭으로도 알림을
-  유지하는지 · G3(검증 중 타이틀 깜빡임)이 실제로 보이는지.
-- Caps Lock 실제 키보드 재현 — 비밀번호·비밀번호 확인 두 필드 모두.
-- 한글 IME 조합 — 이름 필드(변형 A만 있음, AU-01 로그인 필드와 별개로 재확인 필요).
+아래는 원래 "미검증으로 남긴 것"에 있던 항목 중 이번에 curl·Playwright로 실제 확인한 것 —
+자세한 절차·응답 원문은 뒤의 "2단계 실측"·"5단계 플로우를 탄다" 절 표에 있다.
+
+**curl로 실서버 확인:**
+
+- `INVITATION_INVALID`(A4·B4) — 위조 토큰으로 `resolve`·`manager-signup`·`trainee-activation`
+  세 엔드포인트 전부 400 `INVITATION_INVALID` 응답 확인
+- 계정 열거 방지(`resend`, C1) — 존재/미존재 이메일 모두 202 + 완전히 동일한 메시지 확인
+- 네트워크 도달 실패(A7·B7) — DNS 실패로 `ApiError.isNetwork` 경로가 실제로 트리거되는 것을
+  transport 레벨에서 확인
+
+**Playwright로 렌더 확인(응답 가로채기 + 실제 클릭, 18건 전수):**
+
+- 변형 A(매니저)·변형 B(교육생) 정상 흐름 — 필드 구성·동의 개수·제출 후 `/shared/login` 이동까지
+  실제 클릭으로 렌더 확인
+- E3 필수 동의 미체크 시 제출 버튼 비활성 — 렌더 확인
+- `#expired`(A2)·`#already`(A3)·`#invalid`(A4)·`#notlisted`(A5) 네 상태 카드 — **화면이 이 코드를
+  받았을 때 올바르게 렌더하는지**는 전부 확인(A3·A5는 서버가 실제로 이 코드를 주는지 자체는 아직
+  미검증 — 아래 참고)
+- B2(제출 단계 만료) — 인라인 알림 + 재발송 링크 노출 확인
+- **C3 재검증** — 재발송이 500으로 실패해도 링크가 안 사라지는 것(회귀 없음) 실제 클릭으로 확인
+- **G3** — 교육생 링크에서 검증 중 매니저 문구가 실제로 잠깐 보이는 것을 렌더로 확인(비치명 결론까지 포함)
+- 한글 IME 조합(이름 필드) — CDP composition으로 조합 안 깨짐 확인
+- Caps Lock `onFocus` 배선 — 크래시 없이 필드 간 포커스 전환 확인(물리 키 토글 자체는 여전히 미검증)
+
+---
+
+## 2단계 · 실측 (curl, 2026-08-18)
+
+실서버(`https://xvdanr6m362b2ge232vdmfbrny0kwakz.lambda-url.ap-northeast-1.on.aws`, Lambda 프록시 —
+`docs/dev/handoff.md` 8/16 기록·AU-01 실측과 동일 주소) 직접 호출. `.env.local`은 비워 둔 채(dev
+서버의 `vite.config.ts` 프록시가 같은 주소로 중계) — curl은 이 주소로 바로 쳤다.
+
+| 요청 | 결과 |
+|---|---|
+| `POST /auth/invitations/resolve` 위조 토큰 | 400 `INVITATION_INVALID`(A4 코드 실서버 확인) |
+| `POST /auth/invitations/resolve` 빈 토큰 | 400 `VALIDATION_FAILED`(스펙 밖 코드 — 아래 참고) |
+| `POST /auth/manager-signup` 위조 토큰 | 400 `INVITATION_INVALID` |
+| `POST /auth/trainee-activation` 위조 토큰 | 400 `INVITATION_INVALID` |
+| `POST /auth/invitations/resend` 존재하는 dev 계정 이메일 | 202, "입력하신 주소로 초대를 보낸 기록이 있으면…" |
+| `POST /auth/invitations/resend` 존재하지 않는 이메일 | 202, **동일한 메시지**(계정 열거 방지 실측 확인) |
+| `POST /auth/invitations/resend` 형식 오류 이메일 | 400 `VALIDATION_FAILED` |
+| 위 네 엔드포인트 전부 DNS 실패(존재하지 않는 호스트) | `curl exit 6`(connect 실패) — `ApiError.isNetwork` 경로가 실제로 트리거됨을 transport 레벨에서 확인 |
+
+- **`INVITATION_EXPIRED`·`INVITATION_ALREADY_ACCEPTED`·`INVITATION_NOT_IN_ROSTER` 3종은 curl로
+  확인 못 함.** 진짜 발급된 초대 토큰이 있어야 하는데, 토큰 원문은 API 응답 어디에도 없고 실제
+  메일 링크 안에만 있다(`inviteApi.ts` 주석과 일치) — 발송 후 실제 받은편지함을 확인해야 얻을 수
+  있다. 사용자에게 물어 **코드 리뷰 + Playwright 가로채기로 대체하기로 결정**(이 세션 대화 로그
+  참고). 3종 다 아래 5단계에서 실제 렌더로 대신 확인함 — **서버가 정확히 이 코드·상태를 주는지는
+  여전히 미검증**으로 남는다(오늘 다른 Cowork 세션이 실메일로 초대 흐름 자체는 종단 검증했으나
+  특정 에러 코드 3종을 겨냥한 것은 아니었다, `docs/dev/handoff.md` 8/18 "추가 2").
+- **빈 토큰(`VALIDATION_FAILED`)은 실제로 도달 불가능한 경로** — 라우트가 `/invite/:token`이라
+  `token` 세그먼트 없이는 이 화면 자체에 안 들어온다(`InviteScreen.route.tsx` 확인). 코드가 반응할
+  필요는 없다 — 참고용으로만 남긴다.
+- 미활성 계정 대상 재발송 응답이 정상 계정과 같은지는 별도 계정이 없어 미검증(자연 계정 열거
+  방지 로직상 같을 것으로 추정되나 실측 아님).
+
+## 5단계 · 플로우를 탄다 (Playwright, 2026-08-18)
+
+로컬 `npm run dev`(5173), `page.route`로 서버 응답을 가로챈 뒤 **실제 클릭·입력**으로 검증(코드
+직접 판독이 아니라 렌더 확인). 스크립트는 스크래치패드에 둠(레포에 안 남김). **18건 전수 통과.**
+
+| 시나리오 | 확인한 것 | 결과 |
+|---|---|---|
+| 변형 A(매니저) 정상 흐름 | 이름 필드 있음 · 체크박스 3개(전체동의+2) · 제출 → `/shared/login` | ✅ |
+| 변형 B(교육생) 정상 흐름 | 이름 필드 없음 · 체크박스 6개(전체동의+5) · 제출 → `/shared/login` | ✅ |
+| E3 필수 동의 미체크 | 제출 버튼 비활성 | ✅ |
+| A2 만료(검증 단계) | `#expired` 카드 · 이메일 입력 후 재발송 성공 시 문구 교체 | ✅ |
+| A3 이미가입 | `#already` 카드 · [로그인] 클릭 → `/shared/login` | ✅ |
+| A4 무효 | `#invalid` 카드 렌더 | ✅ |
+| A5 명단외 | `#notlisted` 카드 렌더 | ✅ |
+| A7 네트워크 실패(검증 단계) | 폴백 카드("서버에 연결하지 못했습니다") | ✅ |
+| B2 제출 단계 만료 | 인라인 알림 + 재발송 링크(`action=RESEND`) 노출 | ✅ |
+| **C3 재검증** | 재발송이 500으로 실패해도 **링크가 사라지지 않음**(AU-01 C3 회귀와 같은 함정, 이번엔 처음부터 `action: 'RESEND'` 유지로 짜서 회귀 없음) | ✅ |
+| **G3 검증 중 타이틀** | 교육생(`stu-`) 링크인데 검증 중 브랜드 패널 제목이 잠깐 "운영 계정을 설정하세요"(매니저 카피)로 뜬 뒤 "계정 활성화"로 바뀜 — **실제로 재현됨**, 비-치명(수백 ms) | ⚠ 아래 참고 |
+| IME 한글 조합 | 이름 필드(변형 A) — CDP composition 후 "미니" 정확히 입력, 안 깨짐 | ✅ |
+| Caps Lock `onFocus` | 크래시 없이 필드 간 포커스 이동(AU-01에서 고친 배선 재사용) | ✅(물리 키 토글 자체는 자동화 불가, 실측은 사용자 몫) |
+
+### G3 — 실제로 확인됐지만 이번 범위에서 안 고침
+
+검증 중(수백 ms) 짧게 잘못된 브랜드 카피가 보인다. 원인은 `copy = invite ? COPY[invite.inviteType]
+: COPY.MANAGER`(`InviteScreen.tsx`)의 폴백이 `MANAGER`로 고정된 것 — `role`을 아직 몰라 무엇을
+보여줄지 모르는 상태인데 하나를 골라야 해서 생긴 구조적 결과다. **1단계 문서가 이미 "비-치명적"으로
+분류**했고 이번 라운드 스코프(§C3·A2/B3·C4/C5 하드닝)와 다른 종류의 개선(로딩 중 문구를 아예
+없애거나 중립 카피로 바꾸는 설계 판단)이라 범위 밖으로 남긴다 — 실측으로 존재는 확정했으니
+다음에 손댈 사람이 "정말 비-치명적인지"부터 다시 재지 않아도 된다.
+
+## 6단계 · 남긴다
+
+### 이번 라운드에서 고친 것
+
+1. C3(제출 단계 재발송 실패) — `handleResend` `try/catch` 추가, `action: 'RESEND'` 유지(코드
+   리뷰 단계에서 고침, 이번 5단계에서 실제 클릭으로 재검증 완료 — 회귀 없음)
+
+### 이번 범위에서 의도적으로 안 건드린 것
+
+- **G3(검증 중 브랜드 카피 깜빡임)** — 실제로 재현됐으나 구조적 설계 판단이 필요해 범위 밖(위 참고)
+- **접근성 `aria-describedby` 미연결** — AU-01에서 이미 발견·기록, 공용 컴포넌트라 조율 필요
+
+### 미검증으로 남긴 것
+
+- **`INVITATION_EXPIRED`·`INVITATION_ALREADY_ACCEPTED`·`INVITATION_NOT_IN_ROSTER`의 실서버 응답
+  일치 여부** — curl로 확인하려면 진짜 발급된 토큰(실제 메일 수신)이 필요해 이번 세션에서
+  Playwright 가로채기로 대체(사용자 확인). 서버가 정확히 이 3개 코드를 이 상황에서 주는지 자체는
+  여전히 실측 안 됨 — 다음에 실제 초대 메일 라운드(운영자 초대 → 실제 수신함 확인)를 돌릴 때
+  같이 확인.
+- **Caps Lock 실제 물리 키보드 재현** — `onFocus` 배선은 AU-01에서 고쳐 이 화면도 공유하지만,
+  Playwright/CDP가 OS Caps Lock 토글을 못 켜 자동 재현 불가(AU-01과 동일한 한계).
+- **미활성 계정 대상 재발송 응답 비교** — 별도 미활성 계정이 없어 미실측.

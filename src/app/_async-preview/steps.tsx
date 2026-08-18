@@ -46,7 +46,7 @@ export function Step1() {
     <>
       <Case
         title="프로젝트 상세 — 무엇이 실패했든 «주소가 잘못됐다»고 했다"
-        note="전에는 500이든 403이든 «회차를 찾을 수 없습니다 / 지워졌거나 주소가 잘못됐을 수 있습니다» 하나였다. 서버가 500을 주는 동안 사용자는 없는 문제(주소)를 고치러 간다. 지금은 status·에러 코드를 보고 갈린다."
+        note="전에는 500이든 403이든 «프로젝트를 찾을 수 없습니다 / 지워졌거나 주소가 잘못됐을 수 있습니다» 하나였다. 서버가 500을 주는 동안 사용자는 없는 문제(주소)를 고치러 간다. 지금은 status·에러 코드를 보고 갈린다."
       >
         <Pair>
           <Screen
@@ -57,7 +57,7 @@ export function Step1() {
           >
             <Empty variant="failed">
               <EmptyHeader>
-                <EmptyTitle>회차를 찾을 수 없습니다</EmptyTitle>
+                <EmptyTitle>프로젝트를 찾을 수 없습니다</EmptyTitle>
                 <EmptyDescription>지워졌거나 주소가 잘못됐을 수 있습니다.</EmptyDescription>
               </EmptyHeader>
               <Button variant="ghost">프로젝트 목록으로</Button>
@@ -71,7 +71,7 @@ export function Step1() {
           >
             <ErrorState
               error={err(500)}
-              subject="회차"
+              subject="프로젝트"
               onRetry={() => {}}
               action={<Button variant="ghost">프로젝트 목록으로</Button>}
             />
@@ -82,7 +82,7 @@ export function Step1() {
             <Screen title="미니프로젝트 7차" breadcrumb="프로젝트 › 9기" label="후 · 진짜 404">
               <ErrorState
                 error={err(404)}
-                subject="회차"
+                subject="프로젝트"
                 onRetry={() => {}}
                 action={<Button variant="ghost">프로젝트 목록으로</Button>}
               />
@@ -90,7 +90,7 @@ export function Step1() {
             <Screen title="미니프로젝트 7차" breadcrumb="프로젝트 › 9기" label="후 · 권한 없음 403">
               <ErrorState
                 error={err(403)}
-                subject="회차"
+                subject="프로젝트"
                 onRetry={() => {}}
                 action={<Button variant="ghost">프로젝트 목록으로</Button>}
               />
@@ -406,7 +406,7 @@ export function Step3() {
               <EmptyHeader>
                 <EmptyTitle>아직 프로젝트가 없습니다</EmptyTitle>
                 <EmptyDescription>
-                  회차를 만들고 교안을 연결하면 검증 개념 3건을 고를 수 있습니다.
+                  프로젝트를 만들고 교안을 연결하면 검증 개념 3건을 고를 수 있습니다.
                 </EmptyDescription>
               </EmptyHeader>
               <Button>+ 프로젝트 생성</Button>

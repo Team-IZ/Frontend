@@ -134,7 +134,7 @@ export default function SubmissionTab({ query, classProgress }: Props) {
             · 분석 실패 {d.summary.analysisFailedTeamCount}팀
           </span>
         )}
-        {d.locked && <span className="ml-2">· 종료된 회차라 팀 이동을 할 수 없습니다</span>}
+        {d.locked && <span className="ml-2">· 종료된 프로젝트라 팀 이동을 할 수 없습니다</span>}
       </p>
 
       {classProgress && classProgress.classes.length > 0 && (

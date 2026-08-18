@@ -298,7 +298,7 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
             <EmptyDescription>
               {canEdit
                 ? '자동 배분을 누르거나 팀을 하나씩 추가하세요.'
-                : '이 회차는 팀이 편성되지 않은 채로 잠겼습니다.'}
+                : '이 프로젝트는 팀이 편성되지 않은 채로 잠겼습니다.'}
             </EmptyDescription>
           </EmptyHeader>
         </Empty>

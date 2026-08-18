@@ -626,3 +626,11 @@ git에는 `pre-stash`·`pre-reset` 훅이 없다. 그래서 Claude Code의 `PreT
 - **이름표 구분자를 `·`에서 `│`로 통일.** 매니저 쪽만 `라벨 · 값` 문자열이었는데 **값에 점이 들어가는 이름이 실제로 있다**(`정렬 · 최근 발행 회차 나쁜 순`) — 어디까지가 이름표인지 읽을 수 없고 드롭다운 항목마다 같은 접두사가 반복됐다. `ControlLabel`(얇은 세로선)로 전부 바꿨다. 오퍼레이터 `RoundToolbar`는 범위 선택기라 `FilterSelect`로는 못 옮기고 `ControlLabel`만 적용했다.
 - **검산:** `typecheck`·`lint`·`check-design` 통과. 렌더 확인(Playwright, 5175) — MG-03·MG-05·MG-07·OP-02 필터에서 로딩 줄·실패+다시 시도·프리페치 후 즉시 도착 각각 관찰.
 
+## D37 · 화면에서 「회차」를 뜻에 따라 가른다 — 프로젝트 엔티티는 「프로젝트」로
+
+- **배경:** 기획에서 「회차」를 빼기로 했는데 코드에는 **뜻이 다른 두 가지가 같은 이름**으로 있었다. 하나는 프로젝트 엔티티(`projectId`·`linkedProjects`·`/curricula/{id}/projects`), 하나는 이해도 확인 회차(`assessmentRoundId`)다. 한쪽만 보고 일괄 치환하면 다른 쪽이 틀린 말이 된다.
+- **판단(사용자 결정) — 라벨만 바꾼다.** 식별자·타입·API 필드명(`usedRoundLabels`·`roundName`·`assessmentRoundId`)은 **서버가 정한 이름이라 그대로 둔다.** 프론트가 혼자 바꾸면 대조표를 볼 때 화면 글자와 필드가 안 이어져서 오히려 더 헷갈린다.
+- **가르는 기준은 식별자다.** 문장만 보면 「이 회차는 팀이 편성되지 않았습니다」가 어느 쪽인지 안 갈린다 — **그 화면이 실제로 들고 있는 id**로 판정했다. 프로젝트 축이면 프로젝트, `assessmentRoundId` 축이면 회차.
+- **바꾼 곳(16곳):** MG-07 목록 빈·에러·검색 문구, MG-08 상세 not-found·팀 잠금, `ProjectRowCells` 진행 열, MG-09 교안 목록 「쓰인 프로젝트」 열·교안 상세 탭/표/안내, `_async-preview` 프로젝트 상세 사례, `errorCopy` 4건(`MANAGER_SCOPE_NOT_FOUND`·`AUTO_ASSIGN_NOT_ALLOWED`·`PROJECT_LIST_SCOPE_AMBIGUOUS`·`PROJECT_MEMBERSHIP_NOT_FOUND`).
+- **그대로 둔 곳(56곳):** MG-02 히트맵·MG-04/05 면담·MG-03 교육생의 `회차` 필터와 그 문구, `RoundReachGrid` 회차별 도달 단계, 교육생 화면 전부(서버가 `roundName`을 준다), `직전 회차 도달 단계`(자동 편성 기준이 이해도 확인 결과다), 오퍼레이터 분석 `회차 흐름`(`assessmentRoundId` 축), 슈퍼어드민 `채점 회차`.
+- **검산:** `typecheck`·`lint`·`check-design` 통과. 렌더 확인(Playwright, 5175) — MG-07 목록·MG-08 상세·MG-09 목록/상세/`쓰인 프로젝트` 탭에서 「회차」 0건, MG-03 교육생에서 「회차」 필터·「이번 회차」 열 그대로 유지 확인.

@@ -50,8 +50,8 @@ import {
   생성 유도를 넣으면 할 수 없는 일을 권하는 것이다(정의서 §"생성 유도를 넣지 않는다").
 
   🔴 **기수 스코프로 부른다**(하드닝에서 뒤집었다). 연동 때는 `classId`로 좁혔는데,
-  그러면 **팀 편성 전 회차가 통째로 안 온다**(스펙: 「그 반의 팀이 편성된 프로젝트만」).
-  9기에서 다가올 회차 둘이 그렇게 사라져 있었다.
+  그러면 **팀 편성 전 프로젝트가 통째로 안 온다**(스펙: 「그 반의 팀이 편성된 프로젝트만」).
+  9기에서 다가올 프로젝트 둘이 그렇게 사라져 있었다.
 
   덤으로 **직렬 두 왕복이 없어졌다** — 반 목록(2.1초)을 기다렸다 목록(7.6초)을 부르느라
   진입이 10초였는데, 이제 둘이 나란히 나가 7.7초다. 반 필터를 실제로 고를 때만
@@ -135,7 +135,7 @@ export default function ProjectListScreen() {
           <EmptyHeader>
             <EmptyTitle>담당 기수가 없습니다</EmptyTitle>
             <EmptyDescription>
-              반 배정이 끝나면 그 기수의 회차가 나타납니다.
+              반 배정이 끝나면 그 기수의 프로젝트가 나타납니다.
               <br />
               배정은 <b className="text-fg-muted">오퍼레이터가 합니다.</b>
             </EmptyDescription>
@@ -148,7 +148,7 @@ export default function ProjectListScreen() {
 
           높이는 **이 표에서 쟀다** — 헤더 38.5 · 행 96.1(검증 개념 칩 3개가 세로로
           쌓여 다른 표보다 훨씬 높다) · 열 비율 10.8/8.5/9.9/14.2/12.8/나머지/9.9/14.2.
-          6행은 이 기수 회차 수인데 **기수마다 다르다** — 페이지가 없어 「페이지 크기와
+          6행은 이 기수 프로젝트 수인데 **기수마다 다르다** — 페이지가 없어 「페이지 크기와
           맞춘다」는 기준을 쓸 자리가 없다(MG-09 목록과 같은 상황).
         */
         <TableSkeleton
@@ -176,7 +176,7 @@ export default function ProjectListScreen() {
           MG-09가 이미 그렇게 하고 있어 같은 방식으로 맞춘다.
         */
         (() => {
-          const copy = errorCopy(list.error, { subject: '회차 목록' })
+          const copy = errorCopy(list.error, { subject: '프로젝트 목록' })
           return (
             <Empty>
               <EmptyHeader>
@@ -210,23 +210,23 @@ export default function ProjectListScreen() {
                   */}
                   <EmptyTitle className="break-all">
                     {settledSearch
-                      ? `"${settledSearch}"와 맞는 회차가 없습니다`
-                      : '조건에 맞는 회차가 없습니다'}
+                      ? `"${settledSearch}"와 맞는 프로젝트가 없습니다`
+                      : '조건에 맞는 프로젝트가 없습니다'}
                   </EmptyTitle>
                   {/*
                     🔴 **반 필터가 「예정」을 통째로 지운다**(하드닝 실측). 서버의
-                    `classId`는 「그 반의 **팀이 편성된** 회차만」이라(스펙), 팀 편성 전
-                    회차는 반으로 좁히는 순간 사라진다.
+                    `classId`는 「그 반의 **팀이 편성된** 프로젝트만」이라(스펙), 팀 편성 전
+                    프로젝트는 반으로 좁히는 순간 사라진다.
 
                     9기에서 `예정 + C반`이 0건인데 `예정 + 전체`는 2건이다 — 이유를
-                    안 말하면 「내 반에는 다음 회차가 없다」로 읽힌다. 실제로는 아직
+                    안 말하면 「내 반에는 다음 프로젝트가 없다」로 읽힌다. 실제로는 아직
                     **팀이 안 짜인 것**이고, 그건 곧 생긴다.
                   */}
                   {filters.classFilter !== ALL && (
                     <EmptyDescription>
-                      반을 고르면 <b className="text-fg-muted">팀이 편성된 회차만</b> 보입니다 —
-                      아직 팀을 안 짠 회차는 반 필터를 <b className="text-fg-muted">전체</b>로 두면
-                      나타납니다.
+                      반을 고르면 <b className="text-fg-muted">팀이 편성된 프로젝트만</b> 보입니다 —
+                      아직 팀을 안 짠 프로젝트는 반 필터를 <b className="text-fg-muted">전체</b>로
+                      두면 나타납니다.
                     </EmptyDescription>
                   )}
                 </EmptyHeader>
@@ -236,7 +236,7 @@ export default function ProjectListScreen() {
               <Empty className="bg-surface-2 border-dashed">
                 <EmptyHeader>
                   <EmptyTitle>이 기수에 등록된 프로젝트가 없습니다</EmptyTitle>
-                  <EmptyDescription>회차가 만들어지면 여기에 나타납니다.</EmptyDescription>
+                  <EmptyDescription>프로젝트가 만들어지면 여기에 나타납니다.</EmptyDescription>
                 </EmptyHeader>
               </Empty>
             )

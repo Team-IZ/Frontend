@@ -101,6 +101,13 @@ const PAIRS = [
   ['success', 'success-soft'],
   ['info', 'surface'],
   ['info', 'info-soft'],
+  /*
+    회색 배지 면. **이 짝이 빠져 있어 3.93:1이 통과했다**(MG-09 하드닝 2차에서 브라우저
+    픽셀로 재서 발견). 다른 `-soft` 배경은 전부 짝이 있는데 `neutral-soft`만 없었다 —
+    `fg-subtle`은 흰 면 기준으로 정해진 값이라 회색 면에서는 못 미친다. `Badge`의
+    `neutral`을 `fg-muted`(4.87)로 옮기고 이 줄을 추가했다.
+  */
+  ['fg-muted', 'neutral-soft'],
   // 어두운 면 — 좌측 네비게이션. 밝은 배경만 검사하면 이 조합이 통째로 빠진다.
   ['nav-fg', 'nav'],
   ['nav-fg', 'nav-active'],

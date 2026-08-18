@@ -43,7 +43,14 @@ const badgeVariants = cva(
         warning: 'bg-warning-soft text-warning',
         danger: 'bg-danger-soft text-danger',
         info: 'bg-info-soft text-info',
-        neutral: 'bg-neutral-soft text-fg-subtle',
+        /*
+          🔴 `text-fg-subtle`이었다 — **회색 면 위에서 3.93:1로 AA 미달**이다(실측).
+          `fg-subtle`은 흰 면(5.05) · 캔버스(4.63) 기준으로 정해진 값이라 `neutral-soft`
+          위에서는 못 미친다. `fg-muted`면 4.87로 통과하고, 이 배지는 「비활성·
+          보류」라 원래도 강조 색이 아니라 **더 진해져도 뜻이 안 바뀐다.**
+          `scripts/check-design.mjs`가 이 짝을 검사한다.
+        */
+        neutral: 'bg-neutral-soft text-fg-muted',
       },
     },
     defaultVariants: { variant: 'neutral' },

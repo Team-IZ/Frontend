@@ -260,7 +260,8 @@ function PublishedBody({ report }: { report: Extract<RoundReport, { status: 'PUB
           <LockIcon className="size-5 shrink-0 text-fg-muted" />
           <div>
             <b className="text-fg">이 리포트는 요약만 공개돼 있어요</b>
-            <div className="text-xs text-fg-subtle">
+            {/* 회색 면 위라 `fg-subtle`은 3.93:1로 AA 미달이다(Badge와 같은 건) */}
+            <div className="text-xs text-fg-muted">
               문답 원문과 자세한 해설은 매니저가 공개하면 열려요
             </div>
           </div>

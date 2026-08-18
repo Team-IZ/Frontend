@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useNavigate, Navigate, Link } from 'react-router'
+import { useNavigate, Navigate } from 'react-router'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { initialScreenFor } from './authStore'
 import { useSession, useSignIn } from './useSession'
@@ -267,31 +267,19 @@ export default function LoginScreen() {
             </div>
           </form>
 
-          {/* 폼의 일부로 읽히게 붙여 둔다 — 아래 dev 블록과 같은 무게로 보이면 안 된다 */}
+          {/* 폼의 일부로 읽히게 붙여 둔다 — 위 dev 블록(발표용 바로 입장)과 같은 무게로 보이면 안 된다 */}
           <div className="mt-5 text-center">
             <TextLink to="/shared/password-reset">비밀번호를 잊으셨나요?</TextLink>
           </div>
 
           {/*
-            **dev 안내를 지웠다.** 실서버 연동 여부·차단 정책·재설정 토큰 같은 설명이
-            넉 줄 쌓여 있었는데, 그 내용은 화면이 실제로 알려 주거나(차단되면 서버가 남은
-            시간을 말한다) 이미 다른 곳에 적혀 있다. 두 곳에 적으면 한쪽이 반드시 낡는다.
-
-            남긴 것은 **아직 목으로 도는 초대 흐름** 링크 둘뿐이다 — 그건 눌러 봐야만
-            갈 수 있고 다른 진입 경로가 없다.
+            **한때 여기 아래에 목으로 도는 초대 흐름 링크(매니저 가입·교육생 활성화)와
+            dev 안내 넉 줄이 더 있었다.** 안내 문구는 화면이 실제로 알려 주거나 이미
+            다른 곳에 적혀 있어 먼저 지웠고(두 곳에 적으면 한쪽이 반드시 낡는다), 남겨
+            뒀던 목 링크 둘도 8/19 실제 초대 메일로 두 흐름 다 엔드투엔드 검증
+            완료(가입·활성화·로그인까지 확인)했으므로 마저 지웠다 — 이제 진입 경로는
+            실제 초대 메일뿐이고, 그게 맞는 경로다.
           */}
-          {SHOW_DEV_UI && (
-            <div className="mt-8 flex items-center justify-center gap-2 border-t border-border pt-4 text-[11px] text-fg-subtle">
-              <span>초대 링크(목)</span>
-              <Link to="/invite/mgr-8f3a" className="text-primary hover:underline">
-                매니저 가입
-              </Link>
-              <span aria-hidden="true">·</span>
-              <Link to="/invite/stu-4c19" className="text-primary hover:underline">
-                교육생 활성화
-              </Link>
-            </div>
-          )}
         </AuthForm>
       </div>
     </div>

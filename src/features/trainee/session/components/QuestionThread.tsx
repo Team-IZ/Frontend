@@ -177,15 +177,15 @@ function Dot() {
 }
 
 /*
-  라벨이 `질문 N`이 아니라 **단계 이름**이다 — 질문 하나가 단계 하나이고, 학생이 지금
-  어느 깊이에 있는지가 순번보다 쓸모 있다. 점수는 절대 안 보인다(A5).
+  라벨은 **순번뿐이다.** 한동안 단계 이름(`코드 이해`·`설계 논리`·`대안 비교`·`반례 대응`)을
+  보여줬는데, 그 이름 자체가 **무엇을 답해야 하는지 알려주는 힌트**다 — `대안 비교`라고
+  적혀 있으면 질문을 안 읽어도 다른 방법과 비교하면 된다는 것을 안다.
+
+  응시 중에는 숨기고, 어느 축에서 막혔는지는 **리포트에서** 알려준다. 그게 이 제품이
+  축을 나눠 둔 이유이기도 하다.
+
+  점수도 절대 안 보인다(A5).
 */
-const LEVEL_LABEL = {
-  1: '코드 이해',
-  2: '설계 논리',
-  3: '대안 비교',
-  4: '반례 대응',
-} as const
 
 function QuestionBubble({
   mode,
@@ -200,7 +200,7 @@ function QuestionBubble({
   refText: string
   active?: boolean
 }) {
-  const label = mode === 'REVIEW' ? `다시 보기 · ${LEVEL_LABEL[level]}` : LEVEL_LABEL[level]
+  const label = mode === 'REVIEW' ? `다시 보기 · 질문 ${level}` : `질문 ${level}`
   return (
     <div
       className={cn(

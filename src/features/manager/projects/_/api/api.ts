@@ -12,6 +12,7 @@ import {
   useAutoAssignTeams,
   useConfirmTeams,
   useReopenTeams,
+  useDisbandTeam,
 } from '@/api/projectExecution/useProjectExecutionMutations'
 import {
   useFindProjectEvaluationSummary,
@@ -73,4 +74,5 @@ export {
   useAutoAssignTeams,
   useConfirmTeams,
   useReopenTeams,
+  useDisbandTeam,
 }

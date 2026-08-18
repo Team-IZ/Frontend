@@ -15,7 +15,8 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
-import { Spinner } from '@/components/ui/Spinner'
+import StaleBlock from '@/components/common/StaleBlock'
+import TableSkeleton from '@/components/common/TableSkeleton'
 import {
   InputGroup,
   InputGroupAddon,
@@ -41,7 +42,6 @@ import { maskEmail } from '@/lib/utils/mask'
 import { cn } from '@/lib/utils/cn'
 import { NA_PATTERN, REACH_STYLE } from '@/components/common/reach'
 import { useDebounced } from '@/lib/useDebounced'
-import { staleProps } from '@/lib/listQuery'
 import { useManagerCohort } from '@/stores/cohortScope'
 import { PAGE_SIZE, useManagedClassrooms, useRoster } from './_/api/api'
 import type { AccountStatus, ConceptReach, TraineeRow } from './_/api/types'
@@ -193,14 +193,19 @@ export default function TraineeListScreen() {
   const classrooms = useManagedClassrooms(cohortId)
 
   const view = roster.data
-  const classOptions = classrooms.data?.classrooms ?? []
+  /*
+    **`?? []`로 뭉개지 않는다**(화면 규칙 E) — 아직 안 온 것과 없는 것은 다르다.
+    빈 배열로 만들면 반 목록이 오기 전에 빈 상태가 「담당 반 0개에서 찾았습니다」라고
+    말한다. 담당 반이 0개인 매니저는 명단도 못 보므로 그 문장은 언제나 거짓이다.
+  */
+  const classOptions = classrooms.data?.classrooms
   /* 서버가 「이번 회차」를 골라 줬으면 드롭다운이 그 값을 그린다(첫 진입) */
   const selectedRound = round ?? view?.roundId ?? ''
   const roundItems = Object.fromEntries(
     (view?.rounds ?? []).map((r) => [r.assessmentRoundId, `회차 · ${r.label}`]),
   )
   const classItems: Record<string, string> = { ALL: '반 · 전체' }
-  for (const c of classOptions) classItems[c.classroomId] = `반 · ${c.name}`
+  for (const c of classOptions ?? []) classItems[c.classroomId] = `반 · ${c.name}`
 
   const narrowed =
     !!settledSearch || classFilter !== ALL || accountFilter !== ALL || (view?.total ?? 0) === 0
@@ -294,7 +299,7 @@ export default function TraineeListScreen() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">반 · 전체</SelectItem>
-            {classOptions.map((c) => (
+            {(classOptions ?? []).map((c) => (
               <SelectItem key={c.classroomId} value={c.classroomId}>
                 반 · {c.name}
               </SelectItem>
@@ -350,10 +355,20 @@ export default function TraineeListScreen() {
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
-      ) : roster.isPending ? (
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" aria-label="명단을 불러오는 중" />
-        </div>
+      ) : !view && !roster.isError ? (
+        /*
+          ⚠ **`isPending`으로 판정하지 않는다** — 기수를 아직 못 받아 `enabled: false`인
+          동안에도 값은 없다. **값이 있나 없나**로 가른다(MG-03과 같은 판정).
+
+          높이는 이 표에서 잰 값이다 — 헤더 38.5 · 행 57.3(두 줄 셀이라 기본 53보다 크다)
+          · 푸터 44(`mt-3` 12 + 페이저 32). 20행은 `PAGE_SIZE`와 같다.
+        */
+        <TableSkeleton
+          rows={PAGE_SIZE}
+          cols={['w-[22%]', 'w-[13%]', 'w-[8%]', 'w-[10%]', 'w-[22%]', 'w-[10%]', 'w-[3%]']}
+          rowH={57.3}
+          footerH={44}
+        />
       ) : roster.isError || !view ? (
         <Empty>
           <EmptyHeader>
@@ -364,56 +379,66 @@ export default function TraineeListScreen() {
             다시 시도
           </Button>
         </Empty>
-      ) : view.rows.length === 0 ? (
-        /*
-          빈 결과가 "아직 없음"인지 "필터에 안 걸림"인지 문구가 갈린다 — 하나로 묶으면
-          매니저가 무엇을 기다려야 하는지 모른다. 판정은 **조회에 실제로 나간 검색어**로
-          한다(입력 원본으로 하면 타이핑 첫 글자에 아직 안 좁혀진 결과를 두고 말한다).
-        */
-        narrowed && view.scopeTotal > 0 ? (
-          <Empty>
-            <EmptyHeader>
-              <EmptyTitle>
-                {settledSearch
-                  ? `"${settledSearch}"와 맞는 사람이 없습니다`
-                  : '조건에 맞는 교육생이 없습니다'}
-              </EmptyTitle>
-              <EmptyDescription>
-                담당 반 {classOptions.length}개 · {view.scopeTotal}명에서 찾았습니다.
-                {accountFilter !== ALL && (
-                  <>
-                    <br />
-                    계정 필터가 <b className="text-fg-muted">{ACCOUNT_LABEL[accountFilter]}</b>으로
-                    걸려 있어요 — 초대 대기나 비활성일 수 있습니다.
-                  </>
-                )}
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        ) : (
-          // 명단은 오퍼레이터가 등록하므로 생성 유도를 넣지 않는다(F6)
-          <Empty>
-            <EmptyHeader>
-              <EmptyTitle>이 반에 등록된 교육생이 없습니다</EmptyTitle>
-              <EmptyDescription>
-                기수 명단과 반 배정이 끝나면 여기에 나타납니다.
-                <br />
-                명단은 <b className="text-fg-muted">오퍼레이터가 등록</b>합니다.
-              </EmptyDescription>
-            </EmptyHeader>
-          </Empty>
-        )
       ) : (
-        <>
-          {/* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `lib/listQuery` */}
-          <div {...staleProps(roster.isPlaceholderData)}>
-            <TableFrame>
-              <Table className="table-fixed border-0 bg-transparent rounded-none">
-                <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="w-64">교육생</TableHead>
-                    <TableHead className="w-36">개념 도달</TableHead>
-                    {/*
+        /*
+          🔴 **빈 상태도 같이 덮는다.** 처음엔 표 갈래만 감쌌는데, 결과가 0건인 조건에서
+          다른 조건으로 바꾸면 **6.6초 동안 「조건에 맞는 교육생이 없습니다」가 그대로**
+          있고 로딩 표시가 하나도 없었다(실측 · 조회를 3초 늦춰 재현).
+
+          0건도 **옛 조건의 결과**다 — 규칙 E가 "표를 비우지 말라"고 하는 것과 같은 이유로
+          여기도 덮어야 한다. 푸터까지 함께 감싸는 것은 개수도 같이 옛 값이기 때문이다.
+        */
+        <StaleBlock stale={roster.isPlaceholderData} label="명단을 불러오는 중">
+          {view.rows.length === 0 ? (
+            /*
+              빈 결과가 "아직 없음"인지 "필터에 안 걸림"인지 문구가 갈린다 — 하나로 묶으면
+              매니저가 무엇을 기다려야 하는지 모른다. 판정은 **조회에 실제로 나간 검색어**로
+              한다(입력 원본으로 하면 타이핑 첫 글자에 아직 안 좁혀진 결과를 두고 말한다).
+            */
+            narrowed && view.scopeTotal > 0 ? (
+              <Empty>
+                <EmptyHeader>
+                  <EmptyTitle>
+                    {settledSearch
+                      ? `"${settledSearch}"와 맞는 사람이 없습니다`
+                      : '조건에 맞는 교육생이 없습니다'}
+                  </EmptyTitle>
+                  <EmptyDescription>
+                    {/* 반 목록이 아직이면 반 수를 빼고 말한다 — 0개라고 하지 않는다 */}
+                    {classOptions ? `담당 반 ${classOptions.length}개 · ` : ''}
+                    {view.scopeTotal}명에서 찾았습니다.
+                    {accountFilter !== ALL && (
+                      <>
+                        <br />
+                        계정 필터가 <b className="text-fg-muted">{ACCOUNT_LABEL[accountFilter]}</b>
+                        으로 걸려 있어요 — 초대 대기나 비활성일 수 있습니다.
+                      </>
+                    )}
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            ) : (
+              // 명단은 오퍼레이터가 등록하므로 생성 유도를 넣지 않는다(F6)
+              <Empty>
+                <EmptyHeader>
+                  <EmptyTitle>이 반에 등록된 교육생이 없습니다</EmptyTitle>
+                  <EmptyDescription>
+                    기수 명단과 반 배정이 끝나면 여기에 나타납니다.
+                    <br />
+                    명단은 <b className="text-fg-muted">오퍼레이터가 등록</b>합니다.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
+            )
+          ) : (
+            <>
+              <TableFrame>
+                <Table className="table-fixed border-0 bg-transparent rounded-none">
+                  <TableHeader>
+                    <TableRow className="hover:bg-transparent">
+                      <TableHead className="w-64">교육생</TableHead>
+                      <TableHead className="w-36">개념 도달</TableHead>
+                      {/*
                       **`2단 이하`가 아니라 `2단 미만`이다.** 목 열 이름을 그대로 뒀다가
                       렌더에서 잡았다 — `2·2·1`인 사람이 `1/3`, `2·2·2`인 사람이 `0/3`으로
                       나온다. 서버는 **0~1단**만 센다(원장이 `reach_level <= 1`).
@@ -421,116 +446,118 @@ export default function TraineeListScreen() {
                       30차 R5로 확정됐다 — 값이 아니라 설명이 틀린 것이었고, 백엔드가
                       명단·상세·타임라인 7곳의 문구를 정정했다. 이 라벨이 기준이다.
                     */}
-                    <TableHead className="w-24">2단 미만</TableHead>
-                    <TableHead className="w-28 text-center">이번 회차</TableHead>
-                    <TableHead className="w-64 pl-8">우수 누적</TableHead>
-                    <TableHead className="w-28">계정</TableHead>
-                    <TableHead className="w-8" />
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {view.rows.map((t) => {
-                    const hot = t.lowCount !== null && t.lowCount >= 2
-                    return (
-                      <TableRow
-                        key={t.id}
-                        className="hover:bg-surface-2 cursor-pointer"
-                        onClick={() => navigate(`/manager/trainees/${t.id}`)}
-                      >
-                        <TableCell className="w-64">
-                          <div className="flex items-center gap-3">
-                            <Avatar aria-hidden="true">
-                              <AvatarFallback className="bg-primary-soft text-primary font-semibold">
-                                {t.name.slice(0, 1)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <span className="flex items-center gap-1.5">
-                                <Link
-                                  to={`/manager/trainees/${t.id}`}
-                                  aria-label={`${t.name} 상세 보기`}
-                                  className="text-fg hover:text-primary font-semibold hover:underline"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {t.name}
-                                </Link>
-                                <span className="text-fg-subtle text-2xs">{t.className}</span>
-                              </span>
-                              <p className="text-fg-subtle text-2xs">{maskEmail(t.email)}</p>
+                      <TableHead className="w-24">2단 미만</TableHead>
+                      <TableHead className="w-28 text-center">이번 회차</TableHead>
+                      <TableHead className="w-64 pl-8">우수 누적</TableHead>
+                      <TableHead className="w-28">계정</TableHead>
+                      <TableHead className="w-8" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {view.rows.map((t) => {
+                      const hot = t.lowCount !== null && t.lowCount >= 2
+                      return (
+                        <TableRow
+                          key={t.id}
+                          className="hover:bg-surface-2 cursor-pointer"
+                          onClick={() => navigate(`/manager/trainees/${t.id}`)}
+                        >
+                          <TableCell className="w-64">
+                            <div className="flex items-center gap-3">
+                              <Avatar aria-hidden="true">
+                                <AvatarFallback className="bg-primary-soft text-primary font-semibold">
+                                  {t.name.slice(0, 1)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <span className="flex items-center gap-1.5">
+                                  <Link
+                                    to={`/manager/trainees/${t.id}`}
+                                    aria-label={`${t.name} 상세 보기`}
+                                    className="text-fg hover:text-primary font-semibold hover:underline"
+                                    onClick={(e) => e.stopPropagation()}
+                                  >
+                                    {t.name}
+                                  </Link>
+                                  <span className="text-fg-subtle text-2xs">{t.className}</span>
+                                </span>
+                                <p className="text-fg-subtle text-2xs">{maskEmail(t.email)}</p>
+                              </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="w-36 text-xs">
-                          <ConceptReachCell reach={t.reach} />
-                        </TableCell>
-                        <TableCell className="w-24 text-xs tabular-nums">
-                          {/*
+                          </TableCell>
+                          <TableCell className="w-36 text-xs">
+                            <ConceptReachCell reach={t.reach} />
+                          </TableCell>
+                          <TableCell className="w-24 text-xs tabular-nums">
+                            {/*
                             분모는 **서버가 준 사람별 문항 수**다(`expectedConceptCount`).
                             목이 `/3`을 박아 뒀는데 실제로는 2·3이 섞여 온다 — 코드에
                             근거가 없어 문항이 안 만들어지면 그 사람 분모가 줄어든다.
                           */}
-                          {t.lowCount === null ? (
-                            <span className="text-fg-subtle">—</span>
-                          ) : (
-                            <span className={hot ? 'text-warning' : 'text-fg-muted'}>
-                              <b className={cn('font-bold', hot ? 'text-warning' : 'text-fg')}>
-                                {t.lowCount}
-                              </b>
-                              /{t.lowTotal}
-                            </span>
-                          )}
-                        </TableCell>
-                        <TableCell className="w-28 text-center">
-                          <RoundBadge kind={t.badge} />
-                        </TableCell>
-                        <TableCell className="w-64 pl-8 text-xs">
-                          <AceOrNoteCell row={t} />
-                        </TableCell>
-                        <TableCell className="w-28">
-                          <AccountStatusBadge status={t.accountStatus} />
-                          {t.inactivated && (
-                            <p className="text-fg-subtle mt-0.5 text-2xs">
-                              {[t.inactivated.reason, t.inactivated.at?.slice(5, 10)]
-                                .filter(Boolean)
-                                .join(' · ')}
-                            </p>
-                          )}
-                        </TableCell>
-                        <TableCell aria-hidden="true" className="w-8 text-fg-subtle text-right">
-                          ›
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-            </TableFrame>
-          </div>
+                            {t.lowCount === null ? (
+                              <span className="text-fg-subtle">—</span>
+                            ) : (
+                              <span className={hot ? 'text-warning' : 'text-fg-muted'}>
+                                <b className={cn('font-bold', hot ? 'text-warning' : 'text-fg')}>
+                                  {t.lowCount}
+                                </b>
+                                /{t.lowTotal}
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="w-28 text-center">
+                            <RoundBadge kind={t.badge} />
+                          </TableCell>
+                          <TableCell className="w-64 pl-8 text-xs">
+                            <AceOrNoteCell row={t} />
+                          </TableCell>
+                          <TableCell className="w-28">
+                            <AccountStatusBadge status={t.accountStatus} />
+                            {t.inactivated && (
+                              <p className="text-fg-subtle mt-0.5 text-2xs">
+                                {[t.inactivated.reason, t.inactivated.at?.slice(5, 10)]
+                                  .filter(Boolean)
+                                  .join(' · ')}
+                              </p>
+                            )}
+                          </TableCell>
+                          <TableCell aria-hidden="true" className="w-8 text-fg-subtle text-right">
+                            ›
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })}
+                  </TableBody>
+                </Table>
+              </TableFrame>
 
-          <div className="mt-3 grid grid-cols-3 items-center">
-            <p className="text-fg-subtle text-xs">
-              {`${view.total}명 중 ${page * PAGE_SIZE + 1}–${page * PAGE_SIZE + view.rows.length}`}
-            </p>
-            <div className="flex justify-center">
-              <Pagination className="mx-0 w-auto">
-                <PaginationContent>
-                  {Array.from({ length: view.totalPages }, (_, i) => (
-                    <PaginationItem key={i}>
-                      <PaginationLink
-                        isActive={i === page}
-                        aria-label={`${i + 1}쪽`}
-                        onClick={() => setFilters((f) => ({ ...f, page: i }))}
-                      >
-                        {i + 1}
-                      </PaginationLink>
-                    </PaginationItem>
-                  ))}
-                </PaginationContent>
-              </Pagination>
-            </div>
-            <div />
-          </div>
-        </>
+              <div className="mt-3 grid grid-cols-3 items-center">
+                <p className="text-fg-subtle text-xs">
+                  {/* 쪽 번호는 **행과 같은 응답**에서 온 것을 쓴다 — `types.ts`의 `page` */}
+                  {`${view.total}명 중 ${view.page * PAGE_SIZE + 1}–${view.page * PAGE_SIZE + view.rows.length}`}
+                </p>
+                <div className="flex justify-center">
+                  <Pagination className="mx-0 w-auto">
+                    <PaginationContent>
+                      {Array.from({ length: view.totalPages }, (_, i) => (
+                        <PaginationItem key={i}>
+                          <PaginationLink
+                            isActive={i === page}
+                            aria-label={`${i + 1}쪽`}
+                            onClick={() => setFilters((f) => ({ ...f, page: i }))}
+                          >
+                            {i + 1}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ))}
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+                <div />
+              </div>
+            </>
+          )}
+        </StaleBlock>
       )}
     </ConsoleShell>
   )

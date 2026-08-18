@@ -14,8 +14,16 @@
 /** 계층 — 서버 값 그대로. 목은 소문자였다(`class`·`team`·`person`) */
 export type HeatmapLevel = 'CLASS' | 'TEAM' | 'TRAINEE'
 
-/** 최초 응시 / 다시 보기 — 목에 없던 축이다 */
-export type AttemptView = 'INITIAL' | 'REVIEW'
+/*
+  🔴 **다시 보기(`attemptView=REVIEW`)는 이 화면의 축이 아니다.**
+
+  서버 파라미터에는 있고 기본값이 `INITIAL`이라 한때 토글로 그렸는데, 히트맵이
+  답하는 질문은 「개인 문제인가, 반 문제인가」이고 그 판단은 **최초 성적으로만**
+  한다(사용자 지시). 다시 보기는 개인이 스스로 여는 보충이라 반·팀 평균에 섞으면
+  같은 격자가 두 가지 뜻을 갖게 된다.
+
+  그래서 **파라미터를 아예 안 보낸다** — 서버 기본값이 `INITIAL`이다.
+*/
 
 export type HeatmapConcept = {
   problemNo: number
@@ -51,7 +59,6 @@ export type HeatmapRow = {
 
 export type HeatmapView = {
   level: HeatmapLevel
-  attemptView: AttemptView
   /** 지금 보고 있는 반·팀. `CLASS` 계층에는 없다 */
   scope: {
     classroomId: string

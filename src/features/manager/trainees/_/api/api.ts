@@ -119,6 +119,7 @@ function toRosterView(res: Server): RosterView {
     },
     rounds,
     roundId: res.assessmentRoundId ?? null,
+    page: res.page,
   }
 }
 
@@ -222,8 +223,19 @@ export function useTraineeDetail(cohortId: string | undefined, traineeId: string
  * 이력 — **커서 페이징이라 한 번에 넉넉히 받는다.**
  *
  * 이 화면은 회차별로 접어서 다 보여주는 구조라 「더 보기」가 들어갈 자리가 없다.
- * 회차 6 × 이벤트 4가 실측 15건이라 100이면 한참 남는다 — 넘치면 `hasNext`가 참으로
- * 오므로 그때 이어받기를 붙인다.
+ *
+ * ⚠ **`size`의 단위는 이벤트가 아니라 회차다** — **스펙에 이미 적혀 있다**
+ * (`⚠️ size는 회차 수다. 이벤트 수가 아니다`).
+ *
+ * ```
+ * size=1    회차 1 · 이벤트 3    hasNext=true
+ * size=5    회차 5 · 이벤트 15   hasNext=true
+ * size=20   회차 6 · 이벤트 18   hasNext=false
+ * ```
+ *
+ * 하드닝 1차에 「`size`가 무시된다」로 적었던 것은 **이벤트가 18건뿐이라 20과 100이
+ * 같은 결과였던 것**이고, 그때 스펙을 안 읽었다. 기수 회차는 6이라 100이면 늘 전량이고,
+ * 넘치면 `hasNext`가 참으로 오므로 그때 이어받기를 붙인다.
  */
 export function useTraineeTimeline(cohortId: string | undefined, traineeId: string | undefined) {
   const query = useFindManagerTraineeTimeline(

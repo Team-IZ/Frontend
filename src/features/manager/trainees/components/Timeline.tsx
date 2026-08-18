@@ -189,7 +189,7 @@ function AssessmentRow({
                 </span>
                 {p.conceptName}
                 {hintText && (
-                  <span className="rounded-full border border-border px-2 py-0.5 text-2xs font-semibold text-fg-subtle">
+                  <span className="border-border text-fg-subtle rounded-full border px-2 py-0.5 text-2xs font-semibold">
                     {hintText}
                   </span>
                 )}
@@ -200,14 +200,14 @@ function AssessmentRow({
           )
         })}
         {evaluation.isPending && (
-          <p className="mt-2 text-2xs text-fg-subtle">채점 근거를 불러오는 중…</p>
+          <p className="text-fg-subtle mt-2 text-2xs">채점 근거를 불러오는 중…</p>
         )}
         {/*
           발행 전에는 `note`가 전부 null이다 — 비워 두면 매니저가 "이 사람은 근거가
           없구나"로 읽으므로 왜 없는지를 말한다.
         */}
         {evaluation.data && !evaluation.data.reportPublished && (
-          <p className="mt-3 border-t border-primary-border pt-2.5 text-2xs text-fg-subtle">
+          <p className="border-primary-border text-fg-subtle mt-3 border-t pt-2.5 text-2xs">
             채점 근거는 회차 리포트가 발행된 뒤에 나옵니다.
           </p>
         )}
@@ -521,6 +521,25 @@ export function Timeline({
           <EmptyTitle>아직 기록이 없어요</EmptyTitle>
           <EmptyDescription>
             이해도 확인·다시 보기·면담이 생기면 여기에 시간 순으로 쌓입니다.
+          </EmptyDescription>
+        </Empty>
+      ) : total === 0 ? (
+        /*
+          🔴 **필터에 걸린 것이 없으면 회차 껍데기만 남았다.** 면담이 없는 교육생에게
+          `면담` 칩을 누르면 회차 줄 6개가 그대로 있고 그 아래가 전부 비었다 — 「면담 0건」
+          이라는 작은 회색 글씨 하나뿐이라 **고장으로 읽힌다**(실측).
+
+          아무것도 없는 회차 줄은 정보가 아니다. 그 자리에 이유를 적는다. 되돌리는 버튼은
+          두지 않는다 — 칩이 바로 위에 있고, 규칙 F("고를 수 있는 것만")대로 이미 눌린
+          칩이 무엇인지 보인다.
+        */
+        <Empty>
+          <EmptyTitle>
+            {FILTER_LABEL[filter as Exclude<EventFilter, 'ALL'>]} 기록이 없어요
+          </EmptyTitle>
+          <EmptyDescription>
+            이 교육생에게는 아직 없습니다. 위에서 <b className="text-fg-muted">전체</b>를 누르면
+            다른 기록을 볼 수 있어요.
           </EmptyDescription>
         </Empty>
       ) : (

@@ -1,9 +1,9 @@
 import { useMemo } from 'react'
 import { useFindManagerHeatmap } from '@/api/analytics/useAnalyticsQueries'
-import { useFindTraineeRoster } from '@/api/member/useMemberQueries'
+import { useFindInterviewRoundOptions } from '@/api/intervention/useInterventionQueries'
 import type { findManagerHeatmap_Response } from '@/api/analytics/analyticsTypes'
 import { listQueryOptions } from '@/lib/listQuery'
-import type { AttemptView, HeatmapLevel, HeatmapRow, HeatmapView, RoundOption } from './types'
+import type { HeatmapLevel, HeatmapRow, HeatmapView, RoundOption } from './types'
 
 /*
   MG-02 히트맵 도메인 훅 — **생성 훅을 감싸 화면 어휘로 옮긴다.**
@@ -30,7 +30,6 @@ export type HeatmapQuery = {
   projectId: string
   assessmentRoundId: string
   level: HeatmapLevel
-  attemptView?: AttemptView
   /** `TEAM`·`TRAINEE`에 필수 — 없으면 서버가 `HEATMAP_SCOPE_INVALID`(400)를 낸다 */
   classroomId?: string
   /** `TRAINEE`에서 팀까지 좁힐 때 */
@@ -63,7 +62,6 @@ export function useHeatmap(params: HeatmapQuery | undefined) {
         projectId: params?.projectId ?? '',
         assessmentRoundId: params?.assessmentRoundId ?? '',
         level: params?.level ?? 'CLASS',
-        attemptView: params?.attemptView,
         classroomId: params?.classroomId,
         teamId: params?.teamId,
       },
@@ -75,26 +73,30 @@ export function useHeatmap(params: HeatmapQuery | undefined) {
 }
 
 /**
- * 회차 선택지 — **히트맵 전용 조회가 없어 명부 응답을 빌린다.**
+ * 회차 선택지.
  *
- * `size=1`로 부른다: 필요한 것은 `rounds[]`뿐이고 교육생 목록은 안 쓴다.
- * 명부 화면과 쿼리 키가 달라 캐시는 공유되지 않지만, 같은 키를 쓰면 이 화면이
- * 명부의 필터 조건에 묶인다.
+ * **한때 교육생 명부를 빌려 썼다.** 히트맵은 `projectId`와 `assessmentRoundId`가 둘 다
+ * 필수인데 그 **짝**을 주는 조회가 명부뿐이었고, 명부는 실측 7~8초라 격자와 무관한
+ * 조회 하나가 첫 진입을 12초로 만들고 있었다(32차 R10).
  *
- * ⚠ 명부 조회는 실측 7초다(32차 R9) — 회차 드롭다운이 늦게 차는 원인이 여기 있다.
+ * **32차 R10으로 `/interviews/rounds`에 `projectId`가 실렸다** — 이제 1.1초짜리 조회
+ * 하나면 된다. 스펙도 「이 값이 붙으면서 그 왕복이 없어진다」고 적고 있다.
+ *
+ * ⚠ 이름이 `interviews`지만 **면담 전용이 아니다** — 기수의 이해도 확인 회차 목록이라
+ * 히트맵도 같은 것을 본다. 면담 화면과 쿼리 키를 공유해 캐시도 함께 쓴다.
  */
 export function useHeatmapRounds(cohortId: string | undefined) {
-  const query = useFindTraineeRoster(
-    { path: { cohortId: cohortId ?? '' }, query: { page: 0, size: 1 } },
-    { enabled: !!cohortId },
-  )
+  const query = useFindInterviewRoundOptions({ enabled: !!cohortId })
   const data = useMemo<RoundOption[] | undefined>(
     () =>
-      query.data?.rounds?.map((r) => ({
+      query.data?.map((r) => ({
         assessmentRoundId: r.assessmentRoundId,
         projectId: r.projectId,
-        /* `미니프로젝트 6차`에 차수가 이미 있다 — 붙이면 `… 6차 · 6차`가 된다 */
-        label: r.projectName,
+        /*
+          `미니프로젝트 6차 이해도 확인` — 뒤의 `이해도 확인`은 이 화면에서 군더더기다
+          (격자 자체가 이해도다). 회차만 남긴다.
+        */
+        label: r.label.replace(/\s*이해도 확인\s*$/, ''),
       })),
     [query.data],
   )
@@ -104,7 +106,6 @@ export function useHeatmapRounds(cohortId: string | undefined) {
 function toView(res: Server): HeatmapView {
   return {
     level: res.level as HeatmapLevel,
-    attemptView: res.attemptView as AttemptView,
     scope: res.scope
       ? {
           classroomId: res.scope.classroomId,

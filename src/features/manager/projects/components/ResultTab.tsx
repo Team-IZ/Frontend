@@ -4,7 +4,7 @@ import type { UseQueryResult } from '@tanstack/react-query'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
-import { Spinner } from '@/components/ui/Spinner'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import {
   RESULT_STATUS_LABEL,
@@ -44,10 +44,26 @@ type Props = {
 export default function ResultTab({ projectId, query }: Props) {
   const [selected, setSelected] = useState<string>('summary')
 
-  if (query.isPending) {
+  if (!query.data && !query.isError) {
+    /* 실측 — 틀 578 · 왼쪽 목록 폭 basis-64 · 항목 36px(27개는 스크롤이라 16개만 그린다) */
     return (
-      <div className="flex justify-center py-16">
-        <Spinner className="size-6" aria-label="결과를 불러오는 중" />
+      <div
+        aria-hidden
+        className="border-border bg-surface flex h-[578px] overflow-hidden rounded-md border"
+      >
+        <div className="border-border bg-surface-2 flex-none basis-64 border-r py-2">
+          {Array.from({ length: 16 }, (_, i) => (
+            <div key={i} className="flex h-9 items-center justify-between px-4">
+              <Skeleton className="h-3 w-16" />
+              <Skeleton className="h-3 w-8" />
+            </div>
+          ))}
+        </div>
+        <div className="min-w-0 flex-1 p-5">
+          <Skeleton className="mb-3 h-4 w-40" />
+          <Skeleton className="mb-2 h-3 w-full" />
+          <Skeleton className="h-3 w-2/3" />
+        </div>
       </div>
     )
   }
@@ -82,8 +98,13 @@ export default function ResultTab({ projectId, query }: Props) {
   return (
     <div className="border-border bg-surface flex overflow-hidden rounded-md border">
       <div className="border-border bg-surface-2 max-h-[36rem] flex-none basis-64 overflow-y-auto border-r py-2">
+        {/*
+          `aria-current`를 단다 — 선택 표시가 **왼쪽 2px 선과 글자색뿐**이라 눈으로만
+          보인다. 27개 중 어느 것이 열려 있는지 스크린리더가 말할 수 있어야 한다.
+        */}
         <button
           type="button"
+          aria-current={selected === 'summary'}
           onClick={() => setSelected('summary')}
           className={
             selected === 'summary'
@@ -115,6 +136,7 @@ export default function ResultTab({ projectId, query }: Props) {
             <button
               key={t.userId}
               type="button"
+              aria-current={on}
               onClick={() => setSelected(t.userId)}
               className={
                 on

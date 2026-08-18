@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { ArrowLeft, Check } from 'lucide-react'
 import ConsoleShell from '@/shells/ConsoleShell'
 import { errorCopy } from '@/lib/errorCopy'
+import BriefSkeleton from './components/BriefSkeleton'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
 import {
@@ -13,7 +14,6 @@ import {
   DialogTitle,
 } from '@/components/ui/Dialog'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
-import { Spinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils/cn'
 import { useManagerCohort } from '@/stores/cohortScope'
 import RiskBadge from './components/RiskBadge'
@@ -124,12 +124,16 @@ export default function InterviewBriefScreen() {
     )
   }
 
-  if (brief.isPending) {
-    return shell(
-      <div className="flex justify-center py-16">
-        <Spinner className="size-6" aria-label="브리프를 불러오는 중" />
-      </div>,
-    )
+  if (!brief.data && !brief.isError) {
+    /*
+      🔴 **첫 진입은 스켈레톤이다**(화면 규칙 E · async-states §1-2). 스피너
+      자리(128px)와 실제 브리프(머리 + 블록 넷 = 700px 남짓)가 달라 도착할 때 본문이
+      통째로 밀렸다 — **AI 생성이 20초 넘게 걸리는 화면**이라 그 사이가 특히 길다.
+
+      ⚠ **`isPending`으로 판정하지 않는다** — `exists`가 거짓이면 조회가 꺼져 있어
+      `isPending`이 거짓이다. **값이 있나 없나**로 가른다.
+    */
+    return shell(<BriefSkeleton />)
   }
 
   if (brief.isError || !brief.data) {

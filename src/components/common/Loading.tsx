@@ -27,8 +27,11 @@ export function SlowNotice({ afterMs = 12000 }: { afterMs?: number }) {
   if (!slow) return null
   return (
     <p className="text-fg-subtle mt-4 text-center text-xs">
-      예상보다 오래 걸립니다. 서버가 깨어나는 중일 수 있습니다 — 조금 더 기다리거나 주소가 맞는지
-      확인해 주세요.
+      응답이 늦어지고 있어요.
+      <br />
+      서버가 잠들어 있다가 깨어나는 중일 수 있으니
+      <br />
+      조금만 더 기다리거나, 주소가 맞는지 확인해 주세요.
     </p>
   )
 }
@@ -75,9 +78,11 @@ export default function Loading({
       <Spinner className="size-6" aria-label={label} />
       {slow && (
         <p className="text-fg-subtle max-w-xs text-center text-xs">
-          예상보다 오래 걸립니다. 서버가 깨어나는 중일 수 있습니다 — 조금 더 기다리거나
+          응답이 늦어지고 있어요.
           <br />
-          주소가 맞는지 확인해 주세요.
+          서버가 잠들어 있다가 깨어나는 중일 수 있으니
+          <br />
+          조금만 더 기다리거나, 주소가 맞는지 확인해 주세요.
         </p>
       )}
     </div>

@@ -4,11 +4,12 @@
  * 화면 렌더는 검사하지 않는다. 여기 있는 것은 **입력을 넣으면 답이 정해지는 규칙**뿐이다
  * (검사 방식은 check-project-rules.mts와 같다 — 러너를 따로 들이지 않는다).
  *
- * 이 넷이 깨지면 조용히 틀린다:
+ * 이 셋이 깨지면 조용히 틀린다:
  *   · CSV 파싱   한 줄 때문에 전체가 막히거나, 오류 행 번호가 어긋난다
- *   · 도메인     기관 밖 주소가 등록되고 초대가 나간다
  *   · 정원       `22 → 24 / 25` 미리보기가 실제와 다르다
  *   · 최근 접속  `오늘`이 어제 것을 가리킨다
+ *
+ * 기관 도메인 제한은 8/18로 없앴다(백엔드도 동일하게 열었다) — 이메일은 형식만 본다.
  */
 import assert from 'node:assert'
 import { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL } from '../src/api/uploadLimits.ts'
@@ -27,16 +28,12 @@ import {
   toIsoDate,
 } from '../src/features/operator/admin/_/rules.ts'
 
-const DOMAIN = 'green.com'
-
 // ── 이메일 ──────────────────────────────────────────────────
-// 두 실패를 갈라야 한다 — 형식은 그 줄을, 도메인은 주소 자체를 고쳐야 한다
-assert.strictEqual(checkEmail('dohyun@green.com', DOMAIN), null)
-assert.strictEqual(checkEmail('DoHyun@GREEN.COM', DOMAIN), null, '대소문자를 가리지 않는다')
-assert.strictEqual(checkEmail('이름만', DOMAIN), 'INVALID_FORMAT')
-assert.strictEqual(checkEmail('someone@gmail.com', DOMAIN), 'DOMAIN_NOT_ALLOWED')
-// 도메인이 뒤에 붙기만 하면 되는 게 아니다 — `@`까지 맞아야 한다
-assert.strictEqual(checkEmail('a@evilgreen.com', DOMAIN), 'DOMAIN_NOT_ALLOWED')
+// 형식만 본다 — 기관 도메인 제한은 없다
+assert.strictEqual(checkEmail('dohyun@green.com'), null)
+assert.strictEqual(checkEmail('DoHyun@GREEN.COM'), null, '대소문자를 가리지 않는다')
+assert.strictEqual(checkEmail('이름만'), 'INVALID_FORMAT')
+assert.strictEqual(checkEmail('someone@gmail.com'), null, '도메인 제한 없음 — 형식만 맞으면 통과')
 
 // ── CSV ────────────────────────────────────────────────────
 {
@@ -46,23 +43,22 @@ assert.strictEqual(checkEmail('a@evilgreen.com', DOMAIN), 'DOMAIN_NOT_ALLOWED')
     '정하늘,haneul@green.com',
     '', // 빈 줄은 오류가 아니다 — 파일 끝 개행이 늘 붙는다
     '오류행,not-an-email',
-    '외부인,someone@gmail.com',
+    '외부인,someone@gmail.com', // 도메인 제한 없음 — 형식만 맞으면 유효 행이다
     '중복,dohyun@green.com',
   ].join('\n')
 
-  const { entries, invalid } = parseRosterCsv(csv, DOMAIN)
+  const { entries, invalid } = parseRosterCsv(csv)
 
   // **한 줄 때문에 전체를 막지 않는다** — 유효 행은 그대로 등록 후보다
-  assert.strictEqual(entries.length, 2, '유효 행만 남는다')
+  assert.strictEqual(entries.length, 3, '유효 행만 남는다')
   assert.deepStrictEqual(
     entries.map((e) => e.name),
-    ['한도현', '정하늘'],
+    ['한도현', '정하늘', '외부인'],
   )
 
   // **행 번호는 파일의 줄 번호다** — 편집기에서 그 줄을 찾을 수 있어야 한다
   assert.deepStrictEqual(invalid, [
     { line: 5, reason: 'INVALID_FORMAT' },
-    { line: 6, reason: 'DOMAIN_NOT_ALLOWED' },
     { line: 7, reason: 'DUPLICATE_IN_FILE' },
   ])
 }
@@ -82,7 +78,6 @@ assert.strictEqual(checkEmail('a@evilgreen.com', DOMAIN), 'DOMAIN_NOT_ALLOWED')
   */
   const { entries, invalid } = parseRosterCsv(
     '번호,이메일,소속,이름\n1,dohyun@green.com,백엔드,한도현',
-    DOMAIN,
   )
   assert.deepStrictEqual(
     entries,
@@ -94,34 +89,34 @@ assert.strictEqual(checkEmail('a@evilgreen.com', DOMAIN), 'DOMAIN_NOT_ALLOWED')
 
 {
   // 엑셀이 쉼표 뒤에 공백을 남기는 파일이 흔하다 — 머리글 칸도 trim 한다
-  const { entries, invalid } = parseRosterCsv('이름, 이메일\n한도현, dohyun@green.com', DOMAIN)
+  const { entries, invalid } = parseRosterCsv('이름, 이메일\n한도현, dohyun@green.com')
   assert.deepStrictEqual(entries, [{ name: '한도현', email: 'dohyun@green.com' }], '머리글 공백')
   assert.deepStrictEqual(invalid, [])
 }
 
 {
   // 두 열 중 하나라도 없으면 그 파일로는 아무것도 못 한다 — 서버도 400이다
-  const { entries, invalid } = parseRosterCsv('이메일\ndohyun@green.com', DOMAIN)
+  const { entries, invalid } = parseRosterCsv('이메일\ndohyun@green.com')
   assert.strictEqual(entries.length, 0, '이름 열이 없으면 파일 오류')
   assert.deepStrictEqual(invalid, [{ line: 1, reason: 'HEADER_NOT_FOUND' }])
 }
 
 {
   // 머리글이 없으면 **파일을 못 읽는다** — 행 오류가 아니라 파일 오류다
-  const { entries, invalid } = parseRosterCsv('한도현,dohyun@green.com', DOMAIN)
+  const { entries, invalid } = parseRosterCsv('한도현,dohyun@green.com')
   assert.strictEqual(entries.length, 0)
   assert.deepStrictEqual(invalid, [{ line: 1, reason: 'HEADER_NOT_FOUND' }])
 }
 
 {
   // BOM 은 첫 열 이름을 가린다 — 떼고 읽는다(서버도 BOM 파일은 받는다)
-  const { entries } = parseRosterCsv('\uFEFF이름,이메일\n한도현,dohyun@green.com', DOMAIN)
+  const { entries } = parseRosterCsv('\uFEFF이름,이메일\n한도현,dohyun@green.com')
   assert.deepStrictEqual(entries, [{ name: '한도현', email: 'dohyun@green.com' }], 'BOM')
 }
 
 {
   // 따옴표 안의 쉼표를 안 자른다 — 엑셀이 이름에 쉼표를 넣으면 그렇게 내보낸다
-  const { entries } = parseRosterCsv('이름,이메일\n"한, 도현",dohyun@green.com', DOMAIN)
+  const { entries } = parseRosterCsv('이름,이메일\n"한, 도현",dohyun@green.com')
   assert.deepStrictEqual(
     entries,
     [{ name: '한, 도현', email: 'dohyun@green.com' }],
@@ -138,17 +133,14 @@ assert.strictEqual(checkEmail('a@evilgreen.com', DOMAIN), 'DOMAIN_NOT_ALLOWED')
     (`400 TRAINEE_NAME_INVALID · "5행의 이름을 입력해야 합니다"` — 실측).
     화면만 관대하면 `✓ 유효 2명`이라 해 놓고 아무도 안 들어간다.
   */
-  const { entries, invalid } = parseRosterCsv(
-    '이름,이메일\n한도현,a@green.com\n,dohyun@green.com',
-    DOMAIN,
-  )
+  const { entries, invalid } = parseRosterCsv('이름,이메일\n한도현,a@green.com\n,dohyun@green.com')
   assert.strictEqual(entries.length, 1, '이름 있는 행만 유효')
   assert.deepStrictEqual(invalid, [{ line: 3, reason: 'NAME_REQUIRED' }])
 }
 
 {
   // 따옴표로 감싼 값도 읽는다(엑셀이 그렇게 내보낸다)
-  const { entries } = parseRosterCsv('"이름","이메일"\n"한도현","dohyun@green.com"', DOMAIN)
+  const { entries } = parseRosterCsv('"이름","이메일"\n"한도현","dohyun@green.com"')
   assert.deepStrictEqual(entries, [{ name: '한도현', email: 'dohyun@green.com' }])
 }
 
@@ -156,31 +148,25 @@ assert.strictEqual(checkEmail('a@evilgreen.com', DOMAIN), 'DOMAIN_NOT_ALLOWED')
 // **줄 번호가 입력칸 번호와 같아야 한다.** 빈 행을 걸러낸 뒤의 인덱스를 쓰면
 // 1행을 비우고 2행을 틀렸을 때 `1번째 줄 오류`라고 말한다 — 그 칸은 멀쩡한 빈 칸이다
 assert.deepStrictEqual(
-  checkRosterRows(
-    [
-      { name: '', email: '' },
-      { name: '박', email: '나쁜주소' },
-    ],
-    DOMAIN,
-  ),
+  checkRosterRows([
+    { name: '', email: '' },
+    { name: '박', email: '나쁜주소' },
+  ]),
   [{ line: 2, reason: 'INVALID_FORMAT' }],
 )
 
 // 입력칸 사이 중복 — 안 잡으면 `유효 2명`이라 해 놓고 서버가 1명만 등록한다
 assert.deepStrictEqual(
-  checkRosterRows(
-    [
-      { name: 'a', email: 'x@green.com' },
-      { name: 'b', email: 'X@GREEN.COM' },
-    ],
-    DOMAIN,
-  ),
+  checkRosterRows([
+    { name: 'a', email: 'x@green.com' },
+    { name: 'b', email: 'X@GREEN.COM' },
+  ]),
   [{ line: 2, reason: 'DUPLICATE_IN_FILE' }],
   '대소문자를 가리지 않는다',
 )
 
 // 안 친 칸은 오류가 아니다 — 마지막 빈 줄은 늘 있다
-assert.deepStrictEqual(checkRosterRows([{ name: '', email: '  ' }], DOMAIN), [])
+assert.deepStrictEqual(checkRosterRows([{ name: '', email: '  ' }]), [])
 
 // ── 반 편집 잠금(D30-②) ────────────────────────────────────
 // **개강일 하루 전까지만** 열린다. 시작일 당일은 이미 시작한 것이라 잠긴다

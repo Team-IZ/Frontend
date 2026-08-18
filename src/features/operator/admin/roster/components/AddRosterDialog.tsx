@@ -78,7 +78,10 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
   /** 진행 중인 CSV 등록 요청 — 닫으면서 취소할 수 있게 들고 있는다 */
   const submitAbortRef = useRef<AbortController | null>(null)
 
-  /** 기관 도메인은 세션이 준다(9차 Q3-④) — `null`이면 도메인 제한을 걸지 않는다 */
+  /*
+    기관 도메인은 세션이 준다(9차 Q3-④) — 등록 판정에는 더 안 쓴다(8/18, 도메인 제한
+    없앰). CSV 양식·직접 입력 placeholder의 **예시**로만 남긴다.
+  */
   const { data: me } = useGetCurrentMember()
   const domain = me?.emailDomain ?? undefined
   const scope = useCohortScope()
@@ -91,7 +94,7 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
     여기서 한 줄씩 `checkEmail`을 돌렸을 때 CSV가 잡는 것 둘을 놓쳤다: 빈 행이 앞에
     있으면 줄 번호가 밀렸고, 입력칸 사이 중복을 아예 안 봤다.
   */
-  const typedIssues: RosterIssue[] = domain ? checkRosterRows(rows, domain) : []
+  const typedIssues: RosterIssue[] = checkRosterRows(rows)
   /** 걸리지 않은 행만 등록 후보다. 번호가 칸과 맞으므로 그 번호로 걸러낸다 */
   const typedValid = rows.filter(
     (r, i) => r.email.trim().length > 0 && !typedIssues.some((x) => x.line === i + 1),
@@ -258,7 +261,7 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
 
             <TabsContent value="csv" className="pt-3">
               {/*
-                **파일 자체를 들고 있는다.** 화면이 그 자리에서 형식·도메인을 판정하고
+                **파일 자체를 들고 있는다.** 화면이 그 자리에서 형식을 판정하고
                 (`parseRosterCsv`), 서버에는 **원본 파일을 그대로** 보낸다 — 파싱한 결과를
                 다시 CSV로 만들어 보내면 판정 규칙이 두 벌이 된다.
               */}
@@ -281,8 +284,7 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
                 }}
               />
               <p className="text-fg-subtle mt-2 text-2xs">
-                수십~수백 명을 한 번에 넣을 때 씁니다. 기관 도메인 밖 주소는 등록되지 않습니다. 반
-                배정은 등록한 뒤 배정 모드에서 합니다.
+                수십~수백 명을 한 번에 넣을 때 씁니다. 반 배정은 등록한 뒤 배정 모드에서 합니다.
               </p>
             </TabsContent>
 

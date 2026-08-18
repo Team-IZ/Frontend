@@ -6,7 +6,7 @@ import { parseRosterCsv, type ParsedRoster } from '../rules'
 /*
   명단 CSV 고르기 — **열은 둘, 이름과 이메일**(목업 `#roster-add`).
 
-  파일을 고르는 즉시 **그 자리에서 판정한다.** 형식·도메인·파일 안 중복은 서버를 안 거쳐도
+  파일을 고르는 즉시 **그 자리에서 판정한다.** 형식·파일 안 중복은 서버를 안 거쳐도
   알 수 있고, 등록을 누른 뒤에 알려주면 수백 명짜리 파일을 다시 만들게 된다.
   서버만 아는 것(`이미 등록된 이메일`)은 부르는 쪽이 따로 물어본다.
 
@@ -27,9 +27,10 @@ type Props = {
 }
 
 /**
- * 내려받는 양식. **도메인은 그 기관 것을 쓴다** — `example.com`을 예시로 두면 그대로
- * 채워 올리고 「기관 도메인 밖 주소」로 전부 튕긴다. 이름 칸은 **비우면 서버가 파일
- * 전체를 거절**하므로(`TRAINEE_NAME_INVALID`) 예시 줄이 그것을 보여 준다.
+ * 내려받는 양식. **도메인은 그 기관 것을 쓴다** — 실제로 등록할 주소와 같은 모양을
+ * 보여주려는 것뿐이고, 다른 도메인을 채워 넣어도 더는 걸리지 않는다(8/18 결정). 이름
+ * 칸은 **비우면 서버가 파일 전체를 거절**하므로(`TRAINEE_NAME_INVALID`) 예시 줄이
+ * 그것을 보여 준다.
  */
 const template = (domain: string) => `이름,이메일\n홍길동,gildong@${domain || 'example.com'}\n`
 
@@ -88,7 +89,7 @@ export default function RosterCsvField({ domain, onChange }: Props) {
       return
     }
     setFileName(file.name)
-    onChange(parseRosterCsv(text, domain), file.name, file)
+    onChange(parseRosterCsv(text), file.name, file)
   }
 
   return (

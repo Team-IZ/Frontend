@@ -14,7 +14,6 @@ import { Spinner } from '@/components/ui/Spinner'
 import { isApiError } from '@/api/_contract'
 import { useInviteManager } from '@/api/member/useMemberMutations'
 import { useGetCurrentMember } from '@/api/member/useMemberQueries'
-import { checkEmail } from '../../_/rules'
 import { useCohortScope } from '../../_/cohortScope'
 import RequiredMark from '../../_/components/RequiredMark'
 
@@ -27,8 +26,9 @@ import RequiredMark from '../../_/components/RequiredMark'
   담당 반은 **선택**이다 — 사람을 먼저 뽑고 반을 나중에 정하는 순서가 실제로 있다.
   비워 두면 목록에 `미배정`으로 남고, 반 쪽에는 `담당 필요` 경고가 그대로 있다.
 
-  **도메인 밖 주소는 `저장 실패`가 아니라 다른 문구로 답한다** — 재시도해도 안 되는
-  일이라 "다시 시도"를 권하면 거짓말이 된다(케이스 표 `DOMAIN_NOT_ALLOWED`).
+  **기관 도메인 제한은 없앴다(8/18 결정).** 교육생 명단과 달리 매니저는 재직 여부를
+  도메인으로 가늠할 필요가 없다고 판단 — 어떤 주소든 초대할 수 있다. 서버가 그래도
+  `DOMAIN_NOT_ALLOWED`를 돌려줄 가능성에 대비해 그 케이스의 에러 문구 분기만 남겨 둔다.
 */
 type Props = {
   open: boolean
@@ -39,24 +39,11 @@ export default function InviteManagerDialog({ open, onOpenChange }: Props) {
   const [email, setEmail] = useState('')
   const [error, setError] = useState<string | null>(null)
 
-  /*
-    **기관 도메인은 세션이 준다**(9차 Q3-④로 `/members/me`에 `emailDomain`이 들어왔다).
-    전에는 `getOrg()`를 따로 불렀는데, 오퍼레이터는 `GET /organizations/{id}`가 403이라
-    그 길이 애초에 없었다 — 프론트 상수로 두면 기관이 둘이 되는 순간 틀린다.
-
-    **`null`일 수 있다**(기관에 도메인을 안 정한 경우) — 그때는 도메인 제한을 걸지 않는다.
-  */
   const { data: me } = useGetCurrentMember()
   const scope = useCohortScope()
   const invite = useInviteManager()
 
   const organizationId = me?.organizationId
-  const domain = me?.emailDomain ?? undefined
-  /** `@`를 치기 전에는 판정하지 않는다 — 다 치기 전에 붉어지면 타이핑을 방해한다 */
-  const domainProblem =
-    domain !== undefined &&
-    email.includes('@') &&
-    checkEmail(email.trim(), domain) === 'DOMAIN_NOT_ALLOWED'
 
   /*
     **닫으면 비운다.** 성공했을 때만 비우고 있어서, 주소를 치다 취소하고 다시 열면
@@ -88,7 +75,7 @@ export default function InviteManagerDialog({ open, onOpenChange }: Props) {
       const code = isApiError(e) ? e.code : undefined
       setError(
         code === 'DOMAIN_NOT_ALLOWED'
-          ? `${domain ?? '기관'} 주소로만 초대할 수 있습니다.`
+          ? '이 주소로는 초대할 수 없습니다.'
           : code === 'ALREADY_INVITED'
             ? '이미 초대한 주소입니다. 목록에서 재발송할 수 있습니다.'
             : '초대를 보내지 못했습니다. 이미 등록된 주소인지 확인해 주세요.',
@@ -124,15 +111,10 @@ export default function InviteManagerDialog({ open, onOpenChange }: Props) {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder={domain ? `name@${domain}` : ''}
-              aria-invalid={domainProblem || undefined}
+              placeholder="name@company.com"
             />
             <FieldDescription>
-              {domainProblem ? (
-                <span className="text-danger">{domain} 주소만 초대할 수 있습니다.</span>
-              ) : (
-                '이 주소로 초대가 나가고, 받는 사람은 이름과 비밀번호만 정하면 됩니다.'
-              )}
+              이 주소로 초대가 나가고, 받는 사람은 이름과 비밀번호만 정하면 됩니다.
             </FieldDescription>
           </Field>
 
@@ -158,9 +140,7 @@ export default function InviteManagerDialog({ open, onOpenChange }: Props) {
             취소
           </Button>
           <Button
-            disabled={
-              invite.isPending || email.trim().length === 0 || domainProblem || !organizationId
-            }
+            disabled={invite.isPending || email.trim().length === 0 || !organizationId}
             onClick={() => void submit()}
           >
             {invite.isPending && <Spinner className="size-3.5" />}

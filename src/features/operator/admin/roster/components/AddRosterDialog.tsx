@@ -13,8 +13,11 @@ import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Spinner } from '@/components/ui/Spinner'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
+import { useQueryClient } from '@tanstack/react-query'
 import { useGetCurrentMember } from '@/api/member/useMemberQueries'
-import { useRegisterTrainees, usePreviewTrainees } from '@/api/member/useMemberMutations'
+import { usePreviewTrainees } from '@/api/member/useMemberMutations'
+import { registerTrainees } from '@/api/member/memberApi'
+import { memberKeys } from '@/api/member/memberKeys'
 import { registerTraineesFromCsv, previewTraineesFromCsv } from '@/api/uploads'
 import type { previewTrainees_Response, registerTrainees_Response } from '@/api/member/memberTypes'
 import { checkRosterRows, MAX_TRAINEE_INVITE, type ParsedRoster } from '../../_/rules'
@@ -86,8 +89,8 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
   const domain = me?.emailDomain ?? undefined
   const scope = useCohortScope()
   const cohortId = scope.cohortId
-  const registerTyped = useRegisterTrainees()
   const previewTyped = usePreviewTrainees()
+  const queryClient = useQueryClient()
 
   /*
     **판정은 rules.ts가 한다** — CSV와 같은 규칙을 같은 순서로 돌린다(`checkRosterRows`).
@@ -149,10 +152,27 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
     const controller = new AbortController()
     submitAbortRef.current = controller
     try {
+      /*
+        ⚠ **직접 입력도 CSV처럼 원본 API 함수를 직접 부른다 — 자동 생성 훅
+        (`useRegisterTrainees`)을 거치지 않는다.** 훅의 `mutateAsync`는 `signal`을 안 받는다
+        (`useMemberMutations.ts`는 자동 생성이라 손 못 댐 — `RegisterCurriculumDialog`가
+        `requestAnalysis`를 훅 대신 직접 부르는 것과 같은 이유). 훅을 쓰던 동안은 위
+        `controller`의 `abort()`가 아무 요청도 못 끊는 빈 신호였다: 제출 중 닫아도 서버
+        등록은 계속 진행됐고, 뒤늦게 온 성공 응답이 **이미 닫힌 다이얼로그의 `onAdded`를
+        다시 불렀다** — 취소했다고 믿은 등록이 실제로는 된 것이다.
+      */
       const result =
         mode === 'csv' && file
           ? await registerTraineesFromCsv({ path: { cohortId }, file, signal: controller.signal })
-          : await registerTyped.mutateAsync({ path: { cohortId }, body: { trainees: entries } })
+          : await registerTrainees({
+              path: { cohortId },
+              body: { trainees: entries },
+              signal: controller.signal,
+            })
+      // 훅이 대신 해주던 무효화 — 위 이유로 훅을 안 쓰므로 여기서 직접 한다(CSV 경로는 원래도 안 함)
+      if (mode !== 'csv') {
+        await queryClient.invalidateQueries({ queryKey: memberKeys.all })
+      }
       onAdded(result)
       close(false) // 닫기가 비우는 일까지 한다 — 성공·취소가 같은 길로 나간다
     } catch (e) {

@@ -1,5 +1,5 @@
 import Badge from '@/components/ui/Badge'
-import { STATUS_LABEL, type ProjectStatus } from '../mockData'
+import { STATUS_LABEL, type ProjectStatus } from '../_/api/listTypes'
 
 /*
   목업 `.st.plan`(회색) · `.st.run`(파랑) · `.st.done`(초록)을 그대로 옮긴다.
@@ -9,7 +9,8 @@ import { STATUS_LABEL, type ProjectStatus } from '../mockData'
 const VARIANT: Record<ProjectStatus, 'neutral' | 'info' | 'success'> = {
   PLANNED: 'neutral',
   RUNNING: 'info',
-  DONE: 'success',
+  /* 목은 `DONE`이었다 — 서버 값은 `CLOSED`다(이름만 다르다) */
+  CLOSED: 'success',
 }
 
 export default function ProjectStatusBadge({ status }: { status: ProjectStatus }) {

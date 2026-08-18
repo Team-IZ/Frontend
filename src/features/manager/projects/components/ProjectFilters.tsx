@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select'
-import { STATUS_LABEL, type ClassName, type ProjectSort, type ProjectStatus } from '../mockData'
+import { SORT_LABEL, STATUS_LABEL, type ProjectSort, type ProjectStatus } from '../_/api/listTypes'
 import { ALL, type FilterValues } from '../filterState'
 
 /*
@@ -44,30 +44,32 @@ import { ALL, type FilterValues } from '../filterState'
 const items = (prefix: string, options: { value: string; label: string }[]) =>
   Object.fromEntries(options.map((o) => [o.value, `${prefix} · ${o.label}`]))
 
+type ClassOption = { classroomId: string; name: string }
+
 type Props = FilterValues & {
-  classes: ClassName[]
-  /** 이 기수에서 실제로 쓰이는 교안 — 교안 필터 선택지(`CURRICULUM_OPTIONS`) */
-  curricula: string[]
-  /** 상태별 개수 — 필터와 무관한 전체 모집단 기준(`ProjectListResult.counts`) */
-  counts?: Record<ProjectStatus, number>
+  /**
+   * 담당 반 — **아직 안 왔으면 `undefined`다**(규칙 E). 빈 배열로 뭉개면 「담당 반이
+   * 없다」로 읽히는데, 담당 반이 0개인 매니저는 이 화면 자체를 못 본다.
+   */
+  classes: ClassOption[] | undefined
+  /** 상태별 개수 — 필터와 무관한 전체 모집단 기준(`counts`) */
+  counts?: Record<string, number>
   onChange: (patch: Partial<FilterValues>) => void
 }
 
-const sum = (c: Record<ProjectStatus, number>) => Object.values(c).reduce((a, b) => a + b, 0)
+const sum = (c: Record<string, number>) => Object.values(c).reduce((a, b) => a + b, 0)
 
-const SORT_OPTIONS: { value: ProjectSort; label: string }[] = [
-  { value: 'START', label: '프로젝트 시작 순' },
-  { value: 'DUE', label: '마감 임박 순' },
-]
+/** 서버가 셋을 준다 — 목은 둘이었다(`READINESS`가 늘었다) */
+const SORT_OPTIONS: { value: ProjectSort; label: string }[] = (
+  Object.keys(SORT_LABEL) as ProjectSort[]
+).map((v) => ({ value: v, label: SORT_LABEL[v] }))
 
 export default function ProjectFilters({
   search,
   status,
   classFilter,
-  curriculum,
   sort,
   classes,
-  curricula,
   counts,
   onChange,
 }: Props) {
@@ -75,16 +77,13 @@ export default function ProjectFilters({
     { value: ALL, label: counts ? `전체 (${sum(counts)})` : '전체' },
     ...(Object.keys(STATUS_LABEL) as ProjectStatus[]).map((s) => ({
       value: s,
-      label: counts ? `${STATUS_LABEL[s]} (${counts[s]})` : STATUS_LABEL[s],
+      label: counts ? `${STATUS_LABEL[s]} (${counts[s] ?? 0})` : STATUS_LABEL[s],
     })),
   ]
+  /* 값이 **반 이름이 아니라 `classroomId`**다 — 반 이름은 기수마다 바뀐다 */
   const classOptions = [
     { value: ALL, label: '전체' },
-    ...classes.map((c) => ({ value: c, label: c })),
-  ]
-  const curriculumOptions = [
-    { value: ALL, label: '전체' },
-    ...curricula.map((c) => ({ value: c, label: c })),
+    ...(classes ?? []).map((c) => ({ value: c.classroomId, label: c.name })),
   ]
 
   return (
@@ -126,13 +125,11 @@ export default function ProjectFilters({
         onChange={(v) => onChange({ classFilter: v })}
         className="w-32"
       />
-      <FilterSelect
-        label="교안"
-        value={curriculum}
-        options={curriculumOptions}
-        onChange={(v) => onChange({ curriculum: v })}
-        className="w-56"
-      />
+      {/*
+        🔴 **교안 필터를 잠시 뺐다.** 서버는 `curriculumId`(UUID)를 받는데 선택지를 줄
+        조회를 이 화면이 아직 안 부른다(`linked-curricula`가 그 자리다). 이름으로 보내면
+        400이라, **고를 수 없는 것을 그리지 않는다**(규칙 F). 조회를 붙일 때 되살린다.
+      */}
 
       <span className="bg-border mx-1 h-5 w-px" />
 

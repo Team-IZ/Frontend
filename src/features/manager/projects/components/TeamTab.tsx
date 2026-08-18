@@ -1,10 +1,23 @@
 import { useState } from 'react'
-import { Lock, LockOpen, AlertTriangle } from 'lucide-react'
+import { Lock, LockOpen, AlertTriangle, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
+import { Skeleton } from '@/components/ui/Skeleton'
+import TableSkeleton from '@/components/common/TableSkeleton'
 import { Spinner } from '@/components/ui/Spinner'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogMedia,
+  AlertDialogTitle,
+} from '@/components/ui/AlertDialog'
 import {
   Table,
   TableBody,
@@ -14,7 +27,13 @@ import {
   TableRow,
 } from '@/components/ui/Table'
 import { errorCopy } from '@/lib/errorCopy'
-import { useTeams, useCreateTeam, useConfirmTeams, useReopenTeams } from '../_/api/api'
+import {
+  useTeams,
+  useCreateTeam,
+  useConfirmTeams,
+  useReopenTeams,
+  useDisbandTeam,
+} from '../_/api/api'
 import { TEAM_STAGE_LABEL, type Team, type TeamFormationStage } from '../_/api/types'
 import TeamEditDialog from './TeamEditDialog'
 import TeamAutoAssignDialog from './TeamAutoAssignDialog'
@@ -42,21 +61,37 @@ import TeamAutoAssignDialog from './TeamAutoAssignDialog'
   안 됐는지 알 수 없다. `lib/errorCopy`가 코드·상태를 보고 문구를 정한다(원인을
   추측해 하나로 묶지 않는다 — OP 반 추가에서 이미 겪은 것).
 
-  🔴 **팀 삭제 버튼을 뺐다.** 서버에 삭제 오퍼레이션이 없다(팀 생성·수정·확정·
-  다시 열기·자동 배분·팀원 배정/해제만 있다). 목에는 `deleteTeam`이 있었지만
-  화면이 지어낸 성공은 새로 고치면 사라진다. 32차 요청서로 올린다.
+  🟢 **팀 해체가 돌아왔다**(32차 R14①). 한때 서버에 자리가 없어 뺐던 버튼이다 —
+  인원 0명짜리 팀이 제출 현황에서 「미제출 ⚠」로 잡혀 조치가 필요한 것처럼 보이는데
+  지울 방법이 없었다.
+
+  팀원은 **미배정으로 돌아간다**(서버가 그렇게 한다). 정상 접수된 제출이 있는 팀은
+  `409 TEAM_SUBMISSION_LOCKED`라 해체할 수 없다 — 해체하면 그 제출이 팀 없이 뜬다.
+
+  ⚠ **확인 모달을 거친다**(화면 규칙 H) — 편성을 바꾸는 액션이고, 무엇이 일어나는지
+  (팀원이 미배정으로 돌아간다)를 문장으로 말한다.
 
   ⚠ **반 열이 생겼다.** 담당 반이 여럿이면 팀 번호가 반마다 1부터 다시 시작해
   한 목록에 `1팀`이 반 수만큼 나온다(30차 R4). 반 없이는 팀을 구분할 수 없다.
 */
 
 type Props = {
+  /*
+    🔴 **셋 다 「아직 모른다」가 있다** — 제출 현황 조회가 팀 목록보다 늦게 온다.
+    `?? 'NOT_STARTED'` · `?? false`로 메웠더니 **종료된 회차에서 3.8초 동안
+    「편성 전」이라며 [팀 추가]·[자동 배분]이 열려 있었다**(실측 · 제출 조회를 6초
+    늦춰 재현). 자동 배분은 팀을 다시 짜는 되돌릴 수 없는 쓰기다 — 서버가 막더라도
+    화면이 권해서는 안 된다(규칙 C·F).
+
+    그래서 `undefined`를 그대로 받고, **모르는 동안에는 액션 줄을 안 그린다.**
+    표는 그려도 된다 — 읽기라 틀릴 것이 없다.
+  */
   projectId: string
-  /** 제출 현황이 준다 — 아직 못 읽었으면 없다 */
+  /** 제출 현황이 준다 — 아직 못 읽었으면 `undefined` */
   stage: string | undefined
-  locked: boolean
-  /** 이미 제출한 팀 수 — 확정 경고 문구가 이 값으로 갈린다(아래) */
-  submittedTeamCount: number
+  locked: boolean | undefined
+  /** 이미 제출한 팀 수 — 확정 경고 문구가 이 값으로 갈린다(아래). 모르면 `undefined` */
+  submittedTeamCount: number | undefined
 }
 
 export default function TeamTab({ projectId, stage, locked, submittedTeamCount }: Props) {
@@ -64,16 +99,28 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
   const [editTeam, setEditTeam] = useState<Team | null>(null)
   const [addingTeam, setAddingTeam] = useState(false)
   const [newTeamName, setNewTeamName] = useState('')
+  const [disbandTarget, setDisbandTarget] = useState<Team | null>(null)
 
   const teamList = useTeams(projectId)
   const createTeam = useCreateTeam()
   const confirmTeams = useConfirmTeams()
   const reopenTeams = useReopenTeams()
+  const disbandTeam = useDisbandTeam()
 
-  if (teamList.isPending) {
+  if (!teamList.data && !teamList.isError) {
+    /* 실측 — 머리 줄 30 + gap 16 · 표 헤더 38.5 · 행 53 · 6행. 열 폭은 헤더 그대로 */
     return (
-      <div className="flex justify-center py-16">
-        <Spinner className="size-6" aria-label="팀을 불러오는 중" />
+      <div className="flex flex-col gap-4">
+        <div className="flex h-[30px] items-center gap-2">
+          <Skeleton className="h-[22px] w-16 rounded-full" />
+          <Skeleton className="h-3 w-28" />
+        </div>
+        <TableSkeleton
+          rows={6}
+          cols={['w-[8%]', 'w-[8%]', 'w-[6%]', null, 'w-[10%]', 'w-[11%]']}
+          rowH={53}
+          footerH={0}
+        />
       </div>
     )
   }
@@ -93,7 +140,10 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
   }
 
   const { unassignedMembers, unassignedCount } = teamList.data
-  const phase = (stage ?? 'NOT_STARTED') as TeamFormationStage
+  /** 아직 모르면 `undefined` — 국면을 모르는 채로 액션을 열지 않는다 */
+  const phase = stage as TeamFormationStage | undefined
+  /** 국면과 잠김을 **둘 다 알 때만** 액션 줄을 그린다 */
+  const stageKnown = phase !== undefined && locked !== undefined
 
   /*
     🔴 **정렬은 화면이 한다.** 렌더에서 7·2·5·1·4·6·3팀 순으로 나왔다 — `findTeams`는
@@ -115,14 +165,16 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
   const autoAssignAmbiguous = classIds.size > 1
 
   /* 쓰기 넷 중 마지막으로 실패한 것 — 하나만 띄운다(연달아 누르면 마지막 것이 맞다) */
-  const failure = confirmTeams.error ?? reopenTeams.error ?? createTeam.error
+  const failure = confirmTeams.error ?? reopenTeams.error ?? createTeam.error ?? disbandTeam.error
   const failureAction = confirmTeams.error
     ? '확정'
     : reopenTeams.error
       ? '다시 열기'
       : createTeam.error
         ? '추가'
-        : undefined
+        : disbandTeam.error
+          ? '해체'
+          : undefined
 
   function handleCreateTeam() {
     const name = newTeamName.trim() || `${teams.length + 1}팀`
@@ -205,10 +257,11 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
         「되돌려도 된다」고 읽혀 위험하다 — 되돌리면 이미 낸 팀이 어떻게 되는지를
         화면이 모른다.
       */}
-      {!locked && phase === 'READY_TO_CONFIRM' && (
+      {stageKnown && !locked && phase === 'READY_TO_CONFIRM' && (
         <Alert variant="warning">
           <AlertTriangle />
-          {submittedTeamCount > 0 ? (
+          {/* 이 자리는 `stageKnown`을 지나왔으므로 제출 팀 수도 이미 왔다(같은 응답이다) */}
+          {(submittedTeamCount ?? 0) > 0 ? (
             <>
               <AlertTitle>확정 전인데 이미 {submittedTeamCount}팀이 제출했습니다</AlertTitle>
               <AlertDescription>
@@ -226,7 +279,7 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
         </Alert>
       )}
 
-      {!locked && unassignedCount > 0 && phase !== 'NOT_STARTED' && (
+      {stageKnown && !locked && unassignedCount > 0 && phase !== 'NOT_STARTED' && (
         <Alert variant="warning">
           <AlertTriangle />
           <AlertTitle>미배정 {unassignedCount}명이 남아 있어 제출이 열리지 않습니다</AlertTitle>
@@ -241,7 +294,12 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
         <Empty>
           <EmptyHeader>
             <EmptyTitle>아직 팀이 없어요</EmptyTitle>
-            <EmptyDescription>자동 배분을 누르거나 팀을 하나씩 추가하세요.</EmptyDescription>
+            {/* 지금 편성할 수 있을 때만 그 길을 말한다 — 잠긴 회차에 권하지 않는다(규칙 F) */}
+            <EmptyDescription>
+              {canEdit
+                ? '자동 배분을 누르거나 팀을 하나씩 추가하세요.'
+                : '이 회차는 팀이 편성되지 않은 채로 잠겼습니다.'}
+            </EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (
@@ -271,7 +329,7 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <div className="flex justify-end">
+                  <div className="flex justify-end gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -279,6 +337,17 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
                       onClick={() => setEditTeam(team)}
                     >
                       편집
+                    </Button>
+                    {/* 되돌릴 수 없는 것이 가장 오른쪽·빨강(화면 규칙 C) */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      disabled={!canEdit || disbandTeam.isPending}
+                      className="text-danger hover:bg-danger-soft p-1.5"
+                      aria-label={`${team.className ?? ''} ${team.name} 해체`}
+                      onClick={() => setDisbandTarget(team)}
+                    >
+                      <Trash2 className="size-3.5" />
                     </Button>
                   </div>
                 </TableCell>
@@ -306,6 +375,45 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
         ambiguousClassroom={autoAssignAmbiguous}
       />
 
+      <AlertDialog
+        open={!!disbandTarget}
+        onOpenChange={(o) => !o && !disbandTeam.isPending && setDisbandTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-danger-soft text-danger">
+              <Trash2 />
+            </AlertDialogMedia>
+            <AlertDialogTitle>
+              {disbandTarget?.className} {disbandTarget?.name}을 해체할까요?
+            </AlertDialogTitle>
+            {/* 무엇이 일어나는지 쓴다 — 「정말 하시겠습니까?」는 판단 근거를 안 준다 */}
+            <AlertDialogDescription>
+              {disbandTarget && disbandTarget.memberCount > 0
+                ? `팀원 ${disbandTarget.memberCount}명은 미배정으로 돌아갑니다 — 다른 팀에 다시 넣거나 자동 배분으로 채울 수 있습니다.`
+                : '팀원이 없어 되돌릴 것 없이 해체됩니다.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={disbandTeam.isPending}>취소</AlertDialogCancel>
+            <AlertDialogAction
+              variant="danger"
+              disabled={disbandTeam.isPending}
+              onClick={() => {
+                if (!disbandTarget) return
+                disbandTeam.mutate(
+                  { path: { projectId, teamId: disbandTarget.teamId } },
+                  { onSuccess: () => setDisbandTarget(null) },
+                )
+              }}
+            >
+              {disbandTeam.isPending && <Spinner className="size-3.5" />}
+              해체
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {addingTeam && (
         <NewTeamPrompt
           value={newTeamName}
@@ -322,7 +430,17 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
   )
 }
 
-function PhaseBadge({ phase, locked }: { phase: TeamFormationStage; locked: boolean }) {
+function PhaseBadge({
+  phase,
+  locked,
+}: {
+  phase: TeamFormationStage | undefined
+  locked: boolean | undefined
+}) {
+  /* 아직 모르면 **자리만 잡는다** — 「편성 전」으로 메우면 종료된 회차를 그렇게 말한다 */
+  if (phase === undefined || locked === undefined) {
+    return <Skeleton className="h-[22px] w-16 rounded-full" />
+  }
   if (locked) {
     return (
       <Badge variant="neutral">

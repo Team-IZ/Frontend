@@ -2,6 +2,7 @@ import { Fragment, useCallback, useEffect, useState, type ReactNode } from 'reac
 import { useNavigate } from 'react-router'
 import { toast } from 'sonner'
 import ConsoleShell from '@/shells/ConsoleShell'
+import { useManagerCohort } from '@/stores/cohortScope'
 import PageHeader from '@/components/common/PageHeader'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import { Alert, AlertTitle, AlertAction } from '@/components/ui/Alert'
@@ -67,6 +68,8 @@ function interviewsListPath(roundId: string, className: string): string {
 
 export default function DashboardScreen() {
   const navigate = useNavigate()
+  /* 본문은 아직 목이지만 **스코프는 진짜다** — 헤더가 옆 화면과 다른 기수를 말하면 안 된다 */
+  const { cohortName, cohorts, selectCohort } = useManagerCohort()
   const initial = getSessionView()
   const [round, setRound] = useState<RoundId>(initial.round)
   const [scope, setScope] = useState<InboxScope>('RECENT')
@@ -104,8 +107,22 @@ export default function DashboardScreen() {
   const byBand = (band: ItemBand) => data?.items.filter((i) => i.band === band) ?? []
 
   return (
-    <ConsoleShell role="manager">
-      <PageHeader breadcrumb="대시보드 › 7기 › 담당 반" title="대시보드" />
+    <ConsoleShell
+      role="manager"
+      cohort={cohortName ?? ''}
+      cohorts={cohorts}
+      onCohortChange={selectCohort}
+    >
+      {/*
+        🔴 **기수는 헤더에 항상 있어야 한다**(사용자 지시). 이 화면은 아직 목이라
+        `7기`가 빵부스러기에 박혀 있었고 헤더 스위처는 아예 비어 있었다 — 옆 화면들이
+        `9기`를 말하는데 여기만 `7기`라 **같은 사람이 다른 기수를 보고 있는 것처럼**
+        보였다. 본문이 목이어도 **스코프는 진짜를 쓴다.**
+      */}
+      <PageHeader
+        breadcrumb={['대시보드', cohortName, '담당 반'].filter(Boolean).join(' › ')}
+        title="대시보드"
+      />
 
       {page.loading ? (
         <div className="flex justify-center py-16">

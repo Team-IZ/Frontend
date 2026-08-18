@@ -51,9 +51,13 @@ const RISK_LABEL: Record<string, string> = {
 
 type Props = FilterValues & {
   /** 회차 선택지 — 별개 조회에서 온다 */
-  rounds: RoundOption[]
+  /**
+   * 회차 선택지. **`undefined`는 「아직 모른다」**이고 빈 배열은 「없다」다 —
+   * 둘을 합치면(`?? []`) 로딩 중에 「이 기수엔 회차가 없다」로 보인다(화면 규칙 E).
+   */
+  rounds: RoundOption[] | undefined
   /** 담당 반 — 매니저마다 달라 서버가 준다 */
-  classes: { classId: string; className: string }[]
+  classes: { classId: string; className: string }[] | undefined
   counts?: Record<string, number>
   riskCounts?: Record<string, number>
   onChange: (patch: Partial<FilterValues>) => void
@@ -73,7 +77,7 @@ export default function InterviewFilters({
   riskCounts,
   onChange,
 }: Props) {
-  const roundOptions = rounds.map((r) => ({ value: r.assessmentRoundId, label: r.label }))
+  const roundOptions = (rounds ?? []).map((r) => ({ value: r.assessmentRoundId, label: r.label }))
 
   const statusOptions = [
     { value: ALL, label: counts ? `전체 (${sum(counts)})` : '전체' },
@@ -94,7 +98,7 @@ export default function InterviewFilters({
 
   const classOptions = [
     { value: ALL, label: '전체' },
-    ...classes.map((c) => ({ value: c.classId, label: c.className })),
+    ...(classes ?? []).map((c) => ({ value: c.classId, label: c.className })),
   ]
 
   return (
@@ -103,6 +107,8 @@ export default function InterviewFilters({
         label="회차"
         value={round}
         options={roundOptions}
+        /* 아직 안 온 동안은 잠근다 — 열어 봐야 빈 목록이고, 그게 「없다」로 읽힌다 */
+        disabled={rounds === undefined}
         onChange={(v) => onChange({ round: v })}
         /* 서버 라벨이 `미니프로젝트 3차 이해도 확인`이라 목의 `미프 3차`보다 훨씬 길다 —
            문자열을 자르는 대신 트리거를 넓힌다(렌더에서 잘려 보였다) */
@@ -144,6 +150,7 @@ export default function InterviewFilters({
         label="반"
         value={classFilter}
         options={classOptions}
+        disabled={classes === undefined}
         onChange={(v) => onChange({ classFilter: v })}
         className="w-28"
       />
@@ -165,12 +172,15 @@ function FilterSelect({
   options,
   onChange,
   className = 'w-28',
+  disabled,
 }: {
   label: string
   value: string
   options: { value: string; label: string }[]
   onChange: (value: string) => void
   className?: string
+  /** 선택지를 **아직 모르는** 동안 잠근다(빈 목록을 「없다」로 읽지 않게) */
+  disabled?: boolean
 }) {
   return (
     <Select
@@ -178,7 +188,11 @@ function FilterSelect({
       onValueChange={(v) => onChange(v ?? options[0].value)}
       items={items(label, options)}
     >
-      <SelectTrigger className={`h-9 ${className}`} aria-label={`${label} 필터`}>
+      <SelectTrigger
+        className={`h-9 ${className}`}
+        aria-label={`${label} 필터`}
+        disabled={disabled}
+      >
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

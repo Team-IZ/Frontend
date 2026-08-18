@@ -225,6 +225,29 @@ const BY_CODE: Record<string, (ctx: Ctx) => ErrorCopy> = {
     `message`에 담아 준다**(스펙 명시) — `AddRosterDialog`가 `error.message`를 그대로
     보여주고, 여기 `description`은 message가 없을 때만 쓰는 fallback이다.
   */
+  /**
+   * 담당 밖 회차·자원을 가리켰다(32차 R3). 한때 이 자리가 **200 + 빈 목록**이라
+   * 화면이 「대상이 없습니다」라고 말했다 — 권한이 없는 것과 정말 없는 것이 같아 보였다.
+   * 재시도해도 같으니 주지 않는다.
+   */
+  MANAGER_SCOPE_NOT_FOUND: () => ({
+    title: '담당 범위 밖입니다',
+    description: '담당하지 않는 반·회차입니다 — 주소가 맞는지 확인해 주세요.',
+    retry: false,
+    tone: 'failed',
+  }),
+
+  /**
+   * 제출이 들어온 팀은 해체할 수 없다(32차 R14①) — 해체하면 그 제출이 팀 없이 뜬다.
+   * 되돌릴 방법이 화면에 없으므로 재시도를 주지 않는다.
+   */
+  TEAM_SUBMISSION_LOCKED: () => ({
+    title: '제출이 있는 팀은 해체할 수 없습니다',
+    description: '이미 코드를 낸 팀입니다 — 해체하면 그 제출이 어느 팀에도 속하지 않게 됩니다.',
+    retry: false,
+    tone: 'failed',
+  }),
+
   /*
     ── 팀 편성(MG-08) ───────────────────────────────────────────
     여덟 코드가 전부 「잠시 후 다시 시도해 주세요」로 뭉쳐 있었다(MG-08 하드닝
@@ -281,6 +304,17 @@ const BY_CODE: Record<string, (ctx: Ctx) => ErrorCopy> = {
   TEAM_NOT_FOUND: () => ({
     title: '그 팀을 찾을 수 없습니다',
     description: '다른 곳에서 지워졌을 수 있습니다 — 새로 고친 뒤 다시 시도해 주세요.',
+    retry: false,
+    tone: 'failed',
+  }),
+
+  /*
+    회차 목록 조회에 스코프(`cohort`·`classId`)를 안 보냈거나 둘 다 보냈다 — **화면
+    버그**다. 다시 눌러도 같은 요청이 나가므로 재시도를 주지 않는다(MG-07 하드닝).
+  */
+  PROJECT_LIST_SCOPE_AMBIGUOUS: () => ({
+    title: '회차 목록을 불러오지 못했습니다',
+    description: '조회 범위가 정해지지 않았습니다 — 새로 고쳐도 같으면 알려 주세요.',
     retry: false,
     tone: 'failed',
   }),

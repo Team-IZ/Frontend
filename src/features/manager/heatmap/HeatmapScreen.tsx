@@ -3,15 +3,15 @@ import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
-import { Spinner } from '@/components/ui/Spinner'
-import { staleProps } from '@/lib/listQuery'
+import StaleBlock from '@/components/common/StaleBlock'
 import { useManagerCohort } from '@/stores/cohortScope'
 import { useHeatmap, useHeatmapRounds } from './_/api/api'
-import type { AttemptView, HeatmapLevel, ScopeOption } from './_/api/types'
+import type { HeatmapLevel, ScopeOption } from './_/api/types'
 import { getSessionView, setSessionView } from './viewState'
 import HeatmapToolbar from './components/HeatmapToolbar'
 import HeatmapLegend from './components/HeatmapLegend'
 import HeatmapTable from './components/HeatmapTable'
+import HeatmapSkeleton from './components/HeatmapSkeleton'
 
 /*
   MG-02 히트맵 — "개인 문제인가, 반 문제인가"(정의서 §1). 계층(반 › 팀 › 팀원)마다
@@ -40,7 +40,6 @@ export default function HeatmapScreen() {
   const [level, setLevel] = useState<HeatmapLevel>(initial.level)
   const [classroomId, setClassroomId] = useState(initial.classroomId)
   const [teamId, setTeamId] = useState(initial.teamId)
-  const [attemptView, setAttemptView] = useState<AttemptView>(initial.attemptView)
   /* 본 적 있는 반·팀 — 아래 `useEffect` 주석 참고 */
   const [knownClassrooms, setKnownClassrooms] = useState<ScopeOption[]>([])
   const [knownTeams, setKnownTeams] = useState<ScopeOption[]>([])
@@ -58,7 +57,6 @@ export default function HeatmapScreen() {
           projectId: picked.projectId,
           assessmentRoundId: picked.assessmentRoundId,
           level,
-          attemptView,
           /* `CLASS`는 스코프가 없고, 그 아래는 서버가 필수로 요구한다 */
           classroomId: level === 'CLASS' ? undefined : classroomId || undefined,
           teamId: level === 'TRAINEE' ? teamId || undefined : undefined,
@@ -66,6 +64,13 @@ export default function HeatmapScreen() {
       : undefined,
   )
   const view = heatmap.data
+
+  /*
+    스켈레톤을 **직전에 본 격자 모양**으로 그린다 — 개념 수·행 수가 계층마다 달라
+    고정값으로 두면 도착할 때 그만큼 튄다(스켈레톤을 쓰는 이유가 없어진다).
+  */
+  const [lastCols, setLastCols] = useState(3)
+  const [lastRows, setLastRows] = useState(2)
 
   /*
     🔴 **본 계층의 `rows[]`도 선택지다**(하드닝 실측에서 잡았다).
@@ -85,6 +90,8 @@ export default function HeatmapScreen() {
   */
   useEffect(() => {
     if (!view) return
+    setLastCols(view.concepts.length || 3)
+    setLastRows((view.summary ? 1 : 0) + view.rows.length || 2)
     const fromRows = view.rows
       .filter((r) => r.rowId)
       .map((r) => ({ id: r.rowId!, name: r.rowName ?? '', memberCount: r.memberCount }))
@@ -111,9 +118,8 @@ export default function HeatmapScreen() {
       level,
       classroomId,
       teamId,
-      attemptView,
     })
-  }, [picked, level, classroomId, teamId, attemptView])
+  }, [picked, level, classroomId, teamId])
 
   /**
    * 계층 버튼 — **내려갈 때는 스코프를 먼저 채우고 바꾼다.** 비운 채 바꾸면 400이다.
@@ -199,7 +205,6 @@ export default function HeatmapScreen() {
         round={picked?.assessmentRoundId ?? ''}
         rounds={roundList}
         level={level}
-        attemptView={attemptView}
         classroomId={view?.scope?.classroomId ?? classroomId}
         teamId={view?.scope?.teamId ?? teamId}
         classrooms={knownClassrooms}
@@ -208,7 +213,6 @@ export default function HeatmapScreen() {
         onLevelChange={changeLevel}
         onClassChange={changeClass}
         onTeamChange={setTeamId}
-        onAttemptViewChange={setAttemptView}
       />
 
       {cohortFailed ? (
@@ -220,10 +224,16 @@ export default function HeatmapScreen() {
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
-      ) : rounds.isPending || heatmap.isPending ? (
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" aria-label="히트맵을 불러오는 중" />
-        </div>
+      ) : !view && !heatmap.isError && !rounds.isError ? (
+        /*
+          🔴 **첫 진입은 스켈레톤이다**(화면 규칙 E · async-states §1-2). 스피너 자리
+          128px와 실제 격자 181px이 달라 도착하는 순간 본문이 튀었다.
+
+          ⚠ **`isPending`으로 판정하지 않는다** — 회차를 아직 못 받아 `enabled: false`인
+          동안 `isPending`이 거짓이라 그 분기가 안 그려지고, 빈 화면이 잠깐 스친다.
+          **값이 있나 없나**로 가른다.
+        */
+        <HeatmapSkeleton cols={lastCols} rows={lastRows} />
       ) : rounds.isError || heatmap.isError || !view ? (
         <Empty>
           <EmptyHeader>
@@ -250,8 +260,13 @@ export default function HeatmapScreen() {
           </EmptyHeader>
         </Empty>
       ) : (
-        /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `lib/listQuery` */
-        <div {...staleProps(heatmap.isPlaceholderData)}>
+        /*
+          🔴 **조건을 바꾸는 동안 흐림만 두지 않는다**(화면 규칙 E). 회차·계층을 바꾸면
+          2~3초가 걸리는데, 그동안 툴바는 새 조건을 말하고 격자는 옛 조건의 결과를
+          보여준다 — 흐림은 그것을 설명하지 못한다. `StaleBlock`이 덮고·못 누르게 하고·
+          「불러오는 중」이라고 말한다(옛 행을 눌러 다른 팀으로 내려가는 사고도 막는다).
+        */
+        <StaleBlock stale={heatmap.isPlaceholderData} label="격자를 불러오는 중">
           <HeatmapLegend showLevelMeaning={view.level === 'TRAINEE'} />
           <HeatmapTable
             view={view}
@@ -264,7 +279,7 @@ export default function HeatmapScreen() {
               회차 간에 그대로 견주지 않습니다.
             </p>
           )}
-        </div>
+        </StaleBlock>
       )}
     </ConsoleShell>
   )

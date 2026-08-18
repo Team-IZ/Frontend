@@ -3,7 +3,7 @@ import { Link } from 'react-router'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
-import StaleBlock from '../../_shared/StaleBlock'
+import StaleBlock from '@/components/common/StaleBlock'
 import {
   Table,
   TableHeader,

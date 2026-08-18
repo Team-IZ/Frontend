@@ -1,7 +1,7 @@
 import { ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { Badge } from '@/components/ui/Badge'
-import { Spinner } from '@/components/ui/Spinner'
+import { Skeleton } from '@/components/ui/Skeleton'
 import { REACH_STYLE } from '@/components/common/reach'
 import { useTraineeEvaluation } from '../_/api/api'
 import {
@@ -42,10 +42,18 @@ export default function PersonResultPanel({
 }) {
   const detail = useTraineeEvaluation(projectId, userId)
 
-  if (detail.isPending) {
+  if (!detail.data && !detail.isError) {
+    /*
+      오른쪽 칸만 채운다 — **왼쪽 목록은 그대로 있어야 한다.** 스피너를 쓰면 사람을
+      바꿀 때마다 오른쪽이 통째로 사라졌다 생기고, 목록에서 방금 누른 사람이 어디였는지
+      눈이 놓친다(마스터-디테일에서 디테일만 갈아 끼우는 것이 요점이다).
+    */
     return (
-      <div className="flex justify-center py-16">
-        <Spinner className="size-6" aria-label="결과를 불러오는 중" />
+      <div aria-hidden className="p-5">
+        <Skeleton className="mb-3 h-4 w-32" />
+        <Skeleton className="mb-2 h-3 w-56" />
+        <Skeleton className="mb-2 h-3 w-full" />
+        <Skeleton className="h-3 w-2/3" />
       </div>
     )
   }

@@ -16,7 +16,7 @@ import {
 import { useCohortId } from '@/stores/cohortScope'
 import { useCohortCompare, useRoundGrid } from './_/api/api'
 import ErrorState from '@/components/common/ErrorState'
-import StaleBlock from '../_shared/StaleBlock'
+import StaleBlock from '@/components/common/StaleBlock'
 import GridSkeleton, { CompareSkeleton } from './_/components/GridSkeleton'
 import RoundToolbar from './_/components/RoundToolbar'
 import RoundGridTable from './_/components/RoundGridTable'

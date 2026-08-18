@@ -13,9 +13,9 @@ import {
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
-import { Spinner } from '@/components/ui/Spinner'
+import StaleBlock from '@/components/common/StaleBlock'
+import TableSkeleton from '@/components/common/TableSkeleton'
 import { useDebounced } from '@/lib/useDebounced'
-import { staleProps } from '@/lib/listQuery'
 import { useManagerCohort } from '@/stores/cohortScope'
 import {
   useExcludeInterviewCase,
@@ -106,21 +106,29 @@ export default function InterviewListScreen() {
     **회차가 정해지기 전에는 목록을 안 부른다.** `assessmentRoundId`가 필수 파라미터라
     빈 값으로 부르면 400이 온다. 기본값은 **마지막 회차**다(사용자 지시).
   */
-  const roundList = rounds.data ?? []
-  const round = filters.round || roundList[roundList.length - 1]?.assessmentRoundId || ''
+  /*
+    🔴 **`?? []`를 쓰지 않는다**(화면 규칙 E). 아직 안 온 것과 없는 것이 같아지면
+    필터가 「선택지 0개」로 그려지고, 그게 「이 기수엔 회차가 없다」로 읽힌다.
+  */
+  const roundList = rounds.data
+  /*
+    🟢 **회차를 안 골라도 목록을 부른다**(32차 R2). 한때 회차 목록을 먼저 받아야
+    했고 그래서 첫 진입이 **직렬 두 왕복**(2.5~3.1초)이었다 — 이제 서버가 「이번
+    회차」를 고르고, 회차 드롭다운은 그와 **나란히** 채워진다.
+
+    사용자가 고른 값이 있으면 그것을 보내고, 없으면 **아무것도 안 보낸다** —
+    직전 회차를 화면이 추측하지 않는다(명부와 같은 판정을 서버가 갖고 있다).
+  */
+  const round = filters.round
 
   const search = useDebounced(filters.search).trim()
-  const list = useInterviewList(
-    round
-      ? {
-          assessmentRoundId: round,
-          search: search || undefined,
-          status: filters.status === ALL ? undefined : filters.status,
-          riskType: filters.riskType === ALL ? undefined : filters.riskType,
-          classId: filters.classFilter === ALL ? undefined : filters.classFilter,
-        }
-      : undefined,
-  )
+  const list = useInterviewList({
+    assessmentRoundId: round || undefined,
+    search: search || undefined,
+    status: filters.status === ALL ? undefined : filters.status,
+    riskType: filters.riskType === ALL ? undefined : filters.riskType,
+    classId: filters.classFilter === ALL ? undefined : filters.classFilter,
+  })
 
   const exclude = useExcludeInterviewCase()
   const reinclude = useReincludeInterviewCase()
@@ -213,11 +221,23 @@ export default function InterviewListScreen() {
 
       <InterviewFilters
         {...filters}
-        round={round}
+        /*
+          서버가 고른 회차를 드롭다운에 되채운다 — 사용자가 안 골랐을 때(첫 진입)
+          트리거가 비어 있으면 「무엇을 보고 있는지」를 화면이 말하지 않는다.
+        */
+        round={round || (data?.round?.assessmentRoundId ?? '')}
         rounds={roundList}
-        classes={data?.classes ?? []}
-        counts={data?.counts}
-        riskCounts={data?.riskCounts}
+        classes={data?.classes}
+        /*
+          🔴 **판정 전이면 필터 라벨의 개수도 빼야 한다**(조합 전수에서 잡았다).
+          머리글과 본문은 이미 `resultPending`으로 가렸는데 **필터만 남아서**
+          본문이 「아직 결과가 없어요」인데 트리거는 「전체 (1)」이라고 말했다 —
+          매니저가 보면 한 명이 있는데 왜 안 보이나 싶다.
+
+          아직 뒤집힐 수 있는 판정을 숫자로 단언하지 않는다는 판단은 하나여야 한다.
+        */
+        counts={resultPending ? undefined : data?.counts}
+        riskCounts={resultPending ? undefined : data?.riskCounts}
         onChange={changeFilters}
       />
 
@@ -244,10 +264,23 @@ export default function InterviewListScreen() {
         </Alert>
       )}
 
-      {rounds.isPending || list.isPending ? (
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" aria-label="목록을 불러오는 중" />
-        </div>
+      {!data && !list.isError && !rounds.isError ? (
+        /*
+          🔴 **첫 진입은 스켈레톤이다**(화면 규칙 E · async-states §1-2). 스피너
+          자리(`py-16` 128px)와 실제 표(헤더 39 + 행 53×12 + 푸터 16 = 691px)가 달라
+          도착하는 순간 본문이 통째로 밀렸다.
+
+          행 수·열 폭·높이는 **실제 표에서 잰 값**이다(9기 4차 · 12행). 열 폭은 표
+          헤더에 쓴 토큰을 그대로 넘긴다.
+
+          ⚠ **`isPending`으로 판정하지 않는다** — 회차를 아직 못 받아 `enabled: false`인
+          동안 `isPending`이 거짓이라 빈 화면이 스친다. **값이 있나 없나**로 가른다.
+        */
+        <TableSkeleton
+          rows={12}
+          cols={['w-[8%]', 'w-[14%]', 'w-[11%]', 'w-[27%]', 'w-[24%]', 'w-[16%]']}
+          footerH={16}
+        />
       ) : rounds.isError || list.isError || !data ? (
         <Empty>
           <EmptyHeader>
@@ -297,8 +330,13 @@ export default function InterviewListScreen() {
           </Empty>
         )
       ) : (
-        /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `lib/listQuery` */
-        <div {...staleProps(list.isPlaceholderData)}>
+        /*
+          🔴 **조건을 바꾸는 동안 흐림만 두지 않는다**(화면 규칙 E). 필터를 바꾸면
+          1~2초가 걸리는데 그동안 상태 필터는 「종결 (3)」을 말하고 표는 직전 조건의
+          행을 보여준다 — 흐림은 그것을 설명하지 못한다. `StaleBlock`이 덮고·못 누르게
+          하고·「불러오는 중」이라고 말한다(옛 행의 브리프로 들어가는 사고도 막는다).
+        */
+        <StaleBlock stale={list.isPlaceholderData} label="목록을 불러오는 중">
           <Table className="w-full table-fixed">
             <TableHeader>
               <TableRow className="hover:bg-transparent">
@@ -363,7 +401,7 @@ export default function InterviewListScreen() {
             <div />
             <div />
           </div>
-        </div>
+        </StaleBlock>
       )}
     </ConsoleShell>
   )

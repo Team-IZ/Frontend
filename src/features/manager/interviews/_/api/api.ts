@@ -53,7 +53,11 @@ export function useInterviewRounds() {
 }
 
 export type InterviewQuery = {
-  assessmentRoundId: string
+  /**
+   * 생략하면 **서버가 이번 회차를 고른다**(32차 R2). 고른 회차는 응답의 `round`로
+   * 돌아오므로 화면이 그 값을 드롭다운에 되채운다.
+   */
+  assessmentRoundId?: string
   search?: string
   status?: string
   riskType?: string
@@ -66,9 +70,20 @@ export type InterviewQuery = {
  * **정렬을 보내지 않는다** — 서버가 급한 순으로 정해서 준다(무효 응시가 맨 위).
  * 목에는 `sortCases`가 있었는데 그 규칙이 이제 서버 것이다.
  */
+/**
+ * 면담 목록.
+ *
+ * **회차를 생략하면 서버가 「이번 회차」를 고른다**(32차 R2) — 고른 회차는
+ * `round.assessmentRoundId`로 돌아온다. 명부와 같은 판정을 쓰므로 두 화면이 같은
+ * 차수를 가리킨다.
+ *
+ * 한때 회차 목록을 먼저 받아야 목록을 부를 수 있어 **첫 진입이 직렬 두 왕복**
+ * (2.5~3.1초)이었다. 이제 첫 진입은 한 번이면 되고, 회차 드롭다운은 그와 **나란히**
+ * 채워진다.
+ */
 export function useInterviewList(params: InterviewQuery | undefined) {
   const query = useFindInterviews(
-    { query: params ?? { assessmentRoundId: '' } },
+    { query: params ?? {} },
     { enabled: !!params, ...listQueryOptions },
   )
   const data = useMemo(() => (query.data ? toListView(query.data) : undefined), [query.data])

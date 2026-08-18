@@ -26,7 +26,7 @@ export function useFindInterviewBrief(
 
 /** [면담 목록] 면담 목록 조회 */
 export function useFindInterviews(
-  params: { query: findInterviews_Query },
+  params: { query?: findInterviews_Query } = {},
   options?: QueryOptions<findInterviews_Response>,
 ) {
   return useQuery({

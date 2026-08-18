@@ -4,7 +4,8 @@ import type { UseQueryResult } from '@tanstack/react-query'
 import { cn } from '@/lib/utils/cn'
 import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { Spinner } from '@/components/ui/Spinner'
+import { Skeleton } from '@/components/ui/Skeleton'
+import TableSkeleton from '@/components/common/TableSkeleton'
 import {
   Table,
   TableBody,
@@ -57,10 +58,23 @@ type Props = {
 export default function SubmissionTab({ query, classProgress }: Props) {
   const [expandedReq, setExpandedReq] = useState<Set<string>>(new Set())
 
-  if (query.isPending) {
+  if (!query.data && !query.isError) {
+    /*
+      실측 — 머리 2줄 84 · 표 헤더 38.5 · 행 42.7 · 32행(팀 6 + 교육생 26).
+      스피너를 쓰면 도착 순간 본문이 1375px 늘어난다.
+    */
     return (
-      <div className="flex justify-center py-16">
-        <Spinner className="size-6" aria-label="제출 현황을 불러오는 중" />
+      <div>
+        <div className="mb-4 flex h-[84px] flex-col justify-center gap-2">
+          <Skeleton className="h-4 w-56" />
+          <Skeleton className="h-3 w-72" />
+        </div>
+        <TableSkeleton
+          rows={32}
+          cols={['w-[27%]', 'w-[16%]', 'w-[27%]', 'w-[12%]', 'w-[16%]']}
+          rowH={42.7}
+          footerH={0}
+        />
       </div>
     )
   }
@@ -82,26 +96,14 @@ export default function SubmissionTab({ query, classProgress }: Props) {
   const d = query.data
 
   /*
-    🔴 **서버가 자기모순일 때의 방어**(하드닝 실측, 32차로 올린다).
+    잠김 판정은 **서버 값 하나로** 한다(스펙 명시). 단계 이름으로 다시 세지 않는다.
 
-    스펙은 「화면은 `submissionOpened`만 보고 표를 그릴지 빈 상태를 보여줄지 정한다」고
-    했고 그대로 따랐는데, 실제 응답이 자기 자신과 어긋난다:
-
-        submissionOpened   false   (teamFormationStage = READY_TO_CONFIRM)
-        submittedTeamCount 5 / 7   ← 이미 제출했다
-        analysis           5팀 SUCCEEDED
-        개인 응시          DONE 18 · OPEN 2 · MISSED 1 · BLOCKED 5
-
-    그 말을 그대로 믿으면 화면이 「아직 팀 편성 중이에요」라고 하면서 **제출 5건과
-    응시 18명을 통째로 숨긴다.** 매니저가 이 탭을 여는 이유가 그 값들인데.
-
-    그래서 **그릴 것이 실제로 있으면 그린다.** 판정 규칙을 다시 만드는 것이 아니라
-    (여전히 `submissionOpened`를 본다) 그 값이 데이터와 어긋날 때만 데이터를 택한다.
-    서버가 맞춰 주면 이 분기는 저절로 안 타므로 그때 지운다.
+    한때 「데이터가 있으면 그린다」는 방어를 뒀었다 — `submissionOpened: false`인데
+    제출 5건·응시 18명이 온 회차가 있어서, 그 말을 그대로 믿으면 화면이 그 값들을
+    통째로 숨겼다(32차 R11). **서버가 정의를 고쳐 지웠다** — 이제 이 값은 「팀 편성이
+    확정됐는가」가 아니라 「제출을 받고 있는가」(회차 상태와 마감)를 답한다.
   */
-  const hasSubmissionData = d.teams.some((t) => t.submission || t.members.length > 0)
-
-  if (!d.submissionOpened && !hasSubmissionData) {
+  if (!d.submissionOpened) {
     return (
       <Empty>
         <EmptyHeader>

@@ -1,4 +1,4 @@
-import type { AttemptView, HeatmapLevel } from './_/api/types'
+import type { HeatmapLevel } from './_/api/types'
 
 /*
   히트맵의 현재 드릴 상태(회차·계층·반·팀·응시 구분)를 세션 동안만 기억한다 —
@@ -23,7 +23,6 @@ export type HeatmapViewState = {
   /** `CLASS` 계층에서는 안 쓴다. 그 아래에서는 서버가 필수로 요구한다 */
   classroomId: string
   teamId: string
-  attemptView: AttemptView
 }
 
 export const INITIAL_VIEW: HeatmapViewState = {
@@ -31,7 +30,6 @@ export const INITIAL_VIEW: HeatmapViewState = {
   level: 'CLASS',
   classroomId: '',
   teamId: '',
-  attemptView: 'INITIAL',
 }
 
 let sessionView: HeatmapViewState | null = null

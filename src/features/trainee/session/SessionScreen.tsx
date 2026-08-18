@@ -444,7 +444,12 @@ function RunningView({
   onDismissOffline: () => void
 }) {
   const current = problem.current
-  const waiting = submitting
+  /*
+    **힌트도 답변과 같은 대기다.** 버튼 안에서만 도는 표시로 두었더니 화면이 그대로라
+    학생이 뭔가 일어나는지 몰랐다. 서버를 기다리는 동안 코드·입력을 잠그는 규칙은
+    두 경우가 같다 — 다른 것은 문구뿐이다.
+  */
+  const waiting = submitting || hintPending
 
   return (
     <div className="relative flex h-full flex-col">
@@ -486,6 +491,7 @@ function RunningView({
             current={current}
             pendingAnswer={pendingAnswer}
             waiting={waiting}
+            waitingLabel={hintPending ? '설명을 준비하고 있어요' : '답변을 확인하고 있어요'}
           />
           {/*
             **대기 중에도 입력 영역을 남긴다.** 예전에는 질문이 없으면 통째로 사라졌는데,
@@ -651,6 +657,17 @@ function noSessionMessage(status: string | null) {
       return {
         title: '응시 기한이 지났어요',
         description: '이번 회차는 미응시로 기록됩니다. 사정이 있었다면 매니저에게 알려 주세요.',
+      }
+    /*
+      홈은 `진행 중`이라 했는데 세션이 없다. **들어오는 그 순간 상한이 지난 것**이다 —
+      이 조회가 상한 넘은 세션을 그 자리에서 닫기 때문이다(스펙·실측). 기본 문구
+      ("지금 진행할 이해도 확인이 없어요")로 보내면, 이어서 하라고 해 놓고 아무 일도
+      없는 것처럼 말하게 된다.
+    */
+    case 'ASSESSMENT_IN_PROGRESS':
+      return {
+        title: '이해도 확인 시간이 끝났어요',
+        description: '시간이 지나 자동으로 마무리됐습니다. 답한 내용까지 기록에 남아요.',
       }
     case 'ANALYZING':
       return {

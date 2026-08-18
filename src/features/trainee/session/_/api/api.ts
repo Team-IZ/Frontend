@@ -1,12 +1,23 @@
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
+import { isApiError } from '@/api/_contract'
+import { assessmentKeys } from '@/api/assessment/assessmentKeys'
 import {
   useFindCurrentSession,
   useFindSessionProblem,
   useGetMyAssessmentRounds,
 } from '@/api/assessment/useAssessmentQueries'
+import {
+  useOpenSessionHint,
+  useRecordSessionActivity,
+  useStartSession,
+  useSubmitSessionAnswer,
+} from '@/api/assessment/useAssessmentMutations'
 import type {
+  AnswerResult,
   CurrentQuestion,
   Highlight,
+  OpenedHint,
   ProblemView,
   ServerProblem,
   ServerSession,
@@ -18,12 +29,15 @@ import type {
 /*
   세션 도메인 훅 — **생성 훅을 감싸 화면 어휘로 옮긴다.**
 
-  ## 읽기 두 개가 화면 전체를 채운다
+  ## 읽기 둘이 화면 전체를 채우고, 쓰기 셋이 그것을 움직인다
 
-    GET /current              세션이 있나 · 어느 상태인가 · 어디에 서 있나
-    GET /problems/{no}        코드 패널 + 지금까지의 문답 + 지금 질문
+    GET  /current              세션이 있나 · 어느 상태인가 · 어디에 서 있나
+    GET  /problems/{no}        코드 패널 + 지금까지의 문답 + 지금 질문
+    POST /start                시작(인트로 동의)
+    POST /answers              채점 → **다음 자리를 서버가 정한다**
+    POST /hints                학생이 직접 여는 힌트
 
-  **새로고침 복원이 이 둘로 끝난다.** 진행 중이면 `currentProblemNo`가 오고, 그 번호로
+  **새로고침 복원이 읽기 둘로 끝난다.** 진행 중이면 `currentProblemNo`가 오고, 그 번호로
   문제를 조회하면 `turns[]`(끝난 질문)와 `current`(지금 질문)가 함께 온다. 이미 연
   힌트(`shownHints`)까지 복원되므로 별도 복구 경로가 없다.
 
@@ -31,6 +45,12 @@ import type {
 
   "다음이 어디인가"는 답변 응답의 `outcome`이 정하고, "시간이 지났나"는 서버가 409로
   말한다. 화면이 다시 계산하면 같은 규칙이 두 곳에 생긴다.
+
+  ## 쓰기 뒤에 화면 상태를 손으로 만들지 않는다
+
+  생성 훅이 성공 시 이 도메인 조회를 통째로 무효화하므로 `GET /problems/{no}`가 다시
+  읽힌다. 즉 **답변 뒤 화면은 서버가 다시 말해 준 것**이고, 응답의 `next`·`hint`로
+  같은 상태를 화면에서 또 조립하면 두 벌이 생겨 갈린다.
 */
 
 /**
@@ -50,9 +70,19 @@ import type {
 export function useCurrentSession() {
   const query = useFindCurrentSession()
   const data = useMemo(() => (query.data ? toSession(query.data) : undefined), [query.data])
+  /**
+   * **커서를 다시 물어본다.** 서버가 상한을 넘긴 문제를 닫고 커서를 옮기면 화면이 들고
+   * 있던 번호는 낡은 값이 된다 — 그 번호로 조회하면 `PROBLEM_ALREADY_CLOSED`다.
+   * 세션이 끝났으면 `null`이 온다.
+   */
+  const reload = useCallback(async (): Promise<SessionInfo | null> => {
+    const r = await query.refetch()
+    return r.data ? toSession(r.data) : null
+  }, [query])
   return {
     ...query,
     data,
+    reload,
     /** 조회는 끝났는데 세션이 없다(`204` → `null`). 사유는 홈 상태로 가른다 */
     noSession: query.isSuccess && query.data == null,
   }
@@ -92,6 +122,123 @@ export function useNoSessionReason() {
      */
     isPending: home.isPending,
   }
+}
+
+/**
+ * 세션이 끝난 것을 **홈에도 알린다.**
+ *
+ * 쓰기(답변·힌트)는 생성 훅이 알아서 조회를 무효화하지만, **시간이 지나 끝나는 종료는
+ * 아무 요청도 아니라서** 무효화가 일어나지 않는다. 그러면 캐시가 살아 있는 동안
+ * (`staleTime` 30초) 홈이 `이해도 확인을 시작할 차례예요`를 그대로 그리고, 학생이
+ * 그 버튼을 누르면 세션이 없다는 화면으로 떨어진다 — 실제로 보고된 증상이다.
+ */
+export function useMarkSessionEnded() {
+  const queryClient = useQueryClient()
+  return useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: assessmentKeys.all })
+  }, [queryClient])
+}
+
+/**
+ * 세션 시작 — 인트로의 `전체화면으로 시작하기`.
+ *
+ * 🔴 **되돌릴 수 없다.** 여기서부터 60분 시계가 돌고 그 계정은 시작 전으로 안 돌아간다.
+ *
+ * 두 번 눌러도 안전하다 — 이미 진행 중이면 서버가 그 상태를 그대로 돌려준다(스펙 명시).
+ */
+export function useStart(sessionId: string | null) {
+  const m = useStartSession()
+  /** 시작된 세션을 돌려준다 — **어느 문제부터인지도 서버가 말한다**(`currentProblemNo`) */
+  const start = useCallback(async (): Promise<SessionInfo | null> => {
+    if (!sessionId) return null
+    return toSession(await m.mutateAsync({ path: { sessionId } }))
+  }, [m, sessionId])
+  return { start, isPending: m.isPending, error: m.error }
+}
+
+/**
+ * 답변 제출 — **결과가 다음 화면을 정한다.**
+ *
+ * `outcome` 5종과 `nextProblemNo`만 돌려준다. 나머지(`next`·`hint`)는 무효화된 조회가
+ * 다시 읽어 오므로 화면이 쓰지 않는다 — 같은 것을 두 경로로 만들면 갈린다.
+ */
+export function useSubmitAnswer(sessionId: string | null) {
+  const m = useSubmitSessionAnswer()
+  const submit = useCallback(
+    async (answerText: string): Promise<AnswerResult | null> => {
+      if (!sessionId) return null
+      const r = await m.mutateAsync({ path: { sessionId }, body: { answerText } })
+      return {
+        outcome: r.outcome,
+        nextProblemNo: r.nextProblemNo ?? null,
+        // 자동으로 열린 힌트가 있었는지만 남긴다 — 문구는 다시 읽은 `shownHints`에 있다
+        hintOpened: r.hint != null,
+      }
+    },
+    [m, sessionId],
+  )
+  return { submit, isPending: m.isPending, error: m.error }
+}
+
+/**
+ * 학생이 `다시 설명해 주세요`를 눌러 여는 힌트.
+ *
+ * ⚠️ **답변 응답에 `hint`가 실려 왔으면 부르지 않는다** — 이미 소진된 것이라 또 부르면
+ * 두 개째가 열린다(스펙 경고). 그 판단은 호출부가 한다.
+ *
+ * `HINT_EXHAUSTED`·`HINT_NOT_AVAILABLE`은 **오류로 올리지 않고 `null`로 접는다.**
+ * 남은 게 없어 못 여는 것은 사고가 아니라 정상적인 끝이고, 화면은 버튼을 문구로 바꾼다.
+ */
+const HINT_UNAVAILABLE = ['HINT_EXHAUSTED', 'HINT_NOT_AVAILABLE']
+
+export function useOpenHint(sessionId: string | null) {
+  const m = useOpenSessionHint()
+  const open = useCallback(async (): Promise<OpenedHint | null> => {
+    if (!sessionId) return null
+    try {
+      const r = await m.mutateAsync({ path: { sessionId } })
+      return { hintText: r.hintText, hintsUsed: r.hintsUsed, hintsLeft: r.hintsLeft }
+    } catch (e) {
+      if (isApiError(e) && HINT_UNAVAILABLE.includes(e.code)) return null
+      throw e
+    }
+  }, [m, sessionId])
+  return { open, isPending: m.isPending }
+}
+
+/**
+ * 관찰 신호 기록 — 창 이탈·연결 끊김·첫 타이핑 지연.
+ *
+ * **AI를 부르지 않고 진행 상태도 안 바꾼다. 오직 기록이다**(`204`). 이 경로가 없으면
+ * 무효 응시 판정과 매니저 브리프의 "어느 답변이 의심스러운가"가 빈 값으로 남는다.
+ *
+ * ## 실패를 조용히 삼킨다 — 유일하게 그래도 되는 자리다
+ *
+ * 이건 학생이 요청한 일이 아니라 화면이 뒤에서 남기는 기록이다. 실패했다고 응시 중인
+ * 학생에게 알릴 것이 없고, 알려도 할 수 있는 일이 없다. 특히 `409`(끝난 세션)는
+ * **정상이다** — 스펙이 *"끝난 세션의 신호는 버린다, 화면은 409를 무시하면 된다"* 고
+ * 못박았다.
+ *
+ * ## 재전송하지 않는다
+ *
+ * ⚠️ `awaySeconds`·`disconnectedSeconds`는 **보낼 때마다 횟수가 1 올라간다.** 실패했다고
+ * 다시 보내면 한 번 나간 것이 두 번으로 기록되어 무효 응시 판정이 틀린다. 잃는 편이 낫다.
+ */
+export function useSessionActivity(sessionId: string | null) {
+  const m = useRecordSessionActivity()
+  return useCallback(
+    (body: {
+      awaySeconds?: number
+      disconnectedSeconds?: number
+      firstKeystrokeDelayMs?: number
+    }) => {
+      if (!sessionId) return
+      // 셋 다 비면 400이다 — 보낼 것이 없으면 아예 안 부른다
+      if (Object.values(body).every((v) => v == null)) return
+      m.mutate({ path: { sessionId }, body })
+    },
+    [m, sessionId],
+  )
 }
 
 /*

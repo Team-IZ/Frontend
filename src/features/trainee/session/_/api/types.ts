@@ -132,20 +132,16 @@ export type AnswerResult = {
   outcome: AnswerOutcome
   /** 다음에 설 문제 번호. 세션이 끝났으면 `null` */
   nextProblemNo: number | null
-  /** 다음 질문. 세션이 끝났으면 `null` */
-  next: {
-    sequenceNo: number
-    questionText: string
-    hintsUsed: number
-    highlight: Highlight | null
-  } | null
   /**
-   * 3점 미만이라 **자동으로 열린** 힌트.
+   * 3점 미만이라 **자동으로 힌트가 열렸는가.**
    *
-   * 🔴 **이것이 오면 `POST /hints`를 부르지 않는다** — 이미 소진된 힌트라 또 부르면
-   * 두 개째가 열린다(스펙 경고). 화면은 받은 것을 그리기만 한다.
+   * 🔴 **문구를 여기서 안 가져온다.** 답변이 성공하면 문제 조회가 무효화돼 다시 읽히고,
+   * 그 `shownHints`에 같은 문구가 이미 들어 있다 — 두 경로로 만들면 갈린다.
+   *
+   * 이 불리언만 남기는 이유는 하나다: **이번에 힌트가 열렸으면 `POST /hints`를 부르면
+   * 안 된다**(또 부르면 두 개째가 열린다 — 스펙 경고). 그 판단에만 쓴다.
    */
-  hint: { hintText: string; hintsUsed: number; hintsLeft: number } | null
+  hintOpened: boolean
 }
 
 /** 학생이 [다시 설명해 주세요]를 눌러 연 힌트 */

@@ -45,6 +45,7 @@ export default function IntroScreen({
   mode,
   problemTotal,
   onStart,
+  starting,
 }: {
   mode: SessionMode
   /**
@@ -53,6 +54,8 @@ export default function IntroScreen({
    */
   problemTotal: number | null
   onStart: () => void
+  /** 시작 요청이 도는 중 — **되돌릴 수 없는 요청이라 두 번 눌리면 안 된다** */
+  starting?: boolean
 }) {
   const [ready, setReady] = useState(false)
 
@@ -268,8 +271,8 @@ export default function IntroScreen({
           {!ready && (
             <span className="text-xs text-fg-subtle">준비되면 위 항목을 확인해 주세요</span>
           )}
-          <Button onClick={onStart} disabled={!ready}>
-            전체화면으로 시작하기
+          <Button onClick={onStart} disabled={!ready || starting}>
+            {starting ? '시작하는 중…' : '전체화면으로 시작하기'}
           </Button>
         </div>
       </Card>

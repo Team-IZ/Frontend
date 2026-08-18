@@ -1,15 +1,16 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { cn } from '@/lib/utils/cn'
-import type { AnsweredQuestion, Question, SessionMode, ThreadItem } from '../types'
+import type { CurrentQuestion, Turn } from '../_/api/types'
+import type { Level, SessionMode } from '../types'
 
 type Props = {
   mode: SessionMode
-  /** 이 개념에서 답이 끝난 질문들 */
-  answered: AnsweredQuestion[]
-  /** null이면 채점 대기 중이다 */
-  currentQuestion: Question | null
-  /** 지금 질문의 타임라인 — 답변·힌트가 섞여 있다 */
-  current: ThreadItem[]
+  /** 이 문제에서 이미 답이 끝난 턴들. 같은 질문에 여러 번 답했으면 여러 줄로 온다 */
+  turns: Turn[]
+  /** 지금 답해야 하는 질문. 문제가 닫혔으면 `null` */
+  current: CurrentQuestion | null
+  /** 방금 보낸 답변 — 채점이 끝나기 전까지 자리를 지킨다 */
+  pendingAnswer: string | null
   waiting: boolean
 }
 
@@ -20,21 +21,22 @@ type Props = {
   - 내 답변(.ab): primary-soft · 우상단만 각짐 · 오른쪽 정렬
   - 힌트(.again): info-soft · 왼쪽 정렬
 
-  **한 질문 아래 답변이 여러 개 쌓인다.** 한 단계에서 최대 세 번 답하고 그 사이에 힌트가
-  끼기 때문이다(types.ts `ThreadItem` 주석). 답변 배열과 힌트 배열을 따로 두지 않고
-  타임라인 하나를 순서대로 그리므로, 버튼으로 먼저 받은 힌트든 미달로 받은 힌트든
-  실제로 일어난 순서 그대로 보인다.
+  문제가 끝날 때까지 지워지지 않는다(정의서 §3 "코드는 문제 내내 고정, 대화만 아래로 흐른다").
 
-  개념이 끝날 때까지 지워지지 않는다(정의서 §3 "코드는 개념 내내 고정, 대화만 아래로 흐른다").
+  ## 서버 턴을 질문 단위로 묶는다
+
+  **한 질문에 여러 번 답할 수 있다.** 미달이면 힌트가 열리고 같은 질문에 다시 답하는데
+  (`RETRY_WITH_HINT`), 서버는 그 시도들을 각각 한 턴으로 준다 — `sequenceNo`가 같다.
+  그대로 그리면 **같은 질문이 세 번 나온다.** 순번으로 묶어 질문은 한 번만 그리고 그
+  아래에 답변·힌트를 시간순으로 쌓는다.
+
+  힌트가 답변보다 먼저 오기도 하고 나중에 오기도 한다 — 버튼으로 먼저 열면 `힌트 →
+  답변`이고 미달로 열리면 `답변 → 힌트`다. 서버의 `hintText`가 **그 턴 직전에 보여준
+  힌트**라 이 순서가 이미 정해져 있다: 힌트를 먼저 붙이고 답변을 붙이면 맞는다.
 */
-export default function QuestionThread({
-  mode,
-  answered,
-  currentQuestion,
-  current,
-  waiting,
-}: Props) {
+export default function QuestionThread({ mode, turns, current, pendingAnswer, waiting }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
+  const groups = useMemo(() => groupByQuestion(turns, current), [turns, current])
 
   /*
     새 질문·답변·힌트가 붙으면 **맨 아래로 따라간다.** 대화가 길어지면 새로 온 것이
@@ -47,44 +49,42 @@ export default function QuestionThread({
 
     `behavior: 'smooth'`도 안 쓴다 — 답변 직후 눈이 입력칸으로 돌아가야 하는데 화면이
     천천히 흐르면 그 시선을 붙잡는다.
-
-    의존성이 셋인 이유: 답이 끝난 질문(answered)·지금 질문의 타임라인(current)·
-    대기 인디케이터(waiting)가 각각 따로 늘어난다.
   */
   useEffect(() => {
     const el = scrollRef.current
     if (el) el.scrollTop = el.scrollHeight
-  }, [answered.length, current.length, waiting])
+  }, [turns.length, current?.shownHints.length, pendingAnswer, waiting])
 
   return (
     <div ref={scrollRef} className="flex-1 overflow-auto p-4">
       <div className="flex flex-col gap-4">
-        {answered.map((q, i) => (
-          <div key={i} className="flex flex-col gap-2">
-            <QuestionBubble mode={mode} level={q.level} question={q.text} refText={q.ref} />
-            <Timeline items={q.items} />
-          </div>
-        ))}
-
-        {currentQuestion && (
-          <div className="flex flex-col gap-2">
+        {groups.map((g) => (
+          <div key={g.sequenceNo} className="flex flex-col gap-2">
             <QuestionBubble
               mode={mode}
-              level={currentQuestion.level}
-              question={currentQuestion.text}
-              refText={currentQuestion.ref}
-              active
+              level={levelOf(g.sequenceNo)}
+              question={g.questionText}
+              refText={g.refText}
+              active={g.active}
             />
-            <Timeline items={current} />
+            {g.items.map((item, i) =>
+              item.kind === 'answer' ? (
+                <AnswerBubble key={i}>{item.text}</AnswerBubble>
+              ) : (
+                <HintBubble key={i}>{item.text}</HintBubble>
+              ),
+            )}
+            {/* 방금 보낸 답변은 채점 전이라 서버에 없다 — 보낸 자리를 비워 두지 않는다 */}
+            {g.active && pendingAnswer && <AnswerBubble>{pendingAnswer}</AnswerBubble>}
           </div>
-        )}
+        ))}
 
         {waiting && (
           <div className="ml-1 flex items-center gap-2 text-sm text-fg-subtle">
             <span className="flex gap-0.5">
               <Dot /> <Dot /> <Dot />
             </span>
-            다음 질문을 준비하고 있어요
+            답변을 확인하고 있어요
           </div>
         )}
       </div>
@@ -92,19 +92,76 @@ export default function QuestionThread({
   )
 }
 
-function Timeline({ items }: { items: ThreadItem[] }) {
-  return (
-    <>
-      {items.map((item, i) =>
-        item.kind === 'answer' ? (
-          <AnswerBubble key={i}>{item.text}</AnswerBubble>
-        ) : (
-          <HintBubble key={i}>{item.text}</HintBubble>
-        ),
-      )}
-    </>
-  )
+type Item = { kind: 'answer' | 'hint'; text: string }
+type Group = {
+  sequenceNo: number
+  questionText: string
+  refText: string
+  items: Item[]
+  active: boolean
 }
+
+/**
+ * 턴들을 질문 순번으로 묶고, 지금 질문을 마지막에 붙인다.
+ *
+ * 지금 질문의 순번이 이미 턴에 있으면(= 미달로 다시 답하는 중) **새 그룹을 만들지 않고
+ * 그 그룹을 잇는다.** 안 그러면 같은 질문이 두 번 그려진다.
+ */
+function groupByQuestion(turns: Turn[], current: CurrentQuestion | null): Group[] {
+  const groups: Group[] = []
+  const byNo = new Map<number, Group>()
+
+  for (const t of turns) {
+    let g = byNo.get(t.sequenceNo)
+    if (!g) {
+      g = {
+        sequenceNo: t.sequenceNo,
+        questionText: t.questionText,
+        refText: refTextOf(t.highlight),
+        items: [],
+        active: false,
+      }
+      byNo.set(t.sequenceNo, g)
+      groups.push(g)
+    }
+    // 힌트가 먼저다 — `hintText`는 **이 답변 직전에** 보여준 것이다
+    if (t.hintText) g.items.push({ kind: 'hint', text: t.hintText })
+    g.items.push({ kind: 'answer', text: t.answerText })
+  }
+
+  if (current) {
+    const g = byNo.get(current.sequenceNo)
+    const shown = current.shownHints.map((text) => ({ kind: 'hint' as const, text }))
+    if (g) {
+      g.active = true
+      // 이미 턴에 붙은 힌트는 빼고 아직 답하지 않은 것만 잇는다
+      const already = g.items.filter((i) => i.kind === 'hint').length
+      g.items.push(...shown.slice(already))
+    } else {
+      groups.push({
+        sequenceNo: current.sequenceNo,
+        questionText: current.questionText,
+        refText: refTextOf(current.highlight),
+        items: shown,
+        active: true,
+      })
+    }
+  }
+
+  return groups
+}
+
+const refTextOf = (h: { path: string; lineStart: number; lineEnd: number }) =>
+  h.lineStart === h.lineEnd
+    ? `${fileOf(h.path)}:${h.lineStart}`
+    : `${fileOf(h.path)}:${h.lineStart}–${h.lineEnd}`
+
+/** 경로 전체는 길어 말풍선을 두 줄로 만든다 — 파일 이름만 남긴다 */
+const fileOf = (path: string) => path.split('/').pop() ?? path
+
+/** 질문은 L1부터 순서대로다 — 순번이 곧 단계다. 범위를 벗어나면 마지막 단계로 접는다 */
+const levelOf = (sequenceNo: number): Level =>
+  (sequenceNo >= 1 && sequenceNo <= 4 ? sequenceNo : 4) as Level
 
 function Dot() {
   return <span className="inline-block size-1.5 animate-pulse rounded-full bg-fg-subtle" />
@@ -129,7 +186,7 @@ function QuestionBubble({
   active,
 }: {
   mode: SessionMode
-  level: 1 | 2 | 3 | 4
+  level: Level
   question: string
   refText: string
   active?: boolean

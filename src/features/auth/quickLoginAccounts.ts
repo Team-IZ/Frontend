@@ -37,6 +37,14 @@ export type CaseAccount = {
    * 전원 같은 케이스면 `null`이다 — 다 같은 값을 열 줄 적어 봐야 읽는 데 방해만 된다.
    */
   note: string | null
+  /**
+   * **누가 쓰기로 한 계정인가.** 엑셀의 `담당` 열이다.
+   *
+   * 여섯이 함께 테스트하는데 계정이 소모되므로, 남이 쓴 것을 또 열면 이미 끝난 상태를
+   * 보게 된다. 배정은 **엑셀이 정본이고 화면은 거르기만 한다** — 화면이 다시 나누면
+   * 엑셀과 두 벌이 되어 "누가 뭘 썼나"를 또 맞춰야 한다.
+   */
+  owner: string | null
 }
 
 /**
@@ -90,12 +98,9 @@ export const QUICK_LOGIN_ACCOUNTS = parseAccounts(import.meta.env.VITE_DEV_ACCOU
   ⚠️ **이 값은 번들에 들어간다.** 배포 번들을 받으면 계정과 비밀번호를 볼 수 있다는 뜻이다.
   노출을 줄이는 것은 이 파일이 아니라 **어디에 값을 넣느냐**다 — 운영 환경에는 넣지 않는다.
 */
-const caseModules = import.meta.glob<{ measuredAt?: string; groups?: CaseGroup[] }>(
-  '/dev-accounts.json',
-  { eager: true },
-)
+const caseModules = import.meta.glob<CaseData>('/dev-accounts.json', { eager: true })
 
-type CaseData = { measuredAt?: string; groups?: CaseGroup[] }
+type CaseData = { measuredAt?: string; owners?: string[]; groups?: CaseGroup[] }
 
 function readCaseData(): CaseData {
   const fromFile = Object.values(caseModules)[0]
@@ -133,6 +138,14 @@ export const CASE_ACCOUNT_GROUPS = readCaseGroups()
  * 눌러 보고 나서야 알게 되므로 잰 날짜를 함께 말한다.
  */
 export const CASE_ACCOUNT_MEASURED_AT = caseData.measuredAt ?? null
+
+/**
+ * 담당자 목록. 비어 있으면 화면이 담당자 줄을 안 그린다 — 배정이 없는 엑셀도 있다.
+ *
+ * 계정을 훑어 모으지 않고 스크립트가 낸 값을 그대로 쓴다. 렌더마다 194개를 도는 것도
+ * 아깝고, **순서가 화면마다 흔들리면** 어제 눌렀던 자리에 다른 이름이 온다.
+ */
+export const CASE_ACCOUNT_OWNERS = caseData.owners ?? []
 
 /** 고른 계정 총수 — 토글 라벨이 "N개"를 말하려면 필요하다 */
 export const CASE_ACCOUNT_TOTAL = CASE_ACCOUNT_GROUPS.reduce((n, g) => n + g.accounts.length, 0)

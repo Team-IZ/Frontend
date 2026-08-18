@@ -4,9 +4,13 @@ import { cn } from '@/lib/utils/cn'
 import {
   CASE_ACCOUNT_GROUPS,
   CASE_ACCOUNT_MEASURED_AT,
+  CASE_ACCOUNT_OWNERS,
   CASE_ACCOUNT_TOTAL,
   type CaseAccount,
 } from '../quickLoginAccounts'
+
+/** 담당자를 안 골랐을 때 — 「전체」도 하나의 선택지다 */
+const ALL = '전체'
 
 /*
   dev 전용 — 교육생 **상태별** 테스트 계정 고르개.
@@ -22,6 +26,11 @@ import {
   ## 왜 케이스마다 설명이 붙나
   백엔드가 엑셀 요약에 *"이 계정들로 무엇을 보나"* 를 적어 준다. 그것을 그대로 보여준다 —
   계정 목록만 있고 무엇을 확인하는 자리인지 모르면 고를 수가 없다.
+
+  ## 왜 담당자로 한 번 더 거르나
+  여섯이 함께 테스트하는데 **계정은 소모된다.** 남이 쓴 것을 열면 이미 끝난 상태를 보게
+  되고, 그러면 "누가 뭘 썼는지"를 매번 말로 맞춰야 한다. 엑셀에 `담당`이 적혀 오므로
+  화면은 그것으로 거르기만 한다 — **배정은 엑셀이 정본이다.**
 
   ## 왜 반·팀·이름·상태까지 보여주나
   같은 케이스 계정이 여러 개 있는 이유는 **소모되기 때문**이다(세션을 시작하면 그 계정은
@@ -42,10 +51,18 @@ export default function CaseAccountPicker({
 }) {
   const [open, setOpen] = useState(false)
   const [groupIndex, setGroupIndex] = useState(0)
+  const [owner, setOwner] = useState(ALL)
 
   if (CASE_ACCOUNT_GROUPS.length === 0) return null
 
   const group = CASE_ACCOUNT_GROUPS[groupIndex]
+  /*
+    담당자를 고르면 그 사람 것만 남긴다. **케이스 버튼의 수도 함께 줄인다** — 「응시중
+    2개」인데 눌러 보니 내 것이 없는 일이 잦아서, 누르기 전에 몇 개인지 보여야 한다.
+  */
+  const mine = (list: CaseAccount[]) =>
+    owner === ALL ? list : list.filter((a) => a.owner === owner)
+  const shown = mine(group.accounts)
   const measuredLabel = CASE_ACCOUNT_MEASURED_AT
     ? new Date(CASE_ACCOUNT_MEASURED_AT).toLocaleDateString('ko-KR', {
         month: 'numeric',
@@ -78,6 +95,28 @@ export default function CaseAccountPicker({
               {measuredLabel} 기준 상태입니다 — 응시 창은 24시간이라 지나면 <b>창 닫힘</b>이 됩니다.
             </p>
           )}
+          {/* 담당자 줄 — 케이스보다 위에 둔다. 먼저 좁히는 축이 이쪽이다 */}
+          {CASE_ACCOUNT_OWNERS.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-1 border-b border-border pb-2">
+              {[ALL, ...CASE_ACCOUNT_OWNERS].map((o) => (
+                <button
+                  key={o}
+                  type="button"
+                  onClick={() => setOwner(o)}
+                  aria-current={o === owner}
+                  className={cn(
+                    'rounded px-2 py-1 text-[11px] transition-colors',
+                    o === owner
+                      ? 'bg-primary font-medium text-white'
+                      : 'text-fg-muted hover:bg-surface-2 hover:text-fg',
+                  )}
+                >
+                  {o}
+                </button>
+              ))}
+            </div>
+          )}
+
           {/*
             케이스 고르개 — 라벨이 길어 두 칸 격자로 둔다. 고른 것은 채움으로 표시한다:
             테두리만으로 구분하면 어느 케이스를 보고 있는지 놓친다.
@@ -91,17 +130,24 @@ export default function CaseAccountPicker({
                 aria-current={i === groupIndex}
                 className={cn(
                   'rounded px-2 py-1.5 text-left text-[11px] transition-colors',
+                  /*
+                    선택은 **연한 파랑 + 진한 파랑 글씨**다(리포트 회차 목록과 같은 패턴).
+                    진한 파랑을 배경으로 쓰면 그 위에 올릴 글자색 토큰이 없어 글씨가
+                    검정으로 남는다 — 실제로 안 읽혔다.
+                  */
                   i === groupIndex
-                    ? 'bg-primary text-primary-fg'
+                    ? 'bg-primary-soft font-medium text-primary'
                     : 'text-fg-muted hover:bg-surface-2 hover:text-fg',
                 )}
               >
                 {g.label}
-                {/* 고른 수와 실제 수가 다르면 둘 다 말한다 — 「9개뿐인가」로 읽히지 않게 */}
-                <span className={cn('ml-1', i === groupIndex ? 'opacity-80' : 'text-fg-subtle')}>
-                  {g.accounts.length < g.total
-                    ? `${g.accounts.length}/${g.total}`
-                    : `${g.accounts.length}`}
+                {/*
+                  **담당자를 고르면 그 사람 몫만 센다.** 전체 수를 보여 주면 눌러 보고서야
+                  내 것이 없다는 것을 알게 된다 — `응시중`은 계정이 둘뿐이라 넷은 못 본다.
+                */}
+                <span className={cn('ml-1', i === groupIndex ? 'opacity-70' : 'text-fg-subtle')}>
+                  {mine(g.accounts).length}
+                  {owner !== ALL && `/${g.accounts.length}`}
                 </span>
               </button>
             ))}
@@ -112,12 +158,18 @@ export default function CaseAccountPicker({
 
           {/* 목록이 길어도 화면을 밀지 않게 스스로 스크롤한다 */}
           <ul className="mt-1 max-h-[196px] overflow-y-auto">
-            {group.accounts.map((a) => (
+            {shown.map((a) => (
               <li key={a.email}>
                 <AccountRow account={a} disabled={disabled} onPick={onPick} />
               </li>
             ))}
           </ul>
+          {/* 「비어 있다」와 「고장났다」는 다르다 — 왜 없는지 말한다 */}
+          {shown.length === 0 && (
+            <p className="mt-2 text-[11px] text-fg-subtle">
+              {owner}님 몫으로 배정된 {group.label} 계정이 없어요.
+            </p>
+          )}
         </div>
       )}
     </div>

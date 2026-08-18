@@ -144,6 +144,12 @@ export type updateSchedule_Response =
 export type updateSchedule_Errors =
   'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'PROJECT_NOT_FOUND'
 
+// DELETE /api/v0/projects/{projectId}/teams/{teamId} — 팀 해체
+export type disbandTeam_Path = operations['disbandTeam']['parameters']['path']
+export type disbandTeam_Response = void
+export type disbandTeam_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'TEAM_NOT_FOUND' | 'TEAM_SUBMISSION_LOCKED'
+
 // PATCH /api/v0/projects/{projectId}/teams/{teamId} — 팀 정보 수정
 export type updateTeam_Path = operations['updateTeam']['parameters']['path']
 export type updateTeam_Body = NonNullable<

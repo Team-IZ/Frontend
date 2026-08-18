@@ -12,8 +12,6 @@
 | `unavailable` | POST /api/v0/cohorts/{cohortId}/notifications/reminders | 매니저 단건 독촉 발송 |
 | `unavailable` | PATCH /api/v0/assessment-attempts/{attemptId}/validity | 무효 응시 확정·복원 |
 | `unavailable` | GET /api/v0/reports/managed | 담당 반 리포트 목록 조회 (매니저) |
-| `unavailable` | GET /api/v0/cohorts/{cohortId}/notifications/inbox | 매니저 인박스 조회 |
-| `unavailable` | GET /api/v0/cohorts/{cohortId}/analytics/risk-signals | 매니저 위험 신호 근거 조회 |
 | `unavailable` | GET /api/v0/cohorts/{cohortId}/analytics/concept-scope | 면담 브리프 개념 소관 판정 |
 
 ## 손으로 쓰는 것 — multipart

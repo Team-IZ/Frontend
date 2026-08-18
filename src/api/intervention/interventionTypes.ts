@@ -67,7 +67,7 @@ export type findInterviews_Query = NonNullable<operations['findInterviews']['par
 export type findInterviews_Response =
   operations['findInterviews']['responses'][200]['content']['application/json']
 export type findInterviews_Errors =
-  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'ORGANIZATION_CONTEXT_MISSING'
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'MANAGER_SCOPE_NOT_FOUND' | 'ORGANIZATION_CONTEXT_MISSING'
 
 // GET /api/v0/interviews/rounds — [면담 목록] 면담 회차 옵션 조회
 export type findInterviewRoundOptions_Response =

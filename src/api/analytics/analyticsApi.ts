@@ -2,6 +2,9 @@
 
 import { izClient, unwrap, type RequestOptions } from '@/api/_contract'
 import type {
+  getRiskSignalsForInbox_Path,
+  getRiskSignalsForInbox_Query,
+  getRiskSignalsForInbox_Response,
   findCohortRiskTraineeRates_Path,
   findCohortRiskTraineeRates_Query,
   findCohortRiskTraineeRates_Response,
@@ -15,7 +18,23 @@ import type {
   findCohortComparison_Response,
   findCohortActionsRequired_Path,
   findCohortActionsRequired_Response,
+  findActionRequiredProjects_Path,
+  findActionRequiredProjects_Response,
 } from './analyticsTypes'
+
+/** 위험 신호 조회 (인박스 행 근거) — `GET /api/v0/cohorts/{cohortId}/analytics/signals` */
+export const getRiskSignalsForInbox = (
+  params: {
+    path: getRiskSignalsForInbox_Path
+    query?: getRiskSignalsForInbox_Query
+  } & RequestOptions,
+) =>
+  unwrap<getRiskSignalsForInbox_Response>(
+    izClient.GET('/api/v0/cohorts/{cohortId}/analytics/signals', {
+      params: { path: params.path, query: params.query ?? {} },
+      signal: params.signal,
+    }) as never,
+  )
 
 /** 회차별 기수 전체·반별 위험 교육생 비율 조회 — `GET /api/v0/cohorts/{cohortId}/analytics/risk-trainees` */
 export const findCohortRiskTraineeRates = (
@@ -68,6 +87,17 @@ export const findCohortActionsRequired = (
 ) =>
   unwrap<findCohortActionsRequired_Response>(
     izClient.GET('/api/v0/cohorts/{cohortId}/analytics/actions', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 조치 필요 항목 조회 — `GET /api/v0/classes/{classId}/projects` */
+export const findActionRequiredProjects = (
+  params: { path: findActionRequiredProjects_Path } & RequestOptions,
+) =>
+  unwrap<findActionRequiredProjects_Response>(
+    izClient.GET('/api/v0/classes/{classId}/projects', {
       params: { path: params.path },
       signal: params.signal,
     }) as never,

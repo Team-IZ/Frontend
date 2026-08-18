@@ -73,10 +73,10 @@ export const reincludeInterviewCase = (
   )
 
 /** [면담 목록] 면담 목록 조회 — `GET /api/v0/interviews` */
-export const findInterviews = (params: { query: findInterviews_Query } & RequestOptions) =>
+export const findInterviews = (params: { query?: findInterviews_Query } & RequestOptions = {}) =>
   unwrap<findInterviews_Response>(
     izClient.GET('/api/v0/interviews', {
-      params: { query: params.query },
+      params: { query: params.query ?? {} },
       signal: params.signal,
     }) as never,
   )

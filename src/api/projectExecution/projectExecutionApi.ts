@@ -37,6 +37,8 @@ import type {
   updateSchedule_Path,
   updateSchedule_Body,
   updateSchedule_Response,
+  disbandTeam_Path,
+  disbandTeam_Response,
   updateTeam_Path,
   updateTeam_Body,
   updateTeam_Response,
@@ -201,6 +203,15 @@ export const updateSchedule = (
     izClient.PATCH('/api/v0/projects/{projectId}', {
       params: { path: params.path },
       body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 팀 해체 — `DELETE /api/v0/projects/{projectId}/teams/{teamId}` */
+export const disbandTeam = (params: { path: disbandTeam_Path } & RequestOptions) =>
+  unwrap<disbandTeam_Response>(
+    izClient.DELETE('/api/v0/projects/{projectId}/teams/{teamId}', {
+      params: { path: params.path },
       signal: params.signal,
     }) as never,
   )

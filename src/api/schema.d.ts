@@ -547,10 +547,25 @@ export interface paths {
     put: operations['saveInterviewBrief']
     /**
      * [면담 목록] 면담 브리프 생성 (AI) | ✅ 사용 가능
-     * @description **AI를 호출해 여는 말과 질문 체크리스트를 만듭니다. 수 초~수십 초 걸립니다.**
+     * @description **AI를 호출해 여는 말과 질문 체크리스트를 만듭니다. 보통 20~30초 걸립니다.**
      *
      *     화면은 이 응답을 기다리는 동안 로딩 상태를 유지해야 합니다 — AI가 동기 계약이라
      *     (202+폴링이 아니라 200) 이 응답이 곧 결과입니다.
+     *
+     *     ### 대기 안내는 「잠시」가 아닙니다 (32차 R7)
+     *
+     *     종전 문구가 「수 초」라 화면이 *「잠시 걸립니다」* 로 안내했는데, **실측 24초**입니다.
+     *     20초 넘게 버튼 문구 하나만 보이면 매니저는 멈춘 것으로 읽습니다.
+     *
+     *     **진행률을 줄 수 없는 구조입니다** — AI가 여는 말과 질문 4~8개를 한 번에 만들어
+     *     한 응답으로 주므로 중간 단계가 없습니다. 그래서 **예상 소요를 문구로 말하는 것**이
+     *     지금 할 수 있는 최선입니다(예: *「AI가 브리프를 만드는 중입니다 · 20초쯤 걸려요」*).
+     *
+     *     왜 오래 걸리는지도 적어 둡니다 — 질문 하나하나가 **그 교육생의 회차 문답 원문**을
+     *     근거로 나오므로, 회차 문항 수만큼 컨텍스트가 붙습니다. 사람마다 다르지만 20~30초가
+     *              일반적인 범위입니다.
+     *
+     *     > 한 번 만든 브리프는 다시 만들지 않으므로(아래) **이 대기는 교육생당 한 번**입니다.
      *
      *     ### 브리프당 한 번만 만듭니다
      *
@@ -2223,83 +2238,83 @@ export interface paths {
     /**
      * 기수 프로젝트 목록 | ✅ 사용 가능
      * @description 기수 안의 프로젝트를 조회한다. **검색·필터·정렬을 서버가 처리하므로 화면은 파라미터만
-     *     넘기면 된다**(9차 R3).
+     *     					넘기면 된다**(9차 R3).
      *
-     *     ## 요청 (쿼리 파라미터)
+     *     					## 요청 (쿼리 파라미터)
      *
-     *     | 파라미터 | 필수 | 타입 | 설명 |
-     *     |---|---|---|---|
-     *     | `cohortId` | **필수**(경로) | UUID | 조회할 기수 ID |
-     *     | `search` | 선택 | string | 회차 이름 부분검색(대소문자 무시). 비우면 전체 |
-     *     | `curriculumId` | 선택 | UUID | 교안으로 좁힌다. **교안 버전 ID와 자료(material) ID를 모두 받는다** |
-     *     | `status` | 선택 | enum | `PLANNED` · `RUNNING` · `CLOSED`. 비우면 전체 |
-     *     | `sort` | 선택 | enum | `READINESS`(준비 필요 순, **기본**) · `DUE_SOON`(마감 임박 순) · `START_DATE`(시작 이른 순) |
+     *     					| 파라미터 | 필수 | 타입 | 설명 |
+     *     					|---|---|---|---|
+     *     					| `cohortId` | **필수**(경로) | UUID | 조회할 기수 ID |
+     *     					| `search` | 선택 | string | 회차 이름 부분검색(대소문자 무시). 비우면 전체 |
+     *     					| `curriculumId` | 선택 | UUID | 교안으로 좁힌다. **교안 버전 ID와 자료(material) ID를 모두 받는다** |
+     *     					| `status` | 선택 | enum | `PLANNED` · `RUNNING` · `CLOSED`. 비우면 전체 |
+     *     					| `sort` | 선택 | enum | `READINESS`(준비 필요 순, **기본**) · `DUE_SOON`(마감 임박 순) · `START_DATE`(시작 이른 순) |
      *
-     *     ## 응답 (200)
+     *     					## 응답 (200)
      *
-     *     | 필드 | 타입 | 설명 |
-     *     |---|---|---|
-     *     | `projects[]` | array | 필터·정렬이 적용된 목록 |
-     *     | `total` | int | **필터 적용 후** 개수. `projects`의 길이와 같다 |
-     *     | `counts` | object | 상태별 개수. **필터와 무관한 기수 전체 모집단** |
+     *     					| 필드 | 타입 | 설명 |
+     *     					|---|---|---|
+     *     					| `projects[]` | array | 필터·정렬이 적용된 목록 |
+     *     					| `total` | int | **필터 적용 후** 개수. `projects`의 길이와 같다 |
+     *     					| `counts` | object | 상태별 개수. **필터와 무관한 기수 전체 모집단** |
      *
-     *     ⚠️ **응답이 배열에서 객체로 바뀌었다.** `counts`를 실을 자리가 필요했기 때문이다 —
-     *     상태별 개수는 필터와 무관한 모집단 기준이라 걸러진 배열에서는 셀 수 없다.
-     *     기수·반·매니저 목록이 이미 같은 모양이다.
+     *     					⚠️ **응답이 배열에서 객체로 바뀌었다.** `counts`를 실을 자리가 필요했기 때문이다 —
+     *     					상태별 개수는 필터와 무관한 모집단 기준이라 걸러진 배열에서는 셀 수 없다.
+     *     					기수·반·매니저 목록이 이미 같은 모양이다.
      *
-     *     **`counts`는 `PLANNED`·`RUNNING`·`CLOSED` 세 키가 항상 모두 있고**, 0건인 상태는 0으로 온다.
-     *     세 값을 더하면 이 기수의 전체 회차 수다.
+     *     					**`counts`는 `PLANNED`·`RUNNING`·`CLOSED` 세 키가 항상 모두 있고**, 0건인 상태는 0으로 온다.
+     *     					세 값을 더하면 이 기수의 전체 회차 수다.
      *
-     *     ### `projects[]` 각 항목
+     *     					### `projects[]` 각 항목
      *
-     *     - projectId / cohortId / name / sequenceNo / category / status / startDate / endDate
-     *     - **readiness**: `PREP`(준비 중) · `READY`(준비됨) — 서버가 판정한다(아래)
-     *     - curriculumCount: 연결된 교안 수. 0이면 화면의 `교안 연결 안 됨`
-     *     - conceptCount: 확정된 검증 개념 수. 화면의 `검증 개념 2 / 3건`에서 분자
-     *     - conceptCandidateCount: 검증 개념 후보 수. 화면의 `후보 12건에서 3건`에서 앞 숫자
+     *     					- projectId / cohortId / name / sequenceNo / category / status / startDate / endDate
+     *     					- **readiness**: `PREP`(준비 중) · `READY`(준비됨) — 서버가 판정한다(아래)
+     *     					- curriculumCount: 연결된 교안 수. 0이면 화면의 `교안 연결 안 됨`
+     *     					- conceptCount: 확정된 검증 개념 수. 화면의 `검증 개념 2 / 3건`에서 분자
+     *     					- conceptCandidateCount: 검증 개념 후보 수. 화면의 `후보 12건에서 3건`에서 앞 숫자
      *
-     *     ## `readiness` — 9차 Q1의 답(ⓐ 서버 판정)
+     *     					## `readiness` — 9차 Q1의 답(ⓐ 서버 판정)
      *
-     *     **`status`에 값을 더하지 않고 축을 나눴다.** 화면이 쓰는 4값
-     *     (`준비 중`·`준비됨`·`진행 중`·`종료`)은 성격이 다른 둘을 겹쳐 놓은 것이다 —
-     *     `RUNNING`·`CLOSED`는 **시간**이 정하고 `PREP`·`READY`는 **구성이 찼는지**가 정한다.
-     *     한 필드에 합치면 *"진행 중인데 교안이 비어 있다"* 같은 실제 상태를 표현할 수 없다.
+     *     					**`status`에 값을 더하지 않고 축을 나눴다.** 화면이 쓰는 4값
+     *     					(`준비 중`·`준비됨`·`진행 중`·`종료`)은 성격이 다른 둘을 겹쳐 놓은 것이다 —
+     *     					`RUNNING`·`CLOSED`는 **시간**이 정하고 `PREP`·`READY`는 **구성이 찼는지**가 정한다.
+     *     					한 필드에 합치면 *"진행 중인데 교안이 비어 있다"* 같은 실제 상태를 표현할 수 없다.
      *
-     *     화면의 4값은 두 필드를 겹쳐 만든다:
+     *     					화면의 4값은 두 필드를 겹쳐 만든다:
      *
      *     ```ts
-     *     const label = status === 'PLANNED' ? readiness : status;
-     *     // PREP | READY | RUNNING | CLOSED
+     *     					const label = status === 'PLANNED' ? readiness : status;
+     *     					// PREP | READY | RUNNING | CLOSED
      *     ```
      *
-     *     **판정 규칙** — 교안·확정 개념·마감일 셋 중 **하나라도 비어 있으면 `PREP`**, 셋 다 차면 `READY`.
-     *     `sort=READINESS`가 쓰는 규칙과 **같은 자리**에서 계산하므로 목록의 순서와 배지가 어긋날 수 없다.
+     *     					**판정 규칙** — 교안·확정 개념·마감일 셋 중 **하나라도 비어 있으면 `PREP`**, 셋 다 차면 `READY`.
+     *     					`sort=READINESS`가 쓰는 규칙과 **같은 자리**에서 계산하므로 목록의 순서와 배지가 어긋날 수 없다.
      *
-     *     `RUNNING`·`CLOSED` 회차에도 계산되어 온다 — 개강 후 교안이 비는 것은 실제로 일어나는
-     *     상태라 감추지 않는다. 화면이 안 쓰면 무시하면 된다.
+     *     					`RUNNING`·`CLOSED` 회차에도 계산되어 온다 — 개강 후 교안이 비는 것은 실제로 일어나는
+     *     					상태라 감추지 않는다. 화면이 안 쓰면 무시하면 된다.
      *
-     *     **세 숫자는 목록 화면이 셀마다 그리는 값이다**(9차 R1). 화면이 직접 세려면 회차마다
-     *     교안·개념·후보를 따로 물어야 해서, 회차가 6~8건인 목록 하나에 조회가 그만큼 늘어난다.
+     *     					**세 숫자는 목록 화면이 셀마다 그리는 값이다**(9차 R1). 화면이 직접 세려면 회차마다
+     *     					교안·개념·후보를 따로 물어야 해서, 회차가 6~8건인 목록 하나에 조회가 그만큼 늘어난다.
      *
-     *     교안 이름·개념 이름처럼 **목록이 아니라 상세에서 쓰는 값**은 여기 없다 —
-     *     `GET /projects/{projectId}`가 배열로 내려준다.
+     *     					교안 이름·개념 이름처럼 **목록이 아니라 상세에서 쓰는 값**은 여기 없다 —
+     *     					`GET /projects/{projectId}`가 배열로 내려준다.
      *
-     *     ## `READINESS`(준비 필요 순)의 판정 규칙
+     *     					## `READINESS`(준비 필요 순)의 판정 규칙
      *
-     *     **덜 준비된 회차가 앞**이다. 이 목록이 답하는 질문이 "뭐부터 손대야 하나"라서 기본값이다.
+     *     					**덜 준비된 회차가 앞**이다. 이 목록이 답하는 질문이 "뭐부터 손대야 하나"라서 기본값이다.
      *
-     *     1. **미충족 항목 수**가 많은 순 — 교안 0건 · 확정 개념 0건 · 마감일 없음 셋 중 몇 개인지
-     *     2. 같으면 **마감이 이른 순**(마감 없는 회차가 뒤)
-     *     3. 그것도 같으면 **최근 회차 순**
+     *     					1. **미충족 항목 수**가 많은 순 — 교안 0건 · 확정 개념 0건 · 마감일 없음 셋 중 몇 개인지
+     *     					2. 같으면 **마감이 이른 순**(마감 없는 회차가 뒤)
+     *     					3. 그것도 같으면 **최근 회차 순**
      *
-     *     💡 정렬을 서버가 하기로 한 이상 규칙도 서버에 두었다 — 화면이 정렬하고 서버가 순서를 매기면
-     *     같은 규칙이 두 곳에 생긴다. **이 규칙이 곧 `readiness` 판정**이라(9차 Q1 ⓐ),
-     *     `unreadyCount() === 0`이면 `READY`다. 순서와 배지가 한 계산에서 나온다.
+     *     					💡 정렬을 서버가 하기로 한 이상 규칙도 서버에 두었다 — 화면이 정렬하고 서버가 순서를 매기면
+     *     					같은 규칙이 두 곳에 생긴다. **이 규칙이 곧 `readiness` 판정**이라(9차 Q1 ⓐ),
+     *     					`unreadyCount() === 0`이면 `READY`다. 순서와 배지가 한 계산에서 나온다.
      *
-     *     ## 페이지네이션은 없다
+     *     					## 페이지네이션은 없다
      *
-     *     기수당 회차가 6~8건이라 전량이 한 페이지에 들어간다. 회차가 쌓이면 `page`·`size`를
-     *     추가하겠다 — 그때도 위 파라미터와 `counts`는 그대로 쓸 수 있다.
+     *     					기수당 회차가 6~8건이라 전량이 한 페이지에 들어간다. 회차가 쌓이면 `page`·`size`를
+     *     					추가하겠다 — 그때도 위 파라미터와 `counts`는 그대로 쓸 수 있다.
      */
     get: operations['findProjects']
     put?: never
@@ -2354,7 +2369,14 @@ export interface paths {
     }
     get?: never
     put?: never
-    /** 매니저 단건 독촉 발송 | ⚠️ 사용 불가 */
+    /**
+     * 매니저 단건 독촉 발송 | ⚠️ 사용 불가
+     * @description ⚠️ **이 기능은 폐기되었습니다.** 응시 독촉 기능 자체가 제품에서 제거되기로
+     *     결정되어 프론트엔드에서 이 API를 호출하면 안 됩니다.
+     *
+     *     로직은 당분간 코드에 남아있지만 곧 완전히 제거될 예정입니다. 신규 연동을
+     *     추가하지 마세요.
+     */
     post: operations['sendManagerReminder']
     delete?: never
     options?: never
@@ -3494,7 +3516,33 @@ export interface paths {
     get?: never
     put?: never
     post?: never
-    delete?: never
+    /**
+     * 팀 해체 | ✅ 사용 가능
+     * @description 팀을 해체한다(32차 R14①).
+     *
+     *     **요청**
+     *     - projectId (경로): 기준 프로젝트 ID
+     *     - teamId (경로): 해체할 팀 ID
+     *
+     *     **응답 (204)** — 본문 없음
+     *
+     *     ## 팀원은 미배정으로 돌아간다
+     *
+     *     팀 행만 지우면 그 사람들이 **해체된 팀에 속한 채** 남아 어디에도 안 보입니다.
+     *     배정 종료 시각을 찍어 미배정으로 돌려놓으므로 자동 배분·수동 배정의 대상이 됩니다.
+     *
+     *     팀원이 0명인 팀도 그대로 해체됩니다 — 인원 없는 팀이 제출 현황에서
+     *     「미제출 ⚠」로 잡혀 조치가 필요한 것처럼 보이던 자리입니다.
+     *
+     *     ## 지우지 않고 종료 시각만 찍는다
+     *
+     *     팀원 제외(`DELETE …/members/{traineeId}`)와 같습니다. 과거에 이 팀 소속이었다는
+     *     사실이 남아야 그 회차의 제출·결과 귀속이 유지됩니다.
+     *
+     *     ⚠️ **정상 접수된 제출이 있는 팀은 해체할 수 없습니다**(`409 TEAM_SUBMISSION_LOCKED`).
+     *     해체하면 그 제출이 팀 없이 뜹니다. 배정·제외와 같은 규칙입니다.
+     */
+    delete: operations['disbandTeam']
     options?: never
     head?: never
     /**
@@ -5010,10 +5058,11 @@ export interface paths {
      *     ⚠️ **`cohort`·`classId` 중 하나만 보내야 한다.** 둘 다 없거나 둘 다 있으면
      *     400 `PROJECT_LIST_SCOPE_AMBIGUOUS`다.
      *
-     *     ⚠️ **아직 없는 것** — 정의 문서(MG-07)의 "A반 미제출 2팀" 같은 제출 단위 집계는
-     *     이 응답에 없다. 제출 현황은 Submission 도메인에서 와야 한다. 지금은 회차 목록과
-     *     `readiness`·교안/개념 집계까지만 내려주고, 제출 집계는 Submission 도메인
-     *     착수 후 별도로 얹는다.
+     *     ## 🆕 진행·조치 필드가 목록 행에 붙는다
+     *
+     *     미니프로젝트 행마다 `progress`·`actionItems`가 함께 온다(Submission 도메인 위임).
+     *     빅프로젝트는 앵커가 개인 커밋 영역이라 반별 집계 대상이 아니므로 계산하지 않고,
+     *     `PLANNED` 상태는 진행이 아직 없으므로 `progress`가 null로 온다.
      */
     get: operations['findProjectsForManager']
     put?: never
@@ -5062,9 +5111,9 @@ export interface paths {
      *     | 필드 | 설명 |
      *     |---|---|
      *     | `teamFormationStage` | `NOT_STARTED` · `FORMING` · `READY_TO_CONFIRM` · `CONFIRMED` · `CLOSED` |
-     *     | `submissionOpened` | 제출이 열렸는가. **화면은 이 값만 보고 표/빈 상태를 정한다** |
+     *     | `submissionOpened` | **제출 현황을 그릴 것이 있는가.** 화면은 이 값만 보고 표/빈 상태를 정한다 — 32차 R11로 기준이 「팀 확정」에서 「제출 수령」으로 바뀌었다(필드 설명 참고) |
      *     | `locked` | 종료된 회차 |
-     *     | `unassignedMemberCount` | 미배정 인원. 0이 아니면 제출이 열리지 않는다 |
+     *     | `unassignedMemberCount` | 팀에 배정되지 않은 인원. **제출을 막지는 않는다** — 배정된 팀은 그대로 제출한다 |
      *     | `summary` | `teamCount` · `submittedTeamCount` · `unsubmittedTeamCount` · `analysisFailedTeamCount` |
      *     | `requirements[]` | 프로젝트가 정의한 요구사항. **팀이 아니라 프로젝트에 달린 값이라 최상위에 한 번만 싣는다** |
      *     | `teams[]` | 팀 행. `submission` · `analysis` · `requirementResults[]` · `members[]` |
@@ -6445,6 +6494,20 @@ export interface paths {
      *
      *     `round_no`가 **프로젝트 안에서만 유일**하기 때문입니다. 안 붙이면 서로 다른 프로젝트의
      *     1차가 드롭다운에 똑같이 두 번 보입니다.
+     *
+     *     ### 히트맵(MG-02)도 이 조회를 씁니다 (32차 R10)
+     *
+     *     이름은 면담이지만 내용은 **담당 기수의 회차 목록**이라, 회차를 골라야 그릴 수 있는
+     *     화면이면 어디든 맞습니다. `projectId`를 함께 실어 **`(projectId, assessmentRoundId)`
+     *     짝**을 이 한 번의 조회로 얻을 수 있습니다.
+     *
+     *     종전에는 그 짝을 주는 조회가 `GET /cohorts/{id}/trainees`(교육생 명부)뿐이라, 히트맵이
+     *     **격자와 무관한 명부를 먼저 받아야** 했습니다. 그쪽은 행마다 지표를 붙이는 무거운
+     *     조회라 `size=1`로 줄여도 시간이 줄지 않습니다 — 그것이 히트맵 첫 진입 시간이
+     *     되고 있었습니다.
+     *
+     *     별도 엔드포인트를 새로 열지 않은 이유는 **같은 질의**이기 때문입니다. 하나 더 만들면
+     *     담당 반 스코프 규칙이 두 곳에 생기고, 한쪽만 고쳐지는 날 두 화면의 회차 목록이 갈립니다.
      */
     get: operations['findInterviewRoundOptions']
     put?: never
@@ -7049,7 +7112,69 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** 매니저 인박스 조회 | ⚠️ 사용 불가 */
+    /**
+     * 매니저 인박스 조회 | ✅ 사용 가능
+     * @description 매니저 대시보드 인박스를 조회한다. 제출 누락·분석 실패·응시 미시작 같은 **조치가 필요한
+     *     항목**과, 무효 응시 검토·면담 대기·독촉 발송 이력을 **한 목록**으로 합쳐 마감 임박 순으로
+     *     보여준다.
+     *
+     *     ## 요청 (경로 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     |---|---|---|---|
+     *     | `cohortId` | **필수** | UUID | 조회할 기수 |
+     *
+     *     ## 요청 (쿼리 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     |---|---|---|---|
+     *     | `projectId` | 선택 | UUID | 프로젝트로 좁힌다. 생략하면 담당 반 전체 |
+     *     | `assessmentRoundId` | 선택 | UUID | 회차로 좁힌다 |
+     *     | `since` | 선택 | datetime (ISO 8601) | 이 시각 이후 발생한 항목만. 생략하면 기간 제한 없음 |
+     *     | `includeResolved` | 선택 | boolean | `true`면 이미 해소된 항목도 포함. 기본 `false`(미해소만) |
+     *     | `cursor` | 선택 | string | 다음 페이지 커서. 이전 응답의 `nextCursor`를 그대로 넣는다 |
+     *     | `size` | 선택 | int | 페이지 크기. 1~100, 기본 20 |
+     *
+     *     ## 응답 (200)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     |---|---|---|
+     *     | `items[]` | array | 인박스 항목 목록. 마감 임박 순(마감 없는 항목은 뒤로) |
+     *     | `nextCursor` | string? | 다음 페이지 커서. 더 없으면 `null` |
+     *
+     *     ### items[] 각 항목
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     |---|---|---|
+     *     | `itemId` | string | 항목 식별자. 원천에 따라 형식이 다르다(`ATTENDANCE:...`·`INVALID:...`·`INTERVIEW:...`·`REMINDER:...`) |
+     *     | `itemType` | string | 항목 유형. `SUBMISSION_MISSING`·`ANALYSIS_FAILED`·`ASSESSMENT_NOT_STARTED`·`REVIEW`·`ASSESSMENT`·`INVALID_ATTEMPT`·`INTERVIEW`·`REMINDER` |
+     *     | `projectId` / `assessmentRoundId` / `classroomId` / `teamId` / `traineeId` | UUID | 이 항목이 걸린 대상 |
+     *     | `subject` | string | 대상 이름(교육생명 또는 팀명) |
+     *     | `sourceStatus` | string | 원천의 현재 상태 |
+     *     | `reasonCode` | string? | 사유 코드. 원천마다 의미가 다르다 |
+     *     | `evidence` | string | 화면에 그대로 보여줄 근거 요약 문구 |
+     *     | `deadlineAt` | timestamp? | 정렬 기준 마감 시각. 없으면 `null`(정렬에서 뒤로 밀림) |
+     *     | `occurredAt` | timestamp | 발생/갱신 시각 |
+     *     | `resolved` | boolean | 이미 해소됐는지. `includeResolved=false`면 이 값이 `true`인 항목은 안 옴 |
+     *     | `reminderEligible` | boolean | 지금 독촉 발송 대상이 될 수 있는지. `true`인 항목만 `POST /reminders`로 보낼 수 있다 |
+     *
+     *     ## 정렬 규칙
+     *
+     *     **마감이 있는 항목이 먼저**, 그 안에서 마감이 이른 순이다. 마감이 없는 항목(면담 등)은
+     *     뒤로 밀리고 그 안에서는 최근 발생 순이다.
+     *
+     *     ## 네 가지 원천을 하나로 합친다
+     *
+     *     `assessment_round_attendance`(제출·분석·응시) · `manager_invalid_attempt_review_view`(무효
+     *     응시 검토) · `manager_interview_list_view`(면담 대기) · `reminder_dispatch`(독촉 이력)
+     *     네 원천을 `UNION ALL`로 합쳐 하나의 인박스로 낸다. 담당 반(`manager_assignment`) 기준으로
+     *     필터링되므로 다른 매니저의 반은 보이지 않는다.
+     *
+     *     ## 커서 페이지네이션
+     *
+     *     `cursor`는 이전 페이지 마지막 항목의 `itemId`를 인코딩한 값이다. 직접 만들지 말고
+     *     `nextCursor`를 그대로 다음 요청에 넣어야 한다 — 잘못된 커서를 보내면 400이다.
+     */
     get: operations['findManagerNotificationInbox']
     put?: never
     post?: never
@@ -7175,6 +7300,74 @@ export interface paths {
      *     **조회는 교안 수와 무관하게 고정 3건**이라 목록이 길어져도 느려지지 않는다.
      */
     get: operations['findLinkableCurricula']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v0/cohorts/{cohortId}/analytics/signals': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 위험 신호 조회 (인박스 행 근거) | ✅ 사용 가능
+     * @description 매니저 인박스·면담 목록·교육생 상세가 공용으로 쓰는 위험 신호 원장을 조회한다.
+     *     **행 근거를 채우는 조회라 화면마다 파라미터 조합만 다르다** — 새 화면이 생겨도
+     *     조회 로직은 여기 하나다.
+     *
+     *     ## 요청 (경로 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     |---|---|---|---|
+     *     | `cohortId` | **필수** | UUID | 조회할 기수 |
+     *
+     *     ## 요청 (쿼리 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     |---|---|---|---|
+     *     | `classId` | 선택 | UUID | 반으로 좁힌다. MG-01 인박스가 사용 |
+     *     | `traineeId` | 선택 | UUID | 교육생 한 명으로 좁힌다. MG-06 교육생 상세(지속 저점)가 사용 |
+     *     | `assessmentRoundId` | 선택 | UUID | 회차로 좁힌다. **지금 화면 중 쓰는 곳은 없다** — 구 `/risk-signals`가 갖던 필터를 유지만 한다 |
+     *     | `reasonCode` | 선택 | string | 위험 신호 사유 코드로 좁힌다. **지금 화면 중 쓰는 곳은 없다** — 위와 같은 이유 |
+     *
+     *     모든 쿼리 파라미터는 조합해서 쓸 수 있으며, 전부 생략하면 그 기수의 위험 신호
+     *     전체를 돌려준다.
+     *
+     *     ## 응답 (200)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     |---|---|---|
+     *     | `cohortId` | UUID | 조회한 기수. 경로 변수를 그대로 반영 |
+     *     | `signals[]` | array | 위험 신호 목록 |
+     *
+     *     ### signals[] 각 항목
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     |---|---|---|
+     *     | `signalId` | UUID | 신호 식별자 |
+     *     | `reasonCode` | string | 위험 신호 사유 |
+     *     | `assessmentRoundId` | UUID | 신호가 발생한 회차 |
+     *     | `classroomId` | UUID | 신호가 발생한 반 |
+     *     | `teamId` | UUID | 신호가 발생한 팀 |
+     *     | `traineeId` | UUID | 대상 교육생 |
+     *     | `traineeName` | string | 대상 교육생 이름 |
+     *     | `summary` | string | 신호 요약 문구 |
+     *     | `status` | string | 신호 상태 |
+     *     | `policyVersion` | int | 판정에 쓰인 정책 버전 |
+     *     | `detectedAt` | timestamp | 신호가 감지된 시각 |
+     *
+     *     💡 **구 `/risk-signals`와 로직이 중복이라 이 엔드포인트로 통합했다.** 두 엔드포인트가
+     *     같은 리포지토리 조회를 호출하고 있었고, `/risk-signals`는 문서·에러 응답이 없는
+     *     미완성 상태로 방치돼 있었다. `assessmentRoundId`·`reasonCode`는 그쪽이 갖고
+     *     있던 필터를 선택값으로 그대로 옮겨온 것이다.
+     */
+    get: operations['getRiskSignalsForInbox']
     put?: never
     post?: never
     delete?: never
@@ -7358,23 +7551,6 @@ export interface paths {
      *     💡 **빅프로젝트는 위험 판정식이 달라 이 격자에 포함하지 않습니다.**
      */
     get: operations['findCohortRiskTraineeRates']
-    put?: never
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
-  '/api/v0/cohorts/{cohortId}/analytics/risk-signals': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /** 매니저 위험 신호 근거 조회 | ⚠️ 사용 불가 */
-    get: operations['findManagerRiskSignals']
     put?: never
     post?: never
     delete?: never
@@ -7847,6 +8023,61 @@ export interface paths {
      *     💡 **회차 범위는 미니프로젝트로 좁히되 면담 적체만 빅프로젝트 회차도 포함합니다.**
      */
     get: operations['findCohortActionsRequired']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v0/classes/{classId}/projects': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 조치 필요 항목 조회 | ✅ 사용 가능
+     * @description MG-07 프로젝트 목록 화면에서 매니저가 담당하는 반 하나의 조치 필요 경보를 조회한다.
+     *     **기수 전체를 보는 `/analytics/actions`와 응답 모양은 같지만 스코프가 다르다** —
+     *     이쪽은 `classId` 하나로 좁힌 반 단위 집계다.
+     *
+     *     ## 요청 (경로 파라미터)
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     |---|---|---|---|
+     *     | `classId` | **필수** | UUID | 조회할 반 |
+     *
+     *     쿼리 파라미터는 없다.
+     *
+     *     ## 응답 (200)
+     *
+     *     | 필드 | 타입 | 설명 |
+     *     |---|---|---|
+     *     | `cohortId` | UUID | 이 반이 속한 기수. 조회한 `classId`에서 서버가 역산한다 |
+     *     | `actionCount` | int | `null`이 아닌 경보 수(0~4) |
+     *     | `managerUnassigned` | object? | 담당 매니저 미배정. 없으면 `null` |
+     *     | `conceptGap` | object? | 검증 개념 공백. 없으면 `null` |
+     *     | `groupGap` | object? | 집단 미달. 없으면 `null` |
+     *     | `interviewBacklog` | object? | 면담 적체. 없으면 `null` |
+     *
+     *     각 경보 객체의 필드 구조는 `GET /cohorts/{cohortId}/analytics/actions`(조치 필요
+     *     경보 조회)와 완전히 같다 — 같은 서비스(`ActionRequiredAnalyticsService`)와 같은
+     *     DTO(`ActionRequiredResponse`)를 재사용하며 조회 스코프만 기수 대신 반이다.
+     *
+     *     ## 오류
+     *
+     *     | 상태 | 언제 |
+     *     |---|---|
+     *     | 404 | `CLASSROOM_NOT_FOUND` — 그 `classId`가 없거나, 삭제됐거나, **다른 기관 소속**일 때 |
+     *
+     *     ⚠️ **기관 소속 검증을 여기서 한다.** 로그인한 매니저의 기관과 `classId`가 속한
+     *     기관이 다르면 조회 자체를 막고 404로 답한다 — 다른 기관의 반 데이터가 새어나가지
+     *     않도록 하는 안전장치다.
+     */
+    get: operations['findActionRequiredProjects']
     put?: never
     post?: never
     delete?: never
@@ -9072,8 +9303,15 @@ export interface components {
        */
       questionText: string
       /**
-       * @description **매니저만 보는 근거.** 어떤 데이터에서 나온 질문인지
-       * @example Deployment 롤링 업데이트 관련 확인
+       * @description **매니저만 보는 근거.** 어떤 데이터에서 나온 질문인지.
+       *
+       *     **내부 식별자·코드는 실리지 않습니다**(32차 R6). 서버가 내보내기 전에
+       *     `interviewSourceId` 같은 값을 걷어내고, 위험 사유 코드와 축 코드를 화면이 쓰는
+       *     말로 바꿉니다 — `PERSISTENT_LOW` → `지속 저점`, `L3` → `대안 비교`,
+       *     `문제 1` → `1번 문항`.
+       *
+       *     그대로 그리면 됩니다.
+       * @example 1번 문항 대안 비교 인터뷰 기반 Q&A 질문
        */
       questionRationale: string
       /**
@@ -9171,10 +9409,19 @@ export interface components {
        *     ]
        */
       causes: string[]
-      /** @description 상세 사유(매니저가 타이핑) */
-      why: string
-      /** @description 추후 계획(매니저가 타이핑) */
-      nextAction: string
+      /**
+       * @description 상세 사유(매니저가 타이핑). **안 썼으면 `null`입니다.**
+       *
+       *     🔴 **32차 R8 — 더 이상 `(기록 없음)`으로 치환하지 않습니다.** 종전에는 빈 값을
+       *     그 문구로 바꿔 저장해서, 다시 열면 입력칸에 그 글자가 들어 있었고 그대로 저장하면
+       *     진짜 타이핑한 서술로 남았습니다. 지금은 안 쓴 것과 쓴 것이 구분됩니다.
+       *
+       *     ⚠️ 이 회신 전에 저장된 브리프에는 그 문구가 그대로 남아 있습니다 — 일괄 정리가
+       *     필요하면 말씀해 주세요.
+       */
+      why: string | null
+      /** @description 추후 계획(매니저가 타이핑). 안 썼으면 `null`입니다 */
+      nextAction: string | null
     }
     /** @description 무효 응시 근거. 화면 문구: `3문항 중 2문항 무응답 · 나머지 1문항은 질문 문장을 그대로 복사 · 총 응답 시간 4분` */
     VoidEvidenceResponse: {
@@ -10055,6 +10302,53 @@ export interface components {
      * @enum {string}
      */
     ProjectCategory: 'MINI_PROJECT' | 'BIG_PROJECT'
+    /** @description 매니저가 조치할 수 있는 항목 */
+    ActionItem: {
+      /** Format: uuid */
+      classId: string
+      className: string
+      /**
+       * @description UNSUBMITTED_TEAMS(제출 마감 지남·미제출) · ANALYSIS_FAILED_TEAMS(제출했으나 분석 실패)
+       * @example UNSUBMITTED_TEAMS
+       */
+      type: string
+      /**
+       * Format: int32
+       * @description 해당 유형에 걸린 팀 수
+       */
+      teamCount: number
+    }
+    /** @description 담당 반 중 진행률이 가장 낮은 반 */
+    LaggingClass: {
+      /** Format: uuid */
+      classId: string
+      className: string
+      /**
+       * Format: int64
+       * @description 그 반에서 응시(완료)를 마친 인원
+       */
+      assessedCount: number
+      /**
+       * Format: int64
+       * @description 그 반의 전체 대상 인원
+       */
+      targetTraineeCount: number
+    }
+    /** @description 매니저 담당 반 진행 합계 */
+    Progress: {
+      /**
+       * Format: int64
+       * @description 담당 반 전체에서 응시(완료)를 마친 인원
+       */
+      assessedCount: number
+      /**
+       * Format: int64
+       * @description 담당 반 전체 대상 인원
+       */
+      targetTraineeCount: number
+      /** @description 담당 반이 둘 이상일 때, 진행률이 가장 낮은 반. 담당 반이 하나뿐이면 null */
+      laggingClass: components['schemas']['LaggingClass'] | null
+    }
     /**
      * @description 회차 준비 상태. **`ProjectStatus`(시간 축)와 별개인 구성 축**이다.
      *     `PREP`(준비 중 — 교안·검증개념·마감 중 빈 것이 있다) · `READY`(준비됨 — 셋 다 찼다).
@@ -10161,6 +10455,23 @@ export interface components {
        *     ]
        */
       conceptNames: string[]
+      /**
+       * @description 매니저 담당 반 기준 진행 현황. **매니저 전용 목록(`GET /projects`)에서만 채워진다.**
+       *
+       *     오퍼레이터 목록(`GET /cohorts/{cohortId}/projects`)이나 생성·수정 직후 응답에서는
+       *     항상 `null`이다 — 계산 자체를 하지 않는다.
+       *
+       *     빅프로젝트 행이거나(개인 커밋 영역이라 반별 집계 대상이 아님) 회차가 `PLANNED`거나
+       *     아직 회차가 없으면 `null`이다.
+       */
+      progress: components['schemas']['Progress'] | null
+      /**
+       * @description 매니저가 바로 조치할 수 있는 항목 목록. 반별 미제출·분석 실패 팀을 담는다.
+       *
+       *     **매니저 전용 목록에서만 채워진다.** 조치가 필요 없으면 빈 배열이며,
+       *     **그것이 정상이다** — 화면은 —로 그리면 된다.
+       */
+      actionItems: components['schemas']['ActionItem'][]
     }
     /**
      * @description 프로젝트 진행 상태. PLANNED(생성됨 — 아직 시작 전) · RUNNING(진행 중) · CLOSED(종료). 값은 CohortStatus와 같지만 개념이 달라 별도 스키마로 둔다.
@@ -11810,19 +12121,39 @@ export interface components {
       submissionDueAt: string | null
       /**
        * Format: date-time
-       * @description 회차 응시 창이 **열리는** 시각이다. 개인별 응시 창이 아니라 회차 단위 값이다.
+       * @description 🔴 **폐기된 필드. 언제나 `null`이다**(2026-08-16).
        *
-       *     회차가 열리기 전에는 `null`이다 — 응시 창은 코드 분석이 끝나야 정해진다.
-       *     DB CHECK도 `PLANNED` 회차에서는 이 값이 비어 있는 것을 허용한다.
-       * @example 2026-08-22T00:00:00Z
+       *     회차 공통 응시 창 시작이었다. 컬럼이 폐기돼 `project_assessment_round`의 전 행이
+       *     `null`이며 다시 채우는 코드 경로도 없다. 계약은 화면이 깨지지 않도록 남겨 둔다.
+       *
+       *     32차 R5 — `UpcomingRoundResponse`·`CurrentRoundResponse`에만 이 표시가 붙고
+       *     여기는 빠져 있었다. 같은 값을 주는 자리라 표시도 같아야 한다.
        */
       roundAssessmentOpenAt: string | null
       /**
        * Format: date-time
-       * @description 회차 응시 창이 **닫히는** 시각이다. 개요 타임라인의 `응시 창`이 이 값으로 그려진다.
+       * @description 🔴 **폐기된 필드. 언제나 `null`이다**(2026-08-16). `roundAssessmentOpenAt`과 같다.
        *
-       *     회차가 열리기 전에는 `null`이다.
-       * @example 2026-08-23T00:00:00Z
+       *     ⚠️ 종전 설명이 *"개요 타임라인의 `응시 창`이 이 값으로 그려진다"* 라고 적고 있었는데,
+       *     그 지시를 따르면 **영원히 그릴 수 없다.** 32차 R5로 정정한다.
+       *
+       *     ## 회차 단위 응시 창은 이제 없다
+       *
+       *     응시 창은 **개인별**이다. 팀 분석이 끝난 시각부터 사람마다 따로 열리므로
+       *     (`measurement_attempt.assessment_open_at` · `assessment_close_at`), 회차 하나를
+       *     가리키는 구간이 존재하지 않는다.
+       *
+       *     개요 타임라인에는 회차 단위로 확정된 값들만 쓰면 된다.
+       *
+       *     | 구간 | 값 |
+       *     |---|---|
+       *     | 제출 마감 | `submissionDueAt` |
+       *     | 리포트 발행 하한 | `reportPublishNotBeforeAt` |
+       *
+       *     「응시 창」 구간이 꼭 필요하면 그 회차 수행들의 **실제** 창 범위
+       *     (`MIN(assessment_open_at)` ~ `MAX(assessment_close_at)`)가 유일한 근거다.
+       *     사후적이지만 진행 상황을 그리는 자리라면 맞는 값이다 — **필요하다고 하시면
+       *     회차 단위로 접어 내려보내겠다.** 지금은 쓰는 화면이 없어 넣지 않았다.
        */
       roundAssessmentDueAt: string | null
       /**
@@ -12018,10 +12349,30 @@ export interface components {
        */
       teamFormationStage: string
       /**
-       * @description 제출이 열렸는지 여부입니다. `teamFormationStage`가 `CONFIRMED`·`CLOSED`일 때 true입니다.
+       * @description **제출 현황을 그릴 것이 있는지** 여부입니다.
        *
        *     **화면은 이 값만 보고 표를 그릴지 빈 상태를 보여줄지 정합니다.** 단계 이름으로 다시
        *     판정하면 같은 규칙이 서버와 화면 두 곳에 생깁니다.
+       *
+       *     🔴 **32차 R11 — 기준이 「팀 확정」에서 「제출 수령」으로 바뀌었습니다.**
+       *     종전에는 `teamFormationStage`가 `CONFIRMED`·`CLOSED`일 때만 true였는데,
+       *     **서버는 제출을 받을 때 팀 상태를 보지 않습니다**(회차가 열려 있는지와 마감만 봅니다).
+       *     그래서 팀이 전부 `DRAFT`인 회차에도 제출이 정상적으로 들어오고, 그때 이 값이
+       *     `false`라 화면이 제출·분석·응시를 통째로 가렸습니다.
+       *
+       *     지금 기준은 이렇습니다.
+       *
+       *     | 상황 | 값 |
+       *     |---|---|
+       *     | 프로젝트가 `PLANNED`(시작 전) | `false` — 제출이 있을 수 없습니다 |
+       *     | 팀이 0개 | `false` — 그릴 행이 없습니다 |
+       *     | 그 밖 | `true` — 제출을 받았거나 받는 중입니다 |
+       *
+       *     「지금 이 순간 제출을 받고 있는가」가 아닙니다. 그렇게 두면 **마감 뒤에 표가 다시
+       *     사라지는데**, 매니저가 제출 현황을 보는 시점은 대개 마감 후입니다.
+       *     지금 제출이 가능한지는 `submissionDueAt`으로 판단하세요.
+       *
+       *     편성이 어디까지 됐는지는 `teamFormationStage`가 그대로 답합니다.
        */
       submissionOpened: boolean
       /** @description 종료된 회차입니다. 독촉·팀 이동 등 편성 액션을 잠급니다. */
@@ -13641,7 +13992,7 @@ export interface components {
        *
        *     | 값 | 버튼 | 동작 |
        *     |---|---|---|
-       *     | `NONE` | 브리프 생성 | `POST .../brief` — AI 생성, 수 초 대기 |
+       *     | `NONE` | 브리프 생성 | `POST .../brief` — AI 생성, **20~30초**(32차 R7 실측 24초) |
        *     | `FAILED` | 다시 생성 | `POST .../brief` 재시도 |
        *     | `DRAFT` | 브리프 열기 | `GET .../brief` — 즉시 |
        *     | `CONFIRMED` | 브리프 수정 | `GET .../brief` — 즉시 |
@@ -13736,8 +14087,19 @@ export interface components {
        */
       label: string
       /**
-       * @description `PENDING`이면 화면이 **"이 회차는 아직 결과가 없어요"** 를 그린다.
-       *     리포트 발행 전이라 위험 판정 자체가 없는 상태다.
+       * @description **위험 판정이 끝났는가.** `PENDING`이면 화면이 **"이 회차는 아직 결과가 없어요"** 를
+       *     그린다 — 그때는 `items`도 비어 있다.
+       *
+       *     🔴 **32차 R1 — 기준이 리포트 발행에서 위험 판정으로 바뀌었다.**
+       *     종전에는 `publishedAt`으로 판정해서, 운영자가 발행을 미루면 **판정은 끝났는데
+       *     `PENDING`**이 나갔다. 그 상태에서 위험 유형이 붙은 `items`가 함께 나가
+       *     한 응답이 서로 다른 말을 했다.
+       *
+       *     두 축은 의도적으로 독립이다 — 판정은 「마지막 응시 마감 + 1시간 1분」에 돌고
+       *     발행 시각은 운영자가 정한다. 지금은 `items`가 있는데 `PENDING`인 조합이
+       *     **구조적으로 나올 수 없다**(후보 등재 조건이 곧 판정 완료다).
+       *
+       *     발행 쪽 값은 `publishedAt`·`daysSincePublish`가 그대로 답한다.
        * @example READY
        */
       resultStatus: string
@@ -13745,21 +14107,36 @@ export interface components {
       firstRound: boolean
       /**
        * Format: date-time
-       * @description 리포트 발행 시각. **위험 판정 등재 시각이기도 하다**
+       * @description 리포트 발행 시각. **발행 전이면 `null`이다.**
+       *
+       *     ⚠️ **위험 판정 등재 시각이 아니다**(32차 R1에서 정정). 판정은 「마지막 응시 마감 +
+       *     1시간 1분」에 돌고 발행은 운영자가 정하는 별개 시점이라, 발행이 미뤄지면 이 값만
+       *     비어 있고 판정은 이미 끝나 있다. 판정 여부는 `resultStatus`가 답한다.
        */
-      publishedAt: string
+      publishedAt: string | null
       /**
        * Format: int32
-       * @description 발행 후 경과일. 상단 경고줄(`N일째 안 끝났습니다`)에 쓴다.
+       * @description 발행 후 경과일. 상단 경고줄(`N일째 안 끝났습니다`)에 쓴다. **발행 전이면 `null`이며**
+       *     그때는 그 경고줄을 그리지 않는다(0으로 두면 「0일째」가 된다).
+       *
        *     **대기는 개인별이 아니라 회차 경과다** — 리포트가 일괄 발행되므로 회차 안에서 모두 같은 값이다.
        * @example 6
        */
-      daysSincePublish: number
+      daysSincePublish: number | null
     }
-    /** @description 면담 회차 옵션 */
+    /** @description 면담 회차 옵션. 회차를 골라야 그릴 수 있는 화면(면담 목록·히트맵)이 공용으로 쓴다 */
     InterviewRoundOptionResponse: {
       /** Format: uuid */
       assessmentRoundId: string
+      /**
+       * Format: uuid
+       * @description 그 회차가 속한 프로젝트 ID(32차 R10).
+       *
+       *     회차와 **짝으로** 필요한 화면이 있어 함께 싣는다 — 히트맵은 `projectId`와
+       *     `assessmentRoundId`가 둘 다 필수인데, 종전에는 그 짝을 주는 조회가 교육생 명부뿐이라
+       *     히트맵이 **격자와 무관한 명부를 먼저 받아야** 했다. 이 값이 붙으면서 그 왕복이 없어진다.
+       */
+      projectId: string
       /**
        * @description 드롭다운 문구. `round_no`가 프로젝트 안에서만 유일해 **프로젝트명을 함께 붙인다** —
        *     안 붙이면 서로 다른 프로젝트의 1차가 목록에 똑같이 두 번 보인다.
@@ -14691,12 +15068,23 @@ export interface components {
     CohortCurriculumResponse: {
       /**
        * Format: uuid
-       * @description curriculum_version_id — 교안 상세로 갈 때 쓰는 ID
+       * @description `curriculum_version_id` — **이 기수가 실제로 연결한 버전**입니다.
+       *
+       *     🔴 **상세로 갈 때 쓰는 ID가 아닙니다**(32차 Q3에서 정정). 종전 설명이 그렇게 적고
+       *     있었는데 **`versionId`를 받는 오퍼레이션은 스펙 전체에 하나도 없습니다.** 그 설명을
+       *     따르면 13차 R1이 그대로 재현됩니다 — 그때도 화면이 교안 축에 버전 ID를 넣어 늘 빈
+       *     배열을 받았고, 목록은 「24개 회차에서 사용 중」인데 상세는 「쓰는 회차가 없습니다」로
+       *     답했습니다.
+       *
+       *     **상세로 갈 때는 `materialId`를 쓰세요.** 이 값은 화면에 버전 번호(`versionNo`)를
+       *     표시하거나, 회차가 어느 버전을 물고 있는지 대조할 때 씁니다.
        */
       versionId: string
       /**
        * Format: uuid
-       * @description 교안 원장 ID. 「쓰인 회차」 조회가 이 축을 받습니다
+       * @description 교안 원장 ID. **상세 셋과 「쓰인 회차」 조회가 모두 이 축을 받습니다.**
+       *
+       *     `GET /curricula/{materialId}` · `/sections` · `/projects`
        */
       materialId: string
       /**
@@ -14746,6 +15134,31 @@ export interface components {
     ClassroomListResponse: {
       /** @description 그 기수에 편성된 반 전체. 하나도 없으면 빈 배열 */
       classrooms: components['schemas']['ClassroomResponse'][]
+    }
+    RiskSignalResponse: {
+      /** Format: uuid */
+      cohortId: string
+      signals: components['schemas']['Signal'][]
+    }
+    Signal: {
+      /** Format: uuid */
+      signalId: string
+      reasonCode: string
+      /** Format: uuid */
+      assessmentRoundId: string
+      /** Format: uuid */
+      classroomId: string
+      /** Format: uuid */
+      teamId: string
+      /** Format: uuid */
+      traineeId: string
+      traineeName: string
+      summary: string
+      status: string
+      /** Format: int32 */
+      policyVersion: number
+      /** Format: date-time */
+      detectedAt: string
     }
     /**
      * @description 위험 교육생 격자의 행 계층. CLASS(반 단위) · TEAM(팀 단위, projectId와 classroomId 한 건이 모두 필요)
@@ -15030,31 +15443,6 @@ export interface components {
       exclusionRollup: components['schemas']['ExclusionBreakdown']
       /** @description 이 팀의 회차별 위험 비율 칸 목록이며 rounds와 같은 순서·길이입니다. */
       cells: components['schemas']['RiskCell'][]
-    }
-    RiskSignalResponse: {
-      /** Format: uuid */
-      cohortId: string
-      signals: components['schemas']['Signal'][]
-    }
-    Signal: {
-      /** Format: uuid */
-      signalId: string
-      reasonCode: string
-      /** Format: uuid */
-      assessmentRoundId: string
-      /** Format: uuid */
-      classroomId: string
-      /** Format: uuid */
-      teamId: string
-      /** Format: uuid */
-      traineeId: string
-      traineeName: string
-      summary: string
-      status: string
-      /** Format: int32 */
-      policyVersion: number
-      /** Format: date-time */
-      detectedAt: string
     }
     HeatmapCell: {
       /** Format: int32 */
@@ -19239,9 +19627,11 @@ export interface operations {
     parameters: {
       query?: never
       header: {
+        /** @description 요청 고유 키. 같은 키로 재요청하면 중복 발송 대신 이전 결과를 반환한다 */
         'Idempotency-Key': string
       }
       path: {
+        /** @description 대상 기수 ID */
         cohortId: string
       }
       cookie?: never
@@ -19252,7 +19642,7 @@ export interface operations {
       }
     }
     responses: {
-      /** @description OK */
+      /** @description 독촉 발송 성공(또는 같은 멱등키로 이전 결과 재반환) */
       200: {
         headers: {
           [name: string]: unknown
@@ -19261,7 +19651,16 @@ export interface operations {
           'application/json': components['schemas']['SendReminderResponse']
         }
       }
-      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      /** @description VALIDATION_FAILED 필수값 누락 · REMINDER_TARGET_INVALID 팀·교육생 중 정확히 하나가 아님 · REMINDER_REASON_INVALID 사유와 대상 종류가 안 맞음 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
       401: {
         headers: {
           [name: string]: unknown
@@ -19270,8 +19669,17 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      /** @description ACCESS_DENIED 매니저 권한이 아님 */
       403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description REMINDER_TARGET_NOT_ELIGIBLE 지금 상태에서 독촉할 수 없음 · IDEMPOTENCY_KEY_REUSED 같은 멱등키가 다른 요청에 사용됨 */
+      409: {
         headers: {
           [name: string]: unknown
         }
@@ -20478,6 +20886,65 @@ export interface operations {
       }
       /** @description PROJECT_NOT_FOUND 프로젝트를 찾을 수 없음 */
       404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  disbandTeam: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description 프로젝트 ID */
+        projectId: string
+        /** @description 해체할 팀 ID */
+        teamId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 팀 해체 성공(본문 없음) */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED 매니저가 아님 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description TEAM_NOT_FOUND 팀을 찾을 수 없음 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description TEAM_SUBMISSION_LOCKED 정상 접수된 제출이 있는 팀은 해체할 수 없음 */
+      409: {
         headers: {
           [name: string]: unknown
         }
@@ -23208,12 +23675,19 @@ export interface operations {
   }
   findInterviews: {
     parameters: {
-      query: {
+      query?: {
         /**
-         * @description 조회할 회차 ID
+         * @description 조회할 회차 ID. **생략하면 서버가 「이번 회차」를 고릅니다**(32차 R2).
+         *
+         *     고른 회차는 응답의 `round.assessmentRoundId`로 나가므로 드롭다운을 그 값에
+         *     맞추면 됩니다. 판정은 명부(`GET /cohorts/{id}/trainees`)와 **같은 규칙**이라
+         *     두 화면이 같은 차수를 가리킵니다.
+         *
+         *                    담당 범위 밖의 회차 ID를 주면 **404**입니다 — 빈 목록으로 답하면 「권한이 없다」와
+         *                    「대상이 없다」가 구분되지 않습니다(32차 R3).
          * @example 123e4567-e89b-12d3-a456-426614174000
          */
-        assessmentRoundId: string
+        assessmentRoundId?: string
         /**
          * @description 교육생 이름 부분 일치. 공백이면 무시한다
          * @example 김민준
@@ -23258,6 +23732,15 @@ export interface operations {
       }
       /** @description 매니저 권한이 없음 */
       403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description MANAGER_SCOPE_NOT_FOUND 담당 범위 밖의 회차이거나 존재하지 않음(32차 R3) */
+      404: {
         headers: {
           [name: string]: unknown
         }
@@ -23867,22 +24350,29 @@ export interface operations {
   findManagerNotificationInbox: {
     parameters: {
       query?: {
+        /** @description 프로젝트로 좁힌다 */
         projectId?: string
+        /** @description 회차로 좁힌다 */
         assessmentRoundId?: string
+        /** @description 이 시각 이후 발생한 항목만 조회한다 */
         since?: string
+        /** @description true면 이미 해소된 항목도 포함한다 */
         includeResolved?: boolean
+        /** @description 다음 페이지 커서. 이전 응답의 nextCursor를 그대로 넣는다 */
         cursor?: string
+        /** @description 페이지 크기(1~100) */
         size?: number
       }
       header?: never
       path: {
+        /** @description 조회할 기수 ID */
         cohortId: string
       }
       cookie?: never
     }
     requestBody?: never
     responses: {
-      /** @description OK */
+      /** @description 인박스 조회 성공 */
       200: {
         headers: {
           [name: string]: unknown
@@ -23891,7 +24381,16 @@ export interface operations {
           'application/json': components['schemas']['NotificationInboxResponse']
         }
       }
-      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      /** @description INBOX_CURSOR_INVALID 커서 값이 올바르지 않음 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
       401: {
         headers: {
           [name: string]: unknown
@@ -23900,8 +24399,17 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      /** @description ACCESS_DENIED 매니저 권한이 아님 */
       403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description MANAGER_SCOPE_NOT_FOUND 담당 범위 밖의 기수이거나 존재하지 않음 */
+      404: {
         headers: {
           [name: string]: unknown
         }
@@ -24011,6 +24519,65 @@ export interface operations {
       }
     }
   }
+  getRiskSignalsForInbox: {
+    parameters: {
+      query?: {
+        /** @description 반으로 좁힌다. 생략하면 반 구분 없이 조회 */
+        classId?: string
+        /** @description 교육생 한 명으로 좁힌다 */
+        traineeId?: string
+        /** @description 회차로 좁힌다. 지금 화면은 쓰지 않는다 */
+        assessmentRoundId?: string
+        /** @description 위험 신호 사유 코드로 좁힌다. 지금 화면은 쓰지 않는다 */
+        reasonCode?: string
+      }
+      header?: never
+      path: {
+        /** @description 조회할 기수 ID */
+        cohortId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 위험 신호 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['RiskSignalResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 만료됨 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED 매니저 권한이 아님 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description MANAGER_SCOPE_NOT_FOUND 담당 범위 밖의 기수이거나 존재하지 않음 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
   findCohortRiskTraineeRates: {
     parameters: {
       query?: {
@@ -24107,51 +24674,6 @@ export interface operations {
       }
     }
   }
-  findManagerRiskSignals: {
-    parameters: {
-      query?: {
-        assessmentRoundId?: string
-        classroomId?: string
-        traineeId?: string
-        reasonCode?: string
-      }
-      header?: never
-      path: {
-        cohortId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description OK */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['RiskSignalResponse']
-        }
-      }
-      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
   findManagerHeatmap: {
     parameters: {
       query: {
@@ -24179,7 +24701,7 @@ export interface operations {
           'application/json': components['schemas']['ManagerHeatmapResponse']
         }
       }
-      /** @description HEATMAP_SCOPE_INVALID 계층과 classroomId·teamId 조합이 맞지 않음 · HEATMAP_REVIEW_TRAINEE_REQUIRED REVIEW는 TRAINEE 계층만 허용 */
+      /** @description HEATMAP_SCOPE_INVALID 계층과 classroomId·teamId 조합이 맞지 않거나 **teamId가 이 회차의 팀이 아님**(32차 R13) · HEATMAP_REVIEW_TRAINEE_REQUIRED REVIEW는 TRAINEE 계층만 허용 */
       400: {
         headers: {
           [name: string]: unknown
@@ -24436,6 +24958,56 @@ export interface operations {
         }
       }
       /** @description COHORT_NOT_FOUND 조회할 기수를 찾을 수 없음 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  findActionRequiredProjects: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description 조회할 반 ID */
+        classId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 조치 필요 항목 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ActionRequiredResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED 오퍼레이터·매니저가 아님 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description CLASSROOM_NOT_FOUND 반을 찾을 수 없음(다른 기관 소속·삭제된 반 포함) */
       404: {
         headers: {
           [name: string]: unknown

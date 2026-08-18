@@ -7,6 +7,19 @@ import type { operations } from '@/api/schema'
     {operationId}_Body · _Query · _Path · _Header · _Response · _Item · _Errors
 */
 
+// GET /api/v0/cohorts/{cohortId}/analytics/signals — 위험 신호 조회 (인박스 행 근거)
+export type getRiskSignalsForInbox_Path = operations['getRiskSignalsForInbox']['parameters']['path']
+export type getRiskSignalsForInbox_Query = NonNullable<
+  operations['getRiskSignalsForInbox']['parameters']['query']
+>
+export type getRiskSignalsForInbox_Response =
+  operations['getRiskSignalsForInbox']['responses'][200]['content']['application/json']
+export type getRiskSignalsForInbox_Item = NonNullable<
+  getRiskSignalsForInbox_Response['signals']
+>[number]
+export type getRiskSignalsForInbox_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'MANAGER_SCOPE_NOT_FOUND'
+
 // GET /api/v0/cohorts/{cohortId}/analytics/risk-trainees — 회차별 기수 전체·반별 위험 교육생 비율 조회
 export type findCohortRiskTraineeRates_Path =
   operations['findCohortRiskTraineeRates']['parameters']['path']
@@ -92,3 +105,11 @@ export type findCohortActionsRequired_Errors =
   | 'ANALYTICS_COHORT_CROSS_ORGANIZATION'
   | 'ACCESS_DENIED'
   | 'COHORT_NOT_FOUND'
+
+// GET /api/v0/classes/{classId}/projects — 조치 필요 항목 조회
+export type findActionRequiredProjects_Path =
+  operations['findActionRequiredProjects']['parameters']['path']
+export type findActionRequiredProjects_Response =
+  operations['findActionRequiredProjects']['responses'][200]['content']['application/json']
+export type findActionRequiredProjects_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'CLASSROOM_NOT_FOUND'

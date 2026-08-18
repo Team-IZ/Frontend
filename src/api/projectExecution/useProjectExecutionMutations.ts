@@ -13,6 +13,7 @@ import {
   createProject,
   deleteProject,
   updateSchedule,
+  disbandTeam,
   updateTeam,
   reopenTeams,
   updateRoundSchedule,
@@ -49,6 +50,8 @@ import type {
   updateSchedule_Path,
   updateSchedule_Body,
   updateSchedule_Response,
+  disbandTeam_Path,
+  disbandTeam_Response,
   updateTeam_Path,
   updateTeam_Body,
   updateTeam_Response,
@@ -247,6 +250,22 @@ export function useUpdateSchedule(
   return useMutation({
     mutationFn: (vars: { path: updateSchedule_Path; body: updateSchedule_Body }) =>
       updateSchedule(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: projectExecutionKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 팀 해체 */
+export function useDisbandTeam(
+  options?: MutationOptions<disbandTeam_Response, { path: disbandTeam_Path }>,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: disbandTeam_Path }) => disbandTeam(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다

@@ -1,6 +1,8 @@
 /* 자동 생성 — 손으로 고치지 마세요. 다시 만들려면: npm run api:gen */
 
 import type {
+  getRiskSignalsForInbox_Path,
+  getRiskSignalsForInbox_Query,
   findCohortRiskTraineeRates_Path,
   findCohortRiskTraineeRates_Query,
   findManagerHeatmap_Path,
@@ -9,6 +11,7 @@ import type {
   findCohortComparison_Path,
   findCohortComparison_Query,
   findCohortActionsRequired_Path,
+  findActionRequiredProjects_Path,
 } from './analyticsTypes'
 
 /*
@@ -18,6 +21,16 @@ import type {
 */
 export const analyticsKeys = {
   all: ['analytics'] as const,
+  getRiskSignalsForInbox: (params: {
+    path: getRiskSignalsForInbox_Path
+    query?: getRiskSignalsForInbox_Query
+  }) =>
+    [
+      ...analyticsKeys.all,
+      'getRiskSignalsForInbox',
+      params.path ?? null,
+      params.query ?? null,
+    ] as const,
   findCohortRiskTraineeRates: (params: {
     path: findCohortRiskTraineeRates_Path
     query?: findCohortRiskTraineeRates_Query
@@ -52,4 +65,6 @@ export const analyticsKeys = {
     ] as const,
   findCohortActionsRequired: (params: { path: findCohortActionsRequired_Path }) =>
     [...analyticsKeys.all, 'findCohortActionsRequired', params.path ?? null] as const,
+  findActionRequiredProjects: (params: { path: findActionRequiredProjects_Path }) =>
+    [...analyticsKeys.all, 'findActionRequiredProjects', params.path ?? null] as const,
 }

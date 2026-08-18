@@ -267,8 +267,18 @@ export default function InviteScreen() {
   /** 제출 단계 재발송 — 폼을 이미 연 상태라 invite.email을 안다(검증 단계와 다른 점) */
   async function handleResend() {
     if (!invite) return
-    await resendInvite(invite.email)
-    setResendDone(true)
+    try {
+      await resendInvite(invite.email)
+      setResendDone(true)
+    } catch {
+      // 실패해도 action을 'RESEND'로 유지해 링크가 사라지지 않게 한다 —
+      // AU-01 LoginScreen.tsx의 handleResend와 같은 패턴(C3 결함 재발 방지)
+      setSubmitAlert({
+        variant: 'danger',
+        message: '메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.',
+        action: 'RESEND',
+      })
+    }
   }
 
   /** 검증 단계 재발송 — invite.email을 모르므로 사용자가 입력한 주소로 보낸다 */

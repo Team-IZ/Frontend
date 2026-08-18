@@ -39,6 +39,9 @@ interface SetPasswordFormValues {
 function RequestStage() {
   const [sentEmail, setSentEmail] = useState<string | null>(null)
   const [resent, setResent] = useState(false)
+  /** 제출 실패(네트워크·5xx) — 폼은 유지, 인라인 알림. 카드로 넘어간 뒤 재발송 실패는 resendError */
+  const [submitAlert, setSubmitAlert] = useState<string | null>(null)
+  const [resendError, setResendError] = useState<string | null>(null)
   const {
     register,
     handleSubmit,
@@ -46,14 +49,24 @@ function RequestStage() {
   } = useForm<RequestFormValues>({ defaultValues: { email: '' } })
 
   async function onSubmit(values: RequestFormValues) {
-    await requestPasswordReset(values.email)
-    setSentEmail(values.email)
+    setSubmitAlert(null)
+    try {
+      await requestPasswordReset(values.email)
+      setSentEmail(values.email)
+    } catch (err) {
+      setSubmitAlert(resolvePasswordResetState(err).message)
+    }
   }
 
   async function handleResend() {
     if (!sentEmail) return
-    await requestPasswordReset(sentEmail)
-    setResent(true)
+    setResendError(null)
+    try {
+      await requestPasswordReset(sentEmail)
+      setResent(true)
+    } catch (err) {
+      setResendError(resolvePasswordResetState(err).message)
+    }
   }
 
   if (sentEmail) {
@@ -69,7 +82,13 @@ function RequestStage() {
             입력하신 주소가 계정에 등록돼 있으면 재설정 링크가 도착합니다.
           </>
         }
-        aux="메일이 오지 않으면 스팸함을 확인해 주세요."
+        aux={
+          resendError ? (
+            <span className="text-danger">{resendError}</span>
+          ) : (
+            '메일이 오지 않으면 스팸함을 확인해 주세요.'
+          )
+        }
         actions={
           <>
             {resent ? (
@@ -91,6 +110,8 @@ function RequestStage() {
   return (
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
       <Stepbar active={1} />
+
+      {submitAlert && <Alert variant="danger">{submitAlert}</Alert>}
 
       <Field data-invalid={!!errors.email}>
         <FieldLabel htmlFor="reset-email">이메일</FieldLabel>
@@ -210,18 +231,41 @@ function SetPasswordStage({ token }: { token: string }) {
         />
       )
     }
-    // RESET_TOKEN_INVALID — 위변조는 재요청해도 같은 일이 반복될 것이라 문의로 보낸다
-    // (§6, 보안 로그). AU-02의 동일 케이스와 같은 톤 — danger + 문의하기.
-    // 목업 #invalid 페이지가 한때 #expired를 복사한 채(scard warn·다시 요청하기
-    // 버튼)로 남아 있었는데, 케이스 계약표·정의서와 대조해 danger·문의하기로
-    // 정정했다(목업도 함께 수정).
+    if (tokenAlert.action === 'CONTACT') {
+      // RESET_TOKEN_INVALID — 위변조는 재요청해도 같은 일이 반복될 것이라 문의로 보낸다
+      // (§6, 보안 로그). AU-02의 동일 케이스와 같은 톤 — danger + 문의하기.
+      // 목업 #invalid 페이지가 한때 #expired를 복사한 채(scard warn·다시 요청하기
+      // 버튼)로 남아 있었는데, 케이스 계약표·정의서와 대조해 danger·문의하기로
+      // 정정했다(목업도 함께 수정).
+      return (
+        <AuthStatusCard
+          variant="danger"
+          icon="!"
+          title="유효하지 않은 링크입니다"
+          description="이 링크로는 비밀번호를 바꿀 수 없어요."
+          aux="메일에 있는 링크를 다시 눌러 보세요. 계속 같으면 담당자에게 문의해 주세요."
+          actions={
+            <Button nativeButton={false} render={<a href="mailto:support@iz-get.com" />}>
+              문의하기
+            </Button>
+          }
+        />
+      )
+    }
+    /*
+      네트워크·알 수 없는 오류(action 없음) — 토큰이 진짜 위변조인지 아닌지 서버에
+      물어보지도 못한 상태다. "유효하지 않은 링크"로 단정하면 안 된다(2026-08-18
+      하드닝 — 이전엔 이 분기가 따로 없어서 여기까지 그대로 흘러 CONTACT 케이스와
+      똑같은 "유효하지 않은 링크입니다"가 떴다). `resolvePasswordResetState`가 이미
+      네트워크/미지 코드를 구분해 계산해 둔 `tokenAlert.message`를 그대로 쓴다.
+    */
     return (
       <AuthStatusCard
         variant="danger"
         icon="!"
-        title="유효하지 않은 링크입니다"
-        description="이 링크로는 비밀번호를 바꿀 수 없어요."
-        aux="메일에 있는 링크를 다시 눌러 보세요. 계속 같으면 담당자에게 문의해 주세요."
+        title="문제가 발생했어요"
+        description={tokenAlert.message}
+        aux="잠시 후 링크를 다시 열어 주세요. 계속 같으면 담당자에게 문의해 주세요."
         actions={
           <Button nativeButton={false} render={<a href="mailto:support@iz-get.com" />}>
             문의하기

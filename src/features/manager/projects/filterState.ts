@@ -1,4 +1,4 @@
-import type { ProjectSort } from './mockData'
+import type { ProjectSort } from './_/api/listTypes'
 
 /*
   목록 필터의 값. UI(`components/ProjectFilters.tsx`)와 파일을 가른 이유는 OP-03
@@ -16,13 +16,18 @@ export type FilterValues = {
   sort: ProjectSort
 }
 
-/** 기본값 — 정렬만 기본이 있다. 매니저는 마감이 급한 회차부터 본다(OP-03과 같은 이유) */
+/**
+ * 기본값 — 정렬만 기본이 있다. 매니저는 마감이 급한 회차부터 본다(OP-03과 같은 이유).
+ *
+ * ⚠ 목의 `'DUE'`가 서버에서는 **`'DUE_SOON'`**이다. 반·교안 필터 값도 이름이 아니라
+ * **UUID**가 들어온다(`ALL`만 그대로) — `docs/dev/screens/mg-07-situations.md` §2.
+ */
 export const INITIAL_FILTERS: FilterValues = {
   search: '',
   classFilter: ALL,
   curriculum: ALL,
   status: ALL,
-  sort: 'DUE',
+  sort: 'DUE_SOON',
 }
 
 /** 빈 결과가 "아직 없음"인지 "필터에 안 걸림"인지 — 문구가 갈린다(OP-03 isNarrowed와 같은 이유) */

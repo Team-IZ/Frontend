@@ -21,7 +21,7 @@ import { COHORT_STATUS_LABEL } from '../admin/_/labels'
   뭘 쓰나」는 그 기수의 프로젝트 목록이 답할 질문이라 여기에 기수별 탭을 두지 않는다
   (둬도 기수당 한두 종이라 표가 안 된다).
 
-  (2026-08-18, 이슈 #252) **이사 완료.** `운영 관리 › 교안` 탭과 `CurriculaTab`의
+  (2026-08-18, 이슈 252) **이사 완료.** `운영 관리 › 교안` 탭과 `CurriculaTab`의
   `standalone` prop을 지웠고, 이 폴더도 `admin/` 밖(`features/operator/curricula/`)으로
   옮겼다.
 */

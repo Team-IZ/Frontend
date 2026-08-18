@@ -89,7 +89,7 @@ const SORT_OPTIONS = [
 type CurriculumSort = NonNullable<findOrganizationCurricula_Query['sort']>
 
 /*
-  (2026-08-18, 이슈 #252) **`standalone` 이사 완료.** 한때 이 목록이 사이드바 최상위
+  (2026-08-18, 이슈 252) **`standalone` 이사 완료.** 한때 이 목록이 사이드바 최상위
   `교안`(새 집)과 `운영 관리 › 교안` 탭(옛 집) 두 곳에서 그려져 `standalone` prop으로
   머리 태그(`<h1>` PageHeader / `<h2>` SectionHeader)를 갈랐다. 탭을 지우면서 그 갈래도
   같이 없앴다 — 이제 이 화면은 항상 사이드바 최상위이므로 `PageHeader` 하나로 고정.

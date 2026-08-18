@@ -107,10 +107,15 @@ export default function StatusCard({ round, onVerifyWindowExpire }: Props) {
             ))}
           </div>
 
+          {/*
+            **버튼은 항상 오른쪽 끝이다.** `justify-between`만 쓰면 보조 문구가 없는
+            상태에서 버튼이 혼자 남아 왼쪽으로 간다 — 상태에 따라 버튼 위치가 옮겨
+            다니면 매번 눈으로 찾아야 한다. 문구를 `mr-auto`로 밀어 둔다.
+          */}
           {content.cta && (
-            <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
+            <div className="mt-1 flex flex-wrap items-center justify-end gap-3">
               {content.cta.aside && (
-                <span className="text-xs text-fg-subtle">{content.cta.aside}</span>
+                <span className="mr-auto text-xs text-fg-subtle">{content.cta.aside}</span>
               )}
               {content.cta.to ? (
                 <Button nativeButton={false} render={<Link to={content.cta.to} />}>

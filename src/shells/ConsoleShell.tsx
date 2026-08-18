@@ -68,7 +68,7 @@ const ROLE_LABEL: Record<string, string> = {
 type Props = {
   role: Role
   /** 넘기면 세션보다 우선한다 — 지금 그런 화면은 없다 */
-  user?: { name: string; role: string }
+  user?: { name: string; role: string; email?: string }
   /** 헤더 스코프에 보일 지금 기수 이름. 빈 문자열이면 스코프 자리를 그리지 않는다 */
   cohort?: string
   /** 고를 수 있는 기수 전부. 주면 헤더 스위처가 **실제로 동작한다** */
@@ -93,6 +93,7 @@ export default function ConsoleShell({
   const shown = user ?? {
     name: me?.name ?? '',
     role: me ? (ROLE_LABEL[me.role] ?? me.role) : '',
+    email: me?.email,
   }
 
   const sidebar = SIDEBAR_BY_ROLE[role]

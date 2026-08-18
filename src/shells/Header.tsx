@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router'
-import { UserCogIcon } from 'lucide-react'
+import { LogOutIcon, UserCogIcon } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/Avatar'
+import { Badge } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import {
   DropdownMenu,
@@ -8,6 +9,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/DropdownMenu'
 import {
@@ -19,7 +21,7 @@ import {
 } from '@/components/ui/Select'
 import Wordmark from '@/components/common/Wordmark'
 import { initialScreenFor } from '@/features/auth/authStore'
-import { useSignIn } from '@/features/auth/useSession'
+import { useSignIn, useSignOut } from '@/features/auth/useSession'
 import { login } from '@/api/auth/authApi'
 import { QUICK_LOGIN_ACCOUNTS } from '@/features/auth/quickLoginAccounts'
 
@@ -59,11 +61,86 @@ function DevRoleSwitcher() {
         <DropdownMenuGroup>
           <DropdownMenuLabel>역할 전환 (dev)</DropdownMenuLabel>
           {QUICK_LOGIN_ACCOUNTS.map(({ label, email, password }) => (
-            <DropdownMenuItem key={email} onClick={() => handleQuickLogin(email, password)}>
+            <DropdownMenuItem
+              key={email}
+              className="cursor-pointer"
+              onClick={() => handleQuickLogin(email, password)}
+            >
               {label}
             </DropdownMenuItem>
           ))}
         </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+/** 성 한 글자 동그라미 — 메뉴 트리거일 때와 아닐 때가 같은 그림이어야 한다 */
+function UserAvatar({ name }: { name: string }) {
+  return (
+    <Avatar size="sm">
+      <AvatarFallback className="bg-primary-soft text-primary font-semibold">
+        {name.slice(0, 1)}
+      </AvatarFallback>
+    </Avatar>
+  )
+}
+
+/*
+  아바타를 눌러 여는 계정 메뉴 — 내용은 전부 `/me`에서 온 값이다(헤더가 prop으로 받는다).
+
+  로그아웃은 `useSignOut()`을 그대로 쓴다 — 서버 세션(쿠키) 폐기 + 캐시 비우기가 이미
+  그 안에 있다. 비운 뒤 라우터를 직접 돌리는 이유는, 가만히 둬도 RequireRole이 결국
+  로그인 화면으로 보내지만 그 사이 `/me` 재조회 한 번(+401·재발급 실패)만큼 스피너가
+  뜨기 때문이다. 나가겠다고 누른 사람에게는 그 대기가 고장으로 보인다.
+*/
+function AccountMenu({ user }: { user: Props['user'] }) {
+  const navigate = useNavigate()
+  const signOut = useSignOut()
+
+  async function handleSignOut() {
+    await signOut()
+    navigate('/shared/login', { replace: true })
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <button
+            type="button"
+            className="text-fg-muted flex cursor-pointer items-center gap-3 rounded-full text-sm"
+            aria-label="내 계정"
+          >
+            <span className="hidden sm:inline">
+              {user.name} · {user.role}
+            </span>
+            <UserAvatar name={user.name} />
+          </button>
+        }
+      />
+      {/*
+        폭 — 기본이 트리거 폭(--anchor-width)이라 아바타에 맞춰 24px이 된다. 고정폭을 주면
+        이메일이 짧은 사람에게 빈 여백만 남으므로 내용에 맞추고(w-auto) 아래위 경계만 잡는다.
+      */}
+      <DropdownMenuContent align="end" className="w-auto max-w-64 min-w-44 p-1.5">
+        <div className="px-2 py-1.5">
+          {/* 역할은 값만으로 무엇인지 안다 — `역할:` 같은 라벨을 붙이지 않는다 */}
+          <div className="flex items-center gap-2">
+            <p className="text-fg truncate text-sm font-medium">{user.name}</p>
+            {user.role && <Badge>{user.role}</Badge>}
+          </div>
+          {user.email && <p className="text-fg-subtle mt-1 truncate text-xs">{user.email}</p>}
+        </div>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          variant="destructive"
+          className="cursor-pointer px-2 py-1.5"
+          onClick={handleSignOut}
+        >
+          <LogOutIcon aria-hidden="true" />
+          로그아웃
+        </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   )
@@ -88,7 +165,8 @@ function DevRoleSwitcher() {
   `운영 관리`와 같은 자리(구분선 아래 별도 그룹)로 옮겼다(sidebarConfig.ts 참고).
 */
 type Props = {
-  user: { name: string; role: string }
+  /** `role`은 이미 한글 라벨(ConsoleShell이 서버 코드를 옮겨 준다). `email`은 계정 메뉴에만 쓴다 */
+  user: { name: string; role: string; email?: string }
   scope?: {
     label: string
     /**
@@ -160,17 +238,12 @@ export default function Header({ user, scope }: Props) {
 
       <div className="text-fg-muted flex shrink-0 items-center gap-3 text-sm">
         {SHOW_DEV_ROLE_SWITCHER && <DevRoleSwitcher />}
-        {/* 세션이 오기 전에는 이름·역할이 빈 문자열이라 ` · `만 남는다 — 줄째 접는다 */}
-        {user.name && (
-          <span className="hidden sm:inline">
-            {user.name} · {user.role}
-          </span>
-        )}
-        <Avatar aria-hidden="true" size="sm">
-          <AvatarFallback className="bg-primary-soft text-primary font-semibold">
-            {user.name.slice(0, 1)}
-          </AvatarFallback>
-        </Avatar>
+        {/*
+          이름·역할 글자까지 트리거에 넣었다 — 24px 동그라미만 누르게 하는 것보다 과녁이
+          크고, 그 글자가 계정 조작의 일부라는 것이 눌러 보기 전에 드러난다.
+          세션이 오기 전에는 이름·역할이 빈 문자열이고 메뉴도 빈 채로 열린다 — 자리만 지킨다.
+        */}
+        {user.name ? <AccountMenu user={user} /> : <UserAvatar name="" />}
       </div>
     </header>
   )

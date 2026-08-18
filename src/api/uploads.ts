@@ -1,4 +1,4 @@
-import { izClient, unwrap, type RequestOptions } from '@/api/_contract'
+import { izClient, izOriginClient, unwrap, type RequestOptions } from '@/api/_contract'
 import type { operations } from '@/api/schema'
 /* 상한은 의존성 없는 잎 모듈에 있다 — CI 가드가 별칭 없이 읽어 검산한다 */
 export { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL, tooLargeToUpload } from '@/api/uploadLimits'
@@ -91,17 +91,24 @@ export const previewTraineesFromCsv = (params: CsvUpload) =>
  *
  * ⚠ **등록 직후에는 분석이 안 된 상태다.** 섹션·검증개념을 쓰려면 별도로
  * `POST /curricula/{materialId}/analyses`를 불러야 한다(스펙 명시).
+ *
+ * **본문은 `izClient`가 아니라 `izOriginClient`로 보낸다.** Lambda Function URL(`izClient`)엔
+ * AWS 자체 6MB 동기 페이로드 상한이 있어 그 이상은 413(실측) — App Runner origin 도메인으로
+ * 직접 보내 우회한다(Backend PR #87의 `AiCurriculumClient` 패턴 미러링). origin은 PAUSED
+ * 상태를 스스로 못 깨우므로, 실제 업로드 전에 `izClient`로 가벼운 GET을 먼저 보내 깨운다.
  */
-export const registerCurriculum = (
+export const registerCurriculum = async (
   params: { query: { title: string; topic?: string }; file: File } & RequestOptions,
-) =>
-  unwrap<RegisterCurriculumResponse>(
-    izClient.POST('/api/v0/curricula', {
+) => {
+  await izClient.GET('/api/v0/members/me', { signal: params.signal }).catch(() => {})
+  return unwrap<RegisterCurriculumResponse>(
+    izOriginClient.POST('/api/v0/curricula', {
       params: { query: params.query },
       body: csvBody(params.file) as never,
       signal: params.signal,
     }) as never,
   )
+}
 
 /*
   ─── 교육생 코드 제출 (ZIP) ──────────────────────────────────────────────────

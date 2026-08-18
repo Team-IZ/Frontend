@@ -652,6 +652,17 @@ function noSessionMessage(status: string | null) {
         title: '응시 기한이 지났어요',
         description: '이번 회차는 미응시로 기록됩니다. 사정이 있었다면 매니저에게 알려 주세요.',
       }
+    /*
+      홈은 `진행 중`이라 했는데 세션이 없다. **들어오는 그 순간 상한이 지난 것**이다 —
+      이 조회가 상한 넘은 세션을 그 자리에서 닫기 때문이다(스펙·실측). 기본 문구
+      ("지금 진행할 이해도 확인이 없어요")로 보내면, 이어서 하라고 해 놓고 아무 일도
+      없는 것처럼 말하게 된다.
+    */
+    case 'ASSESSMENT_IN_PROGRESS':
+      return {
+        title: '이해도 확인 시간이 끝났어요',
+        description: '시간이 지나 자동으로 마무리됐습니다. 답한 내용까지 기록에 남아요.',
+      }
     case 'ANALYZING':
       return {
         title: '아직 분석이 끝나지 않았어요',

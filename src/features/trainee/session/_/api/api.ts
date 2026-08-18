@@ -223,7 +223,17 @@ export function useOpenHint(sessionId: string | null) {
  *
  * ⚠️ `awaySeconds`·`disconnectedSeconds`는 **보낼 때마다 횟수가 1 올라간다.** 실패했다고
  * 다시 보내면 한 번 나간 것이 두 번으로 기록되어 무효 응시 판정이 틀린다. 잃는 편이 낫다.
+ *
+ * ## 범위를 넘기지 않는다
+ *
+ * 서버가 `0~86400`초(밀리초는 `0~86400000`)를 벗어나면 `400 VALIDATION_FAILED`로 막는다
+ * (실측). 탭을 하루 넘게 숨겨 두고 돌아오면 그대로 걸리므로 여기서 잘라 보낸다 —
+ * 어차피 상한을 넘긴 값은 "아주 오래 나가 있었다" 이상의 뜻이 없다.
  */
+const SEC_MAX = 86_400
+const MS_MAX = 86_400_000
+const clamp = (v: number | undefined, max: number) =>
+  v == null ? undefined : Math.min(Math.max(Math.round(v), 0), max)
 export function useSessionActivity(sessionId: string | null) {
   const m = useRecordSessionActivity()
   return useCallback(
@@ -233,9 +243,14 @@ export function useSessionActivity(sessionId: string | null) {
       firstKeystrokeDelayMs?: number
     }) => {
       if (!sessionId) return
+      const safe = {
+        awaySeconds: clamp(body.awaySeconds, SEC_MAX),
+        disconnectedSeconds: clamp(body.disconnectedSeconds, SEC_MAX),
+        firstKeystrokeDelayMs: clamp(body.firstKeystrokeDelayMs, MS_MAX),
+      }
       // 셋 다 비면 400이다 — 보낼 것이 없으면 아예 안 부른다
-      if (Object.values(body).every((v) => v == null)) return
-      m.mutate({ path: { sessionId }, body })
+      if (Object.values(safe).every((v) => v == null)) return
+      m.mutate({ path: { sessionId }, body: safe })
     },
     [m, sessionId],
   )

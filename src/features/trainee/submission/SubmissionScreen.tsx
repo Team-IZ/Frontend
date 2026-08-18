@@ -4,11 +4,12 @@ import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/Empty'
 import { Spinner } from '@/components/ui/Spinner'
+import { isApiError } from '@/api/_contract'
 import { formatDateTime } from '@/lib/format'
 import ConsoleShell from '@/shells/ConsoleShell'
 import { useSubmission, useSubmitZip } from './_/api/api'
 import type { SubmissionView } from './_/api/types'
-import { buildStateBanner } from './labels'
+import { buildStateBanner, submitFailureOf, type SubmitFailure } from './labels'
 import StateBanner from './components/StateBanner'
 import SubmissionForm from './components/SubmissionForm'
 import SubmittedContentCard from './components/SubmittedContentCard'
@@ -73,7 +74,11 @@ export default function SubmissionScreen() {
             view={data}
             resubmitting={resubmitting}
             submitting={submit.isPending}
-            failed={submit.isError}
+            failure={
+              submit.isError
+                ? submitFailureOf(isApiError(submit.error) ? submit.error.code : null)
+                : null
+            }
             onResubmitClick={() => setResubmitting(true)}
             onCancelResubmit={() => setResubmitting(false)}
             onSubmit={handleSubmit}
@@ -88,7 +93,7 @@ function SubmissionBody({
   view,
   resubmitting,
   submitting,
-  failed,
+  failure,
   onResubmitClick,
   onCancelResubmit,
   onSubmit,
@@ -96,7 +101,8 @@ function SubmissionBody({
   view: SubmissionView
   resubmitting: boolean
   submitting: boolean
-  failed: boolean
+  /** 접수가 거절된 이유. 성공했거나 아직 안 눌렀으면 `null` */
+  failure: SubmitFailure | null
   onResubmitClick: () => void
   onCancelResubmit: () => void
   onSubmit: (file: File) => void
@@ -115,16 +121,13 @@ function SubmissionBody({
       {banner && <StateBanner {...banner} />}
 
       {/*
-        🔴 **"다시 시도해 주세요"를 뺐다.** 지금 제출은 서버에 닿지도 못한다 — 스펙이
-        필수로 요구하는 멱등키 헤더가 CORS 허용 목록에 없어 브라우저가 요청을 보내기 전에
-        막는다(33차 R1). 다시 눌러도 같은 자리에서 같게 실패하므로, 될 때까지 누르라고
-        말하면 학생은 헛수고를 반복하고 그동안 마감이 지나간다.
-
-        서버가 헤더 한 줄을 열면 이 문구를 원래대로(재시도 안내) 되돌린다.
+        **서버가 준 이유를 그대로 옮긴다.** 접수 거절 코드가 13종인데 하나로 뭉치면
+        학생이 무엇을 해야 하는지 모른다 — 압축을 다시 하면 되는 경우와 기다려야 하는
+        경우가 섞인다. 재시도가 의미 없는 경우에는 그 말을 하지 않는다(`labels.ts`).
       */}
-      {failed && (
+      {failure && (
         <div className="rounded-md bg-danger-soft px-4 py-3 text-sm text-danger">
-          지금은 제출이 접수되지 않아요. 다시 눌러도 같은 문제가 반복되니 매니저에게 알려 주세요.
+          {failure.message}
         </div>
       )}
 

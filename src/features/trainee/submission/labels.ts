@@ -143,3 +143,71 @@ export const REPO_HELP =
 export const ZIP_HELP = '최대 50MB · node_modules, .venv 같은 폴더는 빼고 압축해 주세요.'
 export const REPO_NOT_FOUND_HELP =
   '비공개 저장소이거나 우리 기관 조직 밖에 있으면 열 수 없어요 — 그럴 땐 ZIP으로 올리면 됩니다.'
+
+/*
+  제출이 **접수되지 못한** 이유 — 분석 실패(`failureCode`)와 다른 축이다.
+
+  | | 언제 | 무엇이 다른가 |
+  |---|---|---|
+  | 접수 실패 | 요청이 거절됐다 | 서버가 파일을 받지도 않았다 |
+  | 분석 실패 | 접수는 됐다 | 받아서 열어 보니 분석할 수 없었다 |
+
+  13종이 오는데 화면이 하나로 뭉치면 **학생이 무엇을 해야 하는지 모른다.** 압축을 다시
+  하면 되는 경우와 기다려야 하는 경우와 매니저를 찾아야 하는 경우가 섞인다.
+
+  그래서 **다음 행동으로 갈라** 세 갈래만 만든다. 코드를 그대로 노출하지 않는 이유는
+  그것이 개발자용 문자열이기 때문이다(F3).
+*/
+export type SubmitFailure = {
+  message: string
+  /** 같은 파일로 다시 눌러 볼 만한가 — 아니면 버튼을 다시 강조하지 않는다 */
+  retryable: boolean
+}
+
+const SUBMIT_FAILURE: Record<string, SubmitFailure> = {
+  // 학생이 고칠 수 있다 — 파일을 바꿔 다시 낸다
+  ARCHIVE_INVALID: {
+    message: '압축 파일을 열지 못했어요. 다시 압축해서 올려 주세요.',
+    retryable: false,
+  },
+  FILE_TOO_LARGE: { message: '파일이 너무 커요. 50MB 아래로 줄여 주세요.', retryable: false },
+
+  // 기다리면 된다 — 같은 파일로 다시 눌러도 된다
+  ARTIFACT_STORE_FAILED: {
+    message: '파일을 저장하는 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.',
+    retryable: true,
+  },
+  AI_SERVER_UNAVAILABLE: {
+    message: '분석 서버를 깨우는 중이에요. 최대 2분쯤 걸릴 수 있어요 — 잠시 후 다시 시도해 주세요.',
+    retryable: true,
+  },
+
+  // 상황이 끝났다 — 다시 눌러도 같다
+  SUBMISSION_DEADLINE_PASSED: {
+    message: '제출 마감이 지나 더 이상 낼 수 없어요.',
+    retryable: false,
+  },
+  SUBMISSION_ROUND_NOT_OPEN: {
+    message: '지금은 제출할 수 있는 회차가 아니에요.',
+    retryable: false,
+  },
+  SUBMISSION_ROUND_NOT_ACCESSIBLE: {
+    message: '제출할 회차를 찾지 못했어요. 매니저에게 알려 주세요.',
+    retryable: false,
+  },
+  SUBMISSION_METHOD_NOT_ALLOWED: {
+    message: '이 방식으로는 제출할 수 없어요. 매니저에게 알려 주세요.',
+    retryable: false,
+  },
+}
+
+/**
+ * 제출 실패를 학생이 읽는 말로.
+ *
+ * 모르는 코드는 **재시도 가능**으로 둔다 — 멱등키 충돌이나 일시적 오류가 그쪽에 많고,
+ * 다시 눌러 볼 수 있다고 말하는 편이 "매니저를 찾으세요"보다 먼저 시도해 볼 것을 준다.
+ */
+export function submitFailureOf(code: string | null | undefined): SubmitFailure {
+  if (code && SUBMIT_FAILURE[code]) return SUBMIT_FAILURE[code]
+  return { message: '제출하지 못했어요. 잠시 후 다시 시도해 주세요.', retryable: true }
+}

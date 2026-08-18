@@ -33,13 +33,13 @@ import type {
   findSections_Response,
   findUsedProjects_Response,
 } from '@/api/curriculum/curriculumTypes'
-import { useCohortScope } from '../_/cohortScope'
-import { COHORT_STATUS_LABEL } from '../_/labels'
+import { useCohortScope } from '../admin/_/cohortScope'
+import { COHORT_STATUS_LABEL } from '../admin/_/labels'
 import { Skeleton } from '@/components/ui/Skeleton'
 import TableSkeleton from '@/components/common/TableSkeleton'
 import CurriculumDetailSkeleton, { SectionListSkeleton } from './CurriculumDetailSkeleton'
 import ErrorState from '@/components/common/ErrorState'
-import { CurriculumStatusBadge } from '../_/components/StatusBadges'
+import { CurriculumStatusBadge } from '../admin/_/components/StatusBadges'
 import ReanalyzeDialog from './components/ReanalyzeDialog'
 import DeleteCurriculumDialog from './components/DeleteCurriculumDialog'
 

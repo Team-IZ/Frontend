@@ -18,7 +18,7 @@ import { useRequestAnalysis } from '@/api/curriculum/useCurriculumMutations'
 import { curriculumKeys } from '@/api/curriculum/curriculumKeys'
 import { isApiError } from '@/api/_contract'
 import { errorCopy } from '@/lib/errorCopy'
-import RequiredMark from '../../_/components/RequiredMark'
+import RequiredMark from '../../admin/_/components/RequiredMark'
 
 /*
   교안 등록.

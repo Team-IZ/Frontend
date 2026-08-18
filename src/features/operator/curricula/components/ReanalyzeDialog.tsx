@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { useRequestAnalysis } from '@/api/curriculum/useCurriculumMutations'
 import type { findUsedProjects_Response } from '@/api/curriculum/curriculumTypes'
-import type { CurriculumStatus } from '../../_/api/types'
+import type { CurriculumStatus } from '../../admin/_/api/types'
 
 /*
   다시 분석하기 전에 — **쓰는 회차를 먼저 보여준다**(OP-06 §6).

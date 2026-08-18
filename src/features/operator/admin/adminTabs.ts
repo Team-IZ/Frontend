@@ -3,7 +3,6 @@ import CohortsTab from './cohorts/CohortsTab'
 import ClassesTab from './classes/ClassesTab'
 import RosterTab from './roster/RosterTab'
 import ManagersTab from './managers/ManagersTab'
-import CurriculaTab from './curricula/CurriculaTab'
 import CostTab from './cost/CostTab'
 
 /*
@@ -64,11 +63,6 @@ export const ADMIN_TABS = [
     value: 'managers',
     label: '매니저',
     Panel: ManagersTab,
-  },
-  {
-    value: 'curricula',
-    label: '교안',
-    Panel: CurriculaTab,
   },
   {
     // 비용은 목록이 아니라 금액이라 셀 것이 없다

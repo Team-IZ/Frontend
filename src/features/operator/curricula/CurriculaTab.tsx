@@ -16,15 +16,14 @@ import { listQueryOptions } from '@/lib/listQuery'
 import { useGetCurrentMember } from '@/api/member/useMemberQueries'
 import { useFindOrganizationCurricula } from '@/api/curriculum/useCurriculumQueries'
 import type { findOrganizationCurricula_Query } from '@/api/curriculum/curriculumTypes'
-import { CURRICULUM_STATUS_LABEL } from '../_/labels'
-import SectionHeader from '../_/components/SectionHeader'
+import { CURRICULUM_STATUS_LABEL } from '../admin/_/labels'
 import PageHeader from '@/components/common/PageHeader'
-import TableFooterBar from '../_/components/TableFooterBar'
+import TableFooterBar from '../admin/_/components/TableFooterBar'
 import TableSkeleton from '@/components/common/TableSkeleton'
 import ErrorState from '@/components/common/ErrorState'
-import { CurriculumStatusBadge } from '../_/components/StatusBadges'
-import { FilterSelect, SearchBox } from '../_/components/AdminFilters'
-import { ALL } from '../_/filterState'
+import { CurriculumStatusBadge } from '../admin/_/components/StatusBadges'
+import { FilterSelect, SearchBox } from '../admin/_/components/AdminFilters'
+import { ALL } from '../admin/_/filterState'
 import RegisterCurriculumDialog from './components/RegisterCurriculumDialog'
 
 /*
@@ -90,17 +89,12 @@ const SORT_OPTIONS = [
 type CurriculumSort = NonNullable<findOrganizationCurricula_Query['sort']>
 
 /*
-  ⏳ **`standalone`은 이사 중에만 있는 문이다.** 같은 목록이 지금 두 곳에서 그려진다 —
-  사이드바 최상위 `교안`(새 집)과 `운영 관리 › 교안` 탭(옛 집). 탭을 지울 때 이 prop과
-  `SectionHeader` 갈래를 같이 지운다.
-
-  **머리 태그가 달라서 나눈다.** 탭 안에서는 `운영 관리`가 `<h1>`이라 여기는 `<h2>`여야
-  하고(SectionHeader), 최상위 화면에서는 여기가 그 화면의 `<h1>`이다(PageHeader).
-  `<h1>`이 한 화면에 둘이면 스크린리더의 문서 구조가 깨진다 — 보이는 크기 문제가 아니다.
-  두 컴포넌트는 prop 모양이 같아서 갈래가 한 줄로 끝난다.
+  (2026-08-18, 이슈 252) **`standalone` 이사 완료.** 한때 이 목록이 사이드바 최상위
+  `교안`(새 집)과 `운영 관리 › 교안` 탭(옛 집) 두 곳에서 그려져 `standalone` prop으로
+  머리 태그(`<h1>` PageHeader / `<h2>` SectionHeader)를 갈랐다. 탭을 지우면서 그 갈래도
+  같이 없앴다 — 이제 이 화면은 항상 사이드바 최상위이므로 `PageHeader` 하나로 고정.
 */
-export default function CurriculaTab({ standalone = false }: { standalone?: boolean }) {
-  const Header = standalone ? PageHeader : SectionHeader
+export default function CurriculaTab() {
   const navigate = useNavigate()
   /* 이름이 겹친다 — 아래 `search`는 검색어 입력값이고 이쪽은 주소의 쿼리다 */
   const { search: urlQuery } = useLocation()
@@ -155,7 +149,7 @@ export default function CurriculaTab({ standalone = false }: { standalone?: bool
 
   return (
     <>
-      <Header
+      <PageHeader
         title="교안"
         count={counts ? `${totalAll}개` : undefined}
         breakdown={

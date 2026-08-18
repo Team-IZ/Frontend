@@ -1,7 +1,7 @@
 import ConsoleShell from '@/shells/ConsoleShell'
 import CurriculaTab from './CurriculaTab'
-import { useCohortScope } from '../_/cohortScope'
-import { COHORT_STATUS_LABEL } from '../_/labels'
+import { useCohortScope } from '../admin/_/cohortScope'
+import { COHORT_STATUS_LABEL } from '../admin/_/labels'
 
 /*
   교안 — **기수가 아니라 기관의 자산이다.** 그래서 사이드바 최상위에 있다.
@@ -21,8 +21,9 @@ import { COHORT_STATUS_LABEL } from '../_/labels'
   뭘 쓰나」는 그 기수의 프로젝트 목록이 답할 질문이라 여기에 기수별 탭을 두지 않는다
   (둬도 기수당 한두 종이라 표가 안 된다).
 
-  ⏳ **아직 `운영 관리 › 교안` 탭도 살아 있다.** 이사가 끝나면 그 탭과 `standalone`
-  prop을 같이 지우고, 이 폴더를 `admin/` 밖으로 옮긴다.
+  (2026-08-18, 이슈 252) **이사 완료.** `운영 관리 › 교안` 탭과 `CurriculaTab`의
+  `standalone` prop을 지웠고, 이 폴더도 `admin/` 밖(`features/operator/curricula/`)으로
+  옮겼다.
 */
 export default function CurriculaScreen() {
   /*
@@ -54,7 +55,7 @@ export default function CurriculaScreen() {
       }))}
       onCohortChange={scope.setCohort}
     >
-      <CurriculaTab standalone />
+      <CurriculaTab />
     </ConsoleShell>
   )
 }

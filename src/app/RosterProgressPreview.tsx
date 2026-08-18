@@ -7,7 +7,7 @@ import { useRegistrationProgress } from '@/features/operator/admin/roster/regist
 import RegistrationProgressPanel from '@/features/operator/admin/roster/registrationProgress/components/RegistrationProgressPanel'
 
 /*
-  dev 전용 — #224(등록 진행률 폴링 UI, mock-first)를 눈으로 확인하는 자리.
+  dev 전용 — 이슈 224(등록 진행률 폴링 UI, mock-first)를 눈으로 확인하는 자리.
   `/operator/__async`와 같은 관례(`docs/dev/async-states.md` §5-1) — 실제 앱에는 이
   페이지로 오는 링크가 없다. 라우트에 직접 등록한다(`*.route.tsx` 글롭 대상이 아니다).
 
@@ -37,7 +37,7 @@ export default function RosterProgressPreview() {
     <ConsoleShell role="operator" cohort="9기">
       <PageHeader
         breadcrumb="dev › 등록 진행률 폴링"
-        title="#224 · 등록 진행률 폴링 UI (mock-first)"
+        title="이슈 224 · 등록 진행률 폴링 UI (mock-first)"
         breakdown={<span className="text-fg-subtle">진행 컴포넌트 · 폴링 훅 · 목 API 경계</span>}
         action={
           <Button

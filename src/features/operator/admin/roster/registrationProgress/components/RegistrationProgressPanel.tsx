@@ -15,7 +15,7 @@ type Props = {
   부르는 쪽이 정한다(`docs/dev/mock-first-screens.md` §3 폴더 배치의 `components/`처럼
   "목록 · 상세가 같이 쓰는 조각"과 같은 위치).
 
-  **연결은 #224 범위 밖이다** — `AddRosterDialog.tsx`가 아직 이 컴포넌트를 안 부른다
+  **연결은 이슈 224 범위 밖이다** — `AddRosterDialog.tsx`가 아직 이 컴포넌트를 안 부른다
   (이슈 "하지 않는 것": 계약이 안 정해진 상태에서 실제 submit 흐름에 못 붙인다).
   지금은 `RosterProgressPreview`(dev)에서만 실제로 그려진다.
 */

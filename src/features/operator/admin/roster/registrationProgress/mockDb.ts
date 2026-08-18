@@ -29,7 +29,7 @@ const stateByBatch = new Map<string, MockBatchState>()
  * 이 배치가 처음 폴링되는 순간의 총 인원.
  *
  * ⚠ 실제 총 인원은 등록 응답(`registerTrainees_Response.registeredCount`)에서 와야
- * 하지만, #224는 `AddRosterDialog.tsx`에 아직 안 붙어 있어(이슈 범위 밖) 그 값을
+ * 하지만, 이슈 224는 `AddRosterDialog.tsx`에 아직 안 붙어 있어(이슈 범위 밖) 그 값을
  * 받을 자리가 없다. 대신 `batchRequestId`에 심은 숫자를 총 인원으로 읽는다 —
  * 프리뷰가 "8명"·"450명" 같은 시나리오를 아이디만으로 고를 수 있게 하려는 목적이다.
  * 숫자가 없으면 8명으로 기본값을 둔다.

@@ -93,10 +93,14 @@ export function useInterviewList(params: InterviewQuery | undefined) {
 /**
  * 브리프 한 장 — **`briefState`가 `NONE`이면 조회하지 않는다.**
  *
- * 🔴 아직 만들어지지 않은 브리프를 `GET`하면 서버가 404를 내는데, **404는 지금
- * 무응답이라**(29차 R1 · 30차 R1) 화면이 90초를 기다렸다 실패로 떨어진다. 실측했다.
- * 스펙도 `NONE`이면 `POST`로 만들라고 적고 있으니, 그 흐름을 그대로 따른다 —
- * 우회가 아니라 **원래 계약이 그렇다.**
+ * 스펙이 `NONE`이면 `POST`로 만들라고 적고 있다 — **우회가 아니라 원래 계약**이라
+ * 그대로 따른다.
+ *
+ * ⚠ 한때 이걸 「404가 무응답이라 피해 간다」로 적어 뒀는데(29차 R1 · 30차 R1),
+ * **그 무응답은 Lambda 호스트 쪽 현상이었다**(38차 §6). App Runner에서는 같은
+ * 요청이 `404 INTERVIEW_BRIEF_NOT_CREATED`를 0.7초에 준다 — 그래도 이 분기는
+ * 남긴다. 없는 것을 부르지 않는 것이 계약이고, 부른 뒤 404를 받아 다시 만드는
+ * 것보다 왕복이 한 번 적다.
  */
 export function useBrief(caseId: string | undefined, exists: boolean) {
   const query = useFindInterviewBrief(

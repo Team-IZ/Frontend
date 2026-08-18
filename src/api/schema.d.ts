@@ -1681,6 +1681,22 @@ export interface paths {
      *     > **Lambda 6MB 상한(요청서 ②)은 이 커밋의 범위가 아니다.** 본문이 base64로
      *     > 부풀어(×4/3) 실질 4.5MB에서 막히는 것이라 앱이 손댈 수 있는 층이 아니고,
      *     > presigned S3로 그 층을 비켜가는 것이 답이다 — 계약 변경이라 별건이다.
+     *
+     *     ## 파일 형식은 이름이 아니라 내용으로 판정한다
+     *
+     *     앞 5바이트가 `%PDF-` 인지 **실제로 읽어** 확인한다. 확장자와 `Content-Type` 은
+     *     보내는 쪽이 적는 값이라 근거가 되지 못한다 — 종전에는 `.jpg` 를 `.pdf` 로 이름만
+     *     바꿔도 그대로 저장됐다. 제출물 ZIP 이 원래부터 쓰던 원칙을 교안에 맞춘 것이다.
+     *
+     *     저장되는 `mimeType` 도 클라이언트 값이 아니라 서버가 확인한 `application/pdf` 다.
+     *
+     *     | 코드 | 상태 | 언제 |
+     *     |---|---|---|
+     *     | `CURRICULUM_FILE_TYPE_INVALID` | 400 | 내용이 PDF 가 아니다 |
+     *     | `CURRICULUM_FILE_TOO_LARGE` | 413 | 앱 상한(`curriculum.upload.max-bytes`, 기본 50MB)을 넘었다 |
+     *
+     *     크기 상한을 앱에도 두는 이유는 **톰캣 multipart 상한(60MB)에서 먼저 걸리면 도메인
+     *     코드가 붙지 않기 때문**이다. 그 요청은 컨트롤러에 닿지 못해 코드 없는 500 이 된다.
      */
     post: operations['registerCurriculum']
     delete?: never
@@ -4027,6 +4043,94 @@ export interface paths {
      *     | 409 `ORG_POLICY_NOT_FOUND` | 활성 정책이 없음 |
      */
     patch: operations['updateOrganizationOperationSettings']
+    trace?: never
+  }
+  '/api/v0/members/organizations/{organizationId}/users/{userId}/login-lock': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    /**
+     * 계정 로그인 차단 / 해제 | ✅ 사용 가능
+     * @description 계정 탈취가 의심되거나 확인이 필요할 때 **그 계정의 로그인을 일정 시각까지 막는다.**
+     *
+     *     ## 계정 정지와 무엇이 다른가
+     *
+     *     | | 계정 정지 (`PATCH .../managers/{managerId}/status`) | 로그인 차단 (이 API) |
+     *     |---|---|---|
+     *     | 표현 | `status = INACTIVE` | `login_blocked_until` **시각** |
+     *     | 해제 | 사람이 다시 조작해야 한다 | **시각이 지나면 저절로 풀린다** |
+     *     | 이력 | 계정 원장에 정지 사유가 박힌다 | 감사 로그에만 남는다 |
+     *     | 쓰는 자리 | 퇴사·계약 종료처럼 되돌리지 않을 변화 | **지금 몇 시간** 막아야 할 때 |
+     *
+     *     정지밖에 없으면 "일단 막자"에 정지를 쓰게 되고, 그러면 퇴사와 같은 흔적이 계정에 남는다.
+     *
+     *     ## 요청
+     *
+     *     **경로 변수**
+     *
+     *     | 변수 | 필수 | 타입 | 설명 |
+     *     |---|---|---|---|
+     *     | `organizationId` | **필수** | UUID | 기관 식별자. 오퍼레이터는 자기 기관만 허용된다(403) |
+     *     | `userId` | **필수** | UUID | 대상 계정. **역할을 가리지 않는다** — 교육생·매니저·오퍼레이터 모두 가능 |
+     *
+     *     **JSON 본문**
+     *
+     *     | 필드 | 필수 | 타입 | 설명 |
+     *     |---|---|---|---|
+     *     | `locked` | **필수** | boolean | `true` 차단 / `false` 해제 |
+     *     | `lockedUntil` | 조건부 | datetime | 차단이 끝나는 시각. **`locked=true`면 필수**, `false`면 무시된다. 과거 시각은 400 |
+     *     | `reason` | 선택 | string | 조치 사유(최대 500자). 감사 로그에 남는다 |
+     *
+     *     **해제 의사를 명시적으로 받는다.** 시각만 받고 "비어 있으면 해제"로 정하면
+     *     본문을 빠뜨린 요청이 조용히 차단을 푼다 — JSON에서 *키를 안 보냄*과 *null을 보냄*은
+     *     서버에 같은 값으로 도착해 구분할 수 없기 때문이다.
+     *     보안 조치를 되돌리는 동작이 실수로 도달할 수 있는 기본값이면 안 된다.
+     *
+     *     **기한 없는 차단은 만들 수 없다**(400 `LOCK_UNTIL_REQUIRED`).
+     *     시각이 지나면 저절로 풀린다는 것이 이 방식의 요점이고, 종료 시각이 비면
+     *     아무도 풀어 주지 않는 한 영구 차단이 된다 — 그건 계정 정지가 할 일이다.
+     *
+     *     **헤더 (선택)** — `X-Request-Id: {문자열}` 감사 추적용. 생략하면 서버가 만든다.
+     *
+     *     ## 차단은 세션까지 끊는다
+     *
+     *     `login_blocked_until`은 **새 로그인만** 막는다. 이미 로그인해 둔 창은 리프레시 토큰으로
+     *     계속 연장되므로, 토큰을 함께 끊지 않으면 *"차단했는데 그 사람은 계속 쓰고 있는"* 상태가 된다.
+     *     탈취 의심 상황에서 정확히 막아야 하는 것이 그 세션이다.
+     *
+     *     그래서 차단 시 **그 계정의 활성 리프레시 토큰을 같은 트랜잭션에서 전부 폐기**하고
+     *     (`revoked_reason = ADMIN_REVOKED`, `revoked_by` = 조치자) 끊은 개수를 `revokedSessionCount`로 돌려준다.
+     *     대상은 다음 요청에서 401을 받고 로그인 화면으로 가며, 거기서 다시 429 `LOGIN_TEMPORARILY_BLOCKED`를 만난다.
+     *
+     *     **해제할 때는 토큰을 건드리지 않는다** — 이미 끊어진 세션은 되살릴 수도, 되살릴 이유도 없다.
+     *     대신 `failed_login_count`를 0으로 되돌린다. 카운터를 남겨 두면 풀어 준 계정이
+     *     다음 실패 한 번에 다시 막혀 "해제했다"는 말이 사실이 아니게 된다.
+     *
+     *     ## 사유는 감사 로그에 남는다
+     *
+     *     `app_user`에는 차단 사유 컬럼이 없고 이 하나를 위해 테이블을 늘리지 않는다
+     *     (`inactivated_reason`은 계정 정지용이라 여기 쓰면 정지와 차단이 뒤섞인다).
+     *     `audit_log`에 `actor_type=USER`로 **누가·언제·누구를·왜** 막았는지 남으며,
+     *     사유는 `after_snapshot`에 들어간다. 이력이 없으면 나중에 남는 것은 시각 하나뿐이고,
+     *     그 값은 연속 실패 자동 차단과 구분되지 않는다.
+     *
+     *     ## 자기 계정은 차단할 수 없다
+     *
+     *     400 `LOCK_SELF_NOT_ALLOWED`. 기관에 오퍼레이터가 한 명뿐인데 자기를 막으면
+     *     **풀어 줄 사람이 없어진다**(해제도 이 권한이 필요하다).
+     *     마지막 활성 오퍼레이터를 정지하지 못하게 막는 `LAST_OPERATOR`와 같은 종류의 방어다.
+     *     **해제는 자기 계정에도 허용된다** — 아무도 잠기게 하지 않기 때문이다.
+     */
+    patch: operations['updateLoginLock']
     trace?: never
   }
   '/api/v0/members/organizations/{organizationId}/managers/{managerId}/status': {
@@ -6772,6 +6876,11 @@ export interface paths {
      *       `/auth/trainee-activation`)에서 실어 보낼 **필드명**이다. 코드-필드 대응표를
      *       화면이 따로 들고 있지 않아도 되도록 서버가 내려준다
      *     - policyVersion: 표시한 동의 문서 버전이며 동의 기록에 그대로 저장된다
+     *     - **body**: 동의 문서 **본문**(Markdown). 체크박스 옆 한 줄(`description`)만 보여 주고
+     *       동의를 받으면 이용자가 무엇에 동의했는지 알 수 없다. 화면은 `전문 보기`에 이 값을 렌더링한다
+     *     - **documentHash**: 본문의 SHA-256(hex 64자). 동의 기록의 `evidence_hash` 재료로 들어가
+     *       **"이 사용자가 어떤 문안에 동의했는가"**를 나중에 증명할 수 있게 한다. 문안이 개정되면
+     *       이 값이 달라지므로, 화면이 캐시한 본문이 최신인지 판별하는 데도 쓸 수 있다
      *
      *     **required=true 항목을 false로 제출하면 가입이 400으로 거부된다.** 화면은 필수 항목이
      *     모두 체크되기 전까지 제출 버튼을 막아야 한다. 교육생의 익명 활용 동의만 거부해도 가입된다.
@@ -7158,10 +7267,21 @@ export interface paths {
      *     | `resolved` | boolean | 이미 해소됐는지. `includeResolved=false`면 이 값이 `true`인 항목은 안 옴 |
      *     | `reminderEligible` | boolean | 지금 독촉 발송 대상이 될 수 있는지. `true`인 항목만 `POST /reminders`로 보낼 수 있다 |
      *
-     *     ## 정렬 규칙
+     *     ## 정렬 규칙 — `band`가 1차 기준입니다 (34차 R9)
      *
-     *     **마감이 있는 항목이 먼저**, 그 안에서 마감이 이른 순이다. 마감이 없는 항목(면담 등)은
-     *     뒤로 밀리고 그 안에서는 최근 발생 순이다.
+     *     | `band` | 뜻 |
+     *     |---|---|
+     *     | `1` | 마감이 **이미 지났다** |
+     *     | `2` | **오늘 안에** 마감 |
+     *     | `3` | 마감이 남아 있다 |
+     *     | `4` | **마감이 없는 항목**(면담·무효 검토 등) |
+     *
+     *     `items[]`는 **밴드가 이른 순**으로 오고, 같은 밴드 안에서는 유형 우선순위 →
+     *     마감 이른 순 → 최근 발생 순입니다. **화면이 다시 정렬하지 않아도 됩니다** —
+     *     밴드는 섹션을 나눠 그릴 때 쓰시면 됩니다.
+     *
+     *     「오늘 안」의 경계는 절대 24시간이 아니라 **날짜**입니다. 매니저는 하루를 단위로
+     *     일하므로 오후에 열든 오전에 열든 같은 항목이 같은 밴드에 있어야 합니다.
      *
      *     ## 네 가지 원천을 하나로 합친다
      *
@@ -10308,15 +10428,22 @@ export interface components {
       classId: string
       className: string
       /**
-       * @description UNSUBMITTED_TEAMS(제출 마감 지남·미제출) · ANALYSIS_FAILED_TEAMS(제출했으나 분석 실패)
+       * @description `UNSUBMITTED_TEAMS` 제출 마감 지남·미제출 · `ANALYSIS_FAILED_TEAMS` 제출했으나 분석 실패 ·
+       *     **`INTERVIEW_BACKLOG` 면담이 아직 안 끝난 인원**(34차 R7①)
        * @example UNSUBMITTED_TEAMS
        */
       type: string
       /**
        * Format: int32
-       * @description 해당 유형에 걸린 팀 수
+       * @description 해당 유형에 걸린 **팀 수**. 단, `INTERVIEW_BACKLOG`는 **사람 수**다.
+       *
+       *     앞의 둘은 팀 단위 조치이고 면담은 사람 단위인데, 화면이 이미 이 자리를
+       *     「숫자 + 단위」로 그리고 있어 필드를 새로 내지 않고 같은 자리를 씁니다.
+       *     **단위는 `type`으로 갈라 주세요.**
        */
       teamCount: number
+      /** @description 해당 유형에 걸린 팀 목록. 36차 R2 — teamCount만으로는 어느 팀인지 알 수 없어서 붙였다. */
+      teams: components['schemas']['TeamRef'][]
     }
     /** @description 담당 반 중 진행률이 가장 낮은 반 */
     LaggingClass: {
@@ -10436,12 +10563,22 @@ export interface components {
        */
       conceptCandidateCount: number
       /**
-       * @description 연결된 교안 파일명. 순서는 연결 순서(`sequence_no`)다.
+       * @description 연결된 교안 표시명 — **`파일명 v판번호`**. 순서는 연결 순서(`sequence_no`)다.
        *
        *     `curriculumCount`와 길이가 <b>다를 수 있다</b> — 개수는 연결 행을 그대로 세지만
        *     이름은 못 찾은 항목이 빠진다. 개수 표시에는 `curriculumCount`를 쓸 것.
+       *
+       *     ### 34차 R7② — 뒤의 `v1`이 판번호다
+       *
+       *     종전에는 파일명만 실었다. 그러면 **같은 교안의 v1·v2가 한 기수에 섞일 때 표에서
+       *     구분되지 않아** 두 행의 「교안」 열이 같은 글자가 됐다. `curriculum_version.version_no`를
+       *     뒤에 붙인다.
+       *
+       *     파일명 자체에 `_v1`이 들어 있어 `spring_backend_v1.pdf v1`처럼 겹쳐 보일 수 있는데
+       *     **둘은 다른 축**이다 — 앞은 업로더가 붙인 글자이고 뒤가 원장의 판번호다. 파일명을
+       *     파싱해 지우면 `v10`·`_v2_final` 같은 이름에서 틀리므로 서버는 지우지 않는다.
        * @example [
-       *       "spring_backend_v1.pdf"
+       *       "spring_backend_v1.pdf v1"
        *     ]
        */
       curriculumNames: string[]
@@ -10478,6 +10615,12 @@ export interface components {
      * @enum {string}
      */
     ProjectStatus: 'PLANNED' | 'RUNNING' | 'CLOSED'
+    /** @description 조치가 필요한 팀 한 건 */
+    TeamRef: {
+      /** Format: uuid */
+      teamId: string
+      teamName: string
+    }
     SendReminderRequest: {
       /** Format: uuid */
       assessmentRoundId: string
@@ -11152,6 +11295,53 @@ export interface components {
        * @description 이 설정이 속한 정책 버전. organization_policy는 append-only 이력이라 변경할 때마다 올라간다.
        */
       policyVersion: number
+    }
+    /** @description 계정의 로그인 차단 설정·해제 요청 */
+    UpdateLoginLockRequest: {
+      /**
+       * @description **필수.** `true`면 차단, `false`면 해제다.
+       *     해제가 실수로 도달하지 않도록 의사를 명시적으로 받는다 —
+       *     본문을 빠뜨린 요청이 계정 차단을 푸는 일이 없어야 한다.
+       * @example true
+       */
+      locked: boolean
+      /**
+       * Format: date-time
+       * @description 차단이 끝나는 시각(UTC). `locked=true`면 **필수**이고, `locked=false`면 무시된다.
+       *     상태가 아니라 시각이므로 이 시각이 지나면 별도 조작 없이 차단이 풀린다.
+       *     과거 시각은 400으로 거절한다 — 걸자마자 풀리는 차단은 건 적이 없는 것과 같다.
+       * @example 2026-08-18T09:00:00Z
+       */
+      lockedUntil?: string | null
+      /**
+       * @description 조치 사유. `app_user`에 사유 컬럼이 없어 **감사 로그**(`audit_log.after_snapshot`)에 남는다.
+       *     계정 정지 사유(`inactivated_reason`)와는 다른 자리다 — 정지와 차단은 다른 조작이다.
+       * @example 비정상 로그인 시도 확인, 본인 확인 시까지 차단
+       */
+      reason?: string | null
+    }
+    /** @description 로그인 차단 설정·해제 결과 */
+    LoginLockResponse: {
+      /**
+       * Format: uuid
+       * @description 조치 대상 계정
+       */
+      userId: string
+      /**
+       * Format: date-time
+       * @description 차단이 끝나는 시각. 해제했으면 값이 비어 있다.
+       * @example 2026-08-18T09:00:00Z
+       */
+      lockedUntil: string | null
+      /** @description 지금 차단 상태인지. 해제했으면 false다. */
+      locked: boolean
+      /**
+       * Format: int32
+       * @description 이 조치로 끊은 로그인 세션(리프레시 토큰) 수. **해제일 때는 항상 0**이다.
+       *     차단은 새 로그인만 막으므로, 이미 열려 있는 세션을 함께 끊어야 실제로 막힌다.
+       * @example 2
+       */
+      revokedSessionCount: number
     }
     /**
      * @description 매니저 계정 상태 변경 요청.
@@ -14248,6 +14438,24 @@ export interface components {
        * @example 24
        */
       attendedCount: number
+      /**
+       * Format: int32
+       * @description **그 회차의 대상 인원.** 화면 `58 / 71`의 분모다(34차 R16③).
+       *
+       *     종전에는 이 값이 없어 화면이 분자만 적었다 — 「58명」이 몇 명 중 58명인지
+       *     말할 수 없었다. `attendedCount`와 **같은 질의**에서 오므로 분자가 분모보다
+       *     커지는 순간이 없다.
+       * @example 71
+       */
+      eligibleCount: number
+      /**
+       * @description **회차 리포트가 발행됐는지**(34차 R16④).
+       *
+       *     `true`면 재분석이 **이미 나간 리포트와 어긋난다** — 경고의 무게가 다르다.
+       *     `attendedCount`가 0이 아니어도 아직 발행 전이면 되돌릴 여지가 있다.
+       * @example true
+       */
+      reportPublished: boolean
       /** @description 이 회차가 지금 쓰고 있는 확정 검증 개념 이름. 재분석하면 교안 위치가 어긋날 개념들이다. 확정 전이면 빈 배열 */
       conceptNames: string[]
     }
@@ -14263,8 +14471,20 @@ export interface components {
        * @example 서비스 이용약관
        */
       title: string
-      /** @description 항목 설명 문구 */
+      /** @description 체크박스 옆에 붙이는 한 줄 요약이며 약관 본문이 아니다 */
       description: string
+      /**
+       * @description 동의 문서 본문(Markdown). 화면은 이 값을 `전문 보기`에 그대로 렌더링한다.
+       *     한 줄 요약(description)만 보여 주고 동의를 받으면 이용자가 무엇에 동의했는지 알 수 없다.
+       */
+      body: string
+      /**
+       * @description 본문의 SHA-256(hex 64자). 이 값이 동의 기록의 `evidence_hash` 재료로 들어가
+       *     "이 사용자가 어떤 문안에 동의했는가"를 나중에 증명할 수 있게 한다.
+       *     문안에서 한 글자만 바뀌어도 값이 달라진다.
+       * @example 3b1f0c9d2a4e6b8d0f2a4c6e8b0d2f4a6c8e0b2d4f6a8c0e2b4d6f8a0c2e4b6d
+       */
+      documentHash: string
       /**
        * @description 가입 요청에서 이 항목의 동의 여부를 담을 필드명
        * @example serviceTermsAgreed
@@ -15031,6 +15251,27 @@ export interface components {
        *     해소되지 않았어도 독촉 대상이 아닌 항목(무효 검토·인터뷰)이 있어 둘을 따로 읽어야 한다.
        */
       reminderEligible: boolean
+      /**
+       * Format: int32
+       * @description **급한 정도. 1이 가장 급하다**(34차 R9).
+       *
+       *     | 밴드 | 뜻 |
+       *     |---|---|
+       *     | `1` | 마감이 **이미 지났다** |
+       *     | `2` | **오늘 안에** 마감 |
+       *     | `3` | 마감이 남아 있다 |
+       *     | `4` | **마감이 없는 항목**(면담·무효 검토 등) |
+       *
+       *     `items[]`는 이미 이 순서로 옵니다 — 밴드가 이른 순, 같은 밴드 안에서는
+       *     마감이 이른 순입니다. **화면이 다시 정렬하지 않아도 됩니다.** 밴드는
+       *                    섹션을 나눠 그릴 때 쓰시면 됩니다.
+       *
+       *     마감(`deadlineAt`)이 유일한 기준입니다. 항목 유형은 보지 않습니다 —
+       *     같은 유형이라도 마감이 지난 것과 남은 것은 급한 정도가 다르고, 유형별
+       *     경중은 화면이 정할 몫이라 서버가 겹쳐 정하지 않습니다.
+       * @example 2
+       */
+      band: number
     }
     /** @description 매니저 대시보드 인박스 */
     NotificationInboxResponse: {
@@ -15457,6 +15698,21 @@ export interface components {
       invalidCount: number
       /** Format: int32 */
       interruptedCount: number
+      /**
+       * Format: int32
+       * @description **명부에는 있는데 이 회차 격자에 자리가 없는 인원**이다(34차 R2). 합계 행에만 채운다.
+       *
+       *     ```
+       *     memberCount = validCount + notAttendedCount + invalidCount
+       *                 + interruptedCount + notInRoundCount
+       *     ```
+       *
+       *     종전에는 이 자리가 없어 `memberCount 5`인데 세 카운터의 합이 4인 상태가 나왔고,
+       *     화면이 차이를 설명할 근거가 없었다. 회차 중간 합류·이탈처럼 **수행 자체가
+       *     만들어지지 않은** 사람이 여기 잡힌다 — 사유를 화면이 지어내지 않아도 되도록
+       *     자리만 낸 것이고, 0이면 명부와 격자가 완전히 맞는다는 뜻이다.
+       */
+      notInRoundCount?: number
       /** @description 반 행에만 채운다. 그 외에는 키가 빠진다 */
       groupShortfall?: boolean
       /**
@@ -18764,7 +19020,7 @@ export interface operations {
           'application/json': components['schemas']['CurriculumVersionResponse']
         }
       }
-      /** @description CURRICULUM_FILE_REQUIRED 업로드할 파일이 없음 · VALIDATION_FAILED title 등 필수값 누락 */
+      /** @description CURRICULUM_FILE_REQUIRED 업로드할 파일이 없음 · CURRICULUM_FILE_TYPE_INVALID 내용이 PDF가 아님 · VALIDATION_FAILED title 등 필수값 누락 */
       400: {
         headers: {
           [name: string]: unknown
@@ -18793,6 +19049,15 @@ export interface operations {
       }
       /** @description CURRICULUM_TITLE_DUPLICATED 같은 기관에 이미 있는 교안 제목 — 제목 입력란에 인라인 오류(22차 R2) */
       409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description CURRICULUM_FILE_TOO_LARGE 앱 상한을 넘는 교안 파일 */
+      413: {
         headers: {
           [name: string]: unknown
         }
@@ -19937,7 +20202,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description LOGIN_ACCOUNT_INACTIVE 정지 계정 · LOGIN_ORG_SUSPENDED 기관 정지 · LOGIN_ORIGIN_NOT_ALLOWED 허용되지 않은 출처 */
+      /** @description LOGIN_ACCOUNT_INACTIVE 정지 계정 · LOGIN_ORG_SUSPENDED 기관 정지 · LOGIN_ORIGIN_NOT_ALLOWED 허용되지 않은 출처 · PASSWORD_EXPIRED 비밀번호 유효기간 만료(정책이 켜진 경우에만) — 재설정 화면으로 안내 */
       403: {
         headers: {
           [name: string]: unknown
@@ -20264,7 +20529,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description LOGIN_ACCOUNT_INACTIVE 정지 계정 · LOGIN_ORG_SUSPENDED 기관 정지 · LOGIN_ORIGIN_NOT_ALLOWED 허용되지 않은 출처 */
+      /** @description LOGIN_ACCOUNT_INACTIVE 정지 계정 · LOGIN_ORG_SUSPENDED 기관 정지 · LOGIN_ORIGIN_NOT_ALLOWED 허용되지 않은 출처 · PASSWORD_EXPIRED 비밀번호 유효기간 만료(정책이 켜진 경우에만) — 재설정 화면으로 안내 */
       403: {
         headers: {
           [name: string]: unknown
@@ -21488,6 +21753,92 @@ export interface operations {
       }
       /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
       403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  updateLoginLock: {
+    parameters: {
+      query?: never
+      header?: {
+        /**
+         * @description 감사 추적용 식별자이며 생략 시 서버가 생성합니다.
+         * @example lock-op-001
+         */
+        'X-Request-Id'?: string
+      }
+      path: {
+        /**
+         * @description 기관 ID. 오퍼레이터는 자기 소속 기관만 허용됩니다.
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        organizationId: string
+        /**
+         * @description 로그인을 차단·해제할 계정의 사용자 ID
+         * @example 123e4567-e89b-12d3-a456-426614174000
+         */
+        userId: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['UpdateLoginLockRequest']
+      }
+    }
+    responses: {
+      /** @description 로그인 차단 설정 또는 해제 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['LoginLockResponse']
+        }
+      }
+      /** @description VALIDATION_FAILED locked 누락·lockedUntil이 과거·reason이 500자 초과 · LOCK_UNTIL_REQUIRED 차단인데 종료 시각이 없음 · LOCK_SELF_NOT_ALLOWED 자기 계정 차단 시도 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 만료됨 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED 오퍼레이터·슈퍼어드민 권한이 아님 · INVITE_CROSS_ORGANIZATION 다른 기관을 지정함 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description LOCK_TARGET_NOT_FOUND 이 기관의 계정이 아님(다른 기관·삭제된 계정도 여기로 묶는다) */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ORGANIZATION_CONTEXT_MISSING 인증 정보에서 기관을 확인할 수 없음 */
+      500: {
         headers: {
           [name: string]: unknown
         }

@@ -313,9 +313,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -461,9 +461,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -973,9 +973,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -1955,9 +1955,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -2261,9 +2261,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -2742,9 +2742,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -2900,9 +2900,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -3167,9 +3167,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -3384,9 +3384,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -3561,9 +3561,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -5256,7 +5256,7 @@
           "Curriculum"
         ],
         "summary": "교안 등록 | ✅ 사용 가능",
-        "description": "PDF 파일을 업로드해 새 교안(material)과 첫 버전(version)을 만든다.\n⚠ 파일은 현재 로컬 디스크에 저장된다 — 나중에 S3 등으로 교체 예정.\n⚠ 등록 직후엔 분석이 안 된 상태다. 섹션·검증개념을 쓰려면 별도로\n`POST /curricula/{materialId}/analyses`를 호출해야 한다.\n\n**요청 (multipart/form-data)**\n- file (필수): PDF 파일\n- title (필수): 교안 제목\n- topic (선택): 주제\n\n**응답 (201)**\n- 생성된 교안 버전 정보(응답 필드는 \"기수 연결 교안 목록\"과 동일)\n\n## 🔴 22차 R2 — 코드 없는 500으로 나가던 두 실패\n\n`50KB짜리도 500`이라는 보고를 따라간 결과 **크기와 무관한 두 실패**가 있었다.\n둘 다 `ApiExceptionHandler`를 거치지 못해 코드 없는 500으로 나갔고, 스펙에도\n없는 상태였다. 이제 각각 코드를 가진다.\n\n| 코드 | 상태 | 언제 |\n|---|---|---|\n| `CURRICULUM_TITLE_DUPLICATED` | 409 | 같은 기관에 **같은 제목**의 교안이 이미 있다 |\n| `CURRICULUM_FILE_STORE_FAILED` | 503 | 저장 경로가 읽기 전용이거나 가득 찼다 |\n\n**제목 중복이 특히 잘 걸린다.** `uq_curriculum_material_org_id_normalized_title`이\n부분 인덱스가 아니라 전역 UNIQUE라 **논리 삭제된 교안도 제목을 계속 점유**한다.\n같은 제목으로 다시 시험하면 파일이 무엇이든 이 충돌이 난다. 화면은 이 코드로\n제목 입력란에 인라인 오류를 띄우면 된다(회차 이름의 `PROJECT_NAME_DUPLICATED`와 같다).\n\n> **Lambda 6MB 상한(요청서 ②)은 이 커밋의 범위가 아니다.** 본문이 base64로\n> 부풀어(×4/3) 실질 4.5MB에서 막히는 것이라 앱이 손댈 수 있는 층이 아니고,\n> presigned S3로 그 층을 비켜가는 것이 답이다 — 계약 변경이라 별건이다.\n",
+        "description": "PDF 파일을 업로드해 새 교안(material)과 첫 버전(version)을 만든다.\n⚠ 파일은 현재 로컬 디스크에 저장된다 — 나중에 S3 등으로 교체 예정.\n⚠ 등록 직후엔 분석이 안 된 상태다. 섹션·검증개념을 쓰려면 별도로\n`POST /curricula/{materialId}/analyses`를 호출해야 한다.\n\n**요청 (multipart/form-data)**\n- file (필수): PDF 파일\n- title (필수): 교안 제목\n- topic (선택): 주제\n\n**응답 (201)**\n- 생성된 교안 버전 정보(응답 필드는 \"기수 연결 교안 목록\"과 동일)\n\n## 🔴 22차 R2 — 코드 없는 500으로 나가던 두 실패\n\n`50KB짜리도 500`이라는 보고를 따라간 결과 **크기와 무관한 두 실패**가 있었다.\n둘 다 `ApiExceptionHandler`를 거치지 못해 코드 없는 500으로 나갔고, 스펙에도\n없는 상태였다. 이제 각각 코드를 가진다.\n\n| 코드 | 상태 | 언제 |\n|---|---|---|\n| `CURRICULUM_TITLE_DUPLICATED` | 409 | 같은 기관에 **같은 제목**의 교안이 이미 있다 |\n| `CURRICULUM_FILE_STORE_FAILED` | 503 | 저장 경로가 읽기 전용이거나 가득 찼다 |\n\n**제목 중복이 특히 잘 걸린다.** `uq_curriculum_material_org_id_normalized_title`이\n부분 인덱스가 아니라 전역 UNIQUE라 **논리 삭제된 교안도 제목을 계속 점유**한다.\n같은 제목으로 다시 시험하면 파일이 무엇이든 이 충돌이 난다. 화면은 이 코드로\n제목 입력란에 인라인 오류를 띄우면 된다(회차 이름의 `PROJECT_NAME_DUPLICATED`와 같다).\n\n> **Lambda 6MB 상한(요청서 ②)은 이 커밋의 범위가 아니다.** 본문이 base64로\n> 부풀어(×4/3) 실질 4.5MB에서 막히는 것이라 앱이 손댈 수 있는 층이 아니고,\n> presigned S3로 그 층을 비켜가는 것이 답이다 — 계약 변경이라 별건이다.\n\n## 파일 형식은 이름이 아니라 내용으로 판정한다\n\n앞 5바이트가 `%PDF-` 인지 **실제로 읽어** 확인한다. 확장자와 `Content-Type` 은\n보내는 쪽이 적는 값이라 근거가 되지 못한다 — 종전에는 `.jpg` 를 `.pdf` 로 이름만\n바꿔도 그대로 저장됐다. 제출물 ZIP 이 원래부터 쓰던 원칙을 교안에 맞춘 것이다.\n\n저장되는 `mimeType` 도 클라이언트 값이 아니라 서버가 확인한 `application/pdf` 다.\n\n| 코드 | 상태 | 언제 |\n|---|---|---|\n| `CURRICULUM_FILE_TYPE_INVALID` | 400 | 내용이 PDF 가 아니다 |\n| `CURRICULUM_FILE_TOO_LARGE` | 413 | 앱 상한(`curriculum.upload.max-bytes`, 기본 50MB)을 넘었다 |\n\n크기 상한을 앱에도 두는 이유는 **톰캣 multipart 상한(60MB)에서 먼저 걸리면 도메인\n코드가 붙지 않기 때문**이다. 그 요청은 컨트롤러에 닿지 못해 코드 없는 500 이 된다.\n",
         "operationId": "registerCurriculum",
         "parameters": [
           {
@@ -5309,7 +5309,7 @@
             }
           },
           "400": {
-            "description": "CURRICULUM_FILE_REQUIRED 업로드할 파일이 없음 · VALIDATION_FAILED title 등 필수값 누락",
+            "description": "CURRICULUM_FILE_REQUIRED 업로드할 파일이 없음 · CURRICULUM_FILE_TYPE_INVALID 내용이 PDF가 아님 · VALIDATION_FAILED title 등 필수값 누락",
             "content": {
               "application/json": {
                 "schema": {
@@ -5326,6 +5326,16 @@
                       "message": "업로드할 파일이 없습니다."
                     }
                   },
+                  "CURRICULUM_FILE_TYPE_INVALID": {
+                    "summary": "CURRICULUM_FILE_TYPE_INVALID",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 400,
+                      "error": "BAD_REQUEST",
+                      "code": "CURRICULUM_FILE_TYPE_INVALID",
+                      "message": "PDF 파일만 등록할 수 있습니다."
+                    }
+                  },
                   "VALIDATION_FAILED": {
                     "summary": "VALIDATION_FAILED",
                     "value": {
@@ -5336,9 +5346,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -5407,6 +5417,28 @@
                       "error": "CONFLICT",
                       "code": "CURRICULUM_TITLE_DUPLICATED",
                       "message": "이미 존재하는 교안 제목입니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "CURRICULUM_FILE_TOO_LARGE 앱 상한을 넘는 교안 파일",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "CURRICULUM_FILE_TOO_LARGE": {
+                    "summary": "CURRICULUM_FILE_TOO_LARGE",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 413,
+                      "error": "CONTENT_TOO_LARGE",
+                      "code": "CURRICULUM_FILE_TOO_LARGE",
+                      "message": "허용 크기를 넘는 파일입니다."
                     }
                   }
                 }
@@ -5661,9 +5693,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -5792,9 +5824,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -6087,9 +6119,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -6639,9 +6671,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -6855,9 +6887,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -7045,9 +7077,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -7270,9 +7302,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -7413,9 +7445,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -7568,9 +7600,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -7871,9 +7903,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -8245,7 +8277,7 @@
             }
           },
           "403": {
-            "description": "LOGIN_ACCOUNT_INACTIVE 정지 계정 · LOGIN_ORG_SUSPENDED 기관 정지 · LOGIN_ORIGIN_NOT_ALLOWED 허용되지 않은 출처",
+            "description": "LOGIN_ACCOUNT_INACTIVE 정지 계정 · LOGIN_ORG_SUSPENDED 기관 정지 · LOGIN_ORIGIN_NOT_ALLOWED 허용되지 않은 출처 · PASSWORD_EXPIRED 비밀번호 유효기간 만료(정책이 켜진 경우에만) — 재설정 화면으로 안내",
             "content": {
               "application/json": {
                 "schema": {
@@ -8280,6 +8312,16 @@
                       "error": "FORBIDDEN",
                       "code": "LOGIN_ORIGIN_NOT_ALLOWED",
                       "message": "허용되지 않은 요청 출처입니다."
+                    }
+                  },
+                  "PASSWORD_EXPIRED": {
+                    "summary": "PASSWORD_EXPIRED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 403,
+                      "error": "FORBIDDEN",
+                      "code": "PASSWORD_EXPIRED",
+                      "message": "비밀번호 유효기간이 지났습니다. 비밀번호를 재설정해 주세요."
                     }
                   }
                 }
@@ -8493,9 +8535,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -8577,9 +8619,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -8970,9 +9012,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -8992,7 +9034,7 @@
             }
           },
           "403": {
-            "description": "LOGIN_ACCOUNT_INACTIVE 정지 계정 · LOGIN_ORG_SUSPENDED 기관 정지 · LOGIN_ORIGIN_NOT_ALLOWED 허용되지 않은 출처",
+            "description": "LOGIN_ACCOUNT_INACTIVE 정지 계정 · LOGIN_ORG_SUSPENDED 기관 정지 · LOGIN_ORIGIN_NOT_ALLOWED 허용되지 않은 출처 · PASSWORD_EXPIRED 비밀번호 유효기간 만료(정책이 켜진 경우에만) — 재설정 화면으로 안내",
             "content": {
               "application/json": {
                 "schema": {
@@ -9027,6 +9069,16 @@
                       "error": "FORBIDDEN",
                       "code": "LOGIN_ORIGIN_NOT_ALLOWED",
                       "message": "허용되지 않은 요청 출처입니다."
+                    }
+                  },
+                  "PASSWORD_EXPIRED": {
+                    "summary": "PASSWORD_EXPIRED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 403,
+                      "error": "FORBIDDEN",
+                      "code": "PASSWORD_EXPIRED",
+                      "message": "비밀번호 유효기간이 지났습니다. 비밀번호를 재설정해 주세요."
                     }
                   }
                 }
@@ -9262,9 +9314,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -9805,9 +9857,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -10046,9 +10098,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -10246,9 +10298,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -10656,9 +10708,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -10933,9 +10985,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -11165,9 +11217,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -11816,9 +11868,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -12108,6 +12160,225 @@
         "x-readiness": "available"
       }
     },
+    "/api/v0/members/organizations/{organizationId}/users/{userId}/login-lock": {
+      "patch": {
+        "tags": [
+          "Member"
+        ],
+        "summary": "계정 로그인 차단 / 해제 | ✅ 사용 가능",
+        "description": "계정 탈취가 의심되거나 확인이 필요할 때 **그 계정의 로그인을 일정 시각까지 막는다.**\n\n## 계정 정지와 무엇이 다른가\n\n| | 계정 정지 (`PATCH .../managers/{managerId}/status`) | 로그인 차단 (이 API) |\n|---|---|---|\n| 표현 | `status = INACTIVE` | `login_blocked_until` **시각** |\n| 해제 | 사람이 다시 조작해야 한다 | **시각이 지나면 저절로 풀린다** |\n| 이력 | 계정 원장에 정지 사유가 박힌다 | 감사 로그에만 남는다 |\n| 쓰는 자리 | 퇴사·계약 종료처럼 되돌리지 않을 변화 | **지금 몇 시간** 막아야 할 때 |\n\n정지밖에 없으면 \"일단 막자\"에 정지를 쓰게 되고, 그러면 퇴사와 같은 흔적이 계정에 남는다.\n\n## 요청\n\n**경로 변수**\n\n| 변수 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `organizationId` | **필수** | UUID | 기관 식별자. 오퍼레이터는 자기 기관만 허용된다(403) |\n| `userId` | **필수** | UUID | 대상 계정. **역할을 가리지 않는다** — 교육생·매니저·오퍼레이터 모두 가능 |\n\n**JSON 본문**\n\n| 필드 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `locked` | **필수** | boolean | `true` 차단 / `false` 해제 |\n| `lockedUntil` | 조건부 | datetime | 차단이 끝나는 시각. **`locked=true`면 필수**, `false`면 무시된다. 과거 시각은 400 |\n| `reason` | 선택 | string | 조치 사유(최대 500자). 감사 로그에 남는다 |\n\n**해제 의사를 명시적으로 받는다.** 시각만 받고 \"비어 있으면 해제\"로 정하면\n본문을 빠뜨린 요청이 조용히 차단을 푼다 — JSON에서 *키를 안 보냄*과 *null을 보냄*은\n서버에 같은 값으로 도착해 구분할 수 없기 때문이다.\n보안 조치를 되돌리는 동작이 실수로 도달할 수 있는 기본값이면 안 된다.\n\n**기한 없는 차단은 만들 수 없다**(400 `LOCK_UNTIL_REQUIRED`).\n시각이 지나면 저절로 풀린다는 것이 이 방식의 요점이고, 종료 시각이 비면\n아무도 풀어 주지 않는 한 영구 차단이 된다 — 그건 계정 정지가 할 일이다.\n\n**헤더 (선택)** — `X-Request-Id: {문자열}` 감사 추적용. 생략하면 서버가 만든다.\n\n## 차단은 세션까지 끊는다\n\n`login_blocked_until`은 **새 로그인만** 막는다. 이미 로그인해 둔 창은 리프레시 토큰으로\n계속 연장되므로, 토큰을 함께 끊지 않으면 *\"차단했는데 그 사람은 계속 쓰고 있는\"* 상태가 된다.\n탈취 의심 상황에서 정확히 막아야 하는 것이 그 세션이다.\n\n그래서 차단 시 **그 계정의 활성 리프레시 토큰을 같은 트랜잭션에서 전부 폐기**하고\n(`revoked_reason = ADMIN_REVOKED`, `revoked_by` = 조치자) 끊은 개수를 `revokedSessionCount`로 돌려준다.\n대상은 다음 요청에서 401을 받고 로그인 화면으로 가며, 거기서 다시 429 `LOGIN_TEMPORARILY_BLOCKED`를 만난다.\n\n**해제할 때는 토큰을 건드리지 않는다** — 이미 끊어진 세션은 되살릴 수도, 되살릴 이유도 없다.\n대신 `failed_login_count`를 0으로 되돌린다. 카운터를 남겨 두면 풀어 준 계정이\n다음 실패 한 번에 다시 막혀 \"해제했다\"는 말이 사실이 아니게 된다.\n\n## 사유는 감사 로그에 남는다\n\n`app_user`에는 차단 사유 컬럼이 없고 이 하나를 위해 테이블을 늘리지 않는다\n(`inactivated_reason`은 계정 정지용이라 여기 쓰면 정지와 차단이 뒤섞인다).\n`audit_log`에 `actor_type=USER`로 **누가·언제·누구를·왜** 막았는지 남으며,\n사유는 `after_snapshot`에 들어간다. 이력이 없으면 나중에 남는 것은 시각 하나뿐이고,\n그 값은 연속 실패 자동 차단과 구분되지 않는다.\n\n## 자기 계정은 차단할 수 없다\n\n400 `LOCK_SELF_NOT_ALLOWED`. 기관에 오퍼레이터가 한 명뿐인데 자기를 막으면\n**풀어 줄 사람이 없어진다**(해제도 이 권한이 필요하다).\n마지막 활성 오퍼레이터를 정지하지 못하게 막는 `LAST_OPERATOR`와 같은 종류의 방어다.\n**해제는 자기 계정에도 허용된다** — 아무도 잠기게 하지 않기 때문이다.\n",
+        "operationId": "updateLoginLock",
+        "parameters": [
+          {
+            "name": "organizationId",
+            "in": "path",
+            "description": "기관 ID. 오퍼레이터는 자기 소속 기관만 허용됩니다.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "로그인을 차단·해제할 계정의 사용자 ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "example": "123e4567-e89b-12d3-a456-426614174000"
+          },
+          {
+            "name": "X-Request-Id",
+            "in": "header",
+            "description": "감사 추적용 식별자이며 생략 시 서버가 생성합니다.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "example": "lock-op-001"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateLoginLockRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "로그인 차단 설정 또는 해제 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginLockResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_FAILED locked 누락·lockedUntil이 과거·reason이 500자 초과 · LOCK_UNTIL_REQUIRED 차단인데 종료 시각이 없음 · LOCK_SELF_NOT_ALLOWED 자기 계정 차단 시도",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "VALIDATION_FAILED": {
+                    "summary": "VALIDATION_FAILED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 400,
+                      "error": "BAD_REQUEST",
+                      "code": "VALIDATION_FAILED",
+                      "message": "요청 값이 올바르지 않습니다.",
+                      "fieldErrors": [
+                        {
+                          "field": "answerText",
+                          "message": "must not be blank",
+                          "code": "NOT_BLANK"
+                        }
+                      ]
+                    }
+                  },
+                  "LOCK_UNTIL_REQUIRED": {
+                    "summary": "LOCK_UNTIL_REQUIRED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 400,
+                      "error": "BAD_REQUEST",
+                      "code": "LOCK_UNTIL_REQUIRED",
+                      "message": "차단 종료 시각을 지정해야 합니다."
+                    }
+                  },
+                  "LOCK_SELF_NOT_ALLOWED": {
+                    "summary": "LOCK_SELF_NOT_ALLOWED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 400,
+                      "error": "BAD_REQUEST",
+                      "code": "LOCK_SELF_NOT_ALLOWED",
+                      "message": "자기 계정의 로그인은 차단할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED 액세스 토큰이 없거나 만료됨",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 401,
+                      "error": "Unauthenticated",
+                      "code": "UNAUTHENTICATED",
+                      "message": "로그인이 필요합니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED 오퍼레이터·슈퍼어드민 권한이 아님 · INVITE_CROSS_ORGANIZATION 다른 기관을 지정함",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 403,
+                      "error": "Access Denied",
+                      "code": "ACCESS_DENIED",
+                      "message": "접근 권한이 없습니다."
+                    }
+                  },
+                  "INVITE_CROSS_ORGANIZATION": {
+                    "summary": "INVITE_CROSS_ORGANIZATION",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 403,
+                      "error": "FORBIDDEN",
+                      "code": "INVITE_CROSS_ORGANIZATION",
+                      "message": "다른 기관에는 초대할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "LOCK_TARGET_NOT_FOUND 이 기관의 계정이 아님(다른 기관·삭제된 계정도 여기로 묶는다)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "LOCK_TARGET_NOT_FOUND": {
+                    "summary": "LOCK_TARGET_NOT_FOUND",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 404,
+                      "error": "NOT_FOUND",
+                      "code": "LOCK_TARGET_NOT_FOUND",
+                      "message": "이 기관의 계정을 찾을 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "ORGANIZATION_CONTEXT_MISSING 인증 정보에서 기관을 확인할 수 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ORGANIZATION_CONTEXT_MISSING": {
+                    "summary": "ORGANIZATION_CONTEXT_MISSING",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 500,
+                      "error": "INTERNAL_SERVER_ERROR",
+                      "code": "ORGANIZATION_CONTEXT_MISSING",
+                      "message": "기관 컨텍스트를 확인할 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-readiness": "available"
+      }
+    },
     "/api/v0/members/organizations/{organizationId}/managers/{managerId}/status": {
       "patch": {
         "tags": [
@@ -12179,9 +12450,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -12860,9 +13131,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -13060,9 +13331,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -13358,9 +13629,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -13537,9 +13808,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -13693,9 +13964,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -13849,9 +14120,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -14755,9 +15026,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -14892,9 +15163,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -15305,9 +15576,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -16429,9 +16700,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -17034,9 +17305,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -17945,7 +18216,7 @@
           "Consent"
         ],
         "summary": "약관 목록 조회 | ✅ 사용 가능",
-        "description": "가입 화면이 표시할 동의 항목을 역할별로 받아온다. 인증 없이 호출한다.\n\n**요청**\n- role (선택, 기본 MANAGER): `SUPER_ADMIN` · `OPERATOR` · `MANAGER` · `TRAINEE`\n\n**응답**\n- 오퍼레이터·매니저·슈퍼어드민: 필수 2건\n- 교육생: 필수 4건 + 선택 1건(`ANONYMIZED_DATA_USAGE`)\n- requestField: 이 항목의 동의 여부를 후속 가입 요청(`/auth/manager-signup`,\n  `/auth/trainee-activation`)에서 실어 보낼 **필드명**이다. 코드-필드 대응표를\n  화면이 따로 들고 있지 않아도 되도록 서버가 내려준다\n- policyVersion: 표시한 동의 문서 버전이며 동의 기록에 그대로 저장된다\n\n**required=true 항목을 false로 제출하면 가입이 400으로 거부된다.** 화면은 필수 항목이\n모두 체크되기 전까지 제출 버튼을 막아야 한다. 교육생의 익명 활용 동의만 거부해도 가입된다.\n\n항목 구성은 서버가 정하므로 화면에 항목을 하드코딩하지 않는다.\n",
+        "description": "가입 화면이 표시할 동의 항목을 역할별로 받아온다. 인증 없이 호출한다.\n\n**요청**\n- role (선택, 기본 MANAGER): `SUPER_ADMIN` · `OPERATOR` · `MANAGER` · `TRAINEE`\n\n**응답**\n- 오퍼레이터·매니저·슈퍼어드민: 필수 2건\n- 교육생: 필수 4건 + 선택 1건(`ANONYMIZED_DATA_USAGE`)\n- requestField: 이 항목의 동의 여부를 후속 가입 요청(`/auth/manager-signup`,\n  `/auth/trainee-activation`)에서 실어 보낼 **필드명**이다. 코드-필드 대응표를\n  화면이 따로 들고 있지 않아도 되도록 서버가 내려준다\n- policyVersion: 표시한 동의 문서 버전이며 동의 기록에 그대로 저장된다\n- **body**: 동의 문서 **본문**(Markdown). 체크박스 옆 한 줄(`description`)만 보여 주고\n  동의를 받으면 이용자가 무엇에 동의했는지 알 수 없다. 화면은 `전문 보기`에 이 값을 렌더링한다\n- **documentHash**: 본문의 SHA-256(hex 64자). 동의 기록의 `evidence_hash` 재료로 들어가\n  **\"이 사용자가 어떤 문안에 동의했는가\"**를 나중에 증명할 수 있게 한다. 문안이 개정되면\n  이 값이 달라지므로, 화면이 캐시한 본문이 최신인지 판별하는 데도 쓸 수 있다\n\n**required=true 항목을 false로 제출하면 가입이 400으로 거부된다.** 화면은 필수 항목이\n모두 체크되기 전까지 제출 버튼을 막아야 한다. 교육생의 익명 활용 동의만 거부해도 가입된다.\n\n항목 구성은 서버가 정하므로 화면에 항목을 하드코딩하지 않는다.\n",
         "operationId": "findConsents",
         "parameters": [
           {
@@ -17991,9 +18262,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -18272,9 +18543,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -18639,7 +18910,7 @@
           "Notification"
         ],
         "summary": "매니저 인박스 조회 | ✅ 사용 가능",
-        "description": "매니저 대시보드 인박스를 조회한다. 제출 누락·분석 실패·응시 미시작 같은 **조치가 필요한\n항목**과, 무효 응시 검토·면담 대기·독촉 발송 이력을 **한 목록**으로 합쳐 마감 임박 순으로\n보여준다.\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `cohortId` | **필수** | UUID | 조회할 기수 |\n\n## 요청 (쿼리 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `projectId` | 선택 | UUID | 프로젝트로 좁힌다. 생략하면 담당 반 전체 |\n| `assessmentRoundId` | 선택 | UUID | 회차로 좁힌다 |\n| `since` | 선택 | datetime (ISO 8601) | 이 시각 이후 발생한 항목만. 생략하면 기간 제한 없음 |\n| `includeResolved` | 선택 | boolean | `true`면 이미 해소된 항목도 포함. 기본 `false`(미해소만) |\n| `cursor` | 선택 | string | 다음 페이지 커서. 이전 응답의 `nextCursor`를 그대로 넣는다 |\n| `size` | 선택 | int | 페이지 크기. 1~100, 기본 20 |\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `items[]` | array | 인박스 항목 목록. 마감 임박 순(마감 없는 항목은 뒤로) |\n| `nextCursor` | string? | 다음 페이지 커서. 더 없으면 `null` |\n\n### items[] 각 항목\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `itemId` | string | 항목 식별자. 원천에 따라 형식이 다르다(`ATTENDANCE:...`·`INVALID:...`·`INTERVIEW:...`·`REMINDER:...`) |\n| `itemType` | string | 항목 유형. `SUBMISSION_MISSING`·`ANALYSIS_FAILED`·`ASSESSMENT_NOT_STARTED`·`REVIEW`·`ASSESSMENT`·`INVALID_ATTEMPT`·`INTERVIEW`·`REMINDER` |\n| `projectId` / `assessmentRoundId` / `classroomId` / `teamId` / `traineeId` | UUID | 이 항목이 걸린 대상 |\n| `subject` | string | 대상 이름(교육생명 또는 팀명) |\n| `sourceStatus` | string | 원천의 현재 상태 |\n| `reasonCode` | string? | 사유 코드. 원천마다 의미가 다르다 |\n| `evidence` | string | 화면에 그대로 보여줄 근거 요약 문구 |\n| `deadlineAt` | timestamp? | 정렬 기준 마감 시각. 없으면 `null`(정렬에서 뒤로 밀림) |\n| `occurredAt` | timestamp | 발생/갱신 시각 |\n| `resolved` | boolean | 이미 해소됐는지. `includeResolved=false`면 이 값이 `true`인 항목은 안 옴 |\n| `reminderEligible` | boolean | 지금 독촉 발송 대상이 될 수 있는지. `true`인 항목만 `POST /reminders`로 보낼 수 있다 |\n\n## 정렬 규칙\n\n**마감이 있는 항목이 먼저**, 그 안에서 마감이 이른 순이다. 마감이 없는 항목(면담 등)은\n뒤로 밀리고 그 안에서는 최근 발생 순이다.\n\n## 네 가지 원천을 하나로 합친다\n\n`assessment_round_attendance`(제출·분석·응시) · `manager_invalid_attempt_review_view`(무효\n응시 검토) · `manager_interview_list_view`(면담 대기) · `reminder_dispatch`(독촉 이력)\n네 원천을 `UNION ALL`로 합쳐 하나의 인박스로 낸다. 담당 반(`manager_assignment`) 기준으로\n필터링되므로 다른 매니저의 반은 보이지 않는다.\n\n## 커서 페이지네이션\n\n`cursor`는 이전 페이지 마지막 항목의 `itemId`를 인코딩한 값이다. 직접 만들지 말고\n`nextCursor`를 그대로 다음 요청에 넣어야 한다 — 잘못된 커서를 보내면 400이다.\n",
+        "description": "매니저 대시보드 인박스를 조회한다. 제출 누락·분석 실패·응시 미시작 같은 **조치가 필요한\n항목**과, 무효 응시 검토·면담 대기·독촉 발송 이력을 **한 목록**으로 합쳐 마감 임박 순으로\n보여준다.\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `cohortId` | **필수** | UUID | 조회할 기수 |\n\n## 요청 (쿼리 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `projectId` | 선택 | UUID | 프로젝트로 좁힌다. 생략하면 담당 반 전체 |\n| `assessmentRoundId` | 선택 | UUID | 회차로 좁힌다 |\n| `since` | 선택 | datetime (ISO 8601) | 이 시각 이후 발생한 항목만. 생략하면 기간 제한 없음 |\n| `includeResolved` | 선택 | boolean | `true`면 이미 해소된 항목도 포함. 기본 `false`(미해소만) |\n| `cursor` | 선택 | string | 다음 페이지 커서. 이전 응답의 `nextCursor`를 그대로 넣는다 |\n| `size` | 선택 | int | 페이지 크기. 1~100, 기본 20 |\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `items[]` | array | 인박스 항목 목록. 마감 임박 순(마감 없는 항목은 뒤로) |\n| `nextCursor` | string? | 다음 페이지 커서. 더 없으면 `null` |\n\n### items[] 각 항목\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `itemId` | string | 항목 식별자. 원천에 따라 형식이 다르다(`ATTENDANCE:...`·`INVALID:...`·`INTERVIEW:...`·`REMINDER:...`) |\n| `itemType` | string | 항목 유형. `SUBMISSION_MISSING`·`ANALYSIS_FAILED`·`ASSESSMENT_NOT_STARTED`·`REVIEW`·`ASSESSMENT`·`INVALID_ATTEMPT`·`INTERVIEW`·`REMINDER` |\n| `projectId` / `assessmentRoundId` / `classroomId` / `teamId` / `traineeId` | UUID | 이 항목이 걸린 대상 |\n| `subject` | string | 대상 이름(교육생명 또는 팀명) |\n| `sourceStatus` | string | 원천의 현재 상태 |\n| `reasonCode` | string? | 사유 코드. 원천마다 의미가 다르다 |\n| `evidence` | string | 화면에 그대로 보여줄 근거 요약 문구 |\n| `deadlineAt` | timestamp? | 정렬 기준 마감 시각. 없으면 `null`(정렬에서 뒤로 밀림) |\n| `occurredAt` | timestamp | 발생/갱신 시각 |\n| `resolved` | boolean | 이미 해소됐는지. `includeResolved=false`면 이 값이 `true`인 항목은 안 옴 |\n| `reminderEligible` | boolean | 지금 독촉 발송 대상이 될 수 있는지. `true`인 항목만 `POST /reminders`로 보낼 수 있다 |\n\n## 정렬 규칙 — `band`가 1차 기준입니다 (34차 R9)\n\n| `band` | 뜻 |\n|---|---|\n| `1` | 마감이 **이미 지났다** |\n| `2` | **오늘 안에** 마감 |\n| `3` | 마감이 남아 있다 |\n| `4` | **마감이 없는 항목**(면담·무효 검토 등) |\n\n`items[]`는 **밴드가 이른 순**으로 오고, 같은 밴드 안에서는 유형 우선순위 →\n마감 이른 순 → 최근 발생 순입니다. **화면이 다시 정렬하지 않아도 됩니다** —\n밴드는 섹션을 나눠 그릴 때 쓰시면 됩니다.\n\n「오늘 안」의 경계는 절대 24시간이 아니라 **날짜**입니다. 매니저는 하루를 단위로\n일하므로 오후에 열든 오전에 열든 같은 항목이 같은 밴드에 있어야 합니다.\n\n## 네 가지 원천을 하나로 합친다\n\n`assessment_round_attendance`(제출·분석·응시) · `manager_invalid_attempt_review_view`(무효\n응시 검토) · `manager_interview_list_view`(면담 대기) · `reminder_dispatch`(독촉 이력)\n네 원천을 `UNION ALL`로 합쳐 하나의 인박스로 낸다. 담당 반(`manager_assignment`) 기준으로\n필터링되므로 다른 매니저의 반은 보이지 않는다.\n\n## 커서 페이지네이션\n\n`cursor`는 이전 페이지 마지막 항목의 `itemId`를 인코딩한 값이다. 직접 만들지 말고\n`nextCursor`를 그대로 다음 요청에 넣어야 한다 — 잘못된 커서를 보내면 400이다.\n",
         "operationId": "findManagerNotificationInbox",
         "parameters": [
           {
@@ -20613,9 +20884,9 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
+                          "field": "answerText",
                           "message": "must not be blank",
-                          "field": "answerText"
+                          "code": "NOT_BLANK"
                         }
                       ]
                     }
@@ -24278,19 +24549,27 @@
           },
           "type": {
             "type": "string",
-            "description": "UNSUBMITTED_TEAMS(제출 마감 지남·미제출) · ANALYSIS_FAILED_TEAMS(제출했으나 분석 실패)",
+            "description": "`UNSUBMITTED_TEAMS` 제출 마감 지남·미제출 · `ANALYSIS_FAILED_TEAMS` 제출했으나 분석 실패 ·\n**`INTERVIEW_BACKLOG` 면담이 아직 안 끝난 인원**(34차 R7①)",
             "example": "UNSUBMITTED_TEAMS"
           },
           "teamCount": {
             "type": "integer",
             "format": "int32",
-            "description": "해당 유형에 걸린 팀 수"
+            "description": "해당 유형에 걸린 **팀 수**. 단, `INTERVIEW_BACKLOG`는 **사람 수**다.\n\n앞의 둘은 팀 단위 조치이고 면담은 사람 단위인데, 화면이 이미 이 자리를\n「숫자 + 단위」로 그리고 있어 필드를 새로 내지 않고 같은 자리를 씁니다.\n**단위는 `type`으로 갈라 주세요.**"
+          },
+          "teams": {
+            "type": "array",
+            "description": "해당 유형에 걸린 팀 목록. 36차 R2 — teamCount만으로는 어느 팀인지 알 수 없어서 붙였다.",
+            "items": {
+              "$ref": "#/components/schemas/TeamRef"
+            }
           }
         },
         "required": [
           "classId",
           "className",
           "teamCount",
+          "teams",
           "type"
         ]
       },
@@ -24440,9 +24719,9 @@
           },
           "curriculumNames": {
             "type": "array",
-            "description": "연결된 교안 파일명. 순서는 연결 순서(`sequence_no`)다.\n\n`curriculumCount`와 길이가 <b>다를 수 있다</b> — 개수는 연결 행을 그대로 세지만\n이름은 못 찾은 항목이 빠진다. 개수 표시에는 `curriculumCount`를 쓸 것.",
+            "description": "연결된 교안 표시명 — **`파일명 v판번호`**. 순서는 연결 순서(`sequence_no`)다.\n\n`curriculumCount`와 길이가 <b>다를 수 있다</b> — 개수는 연결 행을 그대로 세지만\n이름은 못 찾은 항목이 빠진다. 개수 표시에는 `curriculumCount`를 쓸 것.\n\n### 34차 R7② — 뒤의 `v1`이 판번호다\n\n종전에는 파일명만 실었다. 그러면 **같은 교안의 v1·v2가 한 기수에 섞일 때 표에서\n구분되지 않아** 두 행의 「교안」 열이 같은 글자가 됐다. `curriculum_version.version_no`를\n뒤에 붙인다.\n\n파일명 자체에 `_v1`이 들어 있어 `spring_backend_v1.pdf v1`처럼 겹쳐 보일 수 있는데\n**둘은 다른 축**이다 — 앞은 업로더가 붙인 글자이고 뒤가 원장의 판번호다. 파일명을\n파싱해 지우면 `v10`·`_v2_final` 같은 이름에서 틀리므로 서버는 지우지 않는다.",
             "example": [
-              "spring_backend_v1.pdf"
+              "spring_backend_v1.pdf v1"
             ],
             "items": {
               "type": "string"
@@ -24506,6 +24785,23 @@
           "PLANNED",
           "RUNNING",
           "CLOSED"
+        ]
+      },
+      "TeamRef": {
+        "type": "object",
+        "description": "조치가 필요한 팀 한 건",
+        "properties": {
+          "teamId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "teamName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "teamId",
+          "teamName"
         ]
       },
       "SendReminderRequest": {
@@ -25682,6 +25978,75 @@
           "organizationStatus",
           "policyVersion",
           "storageLimitBytes"
+        ]
+      },
+      "UpdateLoginLockRequest": {
+        "type": "object",
+        "description": "계정의 로그인 차단 설정·해제 요청",
+        "properties": {
+          "locked": {
+            "type": "boolean",
+            "description": "**필수.** `true`면 차단, `false`면 해제다.\n해제가 실수로 도달하지 않도록 의사를 명시적으로 받는다 —\n본문을 빠뜨린 요청이 계정 차단을 푸는 일이 없어야 한다.",
+            "example": true
+          },
+          "lockedUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "차단이 끝나는 시각(UTC). `locked=true`면 **필수**이고, `locked=false`면 무시된다.\n상태가 아니라 시각이므로 이 시각이 지나면 별도 조작 없이 차단이 풀린다.\n과거 시각은 400으로 거절한다 — 걸자마자 풀리는 차단은 건 적이 없는 것과 같다.",
+            "example": "2026-08-18T09:00:00Z"
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "조치 사유. `app_user`에 사유 컬럼이 없어 **감사 로그**(`audit_log.after_snapshot`)에 남는다.\n계정 정지 사유(`inactivated_reason`)와는 다른 자리다 — 정지와 차단은 다른 조작이다.",
+            "example": "비정상 로그인 시도 확인, 본인 확인 시까지 차단",
+            "maxLength": 500,
+            "minLength": 0
+          }
+        },
+        "required": [
+          "locked"
+        ]
+      },
+      "LoginLockResponse": {
+        "type": "object",
+        "description": "로그인 차단 설정·해제 결과",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "조치 대상 계정"
+          },
+          "lockedUntil": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "차단이 끝나는 시각. 해제했으면 값이 비어 있다.",
+            "example": "2026-08-18T09:00:00Z"
+          },
+          "locked": {
+            "type": "boolean",
+            "description": "지금 차단 상태인지. 해제했으면 false다."
+          },
+          "revokedSessionCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "이 조치로 끊은 로그인 세션(리프레시 토큰) 수. **해제일 때는 항상 0**이다.\n차단은 새 로그인만 막으므로, 이미 열려 있는 세션을 함께 끊어야 실제로 막힌다.",
+            "example": 2
+          }
+        },
+        "required": [
+          "locked",
+          "lockedUntil",
+          "revokedSessionCount",
+          "userId"
         ]
       },
       "UpdateManagerStatusRequest": {
@@ -30691,6 +31056,17 @@
             "description": "**응시를 시작한 인원.** 재분석 경고의 문턱이다 — 0이면 아직 아무도 응시하지 않아\n다시 분석해도 발행된 리포트가 어긋나지 않는다.\n\n완료한 인원이 아니라 **시작한 인원**이다. 완료만 세면 진행 중인 응시가 빠져\n이미 문항을 받은 학생이 있는 회차를 경고 없이 지나가게 된다.\n",
             "example": 24
           },
+          "eligibleCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "**그 회차의 대상 인원.** 화면 `58 / 71`의 분모다(34차 R16③).\n\n종전에는 이 값이 없어 화면이 분자만 적었다 — 「58명」이 몇 명 중 58명인지\n말할 수 없었다. `attendedCount`와 **같은 질의**에서 오므로 분자가 분모보다\n커지는 순간이 없다.\n",
+            "example": 71
+          },
+          "reportPublished": {
+            "type": "boolean",
+            "description": "**회차 리포트가 발행됐는지**(34차 R16④).\n\n`true`면 재분석이 **이미 나간 리포트와 어긋난다** — 경고의 무게가 다르다.\n`attendedCount`가 0이 아니어도 아직 발행 전이면 되돌릴 여지가 있다.\n",
+            "example": true
+          },
           "conceptNames": {
             "type": "array",
             "description": "이 회차가 지금 쓰고 있는 확정 검증 개념 이름. 재분석하면 교안 위치가 어긋날 개념들이다. 확정 전이면 빈 배열",
@@ -30704,8 +31080,10 @@
           "cohortId",
           "cohortName",
           "conceptNames",
+          "eligibleCount",
           "name",
           "projectId",
+          "reportPublished",
           "roundLabel"
         ]
       },
@@ -30725,7 +31103,16 @@
           },
           "description": {
             "type": "string",
-            "description": "항목 설명 문구"
+            "description": "체크박스 옆에 붙이는 한 줄 요약이며 약관 본문이 아니다"
+          },
+          "body": {
+            "type": "string",
+            "description": "동의 문서 본문(Markdown). 화면은 이 값을 `전문 보기`에 그대로 렌더링한다.\n한 줄 요약(description)만 보여 주고 동의를 받으면 이용자가 무엇에 동의했는지 알 수 없다."
+          },
+          "documentHash": {
+            "type": "string",
+            "description": "본문의 SHA-256(hex 64자). 이 값이 동의 기록의 `evidence_hash` 재료로 들어가\n\"이 사용자가 어떤 문안에 동의했는가\"를 나중에 증명할 수 있게 한다.\n문안에서 한 글자만 바뀌어도 값이 달라진다.",
+            "example": "3b1f0c9d2a4e6b8d0f2a4c6e8b0d2f4a6c8e0b2d4f6a8c0e2b4d6f8a0c2e4b6d"
           },
           "requestField": {
             "type": "string",
@@ -30744,8 +31131,10 @@
           }
         },
         "required": [
+          "body",
           "code",
           "description",
+          "documentHash",
           "policyVersion",
           "requestField",
           "required",
@@ -31890,10 +32279,17 @@
           "reminderEligible": {
             "type": "boolean",
             "description": "지금 독촉을 보낼 수 있는 항목인가. **`resolved`의 반대가 아니다** —\n해소되지 않았어도 독촉 대상이 아닌 항목(무효 검토·인터뷰)이 있어 둘을 따로 읽어야 한다."
+          },
+          "band": {
+            "type": "integer",
+            "format": "int32",
+            "description": "**급한 정도. 1이 가장 급하다**(34차 R9).\n\n| 밴드 | 뜻 |\n|---|---|\n| `1` | 마감이 **이미 지났다** |\n| `2` | **오늘 안에** 마감 |\n| `3` | 마감이 남아 있다 |\n| `4` | **마감이 없는 항목**(면담·무효 검토 등) |\n\n`items[]`는 이미 이 순서로 옵니다 — 밴드가 이른 순, 같은 밴드 안에서는\n마감이 이른 순입니다. **화면이 다시 정렬하지 않아도 됩니다.** 밴드는\n               섹션을 나눠 그릴 때 쓰시면 됩니다.\n\n마감(`deadlineAt`)이 유일한 기준입니다. 항목 유형은 보지 않습니다 —\n같은 유형이라도 마감이 지난 것과 남은 것은 급한 정도가 다르고, 유형별\n경중은 화면이 정할 몫이라 서버가 겹쳐 정하지 않습니다.",
+            "example": 2
           }
         },
         "required": [
           "assessmentRoundId",
+          "band",
           "classroomId",
           "deadlineAt",
           "evidence",
@@ -32562,6 +32958,11 @@
           "interruptedCount": {
             "type": "integer",
             "format": "int32"
+          },
+          "notInRoundCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "**명부에는 있는데 이 회차 격자에 자리가 없는 인원**이다(34차 R2). 합계 행에만 채운다.\n\n```\nmemberCount = validCount + notAttendedCount + invalidCount\n            + interruptedCount + notInRoundCount\n```\n\n종전에는 이 자리가 없어 `memberCount 5`인데 세 카운터의 합이 4인 상태가 나왔고,\n화면이 차이를 설명할 근거가 없었다. 회차 중간 합류·이탈처럼 **수행 자체가\n만들어지지 않은** 사람이 여기 잡힌다 — 사유를 화면이 지어내지 않아도 되도록\n자리만 낸 것이고, 0이면 명부와 격자가 완전히 맞는다는 뜻이다."
           },
           "groupShortfall": {
             "type": "boolean",

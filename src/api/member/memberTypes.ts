@@ -158,6 +158,23 @@ export type previewTrainees_Errors =
   | 'ACCESS_DENIED'
   | 'COHORT_NOT_INVITABLE'
 
+// PATCH /api/v0/members/organizations/{organizationId}/users/{userId}/login-lock — 계정 로그인 차단 / 해제
+export type updateLoginLock_Path = operations['updateLoginLock']['parameters']['path']
+export type updateLoginLock_Body = NonNullable<
+  operations['updateLoginLock']['requestBody']
+>['content']['application/json']
+export type updateLoginLock_Response =
+  operations['updateLoginLock']['responses'][200]['content']['application/json']
+export type updateLoginLock_Errors =
+  | 'VALIDATION_FAILED'
+  | 'LOCK_UNTIL_REQUIRED'
+  | 'LOCK_SELF_NOT_ALLOWED'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'INVITE_CROSS_ORGANIZATION'
+  | 'LOCK_TARGET_NOT_FOUND'
+  | 'ORGANIZATION_CONTEXT_MISSING'
+
 // PATCH /api/v0/members/organizations/{organizationId}/managers/{managerId}/status — 매니저 계정 정지 / 재활성
 export type updateManagerStatus_Path = operations['updateManagerStatus']['parameters']['path']
 export type updateManagerStatus_Body = NonNullable<

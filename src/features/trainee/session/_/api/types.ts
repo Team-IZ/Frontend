@@ -111,6 +111,14 @@ export type ProblemView = {
   problemNo: number
   problemTotal: number
   title: string
+  /**
+   * 이 문제의 제한 시각 — **문제별 카운트다운은 여기서 잰다.**
+   *
+   * 서버가 문제를 접는 판정도 같은 값을 쓴다(스펙). 예전에는 이 값이 없어 세션 시작에서
+   * 쟀는데, 그러면 두 번째 문제부터 전부 틀렸다(37차 R3으로 요청해 받았다).
+   * 시작 전이거나 지금 문제가 아니면 키가 없다.
+   */
+  timeLimitAt: string | null
   code: CodePane
   /** 이 문제에서 이미 끝난 질문들 */
   turns: Turn[]

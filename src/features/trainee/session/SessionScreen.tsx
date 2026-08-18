@@ -52,16 +52,32 @@ export default function SessionScreen() {
   // `204`의 사유는 홈 대표 상태가 갖고 있다
   const noSessionReason = useNoSessionReason()
 
+  /*
+    🔴 **끝나는 순간 세션이 사라진다 — 그래도 종료 화면은 보여줘야 한다.**
+
+    마지막 답변이 성공하면 생성 뮤테이션이 이 도메인 조회를 통째로 무효화하고
+    (`assessmentKeys.all`, 우리가 못 막는다), 다시 읽은 `GET /current`는 `204`다.
+    그대로 두면 「세션 없음」 화면이 종료 화면을 덮어써서 **학생이 `끝났어요, 수고했어요`를
+    한 번도 못 본다** — 실제로 그랬다.
+
+    그래서 한 번 본 세션을 붙들고 있는다. 이 화면에 머무는 동안은 그것으로 계속 그리고,
+    서버가 없다고 하면 아래 러너가 종료 상태로 넘어간다.
+  */
+  const seen = useRef<SessionInfo | null>(null)
+  if (session.data) seen.current = session.data
+  const active = session.data ?? seen.current
+
   // 세션이 없으면 사유를 홈에서 읽어야 하므로 그 조회까지 기다린다
-  if (session.isPending || (session.noSession && noSessionReason.isPending)) {
+  if (session.isPending || (session.noSession && !active && noSessionReason.isPending)) {
     return <FullScreenSpinner />
   }
 
-  if (session.noSession) {
+  // 이 방문에서 세션을 한 번도 못 봤을 때만 「없음」이다
+  if (session.noSession && !active) {
     return <NoSessionScreen status={noSessionReason.status} />
   }
 
-  if (session.isError || !session.data) {
+  if (session.isError || !active) {
     return (
       <div className="flex h-svh items-center justify-center">
         <Empty className="max-w-[460px] border-solid border-danger-border bg-danger-soft">
@@ -82,7 +98,11 @@ export default function SessionScreen() {
   // 이 화면 하나가 최초로 전체화면을 쓰는 화면이라 지금까지 드러나지 않았다.
   return (
     <div className="h-svh">
-      <SessionRunner session={session.data} reloadSession={session.reload} />
+      <SessionRunner
+        session={active}
+        reloadSession={session.reload}
+        serverGone={session.noSession}
+      />
     </div>
   )
 }
@@ -133,10 +153,13 @@ function answerFailure(e: unknown): string {
 function SessionRunner({
   session,
   reloadSession,
+  serverGone,
 }: {
   session: SessionInfo
   /** 커서를 서버에게 다시 물어본다. 세션이 끝났으면 `null` */
   reloadSession: () => Promise<SessionInfo | null>
+  /** 서버가 세션이 없다고 한다(`204`) — 답을 내서 끝났거나 시간이 지났다 */
+  serverGone: boolean
 }) {
   const { sessionId, mode, problemTotal } = session
 
@@ -147,6 +170,15 @@ function SessionRunner({
   const [transitionReason, setTransitionReason] = useState<TransitionReason | null>(null)
   const [endReason, setEndReason] = useState<EndReason | null>(null)
   const [pendingAnswer, setPendingAnswer] = useState<string | null>(null)
+  /*
+    **무엇을 기다리는 중인가.** 뮤테이션의 `isPending`을 그대로 쓰면 안 된다 — 그것은
+    요청이 끝나는 순간 꺼지는데, 화면에 결과가 나오는 것은 **그 뒤 다시 읽기가 끝난
+    다음**이다. 그 사이에 로딩이 꺼져 화면이 한 번 멀쩡해졌다가 갑자기 답이 튀어나온다
+    (실사용에서 "뚝 끊긴다"로 보고됨).
+
+    그래서 **핸들러 전체**를 감싸는 상태를 따로 둔다. 요청부터 화면 갱신까지가 한 덩어리다.
+  */
+  const [busy, setBusy] = useState<'answer' | 'hint' | null>(null)
   const [submitFailed, setSubmitFailed] = useState<string | null>(null)
   const [callersExpanded, setCallersExpanded] = useState(true)
   const [offlineDismissed, setOfflineDismissed] = useState(false)
@@ -190,17 +222,19 @@ function SessionRunner({
   const elapsedMs = useSessionTimer(startedAtMs, () => endWith('TIMEOUT'), showTimeWarning, running)
 
   /*
-    ⚠️ **문제당 남은 시간은 그리지 않는다.** 문제 상한은 20분인데 *그 문제가 언제
-    시작됐는지*를 서버가 주지 않는다(`ProblemResponse`에 시각이 없다). 세션 시작에서
-    재면 두 번째 문제부터 전부 틀리고 — 실제로 갓 시작한 문제에 `1:03 남음`이 떴다 —
-    **틀린 카운트다운은 없는 것만 못하다.** 36차에 `problemTimeLimitAt`을 요청했다.
+    **남은 시간은 둘 다 서버가 시각으로 준다.**
 
-    대신 **세션 마감은 서버가 시각으로 준다**(`timeLimitAt`). 그건 정확하므로 그것을 쓴다.
+    한동안 문제별 카운트다운을 뺐었다 — 문제가 언제 시작됐는지를 안 줘서 세션 시작에서
+    쟀더니 두 번째 문제부터 전부 틀렸기 때문이다(갓 시작한 문제에 `1:03 남음`이 떴다).
+    37차 R3으로 요청해 `problemTimeLimitAt`을 받았고, **서버가 문제를 접는 판정과 같은
+    값**이라 이제 화면과 서버가 어긋나지 않는다.
+
+    `elapsedMs`가 1초마다 갱신되므로 아래 둘도 함께 다시 계산된다.
   */
-  const limitAtMs = session.timeLimitAt ? Date.parse(session.timeLimitAt) : null
-  // `elapsedMs`가 1초마다 갱신되므로 이 값도 함께 다시 계산된다
-  const sessionRemainingMs =
-    limitAtMs == null ? null : Math.max(0, limitAtMs - (startedAtMs + elapsedMs))
+  const remainingTo = (at: string | null) =>
+    at == null ? null : Math.max(0, Date.parse(at) - (startedAtMs + elapsedMs))
+  const sessionRemainingMs = remainingTo(session.timeLimitAt)
+  const problemRemainingMs = remainingTo(problem.data?.timeLimitAt ?? null)
 
   /*
     🔴 **커서를 서버에게 다시 묻는다.**
@@ -231,6 +265,21 @@ function SessionRunner({
     if (phase !== 'IN_PROBLEM') return
     if (isProblemClosed(problem.error)) void followCursor()
   }, [phase, problem.error, followCursor])
+
+  /*
+    문제 시간이 다 되면 **서버가 그 문제를 접고 커서를 옮긴다.** 화면이 접는 게 아니라
+    그때 다시 물어본다 — 상한을 두 곳에서 세면 반드시 갈린다.
+
+    0이 된 순간 한 번만 부른다(`problemRemainingMs`는 1초마다 갱신되므로 조건이 없으면
+    매 초 부른다).
+  */
+  const sweptRef = useRef<number | null>(null)
+  useEffect(() => {
+    if (phase !== 'IN_PROBLEM' || problemRemainingMs == null || problemRemainingMs > 0) return
+    if (sweptRef.current === problemNo) return
+    sweptRef.current = problemNo
+    void followCursor()
+  }, [phase, problemRemainingMs, problemNo, followCursor])
 
   /*
     연결이 끊겼다 돌아온 시간도 같은 규칙이다 — **재연결 시점에 한 번만.** 끊긴 순간을
@@ -267,6 +316,7 @@ function SessionRunner({
     async (answer: string) => {
       setPendingAnswer(answer)
       setSubmitFailed(null)
+      setBusy('answer')
       try {
         /*
           🔴 **실패를 삼키지 않는다.** 서버가 채점 도중 연결을 끊는 일이 실제로 있다
@@ -299,6 +349,7 @@ function SessionRunner({
         }
       } finally {
         setPendingAnswer(null)
+        setBusy(null)
       }
     },
     [answerer, problem, endWith, followCursor],
@@ -311,8 +362,14 @@ function SessionRunner({
 
   /** 학생이 `다시 설명해 주세요`를 눌렀을 때 — 문구는 다시 읽어서 그린다 */
   const handleRequestHint = useCallback(async () => {
-    const opened = await hinter.open()
-    if (opened) await problem.refetch()
+    setBusy('hint')
+    try {
+      const opened = await hinter.open()
+      // 다시 읽어야 힌트 문구가 화면에 온다 — 그때까지 대기 표시를 유지한다
+      if (opened) await problem.refetch()
+    } finally {
+      setBusy(null)
+    }
   }, [hinter, problem])
 
   if (phase === 'INTRO') {
@@ -386,14 +443,15 @@ function SessionRunner({
       problemTotal={problemTotal}
       elapsedMs={elapsedMs}
       sessionRemainingMs={sessionRemainingMs}
+      problemRemainingMs={problemRemainingMs}
       pendingAnswer={pendingAnswer}
       submitFailed={submitFailed}
-      submitting={answerer.isPending}
+      submitting={busy === 'answer'}
       callersExpanded={callersExpanded}
       onToggleCallers={() => setCallersExpanded((v) => !v)}
       onSubmit={handleSubmit}
       onRequestHint={handleRequestHint}
-      hintPending={hinter.isPending}
+      hintPending={busy === 'hint'}
       onFirstKeystroke={handleFirstKeystroke}
       awayToast={awayToast}
       timeWarning={timeWarning}
@@ -409,6 +467,7 @@ function RunningView({
   problemTotal,
   elapsedMs,
   sessionRemainingMs,
+  problemRemainingMs,
   pendingAnswer,
   submitFailed,
   submitting,
@@ -428,6 +487,7 @@ function RunningView({
   problemTotal: number
   elapsedMs: number
   sessionRemainingMs: number | null
+  problemRemainingMs: number | null
   pendingAnswer: string | null
   /** 접수되지 않았을 때 할 말. 성공하면 `null` */
   submitFailed: string | null
@@ -460,6 +520,7 @@ function RunningView({
         title={problem.title}
         elapsedMs={elapsedMs}
         sessionRemainingMs={sessionRemainingMs}
+        problemRemainingMs={problemRemainingMs}
       />
       {/*
         목업은 코드 패널을 428px 고정폭으로 그렸다 — 실제로는 코드 길이가 문제마다
@@ -532,6 +593,7 @@ function TopBar({
   title,
   elapsedMs,
   sessionRemainingMs,
+  problemRemainingMs,
   ended,
 }: {
   mode: 'FIRST' | 'REVIEW'
@@ -541,6 +603,8 @@ function TopBar({
   elapsedMs: number
   /** 세션 마감까지 남은 시간. 서버가 준 `timeLimitAt` 기준이다 */
   sessionRemainingMs?: number | null
+  /** 지금 문제의 남은 시간. 전환 화면처럼 문제가 없는 국면에서는 `null` */
+  problemRemainingMs?: number | null
   ended?: boolean
 }) {
   const index = (problemNo ?? 1) - 1
@@ -583,12 +647,26 @@ function TopBar({
           `${minutes}분 걸렸어요`
         ) : (
           <>
-            {sessionRemainingMs != null && (
-              <span className={sessionRemainingMs < 5 * 60_000 ? 'text-warning' : undefined}>
-                <b className="font-bold">{formatClock(sessionRemainingMs)}</b> 남음
+            {/*
+              **시계를 하나만 보여준다.** 학생이 관리해야 하는 것은 이 문제에 남은
+              20분이고, 세션 1시간은 3문제×20분이라 **거의 같이 줄어든다** — 둘을 나란히
+              두면 어느 쪽을 봐야 하는지 매번 고르게 된다.
+
+              세션 쪽이 먼저 닿는 경우가 있긴 하다(전환 화면에서 시간을 쓰면). 그때만
+              나타난다 — 10분 아래로 내려가면 그때부터는 그쪽이 진짜 마감이다.
+
+              3분 아래면 경고색. 평소엔 차분하게 둔다(정의서 §2 "상시 경고 = 불안 누적").
+            */}
+            {problemRemainingMs != null && (
+              <span className={problemRemainingMs < 3 * 60_000 ? 'text-warning' : undefined}>
+                이 문제 <b className="font-bold">{formatClock(problemRemainingMs)}</b> 남음
               </span>
             )}
-            <span className="text-xs">{minutes}분 경과</span>
+            {sessionRemainingMs != null && sessionRemainingMs < 10 * 60_000 && (
+              <span className="text-warning">
+                전체 <b className="font-bold">{formatClock(sessionRemainingMs)}</b> 남음
+              </span>
+            )}
           </>
         )}
       </span>

@@ -128,14 +128,21 @@ export function useNoSessionReason() {
  * 세션이 끝난 것을 **홈에도 알린다.**
  *
  * 쓰기(답변·힌트)는 생성 훅이 알아서 조회를 무효화하지만, **시간이 지나 끝나는 종료는
- * 아무 요청도 아니라서** 무효화가 일어나지 않는다. 그러면 캐시가 살아 있는 동안
- * (`staleTime` 30초) 홈이 `이해도 확인을 시작할 차례예요`를 그대로 그리고, 학생이
- * 그 버튼을 누르면 세션이 없다는 화면으로 떨어진다 — 실제로 보고된 증상이다.
+ * 아무 요청도 아니라서** 무효화가 일어나지 않는다. 그러면 홈이 `이해도 확인을 시작할
+ * 차례예요`를 그대로 그리고, 학생이 그 버튼을 누르면 세션이 없다는 화면으로 떨어진다.
+ *
+ * 🔴 **홈만 무효화한다. 세션 조회는 건드리지 않는다.**
+ *
+ * 도메인 전체(`assessmentKeys.all`)를 지우면 세션 조회가 다시 돌아 `204`가 오고, 화면이
+ * 「세션 없음」으로 갈아타 **종료 화면(`끝났어요. 수고했어요`)을 덮어 버린다** — 실제로
+ * 마지막 답을 낸 학생이 그 화면을 못 보고 엉뚱한 문구가 스쳤다(실측).
+ *
+ * 세션이 끝났다는 것은 화면이 이미 안다. 그 사실을 다시 물어볼 이유가 없다.
  */
 export function useMarkSessionEnded() {
   const queryClient = useQueryClient()
   return useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: assessmentKeys.all })
+    queryClient.invalidateQueries({ queryKey: assessmentKeys.getMyAssessmentRounds() })
   }, [queryClient])
 }
 
@@ -283,6 +290,7 @@ function toProblem(p: ServerProblem): ProblemView {
     problemNo: p.problemNo,
     problemTotal: p.problemTotal,
     title: p.title,
+    timeLimitAt: p.problemTimeLimitAt ?? null,
     code: {
       path: p.code.path,
       language: p.code.language,

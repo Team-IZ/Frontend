@@ -2,12 +2,17 @@ import { ArrowRightIcon, PlayIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import StatusMessageCard from '@/components/common/StatusMessageCard'
-import type { Concept, SessionMode } from '../types'
+import type { SessionMode } from '../types'
 
 type Props = {
   reason: 'STOP' | 'NEXT'
   mode: SessionMode
-  nextProblem: Concept
+  /**
+   * 다음 문제 이름·파일. **아직 안 왔을 수 있다** — 서버는 답변 응답에 번호만 주고
+   * 이름은 그 문제를 조회해야 나온다. 그동안은 이름 없이 그린다.
+   */
+  nextTitle: string | null
+  nextPath: string | null
   isNextLast: boolean
   onContinue: () => void
 }
@@ -20,7 +25,8 @@ type Props = {
 export default function TransitionScreen({
   reason,
   mode,
-  nextProblem,
+  nextTitle,
+  nextPath,
   isNextLast,
   onContinue,
 }: Props) {
@@ -62,10 +68,14 @@ export default function TransitionScreen({
         icon={<PlayIcon className="size-6" />}
         title={title}
         description={
-          <>
-            <b className="text-fg">{nextProblem.name}</b>에 대해 이야기해요.{' '}
-            <span className="text-fg-subtle">{nextProblem.file}</span>
-          </>
+          nextTitle ? (
+            <>
+              <b className="text-fg">{nextTitle}</b>에 대해 이야기해요.{' '}
+              {nextPath && <span className="text-fg-subtle">{nextPath}</span>}
+            </>
+          ) : (
+            '다음 코드에 대해 이야기해요.'
+          )
         }
         aux={sub}
         actions={<Button onClick={onContinue}>시작하기</Button>}

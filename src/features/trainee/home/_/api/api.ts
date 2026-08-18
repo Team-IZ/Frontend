@@ -65,6 +65,7 @@ function joinClassTeam(className: string | null, teamName: string | null | undef
 function toCurrent(res: Server, className: string | null): CurrentRound {
   const c = res.current
   return {
+    id: c.assessmentRoundId ?? null,
     status: c.representativeStatus,
     action: c.defaultActionCode,
     warnings: c.warningCodes ?? [],

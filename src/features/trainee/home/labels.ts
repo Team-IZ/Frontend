@@ -87,7 +87,7 @@ const ACTION_LABELS: Record<ActionCode, string> = {
   RESUBMIT_REPOSITORY: '다시 제출',
   RESUBMIT_ZIP: 'ZIP으로 다시 제출',
   START_ASSESSMENT: '이해도 확인 시작하기 →',
-  RESUME_ASSESSMENT: '이해도 확인',
+  RESUME_ASSESSMENT: '이어서 하기',
   START_REVIEW: '다시 보기',
   VIEW_REPORT: '내 리포트',
   WAIT_FOR_ANALYSIS: '이해도 확인',
@@ -103,20 +103,26 @@ const ACTION_ROUTES: Partial<Record<ActionCode, string>> = {
   RESUBMIT_ZIP: '/trainee/submission',
   START_ASSESSMENT: '/trainee/session',
   START_REVIEW: '/trainee/session?retry=1',
+  /*
+    **이어하기를 연다.** 예전에는 일부러 경로를 안 줬다 — "시작하면 중간에 나갈 수
+    없어요"라는 약속을 지키려고. 그런데 실제로 일어나는 일은 학생이 *약속을 어기는* 것이
+    아니라 **사고로 끊기는** 것이다(창을 닫음·네트워크 끊김).
+
+    그때 막아 봐야 시계는 서버에서 계속 돈다. 못 들어오게 하면 남은 시간을 그대로
+    잃고 미응시로 기록될 뿐이라, 막는 쪽이 오히려 약속을 깨뜨린다.
+
+    서버는 이미 돌려줄 준비가 돼 있다 — `GET /current`가 `IN_PROGRESS`와 커서를 주고,
+    문제 조회가 지난 문답과 이미 연 힌트까지 복원한다(실측).
+  */
+  RESUME_ASSESSMENT: '/trainee/session',
 }
 
 /*
-  버튼이 있어도 못 누르는 경우의 설명.
-
-  ⚠️ `RESUME_ASSESSMENT`는 **일부러 경로를 안 준다.** 서버는 세션 재개를 상정하지만
-  이 제품의 규칙은 "한 번에 끝낸다"이고, 이 상태는 네트워크가 끊겨 멈춘 사고 대비다.
-  버튼을 열면 "시작하면 중간에 나갈 수 없어요"라는 약속이 화면에서 무너진다 —
-  재개 경로는 세션 API가 열릴 때 함께 설계한다.
+  버튼이 있어도 못 누르는 경우의 설명. 경로가 있는 액션은 여기 없다 — 누를 수 있으니까.
 */
 const ACTION_ASIDES: Partial<Record<ActionCode, string>> = {
   WAIT_FOR_ANALYSIS: '분석이 끝나면 열려요',
   WAIT_FOR_REPORT: '발행되면 알려드릴게요',
-  RESUME_ASSESSMENT: '진행 중인 응시가 있어요 — 매니저에게 알려 주세요',
 }
 
 /** 경고 배지 — 배열이라 여러 개가 동시에 온다 */
@@ -292,8 +298,13 @@ function buildCta(round: CurrentRound, now: number): StatusContent['cta'] {
     return { label: ACTION_LABELS[action], to, aside: `늦어도 ${hh}:${mm}까지 끝나요` }
   }
 
-  if (action === 'VIEW_REPORT' && round.canViewReport && round.reportId) {
-    return { label: ACTION_LABELS[action], to: `/trainee/report?round=${round.reportId}` }
+  /*
+    **회차 id를 넘긴다** — 리포트 화면은 회차로 찾는다(`reportsById`의 키가 회차 id다).
+    `reportId`는 그 회차에 달린 리포트의 식별자라 다른 값이고, 그것을 넘기면 화면이
+    `undefined`를 그리다 터진다(실측). 갈 수 있는지 판정은 `canViewReport`가 한다.
+  */
+  if (action === 'VIEW_REPORT' && round.canViewReport && round.id) {
+    return { label: ACTION_LABELS[action], to: `/trainee/report?round=${round.id}` }
   }
 
   return { label: ACTION_LABELS[action], to, disabled: !to, aside }

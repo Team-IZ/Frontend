@@ -61,7 +61,7 @@ export default function HomeScreen() {
                       kind="past"
                       label={data.current.roundName ?? '이번 회차'}
                       detail="발행됨 · 자세한 해설은 다시 보기 후 열려요"
-                      to={`/trainee/report?round=${data.current.reportId}`}
+                      to={`/trainee/report?round=${data.current.id}`}
                     />
                   </Card>
                 </div>
@@ -111,9 +111,11 @@ export default function HomeScreen() {
                         false라 링크를 걸지 않는다 — 화면이 발행 상태를 다시 보지 않는다.
                       */
                       to={
-                        r.canViewReport && r.reportId
-                          ? `/trainee/report?round=${r.reportId}`
-                          : undefined
+                        /*
+                          **회차 id를 넘긴다** — 리포트 화면이 회차로 찾는다.
+                          `reportId`를 넘기면 못 찾아 화면이 통째로 터진다(실측).
+                        */
+                        r.canViewReport && r.reportId ? `/trainee/report?round=${r.id}` : undefined
                       }
                     />
                   ))}

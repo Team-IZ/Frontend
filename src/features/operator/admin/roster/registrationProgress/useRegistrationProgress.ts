@@ -10,10 +10,9 @@ type Params = {
   /**
    * 폴링 간격(ms).
    *
-   * ⚠ estimated — 백엔드가 권장 간격을 준 적이 없다. "100명 단위 배치로 순차 처리"만
-   * 아는 상태라, 너무 촘촘하면 의미 없는 요청만 늘고 너무 길면 완료를 늦게 안다 —
-   * 계획 없이 임시로 잡은 값이다(이슈 "하지 않는 것" 참고. 실제 정책은 백엔드 스펙과
-   * 함께 다시 정한다).
+   * ⚠ estimated — 백엔드가 권장 간격을 준 적이 없다(이슈 263에서도 미정). 너무
+   * 촘촘하면 의미 없는 요청만 늘고 너무 길면 완료를 늦게 안다 — 실측 없이 임시로
+   * 잡은 값이다. 실제 정책은 배치 처리 속도가 드러나면 다시 정한다.
    */
   intervalMs?: number
 }
@@ -27,8 +26,10 @@ const DEFAULT_INTERVAL_MS = 2000
  * `setInterval`은 요청을 겹쳐 보낸다 — 여기서는 이전 응답을 받은 뒤에만 다음 요청을
  * 예약해 항상 하나만 떠 있게 한다.
  *
- * **완료되면 스스로 멈춘다.** `status === 'COMPLETED'`가 되면 더 이상 예약하지 않는다
- * — 사용자가 다이얼로그를 계속 열어 둬도 끝난 배치를 영원히 두드리지 않는다.
+ * **완료되면 스스로 멈춘다.** `status`가 `PARTIAL`(발송 끝 · 일부 실패) ·
+ * `SUCCEEDED`(전부 발송)가 되면 더 이상 예약하지 않는다 — `RUNNING`(발송 중)만
+ * 계속 두드린다. 사용자가 다이얼로그를 계속 열어 둬도 끝난 배치를 영원히 두드리지
+ * 않는다.
  *
  * **언마운트 · `enabled=false`에서 즉시 멈춘다.** `alive` 플래그(`lib/useAsync.ts`와
  * 같은 패턴)만으로는 부족하다 — 이미 예약된 `setTimeout`이 살아 있는 동안 응답을
@@ -64,7 +65,7 @@ export function useRegistrationProgress({
           if (!alive) return
           setProgress(next)
           setFailed(false)
-          if (next.status !== 'COMPLETED') {
+          if (next.status === 'RUNNING') {
             timer = setTimeout(tick, intervalMs)
           }
         })

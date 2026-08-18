@@ -35,6 +35,8 @@ import { ALL, UNASSIGNED, asQuery, withAll } from '../_/filterState'
 import AddRosterDialog from './components/AddRosterDialog'
 import DeactivateTraineeDialog from './components/DeactivateTraineeDialog'
 import AssignPanel from './components/AssignPanel'
+import { useRegistrationProgress } from './registrationProgress/useRegistrationProgress'
+import RegistrationProgressPanel from './registrationProgress/components/RegistrationProgressPanel'
 
 /*
   ③ 명단 — 기수의 교육생 전체. 범위는 **선택 기수**다.
@@ -121,6 +123,21 @@ export default function RosterTab() {
   const [deactivating, setDeactivating] = useState<Trainee | null>(null)
   /** 벌크 액션·명단 추가 결과 — 성공·실패가 같은 배너 자리를 쓴다 */
   const action = useActionResult()
+  /*
+    이슈 263 — 방금 등록한 배치의 발송 진행률(폴링 대상). `AddRosterDialog`의 응답이 준
+    `batchRequestId`가 있을 때만 켠다(등록된 행이 0이면 서버가 null을 준다 — 폴링할
+    대상 자체가 없다). 결과 배너를 지우면(`action.dismiss`) 같이 지운다 — 하나의
+    등록 결과로 묶어서 보여주고 묶어서 치운다.
+  */
+  const [activeBatch, setActiveBatch] = useState<{
+    cohortId: string
+    batchRequestId: string
+  } | null>(null)
+  const batchProgress = useRegistrationProgress({
+    cohortId: activeBatch?.cohortId ?? '',
+    batchRequestId: activeBatch?.batchRequestId ?? '',
+    enabled: activeBatch !== null,
+  })
 
   const scope = useCohortScope()
   const cohortId = scope.cohortId
@@ -185,10 +202,29 @@ export default function RosterTab() {
         <ResultBanner
           failed={action.result.failed}
           onRetry={action.result.retry}
-          onDismiss={action.dismiss}
+          onDismiss={() => {
+            action.dismiss()
+            setActiveBatch(null)
+          }}
         >
           {action.result.text}
         </ResultBanner>
+      )}
+
+      {/*
+        방금 등록한 배치의 발송 진행률. `ResultBanner`(위)의 `AlertTitle`은 한 줄용이라
+        진행 막대·배지를 못 담는다 — 그래서 `actionResult.ts`의 공용 타입을 넓히는 대신
+        바로 아래에 별도 조각으로 둔다. `ResultBanner`가 없어도(예: 재발송 뒤) 뜨지 않게
+        `action.result` · `activeBatch`를 같이 조건에 건다.
+      */}
+      {action.result && activeBatch && (
+        <div className="border-border bg-surface-2 mb-3 rounded-md border p-3">
+          <RegistrationProgressPanel
+            progress={batchProgress.progress}
+            loading={batchProgress.loading}
+            failed={batchProgress.failed}
+          />
+        </div>
       )}
 
       <SectionHeader
@@ -610,6 +646,16 @@ export default function RosterTab() {
                 : ' · 활성화 초대를 보냈어요') +
               (skipped > 0 ? ` · ${skipped}명은 건너뛰었어요` : ''),
           })
+          /*
+            **`batchRequestId`가 null이면 폴링할 대상이 없다**(스펙: "등록된 행이 하나도
+            없으면 … null"). 이 배너의 문구가 이미 그 경우를 말로 하고 있으니
+            (`등록했어요`가 0명), 진행률 조각은 그때 그냥 안 뜬다.
+          */
+          setActiveBatch(
+            result.batchRequestId && cohortId
+              ? { cohortId, batchRequestId: result.batchRequestId }
+              : null,
+          )
           setSelected(new Set())
         }}
       />

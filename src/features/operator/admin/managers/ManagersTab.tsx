@@ -1,4 +1,4 @@
-import StaleBlock from '../../_shared/StaleBlock'
+import StaleBlock from '@/components/common/StaleBlock'
 import { useState } from 'react'
 import { TriangleAlertIcon } from 'lucide-react'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'

@@ -19,7 +19,7 @@ import SectionHeader from '../_/components/SectionHeader'
 import { FilterSelect } from '../_/components/AdminFilters'
 import { SlowNotice } from '@/components/common/Loading'
 import CostSkeleton from './CostSkeleton'
-import StaleBlock from '../../_shared/StaleBlock'
+import StaleBlock from '@/components/common/StaleBlock'
 import ErrorState from '@/components/common/ErrorState'
 
 /*

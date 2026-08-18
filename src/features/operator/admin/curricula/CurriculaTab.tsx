@@ -1,4 +1,4 @@
-import StaleBlock from '../../_shared/StaleBlock'
+import StaleBlock from '@/components/common/StaleBlock'
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router'
 import { Button } from '@/components/ui/Button'

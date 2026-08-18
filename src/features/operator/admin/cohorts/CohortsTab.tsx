@@ -1,4 +1,4 @@
-import StaleBlock from '../../_shared/StaleBlock'
+import StaleBlock from '@/components/common/StaleBlock'
 import { useMemo, useState } from 'react'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'

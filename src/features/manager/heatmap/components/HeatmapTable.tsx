@@ -50,7 +50,9 @@ function colorLevel(v: number): 0 | 1 | 2 | 3 | 4 {
  * 파생값이 아니라 원인이 되는 값으로 판정한다(screen-hardening §자주 나오는 함정).
  */
 const VALID_STATUS = new Set(['VALID', 'COMPLETE'])
-const isEmptyCell = (c: HeatmapCell) => c.validCount === 0 || !VALID_STATUS.has(c.status)
+/* `value`가 없으면 그릴 것이 없다 — 셋 중 하나만 걸려도 빈 칸이다 */
+const isEmptyCell = (c: HeatmapCell) =>
+  c.value === null || c.validCount === 0 || !VALID_STATUS.has(c.status)
 
 function CellView({ cell, level }: { cell: HeatmapCell; level: HeatmapView['level'] }) {
   const person = level === 'TRAINEE'
@@ -72,14 +74,14 @@ function CellView({ cell, level }: { cell: HeatmapCell; level: HeatmapView['leve
       className={cn(
         h,
         'rounded text-center align-middle font-bold tabular-nums',
-        REACH_STYLE[colorLevel(cell.value)],
+        REACH_STYLE[colorLevel(cell.value ?? 0)],
         cell.groupShortfall && 'outline outline-2 outline-warning outline-offset-[-2px]',
       )}
       title={countsLabel(cell)}
     >
       {/* 개인은 도달 단계 그대로, 반·팀은 평균이라 소수 한 자리 */}
       <span className="text-xl">
-        {person ? `${colorLevel(cell.value)}단` : cell.value.toFixed(1)}
+        {person ? `${colorLevel(cell.value ?? 0)}단` : (cell.value ?? 0).toFixed(1)}
       </span>
     </td>
   )
@@ -115,7 +117,6 @@ function RowLine({
   isSummary,
   traineePath,
   className,
-  listedRows,
 }: {
   row: HeatmapRow
   level: HeatmapView['level']
@@ -123,36 +124,21 @@ function RowLine({
   isSummary?: boolean
   traineePath?: (id: string) => string
   className?: string
-  /** 실제로 그려진 개인 행 수 — 합계 행이 「N / M명」을 만들 때만 쓴다 */
-  listedRows?: number
 }) {
   const label = isSummary ? '전체' : (row.rowName ?? '—')
   /*
-    🔴 **명단에서 아예 빠진 사람이 있다**(하드닝 2차 실측). 1차 1팀은 `memberCount 5`인데
-    `rows`가 4개였고, **왜 빠졌는지 응답 어디에도 없었다**(notAttended·invalid·interrupted
-    전부 0). 화면이 「전체 5명」이라고만 쓰면 한 명이 사라진 것처럼 보인다.
+    **명단과 격자의 차이는 이제 서버가 말한다** — `summary.cells[].notInRoundCount`
+    (34차 R2). 0이면 둘이 완전히 맞는다는 뜻이다.
 
-    ⚠ **`validCount`로 세지 않는다.** 그건 개념별 유효 응시자 수라 뜻이 다르다 —
-    6팀은 `memberCount 4 · validCount 3`인데 **행은 4개**다(한 명이 미응시로 행에는
-    있다). `validCount`를 쓰면 그 경우까지 「3 / 4명」이 되어 개인 행과 어긋난다.
-
-    **행 수와 견준다** — 그려진 것과 있어야 할 것의 차이가 이 표기의 뜻이다.
-
-    🔴 **개인 계층에서만 쓴다.** 반·팀 계층의 행은 사람이 아니라 반·팀이라, 행 수와
-    `memberCount`를 견주면 뜻이 안 맞는 숫자가 나온다 — 2차 팀 격자에서 「5 / 26명」이
-    나왔다(팀 5개 · 사람 26명). 처음에 계층을 안 가르고 넣어 만든 회귀다.
+    🔴 전에는 **행 수와 `memberCount`를 화면이 빼서** 「4 / 5명」이라 쓰고 「1명은 이
+    회차 명단에 없습니다」를 붙였다. 그때는 왜 빠졌는지 응답 어디에도 없어서 그랬는데
+    (notAttended·invalid·interrupted 전부 0), **이제 결과가 없는 사람도 행으로 오고**
+    (`value: null` + `status`) 남는 차이는 위 필드가 센다. 화면이 뺄셈으로 사유를
+    지어내던 자리라 걷어냈다 — 실데이터에서 세 회차 모두 `notInRoundCount: 0`이다.
   */
-  const countsPeople = level === 'TRAINEE'
-  const missing =
-    countsPeople && isSummary && listedRows !== undefined && row.memberCount !== null
-      ? row.memberCount - listedRows
-      : 0
-  const count =
-    row.memberCount === null
-      ? ''
-      : missing > 0
-        ? `${listedRows} / ${row.memberCount}명`
-        : `${row.memberCount}명`
+  /* 개인 계층 합계 행에서만 「명부에 있는데 격자에 없는 인원」을 덧붙인다 */
+  const notInRound = level === 'TRAINEE' && isSummary ? (row.cells[0]?.notInRoundCount ?? 0) : 0
+  const count = row.memberCount === null ? '' : `${row.memberCount}명`
   /* 개인 행의 이름은 상세로 가는 링크다 — 반·팀 행은 드릴다운(클릭) */
   const asLink = level === 'TRAINEE' && !isSummary && row.rowId && traineePath
 
@@ -182,16 +168,10 @@ function RowLine({
         {count && (
           <small
             className="text-fg-subtle ml-1 text-2xs font-normal"
-            title={
-              isSummary &&
-              listedRows !== undefined &&
-              row.memberCount !== null &&
-              listedRows < row.memberCount
-                ? `${row.memberCount - listedRows}명은 이 회차 명단에 없습니다`
-                : undefined
-            }
+            title={notInRound > 0 ? `${notInRound}명은 이 회차 명단에 없습니다` : undefined}
           >
             {count}
+            {notInRound > 0 && <> · 명단 밖 {notInRound}</>}
           </small>
         )}
         {!asLink && onClick && (
@@ -255,7 +235,6 @@ export default function HeatmapTable({
               row={view.summary}
               level={view.level}
               isSummary
-              listedRows={view.rows.length}
               className="[&>td]:border-b [&>td]:border-border"
             />
           )}

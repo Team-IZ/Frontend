@@ -36,14 +36,28 @@ export type HeatmapConcept = {
 
 export type HeatmapCell = {
   problemNo: number
-  /** 평균 도달(반·팀) 또는 그 사람의 도달(개인). 색 스케일이 이 값을 쓴다 */
-  value: number
+  /**
+   * 평균 도달(반·팀) 또는 그 사람의 도달(개인). 색 스케일이 이 값을 쓴다.
+   *
+   * ⚠ **`null`이 온다** — 결과가 하나도 없는 사람·팀도 행으로 오게 되면서
+   * 생긴 모양이다(34차 R2·R3 회신 §1-3). 평균을 낼 표본이 없으면 값이 없다.
+   * `isEmptyCell`이 걸러서 `toFixed`까지 안 가지만, **타입이 그 사실을
+   * 말해야** 다음 사람이 `value`를 그냥 계산에 쓰지 않는다.
+   */
+  value: number | null
   status: string
   /** 이 셀 평균의 분모 */
   validCount: number
   notAttendedCount: number
   invalidCount: number
   interruptedCount: number
+  /**
+   * 명부에는 있는데 이 회차에 수행 자체가 없는 인원. **합계 행에만 온다**
+   * (34차 R2 회신 §1-2). 0이면 명부와 격자가 완전히 맞는다는 뜻이다.
+   *
+   * `memberCount = valid + notAttended + invalid + interrupted + notInRound`
+   */
+  notInRoundCount?: number
   /** 반 행에만 온다 */
   groupShortfall: boolean
 }

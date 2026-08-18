@@ -444,7 +444,12 @@ function RunningView({
   onDismissOffline: () => void
 }) {
   const current = problem.current
-  const waiting = submitting
+  /*
+    **힌트도 답변과 같은 대기다.** 버튼 안에서만 도는 표시로 두었더니 화면이 그대로라
+    학생이 뭔가 일어나는지 몰랐다. 서버를 기다리는 동안 코드·입력을 잠그는 규칙은
+    두 경우가 같다 — 다른 것은 문구뿐이다.
+  */
+  const waiting = submitting || hintPending
 
   return (
     <div className="relative flex h-full flex-col">
@@ -486,6 +491,7 @@ function RunningView({
             current={current}
             pendingAnswer={pendingAnswer}
             waiting={waiting}
+            waitingLabel={hintPending ? '설명을 준비하고 있어요' : '답변을 확인하고 있어요'}
           />
           {/*
             **대기 중에도 입력 영역을 남긴다.** 예전에는 질문이 없으면 통째로 사라졌는데,

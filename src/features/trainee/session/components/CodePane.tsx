@@ -62,9 +62,16 @@ export default function CodePane({
 
   return (
     <div className={dimmed ? 'flex h-full flex-col opacity-45' : 'flex h-full flex-col'}>
-      <div className="flex items-baseline gap-2 border-b border-border px-4 py-3">
-        <span className="font-semibold text-fg">{title}</span>
-        <span className="font-mono text-xs text-fg-subtle">{code.path}</span>
+      {/*
+        제목과 경로를 **각자 한 줄씩** 쓴다. 한 줄에 나란히 두면 경로가 길 때(실제
+        패키지 경로는 60자가 넘는다) 제목이 눌려 한 글자씩 세로로 쌓인다 — 실사용
+        화면에서 그렇게 나왔다. 경로는 앞을 잘라 **파일 이름 쪽을 남긴다.**
+      */}
+      <div className="flex flex-col gap-0.5 border-b border-border px-4 py-3">
+        <span className="truncate font-semibold text-fg">{title}</span>
+        <span dir="rtl" className="truncate text-left font-mono text-xs text-fg-subtle">
+          {code.path}
+        </span>
       </div>
       <div className="flex-1 overflow-hidden p-4">
         <pre

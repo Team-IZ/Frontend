@@ -12,6 +12,8 @@ type Props = {
   /** 방금 보낸 답변 — 채점이 끝나기 전까지 자리를 지킨다 */
   pendingAnswer: string | null
   waiting: boolean
+  /** 무엇을 기다리는지 — 답변 채점과 힌트가 다르다 */
+  waitingLabel: string
 }
 
 /*
@@ -34,7 +36,14 @@ type Props = {
   답변`이고 미달로 열리면 `답변 → 힌트`다. 서버의 `hintText`가 **그 턴 직전에 보여준
   힌트**라 이 순서가 이미 정해져 있다: 힌트를 먼저 붙이고 답변을 붙이면 맞는다.
 */
-export default function QuestionThread({ mode, turns, current, pendingAnswer, waiting }: Props) {
+export default function QuestionThread({
+  mode,
+  turns,
+  current,
+  pendingAnswer,
+  waiting,
+  waitingLabel,
+}: Props) {
   const scrollRef = useRef<HTMLDivElement>(null)
   const groups = useMemo(() => groupByQuestion(turns, current), [turns, current])
 
@@ -84,7 +93,7 @@ export default function QuestionThread({ mode, turns, current, pendingAnswer, wa
             <span className="flex gap-0.5">
               <Dot /> <Dot /> <Dot />
             </span>
-            답변을 확인하고 있어요
+            {waitingLabel}
           </div>
         )}
       </div>

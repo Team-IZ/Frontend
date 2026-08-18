@@ -79,6 +79,13 @@ export default function RosterCsvField({ domain, onChange }: Props) {
 
   const take = async (file: File | undefined) => {
     if (!file) return
+    /*
+      ⚠ **판정과 상관없이 먼저 표시한다.** 예전엔 성공 경로 끝에서만 불러서, UTF-8·CP949
+      둘 다 아닌 파일을 고르면 인코딩 오류 배너는 뜨는데 버튼의 파일명은 이전 값(또는
+      기본 문구)에 그대로 머물렀다(실측) — 뭘 골랐는지 화면에서 알 수 없었다. 판정이
+      뭐가 됐든 **고른 파일 이름은 사실**이라 여기서 바로 반영한다.
+    */
+    setFileName(file.name)
     const text = await readSheet(file)
     if (text === null) {
       onChange(
@@ -88,7 +95,6 @@ export default function RosterCsvField({ domain, onChange }: Props) {
       )
       return
     }
-    setFileName(file.name)
     onChange(parseRosterCsv(text), file.name, file)
   }
 
@@ -127,7 +133,8 @@ export default function RosterCsvField({ domain, onChange }: Props) {
             엑셀이 그냥 「CSV」로 저장한 CP949도 받는다(29차 회신 Q1). 그래서 **엑셀에서
             바로 저장해도 된다**는 것을 여기서 말한다.
           */}
-          끌어다 놓아도 됩니다 · 「이름」·「이메일」 열만 있으면 됩니다(순서·다른 열 무관) ·{' '}
+          끌어다 놓아도 됩니다 · 「이름」·「이메일」 열만 있으면 순서나 다른 열은 상관없어요
+          <br />
           <a
             className="underline"
             download="교육생-양식.csv"

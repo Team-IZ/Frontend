@@ -2,7 +2,6 @@ import { createBrowserRouter, Navigate, Outlet } from 'react-router'
 import type { RouteObject } from 'react-router'
 import UiPreviewScreen from '@/app/UiPreviewScreen'
 import AsyncStatesPreview from '@/app/AsyncStatesPreview'
-import RosterProgressPreview from '@/app/RosterProgressPreview'
 import RouteNotFound from '@/app/RouteNotFound'
 import AppCrashed from '@/app/AppCrashed'
 
@@ -50,8 +49,12 @@ export const router = createBrowserRouter([
       { path: '/ui-preview', element: <UiPreviewScreen /> },
       // 비동기 상태 표준을 눈으로 보는 자리(dev) — docs/dev/async-states.md
       { path: '/operator/__async', element: <AsyncStatesPreview /> },
-      // 등록 진행률 폴링(이슈 224, mock-first)을 눈으로 보는 자리(dev)
-      { path: '/operator/__roster-progress', element: <RosterProgressPreview /> },
+      /*
+        `/operator/__roster-progress`(이슈 224, mock-first 프리뷰) 삭제 — 이슈 263으로
+        실제 API에 붙으면서 그 프리뷰가 쓰던 목(`mockDb.ts`)이 같이 없어졌다.
+        가짜 `batchRequestId`(`demo-8` 등)로는 실제 엔드포인트를 흉내 낼 수 없어
+        폐기가 맞다 — 이제 실제 화면(`RosterTab.tsx`)에서 실제 등록으로 확인한다.
+      */
 
       // 없는 경로를 조용히 로그인으로 보내지 않는다. 그러면 "라우트를 등록 안 한 것"과
       // "코드가 틀린 것"을 구분할 수 없어 개발 중에 시간을 잃는다.

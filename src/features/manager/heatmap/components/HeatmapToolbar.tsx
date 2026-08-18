@@ -17,272 +17,202 @@ import {
   SelectValue,
 } from '@/components/ui/Select'
 import { cn } from '@/lib/utils/cn'
-import {
-  ROUND_OPTIONS,
-  CLASS_OPTIONS,
-  type ClassName,
-  type HeatmapLevel,
-  type RoundId,
-  type SortMode,
-} from '../mockData'
+import type { AttemptView, HeatmapLevel, RoundOption, ScopeOption } from '../_/api/types'
 
 /*
   툴바 — 프로젝트 select가 이 화면의 변수라 맨 왼쪽·크게 둔다(정의서 "회차 비교
-  토글 자리에 프로젝트 select"). 계층(반별·팀·개인)은 2지가 아니라 3지라 InputCompositionsPreview
-  J 규약(ButtonGroup)을 3버튼으로 확장했다 — OP-02 `RoundToolbar`의 2지 토글과 같은 조립.
+  토글 자리에 프로젝트 select"). 계층(반·팀·팀원)은 3지라 ButtonGroup을 3버튼으로
+  쓴다 — OP-02 `RoundToolbar`의 2지 토글과 같은 조립.
 
-  각 계층마다 필요한 선택 필터만 보인다(정의서 §3 표) — 반은 정렬·문제만, 팀은
-  반 select·정렬, 팀원은 반·팀 select·정렬·위험만.
+  각 계층마다 필요한 선택 필터만 보인다(정의서 §3 표) — 팀은 반 select가, 팀원은
+  반·팀 select가 붙는다. 서버가 그 값을 **필수로 요구**하기 때문이기도 하다
+  (`HEATMAP_SCOPE_INVALID`).
 
-  ⚠ 버튼 라벨은 "반별/팀/개인"이었다가 "반/팀/팀원"으로 바꿨다(렌더 확인 후
-  사용자 지시) — 셋 다 명사형으로 맞추고, "개인"은 그 계층에서 실제로 보여주는
-  단위(팀 소속 개인 = 팀원)를 더 직접적으로 가리키게 했다.
+  ⚠ 버튼 라벨은 "반별/팀/개인"이었다가 "반/팀/팀원"으로 바꿨다(렌더 확인 후 사용자
+  지시) — 셋 다 명사형으로 맞추고, "개인"은 그 계층에서 실제로 보여주는 단위를
+  더 직접적으로 가리키게 했다.
+
+  🔴 **정렬·문제만·위험만 세 필터를 뺐다.** 목에 있었는데 **서버에 그 파라미터가
+  없다.** 화면이 정렬하고 거르면 서버가 준 순서를 화면이 뒤집는 것이고, 계층을
+  오갈 때마다 규칙이 갈린다(api-boundary §1-②). 필요하면 요청서로 올린다.
+
+  대신 **최초 응시 / 다시 보기** 토글이 생겼다 — 목에 없던 축인데 서버가 준다
+  (`attemptView`). 다시 보기로 도달이 바뀐 것을 이 화면에서 볼 수 있다.
 */
+
+const LEVELS: { value: HeatmapLevel; label: string }[] = [
+  { value: 'CLASS', label: '반' },
+  { value: 'TEAM', label: '팀' },
+  { value: 'TRAINEE', label: '팀원' },
+]
+
+const ATTEMPTS: { value: AttemptView; label: string }[] = [
+  { value: 'INITIAL', label: '최초 응시' },
+  { value: 'REVIEW', label: '다시 보기' },
+]
+
 export default function HeatmapToolbar({
   round,
+  rounds,
   level,
-  classFilter,
-  teamFilter,
-  teamOptions,
-  sort,
-  problemOnly,
-  riskOnly,
+  attemptView,
+  classroomId,
+  teamId,
+  classrooms,
+  teams,
   onRoundChange,
   onLevelChange,
   onClassChange,
   onTeamChange,
-  onSortChange,
-  onProblemOnlyChange,
-  onRiskOnlyChange,
+  onAttemptViewChange,
 }: {
-  round: RoundId
+  round: string
+  rounds: RoundOption[]
   level: HeatmapLevel
-  classFilter: ClassName
-  teamFilter: string
-  teamOptions: { id: string; name: string }[]
-  sort: SortMode
-  problemOnly: boolean
-  riskOnly: boolean
-  onRoundChange: (v: RoundId) => void
-  onLevelChange: (v: HeatmapLevel) => void
-  onClassChange: (v: ClassName) => void
-  onTeamChange: (v: string) => void
-  onSortChange: (v: SortMode) => void
-  onProblemOnlyChange: (v: boolean) => void
-  onRiskOnlyChange: (v: boolean) => void
+  attemptView: AttemptView
+  classroomId: string
+  teamId: string
+  /** 본 적 있는 반·팀 — 화면이 기억한다(`HeatmapScreen`의 주석 참고) */
+  classrooms: ScopeOption[]
+  teams: ScopeOption[]
+  onRoundChange: (assessmentRoundId: string) => void
+  onLevelChange: (level: HeatmapLevel) => void
+  onClassChange: (classroomId: string) => void
+  onTeamChange: (teamId: string) => void
+  onAttemptViewChange: (v: AttemptView) => void
 }) {
+  const roundItems = Object.fromEntries(rounds.map((r) => [r.assessmentRoundId, r.label]))
+  const classItems = Object.fromEntries(classrooms.map((c) => [c.id, `반 · ${c.name}`]))
+  const teamItems = Object.fromEntries(teams.map((t) => [t.id, `팀 · ${t.name}`]))
+
+  /*
+    🔴 **갈 수 없는 계층은 잠근다**(하드닝 실측). 서버가 `TEAM`에 반을, `TRAINEE`에
+    반과 팀을 **필수로** 요구한다(`HEATMAP_SCOPE_INVALID`). 팀 목록은 반 격자를
+    한 번 봐야 생기므로, 그 전에는 「팀원」을 눌러도 400밖에 안 나온다.
+    막는 대신 왜인지 말한다(integration-process §7과 같은 원칙).
+  */
+  const blocked = (l: HeatmapLevel) =>
+    l !== 'CLASS' && classrooms.length === 0
+      ? '반 격자를 먼저 불러와야 합니다'
+      : l === 'TRAINEE' && !teamId && teams.length === 0
+        ? '팀을 먼저 고르세요 — 팀 격자에서 팀을 누르면 열립니다'
+        : undefined
+
   return (
-    <div className="mb-3 flex flex-wrap items-center gap-2">
-      <Select
-        value={round}
-        onValueChange={(v) => onRoundChange((v ?? round) as RoundId)}
-        items={ROUND_OPTIONS.map((o) => ({ value: o.value, label: `프로젝트 · ${o.label}` }))}
-      >
-        {/* SelectContent 폭이 트리거 폭(--anchor-width)을 그대로 물려받는다 — "프로젝트 ·
-            미프 4차"가 다 들어갈 만큼 넉넉히 줘야 목록에서 글자와 체크 표시가 안
-            겹친다(렌더 확인 후 w-36 → w-48) */}
-        <SelectTrigger className="h-9 w-48 text-sm font-bold" aria-label="프로젝트">
+    <div className="mb-4 flex flex-wrap items-center gap-2">
+      <Select value={round} onValueChange={(v) => v && onRoundChange(v)} items={roundItems}>
+        <SelectTrigger
+          className="h-9 min-w-52 text-sm font-semibold"
+          aria-label="회차 선택"
+          disabled={rounds.length === 0}
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          {ROUND_OPTIONS.map((o) => (
-            <SelectItem key={o.value} value={o.value}>
-              프로젝트 · {o.label}
+          {rounds.map((r) => (
+            <SelectItem key={r.assessmentRoundId} value={r.assessmentRoundId}>
+              {r.label}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
 
-      <ButtonGroup>
-        <Button
-          variant={level === 'class' ? 'primary' : 'ghost'}
-          size="sm"
-          onClick={() => onLevelChange('class')}
-        >
-          반
-        </Button>
-        <Button
-          variant={level === 'team' ? 'primary' : 'ghost'}
-          size="sm"
-          onClick={() => onLevelChange('team')}
-        >
-          팀
-        </Button>
-        <Button
-          variant={level === 'person' ? 'primary' : 'ghost'}
-          size="sm"
-          onClick={() => onLevelChange('person')}
-        >
-          팀원
-        </Button>
+      <ButtonGroup aria-label="계층">
+        {LEVELS.map((l) => {
+          const why = blocked(l.value)
+          return (
+            <Button
+              key={l.value}
+              size="sm"
+              variant={level === l.value ? 'primary' : 'ghost'}
+              aria-pressed={level === l.value}
+              disabled={!!why && level !== l.value}
+              title={why}
+              onClick={() => onLevelChange(l.value)}
+            >
+              {l.label}
+            </Button>
+          )
+        })}
       </ButtonGroup>
 
-      {(level === 'team' || level === 'person') && (
-        <FilterSelect
-          label="반"
-          value={classFilter}
-          options={CLASS_OPTIONS.map((c) => ({ value: c, label: c }))}
-          onChange={(v) => onClassChange(v as ClassName)}
-          className="w-24"
-        />
+      {/*
+        반·팀 select는 **그 계층에 필요할 때만** 그린다. 서버가 `TEAM`·`TRAINEE`에서
+        `classroomId`를 필수로 요구하므로(400) 없는 채로 부르지 않는다.
+      */}
+      {level !== 'CLASS' && classrooms.length > 0 && (
+        <Select value={classroomId} onValueChange={(v) => v && onClassChange(v)} items={classItems}>
+          <SelectTrigger className="h-9 w-32" aria-label="반 선택">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {classrooms.map((c) => (
+              <SelectItem key={c.id} value={c.id}>
+                반 · {c.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
 
-      {level === 'person' && (
-        <FilterSelect
-          label="팀"
-          value={teamFilter}
-          options={teamOptions.map((t) => ({ value: t.id, label: t.name }))}
-          onChange={onTeamChange}
-          className="w-24"
-        />
+      {level === 'TRAINEE' && teams.length > 0 && (
+        <Select value={teamId} onValueChange={(v) => v && onTeamChange(v)} items={teamItems}>
+          <SelectTrigger className="h-9 w-32" aria-label="팀 선택">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {teams.map((t) => (
+              <SelectItem key={t.id} value={t.id}>
+                팀 · {t.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
 
-      <FilterSelect
-        label="정렬"
-        value={sort}
-        options={[
-          { value: 'DEFAULT', label: '기본' },
-          { value: 'LOW_FIRST', label: '낮은 순' },
-        ]}
-        onChange={(v) => onSortChange(v as SortMode)}
-        className="w-28"
-      />
+      <ButtonGroup aria-label="응시 구분" className="ml-auto">
+        {ATTEMPTS.map((a) => (
+          <Button
+            key={a.value}
+            size="sm"
+            variant={attemptView === a.value ? 'primary' : 'ghost'}
+            aria-pressed={attemptView === a.value}
+            onClick={() => onAttemptViewChange(a.value)}
+          >
+            {a.label}
+          </Button>
+        ))}
+      </ButtonGroup>
 
-      {/* "반 문제만"·"위험만"이었다가 "반 : 위험"·"팀원 : 위험"으로 바꿨다(렌더
-          확인 후 사용자 지시) — "문제"라는 말이 뭘 가리키는지 애매하다는 지적.
-          집단 미달·위험 배지 둘 다 결국 같은 개념(위험 신호)이라 두 토글의
-          어휘를 "대상 : 위험"으로 통일했다. 콜론 양옆 1칸은 표 안 "세로 : X"·
-          "가로 : X" 축 라벨과 같은 간격 규칙(렌더 확인 후 사용자 지시,
-          `HeatmapTable.tsx`).
-
-          ⚠ **팀 계층에도 같은 토글을 추가했다**(사용자 제안, 이번 라운드) — 처음엔
-          반별에만 있었는데, "팀에도 있는 게 좋지 않을까?" 하는 지적을 받고 보니
-          팀 행도 반 행과 똑같이 `cell.flagged`(집단 미달)를 갖고 있어 같은 필터를
-          그대로 재사용할 수 있었다(`mockData.ts`의 `problemOnly` 분기를 team
-          레벨에도 추가). 상태(`problemOnly`)를 새로 안 만들고 기존 것을 공유한다
-          — class·team은 서로 배타적으로만 보이는 탭이라 하나의 상태를 같이 써도
-          꼬이지 않는다. */}
-      {(level === 'class' || level === 'team') && (
-        <TogglePill active={problemOnly} onClick={() => onProblemOnlyChange(!problemOnly)}>
-          ⚠ {level === 'class' ? '반' : '팀'} : 위험
-        </TogglePill>
-      )}
-
-      {level === 'person' && (
-        <TogglePill active={riskOnly} onClick={() => onRiskOnlyChange(!riskOnly)}>
-          ⚠ 팀원 : 위험
-        </TogglePill>
-      )}
-
-      {/* "위험" 판정 기준을 설명하는 도움말 버튼(사용자 지시) — 반/팀은 집단 통계
-          기준, 팀원은 개인 배지 기준으로 서로 다른데 이름만 봐서는 안 드러난다
-          ("위험 팀원이 왜 항상 0명이냐"는 질문이 실제로 나왔다). 계층에 상관없이
-          항상 보이게 뒀다 — 세 계층 기준을 한 번에 설명하는 내용이라 특정
-          계층에서만 보이면 다른 계층에 있을 때는 못 찾는다.
-
-          트리거는 위험 토글(⚠, 앰버 필 스타일)과 헷갈리지 않게 일부러 다른 아이콘
-          (`CircleHelp`)·중립색을 썼다 — 같은 ⚠를 쓰면 이 버튼도 필터처럼 보인다.
-          `Popover`는 `UiPreviewScreen.tsx`의 "SC-M10 코치마크" 용례를 그대로
-          따랐다(정의서 밖 새 UI라 기존 패턴을 재사용).
-
-          ⚠ `ml-auto`로 오른쪽 끝에 붙였다(사용자 지시, 이번 라운드) — §6 "툴바는
-          전부 좌측, 우측 비움"과는 결이 다르지만, 이건 필터가 아니라 도움말이라
-          "필터 줄의 다른 액션들과 나란히 좌측에 쌓인 것"보다 "줄 끝에 따로 뗀 것"
-          이 여기서는 더 명확하다고 판단해 그대로 반영했다. */}
       <Popover>
         <PopoverTrigger
           render={
-            <button
-              type="button"
-              className="ml-auto flex items-center gap-1 rounded-full border border-border-strong bg-surface-2 px-3 py-1.5 text-xs text-fg-muted hover:bg-canvas"
-            >
-              <CircleHelp className="size-3.5" aria-hidden="true" />
-              위험 기준?
-            </button>
+            <Button variant="ghost" size="sm" aria-label="히트맵 읽는 법">
+              <CircleHelp className={cn('size-4')} aria-hidden="true" />
+            </Button>
           }
         />
-        <PopoverContent className="w-80" align="end">
+        <PopoverContent className="max-w-sm">
           <PopoverHeader>
-            <PopoverTitle>&ldquo;위험&rdquo; 판정 기준</PopoverTitle>
+            <PopoverTitle>이 표를 읽는 법</PopoverTitle>
           </PopoverHeader>
-          <PopoverDescription className="flex flex-col gap-2">
-            <span>
-              <b className="font-semibold text-fg">반 · 팀 위험</b> — 검증 개념 3개 중 하나라도{' '}
-              <b className="font-semibold text-fg">그 반(팀) 인원의 절반 이상이 2단 이하</b>를
-              받으면 위험으로 표시돼요. 개인 점수가 아니라 집단 전체의 통계예요.
-            </span>
-            <span>
-              <b className="font-semibold text-fg">팀원 위험</b> —{' '}
-              <b className="font-semibold text-fg">
-                &ldquo;단계 하락&rdquo;·&ldquo;지속 저점&rdquo;
-              </b>{' '}
-              배지가 붙어 있거나, 검증 개념 중 하나라도{' '}
-              <b className="font-semibold text-fg">0단·1단</b>을 받았으면 해당돼요. 배지는 직전
-              회차와 비교해야 매길 수 있어서 최소 3차부터 나오지만, 0단·1단은 그 회차 점수만 보기
-              때문에 회차와 상관없이 바로 적용돼요.
-            </span>
+          <PopoverDescription className="space-y-1.5 text-xs leading-relaxed">
+            <p>
+              칸의 숫자는 <b className="font-semibold text-fg">도달 단계</b>입니다. 반·팀은 평균이라
+              소수로, 팀원은 그 사람의 단계로 나옵니다.
+            </p>
+            <p>
+              열 이름 앞의 <span className="text-warning">⚠</span>는{' '}
+              <b className="font-semibold text-fg">집단 미달</b> — 그 개념에서 절반 이상이 막혔다는
+              뜻이라 개인 문제가 아닙니다.
+            </p>
+            <p>
+              빗금 친 칸은 <b className="font-semibold text-fg">셀 수 있는 결과가 없는 것</b>
+              입니다. 칸에 마우스를 올리면 미응시·무효·중단 인원이 나옵니다.
+            </p>
           </PopoverDescription>
         </PopoverContent>
       </Popover>
     </div>
-  )
-}
-
-function TogglePill({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean
-  onClick: () => void
-  children: React.ReactNode
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        'rounded-full border px-3 py-1.5 text-xs',
-        active
-          ? 'border-primary-border bg-primary-soft font-semibold text-primary'
-          : 'border-border-strong bg-surface-2 text-fg-muted',
-      )}
-    >
-      {children}
-    </button>
-  )
-}
-
-function FilterSelect({
-  label,
-  value,
-  options,
-  onChange,
-  className,
-}: {
-  label: string
-  value: string
-  options: { value: string; label: string }[]
-  onChange: (value: string) => void
-  className?: string
-}) {
-  return (
-    <Select
-      value={value}
-      onValueChange={(v) => onChange(v ?? options[0]?.value)}
-      items={options.map((o) => ({ value: o.value, label: `${label} · ${o.label}` }))}
-    >
-      <SelectTrigger className={cn('h-9', className)} aria-label={`${label} 필터`}>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {options.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
-            {label} · {o.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
   )
 }

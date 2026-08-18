@@ -1,154 +1,270 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
+import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import { Spinner } from '@/components/ui/Spinner'
-import { useAsync } from '@/lib/useAsync'
-import {
-  COHORT_NAME,
-  getHeatmap,
-  type ClassName,
-  type HeatmapLevel,
-  type RoundId,
-  type SortMode,
-} from './mockData'
+import { staleProps } from '@/lib/listQuery'
+import { useManagerCohort } from '@/stores/cohortScope'
+import { useHeatmap, useHeatmapRounds } from './_/api/api'
+import type { AttemptView, HeatmapLevel, ScopeOption } from './_/api/types'
 import { getSessionView, setSessionView } from './viewState'
 import HeatmapToolbar from './components/HeatmapToolbar'
 import HeatmapLegend from './components/HeatmapLegend'
 import HeatmapTable from './components/HeatmapTable'
 
 /*
-  MG-02 히트맵 — "개인 문제인가, 반 문제인가"(정의서 §1). 계층(반별 › 팀 › 개인)마다
-  화면이 바뀐다(URL은 그대로다 — 목업 3장면이 모두 같은 주소를 쓴다). 조립은 여기가,
-  집계·판정(집단 미달·색·라벨)은 `mockData.ts`가 갖는다(MG-03·MG-07과 같은 분업).
+  MG-02 히트맵 — "개인 문제인가, 반 문제인가"(정의서 §1). 계층(반 › 팀 › 팀원)마다
+  화면이 바뀐다(URL은 그대로다). 조립은 여기가, **집계·판정은 서버가** 갖는다 —
+  목일 때는 `mockData.ts`가 평균과 집단 미달을 계산했다.
 
-  **드릴다운은 두 갈래다** — 표의 행 클릭(아래로 한 단만) vs 툴바 `반별/팀/개인`
-  버튼(어느 단으로든 바로 이동). 버튼으로 팀·개인에 들어가면 아직 반을 안 골랐을
-  수 있어 **첫 반을 기본값으로 둔다** — OP-02 `RoundToolbar`처럼 팝오버를 강제로
-  여는 대신, 이 화면의 반 select는 항상 값이 있어야 하는 일반 Select라 빈 상태를
-  만들지 않는 편이 단순하다(정의서가 이 갈림길을 명시하지 않아 여기서 판단).
+  **드릴다운은 두 갈래다** — 표의 행 클릭(아래로 한 단만) vs 툴바 버튼(어느 단으로든).
+  버튼으로 내려갈 때는 **스코프를 먼저 채우고** 계층을 바꾼다. 서버가 `TEAM`에 반을,
+  `TRAINEE`에 반과 팀을 필수로 요구해서(400) 빈 채로는 못 부른다.
+
+  ⚠ **스코프를 언제 비우나** — 셋 다 하드닝 실측에서 정해졌다.
+  · 계층을 올리면 아래 스코프는 뜻을 잃는다
+  · 반을 바꾸면 이전 팀은 다른 반 소속이다(400)
+  · **회차를 바꾸면 팀은 뜻을 잃는다** — 팀은 프로젝트에 매인다. 이건 400도 아니라
+    200 + 빈 결과가 와서, 안 비우면 화면이 「결과 없음」이라고 거짓말한다
 */
 const traineePath = (id: string) => `/manager/trainees/${id}`
 
 export default function HeatmapScreen() {
+  const { cohortId, cohortName, failed: cohortFailed, cohorts, selectCohort } = useManagerCohort()
+
   // 개인 히트맵 → 교육생 상세 → 뒤로가기로 돌아왔을 때 같은 화면(같은 반·팀·회차)을
   // 다시 보여주기 위해 초기값을 세션에서 복원한다(viewState.ts, 사용자 지시).
   const initial = getSessionView()
-  const [round, setRound] = useState<RoundId>(initial.round)
+  const [round, setRound] = useState(initial.round)
   const [level, setLevel] = useState<HeatmapLevel>(initial.level)
-  const [classFilter, setClassFilter] = useState<ClassName>(initial.classFilter)
-  const [teamFilter, setTeamFilter] = useState(initial.teamFilter)
-  const [sort, setSort] = useState<SortMode>(initial.sort)
-  const [problemOnly, setProblemOnly] = useState(initial.problemOnly)
-  const [riskOnly, setRiskOnly] = useState(initial.riskOnly)
+  const [classroomId, setClassroomId] = useState(initial.classroomId)
+  const [teamId, setTeamId] = useState(initial.teamId)
+  const [attemptView, setAttemptView] = useState<AttemptView>(initial.attemptView)
+  /* 본 적 있는 반·팀 — 아래 `useEffect` 주석 참고 */
+  const [knownClassrooms, setKnownClassrooms] = useState<ScopeOption[]>([])
+  const [knownTeams, setKnownTeams] = useState<ScopeOption[]>([])
+
+  const rounds = useHeatmapRounds(cohortId)
+  const roundList = rounds.data ?? []
+  /* 서버가 준 마지막 회차를 기본으로 — 회차가 늘어도 안 깨진다 */
+  const picked =
+    roundList.find((r) => r.assessmentRoundId === round) ?? roundList[roundList.length - 1]
+
+  const heatmap = useHeatmap(
+    cohortId && picked
+      ? {
+          cohortId,
+          projectId: picked.projectId,
+          assessmentRoundId: picked.assessmentRoundId,
+          level,
+          attemptView,
+          /* `CLASS`는 스코프가 없고, 그 아래는 서버가 필수로 요구한다 */
+          classroomId: level === 'CLASS' ? undefined : classroomId || undefined,
+          teamId: level === 'TRAINEE' ? teamId || undefined : undefined,
+        }
+      : undefined,
+  )
+  const view = heatmap.data
+
+  /*
+    🔴 **본 계층의 `rows[]`도 선택지다**(하드닝 실측에서 잡았다).
+
+    `navigation`은 **지금 계층보다 위**의 선택지만 준다 — `CLASS`에서는 통째로 비어
+    온다. 아래 단계 항목은 `rows[]`에 있고 그 `rowId`가 곧 `classroomId`·`teamId`다.
+
+    이걸 몰라서 툴바 「팀」·「팀원」 버튼이 **400에서 빠져나오지 못했다.** 계층만
+    바꾸면 스코프가 빈 채로 나가 `HEATMAP_SCOPE_INVALID`가 되고, 채울 값을 빈
+    `navigation`에서 찾으니 영영 안 채워진다. 실측:
+
+        level=TEAM     반 없이  → 400 HEATMAP_SCOPE_INVALID
+        level=TRAINEE  팀 없이  → 400 (반만으로는 부족하다)
+
+    그래서 **본 것을 기억한다.** 반·팀 목록은 자주 바뀌지 않고, 계층을 오갈 때마다
+    다시 받을 수도 없다(그 요청이 바로 스코프를 요구한다).
+  */
+  useEffect(() => {
+    if (!view) return
+    const fromRows = view.rows
+      .filter((r) => r.rowId)
+      .map((r) => ({ id: r.rowId!, name: r.rowName ?? '', memberCount: r.memberCount }))
+
+    if (view.level === 'CLASS') {
+      setKnownClassrooms(fromRows)
+    } else if (view.level === 'TEAM') {
+      setKnownTeams(fromRows)
+      if (view.navigation.classrooms.length > 0) {
+        setKnownClassrooms(
+          view.navigation.classrooms.map((c) => ({
+            id: c.classroomId,
+            name: c.classroomName,
+            memberCount: c.memberCount,
+          })),
+        )
+      }
+    }
+  }, [view])
 
   useEffect(() => {
-    setSessionView({ round, level, classFilter, teamFilter, sort, problemOnly, riskOnly })
-  }, [round, level, classFilter, teamFilter, sort, problemOnly, riskOnly])
+    setSessionView({
+      round: picked?.assessmentRoundId ?? '',
+      level,
+      classroomId,
+      teamId,
+      attemptView,
+    })
+  }, [picked, level, classroomId, teamId, attemptView])
 
-  const load = useCallback(
-    () =>
-      getHeatmap({
-        round,
-        level,
-        classFilter,
-        teamFilter: teamFilter || undefined,
-        sort,
-        problemOnly,
-        riskOnly,
-      }),
-    [round, level, classFilter, teamFilter, sort, problemOnly, riskOnly],
+  /**
+   * 계층 버튼 — **내려갈 때는 스코프를 먼저 채우고 바꾼다.** 비운 채 바꾸면 400이다.
+   *
+   * `TRAINEE`는 반과 팀이 둘 다 있어야 하는데, 팀 목록은 `TEAM` 계층을 한 번
+   * 봐야 생긴다 — 아직 모르면 그 버튼을 잠그고 왜인지 말한다(툴바). 여기서
+   * 임의로 `TEAM`에 내려놓으면 사용자가 누른 것과 다른 화면이 뜬다.
+   */
+  function changeLevel(next: HeatmapLevel) {
+    if (next === 'CLASS') {
+      setClassroomId('')
+      setTeamId('')
+    } else {
+      const cls = classroomId || knownClassrooms[0]?.id
+      if (!cls) return
+      setClassroomId(cls)
+      if (next === 'TEAM') {
+        setTeamId('')
+      } else {
+        const team = teamId || knownTeams[0]?.id
+        if (!team) return
+        setTeamId(team)
+      }
+    }
+    setLevel(next)
+  }
+
+  /**
+   * 반을 바꾸면 이전 팀은 **다른 반 소속**이라 못 쓴다.
+   *
+   * 그래서 `TRAINEE`에 머물 수 없다 — 새 반의 팀 목록을 아직 모르고, 그걸 알려면
+   * 그 반의 `TEAM` 격자를 한 번 받아야 한다. 빈 팀으로 밀어 넣으면 400이다.
+   */
+  function changeClass(next: string) {
+    setClassroomId(next)
+    setTeamId('')
+    setKnownTeams([])
+    if (level === 'TRAINEE') setLevel('TEAM')
+  }
+
+  /**
+   * 회차를 바꾸면 **팀은 뜻을 잃는다** — 팀은 프로젝트에 매인 것이라 회차마다 다시
+   * 짠다. 반은 기수 소속이라 그대로 쓴다.
+   *
+   * 🔴 이걸 안 비우면 **화면이 거짓말을 한다.** 다른 회차의 `teamId`를 넣어도 서버가
+   * 400이 아니라 **200 + 빈 결과**를 준다(하드닝 실측) — 그러면 화면이 「이 범위에는
+   * 아직 결과가 없습니다」라고 말하는데, 사실은 그 팀이 이 회차에 없는 것이다.
+   */
+  function changeRound(next: string) {
+    setRound(next)
+    setTeamId('')
+    setKnownTeams([])
+    if (level === 'TRAINEE') setLevel('TEAM')
+  }
+
+  /** 행을 눌러 한 단 내려간다 */
+  function drill(rowId: string) {
+    if (level === 'CLASS') {
+      setClassroomId(rowId)
+      setTeamId('')
+      setLevel('TEAM')
+    } else if (level === 'TEAM') {
+      setTeamId(rowId)
+      setLevel('TRAINEE')
+    }
+  }
+
+  const crumb = ['히트맵', cohortName, view?.scope?.classroomName, view?.scope?.teamName].filter(
+    Boolean,
   )
-  const page = useAsync(load)
-  const data = page.data
-
-  function changeLevel(v: HeatmapLevel) {
-    setLevel(v)
-    // 반이 바뀌면 팀 select가 달라지니, 팀까지 필요한 개인 단으로 직접 넘어올 때는
-    // 항상 그 반의 첫 팀으로 다시 고른다(반을 그대로 두면 이전 팀이 다른 반 소속일
-    // 수 있다).
-    if (v === 'person') setTeamFilter('')
-  }
-  function changeClass(v: ClassName) {
-    setClassFilter(v)
-    setTeamFilter('')
-  }
-  function drillToTeam(cls: string) {
-    setClassFilter(cls as ClassName)
-    setTeamFilter('')
-    setLevel('team')
-  }
-  function drillToPerson(cls: string, team: string) {
-    setClassFilter(cls as ClassName)
-    setTeamFilter(team)
-    setLevel('person')
-  }
-
-  const crumb =
-    `히트맵 › ${COHORT_NAME} › 담당 반` + (data?.crumb.length ? ' › ' + data.crumb.join(' › ') : '')
 
   return (
-    <ConsoleShell role="manager">
-      <PageHeader breadcrumb={crumb} title="히트맵" />
+    <ConsoleShell
+      role="manager"
+      cohort={cohortName ?? ''}
+      cohorts={cohorts}
+      onCohortChange={selectCohort}
+    >
+      {/* 있는 것만 잇는다 — 스코프가 오기 전 `히트맵 › › ` 가 되지 않게(MG-03과 같은 건) */}
+      <PageHeader breadcrumb={crumb.join(' › ')} title="히트맵" />
 
       <HeatmapToolbar
-        round={round}
+        round={picked?.assessmentRoundId ?? ''}
+        rounds={roundList}
         level={level}
-        classFilter={classFilter}
-        teamFilter={data && data.level === 'person' ? teamFilter || data.teamFilter : teamFilter}
-        teamOptions={data && data.level === 'person' ? data.teamOptions : []}
-        sort={sort}
-        problemOnly={problemOnly}
-        riskOnly={riskOnly}
-        onRoundChange={setRound}
+        attemptView={attemptView}
+        classroomId={view?.scope?.classroomId ?? classroomId}
+        teamId={view?.scope?.teamId ?? teamId}
+        classrooms={knownClassrooms}
+        teams={knownTeams}
+        onRoundChange={changeRound}
         onLevelChange={changeLevel}
         onClassChange={changeClass}
-        onTeamChange={setTeamFilter}
-        onSortChange={setSort}
-        onProblemOnlyChange={setProblemOnly}
-        onRiskOnlyChange={setRiskOnly}
+        onTeamChange={setTeamId}
+        onAttemptViewChange={setAttemptView}
       />
 
-      {page.loading ? (
+      {cohortFailed ? (
+        <Empty>
+          <EmptyHeader>
+            <EmptyTitle>담당 기수가 없습니다</EmptyTitle>
+            <EmptyDescription>
+              반 배정이 끝나면 여기에 담당 반의 도달 현황이 나타납니다.
+            </EmptyDescription>
+          </EmptyHeader>
+        </Empty>
+      ) : rounds.isPending || heatmap.isPending ? (
         <div className="flex justify-center py-16">
           <Spinner className="size-6" aria-label="히트맵을 불러오는 중" />
         </div>
-      ) : page.failed ? (
+      ) : rounds.isError || heatmap.isError || !view ? (
         <Empty>
           <EmptyHeader>
             <EmptyTitle>불러오지 못했습니다</EmptyTitle>
             <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
           </EmptyHeader>
+          <Button variant="ghost" onClick={() => void heatmap.refetch()}>
+            다시 시도
+          </Button>
         </Empty>
-      ) : data && data.round.resultStatus === 'PENDING' ? (
+      ) : view.concepts.length === 0 ? (
+        /*
+          열이 하나도 없으면 그릴 격자가 없다 — 아직 문항이 만들어지지 않은 회차다.
+          `rows`가 비는 것과 다른 상태라 문구를 가른다.
+        */
         <Empty className="min-h-70 border-dashed">
           <EmptyHeader className="max-w-md">
             <EmptyTitle>이 회차는 아직 결과가 없어요</EmptyTitle>
             <EmptyDescription>
               이해도 확인이 끝나면 여기에 표시됩니다.
               <br />
-              지난 회차를 보려면 위에서 프로젝트를 바꾸세요.
+              지난 회차를 보려면 위에서 회차를 바꾸세요.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (
-        data && (
-          <>
-            <HeatmapLegend showLevelMeaning={data.level === 'person'} />
-            <HeatmapTable
-              result={data}
-              onDrillTeam={drillToTeam}
-              onDrillPerson={drillToPerson}
-              traineePath={traineePath}
-            />
-            {data.round.isFirstRound && (
-              <p className="mt-4 max-w-[920px] border-t border-border pt-4 text-xs text-fg-subtle">
-                · <b className="font-semibold text-fg-muted">이번이 첫 회차입니다.</b> 비교할 지난
-                회차가 없어 단계 하락은 판정하지 않습니다.
-              </p>
-            )}
-          </>
-        )
+        /* 옛 값을 그리는 동안 그 사실을 숨기지 않는다 — `lib/listQuery` */
+        <div {...staleProps(heatmap.isPlaceholderData)}>
+          <HeatmapLegend showLevelMeaning={view.level === 'TRAINEE'} />
+          <HeatmapTable
+            view={view}
+            onDrill={view.level === 'TRAINEE' ? undefined : drill}
+            traineePath={traineePath}
+          />
+          {view.asOfAt && (
+            <p className="mt-4 text-xs text-fg-subtle">
+              · {view.asOfAt.slice(0, 10)} 기준 집계입니다. 회차마다 검증 개념도 과제도 달라 단계를
+              회차 간에 그대로 견주지 않습니다.
+            </p>
+          )}
+        </div>
       )}
     </ConsoleShell>
   )

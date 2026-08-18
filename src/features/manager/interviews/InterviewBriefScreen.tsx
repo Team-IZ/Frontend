@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router'
 import { ArrowLeft, Check } from 'lucide-react'
 import ConsoleShell from '@/shells/ConsoleShell'
+import { errorCopy } from '@/lib/errorCopy'
 import { Button } from '@/components/ui/Button'
 import { Textarea } from '@/components/ui/Textarea'
 import {
@@ -84,15 +85,29 @@ export default function InterviewBriefScreen() {
     return shell(
       <Empty>
         <EmptyHeader>
+          {/*
+            🔴 **방금 누른 생성이 실패한 것도 말한다**(MG-08 하드닝 중 훑다가 발견).
+            `stateHint`는 **목록이 준 지난 상태**라, 이 화면에서 누른 생성이 실패해도
+            「아직 브리프가 없습니다」가 그대로 떠 있었다 — 눌렀는데 아무 일도 안
+            일어난 것처럼 보인다.
+          */}
           <EmptyTitle>
-            {stateHint === 'FAILED' ? '브리프를 만들지 못했습니다' : '아직 브리프가 없습니다'}
+            {create.isError || stateHint === 'FAILED'
+              ? '브리프를 만들지 못했습니다'
+              : '아직 브리프가 없습니다'}
           </EmptyTitle>
           <EmptyDescription>
-            여는 말과 질문을 만드는 데 잠시 걸립니다.
-            {stateHint === 'FAILED' && (
+            {create.isError ? (
+              errorCopy(create.error, { subject: '브리프', action: '생성' }).description
+            ) : (
               <>
-                <br />
-                지난번 생성이 실패했어요 — 다시 시도해 주세요.
+                여는 말과 질문을 만드는 데 잠시 걸립니다.
+                {stateHint === 'FAILED' && (
+                  <>
+                    <br />
+                    지난번 생성이 실패했어요 — 다시 시도해 주세요.
+                  </>
+                )}
               </>
             )}
           </EmptyDescription>

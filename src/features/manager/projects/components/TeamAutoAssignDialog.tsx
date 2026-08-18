@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Check } from 'lucide-react'
+import { Check, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import {
   Dialog,
@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/Dialog'
-import { Checkbox } from '@/components/ui/Checkbox'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import {
   Select,
@@ -17,58 +17,58 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/Select'
-import { TEAM_SIZE_RANGES, autoAssignTeams, planAutoAssign, type TeamSizeRange } from '../mockData'
+import { errorCopy } from '@/lib/errorCopy'
+import { useAutoAssignTeams } from '../_/api/api'
 
 /*
-  자동 배분 모달 — 와이어프레임(#team-auto) 그대로: 팀 크기(범위) · 섞는 방법
-  (무작위/실력 섞기) · 지난 회차 겹침 회피, 실시간 미리보기 + 배분하기.
+  자동 배분 모달 — 와이어프레임(#team-auto) 그대로: 팀 크기 · 섞는 방법,
+  그리고 배분하기.
 
-  이전엔 버튼 하나로 바로 실행했는데(값 고정), 사용자가 "와이어프레임쪽으로
-  바꿔달라"고 명시해 옵션을 실제로 mockData의 `autoAssign` 로직에 흘려보내는
-  형태로 다시 짰다 — 모달에서 고른 값이 배분 결과에 실제로 반영된다.
+  🔴 **"지난 회차 겹침 회피"를 뺐다.** 목이 화면에서 20회 재추첨하던 규칙인데
+  `AutoAssignTeamsRequest`에 그 파라미터가 없다(`teamSize`·`skillBalanced` 둘뿐).
+  못 피한 팀을 알려주던 경고도 함께 사라졌다 — 응답이 `TeamResponse[]`라 어느 팀이
+  겹쳤는지 오지 않는다. 32차 요청서로 올린다.
+
+  ⚠ **팀 크기가 범위가 아니라 값 하나다.** 목은 "3~4명" 같은 범위를 골라 화면이
+  분배를 계산했는데 서버는 목표 인원 하나를 받는다 — 나머지 처리는 서버 몫이라
+  화면이 미리 나눠 보여주지 않는다(같은 규칙이 양쪽에 생긴다).
+
+  ⚠ **실력 섞기에 선택 조건을 걸지 않는다.** 목은 "직전 회차 기록이 없으면 무작위만"
+  이었는데 그 기록이 있는지는 화면이 알 수 없다(팀·미배정 응답에 도달 단계가 없다).
+  기록이 없을 때 어떻게 되는지는 서버가 정한다.
 */
+
+/** 목표 인원 — 서버가 값 하나를 받는다 */
+const TEAM_SIZES = [2, 3, 4, 5, 6]
 
 type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
   projectId: string
   unassignedCount: number
-  /** 직전 회차 기록이 하나도 없으면 "실력 섞기"를 고를 수 없다(와이어 "1차라면 무작위만") */
-  canMixByReach: boolean
-  onAssigned: (conflicted: string[]) => void
+  /** 담당 반이 여럿이면 서버가 반을 하나로 못 정한다(400 `MANAGER_CLASSROOM_AMBIGUOUS`) */
+  ambiguousClassroom: boolean
 }
 
-const items = Object.fromEntries(TEAM_SIZE_RANGES.map((r) => [String(r.max), r.label]))
+const items = Object.fromEntries(TEAM_SIZES.map((n) => [String(n), `${n}명씩`]))
 
 export default function TeamAutoAssignDialog({
   open,
   onOpenChange,
   projectId,
   unassignedCount,
-  canMixByReach,
-  onAssigned,
+  ambiguousClassroom,
 }: Props) {
-  const [range, setRange] = useState<TeamSizeRange>(TEAM_SIZE_RANGES[1])
-  const [mixByReach, setMixByReach] = useState(canMixByReach)
-  const [avoidOverlap, setAvoidOverlap] = useState(true)
-  const [assigning, setAssigning] = useState(false)
+  const [teamSize, setTeamSize] = useState(4)
+  const [skillBalanced, setSkillBalanced] = useState(false)
 
-  const preview = planAutoAssign(unassignedCount, range.max)
-  const previewLabel = preview.sizes.map((s) => `${s.size}명 ${s.count}팀`).join(' · ')
+  const autoAssign = useAutoAssignTeams()
 
-  async function handleAssign() {
-    setAssigning(true)
-    try {
-      const { conflicted } = await autoAssignTeams(projectId, {
-        maxSize: range.max,
-        mixByReach: mixByReach && canMixByReach,
-        avoidOverlap,
-      })
-      onOpenChange(false)
-      onAssigned(conflicted)
-    } finally {
-      setAssigning(false)
-    }
+  function handleAssign() {
+    autoAssign.mutate(
+      { path: { projectId }, body: { teamSize, skillBalanced } },
+      { onSuccess: () => onOpenChange(false) },
+    )
   }
 
   return (
@@ -79,34 +79,46 @@ export default function TeamAutoAssignDialog({
         </DialogHeader>
 
         <div className="flex flex-col gap-5">
+          {/* 🔴 실패를 말한다(하드닝 실측) — 배분이 거절돼도 모달만 열려 있었다 */}
+          {autoAssign.error !== null &&
+            (() => {
+              const copy = errorCopy(autoAssign.error, { subject: '팀', action: '배분' })
+              return (
+                <Alert variant="danger">
+                  <AlertTitle>{copy.title}</AlertTitle>
+                  <AlertDescription>{copy.description}</AlertDescription>
+                </Alert>
+              )
+            })()}
+
+          {ambiguousClassroom && (
+            <Alert variant="warning">
+              <AlertTriangle />
+              <AlertTitle>담당 반이 여럿이라 자동 배분을 쓸 수 없습니다</AlertTitle>
+              <AlertDescription>반마다 팀을 직접 추가해 편성하세요.</AlertDescription>
+            </Alert>
+          )}
+
           <div>
             <p className="text-fg-muted mb-1.5 text-xs font-bold">팀 크기</p>
-            <div className="flex items-center gap-2">
-              <Select
-                value={String(range.max)}
-                onValueChange={(v) => {
-                  const found = TEAM_SIZE_RANGES.find((r) => String(r.max) === v)
-                  if (found) setRange(found)
-                }}
-                items={items}
-              >
-                <SelectTrigger className="w-28">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {TEAM_SIZE_RANGES.map((r) => (
-                    <SelectItem key={r.max} value={String(r.max)}>
-                      {r.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <span className="text-fg-subtle text-xs">
-                → {preview.teamCount}팀 · {previewLabel}
-              </span>
-            </div>
+            <Select
+              value={String(teamSize)}
+              onValueChange={(v) => v && setTeamSize(Number(v))}
+              items={items}
+            >
+              <SelectTrigger className="w-28">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {TEAM_SIZES.map((n) => (
+                  <SelectItem key={n} value={String(n)}>
+                    {n}명씩
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <p className="text-fg-subtle mt-1.5 text-2xs">
-              인원이 딱 나눠지지 않아 범위로 고릅니다 — 단일 인원으로 고정하면 남는 사람이 생겨요.
+              딱 나눠지지 않는 인원은 서버가 남는 팀에 붙입니다.
             </p>
           </div>
 
@@ -114,53 +126,32 @@ export default function TeamAutoAssignDialog({
             <p className="text-fg-muted mb-1.5 text-xs font-bold">섞는 방법</p>
             <div className="flex flex-col gap-1.5">
               <RadioRow
-                checked={!mixByReach}
-                onSelect={() => setMixByReach(false)}
+                checked={!skillBalanced}
+                onSelect={() => setSkillBalanced(false)}
                 title="무작위"
                 desc="그냥 섞어서 나눕니다"
               />
               <RadioRow
-                checked={mixByReach}
-                disabled={!canMixByReach}
-                onSelect={() => canMixByReach && setMixByReach(true)}
+                checked={skillBalanced}
+                onSelect={() => setSkillBalanced(true)}
                 title="실력 섞기"
                 desc="직전 회차 도달 단계가 한쪽에 몰리지 않게 나눕니다"
               />
             </div>
-            <p className="text-fg-subtle mt-1.5 text-2xs">
-              {canMixByReach
-                ? '이번은 직전 기록이 있어 실력 섞기를 쓸 수 있어요.'
-                : '직전 회차 기록이 없어 무작위만 쓸 수 있습니다.'}
-            </p>
           </div>
-
-          <label className="flex items-start gap-2">
-            <Checkbox checked={avoidOverlap} onCheckedChange={() => setAvoidOverlap((v) => !v)} />
-            <span className="flex-1">
-              <span className="block text-sm font-semibold">지난 회차와 겹치지 않게</span>
-              <span className="text-fg-subtle block text-2xs">
-                2명 이상 겹치는 팀은 다시 뽑아요 — 안 되면 그대로 두고 알려드립니다
-              </span>
-            </span>
-          </label>
 
           <p className="text-fg-subtle text-2xs">
             결과가 마음에 안 들면 다시 실행하거나 팀 편집으로 바꾸면 돼요.
           </p>
         </div>
 
-        <DialogFooter className="sm:justify-between">
-          <p className="text-fg-subtle self-center text-xs">
-            {unassignedCount}명이 {preview.teamCount}팀으로 나뉩니다
-          </p>
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => onOpenChange(false)}>
-              취소
-            </Button>
-            <Button disabled={assigning} onClick={handleAssign}>
-              {assigning ? '배분 중…' : '배분하기'}
-            </Button>
-          </div>
+        <DialogFooter className="sm:justify-end">
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            취소
+          </Button>
+          <Button disabled={autoAssign.isPending || ambiguousClassroom} onClick={handleAssign}>
+            {autoAssign.isPending ? '배분 중…' : '배분하기'}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
@@ -169,13 +160,11 @@ export default function TeamAutoAssignDialog({
 
 function RadioRow({
   checked,
-  disabled,
   onSelect,
   title,
   desc,
 }: {
   checked: boolean
-  disabled?: boolean
   onSelect: () => void
   title: string
   desc: string
@@ -183,10 +172,9 @@ function RadioRow({
   return (
     <button
       type="button"
-      disabled={disabled}
       onClick={onSelect}
       className={cn(
-        'flex items-start gap-2 rounded-md border px-3 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-50',
+        'flex items-start gap-2 rounded-md border px-3 py-2 text-left transition-colors',
         checked ? 'border-primary-border bg-primary-soft' : 'border-border bg-surface',
       )}
     >

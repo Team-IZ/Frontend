@@ -37,7 +37,6 @@ import type { ActionCode, CurrentRound, RoundStatus, WarningCode } from './_/api
   **한쪽만 고치면 홈과 세션이 다른 시간을 말하게 된다**(실제로 그랬다).
   ponytail: 세 번째 화면이 같은 값을 말하게 되면 `lib/`로 올린다.
 */
-const CONCEPT_COUNT = 3
 const CONCEPT_LIMIT_MIN = 20
 /** 문구용 — 세션 인트로가 "전체 1시간"이라고 하므로 홈도 같은 말을 쓴다("60분" ✗) */
 const SESSION_LIMIT_LABEL = '1시간'
@@ -197,7 +196,14 @@ function buildGuide(round: CurrentRound): GuideLine[] {
       return [
         {
           icon: MessageCircleIcon,
-          text: `내가 쓴 코드 ${CONCEPT_COUNT}군데에 대해 왜 그렇게 했는지 이야기하는 시간이에요.`,
+          /*
+            **문제 수를 서버가 준다** — 스펙이 *"`3`으로 가정하지 말 것"* 이라고 못박았다.
+            코드에 근거가 없는 개념은 문항이 안 만들어져 세션에 나오지 않는다(실제로
+            2문항인 계정이 있었다). 아직 안 정해졌으면 수를 빼고 말한다.
+          */
+          text: round.problemCount
+            ? `내가 쓴 코드 ${round.problemCount}군데에 대해 왜 그렇게 했는지 이야기하는 시간이에요.`
+            : '내가 쓴 코드에 대해 왜 그렇게 했는지 이야기하는 시간이에요.',
         },
         {
           icon: ClockIcon,

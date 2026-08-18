@@ -9,7 +9,7 @@ type Props = { mode: SessionMode; reason: EndReason }
 
 /** 세션 종료 — 정상 종료·70분 초과·다시 보기 종료가 같은 자리에서 문구만 갈린다(H+) */
 export default function EndScreen({ mode, reason }: Props) {
-  if (mode === 'RETRY') {
+  if (mode === 'REVIEW') {
     return (
       <Center>
         <StatusMessageCard

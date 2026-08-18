@@ -180,6 +180,19 @@ export const izClient = createIzClient({
  *
  * 왜 throw인가: React Query도 화면의 try/catch도 예외 기반이라 그쪽에 맞추는 편이 분기가 준다.
  * 생성될 호출 함수들이 전부 이 함수를 통과한다.
+ *
+ * ## 본문 없는 성공(`204`)은 `null`이다
+ *
+ * `204 No Content`는 실패가 아니라 **"내용이 없다"는 정상 응답**이다. 그런데 그대로 두면
+ * `data`가 `undefined`가 되고, React Query는 `queryFn`이 `undefined`를 반환하면 **에러로
+ * 취급한다**(`Query data cannot be undefined`). 그래서 조회가 성공했는데 화면은 실패로
+ * 읽는다 — 실제로 세션 조회에서 그렇게 드러났다.
+ *
+ * `null`로 바꾸면 그 자리가 "값이 없음"으로 정상 취급된다. 삭제·기록처럼 반환값을 안
+ * 쓰는 곳에는 영향이 없고, `200`과 `204`를 함께 주는 조회에서만 의미가 생긴다.
+ *
+ * ⚠️ 그 조회들의 생성 타입은 `200` 기준이라 **`null` 가능성을 모른다.** 부르는 쪽이
+ * 그것을 알고 다뤄야 한다(세션 어댑터의 `noSession` 참고).
  */
 export async function unwrap<T>(
   call: Promise<{ data?: T; error?: unknown; response: Response }>,
@@ -194,5 +207,5 @@ export async function unwrap<T>(
 
   const { data, error, response } = result
   if (error !== undefined || !response.ok) throw toApiError(error, response)
-  return data as T
+  return (data ?? null) as T
 }

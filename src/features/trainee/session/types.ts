@@ -16,7 +16,8 @@
   채점은 실제로는 AI가 한다. 목은 `api.ts`가 길이로 어림잡는다(그쪽 주석 참고).
 */
 
-export type SessionMode = 'FIRST' | 'RETRY'
+/** 서버 이름을 따른다 — `RETRY`가 아니라 `REVIEW`다(어댑터 `_/api/types.ts`) */
+export type SessionMode = 'FIRST' | 'REVIEW'
 
 /** 질문이 묻는 깊이. 질문 하나가 단계 하나다 */
 export type Level = 1 | 2 | 3 | 4

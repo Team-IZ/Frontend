@@ -66,6 +66,14 @@ export type CurrentRound = {
   assessmentCloseAt: string | null
   submittedAt: string | null
 
+  /**
+   * 실제로 출제된 문제 수(0~3). 세션의 `problemTotal`과 같다.
+   *
+   * ⚠️ **`3`으로 가정하지 않는다** — 코드에 근거가 없는 개념은 문항이 안 만들어져
+   * 세션에 나오지 않는다(스펙 명시). 세션이 열리기 전이면 `null`이다.
+   */
+  problemCount: number | null
+
   /** 다시 볼 개념 수. 0이면 다시 보기 대상이 아니다 */
   reviewPendingCount: number
   /** 리포트로 갈 수 있는가 — 서버가 공개 상태까지 보고 판정한다 */

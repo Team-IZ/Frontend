@@ -197,7 +197,10 @@ function SessionRunner({
   */
   const recordActivity = useSessionActivity(sessionId)
   const awayToast = useAwayToast(
-    useCallback((seconds: number) => recordActivity({ awaySeconds: seconds }), [recordActivity]),
+    useCallback(
+      (seconds: number, sinceMs: number) => recordActivity('WINDOW_LEAVE', seconds * 1000, sinceMs),
+      [recordActivity],
+    ),
     running,
   )
   const [timeWarning, showTimeWarning] = useTimeWarningToast()
@@ -260,6 +263,15 @@ function SessionRunner({
   */
   useEffect(() => setSubmitFailed(null), [problemNo])
 
+  /*
+    서버가 세션이 없다고 하는데 화면이 아직 문제를 그리고 있으면 **끝난 것이다.**
+    답을 내서 끝난 경우는 `outcome`으로 이미 알지만, 옆에서 시간이 지나 닫힌 경우는
+    이 신호뿐이다.
+  */
+  useEffect(() => {
+    if (serverGone && phase !== 'ENDED' && phase !== 'INTRO') endWith('COMPLETED')
+  }, [serverGone, phase, endWith])
+
   // 낡은 번호를 들고 있으면 조회가 409로 돌아온다 — 그 자리에서 따라간다
   useEffect(() => {
     if (phase !== 'IN_PROBLEM') return
@@ -296,7 +308,7 @@ function SessionRunner({
     offlineSinceRef.current = null
     if (since == null) return
     const seconds = Math.round((Date.now() - since) / 1000)
-    if (seconds >= 1) recordActivity({ disconnectedSeconds: seconds })
+    if (seconds >= 1) recordActivity('CONNECTION_LOSS', seconds * 1000, since)
   }, [online, recordActivity])
 
   const handleStart = useCallback(async () => {
@@ -356,7 +368,8 @@ function SessionRunner({
   )
 
   const handleFirstKeystroke = useCallback(
-    (delayMs: number) => recordActivity({ firstKeystrokeDelayMs: delayMs }),
+    // 첫 글자를 친 시각이 아니라 **질문이 보인 시각**이 시작점이다
+    (delayMs: number) => recordActivity('FIRST_KEYSTROKE_DELAY', delayMs, Date.now() - delayMs),
     [recordActivity],
   )
 

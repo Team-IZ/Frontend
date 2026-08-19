@@ -68,7 +68,8 @@ export type CodePane = {
    */
   references: {
     type: string
-    path: string
+    /** ⚠️ `CURRICULUM_EVIDENCE`는 비어 온다 — 39차 R4로 nullable이 됐다 */
+    path: string | null
     lineStart: number
     lineEnd: number
     /** 이 근거가 붙는 축. `QUESTION_HIGHLIGHT`에서만 채워진다 */

@@ -9,7 +9,7 @@ import {
 } from '@/api/assessment/useAssessmentQueries'
 import {
   useOpenSessionHint,
-  useRecordSessionActivity,
+  useRecordSessionActivityEvent,
   useStartSession,
   useSubmitSessionAnswer,
 } from '@/api/assessment/useAssessmentMutations'
@@ -214,50 +214,52 @@ export function useOpenHint(sessionId: string | null) {
 }
 
 /**
- * 관찰 신호 기록 — 창 이탈·연결 끊김·첫 타이핑 지연.
+ * 관찰 신호 기록 — 창 이탈·연결 끊김·첫 타이핑 지연을 **건별로** 남긴다.
  *
  * **AI를 부르지 않고 진행 상태도 안 바꾼다. 오직 기록이다**(`204`). 이 경로가 없으면
  * 무효 응시 판정과 매니저 브리프의 "어느 답변이 의심스러운가"가 빈 값으로 남는다.
  *
+ * ## 왜 `/activity`가 아니라 `/activity-events`인가
+ *
+ * 예전 경로는 지속 시간만 보냈고 **서버가 발생 시각을 거꾸로 근사**했다. 지금은
+ * `occurredAt`을 우리가 싣는다 — 실제로 언제 나갔는지는 브라우저만 안다. 매니저가
+ * 보는 로그에 시각이 그대로 남으므로, 근사값이면 "11시 8분에 나갔다"가 틀린 말이 된다.
+ *
  * ## 실패를 조용히 삼킨다 — 유일하게 그래도 되는 자리다
  *
- * 이건 학생이 요청한 일이 아니라 화면이 뒤에서 남기는 기록이다. 실패했다고 응시 중인
- * 학생에게 알릴 것이 없고, 알려도 할 수 있는 일이 없다. 특히 `409`(끝난 세션)는
- * **정상이다** — 스펙이 *"끝난 세션의 신호는 버린다, 화면은 409를 무시하면 된다"* 고
- * 못박았다.
+ * 학생이 요청한 일이 아니라 화면이 뒤에서 남기는 기록이다. 실패했다고 응시 중인 학생에게
+ * 알릴 것이 없고, 알려도 할 수 있는 일이 없다. 특히 `409`(끝난 세션)는 **정상이다** —
+ * 스펙이 *"끝난 세션의 신호는 버린다, 화면은 409를 무시하면 된다"* 고 못박았다.
  *
  * ## 재전송하지 않는다
  *
- * ⚠️ `awaySeconds`·`disconnectedSeconds`는 **보낼 때마다 횟수가 1 올라간다.** 실패했다고
+ * ⚠️ `WINDOW_LEAVE`·`CONNECTION_LOSS`는 **부를 때마다 횟수가 1 올라간다.** 실패했다고
  * 다시 보내면 한 번 나간 것이 두 번으로 기록되어 무효 응시 판정이 틀린다. 잃는 편이 낫다.
  *
  * ## 범위를 넘기지 않는다
  *
- * 서버가 `0~86400`초(밀리초는 `0~86400000`)를 벗어나면 `400 VALIDATION_FAILED`로 막는다
- * (실측). 탭을 하루 넘게 숨겨 두고 돌아오면 그대로 걸리므로 여기서 잘라 보낸다 —
- * 어차피 상한을 넘긴 값은 "아주 오래 나가 있었다" 이상의 뜻이 없다.
+ * 서버가 `0~86400000`ms를 벗어나면 `400`으로 막는다(실측). 탭을 하루 넘게 숨겨 두고
+ * 돌아오면 그대로 걸리므로 여기서 잘라 보낸다 — 상한을 넘긴 값은 "아주 오래 나가
+ * 있었다" 이상의 뜻이 없다.
  */
-const SEC_MAX = 86_400
 const MS_MAX = 86_400_000
-const clamp = (v: number | undefined, max: number) =>
-  v == null ? undefined : Math.min(Math.max(Math.round(v), 0), max)
+const clampMs = (v: number) => Math.min(Math.max(Math.round(v), 0), MS_MAX)
+
+export type ActivityEvent = 'WINDOW_LEAVE' | 'CONNECTION_LOSS' | 'FIRST_KEYSTROKE_DELAY'
+
 export function useSessionActivity(sessionId: string | null) {
-  const m = useRecordSessionActivity()
+  const m = useRecordSessionActivityEvent()
   return useCallback(
-    (body: {
-      awaySeconds?: number
-      disconnectedSeconds?: number
-      firstKeystrokeDelayMs?: number
-    }) => {
+    (eventType: ActivityEvent, durationMs: number, occurredAtMs: number) => {
       if (!sessionId) return
-      const safe = {
-        awaySeconds: clamp(body.awaySeconds, SEC_MAX),
-        disconnectedSeconds: clamp(body.disconnectedSeconds, SEC_MAX),
-        firstKeystrokeDelayMs: clamp(body.firstKeystrokeDelayMs, MS_MAX),
-      }
-      // 셋 다 비면 400이다 — 보낼 것이 없으면 아예 안 부른다
-      if (Object.values(safe).every((v) => v == null)) return
-      m.mutate({ path: { sessionId }, body: safe })
+      m.mutate({
+        path: { sessionId },
+        body: {
+          eventType,
+          occurredAt: new Date(occurredAtMs).toISOString(),
+          durationMs: clampMs(durationMs),
+        },
+      })
     },
     [m, sessionId],
   )

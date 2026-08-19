@@ -55,7 +55,7 @@ function useDismissingToast<T>(holdMs: number) {
  * 이미 나가 있으면 덮어쓰지 않는다 — 안 그러면 한 번 나간 것이 두 번으로 기록되어
  * 무효 응시 판정이 틀어진다.
  */
-export function useAwayToast(onAway: (seconds: number) => void, enabled: boolean) {
+export function useAwayToast(onAway: (seconds: number, sinceMs: number) => void, enabled: boolean) {
   const awaySinceRef = useRef<number | null>(null)
   const [toast, show] = useDismissingToast<{ seconds: number }>(3500)
 
@@ -75,7 +75,8 @@ export function useAwayToast(onAway: (seconds: number) => void, enabled: boolean
       const seconds = Math.round((Date.now() - since) / 1000)
       // 1초 미만은 지나가는 클릭이다 — 기록하면 이탈 횟수만 부풀린다
       if (seconds < 1) return
-      onAway(seconds)
+      // **떠난 시각**을 함께 준다 — 서버가 지속 시간으로 거꾸로 근사하지 않는다
+      onAway(seconds, since)
       show({ seconds })
     }
     const handleVisibility = () => (document.hidden ? leave() : back())

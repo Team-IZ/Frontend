@@ -27,8 +27,6 @@ import './index.css'
   `<Toaster />` — sonner의 렌더 타깃. 어디서든 `toast.success(...)`를 부를 수 있게 여기 한 번만
   심는다. 화면이 각자 심으면 그 화면을 안 거친 라우트에서 부른 toast는 아무 데도 안 뜬다.
 */
-connectSession()
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -84,6 +82,12 @@ const queryClient = new QueryClient({
   이유와 대상은 `api/traineeFreshness.ts`에 있다.
 */
 applyTraineeFreshness(queryClient)
+
+/*
+  `queryClient` 생성 뒤로 옮겼다 — `connectSession`이 세션 종료 시 `/me` 캐시를 지우려면
+  같은 `queryClient` 인스턴스가 필요하다(`authStore.ts` 참고).
+*/
+connectSession(queryClient)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

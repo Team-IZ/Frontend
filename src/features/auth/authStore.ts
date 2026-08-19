@@ -21,8 +21,10 @@
   자동으로 재시도**한다 — 세션 복원을 위한 별도 코드가 없는 이유다.
 */
 import { create } from 'zustand'
+import type { QueryClient } from '@tanstack/react-query'
 import { ApiError, connectAuth, type RefreshResult, type SessionEndReason } from '@/api/_contract'
 import { refresh as refreshApi } from '@/api/auth/authApi'
+import { memberKeys } from '@/api/member/memberKeys'
 import type { Role } from './authTypes'
 
 /**
@@ -73,8 +75,15 @@ export const getAccessToken = () => useAuthStore.getState().accessToken
  *
  * 한 번으로 끝나는 것이 스토어를 쓴 이유다 — 토큰이 React 상태였을 때는 세션이 바뀔 때마다
  * 다시 꽂아야 했고, 그 재주입이 "옛 값에 갇힌다"는 문제의 증상이었다.
+ *
+ * `queryClient`를 받는 이유 — `onSessionExpired`가 `accessToken`만 지우고 `/me` 캐시를
+ * 그대로 두면, `RequireRole`은 캐시된(stale이어도 값은 남아있는) `user`만 보고 로그인
+ * 화면으로 안 보낸다. 그 사이 다른 화면은 진짜 401을 맞아 깨진 채로 방치된다(실측,
+ * 2026-08-19 — 리프레시 토큰 만료 후 헤더는 로그인 상태를 계속 보여주는데 홈 화면은
+ * "불러오지 못했습니다"만 반복). `/me` 캐시를 여기서 지워야 `user`가 `null`이 되고
+ * `RequireRole`이 정상적으로 리다이렉트한다.
  */
-export function connectSession() {
+export function connectSession(queryClient: QueryClient) {
   connectAuth({
     getToken: getAccessToken,
 
@@ -94,6 +103,11 @@ export function connectSession() {
       }
     },
 
-    onSessionExpired: (reason) => useAuthStore.getState().clear(reason),
+    onSessionExpired: (reason) => {
+      useAuthStore.getState().clear(reason)
+      // invalidate가 아니라 remove다 — invalidate는 재조회가 끝날 때까지 옛 data를
+      // 그대로 들고 있어서 그 사이 `user`가 계속 참이다. remove는 즉시 비운다.
+      queryClient.removeQueries({ queryKey: memberKeys.getCurrentMember() })
+    },
   })
 }

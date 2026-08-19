@@ -90,7 +90,7 @@ function TimelineSkeleton({ rounds = 6 }: { rounds?: number }) {
 
 export default function TraineeDetailScreen() {
   const { id } = useParams<{ id: string }>()
-  const { cohortId, cohortName, failed: cohortFailed, cohorts, selectCohort } = useManagerCohort()
+  const { cohortId, failed: cohortFailed, cohorts, selectCohort } = useManagerCohort()
   const detail = useTraineeDetail(cohortId, id)
   const timeline = useTraineeTimeline(cohortId, id)
 

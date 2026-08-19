@@ -5,6 +5,8 @@ import type {
   findMyReports_Response,
   findMyReport_Path,
   findMyReport_Response,
+  findManagedReports_Query,
+  findManagedReports_Response,
   findClassDiagnosis_Query,
   findClassDiagnosis_Response,
 } from './reportingTypes'
@@ -20,6 +22,17 @@ export const findMyReport = (params: { path: findMyReport_Path } & RequestOption
   unwrap<findMyReport_Response>(
     izClient.GET('/api/v0/reports/{reportId}', {
       params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 담당 반 리포트 목록 조회 (매니저) — `GET /api/v0/reports/managed` */
+export const findManagedReports = (
+  params: { query?: findManagedReports_Query } & RequestOptions = {},
+) =>
+  unwrap<findManagedReports_Response>(
+    izClient.GET('/api/v0/reports/managed', {
+      params: { query: params.query ?? {} },
       signal: params.signal,
     }) as never,
   )

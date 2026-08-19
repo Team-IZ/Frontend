@@ -15,8 +15,8 @@ import StatusMessageCard from '@/components/common/StatusMessageCard'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/Empty'
-import { Spinner } from '@/components/ui/Spinner'
 import ConsoleShell from '@/shells/ConsoleShell'
+import ReportSkeleton from './components/ReportSkeleton'
 import { useReports } from './_/api/api'
 import { buildRailNote, formatDate, formatRelativeMonths } from './labels'
 import ConceptCard from './components/ConceptCard'
@@ -66,9 +66,7 @@ export default function MyReportScreen() {
   return (
     <ConsoleShell role="trainee">
       {page.isPending ? (
-        <div className="flex justify-center py-16">
-          <Spinner className="size-6" aria-label="리포트를 불러오는 중" />
-        </div>
+        <ReportSkeleton />
       ) : page.isError || !page.data ? (
         <Empty className="border-solid bg-danger-soft border-danger-border">
           <EmptyHeader>

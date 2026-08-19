@@ -7,6 +7,7 @@ import {
   openSessionHint,
   submitSessionAnswer,
   recordSessionActivity,
+  recordSessionActivityEvent,
   openReviewSession,
 } from './assessmentApi'
 import { assessmentKeys } from './assessmentKeys'
@@ -21,6 +22,9 @@ import type {
   recordSessionActivity_Path,
   recordSessionActivity_Body,
   recordSessionActivity_Response,
+  recordSessionActivityEvent_Path,
+  recordSessionActivityEvent_Body,
+  recordSessionActivityEvent_Response,
   openReviewSession_Body,
   openReviewSession_Response,
 } from './assessmentTypes'
@@ -93,6 +97,28 @@ export function useRecordSessionActivity(
   return useMutation({
     mutationFn: (vars: { path: recordSessionActivity_Path; body: recordSessionActivity_Body }) =>
       recordSessionActivity(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: assessmentKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 관찰 신호 이벤트 1건 기록 */
+export function useRecordSessionActivityEvent(
+  options?: MutationOptions<
+    recordSessionActivityEvent_Response,
+    { path: recordSessionActivityEvent_Path; body: recordSessionActivityEvent_Body }
+  >,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      path: recordSessionActivityEvent_Path
+      body: recordSessionActivityEvent_Body
+    }) => recordSessionActivityEvent(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다

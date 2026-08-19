@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/Dialog'
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
+import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { cn } from '@/lib/utils/cn'
@@ -71,6 +71,11 @@ export default function ReportReleaseDialog({
   )
 
   const run = async () => {
+    /*
+      ⚠ **다시 누르기 전에 앞선 실패를 지운다.** 안 지우면 두 번째 시도에서 성공한
+      사람이 「열지 못했습니다」에 그대로 남아, 실제로 열렸는데 안 열린 것처럼 읽힌다.
+    */
+    setFailed([])
     const res = await publish(
       targets.map((r) => r.reportId),
       scope,
@@ -96,12 +101,27 @@ export default function ReportReleaseDialog({
             <Spinner className="size-5" aria-label="공개 상태를 불러오는 중" />
           </div>
         ) : list.isError || !list.data ? (
-          <Alert variant="danger">
-            <AlertTitle>{errorCopy(list.error, { subject: '공개 상태' }).title}</AlertTitle>
-            <AlertDescription>
-              {errorCopy(list.error, { subject: '공개 상태' }).description}
-            </AlertDescription>
-          </Alert>
+          /*
+            🔴 **다시 시도를 그릴지도 서버가 정한다**(규칙 I). 담당 밖 자원(404
+            `MANAGER_SCOPE_NOT_FOUND`)에 버튼을 주면 같은 실패를 반복시킨다.
+            `errorCopy`를 한 번만 불러 `tone`·`retry`까지 같이 쓴다.
+          */
+          (() => {
+            const copy = errorCopy(list.error, { subject: '공개 상태' })
+            return (
+              <Alert variant={copy.tone === 'pending' ? 'info' : 'danger'}>
+                <AlertTitle>{copy.title}</AlertTitle>
+                <AlertDescription>{copy.description}</AlertDescription>
+                {copy.retry && (
+                  <AlertAction>
+                    <Button variant="ghost" size="sm" onClick={() => void list.refetch()}>
+                      다시 시도
+                    </Button>
+                  </AlertAction>
+                )}
+              </Alert>
+            )
+          })()
         ) : (
           <div className="flex flex-col gap-4">
             {/* 지금 상태 — 숫자 셋이면 충분하다. 이름을 늘어놓지 않는다 */}

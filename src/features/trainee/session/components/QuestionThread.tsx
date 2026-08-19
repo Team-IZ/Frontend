@@ -125,7 +125,7 @@ function groupByQuestion(turns: Turn[], current: CurrentQuestion | null): Group[
     if (!g) {
       g = {
         sequenceNo: t.sequenceNo,
-        questionText: t.questionText,
+        questionText: stripAxis(t.questionText),
         refText: refTextOf(t.highlight),
         items: [],
         active: false,
@@ -149,7 +149,7 @@ function groupByQuestion(turns: Turn[], current: CurrentQuestion | null): Group[
     } else {
       groups.push({
         sequenceNo: current.sequenceNo,
-        questionText: current.questionText,
+        questionText: stripAxis(current.questionText),
         refText: refTextOf(current.highlight),
         items: shown,
         active: true,
@@ -159,6 +159,17 @@ function groupByQuestion(turns: Turn[], current: CurrentQuestion | null): Group[
 
   return groups
 }
+
+/*
+  질문 원문에서 **축 접두어를 떼어 낸다.**
+
+  서버가 `[L1] Optional을 활용한…`처럼 붙여 보내는 경우가 있다(실측 — 계정에 따라
+  갈린다). 라벨을 `질문 N`으로 바꿔 축을 숨겨 놓고 본문이 `L1`이라고 말하면 소용이 없다.
+
+  맨 앞에 붙어 있을 때만 뗀다. 문장 중간의 `[L1]`은 그대로 둔다 — 서버 문구를 화면이
+  고쳐 쓰는 것이 아니라 라벨만 걷어내는 것이다.
+*/
+const stripAxis = (text: string) => text.replace(/^\s*\[L[1-4]\]\s*/, '')
 
 const refTextOf = (h: { path: string; lineStart: number; lineEnd: number }) =>
   h.lineStart === h.lineEnd
@@ -177,15 +188,15 @@ function Dot() {
 }
 
 /*
-  라벨이 `질문 N`이 아니라 **단계 이름**이다 — 질문 하나가 단계 하나이고, 학생이 지금
-  어느 깊이에 있는지가 순번보다 쓸모 있다. 점수는 절대 안 보인다(A5).
+  라벨은 **순번뿐이다.** 한동안 단계 이름(`코드 이해`·`설계 논리`·`대안 비교`·`반례 대응`)을
+  보여줬는데, 그 이름 자체가 **무엇을 답해야 하는지 알려주는 힌트**다 — `대안 비교`라고
+  적혀 있으면 질문을 안 읽어도 다른 방법과 비교하면 된다는 것을 안다.
+
+  응시 중에는 숨기고, 어느 축에서 막혔는지는 **리포트에서** 알려준다. 그게 이 제품이
+  축을 나눠 둔 이유이기도 하다.
+
+  점수도 절대 안 보인다(A5).
 */
-const LEVEL_LABEL = {
-  1: '코드 이해',
-  2: '설계 논리',
-  3: '대안 비교',
-  4: '반례 대응',
-} as const
 
 function QuestionBubble({
   mode,
@@ -200,7 +211,7 @@ function QuestionBubble({
   refText: string
   active?: boolean
 }) {
-  const label = mode === 'REVIEW' ? `다시 보기 · ${LEVEL_LABEL[level]}` : LEVEL_LABEL[level]
+  const label = mode === 'REVIEW' ? `다시 보기 · 질문 ${level}` : `질문 ${level}`
   return (
     <div
       className={cn(

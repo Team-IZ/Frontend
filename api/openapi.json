@@ -313,8 +313,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -461,8 +461,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -973,8 +973,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -1955,8 +1955,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -2261,8 +2261,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -2742,8 +2742,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -2900,8 +2900,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -3167,8 +3167,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -3384,8 +3384,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -3561,8 +3561,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -5346,8 +5346,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -5693,8 +5693,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -5824,8 +5824,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -6119,8 +6119,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -6671,8 +6671,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -6887,8 +6887,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -7077,8 +7077,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -7302,8 +7302,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -7445,8 +7445,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -7600,8 +7600,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -7903,8 +7903,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -8535,8 +8535,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -8619,8 +8619,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -9012,8 +9012,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -9314,8 +9314,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -9857,8 +9857,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -10098,8 +10098,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -10277,8 +10277,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -10477,8 +10477,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -10887,8 +10887,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -11164,8 +11164,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -11396,8 +11396,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -12047,8 +12047,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -12420,8 +12420,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -12629,8 +12629,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -13310,8 +13310,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -13510,8 +13510,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -13808,8 +13808,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -13987,8 +13987,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -14143,8 +14143,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -14299,8 +14299,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -15205,8 +15205,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -15342,8 +15342,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -15755,8 +15755,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -16879,8 +16879,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -17484,8 +17484,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -18441,8 +18441,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -18722,8 +18722,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]
@@ -21063,8 +21063,8 @@
                       "message": "요청 값이 올바르지 않습니다.",
                       "fieldErrors": [
                         {
-                          "code": "NOT_BLANK",
                           "field": "answerText",
+                          "code": "NOT_BLANK",
                           "message": "must not be blank"
                         }
                       ]

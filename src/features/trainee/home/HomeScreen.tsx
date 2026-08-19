@@ -2,8 +2,8 @@ import { Link } from 'react-router'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/Empty'
-import { Spinner } from '@/components/ui/Spinner'
 import ConsoleShell from '@/shells/ConsoleShell'
+import HomeSkeleton from './components/HomeSkeleton'
 import { useHome } from './_/api/api'
 import { pastSummary, upcomingSchedule } from './labels'
 import RoundListRow from './components/RoundListRow'
@@ -27,9 +27,7 @@ export default function HomeScreen() {
     <ConsoleShell role="trainee">
       <div className="mx-auto max-w-[860px]">
         {isPending ? (
-          <div className="flex justify-center py-16">
-            <Spinner className="size-6" aria-label="홈을 불러오는 중" />
-          </div>
+          <HomeSkeleton />
         ) : isError || !data ? (
           <Empty className="border-solid bg-danger-soft border-danger-border">
             <EmptyHeader>

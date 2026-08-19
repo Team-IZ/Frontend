@@ -167,12 +167,8 @@ type Caller = { label: string; snippet: string | null }
 function callerBlocks(code: Code, lines: { line: number; text: string }[]): Caller[] {
   return (
     code.references
-      /*
-      ⚠ **`path`가 스키마상 nullable이 됐다**(2026-08-19 세션 API 개정). 여기서
-      좁혀 두면 아래가 `r.path!` 없이 그대로 읽는다 — 필터와 사용처가 갈리면
-      다음에 조건을 고칠 때 한쪽만 바뀐다.
-    */
-      .filter((r): r is typeof r & { path: string } => r.type === 'CALLER' && !!r.path)
+      // `path`가 nullable이라(39차 R4) 값이 있는 것만 남긴다 — 없으면 가리킬 자리가 없다
+      .flatMap((r) => (r.type === 'CALLER' && r.path ? [{ ...r, path: r.path }] : []))
       .map((r) => {
         const file = r.path.split('/').pop() ?? r.path
         const sameFile = r.path === code.path

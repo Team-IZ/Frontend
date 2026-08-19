@@ -18,6 +18,7 @@ import { requestAnalysis } from '@/api/curriculum/curriculumApi'
 import { curriculumKeys } from '@/api/curriculum/curriculumKeys'
 import { isApiError } from '@/api/_contract'
 import { errorCopy } from '@/lib/errorCopy'
+import { delay } from '@/lib/cancellableDelay'
 import RequiredMark from '../../admin/_/components/RequiredMark'
 
 /*
@@ -51,6 +52,9 @@ type Props = {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
+
+/** 실제 등록 요청을 보내기 전 유예시간(D40) — 이 안에 닫으면 요청 자체가 안 나간다 */
+const SUBMIT_GRACE_MS = 500
 
 export default function RegisterCurriculumDialog({ open, onOpenChange }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
@@ -118,6 +122,7 @@ export default function RegisterCurriculumDialog({ open, onOpenChange }: Props) 
     const controller = new AbortController()
     submitAbortRef.current = controller
     try {
+      await delay(SUBMIT_GRACE_MS, controller.signal)
       const created = await registerCurriculum({
         query: { title: name.trim() },
         file,
@@ -286,7 +291,8 @@ export default function RegisterCurriculumDialog({ open, onOpenChange }: Props) 
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => close(false)} disabled={submitting}>
+          {/* 제출 중에도 눌려야 한다 — 유예시간(SUBMIT_GRACE_MS) 안에 이 버튼으로 취소할 수 있어야 한다(D40) */}
+          <Button variant="ghost" onClick={() => close(false)}>
             취소
           </Button>
           <Button disabled={!submittable} onClick={submit}>

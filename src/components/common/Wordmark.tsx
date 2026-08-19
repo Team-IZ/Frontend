@@ -13,7 +13,7 @@ export default function Wordmark({ light = false }: { light?: boolean }) {
       <span className="inline-flex h-[26px] w-[26px] items-center justify-center rounded-sm bg-primary text-[13px] text-white">
         RZ
       </span>
-      <span>
+      <span className="relative top-[0.75px]">
         R<span className="text-[12px]">eali</span>Z<span className="text-[12px]">e</span>
       </span>
     </div>

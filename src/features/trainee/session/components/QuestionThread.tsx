@@ -125,7 +125,7 @@ function groupByQuestion(turns: Turn[], current: CurrentQuestion | null): Group[
     if (!g) {
       g = {
         sequenceNo: t.sequenceNo,
-        questionText: t.questionText,
+        questionText: stripAxis(t.questionText),
         refText: refTextOf(t.highlight),
         items: [],
         active: false,
@@ -149,7 +149,7 @@ function groupByQuestion(turns: Turn[], current: CurrentQuestion | null): Group[
     } else {
       groups.push({
         sequenceNo: current.sequenceNo,
-        questionText: current.questionText,
+        questionText: stripAxis(current.questionText),
         refText: refTextOf(current.highlight),
         items: shown,
         active: true,
@@ -159,6 +159,17 @@ function groupByQuestion(turns: Turn[], current: CurrentQuestion | null): Group[
 
   return groups
 }
+
+/*
+  질문 원문에서 **축 접두어를 떼어 낸다.**
+
+  서버가 `[L1] Optional을 활용한…`처럼 붙여 보내는 경우가 있다(실측 — 계정에 따라
+  갈린다). 라벨을 `질문 N`으로 바꿔 축을 숨겨 놓고 본문이 `L1`이라고 말하면 소용이 없다.
+
+  맨 앞에 붙어 있을 때만 뗀다. 문장 중간의 `[L1]`은 그대로 둔다 — 서버 문구를 화면이
+  고쳐 쓰는 것이 아니라 라벨만 걷어내는 것이다.
+*/
+const stripAxis = (text: string) => text.replace(/^\s*\[L[1-4]\]\s*/, '')
 
 const refTextOf = (h: { path: string; lineStart: number; lineEnd: number }) =>
   h.lineStart === h.lineEnd

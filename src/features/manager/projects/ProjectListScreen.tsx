@@ -110,7 +110,7 @@ export default function ProjectListScreen() {
   return (
     <ConsoleShell
       role="manager"
-      cohort={cohortName ?? ''}
+      cohort={cohortId ?? ''}
       cohorts={cohorts}
       onCohortChange={selectCohort}
     >

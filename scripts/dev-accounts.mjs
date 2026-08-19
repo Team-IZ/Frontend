@@ -42,7 +42,11 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { inflateRawSync } from 'node:zlib'
 
-const PER_STATE = 10
+/**
+ * 케이스별 상한. **기본은 없다** — 여섯 명이 나눠 쓰므로 열 개만 뽑으면 남의 담당이
+ * 잘려 나간다(`응시중`은 계정이 둘뿐이다). 목록이 너무 길면 `--per`로 줄인다.
+ */
+const PER_STATE = Infinity
 
 // ── 엑셀(xlsx) 최소 파서 ─────────────────────────────────────────────────────
 /*
@@ -191,6 +195,8 @@ const argv = process.argv.slice(2)
 const src = argv.find((a) => !a.startsWith('--'))
 const out = argv.includes('--out') ? argv[argv.indexOf('--out') + 1] : 'dev-accounts.json'
 const per = argv.includes('--per') ? Number(argv[argv.indexOf('--per') + 1]) : PER_STATE
+/** 담당이 적힌 계정이 하나라도 있으면 화면에 담당자 줄을 그린다 */
+const owners = new Set()
 
 if (!src) {
   console.error('사용: node scripts/dev-accounts.mjs <엑셀경로> [--out 파일] [--per 10]')
@@ -288,7 +294,14 @@ for (const [sheet, rows] of sheets) {
   if (sheet === SUMMARY || sheet === 'Query' || rows.length < 2) continue
   const head = rows[0]
   const col = (name) => head.indexOf(name)
-  const [ci, ai, cls, team, nm] = [col('계정'), col('계정상태'), col('반'), col('팀'), col('이름')]
+  const [ci, ai, cls, team, nm, own] = [
+    col('계정'),
+    col('계정상태'),
+    col('반'),
+    col('팀'),
+    col('이름'),
+    col('담당'),
+  ]
   if (ci < 0) continue
 
   const list = []
@@ -301,6 +314,8 @@ for (const [sheet, rows] of sheets) {
       name: r[nm] ?? '',
       className: r[cls] ?? '',
       teamName: r[team] ?? '',
+      // **누가 쓰기로 한 계정인가.** 엑셀이 정본이라 화면이 다시 배정하지 않는다
+      owner: (own >= 0 ? r[own] : '') || null,
       // 축을 이름으로 읽으려면 헤더가 필요하다 — 뽑을 때만 쓰고 출력에는 안 넣는다
       raw: Object.fromEntries(head.map((h, i) => [h, r[i] ?? ''])),
     })
@@ -325,11 +340,10 @@ for (const [sheet, rows] of sheets) {
     hint: hints.get(sheet) ?? null,
     total: list.length,
     axes,
-    accounts: pickDiverse(list, per, axes).map(({ raw, ...a }) => ({
-      ...a,
-      password,
-      note: noteOf(raw, axes),
-    })),
+    accounts: pickDiverse(list, per, axes).map(({ raw, ...a }) => {
+      if (a.owner) owners.add(a.owner)
+      return { ...a, password, note: noteOf(raw, axes) }
+    }),
   })
 }
 
@@ -343,7 +357,15 @@ for (const [sheet, rows] of sheets) {
   24시간이라 `응시 가능` 계정은 하루가 지나면 전부 `창 닫힘`이 된다(실측). 화면이
   라벨만 보여주고 날짜를 숨기면 눌러 보고 나서야 알게 된다.
 */
-const data = { measuredAt: new Date().toISOString(), groups }
+/*
+  담당자 목록을 따로 낸다. 화면이 계정 전부를 훑어 모으게 하면 렌더마다 도는데,
+  **여기서 한 번 세면 끝난다** — 순서도 이름순으로 고정해 화면마다 안 흔들리게 한다.
+*/
+const data = {
+  measuredAt: new Date().toISOString(),
+  owners: [...owners].sort((a, b) => a.localeCompare(b, 'ko')),
+  groups,
+}
 writeFileSync(out, JSON.stringify(data, null, 2) + '\n')
 
 /*
@@ -368,8 +390,12 @@ for (const g of groups) {
   const teams = new Set(g.accounts.map((a) => `${a.className}/${a.teamName}`)).size
   const states = new Set(g.accounts.map((a) => a.note ?? '')).size
   const variety = g.axes.length ? `상태 ${states}종 · 반·팀 ${teams}조합` : `반·팀 ${teams}조합`
+  const byOwner = new Map()
+  for (const a of g.accounts) byOwner.set(a.owner ?? '—', (byOwner.get(a.owner ?? '—') ?? 0) + 1)
+  const missing = data.owners.filter((o) => !byOwner.has(o))
   console.log(
-    `    ${String(g.accounts.length).padStart(2)}/${String(g.total).padEnd(3)} ${g.label.padEnd(14)} (${variety})`,
+    `    ${String(g.accounts.length).padStart(3)}/${String(g.total).padEnd(3)} ${g.label.padEnd(12)} (${variety})` +
+      (missing.length ? `  ⚠️  담당 없음: ${missing.join(' ')}` : ''),
   )
 }
 for (const e of empty) console.log(`     0      ${e.label.padEnd(14)} ⚠️  ${e.why}`)

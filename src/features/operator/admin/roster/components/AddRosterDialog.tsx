@@ -19,10 +19,11 @@ import { usePreviewTrainees } from '@/api/member/useMemberMutations'
 import { registerTrainees } from '@/api/member/memberApi'
 import { memberKeys } from '@/api/member/memberKeys'
 import { registerTraineesFromCsv, previewTraineesFromCsv } from '@/api/uploads'
+import { delay } from '@/lib/cancellableDelay'
 import type { previewTrainees_Response, registerTrainees_Response } from '@/api/member/memberTypes'
 import { checkRosterRows, MAX_TRAINEE_INVITE, type ParsedRoster } from '../../_/rules'
 import { ROSTER_ISSUE_LABEL } from '../../_/labels'
-import { useCohortScope } from '../../_/cohortScope'
+import { useCohortId } from '@/stores/cohortScope'
 import type { RosterEntry, RosterIssue } from '../../_/api/types'
 import RosterCsvField from '../../_/components/RosterCsvField'
 import RosterIssueList from '../../_/components/RosterIssueList'
@@ -63,6 +64,9 @@ type Props = {
 /** 직접 입력의 빈 행. 목업처럼 **한 줄은 늘 비어 있다** — `+ 행 추가`를 안 눌러도 칠 수 있다 */
 const emptyRow = (): RosterEntry => ({ name: '', email: '' })
 
+/** 실제 등록 요청을 보내기 전 유예시간(D40) — 이 안에 닫으면 요청 자체가 안 나간다 */
+const SUBMIT_GRACE_MS = 500
+
 export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) {
   const [mode, setMode] = useState('csv')
   const [parsed, setParsed] = useState<ParsedRoster | null>(null)
@@ -87,7 +91,7 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
   */
   const { data: me } = useGetCurrentMember()
   const domain = me?.emailDomain ?? undefined
-  const scope = useCohortScope()
+  const scope = useCohortId()
   const cohortId = scope.cohortId
   const previewTyped = usePreviewTrainees()
   const queryClient = useQueryClient()
@@ -161,6 +165,7 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
         등록은 계속 진행됐고, 뒤늦게 온 성공 응답이 **이미 닫힌 다이얼로그의 `onAdded`를
         다시 불렀다** — 취소했다고 믿은 등록이 실제로는 된 것이다.
       */
+      await delay(SUBMIT_GRACE_MS, controller.signal)
       const result =
         mode === 'csv' && file
           ? await registerTraineesFromCsv({ path: { cohortId }, file, signal: controller.signal })
@@ -398,7 +403,8 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
         </div>
 
         <DialogFooter>
-          <Button variant="ghost" onClick={() => close(false)} disabled={submitting}>
+          {/* 제출 중에도 눌려야 한다 — 유예시간(SUBMIT_GRACE_MS) 안에 이 버튼으로 취소할 수 있어야 한다(D40) */}
+          <Button variant="ghost" onClick={() => close(false)}>
             취소
           </Button>
           {/*

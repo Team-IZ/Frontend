@@ -52,7 +52,7 @@ export default function DashboardScreen() {
   return (
     <ConsoleShell
       role="operator"
-      cohort={cohortName ?? ''}
+      cohort={cohortId ?? ''}
       cohorts={cohorts}
       onCohortChange={selectCohort}
     >

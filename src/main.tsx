@@ -4,6 +4,7 @@ import { RouterProvider } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { router } from '@/app/routes'
 import { isApiError } from '@/api/_contract'
+import { applyTraineeFreshness } from '@/api/traineeFreshness'
 import { connectSession } from '@/features/auth/authStore'
 import { Toaster } from '@/components/ui/Sonner'
 import './index.css'
@@ -26,8 +27,6 @@ import './index.css'
   `<Toaster />` — sonner의 렌더 타깃. 어디서든 `toast.success(...)`를 부를 수 있게 여기 한 번만
   심는다. 화면이 각자 심으면 그 화면을 안 거친 라우트에서 부른 toast는 아무 데도 안 뜬다.
 */
-connectSession()
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -77,6 +76,18 @@ const queryClient = new QueryClient({
     mutations: { retry: 0 },
   },
 })
+
+/*
+  교육생 화면 조회만 캐시를 끈다 — 전역 기본(30초)은 그대로 두고 도메인별로 덮어쓴다.
+  이유와 대상은 `api/traineeFreshness.ts`에 있다.
+*/
+applyTraineeFreshness(queryClient)
+
+/*
+  `queryClient` 생성 뒤로 옮겼다 — `connectSession`이 세션 종료 시 `/me` 캐시를 지우려면
+  같은 `queryClient` 인스턴스가 필요하다(`authStore.ts` 참고).
+*/
+connectSession(queryClient)
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

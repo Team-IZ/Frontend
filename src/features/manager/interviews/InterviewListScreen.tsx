@@ -72,7 +72,7 @@ const shortDate = (iso: string | null) => (iso ? `${iso.slice(5, 7)}.${iso.slice
 export default function InterviewListScreen() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
-  const { cohortName, cohorts, selectCohort } = useManagerCohort()
+  const { cohortId, cohortName, cohorts, selectCohort } = useManagerCohort()
 
   // 브리프로 갔다가 "← 목록으로"로 돌아와도 회차·검색·상태가 그대로 있어야 한다
   // (사용자 지시) — 세션 동안만 기억하는 모듈 전역값에서 초기화한다.
@@ -177,7 +177,7 @@ export default function InterviewListScreen() {
   return (
     <ConsoleShell
       role="manager"
-      cohort={cohortName ?? ''}
+      cohort={cohortId ?? ''}
       cohorts={cohorts}
       onCohortChange={selectCohort}
     >

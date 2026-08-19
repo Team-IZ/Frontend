@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import {
   Dialog,
   DialogContent,
@@ -10,6 +11,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Spinner } from '@/components/ui/Spinner'
 import { useDeleteCurriculum } from '@/api/curriculum/useCurriculumMutations'
+import { curriculumKeys } from '@/api/curriculum/curriculumKeys'
 import { errorCopy } from '@/lib/errorCopy'
 
 /*
@@ -37,7 +39,22 @@ export default function DeleteCurriculumDialog({
   onDeleted: () => void
 }) {
   const [failed, setFailed] = useState<unknown>(null)
-  const remove = useDeleteCurriculum()
+  const queryClient = useQueryClient()
+  /*
+    **기본 onSuccess(전체 무효화)가 방금 지운 상세를 다시 불러 404를 냈다**(실측,
+    2026-08-19). 이 다이얼로그는 상세 화면(`CurriculumDetailScreen`)에서 뜨는데,
+    `onDeleted`의 `navigate()`가 아직 안 돈 시점에 `invalidateQueries(curriculumKeys.all)`가
+    먼저 실행돼 여전히 마운트된 `useFindCurriculum({ materialId })`를 재조회시킨다.
+    무효화 자체는 놔두고(다른 목록·프로젝트 쿼리는 새로고침돼야 한다), 이 상세 쿼리만
+    캐시에서 제거해 재조회 대상에서 뺀다.
+  */
+  const remove = useDeleteCurriculum({
+    onSuccess: () => {
+      queryClient.removeQueries({
+        queryKey: curriculumKeys.findCurriculum({ path: { materialId } }),
+      })
+    },
+  })
 
   const run = async () => {
     setFailed(null)

@@ -44,12 +44,17 @@ export default function DetailHeader({
   return (
     <div className="mb-4">
       <div className="flex items-center gap-2">
+        {/*
+          (이슈 277 QA) **기수를 실어 간다** — 오퍼레이터 상세와 같은 이유(`DetailHeader.tsx`
+          주석 참고). 고정 경로였으면 스위처로 다른 기수를 골라 두고 들어온 회차에서
+          여기를 누를 때 목록이 기본값으로 되돌아간다.
+        */}
         <Button
           variant="ghost"
           size="sm"
           aria-label="프로젝트 목록으로 돌아가기"
           nativeButton={false}
-          render={<Link to="/manager/projects" />}
+          render={<Link to={`/manager/projects?cohort=${project.cohortId}`} />}
           className="-ml-1.5 p-1.5"
         >
           <ArrowLeft className="size-5" />

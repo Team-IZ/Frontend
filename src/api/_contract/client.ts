@@ -165,10 +165,10 @@ const authMiddleware: Middleware = {
  * 테스트·스토리북이 자기 인스턴스를 만들 수 있게 팩토리를 연다.
  * 서버가 하나뿐이라 앱은 아래 `izClient` 하나만 쓴다 — 팩토리는 "문"이지 사용 패턴이 아니다.
  */
-export function createIzClient(options: { baseUrl: string }) {
+export function createIzClient(options: { baseUrl: string; credentials?: RequestCredentials }) {
   const client = createClient<paths>({
     baseUrl: options.baseUrl,
-    credentials: 'include', // 리프레시 쿠키
+    credentials: options.credentials ?? 'include', // 기본은 리프레시 쿠키 포함
     fetch: fetchWithBudget, // 응답이 안 와도 끝난다
   })
   client.use(authMiddleware)
@@ -177,6 +177,32 @@ export function createIzClient(options: { baseUrl: string }) {
 
 export const izClient = createIzClient({
   baseUrl: import.meta.env?.VITE_API_BASE ?? '',
+})
+
+/*
+  **대용량 업로드 전용 — App Runner origin 도메인으로 직접.**
+
+  Lambda Function URL(=`izClient`)은 AWS 플랫폼 자체의 동기 페이로드 상한이 6MB다(실측,
+  Backend 코드 도달 전에 413). Backend가 자기 쪽(→AI 서비스) 같은 문제를 이미 이 패턴으로
+  풀었다(`AiCurriculumClient`/`AiProxyWarmUp`, Backend PR #87) — 가벼운 GET을 프록시로 먼저
+  보내 깨우고, 실제 대용량 바디는 origin으로 직접. 여기서는 그 패턴을 프론트 쪽에 미러링한다.
+
+  PAUSED 상태는 origin 직접 호출로 못 깨운다 — `resume_service()`는 Lambda 프록시를 거친
+  요청만 트리거한다(프록시 소스 확인). 그래서 이 클라이언트를 쓰는 호출 앞에는 반드시
+  `izClient`로 가벼운 웜업 GET이 선행돼야 한다(예: `uploads.ts`의 `registerCurriculum`).
+
+  `credentials: 'omit'`이다 — 리프레시 쿠키는 로그인이 실제로 일어나는 `izClient`의 호스트에만
+  scope된 host-only 쿠키라(Domain 속성 미지정) 브라우저가 애초에 이 도메인으론 실어 보내지
+  않지만, 이 클라이언트가 쿠키를 쓸 일이 없다는 걸 최소 권한으로 명시해 둔다 — Bearer 헤더만으로
+  인증이 끝나는 호출이라서다.
+
+  `fetchWithBudget`은 `izClient`와 그대로 공유한다 — 예산·401 단일 재시도는 도메인이 아니라
+  요청 자체의 속성이다.
+*/
+export const izOriginClient = createIzClient({
+  baseUrl:
+    import.meta.env?.VITE_API_ORIGIN_BASE ?? 'https://mmbvymzj5k.ap-northeast-1.awsapprunner.com',
+  credentials: 'omit',
 })
 
 /**

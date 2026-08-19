@@ -1,4 +1,4 @@
-import { izClient, unwrap, type RequestOptions } from '@/api/_contract'
+import { izClient, izOriginClient, unwrap, type RequestOptions } from '@/api/_contract'
 import type { operations } from '@/api/schema'
 /* 상한은 의존성 없는 잎 모듈에 있다 — CI 가드가 별칭 없이 읽어 검산한다 */
 export { MAX_UPLOAD_BYTES, MAX_UPLOAD_LABEL, tooLargeToUpload } from '@/api/uploadLimits'
@@ -91,17 +91,41 @@ export const previewTraineesFromCsv = (params: CsvUpload) =>
  *
  * ⚠ **등록 직후에는 분석이 안 된 상태다.** 섹션·검증개념을 쓰려면 별도로
  * `POST /curricula/{materialId}/analyses`를 불러야 한다(스펙 명시).
+ *
+ * **본문은 `izClient`가 아니라 `izOriginClient`로 보낸다.** Lambda Function URL(`izClient`)엔
+ * AWS 자체 6MB 동기 페이로드 상한이 있어 그 이상은 413(실측) — App Runner origin 도메인으로
+ * 직접 보내 우회한다(Backend PR #87의 `AiCurriculumClient` 패턴 미러링). origin은 PAUSED
+ * 상태를 스스로 못 깨우므로, 실제 업로드 전에 `izClient`로 가벼운 GET을 먼저 보내 깨운다.
+ *
+ * **웜업 결과를 확인한다.** 예전엔 `.catch(() => {})`로 웜업 실패를 통째로 무시하고 바로
+ * origin에 업로드를 쐈다 — App Runner가 아직 준비 안 된 순간(PAUSED에서 막 깨어나는 중 등)에
+ * 이 레이스가 걸리면 origin 요청이 그대로 실패했다(도메인 코드 없는 500이 실측됨, 2026-08-18).
+ * 그래서 웜업을 최대 3회(2초 간격)까지 재시도하고, 그래도 안 깨어나면 origin에 아예 안 쏘고
+ * 에러를 던진다 — 실패를 조용히 삼키는 대신 화면이 재시도를 안내할 근거를 준다.
  */
-export const registerCurriculum = (
+const WARMUP_RETRIES = 3
+const WARMUP_RETRY_DELAY_MS = 2000
+
+export const registerCurriculum = async (
   params: { query: { title: string; topic?: string }; file: File } & RequestOptions,
-) =>
-  unwrap<RegisterCurriculumResponse>(
-    izClient.POST('/api/v0/curricula', {
+) => {
+  let warmed = false
+  for (let attempt = 0; attempt < WARMUP_RETRIES && !warmed; attempt++) {
+    if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, WARMUP_RETRY_DELAY_MS))
+    const { error } = await izClient.GET('/api/v0/members/me', { signal: params.signal })
+    warmed = !error
+  }
+  if (!warmed) {
+    throw new Error('서버를 깨우지 못했습니다. 잠시 후 다시 시도해주세요.')
+  }
+  return unwrap<RegisterCurriculumResponse>(
+    izOriginClient.POST('/api/v0/curricula', {
       params: { query: params.query },
       body: csvBody(params.file) as never,
       signal: params.signal,
     }) as never,
   )
+}
 
 /*
   ─── 교육생 코드 제출 (ZIP) ──────────────────────────────────────────────────

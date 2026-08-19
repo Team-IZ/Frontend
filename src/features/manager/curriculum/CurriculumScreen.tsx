@@ -50,7 +50,7 @@ export default function CurriculumScreen() {
   const shell = (children: React.ReactNode) => (
     <ConsoleShell
       role="manager"
-      cohort={cohortName ?? ''}
+      cohort={cohortId ?? ''}
       cohorts={cohorts}
       onCohortChange={selectCohort}
     >

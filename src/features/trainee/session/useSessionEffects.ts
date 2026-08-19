@@ -36,27 +36,59 @@ function useDismissingToast<T>(holdMs: number) {
 /**
  * 다른 창에 다녀온 시간을 잰다. 돌아왔을 때 1회만 토스트가 뜨고, 몇 초 뒤 스스로 닫힌다.
  * 막지 않는다 — 세션 정의서 §6 "창 이탈은 차단하지 않는다, 기록만 한다".
+ *
+ * ## 이벤트 두 종류를 다 듣는다
+ *
+ * `visibilitychange`만 들으면 **다른 앱으로 옮겨 간 이탈을 통째로 놓친다.** 이 화면은
+ * 전체화면이라 탭이 숨겨지지 않고, 창이 뒤로 가도 `document.hidden`은 그대로 `false`다
+ * — 실제로 탭을 바꿔 봐도 신호가 안 나갔다(실측). 스펙도 `visibilitychange`와 `focus`
+ * 둘을 함께 적어 두었다.
+ *
+ * | 무엇을 했나 | 뜨는 이벤트 |
+ * |---|---|
+ * | 탭 전환 · 창 최소화 | `visibilitychange` |
+ * | 다른 앱으로 전환 · 다른 창 클릭 | `blur` / `focus` |
+ *
+ * ## 두 번 세지 않는다
+ *
+ * 둘이 함께 뜨는 경우가 있다(탭을 바꾸면 `blur`도 온다). **떠난 시각을 하나만** 들고,
+ * 이미 나가 있으면 덮어쓰지 않는다 — 안 그러면 한 번 나간 것이 두 번으로 기록되어
+ * 무효 응시 판정이 틀어진다.
  */
-export function useAwayToast(onAway: (seconds: number) => void, enabled: boolean) {
-  const hiddenAtRef = useRef<number | null>(null)
+export function useAwayToast(onAway: (seconds: number, sinceMs: number) => void, enabled: boolean) {
+  const awaySinceRef = useRef<number | null>(null)
   const [toast, show] = useDismissingToast<{ seconds: number }>(3500)
 
   useEffect(() => {
     if (!enabled) return
-    const handleVisibility = () => {
-      if (document.hidden) {
-        hiddenAtRef.current = Date.now()
-        return
-      }
-      if (hiddenAtRef.current == null) return
-      const seconds = Math.round((Date.now() - hiddenAtRef.current) / 1000)
-      hiddenAtRef.current = null
+
+    const leave = () => {
+      // 이미 나가 있으면 시각을 새로 찍지 않는다 — 두 이벤트가 겹쳐 와도 한 번이다
+      awaySinceRef.current ??= Date.now()
+    }
+    const back = () => {
+      // 창이 보이면서 초점까지 돌아와야 "돌아온 것"이다
+      if (document.hidden) return
+      const since = awaySinceRef.current
+      if (since == null) return
+      awaySinceRef.current = null
+      const seconds = Math.round((Date.now() - since) / 1000)
+      // 1초 미만은 지나가는 클릭이다 — 기록하면 이탈 횟수만 부풀린다
       if (seconds < 1) return
-      onAway(seconds)
+      // **떠난 시각**을 함께 준다 — 서버가 지속 시간으로 거꾸로 근사하지 않는다
+      onAway(seconds, since)
       show({ seconds })
     }
+    const handleVisibility = () => (document.hidden ? leave() : back())
+
     document.addEventListener('visibilitychange', handleVisibility)
-    return () => document.removeEventListener('visibilitychange', handleVisibility)
+    window.addEventListener('blur', leave)
+    window.addEventListener('focus', back)
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility)
+      window.removeEventListener('blur', leave)
+      window.removeEventListener('focus', back)
+    }
   }, [enabled, onAway, show])
 
   return toast

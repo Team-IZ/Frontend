@@ -9,7 +9,7 @@ import {
 } from '@/api/assessment/useAssessmentQueries'
 import {
   useOpenSessionHint,
-  useRecordSessionActivity,
+  useRecordSessionActivityEvent,
   useStartSession,
   useSubmitSessionAnswer,
 } from '@/api/assessment/useAssessmentMutations'
@@ -128,14 +128,21 @@ export function useNoSessionReason() {
  * 세션이 끝난 것을 **홈에도 알린다.**
  *
  * 쓰기(답변·힌트)는 생성 훅이 알아서 조회를 무효화하지만, **시간이 지나 끝나는 종료는
- * 아무 요청도 아니라서** 무효화가 일어나지 않는다. 그러면 캐시가 살아 있는 동안
- * (`staleTime` 30초) 홈이 `이해도 확인을 시작할 차례예요`를 그대로 그리고, 학생이
- * 그 버튼을 누르면 세션이 없다는 화면으로 떨어진다 — 실제로 보고된 증상이다.
+ * 아무 요청도 아니라서** 무효화가 일어나지 않는다. 그러면 홈이 `이해도 확인을 시작할
+ * 차례예요`를 그대로 그리고, 학생이 그 버튼을 누르면 세션이 없다는 화면으로 떨어진다.
+ *
+ * 🔴 **홈만 무효화한다. 세션 조회는 건드리지 않는다.**
+ *
+ * 도메인 전체(`assessmentKeys.all`)를 지우면 세션 조회가 다시 돌아 `204`가 오고, 화면이
+ * 「세션 없음」으로 갈아타 **종료 화면(`끝났어요. 수고했어요`)을 덮어 버린다** — 실제로
+ * 마지막 답을 낸 학생이 그 화면을 못 보고 엉뚱한 문구가 스쳤다(실측).
+ *
+ * 세션이 끝났다는 것은 화면이 이미 안다. 그 사실을 다시 물어볼 이유가 없다.
  */
 export function useMarkSessionEnded() {
   const queryClient = useQueryClient()
   return useCallback(() => {
-    queryClient.invalidateQueries({ queryKey: assessmentKeys.all })
+    queryClient.invalidateQueries({ queryKey: assessmentKeys.getMyAssessmentRounds() })
   }, [queryClient])
 }
 
@@ -207,35 +214,52 @@ export function useOpenHint(sessionId: string | null) {
 }
 
 /**
- * 관찰 신호 기록 — 창 이탈·연결 끊김·첫 타이핑 지연.
+ * 관찰 신호 기록 — 창 이탈·연결 끊김·첫 타이핑 지연을 **건별로** 남긴다.
  *
  * **AI를 부르지 않고 진행 상태도 안 바꾼다. 오직 기록이다**(`204`). 이 경로가 없으면
  * 무효 응시 판정과 매니저 브리프의 "어느 답변이 의심스러운가"가 빈 값으로 남는다.
  *
+ * ## 왜 `/activity`가 아니라 `/activity-events`인가
+ *
+ * 예전 경로는 지속 시간만 보냈고 **서버가 발생 시각을 거꾸로 근사**했다. 지금은
+ * `occurredAt`을 우리가 싣는다 — 실제로 언제 나갔는지는 브라우저만 안다. 매니저가
+ * 보는 로그에 시각이 그대로 남으므로, 근사값이면 "11시 8분에 나갔다"가 틀린 말이 된다.
+ *
  * ## 실패를 조용히 삼킨다 — 유일하게 그래도 되는 자리다
  *
- * 이건 학생이 요청한 일이 아니라 화면이 뒤에서 남기는 기록이다. 실패했다고 응시 중인
- * 학생에게 알릴 것이 없고, 알려도 할 수 있는 일이 없다. 특히 `409`(끝난 세션)는
- * **정상이다** — 스펙이 *"끝난 세션의 신호는 버린다, 화면은 409를 무시하면 된다"* 고
- * 못박았다.
+ * 학생이 요청한 일이 아니라 화면이 뒤에서 남기는 기록이다. 실패했다고 응시 중인 학생에게
+ * 알릴 것이 없고, 알려도 할 수 있는 일이 없다. 특히 `409`(끝난 세션)는 **정상이다** —
+ * 스펙이 *"끝난 세션의 신호는 버린다, 화면은 409를 무시하면 된다"* 고 못박았다.
  *
  * ## 재전송하지 않는다
  *
- * ⚠️ `awaySeconds`·`disconnectedSeconds`는 **보낼 때마다 횟수가 1 올라간다.** 실패했다고
+ * ⚠️ `WINDOW_LEAVE`·`CONNECTION_LOSS`는 **부를 때마다 횟수가 1 올라간다.** 실패했다고
  * 다시 보내면 한 번 나간 것이 두 번으로 기록되어 무효 응시 판정이 틀린다. 잃는 편이 낫다.
+ *
+ * ## 범위를 넘기지 않는다
+ *
+ * 서버가 `0~86400000`ms를 벗어나면 `400`으로 막는다(실측). 탭을 하루 넘게 숨겨 두고
+ * 돌아오면 그대로 걸리므로 여기서 잘라 보낸다 — 상한을 넘긴 값은 "아주 오래 나가
+ * 있었다" 이상의 뜻이 없다.
  */
+const MS_MAX = 86_400_000
+const clampMs = (v: number) => Math.min(Math.max(Math.round(v), 0), MS_MAX)
+
+export type ActivityEvent = 'WINDOW_LEAVE' | 'CONNECTION_LOSS' | 'FIRST_KEYSTROKE_DELAY'
+
 export function useSessionActivity(sessionId: string | null) {
-  const m = useRecordSessionActivity()
+  const m = useRecordSessionActivityEvent()
   return useCallback(
-    (body: {
-      awaySeconds?: number
-      disconnectedSeconds?: number
-      firstKeystrokeDelayMs?: number
-    }) => {
+    (eventType: ActivityEvent, durationMs: number, occurredAtMs: number) => {
       if (!sessionId) return
-      // 셋 다 비면 400이다 — 보낼 것이 없으면 아예 안 부른다
-      if (Object.values(body).every((v) => v == null)) return
-      m.mutate({ path: { sessionId }, body })
+      m.mutate({
+        path: { sessionId },
+        body: {
+          eventType,
+          occurredAt: new Date(occurredAtMs).toISOString(),
+          durationMs: clampMs(durationMs),
+        },
+      })
     },
     [m, sessionId],
   )
@@ -268,6 +292,7 @@ function toProblem(p: ServerProblem): ProblemView {
     problemNo: p.problemNo,
     problemTotal: p.problemTotal,
     title: p.title,
+    timeLimitAt: p.problemTimeLimitAt ?? null,
     code: {
       path: p.code.path,
       language: p.code.language,

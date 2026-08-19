@@ -2,13 +2,20 @@
 
 import { useQuery } from '@tanstack/react-query'
 import type { QueryOptions } from '@/api/_contract'
-import { findSessionProblem, findCurrentSession, getMyAssessmentRounds } from './assessmentApi'
+import {
+  findSessionProblem,
+  findCurrentSession,
+  getMyAssessmentRounds,
+  findAssessmentAttemptActivityEvents,
+} from './assessmentApi'
 import { assessmentKeys } from './assessmentKeys'
 import type {
   findSessionProblem_Path,
   findSessionProblem_Response,
   findCurrentSession_Response,
   getMyAssessmentRounds_Response,
+  findAssessmentAttemptActivityEvents_Path,
+  findAssessmentAttemptActivityEvents_Response,
 } from './assessmentTypes'
 
 /** 문제 하나의 코드·질문·문답 조회 */
@@ -37,6 +44,18 @@ export function useGetMyAssessmentRounds(options?: QueryOptions<getMyAssessmentR
   return useQuery({
     queryKey: assessmentKeys.getMyAssessmentRounds(),
     queryFn: ({ signal }) => getMyAssessmentRounds({ signal }),
+    ...options,
+  })
+}
+
+/** 이벤트 로그 조회 (매니저) */
+export function useFindAssessmentAttemptActivityEvents(
+  params: { path: findAssessmentAttemptActivityEvents_Path },
+  options?: QueryOptions<findAssessmentAttemptActivityEvents_Response>,
+) {
+  return useQuery({
+    queryKey: assessmentKeys.findAssessmentAttemptActivityEvents(params),
+    queryFn: ({ signal }) => findAssessmentAttemptActivityEvents({ ...params, signal }),
     ...options,
   })
 }

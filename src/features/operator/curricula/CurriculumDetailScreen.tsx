@@ -33,7 +33,7 @@ import type {
   findSections_Response,
   findUsedProjects_Response,
 } from '@/api/curriculum/curriculumTypes'
-import { useCohortScope } from '../admin/_/cohortScope'
+import { useCohortId } from '@/stores/cohortScope'
 import { COHORT_STATUS_LABEL } from '../admin/_/labels'
 import { Skeleton } from '@/components/ui/Skeleton'
 import TableSkeleton from '@/components/common/TableSkeleton'
@@ -88,7 +88,7 @@ export default function CurriculumDetailScreen() {
     접어서」 가르는 기준이다(LinkedTab). 목록 화면과 같은 `?cohort=`를 읽으므로 목록에서
     고른 기수가 그대로 따라 들어온다.
   */
-  const scope = useCohortScope()
+  const scope = useCohortId()
   const curriculum = useFindCurriculum({ path: { materialId: id } }, { enabled: !!id })
   const sections = useFindSections({ path: { materialId: id } }, { enabled: !!id })
   const usedProjects = useFindUsedProjects({ path: { materialId: id } }, { enabled: !!id })
@@ -101,12 +101,12 @@ export default function CurriculumDetailScreen() {
     role: 'operator' as const,
     /* 목록이 오기 전에는 비운다 — 자리값(`7기`)을 그리면 실제 기수인 척한다 */
     cohort: scope.cohortId ?? '',
-    cohorts: scope.cohorts.map((c) => ({
+    cohorts: scope.cohortList.map((c) => ({
       value: c.cohortId,
       label: c.name,
       detail: COHORT_STATUS_LABEL[c.status],
     })),
-    onCohortChange: scope.setCohort,
+    onCohortChange: scope.selectCohort,
   }
 
   /*

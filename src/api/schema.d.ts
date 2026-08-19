@@ -3025,7 +3025,7 @@ export interface paths {
      *     | 코드 | 상태 | 언제 |
      *     |---|---|---|
      *     | `HINT_EXHAUSTED` | 409 | 단계당 2회를 다 썼다 |
-     *     | `HINT_NOT_AVAILABLE` | 409 | 다시 보기이거나, 이미 답을 제출한 질문이다 |
+     *     | `HINT_NOT_AVAILABLE` | 409 | 이미 끝난 질문이다(통과했거나 NOT_PASSED로 닫혔다) |
      *     | `SESSION_NOT_STARTED` | 409 | `POST /start`를 아직 부르지 않았다 |
      *     | `ASSESSMENT_WINDOW_CLOSED` | 409 | 개인 응시 창이 닫혔다 |
      *
@@ -3271,6 +3271,52 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v0/assessment-sessions/{sessionId}/activity-events': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * 관찰 신호 이벤트 1건 기록 | ✅ 사용 가능
+     * @description 창 이탈·연결 끊김·첫 타이핑 지연을 **발생 건 하나씩** 남긴다. `POST /activity`와 달리
+     *     **발생 시작 시각을 클라이언트가 직접 싣는다** — 서버가 지속 시간으로 거꾸로 근사하지 않는다.
+     *     카운터(문제·세션 누적)는 `POST /activity`와 같은 값을 같은 방식으로 올린다.
+     *
+     *     ## 요청
+     *
+     *     | 파라미터 | 필수 | 타입 | 설명 |
+     *     |---|---|---|---|
+     *     | `sessionId` | 필수 | UUID | 경로 파라미터 |
+     *
+     *     **본문** — 셋 다 필수, 이벤트 1건.
+     *
+     *     | 필드 | 타입 | 범위 | 설명 |
+     *     |---|---|---|---|
+     *     | `eventType` | string | `WINDOW_LEAVE`·`CONNECTION_LOSS`·`FIRST_KEYSTROKE_DELAY` | 이벤트 종류 |
+     *     | `occurredAt` | Instant | | 이 이벤트가 시작된 시각(클라이언트 실측) |
+     *     | `durationMs` | int | `0`~`86400000` | 지속 시간(ms) |
+     *
+     *     어느 문제의 어느 질문에 붙는지는 **싣지 않는다** — `POST /activity`와 같은 이유로 진행
+     *     위치는 서버 커서가 정본이다.
+     *
+     *     ⚠️ `WINDOW_LEAVE`·`CONNECTION_LOSS`는 **부를 때마다 횟수가 1씩 올라간다.** `FIRST_KEYSTROKE_DELAY`는
+     *     슬롯당 첫 값만 남으므로 중복 전송이 안전하다.
+     *
+     *     ## 응답
+     *
+     *     `204 No Content`. 본문이 없다.
+     */
+    post: operations['recordSessionActivityEvent']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v0/assessment-sessions/reviews': {
     parameters: {
       query?: never
@@ -3328,8 +3374,10 @@ export interface paths {
      *     만든 다음은 1차와 똑같다 — 받은 `sessionId`로 `POST /{sessionId}/start`를 부르면 된다.
      *     커서·인트로 동의·문제별 20분 시계는 그쪽이 세운다.
      *
-     *     ⚠️ **다시 보기에는 힌트가 없다.** `POST /{sessionId}/hints`는 409 `HINT_NOT_AVAILABLE`이다
-     *     ("지난번과 같은 질문이라 이미 한 번 들었어요").
+     *     **힌트도 1차와 똑같다.** `POST /{sessionId}/hints`가 그대로 열리고 미달 시 자동 지급도 돈다
+     *     (2026-08-18 변경). 종전에는 409 `HINT_NOT_AVAILABLE`로 막았는데, 그러면 미달한 축에서
+     *     다음 슬롯이 열리지 않아 세션이 그 자리에 갇혔다. 다만 문답·힌트가 1차의 복사본이라
+     *     **1차에서 이미 본 힌트를 다시 보게 된다** — 새 힌트가 생기지는 않는다.
      *
      *     ## 두 번 눌러도 안전하다
      *
@@ -4975,7 +5023,7 @@ export interface paths {
       cookie?: never
     }
     /**
-     * 담당 반 리포트 목록 조회 (매니저) | ⚠️ 사용 불가
+     * 담당 반 리포트 목록 조회 (매니저) | ✅ 사용 가능
      * @description 매니저가 **담당하는 반**의 개인 리포트 목록. 발행 여부와 공개 상태만 준다.
      *
      *     ⚠️ 신설 직후라 **실제 DB로 검증되지 않았다.** SQL이 도는 것을 확인한 뒤
@@ -8251,6 +8299,13 @@ export interface paths {
      *     | `code` | object | 코드 패널. 구조는 아래 |
      *     | `turns[]` | array | 이 문제에서 지금까지 확정된 문답. 화면은 위에서 아래로 쌓는다 |
      *     | `current` | object? | 지금 물어보는 질문. 문제가 끝났으면 `null` |
+     *     | `problemStartedAt` | date-time? | 이 문제의 기산점. **지금 문제일 때만** 값이 있다 |
+     *     | `problemTimeLimitAt` | date-time? | 이 문제의 제한 시각. 화면의 문제별 카운트다운은 여기서 잰다 |
+     *
+     *     ⏱️ **문제별 카운트다운은 `problemTimeLimitAt`에서 잰다**(2026-08-18 추가). 세션 시작
+     *     시각(`startedAt`)에서 재면 두 번째 문제부터 전부 틀린다 — 문제마다 20분을 새로 세기
+     *     때문이다. 서버가 문제를 접는 판정도 같은 값을 쓰므로 화면과 판정이 갈리지 않는다.
+     *     이미 끝난 문제를 열어 볼 때는 두 키가 모두 빠진다.
      *
      *     **code**
      *
@@ -8259,7 +8314,12 @@ export interface paths {
      *     | `path` | string | 파일 경로 |
      *     | `language` | string | `PYTHON` · `JAVA` … 모르는 확장자는 `UNKNOWN` |
      *     | `snippet` | string | **문제를 낸 파일 전체.** 자를 위치는 화면이 정한다 |
-     *     | `lineStart` · `lineEnd` | int | 강조할 구간(파일 기준 절대 줄 번호) |
+     *     | `lineStart` | int | `snippet` 첫 줄의 파일 기준 절대 줄 번호. 화면은 여기서부터 번호를 매긴다 |
+     *     | `lineEnd` | int | `snippet` 마지막 줄의 절대 줄 번호. **`snippet`에서 도출한다** — `lineEnd - lineStart + 1`이 곧 줄 수다 |
+     *
+     *     ⚠️ **`highlight`는 `snippet` 밖으로 나가지 않는다**(2026-08-18 보정). 저장된 좌표가
+     *     `snippet`보다 길게 적혀 있는 경우가 있어(37차 R4), 서버가 `snippet` 마지막 줄로 잘라
+     *     내려보낸다. 화면은 받은 값을 그대로 믿고 칠하면 된다.
      *     | `references[]` | array | `{ type, path, lineStart, lineEnd, axisCode }`. 호출부·관련 문맥. 화면은 접어 두고 필요할 때 편다 |
      *
      *     **turns[] 각 항목**
@@ -8281,7 +8341,7 @@ export interface paths {
      *     | `questionText` | string | 질문 원문 |
      *     | `shownHints[]` | array | 이미 연 힌트 문구. 없으면 빈 배열 |
      *     | `hintsUsed` | int | 지금까지 쓴 힌트 수(0~2) |
-     *     | `hintsLeft` | int | 남은 힌트 수. 다시 보기는 항상 `0` |
+     *     | `hintsLeft` | int | 남은 힌트 수. 다시 보기도 1차와 같다 |
      *     | `highlight` | object | 강조 구간 |
      *     | `lastTurnOfSession` | boolean | `true`면 버튼이 `답변 제출하고 마치기`로 바뀐다 |
      *
@@ -8342,7 +8402,7 @@ export interface paths {
      *     | 필드 | 타입 | 설명 |
      *     |---|---|---|
      *     | `sessionId` | UUID | 이후 네 경로가 모두 이 값을 쓴다 |
-     *     | `mode` | enum | `FIRST`(1차) · `REVIEW`(다시 보기). REVIEW는 힌트가 없고 판정에 반영되지 않는다 |
+     *     | `mode` | enum | `FIRST`(1차) · `REVIEW`(다시 보기). REVIEW는 판정에 반영되지 않는다(힌트는 1차와 같다) |
      *     | `status` | enum | `READY`(시작 전 안내) · `IN_PROGRESS`(진행 중) |
      *     | `currentProblemNo` | int? | 지금 서 있는 문제 번호(1~`problemTotal`). 시작 전이면 `null` |
      *     | `problemTotal` | int | 생성된 문제 수. 화면의 `문제 n/N`의 N |
@@ -8675,6 +8735,37 @@ export interface paths {
      *     | 403 | 호출자가 교육생(`TRAINEE`)이 아니다 |
      */
     get: operations['getMyAssessmentRounds']
+    put?: never
+    post?: never
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v0/assessment-attempts/{attemptId}/activity-events': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    /**
+     * 이벤트 로그 조회 (매니저) | ✅ 사용 가능
+     * @description 이 시도(attempt)의 세션에서 벌어진 창 이탈·연결 끊김·첫 타이핑 지연을 **문제(질문)별로**
+     *     집계해 돌려준다.
+     *
+     *     ## 응답 (200)
+     *
+     *     문제마다 발생한 이벤트 타입별로 횟수·지속 시간 합계·발생 건 원본 목록을 담는다.
+     *     한 건도 없던 이벤트 타입은 그 문제의 `events`에 나오지 않는다. 이벤트가 아예 없던
+     *     문제는 `events: []`로 나온다.
+     *
+     *     🔴 **응답은 호출자가 담당하는 범위로 제한된다.** 담당하지 않는 시도를 지정하면
+     *     `404 ASSESSMENT_ATTEMPT_NOT_FOUND`다 — 존재하지 않는 것과 남의 담당인 것을 구분하지
+     *     않는다(담당 밖 시도의 존재를 알려줄 이유가 없다).
+     */
+    get: operations['findAssessmentAttemptActivityEvents']
     put?: never
     post?: never
     delete?: never
@@ -9568,6 +9659,24 @@ export interface components {
        * @example 4
        */
       durationMin: number
+      /**
+       * Format: int32
+       * @description 창을 떠난 횟수(39차 R2)
+       * @example 3
+       */
+      windowLeaveCount: number
+      /**
+       * Format: int32
+       * @description 연결이 끊긴 횟수(39차 R2)
+       * @example 1
+       */
+      connectionLossCount: number
+      /**
+       * Format: int32
+       * @description 문제·힌트 단계 중 가장 빠른(=가장 의심스러운) 첫 타이핑 지연(ms). 기록된 지연이 하나도 없으면 `null`(39차 R2)
+       * @example 450
+       */
+      firstKeystrokeDelayMs: number | null
     }
     /** @description GitHub 저장소 URL 제출 요청 */
     CreateGithubSubmissionRequest: {
@@ -10963,7 +11072,7 @@ export interface components {
        */
       sessionId: string
       /**
-       * @description FIRST(1차) · REVIEW(다시 보기). REVIEW는 힌트가 없고 판정에 반영되지 않는다
+       * @description FIRST(1차) · REVIEW(다시 보기). REVIEW는 판정에 반영되지 않는다(힌트는 1차와 같다)
        * @enum {string}
        */
       mode: 'FIRST' | 'REVIEW'
@@ -11107,6 +11216,25 @@ export interface components {
        * @example 3500
        */
       firstKeystrokeDelayMs?: number
+    }
+    /** @description 응시 중 관찰 신호 이벤트 1건(창 이탈·연결 끊김·첫 타이핑 지연). 발생 시작 시각을 명시한다 */
+    SessionActivityEventRequest: {
+      /**
+       * @description WINDOW_LEAVE · CONNECTION_LOSS · FIRST_KEYSTROKE_DELAY
+       * @enum {string}
+       */
+      eventType: 'WINDOW_LEAVE' | 'CONNECTION_LOSS' | 'FIRST_KEYSTROKE_DELAY'
+      /**
+       * Format: date-time
+       * @description 이 이벤트가 시작된 시각(클라이언트 실측)
+       */
+      occurredAt: string
+      /**
+       * Format: int32
+       * @description 지속 시간(ms)
+       * @example 3500
+       */
+      durationMs: number
     }
     /** @description 다시 보기 개설 */
     ReviewOpenRequest: {
@@ -16429,12 +16557,12 @@ export interface components {
       snippet: string
       /**
        * Format: int32
-       * @description 강조할 구간 시작(파일 기준 절대 줄 번호)
+       * @description snippet 첫 줄의 파일 기준 절대 줄 번호. 화면은 여기서부터 번호를 매긴다
        */
       lineStart: number
       /**
        * Format: int32
-       * @description 강조할 구간 끝
+       * @description snippet 마지막 줄의 절대 줄 번호. snippet에서 도출하므로 lineEnd - lineStart + 1 이 곧 snippet 줄 수다
        */
       lineEnd: number
       /** @description 호출부·관련 문맥. 화면은 접어 두고 필요할 때 편다 */
@@ -16453,7 +16581,7 @@ export interface components {
       hintsUsed: number
       /**
        * Format: int32
-       * @description 남은 힌트 수. 다시 보기는 항상 0이다
+       * @description 남은 힌트 수. 다시 보기도 1차와 같다(2회)
        */
       hintsLeft: number
       /** @description 강조할 구간 */
@@ -16481,18 +16609,33 @@ export interface components {
       turns: components['schemas']['Turn'][]
       /** @description 지금 물어보는 질문. 문제가 끝났으면 이 키가 없다 */
       current?: components['schemas']['CurrentQuestion']
+      /**
+       * Format: date-time
+       * @description 이 문제를 시작한 시각(문제별 상한의 기산점). 시작 전이거나 지금 문제가 아니면 이 키가 없다
+       */
+      problemStartedAt?: string
+      /**
+       * Format: date-time
+       * @description 이 문제의 제한 시각. 화면의 문제별 카운트다운은 이 값에서 잰다. 서버가 문제를 접는 판정도 같은 값을 쓴다
+       */
+      problemTimeLimitAt?: string
     }
     /** @description 코드 근거 하나 */
     Reference: {
       /** @description PRIMARY_BLOCK · QUESTION_HIGHLIGHT · CALLER · RELATED_CONTEXT · CURRICULUM_EVIDENCE */
       type: string
-      path: string
+      /** @description CURRICULUM_EVIDENCE에서는 항상 null이다. 대신 teachLabel/sourcePages를 쓴다 */
+      path: string | null
       /** Format: int32 */
       lineStart: number
       /** Format: int32 */
       lineEnd: number
       /** @description 이 근거가 붙는 축. QUESTION_HIGHLIGHT에서만 채워진다 */
       axisCode: string
+      /** @description 교안 개념 라벨. CURRICULUM_EVIDENCE에서만 채워진다(39차 R4) */
+      teachLabel: string
+      /** @description 교안 근거 페이지. CURRICULUM_EVIDENCE에서만 채워진다(39차 R4) */
+      sourcePages: number[]
     }
     Turn: {
       /**
@@ -16847,6 +16990,52 @@ export interface components {
        * @description 🔴 **폐기된 필드. 언제나 `null`이다**(2026-08-16). 위와 같다.
        */
       roundAssessmentDueAt: string | null
+    }
+    /** @description 이벤트 타입 하나의 집계 */
+    ActivityEventSummary: {
+      /** @description WINDOW_LEAVE · CONNECTION_LOSS · FIRST_KEYSTROKE_DELAY */
+      eventType: string
+      /**
+       * Format: int32
+       * @description 발생 횟수
+       * @example 3
+       */
+      count: number
+      /**
+       * Format: int32
+       * @description 지속 시간 합계(ms)
+       * @example 45000
+       */
+      totalDurationMs: number
+      /** @description 발생 건 원본 목록. 발생 순 */
+      occurrences: components['schemas']['Occurrence'][]
+    }
+    /** @description 발생 건 하나 */
+    Occurrence: {
+      /**
+       * Format: date-time
+       * @description 발생 시작 시각
+       */
+      occurredAt: string
+      /**
+       * Format: int32
+       * @description 지속 시간(ms)
+       * @example 3500
+       */
+      durationMs: number
+    }
+    /** @description 문제 하나의 관찰 신호 이벤트 집계 */
+    ProblemActivityEventsResponse: {
+      /** Format: uuid */
+      problemId: string
+      /**
+       * Format: int32
+       * @description 그 회차 안의 문제 번호(1~3)
+       * @example 1
+       */
+      problemNo: number
+      /** @description 발생한 이벤트 타입별 집계. 한 건도 없던 타입은 나오지 않는다 */
+      events: components['schemas']['ActivityEventSummary'][]
     }
     /** @description 기관 삭제 확인 요청 */
     DeleteOrganizationRequest: {
@@ -20875,6 +21064,75 @@ export interface operations {
         content?: never
       }
       /** @description ACTIVITY_SIGNAL_REQUIRED · VALIDATION_FAILED */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SESSION_NOT_ACCESSIBLE */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description SESSION_NOT_STARTED · SESSION_TIMEOUT · SESSION_ALREADY_ENDED — **끝난 세션의 409는 무시하면 된다.** 재전송할 값이 아니다 */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  recordSessionActivityEvent: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        sessionId: string
+      }
+      cookie?: never
+    }
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['SessionActivityEventRequest']
+      }
+    }
+    responses: {
+      /** @description 기록됨. **본문이 없다** — 진행 상태는 바뀌지 않는다 */
+      204: {
+        headers: {
+          [name: string]: unknown
+        }
+        content?: never
+      }
+      /** @description VALIDATION_FAILED */
       400: {
         headers: {
           [name: string]: unknown
@@ -25512,6 +25770,55 @@ export interface operations {
       }
       /** @description 호출자가 교육생(TRAINEE)이 아님 */
       403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  findAssessmentAttemptActivityEvents: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        attemptId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 이벤트 로그 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ProblemActivityEventsResponse'][]
+        }
+      }
+      /** @description UNAUTHENTICATED */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ASSESSMENT_ATTEMPT_NOT_FOUND */
+      404: {
         headers: {
           [name: string]: unknown
         }

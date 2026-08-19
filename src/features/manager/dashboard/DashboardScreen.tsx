@@ -69,7 +69,7 @@ function interviewsListPath(roundId: string, className: string): string {
 export default function DashboardScreen() {
   const navigate = useNavigate()
   /* 본문은 아직 목이지만 **스코프는 진짜다** — 헤더가 옆 화면과 다른 기수를 말하면 안 된다 */
-  const { cohortName, cohorts, selectCohort } = useManagerCohort()
+  const { cohortId, cohortName, cohorts, selectCohort } = useManagerCohort()
   const initial = getSessionView()
   const [round, setRound] = useState<RoundId>(initial.round)
   const [scope, setScope] = useState<InboxScope>('RECENT')
@@ -109,7 +109,7 @@ export default function DashboardScreen() {
   return (
     <ConsoleShell
       role="manager"
-      cohort={cohortName ?? ''}
+      cohort={cohortId ?? ''}
       cohorts={cohorts}
       onCohortChange={selectCohort}
     >

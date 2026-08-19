@@ -14,7 +14,7 @@ import { Spinner } from '@/components/ui/Spinner'
 import { isApiError } from '@/api/_contract'
 import { useInviteManager } from '@/api/member/useMemberMutations'
 import { useGetCurrentMember } from '@/api/member/useMemberQueries'
-import { useCohortScope } from '../../_/cohortScope'
+import { useCohortId } from '@/stores/cohortScope'
 import RequiredMark from '../../_/components/RequiredMark'
 
 /*
@@ -40,7 +40,7 @@ export default function InviteManagerDialog({ open, onOpenChange }: Props) {
   const [error, setError] = useState<string | null>(null)
 
   const { data: me } = useGetCurrentMember()
-  const scope = useCohortScope()
+  const scope = useCohortId()
   const invite = useInviteManager()
 
   const organizationId = me?.organizationId

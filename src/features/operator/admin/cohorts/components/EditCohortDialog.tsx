@@ -15,7 +15,7 @@ import { useUpdateCohort } from '@/api/academic/useAcademicMutations'
 import { toIsoDate } from '../../_/rules'
 import RequiredMark from '../../_/components/RequiredMark'
 import DateRangeField from './DateRangeField'
-import type { Cohort } from '../../_/cohortScope'
+import type { Cohort } from '@/stores/cohortScope'
 
 /*
   기수 수정 — 이름·기간(11차 Q2).

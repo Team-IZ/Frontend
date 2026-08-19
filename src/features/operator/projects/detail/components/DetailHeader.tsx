@@ -29,8 +29,14 @@ export default function DetailHeader({
 
   return (
     <div className="mb-4">
+      {/*
+        (이슈 277 QA) **기수를 실어 간다.** 예전엔 `/operator/projects`로 고정돼 있어서,
+        스위처로 다른 기수를 골라 두고 들어온 회차에서 여기를 누르면 목록이 전역
+        기본값(진행 중 기수)으로 되돌아갔다 — 방금 보던 기수가 사라졌다. 이 회차가
+        실제로 속한 기수(`project.cohortId`)를 실어 보내면 그 문제가 없다.
+      */}
       <Link
-        to="/operator/projects"
+        to={`/operator/projects?cohort=${project.cohortId}`}
         className="text-fg-subtle hover:text-fg mb-1.5 inline-flex items-center gap-0.5 text-xs"
       >
         <ChevronLeftIcon className="size-3.5" />

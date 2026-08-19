@@ -21,7 +21,7 @@ import { errorCopy } from '@/lib/errorCopy'
 import { useCreateClassroom } from '@/api/academic/useAcademicMutations'
 import { useFindManagers } from '@/api/member/useMemberQueries'
 import { DEFAULT_CLASS_CAPACITY, classroomName } from '../../_/rules'
-import { useCohortScope } from '../../_/cohortScope'
+import { useCohortId } from '@/stores/cohortScope'
 import { FilterSelect } from '../../_/components/AdminFilters'
 import { ALL } from '../../_/filterState'
 import RequiredMark from '../../_/components/RequiredMark'
@@ -61,7 +61,7 @@ export default function AddClassDialog({ open, onOpenChange }: Props) {
   /** 실패 **원인**을 들고 있는다 — 있고 없고만 알면 화면이 이유를 지어내게 된다 */
   const [failure, setFailure] = useState<unknown>(null)
 
-  const scope = useCohortScope()
+  const scope = useCohortId()
   const create = useCreateClassroom()
   /*
     **이 기수의 활성 매니저만 후보다.**

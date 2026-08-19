@@ -25,7 +25,7 @@ import {
 import type { findManagers_Item, findManagers_Query } from '@/api/member/memberTypes'
 import { MANAGER_STATUS_LABEL } from '../_/labels'
 import { assignPolicy, formatLastSeen } from '../_/rules'
-import { useCohortScope } from '../_/cohortScope'
+import { useCohortId } from '@/stores/cohortScope'
 import type { AccountStatus } from '../_/api/types'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
@@ -103,7 +103,7 @@ export default function ManagersTab() {
   /** 행 액션 결과 — 성공·실패가 같은 배너 자리를 쓴다 */
   const action = useActionResult()
 
-  const scope = useCohortScope()
+  const scope = useCohortId()
   const { data: me } = useGetCurrentMember()
   const organizationId = me?.organizationId
 
@@ -197,7 +197,7 @@ export default function ManagersTab() {
         <Alert className="mb-4">
           <AlertTitle>{cohort?.name} 담당 이력을 보고 있습니다</AlertTitle>
           <AlertDescription>
-            끝난 기수라 담당을 바꾸거나 계정을 정지할 수 없습니다.
+            끝난 기수라 담당을 바꾸거나 계정을 정지할 수 없고, 새 매니저를 초대할 수도 없습니다.
           </AlertDescription>
         </Alert>
       )}
@@ -224,7 +224,9 @@ export default function ManagersTab() {
             </>
           )
         }
-        action={<Button onClick={() => setInviteOpen(true)}>+ 매니저 초대</Button>}
+        action={
+          locked ? undefined : <Button onClick={() => setInviteOpen(true)}>+ 매니저 초대</Button>
+        }
       />
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -285,11 +287,12 @@ export default function ManagersTab() {
             <EmptyHeader>
               <EmptyTitle>아직 매니저가 없습니다</EmptyTitle>
               <EmptyDescription>
-                초대하면 담당 반을 맡길 수 있습니다. 반이 담당 없이 시작되면 그 반 면담을 아무도
-                처리하지 않습니다.
+                {locked
+                  ? '끝난 기수라 매니저를 초대할 수 없습니다.'
+                  : '초대하면 담당 반을 맡길 수 있습니다. 반이 담당 없이 시작되면 그 반 면담을 아무도 처리하지 않습니다.'}
               </EmptyDescription>
             </EmptyHeader>
-            <Button onClick={() => setInviteOpen(true)}>+ 매니저 초대</Button>
+            {!locked && <Button onClick={() => setInviteOpen(true)}>+ 매니저 초대</Button>}
           </Empty>
         )
       ) : (

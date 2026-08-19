@@ -118,7 +118,7 @@ const TABS = ['sections', 'used'] as const
 export default function CurriculumDetailScreen() {
   const { id = '' } = useParams()
   const [params, setParams] = useSearchParams()
-  const { cohortName, cohorts, selectCohort } = useManagerCohort()
+  const { cohortId, cohortName, cohorts, selectCohort } = useManagerCohort()
 
   const head = useCurriculumHead(id)
   const sections = useSections(id)
@@ -127,7 +127,7 @@ export default function CurriculumDetailScreen() {
   const shell = (children: React.ReactNode) => (
     <ConsoleShell
       role="manager"
-      cohort={cohortName ?? ''}
+      cohort={cohortId ?? ''}
       cohorts={cohorts}
       onCohortChange={selectCohort}
     >
@@ -156,7 +156,7 @@ export default function CurriculumDetailScreen() {
   if (head.isError || !head.data) {
     return shell(
       <div className="mx-auto max-w-3xl">
-        <BackRow title="교안 상세" />
+        <BackRow title="교안 상세" cohortId={cohortId} />
         <Card className="items-center gap-2 p-10 text-center">
           <p className="text-lg font-semibold">교안을 찾을 수 없습니다</p>
           <p className="text-fg-subtle text-sm">삭제되었거나 잘못된 주소일 수 있습니다.</p>
@@ -179,12 +179,18 @@ export default function CurriculumDetailScreen() {
       </div>
 
       <div className="mb-4 flex items-center gap-2.5">
+        {/*
+          (이슈 277 QA) **기수를 실어 간다.** 교안은 기수 소유가 아니라 기관 전체
+          자산이라 「이 교안의 기수」가 없다 — 대신 지금 스위처가 가리키는 기수를
+          그대로 들고 간다. 안 그러면 다른 기수를 보다 들어온 교안에서 여기를 누를 때
+          목록이 기본값(첫 담당 기수)으로 되돌아간다.
+        */}
         <Button
           variant="ghost"
           size="sm"
           aria-label="교안 목록으로 돌아가기"
           nativeButton={false}
-          render={<Link to="/manager/curriculum" />}
+          render={<Link to={`/manager/curriculum?cohort=${cohortId ?? ''}`} />}
           className="p-1.5"
         >
           <ArrowLeft className="size-5" />
@@ -320,7 +326,7 @@ export default function CurriculumDetailScreen() {
   )
 }
 
-function BackRow({ title }: { title: string }) {
+function BackRow({ title, cohortId }: { title: string; cohortId: string | undefined }) {
   return (
     <>
       <div className="[&_h1]:sr-only">
@@ -332,7 +338,7 @@ function BackRow({ title }: { title: string }) {
           size="sm"
           aria-label="교안 목록으로 돌아가기"
           nativeButton={false}
-          render={<Link to="/manager/curriculum" />}
+          render={<Link to={`/manager/curriculum?cohort=${cohortId ?? ''}`} />}
           className="p-1.5"
         >
           <ArrowLeft className="size-5" />

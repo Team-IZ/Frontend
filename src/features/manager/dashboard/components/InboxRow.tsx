@@ -21,8 +21,9 @@ import type { InboxBand, InboxItem } from '../_/api/types'
   `actionItems`에서 빠지고, 면담을 끝내면 `PLANNED`이 아니게 된다 — 원천이
   이미 그렇게 동작한다.
 
-  ⚠ 같은 이유로 `RETRY`(다시 보기) 행도 없다 — 32차 R14②로 「오퍼레이션 없음」
-  확답을 받았다. `SESSION_INCOMPLETE`(응시 중단)는 반대로 **새로 생겼다**.
+  ⚠ `RETRY`(다시 보기) 행도 없다 — 32차 R14②로 「오퍼레이션 없음」 확답을 받았었다.
+  **2026-08-19에 생겼다**(38차 R1) — 인박스 조회가 `REVIEW`로 준다. 그 조회로
+  갈아탈 때 같이 들어온다(`_/api/api.ts` 머리말). `SESSION_INCOMPLETE`(응시 중단)는 반대로 **새로 생겼다**.
 */
 
 const traineePath = (id: string) => `/manager/trainees/${id}`

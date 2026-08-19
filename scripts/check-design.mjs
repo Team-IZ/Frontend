@@ -108,6 +108,13 @@ const PAIRS = [
     `neutral`을 `fg-muted`(4.87)로 옮기고 이 줄을 추가했다.
   */
   ['fg-muted', 'neutral-soft'],
+  /*
+    두 번째 면(표 머리·밴드 라벨·비활성 행). `neutral-soft`와 **같은 종류의 구멍**이라
+    같이 막는다 — 지금은 `fg-subtle` 4.87 · `fg-muted` 6.04로 둘 다 통과하지만,
+    짝이 없으면 토큰을 조금만 밝혀도 조용히 미달로 내려간다(MG-01 하드닝에서 확인).
+  */
+  ['fg-subtle', 'surface-2'],
+  ['fg-muted', 'surface-2'],
   // 어두운 면 — 좌측 네비게이션. 밝은 배경만 검사하면 이 조합이 통째로 빠진다.
   ['nav-fg', 'nav'],
   ['nav-fg', 'nav-active'],

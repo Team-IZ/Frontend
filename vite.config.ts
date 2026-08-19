@@ -13,7 +13,14 @@ import tailwindcss from '@tailwindcss/vite'
   중계하면 브라우저 입장엔 퍼스트파티 요청이 된다. 배포에서는 vercel.json의 rewrite가
   같은 역할을 한다. `VITE_API_BASE`는 이제 빈 값(상대경로)이 정상이다(.env.local 참고).
 */
-const API_PROXY_TARGET = 'https://xvdanr6m362b2ge232vdmfbrny0kwakz.lambda-url.ap-northeast-1.on.aws'
+/*
+  ⚠ **App Runner다 — Lambda가 아니다.** 배포 문서(`docs/dev/backend/backend-apprunner-deploy.md`)가
+  정식으로 적어 둔 주소이고, 두 호스트는 **「없는 것을 물었을 때」 답이 다르다** —
+  Lambda는 404 대신 매달리고(6종 전부 25~40초 무응답), App Runner는 도메인 코드를
+  붙여 1초 안에 404를 준다(36차 R6 실측). 18차부터 「404가 무응답이다」로 여러 차례
+  올린 요청이 전부 그 차이였다.
+*/
+const API_PROXY_TARGET = 'https://mmbvymzj5k.ap-northeast-1.awsapprunner.com'
 
 // https://vite.dev/config/
 export default defineConfig({

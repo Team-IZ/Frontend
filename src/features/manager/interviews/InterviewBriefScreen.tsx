@@ -32,9 +32,11 @@ import { CAUSE_OPTIONS, type Brief, type CauseKey } from './_/api/types'
   화면이 계산합니다"* 라고 명시한다(`causeRouting.ts`).
 
   ⚠ **브리프가 없으면 먼저 만든다.** `briefState`가 `NONE`·`FAILED`면 조회가 아니라
-  `POST .../brief`다. 없는 브리프를 `GET`하면 서버가 404를 내는데 **404는 지금
-  무응답이라**(30차 R1) 화면이 90초를 기다렸다 실패로 떨어진다 — 실측했다.
-  목록이 `?state=`로 넘겨주는 `briefState`를 그대로 믿는다.
+  `POST .../brief`다 — 스펙이 정한 계약이다. 목록·대시보드가 `?state=`로 넘겨주는
+  `briefState`를 그대로 믿는다.
+
+  ⚠ 없는 브리프를 `GET`하면 `404 INTERVIEW_BRIEF_NOT_CREATED`가 0.7초에 온다
+  (38차 §6 실측). 한때 「404가 무응답」이라 적어 뒀는데 그건 Lambda 쪽 현상이었다.
 
   ⚠ **나가는 길·저장 완료 이동 전부 `navigate(-1)`을 쓴다** — 이 화면은 면담 목록
   (MG-03)과 대시보드(MG-01) 두 입구가 있어, 고정 링크로 두면 대시보드에서 열었을 때

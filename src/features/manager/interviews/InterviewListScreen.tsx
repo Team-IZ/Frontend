@@ -60,8 +60,7 @@ import InterviewFilters from './components/InterviewFilters'
 
 /**
  * 브리프로 갈 때 **`briefState`를 같이 넘긴다** — 브리프 화면이 조회(`GET`)와
- * 생성(`POST`) 중 무엇을 부를지 그 값으로 가른다. 없는 브리프를 `GET`하면 404가
- * 오는데 404가 지금 무응답이라 90초를 기다리게 된다(30차 R1).
+ * 생성(`POST`) 중 무엇을 부를지 그 값으로 가른다(스펙이 정한 계약).
  */
 const briefPath = (c: InterviewCase) =>
   `/manager/interviews/${c.caseId}/brief?state=${c.briefState}`

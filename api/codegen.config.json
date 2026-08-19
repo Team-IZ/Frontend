@@ -6,7 +6,7 @@
     "치환자: {tagName}(짧은 도메인 이름) · {TagName}(PascalCase) · {featurePath}(tagPaths 값)"
   ],
   "spec": {
-    "url": "https://xvdanr6m362b2ge232vdmfbrny0kwakz.lambda-url.ap-northeast-1.on.aws/v3/api-docs",
+    "url": "https://mmbvymzj5k.ap-northeast-1.awsapprunner.com/v3/api-docs",
     "file": "api/openapi.json"
   },
   "paths": {

@@ -221,20 +221,36 @@ export function ProgressColCell({
  * 목은 `prefix()`로 반 이름을 붙였는데 **서버가 `className`을 실어 준다.**
  * 🔴 종료 회차의 「면담 N명」은 서버에 자리가 없어 빠졌다(요청서 §5).
  */
-const ACTION_TEXT: Record<ProjectAction['type'], { label: string; tone: string }> = {
-  UNSUBMITTED_TEAMS: { label: '미제출', tone: 'text-warning font-semibold' },
-  ANALYSIS_FAILED_TEAMS: { label: '분석 실패', tone: 'text-danger font-semibold' },
+/*
+  🔴 **서버가 유형을 늘리면 화면이 죽었다.** `INTERVIEW_BACKLOG`가 새로 오자
+  이 표에서 못 찾아 `undefined.tone`으로 터졌고, **라우트 전체가 흰 화면**이
+  됐다(어댑터가 `as`로 캐스팅해 타입 검사도 못 막았다).
+
+  아래는 **부분 함수**로 둔다 — 모르는 유형은 `undefined`가 나오고 그 줄만
+  건너뛴다. 조치 하나를 못 그리는 것과 화면 전체가 사라지는 것은 다르다.
+
+  ⚠ **단위가 유형마다 다르다**(스펙 명시) — 앞의 둘은 팀 수, 면담은 **사람 수**다.
+*/
+const ACTION_TEXT: Partial<
+  Record<ProjectAction['type'], { label: string; tone: string; unit: string }>
+> = {
+  UNSUBMITTED_TEAMS: { label: '미제출', tone: 'text-warning font-semibold', unit: '팀' },
+  ANALYSIS_FAILED_TEAMS: { label: '분석 실패', tone: 'text-danger font-semibold', unit: '팀' },
+  INTERVIEW_BACKLOG: { label: '면담 대기', tone: 'text-fg-muted font-semibold', unit: '명' },
 }
 
 export function ActionColCell({ items }: { items: ProjectAction[] }) {
-  if (items.length === 0) return <span className="text-fg-subtle text-xs">—</span>
+  /* **그릴 수 있는 것**으로 센다 — 모르는 유형만 있으면 빈 칸이지 빈 상자가 아니다 */
+  const known = items.filter((a) => ACTION_TEXT[a.type])
+  if (known.length === 0) return <span className="text-fg-subtle text-xs">—</span>
   return (
     <div className="flex flex-col gap-0.5 text-xs">
-      {items.map((a, i) => {
-        const t = ACTION_TEXT[a.type]
+      {known.map((a, i) => {
+        const t = ACTION_TEXT[a.type]!
         return (
           <span key={`${a.classId}-${a.type}-${i}`} className={t.tone}>
-            {a.className} {t.label} {a.teamCount}팀
+            {a.className} {t.label} {a.teamCount}
+            {t.unit}
           </span>
         )
       })}

@@ -2,7 +2,13 @@ import { useMemo } from 'react'
 import { useFindProjectsForManager } from '@/api/projectExecution/useProjectExecutionQueries'
 import type { findProjectsForManager_Response } from '@/api/projectExecution/projectExecutionTypes'
 import { listQueryOptions } from '@/lib/listQuery'
-import type { ProjectListView, ProjectRow, ProjectSort, ProjectStatus } from './listTypes'
+import type {
+  ActionType,
+  ProjectListView,
+  ProjectRow,
+  ProjectSort,
+  ProjectStatus,
+} from './listTypes'
 
 /*
   MG-07 프로젝트 목록 도메인 훅 — **생성 훅을 감싸 화면 어휘로 옮긴다.**
@@ -128,13 +134,18 @@ function toRow(p: ServerRow): ProjectRow {
       조치 — 반 이름까지 실려 온다. 목은 `prefix()`로 `C반 미제출 2팀`을 만들었는데
       서버가 `className`을 주므로 그 조립만 화면에 남는다(문구는 화면 어휘다).
 
-      🔴 **종료 회차의 「면담 N명」이 없다** — `type`이 `UNSUBMITTED_TEAMS`·
-      `ANALYSIS_FAILED_TEAMS` 둘뿐이다. 지어내지 않고 그 자리를 비운다(요청서 §5).
+      ⚠ **`INTERVIEW_BACKLOG`가 새로 왔다**(34차 R7①). 한때 「type이 둘뿐이라
+      면담 N명이 없다」고 적어 뒀는데 서버가 늘렸다 — 그리고 **화면이 그 값에
+      죽었다**(`ActionColCell`이 라벨 표에서 못 찾아 `undefined.tone`). 여기서
+      `as`로 캐스팅하고 있어 타입 검사도 못 막았다.
+
+      🔴 **단위가 유형마다 다르다** — 앞의 둘은 팀 수, 면담은 **사람 수**다.
     */
     actions: (p.actionItems ?? []).map((a) => ({
       classId: a.classId,
       className: a.className,
-      type: a.type as ProjectRow['actions'][number]['type'],
+      /* 캐스팅하지 않는다 — 모르는 값은 화면이 그 자리에서 가른다 */
+      type: a.type as ActionType,
       teamCount: a.teamCount,
     })),
   }

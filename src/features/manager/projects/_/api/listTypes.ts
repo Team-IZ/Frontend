@@ -13,13 +13,22 @@ export type ProjectStatus = 'PLANNED' | 'RUNNING' | 'CLOSED'
 export type ProjectSort = 'READINESS' | 'DUE_SOON' | 'START_DATE'
 
 /** 서버가 주는 두 종뿐이다 — 목의 「면담 N명」은 자리가 없다 */
-export type ActionType = 'UNSUBMITTED_TEAMS' | 'ANALYSIS_FAILED_TEAMS'
+/**
+ * 조치 유형. **서버가 늘릴 수 있다** — `INTERVIEW_BACKLOG`가 실제로 그렇게 왔다
+ * (34차 R7①). 그래서 화면은 **모르는 값에도 죽지 않아야 한다**(`ActionColCell`).
+ */
+export type ActionType = 'UNSUBMITTED_TEAMS' | 'ANALYSIS_FAILED_TEAMS' | 'INTERVIEW_BACKLOG'
 
 export type ProjectAction = {
   classId: string
   /** 반 이름을 서버가 실어 준다 — 화면이 반 목록에서 다시 찾지 않는다 */
   className: string
   type: ActionType
+  /**
+   * ⚠ **단위가 `type`마다 다르다.** 앞의 둘은 팀 수, `INTERVIEW_BACKLOG`는
+   * **사람 수**다(스펙이 「단위는 type으로 갈라 주세요」라고 적어 두었다).
+   * 그래서 이름과 달리 화면이 「N팀」으로 못 쓴다.
+   */
   teamCount: number
 }
 

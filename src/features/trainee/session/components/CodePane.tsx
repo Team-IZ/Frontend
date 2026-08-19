@@ -165,21 +165,24 @@ const inRange = (line: number, h: Highlight | null) =>
 type Caller = { label: string; snippet: string | null }
 
 function callerBlocks(code: Code, lines: { line: number; text: string }[]): Caller[] {
-  return code.references
-    .filter((r) => r.type === 'CALLER' && r.path)
-    .map((r) => {
-      const file = r.path.split('/').pop() ?? r.path
-      const sameFile = r.path === code.path
-      const hasRange = r.lineStart > 0 && r.lineEnd > r.lineStart
-      return {
-        label: sameFile && hasRange ? `${file}:${r.lineStart}~${r.lineEnd}` : file,
-        snippet:
-          sameFile && hasRange
-            ? lines
-                .filter((l) => l.line >= r.lineStart && l.line <= r.lineEnd)
-                .map((l) => l.text)
-                .join('\n')
-            : null,
-      }
-    })
+  return (
+    code.references
+      // `path`가 nullable이라(39차 R4) 값이 있는 것만 남긴다 — 없으면 가리킬 자리가 없다
+      .flatMap((r) => (r.type === 'CALLER' && r.path ? [{ ...r, path: r.path }] : []))
+      .map((r) => {
+        const file = r.path.split('/').pop() ?? r.path
+        const sameFile = r.path === code.path
+        const hasRange = r.lineStart > 0 && r.lineEnd > r.lineStart
+        return {
+          label: sameFile && hasRange ? `${file}:${r.lineStart}~${r.lineEnd}` : file,
+          snippet:
+            sameFile && hasRange
+              ? lines
+                  .filter((l) => l.line >= r.lineStart && l.line <= r.lineEnd)
+                  .map((l) => l.text)
+                  .join('\n')
+              : null,
+        }
+      })
+  )
 }

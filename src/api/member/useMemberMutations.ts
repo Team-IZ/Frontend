@@ -10,6 +10,7 @@ import {
   registerTrainees,
   resendTraineeInvitations,
   previewTrainees,
+  updateLoginLock,
   updateManagerStatus,
   updateTraineeStatus,
   cancelManagerInvitation,
@@ -35,6 +36,9 @@ import type {
   previewTrainees_Path,
   previewTrainees_Body,
   previewTrainees_Response,
+  updateLoginLock_Path,
+  updateLoginLock_Body,
+  updateLoginLock_Response,
   updateManagerStatus_Path,
   updateManagerStatus_Body,
   updateManagerStatus_Response,
@@ -180,6 +184,26 @@ export function usePreviewTrainees(
   return useMutation({
     mutationFn: (vars: { path: previewTrainees_Path; body: previewTrainees_Body }) =>
       previewTrainees(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: memberKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 계정 로그인 차단 / 해제 */
+export function useUpdateLoginLock(
+  options?: MutationOptions<
+    updateLoginLock_Response,
+    { path: updateLoginLock_Path; body: updateLoginLock_Body }
+  >,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: updateLoginLock_Path; body: updateLoginLock_Body }) =>
+      updateLoginLock(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다

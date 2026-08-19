@@ -68,7 +68,11 @@ export type CodePane = {
    */
   references: {
     type: string
-    path: string
+    /**
+     * ⚠ **`null`이 온다**(2026-08-19 스펙 · 세션 API 개정). 같은 파일 안을 가리키는
+     * 근거는 경로가 없다 — 화면이 그 조각만 안 쓴다(지어내지 않는다).
+     */
+    path: string | null
     lineStart: number
     lineEnd: number
     /** 이 근거가 붙는 축. `QUESTION_HIGHLIGHT`에서만 채워진다 */

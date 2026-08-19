@@ -70,6 +70,22 @@ export type recordSessionActivity_Errors =
   | 'SESSION_TIMEOUT'
   | 'SESSION_ALREADY_ENDED'
 
+// POST /api/v0/assessment-sessions/{sessionId}/activity-events — 관찰 신호 이벤트 1건 기록
+export type recordSessionActivityEvent_Path =
+  operations['recordSessionActivityEvent']['parameters']['path']
+export type recordSessionActivityEvent_Body = NonNullable<
+  operations['recordSessionActivityEvent']['requestBody']
+>['content']['application/json']
+export type recordSessionActivityEvent_Response = void
+export type recordSessionActivityEvent_Errors =
+  | 'VALIDATION_FAILED'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'SESSION_NOT_ACCESSIBLE'
+  | 'SESSION_NOT_STARTED'
+  | 'SESSION_TIMEOUT'
+  | 'SESSION_ALREADY_ENDED'
+
 // POST /api/v0/assessment-sessions/reviews — 다시 보기 개설(리포트에서 파생)
 export type openReviewSession_Body = NonNullable<
   operations['openReviewSession']['requestBody']
@@ -107,3 +123,11 @@ export type findCurrentSession_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 export type getMyAssessmentRounds_Response =
   operations['getMyAssessmentRounds']['responses'][200]['content']['application/json']
 export type getMyAssessmentRounds_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
+
+// GET /api/v0/assessment-attempts/{attemptId}/activity-events — 이벤트 로그 조회 (매니저)
+export type findAssessmentAttemptActivityEvents_Path =
+  operations['findAssessmentAttemptActivityEvents']['parameters']['path']
+export type findAssessmentAttemptActivityEvents_Response =
+  operations['findAssessmentAttemptActivityEvents']['responses'][200]['content']['application/json']
+export type findAssessmentAttemptActivityEvents_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'ASSESSMENT_ATTEMPT_NOT_FOUND'

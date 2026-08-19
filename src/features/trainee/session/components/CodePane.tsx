@@ -165,21 +165,28 @@ const inRange = (line: number, h: Highlight | null) =>
 type Caller = { label: string; snippet: string | null }
 
 function callerBlocks(code: Code, lines: { line: number; text: string }[]): Caller[] {
-  return code.references
-    .filter((r) => r.type === 'CALLER' && r.path)
-    .map((r) => {
-      const file = r.path.split('/').pop() ?? r.path
-      const sameFile = r.path === code.path
-      const hasRange = r.lineStart > 0 && r.lineEnd > r.lineStart
-      return {
-        label: sameFile && hasRange ? `${file}:${r.lineStart}~${r.lineEnd}` : file,
-        snippet:
-          sameFile && hasRange
-            ? lines
-                .filter((l) => l.line >= r.lineStart && l.line <= r.lineEnd)
-                .map((l) => l.text)
-                .join('\n')
-            : null,
-      }
-    })
+  return (
+    code.references
+      /*
+      ⚠ **`path`가 스키마상 nullable이 됐다**(2026-08-19 세션 API 개정). 여기서
+      좁혀 두면 아래가 `r.path!` 없이 그대로 읽는다 — 필터와 사용처가 갈리면
+      다음에 조건을 고칠 때 한쪽만 바뀐다.
+    */
+      .filter((r): r is typeof r & { path: string } => r.type === 'CALLER' && !!r.path)
+      .map((r) => {
+        const file = r.path.split('/').pop() ?? r.path
+        const sameFile = r.path === code.path
+        const hasRange = r.lineStart > 0 && r.lineEnd > r.lineStart
+        return {
+          label: sameFile && hasRange ? `${file}:${r.lineStart}~${r.lineEnd}` : file,
+          snippet:
+            sameFile && hasRange
+              ? lines
+                  .filter((l) => l.line >= r.lineStart && l.line <= r.lineEnd)
+                  .map((l) => l.text)
+                  .join('\n')
+              : null,
+        }
+      })
+  )
 }

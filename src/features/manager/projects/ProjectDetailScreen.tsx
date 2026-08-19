@@ -50,7 +50,7 @@ export default function ProjectDetailScreen() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
-  const { cohortName, cohorts, selectCohort } = useManagerCohort()
+  const { cohortId, cohortName, cohorts, selectCohort } = useManagerCohort()
 
   const project = useProject(id)
   const submission = useSubmissionStatus(id)
@@ -60,7 +60,7 @@ export default function ProjectDetailScreen() {
   const shell = (children: React.ReactNode) => (
     <ConsoleShell
       role="manager"
-      cohort={cohortName ?? ''}
+      cohort={cohortId ?? ''}
       cohorts={cohorts}
       onCohortChange={selectCohort}
     >

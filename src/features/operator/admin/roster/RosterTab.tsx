@@ -21,7 +21,7 @@ import { useResendTraineeInvitations } from '@/api/member/useMemberMutations'
 import type { findTraineeRoster_Query } from '@/api/member/memberTypes'
 import { ACCOUNT_STATUS_LABEL } from '../_/labels'
 import { ROSTER_PAGE_SIZE } from '../_/rules'
-import { useCohortScope } from '../_/cohortScope'
+import { useCohortId } from '@/stores/cohortScope'
 import type { AccountStatus, TraineeRosterEntry } from '../_/api/types'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
@@ -139,7 +139,7 @@ export default function RosterTab() {
     enabled: activeBatch !== null,
   })
 
-  const scope = useCohortScope()
+  const scope = useCohortId()
   const cohortId = scope.cohortId
 
   const roster = useFindTraineeRoster(

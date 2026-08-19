@@ -194,7 +194,7 @@ export default function HeatmapScreen() {
   return (
     <ConsoleShell
       role="manager"
-      cohort={cohortName ?? ''}
+      cohort={cohortId ?? ''}
       cohorts={cohorts}
       onCohortChange={selectCohort}
     >

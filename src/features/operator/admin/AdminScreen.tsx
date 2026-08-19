@@ -3,7 +3,7 @@ import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import { ADMIN_TABS, DEFAULT_ADMIN_TAB, isAdminTab, type AdminTab } from './adminTabs'
-import { useCohortScope } from './_/cohortScope'
+import { useCohortId } from '@/stores/cohortScope'
 import { COHORT_STATUS_LABEL } from './_/labels'
 
 /*
@@ -34,7 +34,7 @@ export default function AdminScreen() {
   /* 탭을 옮겨도 `?cohort=`를 그대로 들고 간다 — 아래 `onValueChange` 참고 */
   const { search } = useLocation()
   const active: AdminTab = isAdminTab(tab) ? tab : DEFAULT_ADMIN_TAB
-  const scope = useCohortScope()
+  const scope = useCohortId()
 
   /*
     ⚠ **탭 이름 옆 개수를 걷어냈다.**
@@ -58,12 +58,12 @@ export default function AdminScreen() {
       role="operator"
       /* 목록이 오기 전에는 스코프 자리를 비운다 — 자리값(`7기`)을 그리면 실제 기수인 척한다 */
       cohort={scope.cohortId ?? ''}
-      cohorts={scope.cohorts.map((c) => ({
+      cohorts={scope.cohortList.map((c) => ({
         value: c.cohortId,
         label: c.name,
         detail: COHORT_STATUS_LABEL[c.status],
       }))}
-      onCohortChange={scope.setCohort}
+      onCohortChange={scope.selectCohort}
     >
       <PageHeader title="운영 관리" />
 

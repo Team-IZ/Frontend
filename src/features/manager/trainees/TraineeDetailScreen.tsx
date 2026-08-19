@@ -103,7 +103,7 @@ export default function TraineeDetailScreen() {
     */
     <ConsoleShell
       role="manager"
-      cohort={cohortName ?? ''}
+      cohort={cohortId ?? ''}
       cohorts={cohorts}
       onCohortChange={selectCohort}
     >

@@ -48,7 +48,7 @@ export default function InterviewBriefScreen() {
   const { id = '' } = useParams()
   const [params] = useSearchParams()
   const navigate = useNavigate()
-  const { cohortName, cohorts, selectCohort } = useManagerCohort()
+  const { cohortId, cohortName, cohorts, selectCohort } = useManagerCohort()
 
   /*
     목록에서 넘겨준 상태. 없으면(주소로 바로 들어온 경우) 있다고 보고 조회한다 —
@@ -63,7 +63,7 @@ export default function InterviewBriefScreen() {
   const shell = (children: React.ReactNode) => (
     <ConsoleShell
       role="manager"
-      cohort={cohortName ?? ''}
+      cohort={cohortId ?? ''}
       cohorts={cohorts}
       onCohortChange={selectCohort}
     >

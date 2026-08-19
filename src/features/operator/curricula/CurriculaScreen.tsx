@@ -1,6 +1,6 @@
 import ConsoleShell from '@/shells/ConsoleShell'
 import CurriculaTab from './CurriculaTab'
-import { useCohortScope } from '../admin/_/cohortScope'
+import { useCohortId } from '@/stores/cohortScope'
 import { COHORT_STATUS_LABEL } from '../admin/_/labels'
 
 /*
@@ -41,19 +41,19 @@ export default function CurriculaScreen() {
     그래서 스위처는 **목록의 범위가 아니라 「지금 보고 있는 기수」** 다. 목록이 기관 전체라는
     사실은 머리의 `기관 전체` 문구가 계속 말한다 — 그 한 줄이 없으면 다시 거짓말이 된다.
   */
-  const scope = useCohortScope()
+  const scope = useCohortId()
 
   return (
     <ConsoleShell
       role="operator"
       /* 목록이 오기 전에는 비운다 — 자리값(`7기`)을 그리면 실제 기수인 척한다 */
       cohort={scope.cohortId ?? ''}
-      cohorts={scope.cohorts.map((c) => ({
+      cohorts={scope.cohortList.map((c) => ({
         value: c.cohortId,
         label: c.name,
         detail: COHORT_STATUS_LABEL[c.status],
       }))}
-      onCohortChange={scope.setCohort}
+      onCohortChange={scope.selectCohort}
     >
       <CurriculaTab />
     </ConsoleShell>

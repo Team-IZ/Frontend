@@ -23,7 +23,7 @@ import { delay } from '@/lib/cancellableDelay'
 import type { previewTrainees_Response, registerTrainees_Response } from '@/api/member/memberTypes'
 import { checkRosterRows, MAX_TRAINEE_INVITE, type ParsedRoster } from '../../_/rules'
 import { ROSTER_ISSUE_LABEL } from '../../_/labels'
-import { useCohortScope } from '../../_/cohortScope'
+import { useCohortId } from '@/stores/cohortScope'
 import type { RosterEntry, RosterIssue } from '../../_/api/types'
 import RosterCsvField from '../../_/components/RosterCsvField'
 import RosterIssueList from '../../_/components/RosterIssueList'
@@ -91,7 +91,7 @@ export default function AddRosterDialog({ open, onOpenChange, onAdded }: Props) 
   */
   const { data: me } = useGetCurrentMember()
   const domain = me?.emailDomain ?? undefined
-  const scope = useCohortScope()
+  const scope = useCohortId()
   const cohortId = scope.cohortId
   const previewTyped = usePreviewTrainees()
   const queryClient = useQueryClient()

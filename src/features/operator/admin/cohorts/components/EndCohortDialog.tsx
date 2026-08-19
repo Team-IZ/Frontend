@@ -13,7 +13,7 @@ import { Field, FieldLabel } from '@/components/ui/Field'
 import { Textarea } from '@/components/ui/Textarea'
 import { Spinner } from '@/components/ui/Spinner'
 import RequiredMark from '../../_/components/RequiredMark'
-import type { Cohort } from '../../_/cohortScope'
+import type { Cohort } from '@/stores/cohortScope'
 
 /*
   기수 종료 — **확인만 받는 것이 아니라 사유를 받는다.**

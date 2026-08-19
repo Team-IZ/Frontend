@@ -4,18 +4,55 @@ import {
   useFindCohorts,
   useFindMyEnrollments,
 } from '@/api/academic/useAcademicQueries'
+import type { findCohorts_Item } from '@/api/academic/academicTypes'
+
+export type Cohort = findCohorts_Item
+
+/** 스위처가 다룰 수 있는 최대 기수 수 — 넘으면 뒤가 잘린다(admin/_/cohortScope.ts에서 흡수) */
+const MAX_COHORTS = 100
 
 /** 기수 스코프를 쓰는 화면이 헤더 스위처에 그대로 넘기는 모양 */
 export type CohortScope = {
   cohortId: string | undefined
   /** 표시명(`9기`). 상단 스위처가 이 값을 그린다 — 이름 때문에 조회를 더 하지 않는다 */
   cohortName: string | undefined
+  /**
+   * 지금 선택된 기수의 원본 객체 — 기간(`startDate`/`endDate`) 등 이름 밖의 필드가
+   * 필요할 때 쓴다(예: 비용 탭의 기간 계산). 아직 안 왔으면 `undefined`.
+   */
+  current: Cohort | undefined
   /** 기수가 하나도 없거나 조회가 실패했다 — 화면이 그 자리에 무엇을 그릴지 정한다 */
   failed: boolean
+  /** 목록 조회가 아직 끝나지 않았다 — 로딩 스켈레톤 조건으로 쓴다 */
+  isLoading: boolean
   /** 스위처에 넘길 선택지. 아직 안 왔으면 빈 배열이다 */
   cohorts: { value: string; label: string }[]
+  /**
+   * 원본 목록 — `status` 등 `{value,label}`로 안 깎인 필드가 필요할 때 쓴다(예: 스위처
+   * 옵션에 상태를 붙이거나, 상태별로 세는 화면). 매니저 스코프는 원본 Cohort 스키마가
+   * 아니라 `enrollments`를 쓰므로 항상 빈 배열이다.
+   */
+  cohortList: readonly Cohort[]
   /** 스위처가 부른다 — 주소를 바꾸면 이 훅을 쓰는 화면이 전부 따라온다 */
   selectCohort: (cohortId: string) => void
+}
+
+/**
+ * 아무것도 안 고른 사람에게 보여줄 기수.
+ *
+ * **진행 중 > 예정 > 아무거나** 순이다. 오퍼레이터가 매일 여는 화면의 답은 "지금 돌고
+ * 있는 기수"이고, 그런 게 없으면 곧 시작할 기수다. 종료된 기수를 기본으로 열면
+ * 아무것도 바꿀 수 없는 화면이 첫 화면이 된다.
+ *
+ * (이슈 277 — admin/_/cohortScope.ts의 `pickDefault`를 그대로 흡수했다. 전에는 이
+ * 훅이 `RUNNING > 첫 기수` 2단이라 운영 관리 탭과 다른 값을 고를 수 있었다.)
+ */
+function pickDefault(cohorts: readonly Cohort[]): Cohort | undefined {
+  return (
+    cohorts.find((c) => c.status === 'RUNNING') ??
+    cohorts.find((c) => c.status === 'PLANNED') ??
+    cohorts[0]
+  )
 }
 
 /**
@@ -28,8 +65,8 @@ export type CohortScope = {
  * 목일 때는 `'7'`이면 됐지만 서버는 **UUID**를 받는다. 상수를 UUID로 바꿔 적으면 그
  * 계정·그 환경에서만 도는 화면이 되고, 시드가 바뀌면 조용히 깨진다.
  *
- * 그래서 **서버에 물어본다.** 진행 중인 기수를 고르고, 없으면 목록의 첫 기수를 쓴다 —
- * 오퍼레이터가 지금 손대는 기수가 진행 중인 것이라는 근거다.
+ * 그래서 **서버에 물어본다.** 진행 중인 기수를 고르고, 없으면 예정 기수, 그것도 없으면
+ * 목록의 첫 기수를 쓴다 — 오퍼레이터가 지금 손대는 기수가 진행 중인 것이라는 근거다.
  *
  * ─── 스위처가 붙었다 (2026-08-12) ────────────────────────────
  * **고른 값은 주소가 갖는다**(`?cohort=`) — async-states §5. 그래야 새로고침·뒤로가기가
@@ -56,29 +93,40 @@ export type CohortScope = {
  * 요청이 따로 나갔다 — 목록과 상세를 오갈 때마다 기수를 다시 물었다. 같은 쿼리 키를
  * 쓰면 한 번만 나가고 캐시된다.
  *
- * `features/operator/admin/_/cohortScope.ts`가 아직 자기 상수를 갖고 있다 — **남의
- * 도메인 파일이라 건드리지 않는다.** 그쪽이 연동될 때 여기로 합친다.
+ * ─── 이슈 277 — admin/_/cohortScope.ts를 여기로 합쳤다 ─────────────
+ * 운영 관리 5탭(기수·반·명단·매니저·비용)과 교안 목록/상세가 쓰던 로컬 스코프
+ * (`admin/_/cohortScope.ts`)가 이 전역 스코프와 같은 질문("오퍼레이터가 지금 보는
+ * 기수가 뭔가")에 조금씩 다르게 답하고 있었다 — 페이지 크기(50 vs 100), 기본값 폴백
+ * (2단 vs 3단), 기수 변경 시 히스토리(push vs replace)가 갈렸다. 로컬 쪽이 이미 11개
+ * 파일로 이 전역 훅보다 넓게 퍼져 있어서, 로컬을 지우고 전역이 그 능력(`current`
+ * 원본 객체·`isLoading`)을 흡수하는 쪽을 택했다.
+ *
+ * 히스토리는 **push로 통일한다**(전역이 원래 쓰던 방식) — "기수를 바꾸는 것은 다른
+ * 것을 보러 가는 것이라 뒤로가기로 되돌아올 수 있어야 한다"는 아래 `useCohortParam`의
+ * 근거가, 로컬이 쓰던 `replace: true`("기수를 바꾼 것은 화면 이동이 아니다")보다
+ * 더 최근에 쓰였고 근거도 구체적이라 이쪽으로 정리했다.
  */
 export function useCohortId(): CohortScope {
-  const { data, isError } = useFindCohorts({ query: { page: 0, size: 50 } })
+  const { data, isError, isLoading } = useFindCohorts({ query: { page: 0, size: MAX_COHORTS } })
   const { fromUrl, selectCohort } = useCohortParam()
   const list = data?.content ?? []
 
   /*
-    주소가 먼저다. 없거나 **목록에 없는 값**이면 진행 중 기수로 떨어진다 —
+    주소가 먼저다. 없거나 **목록에 없는 값**이면 기본값으로 떨어진다 —
     남의 조직 기수 id가 주소에 실려 와도 그것으로 조회하지 않는다.
   */
   const picked =
     /* `fromUrl &&` 로 쓰면 빈 문자열이 그대로 흘러 타입이 넓어진다 — 조회를 먼저 한다 */
-    (fromUrl ? list.find((c) => c.cohortId === fromUrl) : undefined) ??
-    list.find((c) => c.status === 'RUNNING') ??
-    list[0]
+    (fromUrl ? list.find((c) => c.cohortId === fromUrl) : undefined) ?? pickDefault(list)
 
   return {
     cohortId: picked?.cohortId,
     cohortName: picked?.name,
+    current: picked,
     failed: isError || (!!data && list.length === 0),
+    isLoading,
     cohorts: list.map((c) => ({ value: c.cohortId, label: c.name })),
+    cohortList: list,
     selectCohort,
   }
 }
@@ -122,7 +170,7 @@ export function useCohortId(): CohortScope {
  * 캐시**다. 「담당 반이 무엇인가」는 매니저 스코프 그 자체라 이 파일의 질문이 맞다.
  */
 export function useManagerCohort(): CohortScope {
-  const { data, isError } = useFindMyEnrollments()
+  const { data, isError, isLoading } = useFindMyEnrollments()
   const { fromUrl, selectCohort } = useCohortParam()
   const list = data?.enrollments ?? []
 
@@ -134,8 +182,17 @@ export function useManagerCohort(): CohortScope {
   return {
     cohortId: picked?.cohortId,
     cohortName: picked?.cohortName,
+    /*
+      매니저 스코프는 애초에 `GET /cohorts`(전체 Cohort 스키마)가 아니라
+      `GET /members/me/enrollments`를 쓴다 — `startDate`/`endDate` 등을 포함한 전체
+      Cohort 객체가 없다. 지금까지 이 값을 쓰는 화면이 없어 `undefined`로 둔다.
+    */
+    current: undefined,
     failed: isError || (!!data && list.length === 0),
+    isLoading,
     cohorts: list.map((e) => ({ value: e.cohortId, label: e.cohortName })),
+    /* 매니저 스코프는 `enrollments`를 쓴다 — 원본 Cohort 스키마가 아니라 항상 빈 배열 */
+    cohortList: [],
     selectCohort,
   }
 }
@@ -162,7 +219,8 @@ function useCohortParam() {
       next.set('cohort', cohortId)
       /*
         `replace`가 아니다 — 기수를 바꾸는 것은 **다른 것을 보러 가는 것**이라
-        뒤로가기로 되돌아올 수 있어야 한다(검색어 타이핑과 다르다).
+        뒤로가기로 되돌아올 수 있어야 한다(검색어 타이핑과 다르다). 이슈 277에서
+        운영 관리 로컬 스코프를 흡수하며 이 규칙으로 통일했다.
       */
       setParams(next)
     },

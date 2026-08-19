@@ -14,7 +14,7 @@ import { useFindCohortCost } from '@/api/usage/useUsageQueries'
 import { useGetCurrentMember } from '@/api/member/useMemberQueries'
 import type { findCohortCost_Query } from '@/api/usage/usageTypes'
 import { formatPeriod, formatUsd, remainingLabel } from '../_/rules'
-import { useCohortScope } from '../_/cohortScope'
+import { useCohortId } from '@/stores/cohortScope'
 import SectionHeader from '../_/components/SectionHeader'
 import { FilterSelect } from '../_/components/AdminFilters'
 import { SlowNotice } from '@/components/common/Loading'
@@ -65,7 +65,7 @@ type ClassCostSort = NonNullable<findCohortCost_Query['sort']>
 
 export default function CostTab() {
   const [sort, setSort] = useState<ClassCostSort>('NAME')
-  const scope = useCohortScope()
+  const scope = useCohortId()
   const { data: me } = useGetCurrentMember()
 
   /*

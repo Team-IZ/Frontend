@@ -19,7 +19,7 @@ import { useFindClassrooms } from '@/api/academic/useAcademicQueries'
 import { useDeleteClassroom } from '@/api/academic/useAcademicMutations'
 import type { findClassrooms_Item } from '@/api/academic/academicTypes'
 import { canEditClasses } from '../_/rules'
-import { useCohortScope } from '../_/cohortScope'
+import { useCohortId } from '@/stores/cohortScope'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
 import TableSkeleton from '@/components/common/TableSkeleton'
@@ -72,7 +72,7 @@ export default function ClassesTab() {
   const [deleting, setDeleting] = useState<ClassRoom | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
-  const scope = useCohortScope()
+  const scope = useCohortId()
   const cohortId = scope.cohortId
   const classes = useFindClassrooms({ path: { cohortId: cohortId! } }, { enabled: !!cohortId })
   const removeClass = useDeleteClassroom()

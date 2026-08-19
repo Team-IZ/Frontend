@@ -18,7 +18,7 @@ import { useDeleteCohort, useEndCohort } from '@/api/academic/useAcademicMutatio
 import { isApiError } from '@/api/_contract'
 import { COHORT_STATUS_LABEL } from '../_/labels'
 import { formatPeriod } from '../_/rules'
-import { useCohortScope, type Cohort } from '../_/cohortScope'
+import { useCohortId, type Cohort } from '@/stores/cohortScope'
 import type { CohortStatus } from '../_/api/types'
 import SectionHeader from '../_/components/SectionHeader'
 import TableFooterBar from '../_/components/TableFooterBar'
@@ -94,7 +94,7 @@ export default function CohortsTab() {
     전체 기준이라 걸러진 목록에서는 못 센다 — 그 값을 위해 조회를 하나 더 보내는 대신
     스위처의 전량 목록을 쓴다(같은 쿼리 키라 캐시에서 나온다).
   */
-  const scope = useCohortScope()
+  const scope = useCohortId()
   const page = useFindCohorts(
     {
       query: {
@@ -109,11 +109,11 @@ export default function CohortsTab() {
 
   const counts = useMemo(() => {
     const base: Record<CohortStatus, number> = { PLANNED: 0, RUNNING: 0, CLOSED: 0 }
-    for (const c of scope.cohorts) base[c.status]++
+    for (const c of scope.cohortList) base[c.status]++
     return base
-  }, [scope.cohorts])
+  }, [scope.cohortList])
 
-  const totalAll = scope.cohorts.length
+  const totalAll = scope.cohortList.length
   const items = useMemo(() => sortCohorts(page.data?.content ?? [], sort), [page.data, sort])
 
   /** 빈 결과가 "아직 없음"인지 "필터에 안 걸림"인지 — 문구가 갈린다 */
@@ -265,7 +265,11 @@ export default function CohortsTab() {
                       기수를 고른 직후에 하는 일이 그것이라 여기에도 둔다.
                     */}
                     {c.cohortId !== scope.cohortId && (
-                      <Button variant="ghost" size="sm" onClick={() => scope.setCohort(c.cohortId)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => scope.selectCohort(c.cohortId)}
+                      >
                         이 기수로
                       </Button>
                     )}

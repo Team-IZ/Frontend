@@ -153,7 +153,7 @@ export default function AnalysisScreen() {
   return (
     <ConsoleShell
       role="operator"
-      cohort={cohortName ?? ''}
+      cohort={cohortId ?? ''}
       cohorts={cohorts}
       onCohortChange={selectCohort}
     >

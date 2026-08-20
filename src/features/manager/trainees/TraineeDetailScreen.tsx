@@ -1,6 +1,6 @@
 import { useParams } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
+import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -123,7 +123,12 @@ export default function TraineeDetailScreen() {
           <HeadSkeleton />
           <TimelineSkeleton />
         </>
-      ) : detail.isError || !detail.data ? (
+      ) : !detail.data ? (
+        /*
+          D41 — `detail.data`가 아예 없을 때(최초 진입 실패)만 전면 에러로 막는다.
+          배경 재조회만 실패한 경우는 아래 배너가 알리고 기존 화면을 그대로 보여준다
+          (D46 패턴, decision-log D47).
+        */
         <Empty>
           <EmptyHeader>
             <EmptyTitle>교육생 정보를 불러오지 못했습니다</EmptyTitle>
@@ -135,6 +140,17 @@ export default function TraineeDetailScreen() {
         </Empty>
       ) : (
         <>
+          {detail.isError && (
+            <Alert variant="warning" className="mb-4">
+              <AlertTitle>교육생 정보를 새로고침하지 못했습니다</AlertTitle>
+              <AlertDescription>마지막으로 불러온 정보를 보여드리고 있어요.</AlertDescription>
+              <AlertAction>
+                <Button variant="ghost" size="sm" onClick={() => void detail.refetch()}>
+                  다시 시도
+                </Button>
+              </AlertAction>
+            </Alert>
+          )}
           <DetailHeader
             name={detail.data.name}
             cohortName={detail.data.cohortName}
@@ -147,7 +163,7 @@ export default function TraineeDetailScreen() {
           {/* 이력만 따로 늦게 온다 — 격자를 기다리게 하지 않는다 */}
           {!timeline.data && !timeline.isError ? (
             <TimelineSkeleton rounds={detail.data.rounds.length} />
-          ) : timeline.isError || !timeline.data ? (
+          ) : !timeline.data ? (
             <Empty>
               <EmptyTitle>이력을 불러오지 못했습니다</EmptyTitle>
               <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
@@ -156,13 +172,26 @@ export default function TraineeDetailScreen() {
               </Button>
             </Empty>
           ) : (
-            <Timeline
-              groups={timeline.data}
-              traineeId={detail.data.id}
-              badges={Object.fromEntries(
-                detail.data.rounds.map((r) => [r.assessmentRoundId, r.badge]),
+            <>
+              {timeline.isError && (
+                <Alert variant="warning" className="mb-4">
+                  <AlertTitle>이력을 새로고침하지 못했습니다</AlertTitle>
+                  <AlertDescription>마지막으로 불러온 이력을 보여드리고 있어요.</AlertDescription>
+                  <AlertAction>
+                    <Button variant="ghost" size="sm" onClick={() => void timeline.refetch()}>
+                      다시 시도
+                    </Button>
+                  </AlertAction>
+                </Alert>
               )}
-            />
+              <Timeline
+                groups={timeline.data}
+                traineeId={detail.data.id}
+                badges={Object.fromEntries(
+                  detail.data.rounds.map((r) => [r.assessmentRoundId, r.badge]),
+                )}
+              />
+            </>
           )}
         </>
       )}

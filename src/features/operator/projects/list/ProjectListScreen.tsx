@@ -12,6 +12,7 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import ErrorState from '@/components/common/ErrorState'
 import TableSkeleton from '@/components/common/TableSkeleton'
 import { cn } from '@/lib/utils/cn'
@@ -191,6 +192,23 @@ export default function ProjectListScreen() {
         onChange={patchFilters}
       />
 
+      {/*
+        D41 — 배경 재조회 실패로 이미 보여준 목록을 덮지 않는다(D46 패턴,
+        decision-log D47). `page.data`가 있을 때만 뜬다 — 최초 진입 실패는 아래
+        `page.isError && !page.data` 분기가 따로 막는다.
+      */}
+      {page.isError && page.data && (
+        <Alert variant="warning" className="mb-3">
+          <AlertTitle>목록을 새로고침하지 못했습니다</AlertTitle>
+          <AlertDescription>마지막으로 불러온 목록을 보여드리고 있어요.</AlertDescription>
+          <AlertAction>
+            <Button variant="ghost" size="sm" onClick={() => void page.refetch()}>
+              다시 시도
+            </Button>
+          </AlertAction>
+        </Alert>
+      )}
+
       {cohortFailed ? (
         /*
           기수가 없으면 이 화면이 답할 질문 자체가 없다 — 회차는 기수 하위다(OP-03 3-1).
@@ -225,7 +243,12 @@ export default function ProjectListScreen() {
           footerH={28}
           cols={['w-[200px]', 'w-[108px]', 'w-[168px]', 'w-[200px]', null]}
         />
-      ) : page.isError ? (
+      ) : page.isError && !page.data ? (
+        /*
+          D41 — `page.data`가 아예 없을 때(최초 진입 실패)만 전면 에러로 막는다. 배경
+          재조회만 실패했으면 아래 렌더 분기에서 배너로만 알린다(D46 패턴,
+          decision-log D47).
+        */
         <ErrorState
           error={page.error}
           subject="목록"

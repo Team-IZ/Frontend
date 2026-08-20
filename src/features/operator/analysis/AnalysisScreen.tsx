@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import {
   Select,
   SelectContent,
@@ -199,6 +200,23 @@ export default function AnalysisScreen() {
             }}
           />
 
+          {/*
+            D41 — 배경 재조회 실패로 이미 보여준 격자를 덮지 않는다(D46 패턴,
+            decision-log D47). `g`가 있을 때만 뜬다 — 최초 진입 실패는 아래
+            `grid.isError && !g` 분기가 따로 막는다.
+          */}
+          {grid.isError && g && (
+            <Alert variant="warning" className="mb-3">
+              <AlertTitle>분석 결과를 새로고침하지 못했습니다</AlertTitle>
+              <AlertDescription>마지막으로 불러온 격자를 보여드리고 있어요.</AlertDescription>
+              <AlertAction>
+                <Button variant="ghost" size="sm" onClick={() => void grid.refetch()}>
+                  다시 시도
+                </Button>
+              </AlertAction>
+            </Alert>
+          )}
+
           {cohortFailed ? (
             <Empty variant="empty">
               <EmptyHeader>
@@ -210,8 +228,13 @@ export default function AnalysisScreen() {
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
-          ) : grid.isError ? (
-            /* 실패 문구·재시도 여부는 `errorCopy`가 status·코드를 보고 정한다 */
+          ) : grid.isError && !g ? (
+            /*
+              D41 — `g`가 아예 없을 때(최초 진입 실패)만 전면 에러로 막는다. 배경
+              재조회만 실패했으면 아래 렌더 분기에서 배너로만 알린다(D46 패턴,
+              decision-log D47). 실패 문구·재시도 여부는 `errorCopy`가 status·코드를
+              보고 정한다.
+            */
             <ErrorState
               error={grid.error}
               subject="분석 결과"
@@ -355,7 +378,29 @@ export default function AnalysisScreen() {
             </span>
           </div>
 
-          {compare.isError ? (
+          {/*
+            D41 — 배경 재조회 실패로 이미 보여준 비교를 덮지 않는다(D46 패턴,
+            decision-log D47). `compare.data`가 있을 때만 뜬다 — 최초 진입 실패는
+            아래 `compare.isError && !compare.data` 분기가 따로 막는다.
+          */}
+          {compare.isError && compare.data && (
+            <Alert variant="warning" className="mb-3">
+              <AlertTitle>기수 간 비교를 새로고침하지 못했습니다</AlertTitle>
+              <AlertDescription>마지막으로 불러온 비교를 보여드리고 있어요.</AlertDescription>
+              <AlertAction>
+                <Button variant="ghost" size="sm" onClick={() => void compare.refetch()}>
+                  다시 시도
+                </Button>
+              </AlertAction>
+            </Alert>
+          )}
+
+          {compare.isError && !compare.data ? (
+            /*
+              D41 — `compare.data`가 아예 없을 때(최초 진입 실패)만 전면 에러로 막는다.
+              배경 재조회만 실패했으면 아래 렌더 분기에서 배너로만 알린다(D46 패턴,
+              decision-log D47).
+            */
             <ErrorState
               error={compare.error}
               subject="기수 간 비교"

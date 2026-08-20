@@ -11,6 +11,7 @@ import { useCohortId } from '@/stores/cohortScope'
 import { exportReportCsv, reportDate } from './_/labels'
 import { SlowNotice } from '@/components/common/Loading'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import ErrorState from '@/components/common/ErrorState'
 import ReportHead from './_/components/ReportHead'
 import ReportSkeleton from './_/components/ReportSkeleton'
@@ -187,8 +188,12 @@ export default function ReportScreen() {
           <ReportSkeleton />
           <SlowNotice />
         </>
-      ) : report.isError ? (
+      ) : report.isError && !report.data ? (
         /*
+          D41 — `report.data`가 아예 없을 때(최초 진입 실패)만 전면 에러로 막는다.
+          배경 재조회만 실패했으면 아래 렌더 분기에서 배너로만 알린다(D46 패턴,
+          decision-log D47).
+
           **404가 늘 고장인 것은 아니다.** `COHORT_REPORT_NOT_FOUND`는 아직 진단이 확정되지
           않은 것이라 「없는 것」 3종 중 **유형 1 `아직`** 이고, 다시 시도를 눌러도 리포트가
           생기지 않는다 — `errorCopy`가 그 판정을 갖는다(async-states §3-1·3-2).
@@ -202,6 +207,17 @@ export default function ReportScreen() {
       ) : (
         report.data && (
           <>
+            {report.isError && (
+              <Alert variant="warning" className="mb-4 print:hidden">
+                <AlertTitle>리포트를 새로고침하지 못했습니다</AlertTitle>
+                <AlertDescription>마지막으로 불러온 리포트를 보여드리고 있어요.</AlertDescription>
+                <AlertAction>
+                  <Button variant="ghost" size="sm" onClick={() => void report.refetch()}>
+                    다시 시도
+                  </Button>
+                </AlertAction>
+              </Alert>
+            )}
             <ReportHead
               title={`리포트 · ${report.data.cohortName}`}
               frozenLabel={

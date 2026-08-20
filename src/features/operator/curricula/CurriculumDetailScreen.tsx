@@ -10,7 +10,7 @@ import {
   UploadIcon,
 } from 'lucide-react'
 import ConsoleShell from '@/shells/ConsoleShell'
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
+import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Badge } from '@/components/ui/Badge'
 import {
@@ -172,7 +172,12 @@ export default function CurriculumDetailScreen() {
       </ConsoleShell>
     )
 
-  if (curriculum.isError || !curriculum.data)
+  /*
+    D41 — `curriculum.data`가 아예 없을 때(최초 진입 실패)만 전면 에러로 막는다.
+    배경 재조회만 실패했으면 아래 정상 렌더에서 배너로만 알린다(D46 패턴,
+    decision-log D47).
+  */
+  if (!curriculum.data)
     return (
       <ConsoleShell {...shell}>
         <ErrorState
@@ -224,6 +229,17 @@ export default function CurriculumDetailScreen() {
 
   return (
     <ConsoleShell {...shell} user={{ name: me?.name ?? '', role: '오퍼레이터' }}>
+      {curriculum.isError && (
+        <Alert variant="warning" className="mb-4">
+          <AlertTitle>교안 정보를 새로고침하지 못했습니다</AlertTitle>
+          <AlertDescription>마지막으로 불러온 정보를 보여드리고 있어요.</AlertDescription>
+          <AlertAction>
+            <Button variant="ghost" size="sm" onClick={() => void curriculum.refetch()}>
+              다시 시도
+            </Button>
+          </AlertAction>
+        </Alert>
+      )}
       <div className="mb-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
@@ -357,7 +373,11 @@ export default function CurriculumDetailScreen() {
           <TabsContent value="sections">
             {!sections.data && !sections.isError ? (
               <SectionListSkeleton />
-            ) : sections.isError ? (
+            ) : sections.isError && !sections.data ? (
+              /*
+                D41 — `sections.data`가 아예 없을 때만 막는다. 배경 재조회만 실패했으면
+                아래 정상 렌더에서 배너로만 알린다(D46 패턴, decision-log D47).
+              */
               <ErrorState
                 error={sections.error}
                 subject="섹션"
@@ -365,12 +385,25 @@ export default function CurriculumDetailScreen() {
                 retrying={sections.isFetching}
               />
             ) : (
-              <SectionsTab
-                sections={sections.data ?? []}
-                title={data.title ?? data.originalFileName}
-                versionNo={data.versionNo}
-                pageCount={data.pageCount}
-              />
+              <>
+                {sections.isError && (
+                  <Alert variant="warning" className="mb-3">
+                    <AlertTitle>섹션을 새로고침하지 못했습니다</AlertTitle>
+                    <AlertDescription>마지막으로 불러온 섹션을 보여드리고 있어요.</AlertDescription>
+                    <AlertAction>
+                      <Button variant="ghost" size="sm" onClick={() => void sections.refetch()}>
+                        다시 시도
+                      </Button>
+                    </AlertAction>
+                  </Alert>
+                )}
+                <SectionsTab
+                  sections={sections.data ?? []}
+                  title={data.title ?? data.originalFileName}
+                  versionNo={data.versionNo}
+                  pageCount={data.pageCount}
+                />
+              </>
             )}
           </TabsContent>
 
@@ -390,7 +423,11 @@ export default function CurriculumDetailScreen() {
             */}
             {!shownProjects.data && !shownProjects.isError ? (
               <LinkedTabSkeleton />
-            ) : shownProjects.isError || !shownProjects.data ? (
+            ) : shownProjects.isError && !shownProjects.data ? (
+              /*
+                D41 — `shownProjects.data`가 아예 없을 때만 막는다. 배경 재조회만
+                실패했으면 아래 정상 렌더에서 배너로만 알린다(D46 패턴, decision-log D47).
+              */
               <ErrorState
                 error={shownProjects.error}
                 subject="연결된 프로젝트"
@@ -398,11 +435,28 @@ export default function CurriculumDetailScreen() {
                 retrying={shownProjects.isFetching}
               />
             ) : (
-              <LinkedTab
-                projects={shownProjects.data}
-                cohortId={scope.cohortId}
-                cohortName={scope.current?.name}
-              />
+              <>
+                {shownProjects.isError && (
+                  <Alert variant="warning" className="mb-3">
+                    <AlertTitle>연결된 프로젝트를 새로고침하지 못했습니다</AlertTitle>
+                    <AlertDescription>마지막으로 불러온 목록을 보여드리고 있어요.</AlertDescription>
+                    <AlertAction>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => void shownProjects.refetch()}
+                      >
+                        다시 시도
+                      </Button>
+                    </AlertAction>
+                  </Alert>
+                )}
+                <LinkedTab
+                  projects={shownProjects.data}
+                  cohortId={scope.cohortId}
+                  cohortName={scope.current?.name}
+                />
+              </>
             )}
           </TabsContent>
         </Tabs>

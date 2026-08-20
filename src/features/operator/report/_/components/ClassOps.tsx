@@ -115,10 +115,11 @@ export default function ClassOps({
       {!overall || rows.length === 0 ? (
         <Empty variant="empty" className="mb-6">
           <EmptyHeader>
-            <EmptyTitle>반별로 낼 수 있는 비율이 없습니다</EmptyTitle>
+            {/* 문구 다듬음(사용자 지적 — "낼 수 있는 비율"이 어색했다) */}
+            <EmptyTitle>반별 위험자 비율을 비교할 수 없습니다</EmptyTitle>
             <EmptyDescription>
               {!overall
-                ? '기수 전체 기준선이 집계되지 않아 반끼리 견줄 수 없습니다.'
+                ? '기수 전체 기준선이 아직 집계되지 않았습니다.'
                 : '이 기수에 편성된 반이 없습니다.'}
             </EmptyDescription>
           </EmptyHeader>
@@ -156,8 +157,11 @@ export default function ClassOps({
         // 유형이라 여기 쓰면 "결과를 기다리는 중"으로 읽힌다(02-layout-system §4)
         <Empty variant="empty">
           <EmptyHeader>
-            <EmptyTitle>반 절반 이상이 미달한 프로젝트가 없습니다</EmptyTitle>
-            <EmptyDescription>위험 판정이 모두 개인 사유로 남았습니다.</EmptyDescription>
+            {/* 문구 다듬음(사용자 지적) — "반 절반"이 조사 없이 붙어 두 명사가
+                이어 붙은 것처럼 읽혔다("의" 추가) · "남았습니다"는 이 문맥에
+                안 맞아 "였습니다"로 */}
+            <EmptyTitle>반의 절반 이상이 미달한 프로젝트가 없습니다</EmptyTitle>
+            <EmptyDescription>위험 판정이 모두 개인 사유였습니다.</EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (

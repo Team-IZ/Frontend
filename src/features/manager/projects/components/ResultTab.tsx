@@ -234,7 +234,10 @@ export default function ResultTab({ projectId, query }: Props) {
                   */}
                   <span
                     className={cn(
-                      'w-11 text-right text-2xs',
+                      // w-11(44px)이 가장 긴 라벨("응시 완료", text-2xs 11px)을
+                      // 한 줄로 못 담아 "완"·"료"가 줄바꿈됐다(사용자 지적, 실측
+                      // 렌더에서 확인). w-16(64px)으로 여유를 둔다.
+                      'w-16 text-right text-2xs whitespace-nowrap',
                       STATUS_TONE[status] ?? 'text-fg-subtle',
                     )}
                   >
@@ -252,10 +255,16 @@ export default function ResultTab({ projectId, query }: Props) {
                     (실측 169 vs 213). 자리를 늘 잡아 두면 상태가 한 열에 서고, 칩은
                     그 오른쪽에서만 나타났다 사라진다.
                   */}
-                  <span className="flex w-10 justify-end">
+                  {/*
+                    w-10(40px)이 "막힘 1"(text-2xs + 좌우 padding 6px씩)보다 좁아
+                    같은 이유로 "막힘"·"1"이 줄바꿈됐다(위 상태 라벨과 같은 원인 —
+                    사용자 지적, 실측 렌더에서 확인). w-14(56px) + whitespace-nowrap으로
+                    두 자리 수(예: "막힘 10")까지 여유를 둔다.
+                  */}
+                  <span className="flex w-14 justify-end">
                     {status === 'AVAILABLE' && t.stuckConceptCount > 0 && (
                       <span
-                        className="bg-warning-soft text-warning rounded-full px-1.5 py-px text-2xs font-bold tabular-nums"
+                        className="bg-warning-soft text-warning rounded-full px-1.5 py-px text-2xs font-bold whitespace-nowrap tabular-nums"
                         title={`불합격 — 막힌 개념 ${t.stuckConceptCount}개`}
                       >
                         막힘 {t.stuckConceptCount}

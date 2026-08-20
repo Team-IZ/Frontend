@@ -97,7 +97,7 @@ export default function CreateCohortDialog({ open, onOpenChange }: Props) {
               id="cohort-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="9기"
+              placeholder="0기"
             />
             <FieldDescription>같은 기관 안에서 중복될 수 없습니다.</FieldDescription>
           </Field>
@@ -115,8 +115,7 @@ export default function CreateCohortDialog({ open, onOpenChange }: Props) {
               }}
             />
             <FieldDescription>
-              프로젝트 마감이 이 기간 밖으로 나가지 않게 달력이 막습니다. 교육생은 만든 뒤 교육생
-              탭에서 넣습니다.
+              프로젝트 마감 날짜는 기수 종료일을 넘길 수 없습니다.
             </FieldDescription>
           </Field>
         </div>

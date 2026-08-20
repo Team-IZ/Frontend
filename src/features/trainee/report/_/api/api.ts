@@ -41,15 +41,17 @@ function toReport(r: ServerReport): RoundReport {
   const base = { id: r.id, label: r.label }
 
   /*
-    **캐스트를 지웠다**(2026-08-20). 백엔드가 배포되고 `npm run api:pull`·`api:gen`을
-    돌려 **생성 타입이 `IN_PROGRESS`를 실제로 포함하게 됐다** — 이 자리에 있던
-    `as ServerReport['status'] | 'IN_PROGRESS'`는 스키마가 그 값을 모르던 동안의
-    임시 조치였고, 그 주석이 "재생성 후에는 지워도 된다"고 적어 둔 그대로다.
+    **캐스트가 다시 필요해졌다**(2026-08-21). `IN_PROGRESS`는 백엔드 배포+스키마
+    재생성으로 캐스트를 지울 수 있었는데(위 히스토리), `ANALYSIS_FAILED`는 아직
+    백엔드 PR이 배포 전이라 생성 타입이 이 값을 모른다. 캐스트를 빼면 컴파일은 되지만
+    (스위치가 여전히 소진적이라) 실제로 서버가 `ANALYSIS_FAILED`를 보내는 순간 아래
+    case가 죽은 코드 취급돼 무시되고 `undefined`가 반환돼 화면이 죽는다. 백엔드
+    배포 후 스키마 재생성하면 이 캐스트는 다시 지워도 된다 — `IN_PROGRESS` 때와 같은 절차.
 
-    이제 상태가 하나 늘면 **컴파일러가 이 switch에서 잡는다** — 캐스트가 남아 있으면
-    그 안전망이 계속 꺼져 있게 된다.
+    지역 변수로 뽑아서 switch를 거는 이유도 그때와 같다 — 캐스트 식을 switch에 바로
+    걸면 case 안에서 `r.status`를 다시 읽을 때 좁혀진 타입이 전파되지 않는다.
   */
-  const status = r.status
+  const status = r.status as ServerReport['status'] | 'ANALYSIS_FAILED'
 
   switch (status) {
     case 'PUBLISHED':
@@ -73,6 +75,8 @@ function toReport(r: ServerReport): RoundReport {
       return { ...base, status: 'PENDING_PUBLISH', publishAfter: r.publishAfter ?? null }
     case 'IN_PROGRESS':
       return { ...base, status: 'IN_PROGRESS' }
+    case 'ANALYSIS_FAILED':
+      return { ...base, status: 'ANALYSIS_FAILED' }
     case 'NOT_STARTED':
     case 'NOT_ATTEMPTED':
     case 'VOID_ATTEMPT':

@@ -158,6 +158,22 @@ function RoundBody({ report }: { report: RoundReport }) {
         />
       )
     /*
+      2026-08-21 추가 — 코드 분석이 실패해 이해도 확인 문항 자체가 없는 회차. `PENDING_PUBLISH`와
+      같은 문구를 쓰면 안 된다 — 저쪽은 "곧 나온다"는 약속이고 이쪽은 "이 회차는 리포트가
+      안 나온다"는 사실이다(실사용 재현: 이미 지난 발행 예정일을 계속 기다리게 보임).
+      정확한 실패 사유는 이 화면 계약에 없다 — 홈의 ANALYSIS_FAILED 안내가 더 자세히 보여준다.
+    */
+    case 'ANALYSIS_FAILED':
+      return (
+        <ReportStatusCard
+          variant="warning"
+          icon={<TriangleAlertIcon className="size-5" />}
+          title="코드를 분석하지 못했어요"
+          description="제출한 코드 분석이 실패해서 이 회차는 리포트를 만들 수 없어요."
+          aux="제출 화면에서 다시 제출하면 분석이 다시 시작돼요 — 계속 안 되면 매니저에게 알려 주세요"
+        />
+      )
+    /*
       **`NOT_STARTED`와 `NOT_ATTEMPTED`는 정반대다**(26차 A1). 둘 다 "응시 기록이
       없다"지만 제출 마감을 기준으로 갈린다 — 앞은 아직 시간이 있는 정상이고, 뒤는
       기회가 지나간 것이다. 그래서 매니저 안내(`aux`)는 **뒤에만** 붙는다. 마감 전

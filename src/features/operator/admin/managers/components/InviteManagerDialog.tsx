@@ -113,26 +113,8 @@ export default function InviteManagerDialog({ open, onOpenChange }: Props) {
               onChange={(e) => setEmail(e.target.value)}
               placeholder="name@company.com"
             />
-            <FieldDescription>
-              이 주소로 초대가 나가고, 받는 사람은 이름과 비밀번호만 정하면 됩니다.
-            </FieldDescription>
+            <FieldDescription>작성한 이메일로 매니저 초대를 보냅니다.</FieldDescription>
           </Field>
-
-          {/*
-            **담당 반 칸이 없다**(기획 확인 · op-06-admin.md OP06-11).
-
-            가입 전에는 로그인을 못 하므로 **그 반의 면담·독촉을 처리할 수 없다.** 그런데
-            반에 담당 id는 박혀 있어서 `담당 없음` 경고에 안 잡혔다 — 경고가 막으려던
-            상황(아무도 안 보는 반)을 초대 기능이 만들고 있었다.
-
-            **없는 칸은 눈에 안 띄므로 왜 없는지를 폼 안에서 밝힌다** — 권한 칸을 설명한
-            것과 같은 이유다. 안 그러면 "반은 어디서 정하지?"를 계속 찾는다.
-          */}
-          <FieldDescription>
-            담당 반과 권한을 고르는 칸이 없습니다. 매니저는 한 종류뿐이고, 담당 반은 받는 사람이
-            가입을 마친 뒤 매니저 목록에서 맡깁니다 — 가입 전에는 로그인을 못 해 그 반 학생의
-            면담·독촉을 처리할 수 없기 때문입니다.
-          </FieldDescription>
         </div>
 
         <DialogFooter>

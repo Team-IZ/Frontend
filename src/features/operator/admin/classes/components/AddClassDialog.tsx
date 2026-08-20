@@ -182,8 +182,9 @@ export default function AddClassDialog({ open, onOpenChange }: Props) {
               </Field>
             </div>
             <FieldDescription className="mt-1.5">
-              같은 기수 안에서 반 이름은 중복될 수 없습니다. 정원은 넘겨서 배정할 수도 있습니다 —
-              넘으면 알려만 줍니다.
+              같은 기수 안에서 반 이름은 중복될 수 없습니다.
+              <br />
+              정원은 권장 기준일 뿐 조건은 아닙니다.
             </FieldDescription>
           </div>
 
@@ -206,7 +207,7 @@ export default function AddClassDialog({ open, onOpenChange }: Props) {
             <FieldDescription>
               {managers.data && managers.data.content.length === 0
                 ? '이 기수에 활성 매니저가 없습니다 — 매니저 탭에서 초대하면 여기서 고를 수 있습니다.'
-                : '비우면 담당 없음으로 만들어지고 목록에 경고가 붙습니다. 나중에 목록에서 배정할 수 있고, 배정은 기간형 이력이라 바꿔도 지난 기록은 남습니다.'}
+                : '담당 매니저는 나중에 목록에서 다시 배정할 수 있습니다.'}
             </FieldDescription>
           </Field>
         </div>

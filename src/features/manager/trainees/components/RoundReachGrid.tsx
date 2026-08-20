@@ -66,7 +66,16 @@ export function RoundReachGrid({ rounds }: { rounds: DetailRound[] }) {
         </div>
       </div>
 
-      <div ref={scrollRef} className="flex items-start overflow-x-auto">
+      {/*
+        🔴 **가로 스크롤만 두려던 자리에 세로 스크롤바까지 떴다**(사용자 지적,
+        스크린샷 확인). `overflow-x-auto`만 주고 `overflow-y`를 안 정하면 CSS
+        스펙상 `overflow-y`가 `visible`이 아니라 `auto`로 계산된다(두 축 중 하나만
+        `visible`이 아니면 나머지도 `auto`로 승격 — 실제로 겪은 사례). 개념 이름이
+        길어 두 줄 넘게 접히는 회차가 섞이면 그 칸만 살짝 더 키가 커지고, 이때
+        세로로도 "넘친다"고 판단해 스크롤바가 생긴다. 여기선 세로로 스크롤할 일이
+        없으므로 `overflow-y-hidden`으로 명시해 막는다.
+      */}
+      <div ref={scrollRef} className="flex items-start overflow-x-auto overflow-y-hidden pb-1">
         {attended.map((round, i) => {
           const isCurrent = i === attended.length - 1
           return (

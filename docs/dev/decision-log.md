@@ -1045,8 +1045,22 @@ git에는 `pre-stash`·`pre-reset` 훅이 없다. 그래서 Claude Code의 `PreT
 - **PR 구성 — 9개 화면을 한 이슈·한 PR로 묶는다**(이슈 #304). 코드 9 + 문서 1 = 10개로
   git-convention.md "파일 10개 이내" 경계에 걸치지만, 전부 D41·D46과 같은 정책·같은
   패턴이라는 근거는 동일하다.
+- **머지 중 다른 PR과 충돌 — `CurriculumDetailScreen.tsx`(매니저·오퍼레이터) 2개 파일.**
+  이 브랜치 작업 중 develop에 먼저 올라간 PR #291("교안 버전 연결" 기능)이 같은 화면·
+  같은 조회 로직(매니저의 `used`/`UsedRoundsTable`, 오퍼레이터의 `usedProjects` →
+  `shownProjects` 분리)을 건드려 `git merge develop` 시 충돌 3곳이 났다. 매니저는
+  `UsedRoundsTable` 호출에 배너+재시도는 유지하고 develop의 새 `cohortId`/`cohortName`
+  prop만 얹었고(둘이 각자 추가한 중복 `Alert` import도 하나로 정리), 오퍼레이터는
+  develop이 표시용 목록을 `usedProjects`에서 버전 범위로 좁힌 `shownProjects`로 새로
+  쪼갠 것에 맞춰 우리 D41 조건(`isError && !data`)과 배너를 이름만 옮겨 붙였다(삭제
+  가드용 `usedProjects`/`used`는 안 건드림). `git diff develop -- <두 파일>`로 develop
+  대비 순수 추가만 있음을 검산. **교훈:** 배치 작업이 여러 이슈로 쪼개져 병렬 진행 중일
+  땐 먼저 머지된 다른 PR이 같은 파일을 건드릴 수 있다 — 충돌 나면 develop 쪽 새 이름·
+  구조를 기준으로 우리 조건만 갈아 끼우고, `git diff develop`으로 순수 추가인지 반드시
+  검산할 것(겹침이 컸다면 우리 기능을 양보했어야 했다).
 - **목적·효과:** D46이 남긴 배치 3 후보 중 뮤테이션·응시 중 화면을 뺀 나머지를 정리해
-  D41 결함 클래스의 남은 범위를 좁혔다. 다음 배치(4)는 `InterviewBriefScreen.tsx`
-  (원인·조회 에러가 섞인 배너 위치 설계 필요)·`SessionScreen.tsx`(`session.isError ||
-  !active` → `session.isError && !active`로 고칠 지점은 명확하나, 응시 중 화면이라
-  병합 전 로컬 렌더 확인이 특히 중요해 분리) 둘만 남는다.
+  D41 결함 클래스의 남은 범위를 좁혔다. 이슈 #304 → PR #315로 develop 머지, 브랜치
+  삭제까지 완료. 다음 배치(4)는 `InterviewBriefScreen.tsx`(원인·조회 에러가 섞인 배너
+  위치 설계 필요)·`SessionScreen.tsx`(`session.isError || !active` → `session.isError &&
+  !active`로 고칠 지점은 명확하나, 응시 중 화면이라 병합 전 로컬 렌더 확인이 특히
+  중요해 분리) 둘만 남는다.

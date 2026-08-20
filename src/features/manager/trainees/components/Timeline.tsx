@@ -11,6 +11,7 @@ import {
   CircleSlashIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
+import { Button } from '@/components/ui/Button'
 import { Empty, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import { RoundBadge } from './RoundBadge'
 import { REACH_STYLE } from '@/components/common/reach'
@@ -589,12 +590,17 @@ function RoundGroup({
   const events = group.events.filter((e) => matchesFilter(e.kind, filter))
 
   return (
+    // 선 색으로 구분을 시도했던 것을 사용자 지시로 되돌린다 — 대신 회차 줄(1차~6차)
+    // 자체의 배경을 bg-surface-2(거의 흰색)에서 bg-border-strong(뚜렷한 회색)으로
+    // 올려 탭 영역 자체가 진한 회색 띠로 보이게 한다. 선은 다시
+    // 기본값(border-border, 1px)으로 낮춘다 — 배경 자체가 대비를 만드므로 접힌 줄
+    // 사이 경계도 옅은 선 하나로 충분히 읽힌다.
     <div>
       <button
         type="button"
         onClick={onToggle}
         aria-expanded={expanded}
-        className="flex w-full items-center gap-2 border-t border-border bg-surface-2 px-5 py-2.5 text-left text-sm font-bold first:border-t-0"
+        className="flex w-full items-center gap-2 border-t border-border bg-border-strong px-5 py-2.5 text-left text-sm font-bold first:border-t-0"
       >
         {expanded ? (
           <ChevronDown className="size-3.5 text-fg-subtle" aria-hidden="true" />
@@ -602,7 +608,10 @@ function RoundGroup({
           <ChevronRight className="size-3.5 text-fg-subtle" aria-hidden="true" />
         )}
         {group.label}
-        <span className="font-normal text-fg-subtle">
+        {/* bg-border-strong 위에서 fg-subtle(3.39:1)은 AA 본문 기준(4.5:1)에
+            못 미친다 — Table.tsx 헤더 셀(bg-surface-2)이 fg-muted를 쓰는 것과
+            같은 이유로 여기서도 fg-muted(4.2:1)로 올린다. */}
+        <span className="font-normal text-fg-muted">
           {[group.teamName, group.dateRange].filter(Boolean).map((s) => ` · ${s}`)}
         </span>
         {badge && (
@@ -638,12 +647,13 @@ export function Timeline({
   traineeId: string
 }) {
   const [filter, setFilter] = useState<EventFilter>('ALL')
-  // 회차가 늘면 접는다 — 최근 2회차만 펼치고 이전은 접는다(§4)
-  const [collapsed, setCollapsed] = useState<Set<string>>(
-    () => new Set(groups.slice(2).map((g) => g.assessmentRoundId)),
-  )
+  // 기본값은 전부 펼침(사용자 지시 — 예전엔 최근 2회차만 펼치고 나머지는 접었다).
+  // 아래 "모두 열기·모두 닫기"로 직접 조절한다.
+  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
 
   const total = groups.flatMap((g) => g.events).filter((e) => matchesFilter(e.kind, filter)).length
+  const allExpanded = collapsed.size === 0
+  const allCollapsed = collapsed.size === groups.length
 
   function toggle(roundId: string) {
     setCollapsed((prev) => {
@@ -654,6 +664,14 @@ export function Timeline({
     })
   }
 
+  function expandAll() {
+    setCollapsed(new Set())
+  }
+
+  function collapseAll() {
+    setCollapsed(new Set(groups.map((g) => g.assessmentRoundId)))
+  }
+
   return (
     <div>
       <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -661,6 +679,13 @@ export function Timeline({
         <p className="text-xs text-fg-subtle">
           {filter === 'ALL' ? '이벤트' : FILTER_LABEL[filter]} {total}건
         </p>
+        {/* 누를 수 없는 컨트롤은 장식이다(E7) — 이미 전부 펼쳐/접혀 있으면 그 버튼은 끈다 */}
+        <Button variant="ghost" size="sm" onClick={expandAll} disabled={allExpanded}>
+          전체 열기
+        </Button>
+        <Button variant="ghost" size="sm" onClick={collapseAll} disabled={allCollapsed}>
+          전체 닫기
+        </Button>
         <div className="ml-auto flex flex-wrap gap-1.5">
           {FILTER_OPTIONS.map((o) => (
             <button

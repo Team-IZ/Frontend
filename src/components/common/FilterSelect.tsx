@@ -95,7 +95,14 @@ export default function FilterSelect({
 
     상태 행은 값이 아니라 안내라 여기 넣지 않는다 — 넣으면 트리거가 그것을 그릴 수 있다.
   */
-  const items = Object.fromEntries(all.map((o) => [o.value, o.label]))
+  /**
+   * 개수를 뗀 라벨 — 트리거·메뉴 둘 다 이 값을 쓴다(사용자 지시 — 처음엔 트리거만
+   * 개수를 남겼다가, 닫혀 있을 때도 숫자가 안 보이는 쪽으로 다시 바꿨다). 라벨
+   * 끝에 "(숫자)" 패턴이 없으면 그대로 둔다.
+   */
+  const withoutCount = (label: string) => label.replace(/\s*\(\d+\)$/, '')
+
+  const items = Object.fromEntries(all.map((o) => [o.value, withoutCount(o.label)]))
 
   /** 아직 안 왔나 — 실패가 아니고 값도 없으면 기다리는 중이다(값 유무로 가른다) */
   const waiting = !failed && options === undefined
@@ -113,8 +120,8 @@ export default function FilterSelect({
       </SelectTrigger>
       <SelectContent>
         {all.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
-            {o.label}
+          <SelectItem key={o.value} value={o.value} title={o.label}>
+            {withoutCount(o.label)}
           </SelectItem>
         ))}
 

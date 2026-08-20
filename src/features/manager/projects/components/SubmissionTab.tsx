@@ -109,9 +109,20 @@ export default function SubmissionTab({ query, classProgress }: Props) {
         <EmptyHeader>
           <EmptyTitle>팀 편성이 끝나면 제출 현황이 열립니다</EmptyTitle>
           <EmptyDescription>
-            {d.unassignedMemberCount > 0
-              ? `미배정 ${d.unassignedMemberCount}명이 남아 있어요 — 팀 탭에서 배정을 마치면 이 탭이 채워집니다.`
-              : '아직 팀 편성 중이에요 — 팀 탭에서 편성을 마치면 이 탭이 채워집니다.'}
+            {/* 줄바꿈을 문장이 알아서 하게 두지 않는다(사용자 지시) — 좁은 폭에서
+                "탭에서"가 "탭에"·"서"로 단어 중간에 잘렸다. 의미 단위 경계에서
+                직접 끊는다. */}
+            {d.unassignedMemberCount > 0 ? (
+              <>
+                미배정 {d.unassignedMemberCount}명이 남아 있어요
+                <br />팀 탭에서 배정을 마치면 이 탭이 채워집니다.
+              </>
+            ) : (
+              <>
+                아직 팀 편성 중이에요
+                <br />팀 탭에서 편성을 마치면 이 탭이 채워집니다.
+              </>
+            )}
           </EmptyDescription>
         </EmptyHeader>
       </Empty>

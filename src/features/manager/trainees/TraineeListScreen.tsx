@@ -33,6 +33,7 @@ import {
 import { AccountStatusBadge } from './components/AccountStatusBadge'
 import { RoundBadge } from './components/RoundBadge'
 import { maskEmail } from '@/lib/utils/mask'
+import { withParticle } from '@/lib/format'
 import { cn } from '@/lib/utils/cn'
 import { NA_PATTERN, REACH_STYLE } from '@/components/common/reach'
 import FilterSelect from '@/components/common/FilterSelect'
@@ -290,6 +291,8 @@ export default function TraineeListScreen() {
           value={accountFilter}
           onChange={(v) => changeFilters({ accountFilter: v as FilterValues['accountFilter'] })}
           options={ACCOUNT_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+          // 기본 w-32(128px)가 "초대 대기"를 못 담아 잘렸다(사용자 지적, 실측 렌더 확인)
+          className="w-36"
         />
         <FilterSelect
           label="정렬"
@@ -396,9 +399,17 @@ export default function TraineeListScreen() {
                     {view.scopeTotal}명에서 찾았습니다.
                     {accountFilter !== ALL && (
                       <>
+                        {/* 줄바꿈을 직접 끊는다(사용자 지시). "으로"를 고정으로 붙였더니
+                            "초대 대기"엔 안 맞았다("대기으로") — withParticle로 받침에
+                            맞춘다(대기 → …로, 비활성 → …으로, D14 공용 유틸). */}
                         <br />
-                        계정 필터가 <b className="text-fg-muted">{ACCOUNT_LABEL[accountFilter]}</b>
-                        으로 걸려 있어요 — 초대 대기나 비활성일 수 있습니다.
+                        계정 필터가{' '}
+                        <b className="text-fg-muted">
+                          {withParticle(ACCOUNT_LABEL[accountFilter], '으로', '로')}
+                        </b>{' '}
+                        걸려 있어요
+                        <br />
+                        초대 대기나 비활성일 수 있습니다.
                       </>
                     )}
                   </EmptyDescription>

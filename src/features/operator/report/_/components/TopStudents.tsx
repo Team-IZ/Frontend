@@ -271,8 +271,12 @@ export default function TopStudents({
         <Empty variant="empty">
           <EmptyHeader>
             <EmptyTitle>이번 기수엔 우수 교육생이 없습니다</EmptyTitle>
+            {/* 문구 다듬음(사용자 지적) — "아무도 들지 못했습니다"의 "들다"가
+                이 맥락에서 어색했다 */}
             <EmptyDescription>
-              프로젝트마다 반 상위 1~2명을 표시하는데, 아무도 들지 못했습니다.
+              프로젝트마다 반 상위 1~2명을 표시하는데,
+              <br />
+              이번 기수엔 해당하는 학생이 없습니다.
             </EmptyDescription>
           </EmptyHeader>
         </Empty>

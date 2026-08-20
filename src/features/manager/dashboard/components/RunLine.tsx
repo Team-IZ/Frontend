@@ -50,9 +50,15 @@ export default function RunLine({
       <SelectTrigger className="h-8 shrink-0 text-sm font-bold" aria-label="프로젝트">
         <SelectValue />
       </SelectTrigger>
-      <SelectContent>
+      {/*
+        min-w-64 — 팝업 폭이 트리거 폭(`w-fit`, 지금 고른 프로젝트 이름 길이)에
+        묶여 있어서, 짧은 이름이 선택된 채로 열면 더 긴 다른 프로젝트 이름이
+        목록에서 잘렸다(사용자 지적, 실측 렌더 확인). 트리거는 여전히 고른 값에
+        맞춰 딱 맞게 자라고(의도된 모양), 팝업만 최소 폭을 따로 보장한다.
+      */}
+      <SelectContent className="min-w-64">
         {items.map((o) => (
-          <SelectItem key={o.value} value={o.value}>
+          <SelectItem key={o.value} value={o.value} title={o.label}>
             {o.label}
           </SelectItem>
         ))}

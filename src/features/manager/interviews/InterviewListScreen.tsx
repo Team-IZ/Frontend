@@ -396,7 +396,7 @@ export default function InterviewListScreen() {
                   <TableCell>
                     <RiskReason caseItem={c} />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="whitespace-normal align-middle">
                     <LastActivityCell caseItem={c} />
                   </TableCell>
                   <TableCell className="text-right">
@@ -428,12 +428,16 @@ export default function InterviewListScreen() {
 /** 마지막 활동 열 — 상태별로 다른 값을 한 열에 통합한다(정의서 §3) */
 function LastActivityCell({ caseItem: c }: { caseItem: InterviewCase }) {
   if (c.status === 'DONE') {
+    // 다음에 할 것은 자유 텍스트라 길어지면 행이 세로로 계속 자랐다(사용자 지적) —
+    // 3줄에서 자르고 "..."로 생략한다. 전체 내용은 호버 툴팁(title)으로 본다.
+    const nextActionText = c.nextAction ? `"${c.nextAction}"` : '없음'
     return (
-      <span className="text-fg-muted">
+      <span
+        className="text-fg-muted line-clamp-3"
+        title={`${shortDate(c.interviewedAt)} 면담 · 다음에 할 것 — ${nextActionText}`}
+      >
         {shortDate(c.interviewedAt)} 면담 ·{' '}
-        <span className="text-fg-subtle">
-          다음에 할 것 — {c.nextAction ? `"${c.nextAction}"` : '없음'}
-        </span>
+        <span className="text-fg-subtle">다음에 할 것 — {nextActionText}</span>
       </span>
     )
   }

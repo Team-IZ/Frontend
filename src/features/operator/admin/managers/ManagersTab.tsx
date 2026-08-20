@@ -180,10 +180,9 @@ export default function ManagersTab() {
       {unstaffed.length > 0 && (
         <Alert variant="warning" className="mb-4">
           <TriangleAlertIcon />
-          <AlertTitle>{unstaffed.join(' · ')}에 담당 매니저가 없습니다</AlertTitle>
+          <AlertTitle>{unstaffed.join(' · ')}에 담당 매니저가 없습니다.</AlertTitle>
           <AlertDescription>
-            담당이 없으면 그 반 학생의 면담·독촉을 아무도 처리하지 않습니다. 대시보드의 조치
-            필요에도 같은 신호가 올라옵니다.
+            담당 매니저가 없으면 그 반 학생의 활동을 아무도 처리하지 못합니다.
           </AlertDescription>
         </Alert>
       )}

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, ChevronRightIcon, TriangleAlertIcon } from 'lucide-react'
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import ConsoleShell from '@/shells/ConsoleShell'
 import PageHeader from '@/components/common/PageHeader'
 import { Card } from '@/components/ui/Card'
@@ -13,7 +14,13 @@ import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/u
 import { errorCopy } from '@/lib/errorCopy'
 import { formatDate } from '@/lib/format'
 import { useManagerCohort } from '@/stores/cohortScope'
-import { useCurriculumHead, useSections, useUsedProjects, isAnalysisIncomplete } from './_/api/api'
+import {
+  useCurriculumHead,
+  useSections,
+  useUsedProjects,
+  useLinkedCurricula,
+  isAnalysisIncomplete,
+} from './_/api/api'
 import { analysisLabel, versionLabel, type Section, type UsedProject } from './_/api/types'
 
 /*
@@ -120,9 +127,22 @@ export default function CurriculumDetailScreen() {
   const [params, setParams] = useSearchParams()
   const { cohortId, cohortName, cohorts, selectCohort } = useManagerCohort()
 
-  const head = useCurriculumHead(id)
-  const sections = useSections(id)
-  const used = useUsedProjects(id)
+  /*
+    목록이 *"이 기수가 붙인 버전"* 을 실어 준다(`?versionId=`). 44차 R1·R3로 상세·쓰인
+    회차가 이 값을 받게 되어 **실제로 그 버전을 그린다** — 잠깐 안내로 때웠던 자리다.
+  */
+  const versionId = params.get('versionId') ?? undefined
+
+  const head = useCurriculumHead(id, versionId)
+  const sections = useSections(id, versionId)
+  const used = useUsedProjects(id, versionId)
+  /*
+    **이 기수가 실제로 붙인 버전**을 알아야 어긋남을 판정할 수 있다(아래 안내).
+    목록 화면과 **같은 조회·같은 쿼리 키**라 목록을 거쳐 들어온 흔한 경로에서는
+    캐시를 그대로 쓴다 — 콜이 늘지 않는다.
+  */
+  const linked = useLinkedCurricula(cohortId)
+  const cohortVersion = linked.data?.find((x) => x.materialId === id)
 
   const shell = (children: React.ReactNode) => (
     <ConsoleShell
@@ -205,6 +225,37 @@ export default function CurriculumDetailScreen() {
         <span className="text-fg-muted font-mono text-sm">{versionLabel(c.versionNo)}</span>
         <Badge variant={analysis.variant}>{analysis.text}</Badge>
       </div>
+
+      {/*
+        🔴 **맞을 때는 아무 말도 하지 않는다.** 한때 `?versionId=`가 실려 있기만 하면
+        「이 기수가 쓰는 버전을 보고 있습니다」를 띄웠는데, 목록·회차에서 들어오면 **거의
+        항상 맞는 버전**이라 그 배너가 늘 떠 있었다 — 늘 뜨는 안내는 읽히지 않고, 오히려
+        *"왜 이런 말을 하지, 뭐가 잘못됐나"* 로 읽힌다(사용자 지적).
+
+        **어긋날 때만** 말한다. 그리고 그때 할 일은 하나뿐이라(그 버전으로 가기) 링크를
+        같이 준다.
+
+        판정은 `?versionId=`가 아니라 **실제로 그려지고 있는 버전**(`c.versionId`)으로
+        한다 — 파라미터가 없어 최신이 그려질 때도 어긋남을 잡아야 하기 때문이다.
+      */}
+      {cohortVersion && c.versionId !== cohortVersion.versionId && (
+        <Alert variant="warning" className="mb-4">
+          <TriangleAlertIcon />
+          <AlertTitle>
+            이 기수가 쓰는 것은 {versionLabel(cohortVersion.versionNo)}입니다 — 지금은{' '}
+            {versionLabel(c.versionNo)}을 보고 있습니다
+          </AlertTitle>
+          <AlertDescription>
+            아래 섹션·쪽 번호가 이 기수 리포트·면담이 가리키는 위치와 다릅니다.{' '}
+            <Link
+              to={`/manager/curriculum/${id}?versionId=${cohortVersion.versionId}`}
+              className="underline"
+            >
+              {versionLabel(cohortVersion.versionNo)} 보기
+            </Link>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {/*
         **탭은 주소가 갖는다**(규칙 J) — 새로고침·뒤로가기가 따라오고, 다른 화면이
@@ -321,7 +372,7 @@ export default function CurriculumDetailScreen() {
               )
             })()
           ) : (
-            <UsedRoundsTable rounds={used.data} />
+            <UsedRoundsTable rounds={used.data} cohortId={cohortId} cohortName={cohortName} />
           )}
         </TabsContent>
       </Tabs>
@@ -548,7 +599,15 @@ function roundOrder(r: UsedProject): [number, number] {
   return [cohort ? Number(cohort) : -Infinity, round ? Number(round) : Infinity]
 }
 
-function UsedRoundsTable({ rounds: raw }: { rounds: UsedProject[] }) {
+function UsedRoundsTable({
+  rounds: raw,
+  cohortId,
+  cohortName,
+}: {
+  rounds: UsedProject[]
+  cohortId: string | undefined
+  cohortName: string | undefined
+}) {
   /*
     🔴 **정렬은 화면이 한다**(하드닝 2차 실측). 서버가 주는 순서가
     **`10기 → 9기 → 7기 → 8기`**라 어떤 규칙으로도 안 읽힌다(최신순도 오래된 순도
@@ -577,6 +636,40 @@ function UsedRoundsTable({ rounds: raw }: { rounds: UsedProject[] }) {
     )
   }
 
+  /*
+    🔴 **26줄을 한 표에 쏟지 않는다** — 오퍼레이터 교안 상세(`LinkedTab`)가 먼저 푼
+    문제와 같은 것이라 **그 구조를 그대로 가져왔다.**
+
+    한 교안을 여러 기수가 돌려 쓴다(실측 24~26개 회차). 정렬만 해서 이어 놓으면
+    `미프 1차 · 2차 … 1차 · 2차 …`가 반복돼 **같은 이름이 네 번 나오는 표**가 되고,
+    구분하는 값인 기수는 라벨 앞머리에 묻힌다.
+
+    매니저가 이 탭을 여는 이유는 *"우리 기수가 이 교안을 어디에 쓰나"* 이므로
+    **지금 기수만 펴 두고 나머지는 기수마다 접는다.** 닫힌 줄이 이미 답을 준다
+    (`8기 6개 · 응시 시작 6개`).
+
+    기수를 아직 못 골랐으면 **가르지 않는다** — 그때 나누면 전부 「다른 기수」로 접혀
+    있는 것을 없는 것처럼 보여준다.
+  */
+  const mine = cohortId ? rounds.filter((r) => r.cohortId === cohortId) : rounds
+  const others = cohortId ? rounds.filter((r) => r.cohortId !== cohortId) : []
+  const risky = mine.filter((r) => r.attendedCount > 0).length
+
+  /* 기수 이름이 `null`로 올 수 있다(스펙) — 묶지 않고 `기수 미상`으로 따로 센다 */
+  const groups = new Map<string, UsedProject[]>()
+  for (const r of others) {
+    const key = r.cohortName ?? '기수 미상'
+    groups.set(key, [...(groups.get(key) ?? []), r])
+  }
+  const cohortNo = (name: string) => Number(name.match(/\d+/)?.[0] ?? NaN)
+  const otherGroups = [...groups.entries()].sort(([a], [b]) => {
+    const [x, y] = [cohortNo(a), cohortNo(b)]
+    if (Number.isNaN(x) && Number.isNaN(y)) return a.localeCompare(b, 'ko')
+    if (Number.isNaN(x)) return 1
+    if (Number.isNaN(y)) return -1
+    return y - x
+  })
+
   return (
     <div className="flex flex-col gap-2">
       {/*
@@ -588,62 +681,109 @@ function UsedRoundsTable({ rounds: raw }: { rounds: UsedProject[] }) {
         이 교안을 쓴 <b className="text-fg-muted font-bold">모든 기수의 프로젝트</b>입니다 — 목록의
         「쓰인 프로젝트」는 이 기수 것만 셉니다.
       </p>
-      <div className="border-border overflow-hidden rounded-md border">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="bg-surface-2 border-border border-b">
-              <th className="text-fg-muted px-4 py-2.5 text-left text-xs font-semibold">
-                프로젝트
-              </th>
-              <th className="text-fg-muted px-4 py-2.5 text-left text-xs font-semibold">
-                검증 개념
-              </th>
-              <th className="text-fg-muted px-4 py-2.5 text-right text-xs font-semibold">
-                응시 시작
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rounds.map((r) => (
-              <tr key={r.projectId} className="border-border border-b last:border-0">
-                <td className="px-4 py-3 font-bold">
-                  <Link
-                    to={`/manager/projects/${r.projectId}`}
-                    className="hover:text-primary hover:underline"
-                  >
-                    {r.roundLabel ?? r.name}
-                  </Link>
-                </td>
-                <td className="px-4 py-3">
-                  {/* 확정 전이면 빈 배열이다(스펙 명시) — null이 아니라 길이로 가른다 */}
-                  {r.conceptNames.length === 0 ? (
-                    <Badge variant="neutral">검증 개념 미확정</Badge>
-                  ) : (
-                    <div className="flex flex-wrap gap-1.5">
-                      {r.conceptNames.map((c) => (
-                        <Badge key={c} variant="warning">
-                          ★ {c}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </td>
-                {/*
+
+      <section>
+        <h3 className="mb-2 flex items-baseline gap-2 text-sm font-bold">
+          {cohortName ?? '쓰인 프로젝트'}
+          <span className="text-fg-subtle text-xs font-normal">{mine.length}개</span>
+          {/* 응시가 시작된 회차가 곧 재분석 위험이다 — 세어서 앞에 둔다 */}
+          {risky > 0 && (
+            <span className="text-warning text-xs font-semibold">응시 시작 {risky}개</span>
+          )}
+        </h3>
+        {mine.length > 0 ? (
+          <UsedTable rounds={mine} />
+        ) : (
+          <p className="border-border-strong bg-surface-2 text-fg-muted rounded-md border border-dashed p-4 text-center text-xs">
+            {cohortName}는 이 교안을 안 씁니다 — 아래 다른 기수에서 쓰고 있습니다.
+          </p>
+        )}
+      </section>
+
+      {otherGroups.length > 0 && (
+        <section className="mt-4">
+          <h3 className="text-fg-subtle mb-2 text-xs font-semibold">다른 기수</h3>
+          <div className="border-border divide-border divide-y rounded-md border">
+            {otherGroups.map(([cohort, rows]) => {
+              const started = rows.filter((r) => r.attendedCount > 0).length
+              return (
+                /* 네이티브 `<details>` — 키보드·스크린리더가 그냥 되고 여는 상태를 안 들어도 된다 */
+                <details key={cohort} className="group/c">
+                  <summary className="hover:bg-surface-2 flex cursor-pointer list-none items-center gap-2 px-3 py-2.5 text-xs">
+                    <ChevronRightIcon className="text-fg-subtle size-3.5 shrink-0 transition-transform group-open/c:rotate-90" />
+                    <b className="text-fg font-semibold">{cohort}</b>
+                    <span className="text-fg-muted">{rows.length}개</span>
+                    {started > 0 && (
+                      <span className="text-warning font-semibold">응시 시작 {started}개</span>
+                    )}
+                  </summary>
+                  <div className="px-3 pb-3">
+                    <UsedTable rounds={rows} />
+                  </div>
+                </details>
+              )
+            })}
+          </div>
+        </section>
+      )}
+    </div>
+  )
+}
+
+/** 두 자리가 같은 표를 쓴다 — 지금 기수 섹션과 접힌 기수 안쪽 */
+function UsedTable({ rounds }: { rounds: UsedProject[] }) {
+  return (
+    <div className="border-border overflow-hidden rounded-md border">
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="bg-surface-2 border-border border-b">
+            <th className="text-fg-muted px-4 py-2.5 text-left text-xs font-semibold">프로젝트</th>
+            <th className="text-fg-muted px-4 py-2.5 text-left text-xs font-semibold">검증 개념</th>
+            <th className="text-fg-muted px-4 py-2.5 text-right text-xs font-semibold">
+              응시 시작
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {rounds.map((r) => (
+            <tr key={r.projectId} className="border-border border-b last:border-0">
+              <td className="px-4 py-3 font-bold">
+                <Link
+                  to={`/manager/projects/${r.projectId}`}
+                  className="hover:text-primary hover:underline"
+                >
+                  {r.roundLabel ?? r.name}
+                </Link>
+              </td>
+              <td className="px-4 py-3">
+                {/* 확정 전이면 빈 배열이다(스펙 명시) — null이 아니라 길이로 가른다 */}
+                {r.conceptNames.length === 0 ? (
+                  <Badge variant="neutral">검증 개념 미확정</Badge>
+                ) : (
+                  <div className="flex flex-wrap gap-1.5">
+                    {r.conceptNames.map((c) => (
+                      <Badge key={c} variant="warning">
+                        ★ {c}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </td>
+              {/*
                 **완료가 아니라 시작한 인원이다**(스펙 명시) — 재분석하면 리포트가
                 어긋나는지 판단하는 문턱이라 진행 중인 응시도 세야 한다
               */}
-                <td className="text-fg-muted px-4 py-3 text-right text-xs tabular-nums">
-                  {r.attendedCount === 0 ? (
-                    <span className="text-fg-subtle">—</span>
-                  ) : (
-                    `${r.attendedCount}명`
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+              <td className="text-fg-muted px-4 py-3 text-right text-xs tabular-nums">
+                {r.attendedCount === 0 ? (
+                  <span className="text-fg-subtle">—</span>
+                ) : (
+                  `${r.attendedCount}명`
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   )
 }

@@ -25,8 +25,17 @@ export function useLinkedCurricula(cohortId: string | undefined) {
   )
 }
 
-export function useCurriculumHead(materialId: string) {
-  return useFindCurriculum({ path: { materialId } }, { enabled: !!materialId })
+/**
+ * 머리글.
+ *
+ * `versionId`를 주면 **그 버전의** 제목·쪽수·분석 상태를 준다(44차 R1). 안 주면 최신이다 —
+ * 이 기수가 붙인 버전이 최신이 아닐 수 있어 목록이 그 값을 실어 보낸다.
+ */
+export function useCurriculumHead(materialId: string, versionId?: string) {
+  return useFindCurriculum(
+    { path: { materialId }, query: versionId ? { versionId } : undefined },
+    { enabled: !!materialId },
+  )
 }
 
 /**
@@ -44,9 +53,9 @@ export function useCurriculumHead(materialId: string) {
 const GLOBAL_RETRY = (count: number, error: unknown) =>
   isApiError(error) && !error.isTimeout && (error.status >= 500 || error.isNetwork) && count < 3
 
-export function useSections(materialId: string) {
+export function useSections(materialId: string, versionId?: string) {
   return useFindSections(
-    { path: { materialId } },
+    { path: { materialId }, query: versionId ? { versionId } : undefined },
     {
       enabled: !!materialId,
       retry: (count, error) => !isAnalysisIncomplete(error) && GLOBAL_RETRY(count, error),
@@ -58,6 +67,16 @@ export function isAnalysisIncomplete(error: unknown): boolean {
   return isApiError(error) && error.code === 'CURRICULUM_ANALYSIS_NOT_COMPLETED'
 }
 
-export function useUsedProjects(materialId: string) {
-  return useFindUsedProjects({ path: { materialId } }, { enabled: !!materialId })
+/**
+ * 이 교안이 쓰인 회차.
+ *
+ * `versionId`를 주면 **그 버전을 쓴 회차만** 온다(44차 R3). 매니저 화면에는 삭제가 없어
+ * (읽기 전용) 오퍼레이터 쪽처럼 「삭제 가드용 전체」를 따로 받을 이유가 없다 —
+ * 보고 있는 버전 기준 하나면 된다.
+ */
+export function useUsedProjects(materialId: string, versionId?: string) {
+  return useFindUsedProjects(
+    { path: { materialId }, query: versionId ? { versionId } : undefined },
+    { enabled: !!materialId },
+  )
 }

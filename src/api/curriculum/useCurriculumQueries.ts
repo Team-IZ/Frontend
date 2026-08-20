@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import type { QueryOptions } from '@/api/_contract'
 import {
+  findCurriculumVersionHistory,
   findOrganizationCurricula,
   findCurriculum,
   findSections,
@@ -13,14 +14,19 @@ import {
 } from './curriculumApi'
 import { curriculumKeys } from './curriculumKeys'
 import type {
+  findCurriculumVersionHistory_Path,
+  findCurriculumVersionHistory_Response,
   findOrganizationCurricula_Path,
   findOrganizationCurricula_Query,
   findOrganizationCurricula_Response,
   findCurriculum_Path,
+  findCurriculum_Query,
   findCurriculum_Response,
   findSections_Path,
+  findSections_Query,
   findSections_Response,
   findUsedProjects_Path,
+  findUsedProjects_Query,
   findUsedProjects_Response,
   findComparableCohorts_Query,
   findComparableCohorts_Response,
@@ -29,6 +35,18 @@ import type {
   findLinkableCurricula_Path,
   findLinkableCurricula_Response,
 } from './curriculumTypes'
+
+/** 교안 버전 이력 */
+export function useFindCurriculumVersionHistory(
+  params: { path: findCurriculumVersionHistory_Path },
+  options?: QueryOptions<findCurriculumVersionHistory_Response>,
+) {
+  return useQuery({
+    queryKey: curriculumKeys.findCurriculumVersionHistory(params),
+    queryFn: ({ signal }) => findCurriculumVersionHistory({ ...params, signal }),
+    ...options,
+  })
+}
 
 /** 기관 교안 목록 */
 export function useFindOrganizationCurricula(
@@ -44,7 +62,7 @@ export function useFindOrganizationCurricula(
 
 /** 교안 단건 상세 */
 export function useFindCurriculum(
-  params: { path: findCurriculum_Path },
+  params: { path: findCurriculum_Path; query?: findCurriculum_Query },
   options?: QueryOptions<findCurriculum_Response>,
 ) {
   return useQuery({
@@ -56,7 +74,7 @@ export function useFindCurriculum(
 
 /** 교안 섹션·개념 조회 */
 export function useFindSections(
-  params: { path: findSections_Path },
+  params: { path: findSections_Path; query?: findSections_Query },
   options?: QueryOptions<findSections_Response>,
 ) {
   return useQuery({
@@ -68,7 +86,7 @@ export function useFindSections(
 
 /** 쓰인 회차 */
 export function useFindUsedProjects(
-  params: { path: findUsedProjects_Path },
+  params: { path: findUsedProjects_Path; query?: findUsedProjects_Query },
   options?: QueryOptions<findUsedProjects_Response>,
 ) {
   return useQuery({

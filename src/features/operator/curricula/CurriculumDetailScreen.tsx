@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router'
 import {
-  ChevronLeftIcon,
+  ArrowLeft,
   ChevronRightIcon,
   PlayIcon,
   RefreshCwIcon,
@@ -174,23 +174,33 @@ export default function CurriculumDetailScreen() {
   return (
     <ConsoleShell {...shell} user={{ name: me?.name ?? '', role: '오퍼레이터' }}>
       <div className="mb-4">
-        <Link
-          to={listPath}
-          className="text-fg-subtle hover:text-fg inline-flex items-center gap-1 text-xs"
-        >
-          <ChevronLeftIcon className="size-3.5" />
-          교안 목록
-        </Link>
-        <div className="mt-1 flex flex-wrap items-center justify-between gap-3">
-          <h1 className="flex items-center gap-2 text-xl font-bold tracking-[-0.01em]">
-            {data.title ?? data.originalFileName}
-            <span className="text-fg-subtle text-sm font-normal">v{data.versionNo}</span>
-            {analyzed ? (
-              <CurriculumStatusBadge status={data.analysisStatus!} />
-            ) : (
-              <Badge variant="neutral">분석 전</Badge>
-            )}
-          </h1>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            {/*
+              뒤로가기 버튼은 매니저 화면들과 같은 아이콘 전용 스타일로 통일한다 —
+              텍스트 링크("‹ 교안 목록")와 아이콘 버튼이 화면마다 섞여 있던 것을 정리했다.
+              목록으로 돌아갈 때 **`?cohort=`를 그대로 들고 간다**(`listPath` 주석 참고).
+            */}
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label="교안 목록으로 돌아가기"
+              nativeButton={false}
+              render={<Link to={listPath} />}
+              className="-ml-1.5 p-1.5"
+            >
+              <ArrowLeft className="size-5" />
+            </Button>
+            <h1 className="flex items-center gap-2 text-xl font-bold tracking-[-0.01em]">
+              {data.title ?? data.originalFileName}
+              <span className="text-fg-subtle text-sm font-normal">v{data.versionNo}</span>
+              {analyzed ? (
+                <CurriculumStatusBadge status={data.analysisStatus!} />
+              ) : (
+                <Badge variant="neutral">분석 전</Badge>
+              )}
+            </h1>
+          </div>
           {/*
             **액션은 오른쪽 끝에 모은다.** 한때 이 셋이 `justify-between`의 형제라
             버튼이 늘어나자 **다시 분석이 화면 한가운데로 밀렸다** — 제목과 액션 사이가

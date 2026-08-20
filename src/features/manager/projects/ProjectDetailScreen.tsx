@@ -1,5 +1,6 @@
 import { useParams, useNavigate, useSearchParams } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
+import PageHeader from '@/components/common/PageHeader'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -50,7 +51,7 @@ export default function ProjectDetailScreen() {
   const { id = '' } = useParams()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()
-  const { cohortId, cohorts, selectCohort } = useManagerCohort()
+  const { cohortId, cohortName, cohorts, selectCohort } = useManagerCohort()
 
   const project = useProject(id)
   const submission = useSubmissionStatus(id)
@@ -124,6 +125,16 @@ export default function ProjectDetailScreen() {
 
   return shell(
     <>
+      {/*
+        교안 상세(MG-09)와 같은 패턴 — 헤더에 breadcrumb(경로)이 없어져 있던 것을 복구한다.
+        h1은 여기(sr-only)가 갖고, DetailHeader의 제목은 span으로 눈에 보이는 큰 글씨만 낸다.
+      */}
+      <div className="[&_h1]:sr-only">
+        <PageHeader
+          breadcrumb={['프로젝트', cohortName, p.name].filter(Boolean).join(' › ')}
+          title={p.name}
+        />
+      </div>
       <DetailHeader project={p} classScope={classScope} />
 
       {/*

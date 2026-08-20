@@ -1,5 +1,6 @@
 import { Link } from 'react-router'
-import { ChevronLeftIcon } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils/cn'
 import { dueLabel, formatDue } from '../../rules'
 import ProjectStatusBadge from '../../components/ProjectStatusBadge'
@@ -29,25 +30,32 @@ export default function DetailHeader({
 
   return (
     <div className="mb-4">
-      {/*
-        (이슈 277 QA) **기수를 실어 간다.** 예전엔 `/operator/projects`로 고정돼 있어서,
-        스위처로 다른 기수를 골라 두고 들어온 회차에서 여기를 누르면 목록이 전역
-        기본값(진행 중 기수)으로 되돌아갔다 — 방금 보던 기수가 사라졌다. 이 회차가
-        실제로 속한 기수(`project.cohortId`)를 실어 보내면 그 문제가 없다.
-      */}
-      <Link
-        to={`/operator/projects?cohort=${project.cohortId}`}
-        className="text-fg-subtle hover:text-fg mb-1.5 inline-flex items-center gap-0.5 text-xs"
-      >
-        <ChevronLeftIcon className="size-3.5" />
-        프로젝트 목록
-      </Link>
-
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <h1 className="flex items-center gap-2 text-xl font-bold tracking-[-0.01em]">
-          {project.name}
-          <ProjectStatusBadge status={project.status} />
-        </h1>
+        <div className="flex items-center gap-2">
+          {/*
+            (이슈 277 QA) **기수를 실어 간다.** 예전엔 `/operator/projects`로 고정돼 있어서,
+            스위처로 다른 기수를 골라 두고 들어온 회차에서 여기를 누르면 목록이 전역
+            기본값(진행 중 기수)으로 되돌아갔다 — 방금 보던 기수가 사라졌다. 이 회차가
+            실제로 속한 기수(`project.cohortId`)를 실어 보내면 그 문제가 없다.
+
+            뒤로가기 버튼은 매니저 화면들과 같은 아이콘 전용 스타일로 통일한다 —
+            텍스트 링크("‹ 프로젝트 목록")와 아이콘 버튼이 화면마다 섞여 있던 것을 정리했다.
+          */}
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label="프로젝트 목록으로 돌아가기"
+            nativeButton={false}
+            render={<Link to={`/operator/projects?cohort=${project.cohortId}`} />}
+            className="-ml-1.5 p-1.5"
+          >
+            <ArrowLeft className="size-5" />
+          </Button>
+          <h1 className="flex items-center gap-2 text-xl font-bold tracking-[-0.01em]">
+            {project.name}
+            <ProjectStatusBadge status={project.status} />
+          </h1>
+        </div>
         {/* 마감은 오른쪽 끝으로 — 제목과 같은 줄에 있되 읽는 순서는 나중이다 */}
         <span className="ml-auto text-sm">
           {project.endDate ? (

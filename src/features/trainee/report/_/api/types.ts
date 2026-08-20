@@ -69,6 +69,8 @@ type RoundBase = { id: string; label: string }
 
 export type PublishedReport = RoundBase & {
   status: 'PUBLISHED'
+  /** 다시 보기 개설(`POST /assessment-sessions/reviews`)에 넘기는 값 — `id`(회차)와 다르다 */
+  reportId: string
   publishedAt: string
   curriculum: string
   concepts: ConceptReport[]

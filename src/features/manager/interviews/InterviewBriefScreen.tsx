@@ -262,7 +262,17 @@ function BriefSheet({ brief, cohortName }: { brief: Brief; cohortName: string })
   }
 
   return (
-    <>
+    /*
+      머리와 본문을 **한 틀에 넣어 같이 가운데로 보낸다.**
+
+      🔴 전에는 본문에만 `max-w-[820px]`이 있고 `mx-auto`가 없어, 1512폭에서 본문이
+      **왼쪽 0 · 오른쪽 429px**로 통째로 쏠렸다(실측). 본문에만 `mx-auto`를 붙이면
+      이번엔 머리(뒤로가기·이름·배지)가 셸 폭 그대로 남아 **머리와 본문의 왼쪽 선이
+      어긋난다** — 둘은 같은 문서의 제목과 몸통이라 같은 틀을 써야 한다.
+
+      `w-full`이 같이 붙는다 — 안 붙이면 좁은 폭에서 내용만큼만 줄어든다.
+    */
+    <div className="mx-auto w-full">
       <div className="mb-5 flex items-center gap-3">
         <Button
           variant="ghost"
@@ -282,7 +292,7 @@ function BriefSheet({ brief, cohortName }: { brief: Brief; cohortName: string })
         <RiskBadge riskType={brief.riskType} />
       </div>
 
-      <div className="max-w-[820px] pb-8">
+      <div className="pb-8">
         <Block no={1} title="여는 말">
           {/* **서버가 만든 문장을 그대로 읽는다** — 화면이 문장을 짓지 않는다 */}
           <div className="bg-primary-soft text-fg rounded-md p-4 text-sm leading-[1.85] whitespace-pre-line">
@@ -353,7 +363,7 @@ function BriefSheet({ brief, cohortName }: { brief: Brief; cohortName: string })
         </Block>
 
         <Block no={3} title="원인">
-          <div className="flex flex-wrap gap-1.5">
+          <div className="flex flex-wrap gap-3">
             {CAUSE_OPTIONS.map((o) => {
               const active = causes.has(o.key)
               return (
@@ -530,7 +540,7 @@ function BriefSheet({ brief, cohortName }: { brief: Brief; cohortName: string })
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   )
 }
 

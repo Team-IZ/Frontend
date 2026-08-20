@@ -276,6 +276,18 @@ export function useConceptCandidates(projectId: string, enabled = true) {
  * 생성 모달은 회차를 만들기 전에 개념을 고르는데 `findConceptCandidates`는
  * `projectId`를 요구한다. 섹션 조회가 같은 매핑을 주고 **겹치는 여섯 필드가 이름·타입·
  * 의미까지 같아서**(9차 R2 회신) 같은 컴포넌트로 그릴 수 있다.
+ *
+ * 🔴 **`versionId`를 반드시 같이 보낸다 — 안 보내면 서버가 최신 버전으로 해석한다.**
+ *
+ * 한때 `materialId`만 보내고 결과를 `c.versionId`로 태깅했다. **가져온 곳과 표시한
+ * 출처가 달랐다** — 고른 것이 v1이어도 후보는 v2에서 왔고, 그 `mappingId`가 그대로
+ * 검증 개념으로 확정된다. 리포트와 면담 브리프는 `curriculumVersionId` + 쪽 번호로
+ * 교안 위치를 펴므로(`types.ts` `VerificationConcept` 주석), **발행된 리포트가 엉뚱한
+ * 쪽을 가리키게 된다.**
+ *
+ * 교안마다 버전이 하나뿐인 동안에는 드러나지 않았는데, 개정판을 올려도 이전 버전이
+ * 연결 후보에 남는 것을 실측으로 확인하면서(45차 R2) 실제로 고를 수 있는 상태가 됐다.
+ * `sections`가 `?versionId=`를 받게 되어 지금은 정확히 지정할 수 있다.
  */
 export function useSectionCandidates(curricula: Curriculum[]) {
   return useQuery({
@@ -297,7 +309,11 @@ export function useSectionCandidates(curricula: Curriculum[]) {
       */
       const lists: ConceptCandidate[][] = []
       for (const c of curricula) {
-        const sections = await findSections({ path: { materialId: c.materialId } })
+        const sections = await findSections({
+          path: { materialId: c.materialId },
+          // 고른 그 버전에서 가져온다 — 아래 `curriculumVersionId`와 반드시 같은 값이어야 한다
+          query: { versionId: c.versionId },
+        })
         lists.push(
           sections.flatMap((s) =>
             s.items.map((it) => ({

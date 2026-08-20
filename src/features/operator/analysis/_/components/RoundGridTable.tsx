@@ -29,6 +29,15 @@ const graded = (row: GridRow) => row.size - total(row.uncounted)
 
 const KINDS = ['absent', 'invalid', 'aborted'] as const
 
+/*
+  표 전체 폭 계산에 쓰는 열 폭 상수 — 프로젝트(회차) 열이 늘어도 각 열이 이 아래로
+  안 눌리게 표 자체의 최소 폭을 계산한다(사용자 지적: 나중에 프로젝트가 많아지면
+  다른 영역을 침범한다). 아래 리터럴 클래스(`w-[172px]` 등)와 값을 맞춰 둔다.
+*/
+const ROW_NAME_COL = 172
+const UNCOUNTED_COL = 232
+const PROJECT_COL_MIN = 92
+
 /**
  * 미집계 — **총계만 쓰면 어디를 볼지가 안 나온다**(OP-02 §4-2). 세 종류가 서로 다른 곳을
  * 가리킨다: 미응시는 반 운영, 무효는 세션 설계·응시 태도(9-4), 중단은 기술 문제.
@@ -44,7 +53,9 @@ function UncountedCell({ u }: { u: GridRow['uncounted'] }) {
   const n = total(u)
   if (n === 0) {
     // 0을 강조하지 않는다 — 없음과 0을 다르게 표시한다(F3)
-    return <span className="text-fg-subtle pr-[52px]">—</span>
+    // pr 오프셋으로 자리를 흉내 내던 것을 지운다(사용자 지시: 가운데 정렬) — 값이 있는
+    // 행과 똑같이 이 칸 전체 폭(flex)을 쓰고 그 안에서 가운데 정렬한다.
+    return <span className="text-fg-subtle flex justify-center">—</span>
   }
   return (
     <span
@@ -53,7 +64,7 @@ function UncountedCell({ u }: { u: GridRow['uncounted'] }) {
         .map((k) => `${UNCOUNTED_LABEL[k]} ${u[k]}`)
         .join(' · ')}
     >
-      <b className="w-7 text-right text-fg-muted font-semibold tabular-nums">{n}</b>
+      <b className="w-11 text-center text-xs text-fg-muted font-semibold tabular-nums">{n}</b>
       {/*
         **테두리·구분선을 뺐다.** 칩마다 상자를 두면 행 11개 × 선 4개가 잔선으로 쌓여
         표가 지저분해진다 — 폭이 고정돼 있으면 상자 없이도 열이 맞고, **열 머리의 라벨과
@@ -63,7 +74,7 @@ function UncountedCell({ u }: { u: GridRow['uncounted'] }) {
         {KINDS.map((k) => (
           <span
             key={k}
-            className={`w-8 text-center text-2xs tabular-nums ${
+            className={`w-11 text-center text-xs tabular-nums ${
               u[k] > 0 ? `font-medium ${UNCOUNTED_CLASS[k]}` : 'text-fg-subtle/25'
             }`}
           >
@@ -85,7 +96,15 @@ export default function RoundGridTable({ grid }: { grid: RoundGrid }) {
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full table-fixed border-separate border-spacing-0 text-sm">
+      <table
+        className="table-fixed border-separate border-spacing-0 text-sm"
+        // 프로젝트 열이 늘어도 최소 폭(PROJECT_COL_MIN/열)을 보장 — 부족하면 카드
+        // 밖으로 안 밀려나고 이 표 안에서만 가로 스크롤된다(사용자 지적: 프로젝트가
+        // 많아지면 다른 영역을 침범한다).
+        style={{
+          width: `max(100%, ${ROW_NAME_COL + UNCOUNTED_COL + grid.columns.length * PROJECT_COL_MIN}px)`,
+        }}
+      >
         <thead>
           <tr>
             {/*
@@ -134,20 +153,22 @@ export default function RoundGridTable({ grid }: { grid: RoundGrid }) {
               무엇인지 알 수 없고, 범례는 표 아래 오른쪽 끝이라 눈이 왕복해야 한다.
               표에서 그 일을 하는 것은 열 머리다 — 세 칸 위에 세 라벨을 얹는다.
             */}
-            <th className="w-[216px] pb-2 pl-4 align-bottom">
+            <th className="w-[232px] pb-2 pl-4 align-bottom">
               {/*
-                설명 줄(`채점에서 빠져 분모가 줄었습니다`)을 뺐다 — **행 이름 열이
-                `25명 → 채점 21`로 직접 보여주므로** 같은 말이 두 곳에 있었다.
+                "채점에서 빠진 사람" 제목 줄을 지웠다(사용자 지시) — 대신 첫 칸에 "합계"를
+                넣어 굵은 숫자가 무엇인지 라벨 자리에서 바로 말한다.
               */}
-              <span className="text-fg block text-right text-xs font-semibold">
-                채점에서 빠진 사람
-              </span>
               <span className="mt-0.5 flex items-end justify-end gap-0">
-                <span className="w-7" />
+                <span
+                  className="text-fg-subtle w-11 text-center text-2xs"
+                  title="채점에서 빠진 사람 합계"
+                >
+                  합계
+                </span>
                 {KINDS.map((k) => (
                   <span
                     key={k}
-                    className={`w-8 text-center text-2xs ${UNCOUNTED_CLASS[k]}`}
+                    className={`w-11 text-center text-2xs ${UNCOUNTED_CLASS[k]}`}
                     title={UNCOUNTED_LABEL[k]}
                   >
                     {UNCOUNTED_SHORT[k]}

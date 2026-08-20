@@ -7,6 +7,14 @@ import type { operations } from '@/api/schema'
     {operationId}_Body · _Query · _Path · _Header · _Response · _Item · _Errors
 */
 
+// GET /api/v0/curricula/{materialId}/versions — 교안 버전 이력
+export type findCurriculumVersionHistory_Path =
+  operations['findCurriculumVersionHistory']['parameters']['path']
+export type findCurriculumVersionHistory_Response =
+  operations['findCurriculumVersionHistory']['responses'][200]['content']['application/json']
+export type findCurriculumVersionHistory_Errors =
+  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'CURRICULUM_MATERIAL_NOT_FOUND'
+
 // POST /api/v0/curricula/{materialId}/analyses — 재분석 요청
 export type requestAnalysis_Path = operations['requestAnalysis']['parameters']['path']
 export type requestAnalysis_Query = NonNullable<
@@ -39,10 +47,14 @@ export type findOrganizationCurricula_Errors =
 
 // GET /api/v0/curricula/{materialId} — 교안 단건 상세
 export type findCurriculum_Path = operations['findCurriculum']['parameters']['path']
+export type findCurriculum_Query = NonNullable<operations['findCurriculum']['parameters']['query']>
 export type findCurriculum_Response =
   operations['findCurriculum']['responses'][200]['content']['application/json']
 export type findCurriculum_Errors =
-  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'CURRICULUM_MATERIAL_NOT_FOUND'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'CURRICULUM_MATERIAL_NOT_FOUND'
+  | 'CURRICULUM_VERSION_NOT_FOUND'
 
 // DELETE /api/v0/curricula/{materialId} — 교안 삭제
 export type deleteCurriculum_Path = operations['deleteCurriculum']['parameters']['path']
@@ -55,20 +67,29 @@ export type deleteCurriculum_Errors =
 
 // GET /api/v0/curricula/{materialId}/sections — 교안 섹션·개념 조회
 export type findSections_Path = operations['findSections']['parameters']['path']
+export type findSections_Query = NonNullable<operations['findSections']['parameters']['query']>
 export type findSections_Response =
   operations['findSections']['responses'][200]['content']['application/json']
 export type findSections_Errors =
   | 'UNAUTHENTICATED'
   | 'ACCESS_DENIED'
   | 'CURRICULUM_MATERIAL_NOT_FOUND'
+  | 'CURRICULUM_VERSION_NOT_FOUND'
   | 'CURRICULUM_ANALYSIS_NOT_COMPLETED'
+  | 'CURRICULUM_ANALYSIS_FAILED'
 
 // GET /api/v0/curricula/{materialId}/projects — 쓰인 회차
 export type findUsedProjects_Path = operations['findUsedProjects']['parameters']['path']
+export type findUsedProjects_Query = NonNullable<
+  operations['findUsedProjects']['parameters']['query']
+>
 export type findUsedProjects_Response =
   operations['findUsedProjects']['responses'][200]['content']['application/json']
 export type findUsedProjects_Errors =
-  'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'CURRICULUM_MATERIAL_NOT_FOUND'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'CURRICULUM_MATERIAL_NOT_FOUND'
+  | 'CURRICULUM_VERSION_NOT_FOUND'
 
 // GET /api/v0/curricula/comparable-cohorts — 비교 가능한 기수 목록
 export type findComparableCohorts_Query = NonNullable<

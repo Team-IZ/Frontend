@@ -1554,10 +1554,13 @@ export interface paths {
      *     | `CURRICULUM_TITLE_DUPLICATED` | 409 | 같은 기관에 **같은 제목**의 교안이 이미 있다 |
      *     | `CURRICULUM_FILE_STORE_FAILED` | 503 | 저장 경로가 읽기 전용이거나 가득 찼다 |
      *
-     *     **제목 중복이 특히 잘 걸린다.** `uq_curriculum_material_org_id_normalized_title`이
-     *     부분 인덱스가 아니라 전역 UNIQUE라 **논리 삭제된 교안도 제목을 계속 점유**한다.
-     *     같은 제목으로 다시 시험하면 파일이 무엇이든 이 충돌이 난다. 화면은 이 코드로
-     *     제목 입력란에 인라인 오류를 띄우면 된다(회차 이름의 `PROJECT_NAME_DUPLICATED`와 같다).
+     *     **(2026-08-20 정정)** `uq_curriculum_material_org_id_normalized_title`은 여전히
+     *     부분 인덱스가 아니라 전역 UNIQUE지만, `CurriculumMaterial#softDelete()`가 삭제와
+     *     동시에 `normalized_title`을 유일한 값으로 봉인해 **제목은 더 이상 점유되지 않는다.**
+     *     논리 삭제된 교안과 같은 제목으로 다시 등록해도 통과한다. (raw SQL로 삭제 플래그만
+     *     찍고 이 봉인을 거치지 않은 과거 행 56건도 소급 봉인 완료 — 지금은 재현되지 않는다.)
+     *     화면은 이 코드로 제목 입력란에 인라인 오류를 띄우면 된다(회차 이름의
+     *     `PROJECT_NAME_DUPLICATED`와 같다).
      *
      *     > **Lambda 6MB 상한(요청서 ②)은 이 커밋의 범위가 아니다.** 본문이 base64로
      *     > 부풀어(×4/3) 실질 4.5MB에서 막히는 것이라 앱이 손댈 수 있는 층이 아니고,
@@ -1593,7 +1596,21 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    get?: never
+    /**
+     * 교안 버전 이력 | ✅ 사용 가능
+     * @description 이 교안(material)의 전체 버전을 최신순으로 돌려준다. 상세 화면에서 "예전 버전"
+     *     목록을 보여줄 때 쓴다.
+     *
+     *     **요청**
+     *     - materialId (경로): 교안 ID(버전이 바뀌어도 유지되는 고정 식별자)
+     *
+     *     **응답 (200)**
+     *
+     *     `versionNo` 내림차순 배열. 새 버전을 올려도 기존 버전 행이 지워지거나 바뀌지 않고
+     *     그대로 남아 있고, 상태도 계속 `ACTIVE`로 유지되므로 과거 버전도 전부 포함된다.
+     *     각 항목의 스키마는 `CurriculumVersionResponse`(연결 가능한 교안 목록과 동일)다.
+     */
+    get: operations['findCurriculumVersionHistory']
     put?: never
     /**
      * 교안 새 버전 등록 | ✅ 사용 가능
@@ -1603,6 +1620,14 @@ export interface paths {
      *     ⚠ `POST /curricula`(새 교안 등록)와 다른 오퍼레이션이다. 새 개정판을 올리려는
      *     것과 새 교안을 만들려는 것은 사용자 의도가 다르다는 것이 42차 문서의 요청이다 —
      *     이 경로가 그 의도를 명시적으로 받는다.
+     *
+     *     ⚠ **등록 직후엔 이 버전만의 분석이 안 된 상태다.** `POST /curricula`(새 교안)와
+     *     마찬가지로 이 엔드포인트도 분석을 자동으로 걸지 않는다 — **새 버전은 이전 버전과
+     *     다른 파일이라 쪽 번호·섹션 구성이 바뀔 수 있고, 분석이 다시 돌지 않으면 검증
+     *     개념을 못 뽑아 회차에 붙일 수 없는 상태로 남는다.** 새 버전의 섹션·검증개념을
+     *     쓰려면 응답의 `versionId`로 `POST /curricula/{materialId}/analyses`를 별도 호출해야
+     *     한다(44차 R4 회신, 2026-08-20 — 실제로는 이전부터 그래 왔고, 지금까지 이 문장이
+     *     빠져 있었을 뿐이다).
      *
      *     **요청 (multipart/form-data)**
      *     - file (필수): PDF 파일
@@ -1622,10 +1647,23 @@ export interface paths {
      *     (`project_curriculum`)도 그대로다. 발행된 리포트가 가리키는 쪽 번호가 바뀌지
      *     않는 이유가 이것이다.
      *
-     *     바뀌는 것은 상태 하나뿐이다 — 기존 최신 버전이 `INACTIVE`로 넘어가
-     *     `GET /cohorts/{cohortId}/curricula`(연결 후보 목록) 같은 "고를 수 있는 교안"
-     *     조회에서 새 버전에게 자리를 내준다. **읽기 쪽 구버전 상세·버전 목록 API는 이번에도
-     *     추가하지 않는다** — 42차 문서가 명시적으로 요청하지 않았다.
+     *     **(2026-08-20 정정)** 예전에는 여기서 "기존 최신 버전이 `INACTIVE`로 넘어간다"고
+     *     적고 있었는데, 그 처리는 이미 코드에서 빠졌다 — 지금은 새 버전을 올려도 이전
+     *     버전이 계속 `ACTIVE`로 남고, `GET /cohorts/{cohortId}/curricula`(연결 후보 목록)
+     *     같은 "고를 수 있는 교안" 조회에도 옛 버전이 계속 뜬다. 읽기 쪽 구버전 상세·버전
+     *     목록 API는 이후 커밋으로 추가됐다 — `GET /curricula/{materialId}/versions`
+     *     (버전 목록), `GET /curricula/{materialId}/sections?versionId=`(특정 버전 섹션),
+     *     `GET /curricula/{materialId}?versionId=`(특정 버전 상세, 44차 R1),
+     *     `GET /curricula/{materialId}/projects?versionId=`(특정 버전이 쓰인 회차, 44차 R3)를
+     *     쓴다.
+     *
+     *     ## 🔴 같은 내용의 파일을 다시 올리면 409다 (2026-08-20, 45차 R1 조사 중 발견)
+     *
+     *     이 교안의 **다른 버전과 파일 내용이 완전히 같으면**(같은 바이트, `content_hash` 동일)
+     *     `409 CURRICULUM_VERSION_CONTENT_DUPLICATED`다. 종전에는 이 경우 DB UNIQUE 제약
+     *     위반이 그대로 올라가 코드 없는 500이었다 — 45차 R1의 "버전 2개부터 교안이
+     *     사라진다"는 신고를 조사하다가 재현 로그에서 발견했다(R1 자체는 실제로는 같은
+     *     교안을 조사 중 직접 삭제한 뒤의 정상 동작이었고 버그가 아니었다 — 별도 확인 완료).
      *
      *     ## 제목은 안 바꿔도 된다 — 바꾸면 그때만 중복 검사
      *
@@ -4841,19 +4879,30 @@ export interface paths {
      *     | `label` | string | 회차 이름(예: `미프 3차`) |
      *     | `hasPendingRetry` | boolean | 아직 안 한 다시 보기가 있다 — 레일에 점으로 표시 |
      *
-     *     ## 회차 상태 6종 — `reportsById[id].status`
+     *     ## 회차 상태 7종 — `reportsById[id].status`
+     *
+     *     **(2026-08-20 정정)** 아래 표는 실제와 어긋나 있었다 — `PENDING_VISIBILITY`는
+     *     공개/비공개 폐지(2026-08-19)로 이미 없어졌고, `NOT_STARTED`(마감 전 미응시)가
+     *     빠져 있었다. 같은 날 `IN_PROGRESS`도 새로 추가됐다(아래 참고).
      *
      *     | 값 | 언제 | 함께 오는 것 |
      *     |---|---|---|
-     *     | `NOT_ATTEMPTED` | 응시 기록이 없거나 미제출·미출석으로 끝남 | — |
+     *     | `NOT_STARTED` | 제출 마감 전인데 아직 응시 기록이 없다 | — |
+     *     | `NOT_ATTEMPTED` | 마감이 지나도록 응시하지 않았거나 미제출·미출석으로 끝남 | — |
      *     | `VOID_ATTEMPT` | 무효 응시(검토 중 또는 무효 확정) | — |
      *     | `STOPPED` | 세션을 시작했지만 끝내지 못함 | — |
-     *     | `PENDING_PUBLISH` | 아직 발행 전 | `publishAfter` |
-     *     | `PENDING_VISIBILITY` | 발행됐지만 **공개 범위 미지정** | — |
+     *     | `IN_PROGRESS` | **응시 기록은 있지만 아직 안 끝났다**(제출·분석·이해도 확인 세션 준비/진행 중, 2026-08-20 추가) | — |
+     *     | `PENDING_PUBLISH` | **이해도 확인까지 마쳤고** 아직 발행 전 | `publishAfter` |
      *     | `PUBLISHED` | 공개됨 | `publishedAt` · `curriculum` · `concepts[]` · `retryState` |
      *
-     *     ⚠️ **`PENDING_VISIBILITY`를 빈 리포트로 그리면 안 된다.** 발행과 공개는 다른
-     *     사건이라, 결과는 이미 확정됐고 공개 범위만 안 정해진 상태다.
+     *     ## 🔴 `IN_PROGRESS` 추가 배경 (2026-08-20 발견·수정)
+     *
+     *     고치기 전에는 `NOT_STARTED`·`NOT_ATTEMPTED`·`VOID_ATTEMPT`·`STOPPED` 넷 중 어디에도
+     *     안 걸리는 진행 중인 응시(코드 제출·분석·이해도 확인 세션 준비 단계)가 전부
+     *     `PENDING_PUBLISH`로 떨어졌다 — **아직 응시조차 시작 안 했거나 절반쯤 온 회차가
+     *     "응시 완료(리포트 생성 중)"로 보이는 상태**였다(실사용 재현: 코드 분석이 진행 중인
+     *     회차가 화면에 "응시 완료"로 뜸). `PENDING_PUBLISH`는 이제 **이해도 확인까지 실제로
+     *     마친** 경우로만 좁혔고, 그 전 단계는 `IN_PROGRESS`다.
      *
      *     ## concepts[] — `PUBLISHED`에서만
      *
@@ -4974,7 +5023,8 @@ export interface paths {
      *     | 값 | 리포트 라인에 그릴 것 |
      *     |---|---|
      *     | `PUBLISHED` | 결과를 그린다(펼치면 본문) |
-     *     | `PENDING_PUBLISH` | `리포트 생성 중` |
+     *     | `PENDING_PUBLISH` | 이해도 확인까지 마침, `리포트 생성 중` |
+     *     | `IN_PROGRESS` | 아직 응시가 안 끝남(제출·분석·이해도 확인 세션 준비/진행 중, 2026-08-20 추가) — `PENDING_PUBLISH`와 구분해서 그린다 |
      *     | `NOT_STARTED` | 아직 응시 전(마감 전) |
      *     | `NOT_ATTEMPTED` | 미응시 — **매니저 안내가 필요한 줄이다** |
      *     | `VOID_ATTEMPT` | 확인 필요 |
@@ -6625,6 +6675,10 @@ export interface paths {
      *
      *     **요청**
      *     - materialId (경로): 교안 ID(버전이 바뀌어도 유지되는 고정 식별자)
+     *     - versionId (쿼리, 선택): 특정 옛 버전의 머리글을 보고 싶을 때 그 버전 ID를 넘긴다.
+     *       생략하면 최신 버전으로 해석한다(`sections`와 같은 규칙). 그 교안(materialId)의
+     *       버전이 아니거나 존재하지 않으면 404 `CURRICULUM_VERSION_NOT_FOUND`다
+     *       (2026-08-20, 44차 R1).
      *
      *     **응답 (200)**
      *
@@ -6633,16 +6687,19 @@ export interface paths {
      *
      *     | 필드 | 설명 |
      *     |---|---|
-     *     | `materialId` · `versionId` | 교안 ID / 최신 버전 ID |
-     *     | `title` · `originalFileName` · `versionNo` · `pageCount` | 머리글 |
-     *     | `analysisStatus` | 가장 최근 분석 **시도** 상태. 한 번도 분석하지 않았으면 null |
-     *     | `sectionCount` · `conceptCount` | `12섹션 · 개념 48건` |
-     *     | `usedProjectCount` | `3개 회차에서 사용 중` |
-     *     | `uploadedAt` · `uploadedByName` | 업로드 시각 / 올린 사람 |
+     *     | `materialId` · `versionId` | 교안 ID / **기준 버전** ID(위 `versionId`를 생략하면 최신) |
+     *     | `title` · `originalFileName` · `versionNo` · `pageCount` | 기준 버전의 머리글 |
+     *     | `analysisStatus` | 기준 버전의 가장 최근 분석 **시도** 상태. 한 번도 분석하지 않았으면 null |
+     *     | `sectionCount` · `conceptCount` | `12섹션 · 개념 48건` — 기준 버전 기준 |
+     *     | `usedProjectCount` | `3개 회차에서 사용 중` — **교안 전체(모든 버전) 기준으로 고정**이다. 기준 버전을
+     *       바꿔도 이 값은 바뀌지 않는다(삭제 가드와 같은 모집단을 유지해야 하기 때문) |
+     *     | `versionUsedProjectCount` | 기준 버전 **하나만** 쓴 회차 수 (2026-08-20, 44차 R1) |
+     *     | `uploadedAt` · `uploadedByName` | 기준 버전 업로드 시각 / 올린 사람 |
      *
-     *     **섹션 내용은 `GET /curricula/{materialId}/sections`, 쓰는 회차 목록은
-     *     `GET /curricula/{materialId}/projects`가 따로 준다.** 이 API는 머리글만 담당한다 —
-     *     섹션은 교안 하나에 수십 건이라 머리글만 필요한 화면이 그걸 다 받을 이유가 없다.
+     *     **섹션 내용은 `GET /curricula/{materialId}/sections?versionId=`, 쓰는 회차 목록은
+     *     `GET /curricula/{materialId}/projects?versionId=`가 같은 `versionId`로 따로 준다.**
+     *     이 API는 머리글만 담당한다 — 섹션은 교안 하나에 수십 건이라 머리글만 필요한 화면이
+     *     그걸 다 받을 이유가 없다.
      */
     get: operations['findCurriculum']
     put?: never
@@ -6676,10 +6733,8 @@ export interface paths {
      *     `deleted_at`만 찍는 논리 삭제다. 분석 이력·섹션·개념 매핑이 이 교안을 참조하고 있어
      *     물리 삭제는 그 이력까지 함께 지운다.
      *
-     *     ⚠️ **제목은 계속 점유된다.** `uq_curriculum_material_org_id_normalized_title`이 부분
-     *     인덱스가 아니라 전역 UNIQUE라, 지운 교안과 **같은 제목으로 다시 올리면**
-     *     `409 CURRICULUM_TITLE_DUPLICATED`가 난다(22차 R2와 같은 자리). 다시 올릴 때는
-     *     제목을 바꿔야 한다.
+     *     **제목은 더 이상 점유되지 않는다.** 삭제와 동시에 내부적으로 제목을 봉인해 두므로,
+     *     지운 교안과 같은 제목으로 바로 다시 등록할 수 있다.
      */
     delete: operations['deleteCurriculum']
     options?: never
@@ -6702,6 +6757,9 @@ export interface paths {
      *
      *     **요청**
      *     - materialId (경로): 교안 ID(버전이 바뀌어도 유지되는 고정 식별자)
+     *     - versionId (쿼리, 선택): 특정 옛 버전의 섹션을 보고 싶을 때 그 버전 ID를 넘긴다.
+     *       생략하면 종전과 동일하게 최신 버전으로 해석한다. 그 교안(materialId)의 버전이
+     *       아니거나 존재하지 않으면 404 `CURRICULUM_VERSION_NOT_FOUND`다.
      *
      *     **응답 (200)**
      *     - sections[].sectionId / title / pageStart / pageEnd: 섹션 기본 정보
@@ -6714,8 +6772,14 @@ export interface paths {
      *
      *     ## 🔴 분석 전 교안은 409다 (18차 R1)
      *
-     *     이 교안의 최신 버전에 "성공한 분석"이 한 번도 없으면 **`409 CURRICULUM_ANALYSIS_NOT_COMPLETED`**
-     *     를 즉시 반환한다. 화면은 이때 `분석이 끝나면 고를 수 있습니다`를 그리면 된다.
+     *     이 교안의 최신 버전에 "성공한 분석"이 한 번도 없으면 409를 즉시 반환한다 — 그런데
+     *     `code`가 두 가지로 갈린다.
+     *
+     *     - **`CURRICULUM_ANALYSIS_NOT_COMPLETED`**: 아직 분석을 안 걸었거나 PENDING·RUNNING 중.
+     *       **일시적**이다 — 화면은 `분석이 끝나면 고를 수 있습니다`를 그리면 된다.
+     *     - **`CURRICULUM_ANALYSIS_FAILED`**: 가장 최근 분석 시도가 실패로 끝남. **영구적**이다 —
+     *       기다려도 저절로 풀리지 않는다. 화면은 `분석에 실패했습니다. 재분석을 요청해 주세요`를
+     *       그리고 재분석 버튼을 보여줘야 한다.
      *
      *     **종전에는 503이었다.** 그런데 503은 "서버가 지금 요청을 처리할 수 없다"는 인프라
      *     신호라, 프론트 전역 재시도(`status >= 500`)가 자동으로 3회 붙고 그 재시도가 동시에
@@ -6723,7 +6787,7 @@ export interface paths {
      *     **응답이 아예 오지 않는 것처럼** 보였다. 실제로는 요청이 지금 상태와 맞지 않는
      *     것이지 서버가 아픈 것이 아니므로 409가 정확하다.
      *
-     *     재시도해야 한다는 사실은 상태 코드가 아니라 `code`로 전달한다.
+     *     재시도해야 하는지·재분석을 걸어야 하는지는 상태 코드가 아니라 `code`로 전달한다.
      *
      *     ⚠ 교안 자체가 없으면 그건 영구 실패라 여전히 **404**(`CURRICULUM_MATERIAL_NOT_FOUND`)다.
      */
@@ -6760,17 +6824,30 @@ export interface paths {
      *     - materialId (경로): **교안 ID**(버전이 바뀌어도 유지되는 고정 식별자).
      *       교안 목록 응답의 `materialId`와 형제 엔드포인트 `GET /curricula/{materialId}/sections`가
      *       받는 값과 **같은 것**이다
+     *     - versionId (쿼리, 선택): 특정 버전만 쓴 회차로 좁힌다(2026-08-20, 44차 R3).
+     *       생략하면 아래 "모든 버전" 기준(종전과 동일)이다. 그 교안(materialId)의 버전이
+     *       아니거나 존재하지 않으면 404 `CURRICULUM_VERSION_NOT_FOUND`다
      *
      *     **응답 (200)** — 연결된 회차가 없으면 빈 배열
      *
-     *     ## 목록의 `usedProjectCount`와 같은 기준이다
+     *     ## `versionId`를 생략하면 목록의 `usedProjectCount`와 같은 기준이다
      *
      *     이 교안의 **모든 버전**을 쓰는 회차를 모은다. 삭제된 회차는 뺀다.
      *     교안 목록의 `usedProjectCount`가 세는 것과 같은 모집단이라
      *     **`usedProjectCount`와 이 배열의 길이가 일치한다.**
      *
-     *     최신 버전만 보지 않는 이유는 지난 버전으로 연결된 회차가 빠지면 두 숫자가 다시
-     *     갈리기 때문이다 — 화면이 어느 쪽을 믿어야 할지 정할 수 없게 된다.
+     *     모든 버전을 보는 이유는 **삭제 가드**(`CURRICULUM_MATERIAL_IN_USE`)가 이 모집단을
+     *     쓰기 때문이다 — 지난 버전으로 연결된 회차가 빠지면 삭제 버튼이 "쓰는 회차 없음"으로
+     *     읽었는데 실제 삭제는 409로 막히는 어긋남이 생긴다.
+     *
+     *     ## `versionId`를 주면 그 버전만 쓴 회차로 좁혀진다 (2026-08-20, 44차 R3 회신)
+     *
+     *     옛 버전 상세 화면에서 "이 버전이 쓰인 회차"만 보고 싶을 때 쓴다. **삭제 가드에는
+     *     영향이 없다** — `versionId`를 지정해 받은 배열이 비어 있어도(그 버전은 안 쓰였어도)
+     *     다른 버전이 쓰고 있으면 삭제는 여전히 409다. 이 파라미터는 표시용이고, 삭제 가능
+     *     여부는 `versionId` 없이 부른 `usedProjectCount`(교안 전체)로만 판단해야 한다.
+     *     `GET /curricula/{materialId}?versionId=`가 주는 `versionUsedProjectCount`와 같은
+     *     모집단이다.
      *
      *     | 필드 | 설명 |
      *     |---|---|
@@ -7332,16 +7409,43 @@ export interface paths {
      *     | `analysisStatus` | enum? | 최근 분석 시도 상태. **한 번도 안 했으면 null**이며 `FAILED`와 다르다 |
      *     | `teachesCount` | int | 승인된 가르친 항목 수 |
      *     | `createdAt` | date-time | 등록 시각 |
-     *     | `linkedProjects[]` | array | **이 교안을 쓴 회차들**. `projectId` · `projectName` · `sequenceNo` |
+     *     | `linkedProjects[]` | array | **이 행의 버전을 쓴 회차들**. `projectId` · `projectName` · `sequenceNo` ·
+     *       `curriculumVersionId`(2026-08-20, 44차 R2 — 이 행의 `versionId`와 항상 같다) |
      *
-     *     **한 교안이 여러 회차에 걸리면 한 번만 나오고** `linkedProjects[]`에 그 회차가 모두
-     *     담긴다. 이 배열이 이 화면의 맥락 전부라 비어 있는 채로 나오는 일은 없다 —
-     *     연결이 있어야 목록에 들어오기 때문이다.
+     *     **행은 교안이 아니라 버전 단위다.** 한 교안이 여러 회차에 걸려도 **같은 버전**을
+     *     연결한 회차끼리만 `linkedProjects[]`에 함께 담긴다 — 회차마다 다른 버전을 연결했다면
+     *     행이 그만큼 나뉜다. 이 배열이 이 화면의 맥락 전부라 비어 있는 채로 나오는 일은 없다
+     *     — 연결이 있어야 목록에 들어오기 때문이다.
      *
      *     회차 차수는 `sequenceNo`다. 미니프로젝트는 `round_no`가 늘 1이라 그것으로는
      *     차수를 셀 수 없다.
      *
      *     연결이 하나도 없으면 빈 배열이다(기수가 아직 교안을 붙이지 않은 상태이며 정상이다).
+     *
+     *     ## `versionId`가 단수인 이유 — 행이 이미 버전 하나만 대표한다 (2026-08-20, 44차 R2 회신)
+     *
+     *     요청서는 "한 교안이 여러 버전으로 개정돼 회차마다 다른 버전을 연결하면(예: 1차는
+     *     v1, 3차 이후는 v2) 이 행이 어느 버전을 대표하는지 계약이 없다"고 지목했다 — 그런데
+     *     실제로 확인해 보니 **이 조회는 이미 버전 단위로 행을 나누고 있었다.** 위 예시를
+     *     그대로 넣으면:
+     *
+     *     | `versionId` | `versionNo` | `linkedProjects[]` |
+     *     |---|---|---|
+     *     | v1 | 1 | `[{sequenceNo: 1, curriculumVersionId: v1}]` |
+     *     | v2 | 2 | `[{sequenceNo: 3, curriculumVersionId: v2}, …]` |
+     *
+     *     같은 `materialId`가 **두 행**으로 나오고, 각 행의 `linkedProjects[]`에는 **그 행의
+     *     `versionId`를 쓴 회차만** 담긴다 — 요청서가 제안한 "옵션 1(버전 단위로 행 분리)"이
+     *     이미 동작이었다. 요청서가 지목한 것은 동작이 아니라 **이 문서의 옛 문구**("한 교안이
+     *     여러 회차에 걸리면 한 번만 나온다")였다 — 그 문구만 실제와 어긋나 있었다.
+     *
+     *     추가로 요청서의 옵션 2도 함께 반영했다 — `linkedProjects[]`의 각 항목이
+     *     `curriculumVersionId`를 직접 들고 있다(이 행의 `versionId`와 항상 같은 값이다).
+     *     행을 순회하는 코드가 행 묶음 규칙을 몰라도 회차 하나만 보고 바로 버전을 읽을 수
+     *     있도록 하기 위해서다.
+     *
+     *     **상세로 들어갈 때 열 버전은 `GET /curricula/{materialId}?versionId=`로 이 행의
+     *     `versionId`를 그대로 넘기면 된다**(44차 R1로 구현됨).
      */
     get: operations['findCohortLinkedCurricula']
     put?: never
@@ -11910,7 +12014,8 @@ export interface components {
        *     | 값 | 뜻 | 화면 |
        *     |---|---|---|
        *     | `PUBLISHED` | 리포트가 발행됐다 | 결과를 그린다 |
-       *     | `PENDING_PUBLISH` | 리포트를 만드는 중이다 | `리포트가 생성 중입니다` |
+       *     | `PENDING_PUBLISH` | **이해도 확인까지 마쳤고** 리포트를 만드는 중이다 | `리포트가 생성 중입니다` |
+       *     | `IN_PROGRESS` | 응시 기록은 있지만 아직 안 끝났다(제출 전·분석 중·이해도 확인 세션 준비됨·진행 중) — 2026-08-20 추가 | 진행 상황을 그린다. `PENDING_PUBLISH`와 다른 말이어야 한다 |
        *     | `NOT_STARTED` | **제출 마감 전인데 아직 응시 기록이 없다** | 아직 시간이 있다 |
        *     | `NOT_ATTEMPTED` | **마감이 지나도록 응시하지 않았다** | 놓쳤다 — 매니저 안내가 필요하다 |
        *     | `VOID_ATTEMPT` | 무효 응시 검토 중이거나 무효로 확정됐다 | `확인 필요` |
@@ -11924,11 +12029,18 @@ export interface components {
        *     아직 시간이 있는 학생에게 놓쳤다고 말하거나, 정말 놓친 학생에게서 경고가 사라진다(26차 A1).
        *     가르는 축은 **제출 마감**이며, 홈의 `SUBMISSION_REQUIRED` / `SUBMISSION_MISSED`와 같은 값으로
        *     갈리므로 두 화면이 같은 회차를 같은 말로 설명한다.
+       *
+       *     🔴 **`PENDING_PUBLISH`와 `IN_PROGRESS`를 한 문구로 묶지 않는다**(2026-08-20 발견·수정).
+       *     전자는 이해도 확인까지 **다 끝내고** 리포트만 기다리는 것이고, 후자는 **아직 응시 자체를
+       *     끝내지 못한** 것이다 — 코드 제출·분석·이해도 확인 세션 준비 단계에서 이 둘을 섞으면
+       *     학생이 하지도 않은 걸 "응시 완료"로 보게 된다(실사용 재현: 코드 분석 중인 회차가
+       *     "응시 완료"로 표시).
        * @enum {string}
        */
       status:
         | 'PUBLISHED'
         | 'PENDING_PUBLISH'
+        | 'IN_PROGRESS'
         | 'NOT_STARTED'
         | 'NOT_ATTEMPTED'
         | 'VOID_ATTEMPT'
@@ -13703,7 +13815,7 @@ export interface components {
      * @enum {string}
      */
     CurriculumCatalogSort: 'RECENT' | 'NAME' | 'USAGE'
-    /** @description 교안 한 건(최신 버전 기준) */
+    /** @description 교안 한 건(기준 버전 — 목록은 항상 최신, 상세는 `versionId`로 지정 가능) */
     CurriculumCatalogItem: {
       /**
        * Format: uuid
@@ -13712,7 +13824,7 @@ export interface components {
       materialId: string
       /**
        * Format: uuid
-       * @description 최신 교안 버전 ID. 프로젝트에 연결할 때(`POST /projects/{id}/curricula`) 보내는 값
+       * @description 기준 버전 ID(목록은 항상 최신, 상세는 `versionId`로 지정 가능). 프로젝트에 연결할 때(`POST /projects/{id}/curricula`) 보내는 값
        */
       versionId: string
       /**
@@ -13727,7 +13839,7 @@ export interface components {
       originalFileName: string
       /**
        * Format: int32
-       * @description 최신 버전 번호
+       * @description 기준 버전 번호
        * @example 1
        */
       versionNo: number
@@ -13738,20 +13850,20 @@ export interface components {
        */
       pageCount: number | null
       /**
-       * @description 가장 최근 분석 **시도**의 상태. `분석 중`·`분석 완료`·`분석 실패` 배지의 근거다.
-       *     **한 번도 분석하지 않은 교안은 null**이다 — 실패와 구분해야 해서 값을 만들어 넣지 않는다.
+       * @description 기준 버전의 가장 최근 분석 **시도** 상태. `분석 중`·`분석 완료`·`분석 실패` 배지의 근거다.
+       *     **한 번도 분석하지 않은 버전은 null**이다 — 실패와 구분해야 해서 값을 만들어 넣지 않는다.
        *     `POST /curricula/{materialId}/analyses`로 재분석을 건 뒤 이 값을 폴링하면 된다.
        */
       analysisStatus: components['schemas']['CurriculumAnalysisStatus'] | null
       /**
        * Format: int64
-       * @description 가장 최근 **성공한** 분석이 만든 섹션 수. 성공 분석이 없으면 0
+       * @description 기준 버전의 가장 최근 **성공한** 분석이 만든 섹션 수. 성공 분석이 없으면 0
        * @example 12
        */
       sectionCount: number
       /**
        * Format: int64
-       * @description 최신 버전의 승인된(ACTIVE) 개념 수. 화면의 `12섹션 · 개념 48건`에서 뒤 숫자
+       * @description 기준 버전의 승인된(ACTIVE) 개념 수. 화면의 `12섹션 · 개념 48건`에서 뒤 숫자
        * @example 48
        */
       conceptCount: number
@@ -13759,12 +13871,25 @@ export interface components {
        * Format: int64
        * @description 이 교안(모든 버전)을 연결한 **삭제되지 않은** 회차 수. 화면의 `3개 회차에서 사용 중`이며
        *     삭제·교체 판단 근거다. 0이면 아무 회차도 쓰고 있지 않다.
+       *
+       *     **`GET /curricula/{materialId}?versionId=`로 옛 버전을 봐도 이 값은 바뀌지 않는다**
+       *     (2026-08-20, 44차 R1) — 삭제 가드와 같은 모집단을 유지해야 하기 때문이다. 그 버전만의
+       *     개수는 `versionUsedProjectCount`를 쓴다.
        * @example 3
        */
       usedProjectCount: number
       /**
+       * Format: int64
+       * @description 이 행이 대표하는 **그 버전만** 연결한 삭제되지 않은 회차 수(2026-08-20, 44차 R1).
+       *     목록에서는 최신 버전만의 개수이고, `?versionId=`로 옛 버전 상세를 열면 그 버전만의
+       *     개수다. `usedProjectCount`(교안 전체)와 다른 모집단이다 — 삭제 가능 여부는 여전히
+       *     `usedProjectCount`로 판단한다.
+       * @example 1
+       */
+      versionUsedProjectCount: number
+      /**
        * Format: date-time
-       * @description 최신 버전 업로드 시각
+       * @description 기준 버전 업로드 시각
        */
       uploadedAt: string
       /**
@@ -15258,6 +15383,15 @@ export interface components {
        * @example 3
        */
       sequenceNo: number
+      /**
+       * Format: uuid
+       * @description 이 회차가 실제로 연결한 버전 ID(2026-08-20, 44차 R2). 이 행의 `versionId`와
+       *     **항상 같다** — 한 교안이 버전마다 다른 회차에 걸려 있으면 행 자체가 버전
+       *     단위로 나뉘기 때문이다(위 `versionId` 필드 설명 참고). 회차별로 직접 들고
+       *     있으므로, 여러 행을 순회할 때 행 묶음 규칙을 몰라도 회차 → 버전을 바로 읽을
+       *     수 있다.
+       */
+      curriculumVersionId: string
     }
     /**
      * @description 이 기수의 회차에 **실제로 연결된** 교안 한 건입니다(30차 Q2).
@@ -15321,12 +15455,13 @@ export interface components {
        */
       createdAt: string
       /**
-       * @description 이 교안을 연결한 **회차들**이며 차수 오름차순입니다. **비어 있지 않습니다** —
+       * @description 이 행의 `versionId`를 연결한 **회차들**이며 차수 오름차순입니다. **비어 있지 않습니다** —
        *     연결이 있어야 이 목록에 들어옵니다.
        *
-       *     한 교안이 여러 회차에 걸리면 교안은 한 번만 나오고 그 회차들이 여기 모입니다.
-       *     이 값이 없으면 기관 전체 교안 목록과 구분되지 않습니다 — 「이 교안이 3차에 쓰였다」가
-       *     이 화면의 맥락 전부입니다.
+       *     **(2026-08-20 정정, 44차 R2)** 묶는 단위는 교안이 아니라 **버전**입니다 — 같은 교안이라도
+       *     회차마다 다른 버전을 연결했다면 행이 나뉘고, 여기에는 **이 행의 버전만** 쓴 회차만
+       *     모입니다. 이 값이 없으면 기관 전체 교안 목록과 구분되지 않습니다 — 「이 버전이 3차에
+       *     쓰였다」가 이 화면의 맥락 전부입니다.
        */
       linkedProjects: components['schemas']['CohortCurriculumLinkedProject'][]
     }
@@ -19010,6 +19145,56 @@ export interface operations {
       }
     }
   }
+  findCurriculumVersionHistory: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description 교안 ID(버전이 바뀌어도 유지되는 고정 식별자) */
+        materialId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 버전 이력 조회 성공 */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CurriculumVersionResponse'][]
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description CURRICULUM_MATERIAL_NOT_FOUND 그 기관에 그 교안이 없음 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
   registerCurriculumVersion: {
     parameters: {
       query?: {
@@ -19080,7 +19265,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description CURRICULUM_TITLE_DUPLICATED title을 보냈는데 다른 교안이 이미 그 제목을 쓰고 있음 */
+      /** @description CURRICULUM_TITLE_DUPLICATED title을 보냈는데 다른 교안이 이미 그 제목을 쓰고 있음 또는 CURRICULUM_VERSION_CONTENT_DUPLICATED 이 교안의 다른 버전과 파일 내용이 완전히 같음(2026-08-20, 45차 R1 조사 중 발견 — 종전엔 코드 없는 500이었다) */
       409: {
         headers: {
           [name: string]: unknown
@@ -24250,7 +24435,10 @@ export interface operations {
   }
   findCurriculum: {
     parameters: {
-      query?: never
+      query?: {
+        /** @description 특정 옛 버전의 머리글을 보고 싶을 때 그 버전 ID. 생략하면 최신 버전으로 해석한다. */
+        versionId?: string
+      }
       header?: never
       path: {
         /** @description 교안 ID(버전이 바뀌어도 유지되는 고정 식별자) */
@@ -24287,7 +24475,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(다른 기관의 교안도 여기로 온다) */
+      /** @description CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(다른 기관의 교안도 여기로 온다) 또는 CURRICULUM_VERSION_NOT_FOUND versionId를 넘겼는데 그 버전이 없거나 이 교안의 버전이 아님(44차 R1) */
       404: {
         headers: {
           [name: string]: unknown
@@ -24357,7 +24545,10 @@ export interface operations {
   }
   findSections: {
     parameters: {
-      query?: never
+      query?: {
+        /** @description 특정 옛 버전의 섹션을 보고 싶을 때 그 버전 ID. 생략하면 최신 버전으로 해석한다. */
+        versionId?: string
+      }
       header?: never
       path: {
         /** @description 교안 ID(버전이 바뀌어도 유지되는 고정 식별자) */
@@ -24394,7 +24585,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description CURRICULUM_MATERIAL_NOT_FOUND 그 기관에 그 교안이 없음(영구적) */
+      /** @description CURRICULUM_MATERIAL_NOT_FOUND 그 기관에 그 교안이 없음(영구적) 또는 CURRICULUM_VERSION_NOT_FOUND versionId를 넘겼는데 그 버전이 없거나 이 교안의 버전이 아님 */
       404: {
         headers: {
           [name: string]: unknown
@@ -24403,7 +24594,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description CURRICULUM_ANALYSIS_NOT_COMPLETED 최신 버전에 성공한 분석이 아직 없음(일시적 — 화면은 `분석이 끝나면 고를 수 있습니다`를 안내한다). **18차 R1로 503에서 내렸다** — 503은 인프라 신호라 프론트 전역 재시도와 프록시가 그대로 밟아 응답이 화면에 닿지 못했다 */
+      /** @description CURRICULUM_ANALYSIS_NOT_COMPLETED 대상 버전에 성공한 분석이 아직 없음(일시적 — 화면은 `분석이 끝나면 고를 수 있습니다`를 안내한다) 또는 CURRICULUM_ANALYSIS_FAILED 가장 최근 분석이 실패로 끝남(영구적 — 화면은 재분석을 안내한다). **18차 R1로 503에서 내렸다** — 503은 인프라 신호라 프론트 전역 재시도와 프록시가 그대로 밟아 응답이 화면에 닿지 못했다 */
       409: {
         headers: {
           [name: string]: unknown
@@ -24416,7 +24607,10 @@ export interface operations {
   }
   findUsedProjects: {
     parameters: {
-      query?: never
+      query?: {
+        /** @description 특정 버전만 쓴 회차로 좁힌다. 생략하면 모든 버전(종전과 동일, usedProjectCount와 같은 기준). */
+        versionId?: string
+      }
       header?: never
       path: {
         /** @description 교안 ID(버전이 바뀌어도 유지되는 고정 식별자) */
@@ -24453,7 +24647,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(다른 기관의 교안 포함) */
+      /** @description CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(다른 기관의 교안 포함) 또는 CURRICULUM_VERSION_NOT_FOUND versionId를 넘겼는데 그 버전이 없거나 이 교안의 버전이 아님(44차 R3) */
       404: {
         headers: {
           [name: string]: unknown

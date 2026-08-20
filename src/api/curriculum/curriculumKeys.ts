@@ -1,11 +1,15 @@
 /* 자동 생성 — 손으로 고치지 마세요. 다시 만들려면: npm run api:gen */
 
 import type {
+  findCurriculumVersionHistory_Path,
   findOrganizationCurricula_Path,
   findOrganizationCurricula_Query,
   findCurriculum_Path,
+  findCurriculum_Query,
   findSections_Path,
+  findSections_Query,
   findUsedProjects_Path,
+  findUsedProjects_Query,
   findComparableCohorts_Query,
   findCohortLinkedCurricula_Path,
   findLinkableCurricula_Path,
@@ -18,6 +22,8 @@ import type {
 */
 export const curriculumKeys = {
   all: ['curriculum'] as const,
+  findCurriculumVersionHistory: (params: { path: findCurriculumVersionHistory_Path }) =>
+    [...curriculumKeys.all, 'findCurriculumVersionHistory', params.path ?? null] as const,
   findOrganizationCurricula: (params: {
     path: findOrganizationCurricula_Path
     query?: findOrganizationCurricula_Query
@@ -28,12 +34,12 @@ export const curriculumKeys = {
       params.path ?? null,
       params.query ?? null,
     ] as const,
-  findCurriculum: (params: { path: findCurriculum_Path }) =>
-    [...curriculumKeys.all, 'findCurriculum', params.path ?? null] as const,
-  findSections: (params: { path: findSections_Path }) =>
-    [...curriculumKeys.all, 'findSections', params.path ?? null] as const,
-  findUsedProjects: (params: { path: findUsedProjects_Path }) =>
-    [...curriculumKeys.all, 'findUsedProjects', params.path ?? null] as const,
+  findCurriculum: (params: { path: findCurriculum_Path; query?: findCurriculum_Query }) =>
+    [...curriculumKeys.all, 'findCurriculum', params.path ?? null, params.query ?? null] as const,
+  findSections: (params: { path: findSections_Path; query?: findSections_Query }) =>
+    [...curriculumKeys.all, 'findSections', params.path ?? null, params.query ?? null] as const,
+  findUsedProjects: (params: { path: findUsedProjects_Path; query?: findUsedProjects_Query }) =>
+    [...curriculumKeys.all, 'findUsedProjects', params.path ?? null, params.query ?? null] as const,
   findComparableCohorts: (params: { query?: findComparableCohorts_Query }) =>
     [...curriculumKeys.all, 'findComparableCohorts', params.query ?? null] as const,
   findCohortLinkedCurricula: (params: { path: findCohortLinkedCurricula_Path }) =>

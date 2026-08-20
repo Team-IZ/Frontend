@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { REACH_STYLE, NA_PATTERN } from '@/components/common/reach'
 import { cn } from '@/lib/utils/cn'
 import type { DetailRound } from '../_/api/types'
@@ -19,9 +20,22 @@ const LEGEND_BG: Record<0 | 1 | 2 | 3 | 4, string> = {
   안 된다. 칸 수도 3 고정이 아니다.
 
   ponytail: "이 회차 반에서 보기 ↗"(MG-02로 가는 링크)는 히트맵이 붙으면 그때 단다.
+
+  🔴 **예전 회차를 `slice(-3)`로 아예 잘라 냈었다** — 최근 3회차만 그리고 그 앞은
+  DOM에도 없어서 스크롤해도 볼 수 없었다(사용자 지적). 컨테이너가 이미
+  `overflow-x-auto`라 스크롤은 있었는데 자를 데이터가 없었던 것 — 전부 그리고
+  **스크롤 위치만 오른쪽 끝(최신)으로** 맞춰서, 처음 보는 화면은 그대로 최근
+  3회차이되 왼쪽으로 스크롤하면 이전 회차가 나오게 한다.
 */
 export function RoundReachGrid({ rounds }: { rounds: DetailRound[] }) {
-  const attended = rounds.filter((r) => r.attended).slice(-3)
+  const attended = rounds.filter((r) => r.attended)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  // 처음 그릴 때(그리고 회차 수가 바뀔 때) 오른쪽 끝(최신 회차)으로 스크롤해 둔다
+  useEffect(() => {
+    const el = scrollRef.current
+    if (el) el.scrollLeft = el.scrollWidth
+  }, [attended.length])
 
   if (attended.length === 0) {
     return (
@@ -38,7 +52,9 @@ export function RoundReachGrid({ rounds }: { rounds: DetailRound[] }) {
     <div className="mb-4 rounded-md border border-border bg-surface p-5">
       <div className="mb-3 flex items-baseline gap-2">
         <p className="text-sm font-bold">회차별 도달 단계</p>
-        <p className="text-xs text-fg-subtle">· 최근 {attended.length}회차</p>
+        <p className="text-xs text-fg-subtle">
+          · 전체 {attended.length}회차{attended.length > 3 && ' · ← 스크롤하면 이전 회차'}
+        </p>
         <div className="ml-auto flex items-center gap-1 text-2xs text-fg-subtle">
           <span>취약</span>
           {([0, 1, 2, 3, 4] as const).map((l) => (
@@ -50,7 +66,7 @@ export function RoundReachGrid({ rounds }: { rounds: DetailRound[] }) {
         </div>
       </div>
 
-      <div className="flex items-start overflow-x-auto">
+      <div ref={scrollRef} className="flex items-start overflow-x-auto">
         {attended.map((round, i) => {
           const isCurrent = i === attended.length - 1
           return (

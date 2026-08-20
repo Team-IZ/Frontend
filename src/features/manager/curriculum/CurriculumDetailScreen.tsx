@@ -10,6 +10,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 import { SlowNotice } from '@/components/common/Loading'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import { errorCopy } from '@/lib/errorCopy'
 import { formatDate } from '@/lib/format'
 import { useManagerCohort } from '@/stores/cohortScope'
@@ -156,7 +157,12 @@ export default function CurriculumDetailScreen() {
     )
   }
 
-  if (head.isError || !head.data) {
+  if (!head.data) {
+    /*
+      D41 — `head.data`가 아예 없을 때(최초 진입 실패·404 포함)만 이 화면으로 막는다.
+      배경 재조회만 실패했으면 아래 정상 렌더에서 배너로만 알린다(D46 패턴,
+      decision-log D47).
+    */
     return shell(
       <div className="mx-auto max-w-3xl">
         <BackRow title="교안 상세" cohortId={cohortId} />
@@ -174,6 +180,17 @@ export default function CurriculumDetailScreen() {
 
   return shell(
     <>
+      {head.isError && (
+        <Alert variant="warning" className="mb-4">
+          <AlertTitle>교안 정보를 새로고침하지 못했습니다</AlertTitle>
+          <AlertDescription>마지막으로 불러온 정보를 보여드리고 있어요.</AlertDescription>
+          <AlertAction>
+            <Button variant="ghost" size="sm" onClick={() => void head.refetch()}>
+              다시 시도
+            </Button>
+          </AlertAction>
+        </Alert>
+      )}
       <div className="[&_h1]:sr-only">
         <PageHeader
           breadcrumb={['교안', cohortName, label].filter(Boolean).join(' › ')}
@@ -245,7 +262,7 @@ export default function CurriculumDetailScreen() {
               <SectionSkeleton rows={c.sectionCount} />
               <SlowNotice />
             </>
-          ) : isAnalysisIncomplete(sections.error) ? (
+          ) : isAnalysisIncomplete(sections.error) && !sections.data ? (
             /* 아직 분석이 안 끝난 것 — 실패와 다른 말을 한다 */
             <Empty>
               <EmptyHeader>
@@ -257,8 +274,12 @@ export default function CurriculumDetailScreen() {
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
-          ) : sections.isError ? (
+          ) : sections.isError && !sections.data ? (
             /*
+              D41 — `sections.data`가 아예 없을 때만 이 화면들로 막는다(위 분기도
+              같이 좁혔다). 배경 재조회만 실패했으면 아래 정상 렌더에서 배너로만
+              알린다(D46 패턴, decision-log D47).
+
               🔴 **교안 탓을 하지 않는다**(하드닝 실측). 500을 가로챘더니 화면이
               「구조를 추출하지 못했습니다 · 재분석은 오퍼레이터가 진행합니다」라고
               말했다 — 서버가 실패한 것을 **교안 분석이 실패한 것으로** 옮겨
@@ -282,20 +303,35 @@ export default function CurriculumDetailScreen() {
               )
             })()
           ) : (
-            <SectionExplorer
-              curriculumLabel={label}
-              sections={sections.data ?? []}
-              uploadedAt={c.uploadedAt}
-              pageCount={c.pageCount}
-            />
+            <>
+              {sections.isError && (
+                <Alert variant="warning" className="mb-3">
+                  <AlertTitle>섹션을 새로고침하지 못했습니다</AlertTitle>
+                  <AlertDescription>마지막으로 불러온 섹션을 보여드리고 있어요.</AlertDescription>
+                  <AlertAction>
+                    <Button variant="ghost" size="sm" onClick={() => void sections.refetch()}>
+                      다시 시도
+                    </Button>
+                  </AlertAction>
+                </Alert>
+              )}
+              <SectionExplorer
+                curriculumLabel={label}
+                sections={sections.data ?? []}
+                uploadedAt={c.uploadedAt}
+                pageCount={c.pageCount}
+              />
+            </>
           )}
         </TabsContent>
 
         <TabsContent value="used">
           {!used.data && !used.isError ? (
             <UsedSkeleton />
-          ) : used.isError || !used.data ? (
+          ) : !used.data ? (
             /*
+              D41 — `used.data`가 아예 없을 때만 막는다(decision-log D47).
+
               🔴 **실패를 「아직 없다」로 그리고 있었다.** 분기가 `isPending`과 그
               나머지뿐이라, 조회가 500이면 `used.data`가 `undefined`가 되고
               `?? []`가 빈 배열로 만들어 **「이 교안을 쓰는 프로젝트가 아직 없습니다」**가
@@ -321,7 +357,20 @@ export default function CurriculumDetailScreen() {
               )
             })()
           ) : (
-            <UsedRoundsTable rounds={used.data} />
+            <>
+              {used.isError && (
+                <Alert variant="warning" className="mb-3">
+                  <AlertTitle>쓰인 프로젝트를 새로고침하지 못했습니다</AlertTitle>
+                  <AlertDescription>마지막으로 불러온 목록을 보여드리고 있어요.</AlertDescription>
+                  <AlertAction>
+                    <Button variant="ghost" size="sm" onClick={() => void used.refetch()}>
+                      다시 시도
+                    </Button>
+                  </AlertAction>
+                </Alert>
+              )}
+              <UsedRoundsTable rounds={used.data} />
+            </>
           )}
         </TabsContent>
       </Tabs>

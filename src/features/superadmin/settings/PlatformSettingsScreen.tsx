@@ -3,6 +3,7 @@ import PageHeader from '@/components/common/PageHeader'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/Tabs'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { useFindModelSettings } from '@/api/platform/usePlatformQueries'
 import ModelPricingTab from './components/ModelPricingTab'
@@ -34,7 +35,18 @@ export default function PlatformSettingsScreen() {
         </TabsList>
 
         <TabsContent value="model">
-          {isError ? (
+          {isPending ? (
+            <div className="flex flex-col gap-4">
+              <Skeleton className="h-[140px] w-full" />
+              <Skeleton className="h-[189px] w-full" />
+              <Skeleton className="h-[207px] w-full" />
+            </div>
+          ) : isError && !data ? (
+            /*
+              D41 — `data`가 아예 없을 때(최초 진입 실패)만 전면 에러로 막는다. 원래
+              `isError`를 `isPending`보다 먼저 검사해서, 최초 로딩 뒤 배경 재조회만
+              실패해도(`data`는 남아 있는데) 전면 에러가 떴다(D46 패턴, decision-log D47).
+            */
             <Empty>
               <EmptyHeader>
                 <EmptyTitle>설정을 불러오지 못했습니다</EmptyTitle>
@@ -44,12 +56,6 @@ export default function PlatformSettingsScreen() {
                 다시 시도
               </Button>
             </Empty>
-          ) : isPending ? (
-            <div className="flex flex-col gap-4">
-              <Skeleton className="h-[140px] w-full" />
-              <Skeleton className="h-[189px] w-full" />
-              <Skeleton className="h-[207px] w-full" />
-            </div>
           ) : !data.gradingPolicy ? (
             // 스펙(schema.d.ts findModelSettings 응답 주석): "gradingPolicy가 null이면
             // 플랫폼 초기 설정 전 — 화면은 빈 상태를 그려야 한다(오류가 아니다)."
@@ -65,7 +71,20 @@ export default function PlatformSettingsScreen() {
               </EmptyHeader>
             </Empty>
           ) : (
-            <ModelPricingTab settings={data} />
+            <>
+              {isError && (
+                <Alert variant="warning" className="mb-3">
+                  <AlertTitle>설정을 새로고침하지 못했습니다</AlertTitle>
+                  <AlertDescription>마지막으로 불러온 설정을 보여드리고 있어요.</AlertDescription>
+                  <AlertAction>
+                    <Button variant="ghost" size="sm" onClick={() => void refetch()}>
+                      다시 시도
+                    </Button>
+                  </AlertAction>
+                </Alert>
+              )}
+              <ModelPricingTab settings={data} />
+            </>
           )}
         </TabsContent>
 

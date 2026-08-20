@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { AlertTriangleIcon } from 'lucide-react'
 import { Card } from '@/components/ui/Card'
 import { Progress } from '@/components/ui/Progress'
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
+import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import { Badge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { Button } from '@/components/ui/Button'
@@ -148,7 +148,11 @@ export default function OverviewTab({ org }: { org: Org }) {
         <MetricCard
           label="저장량"
           value={
-            usage.isPending || usage.isError ? '—' : formatBytes(usage.data.storage.totalBytes)
+            /*
+              D41 — 값 유무로 가른다. 배경 재조회만 실패했어도 `usage.data`가 남아
+              있으면 그 값을 계속 보여준다(decision-log D47).
+            */
+            usage.data ? formatBytes(usage.data.storage.totalBytes) : '—'
           }
           sub={
             usage.isError ? (
@@ -211,7 +215,12 @@ export default function OverviewTab({ org }: { org: Org }) {
 function CohortTable({ query }: { query: ReturnType<typeof useFindOrganizationCohorts> }) {
   if (query.isPending) return <Skeleton className="h-32 w-full" />
 
-  if (query.isError) {
+  /*
+    D41 — `query.data`가 아예 없을 때(최초 진입 실패)만 전면 에러로 막는다. 배경
+    재조회만 실패했으면 아래에서 배너로만 알리고 캐시된 표를 그대로 그린다
+    (D46 패턴, decision-log D47).
+  */
+  if (query.isError && !query.data) {
     return (
       <Empty>
         <EmptyHeader>
@@ -226,43 +235,61 @@ function CohortTable({ query }: { query: ReturnType<typeof useFindOrganizationCo
   }
 
   const rows = query.data.content
+  const staleBanner = query.isError && (
+    <Alert variant="warning" className="mb-3">
+      <AlertTitle>기수 목록을 새로고침하지 못했습니다</AlertTitle>
+      <AlertDescription>마지막으로 불러온 목록을 보여드리고 있어요.</AlertDescription>
+      <AlertAction>
+        <Button variant="ghost" size="sm" onClick={() => void query.refetch()}>
+          다시 시도
+        </Button>
+      </AlertAction>
+    </Alert>
+  )
+
   if (rows.length === 0) {
     return (
-      <p className="text-fg-subtle rounded-md border border-dashed border-border-strong bg-surface-2 p-6 text-center text-sm">
-        아직 개설된 기수가 없습니다.
-      </p>
+      <>
+        {staleBanner}
+        <p className="text-fg-subtle rounded-md border border-dashed border-border-strong bg-surface-2 p-6 text-center text-sm">
+          아직 개설된 기수가 없습니다.
+        </p>
+      </>
     )
   }
 
   return (
-    <Table>
-      <TableHeader>
-        <TableRow className="hover:bg-transparent">
-          <TableHead className="w-32">기수</TableHead>
-          <TableHead className="w-28">상태</TableHead>
-          <TableHead className="w-20 text-right">반</TableHead>
-          <TableHead className="w-24 text-right">교육생</TableHead>
-          <TableHead>기간</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {rows.map((c) => {
-          const badge = cohortStatusBadge(c.status)
-          const period = formatPeriod(c.startDate, c.endDate)
-          return (
-            <TableRow key={c.cohortId}>
-              <TableCell className="font-bold">{c.name}</TableCell>
-              <TableCell>
-                <Badge variant={badge.variant}>{badge.label}</Badge>
-              </TableCell>
-              <TableCell className="text-right tabular-nums">{c.classCount}</TableCell>
-              <TableCell className="text-right tabular-nums">{c.traineeCount}</TableCell>
-              <TableCell className="text-fg-muted text-xs">{period ?? '—'}</TableCell>
-            </TableRow>
-          )
-        })}
-      </TableBody>
-    </Table>
+    <>
+      {staleBanner}
+      <Table>
+        <TableHeader>
+          <TableRow className="hover:bg-transparent">
+            <TableHead className="w-32">기수</TableHead>
+            <TableHead className="w-28">상태</TableHead>
+            <TableHead className="w-20 text-right">반</TableHead>
+            <TableHead className="w-24 text-right">교육생</TableHead>
+            <TableHead>기간</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((c) => {
+            const badge = cohortStatusBadge(c.status)
+            const period = formatPeriod(c.startDate, c.endDate)
+            return (
+              <TableRow key={c.cohortId}>
+                <TableCell className="font-bold">{c.name}</TableCell>
+                <TableCell>
+                  <Badge variant={badge.variant}>{badge.label}</Badge>
+                </TableCell>
+                <TableCell className="text-right tabular-nums">{c.classCount}</TableCell>
+                <TableCell className="text-right tabular-nums">{c.traineeCount}</TableCell>
+                <TableCell className="text-fg-muted text-xs">{period ?? '—'}</TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
+    </>
   )
 }
 

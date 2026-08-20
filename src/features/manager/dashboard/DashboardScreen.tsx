@@ -142,8 +142,13 @@ export default function DashboardScreen() {
     )
   }
 
-  if (inbox.isError || !data) {
+  if (!data) {
     /*
+      D41 — `data`가 아예 없을 때(최초 진입 실패)만 전면 에러로 막는다. 배경
+      재조회만 실패했으면(`projects.isError`나 `progress.isError`) 아래 정상
+      렌더에서 배너로만 알린다 — `useInbox`(`_/api/api.ts`)는 이미 그렇게
+      짜여 있었고, 버그는 이 화면의 소비 조건에 있었다(D46 패턴, decision-log D47).
+
       ⚠ `action`을 주지 않는다 — 이 인자는 **어간**을 받아 `${action}하지`로 붙는다
       (「삭제」→「삭제하지」). 「불러오기」를 넘겼더니 **「불러오기하지 못했습니다」**가
       나왔다(가로채기에서 잡았다). 빼면 기본이 「불러오지 못했습니다」다.
@@ -166,6 +171,17 @@ export default function DashboardScreen() {
 
   return shell(
     <>
+      {inbox.isError && (
+        <Alert variant="warning" className="mb-4">
+          <AlertTitle>할 일 목록을 새로고침하지 못했습니다</AlertTitle>
+          <AlertDescription>마지막으로 불러온 목록을 보여드리고 있어요.</AlertDescription>
+          <AlertAction>
+            <Button variant="ghost" size="sm" onClick={inbox.refetch}>
+              다시 시도
+            </Button>
+          </AlertAction>
+        </Alert>
+      )}
       <RunLine
         projects={data.projects}
         projectId={data.projectId}

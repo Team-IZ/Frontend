@@ -990,3 +990,63 @@ git에는 `pre-stash`·`pre-reset` 훅이 없다. 그래서 Claude Code의 `PreT
   (설정 폼)·`manager/interviews/InterviewBriefScreen.tsx`(mutation 섞임)·
   `trainee/session/SessionScreen.tsx`(응시 중 화면)·`isError` 2~3회 등장하는 화면 8개는
   이번에도 손대지 않았다 — 다음 배치의 시작점은 여전히 그 목록이다.
+
+## D47 · SPA 내비게이션 캐시 무효화 배치 3 — 9개 화면(설정·상세·분석·목록·리포트·대시보드), `DashboardScreen.tsx`는 훅이 아니라 화면 쪽이 원인이었다
+
+- **배경:** D46이 다음 배치 시작점으로 남긴 목록 — `PlatformSettingsScreen.tsx`(설정 폼)·
+  `InterviewBriefScreen.tsx`(mutation 섞임)·`SessionScreen.tsx`(응시 중 화면)·`isError`
+  2~3회 등장하는 8개(`TraineeDetailScreen`·`AnalysisScreen`·`ProjectListScreen`·
+  `ReportScreen`·`OverviewTab`·`CurriculumDetailScreen`(매니저·오퍼레이터)·
+  `dashboard/_/api/api.ts`)를 이슈 #304로 착수. 뮤테이션이 섞였거나 응시 중처럼 렌더
+  확인 리스크가 다른 `InterviewBriefScreen.tsx`·`SessionScreen.tsx`는 이번에도 분리하고,
+  나머지 9개(`api.ts` 대신 실제 소비자인 `DashboardScreen.tsx`로 바뀜 — 아래 참고)를
+  한 배치로 묶었다.
+- **`manager/dashboard/_/api/api.ts`는 손대지 않았다 — 훅 자체는 이미 D41 정책대로
+  짜여 있었다.** `useInbox`가 반환하는 `data`는 `!projects.data`일 때만 `undefined`이고,
+  `projects.isError`나 `progress.isError`는 별도 `isError` 필드로만 노출한다(`data`를
+  지우지 않는다). **버그는 그 훅을 쓰는 `DashboardScreen.tsx` 145행에 있었다** —
+  `inbox.isError || !data` 조건이 `data`가 있어도 `isError`면 전면 에러로 덮었다.
+  D46 목록에는 `api.ts`로 적혀 있었지만 실제 수정 대상은 소비자 화면이었다는 것을
+  이번에 확인함 — 데이터 계층 훅과 그 훅을 쓰는 화면을 한 항목으로 뭉뚱그리면 원인이
+  어느 쪽인지 놓칠 수 있다는 교훈.
+- **수정 — 9개 파일 모두 같은 두 가지.** 전면 실패 조건을 `!X.data`로 좁히고(원래
+  `X.isError`가 스켈레톤·`isPending`보다 먼저 검사되던 `PlatformSettingsScreen.tsx`·
+  `AnalysisScreen.tsx`의 두 조회는 검사 순서 자체를 옮겼다), `X.isError && X.data`일 때
+  공용 `Alert`(warning) 배너를 얹었다.
+- **(정정) 최초 구현에서 배너에 `AlertAction`(다시 시도 버튼)을 빠뜨렸다 — 진용님이
+  로컬 렌더 확인 중 발견해 신고.** D46 `ClassesTab.tsx` 참고 패턴에 있는
+  `<AlertAction><Button variant="ghost" size="sm" onClick={() => void X.refetch()}>다시
+  시도</Button></AlertAction>` 블록을 제목·설명만 옮기고 누락했다. 9개 파일, 총 15개
+  배너(`TraineeDetailScreen.tsx`·`AnalysisScreen.tsx`·`CurriculumDetailScreen.tsx`
+  매니저·오퍼레이터는 배너 2~3개) 전부에 추가하고 각 배너가 속한 조회의 `refetch`를
+  연결(`DashboardScreen.tsx`의 `inbox.refetch`만 기존 관례대로 감싸지 않고 그대로 전달).
+  `npx prettier --check`·`npm run typecheck` 재확인 통과.
+  - `PlatformSettingsScreen.tsx` — `isError ? … : isPending ? … : !data.gradingPolicy ? …`
+    순서를 `isPending ? … : isError && !data ? … : !data.gradingPolicy ? …`로 재배열.
+  - `TraineeDetailScreen.tsx`(매니저) — `detail`·`timeline` 두 조회.
+  - `AnalysisScreen.tsx`(오퍼레이터) — `grid`·`compare` 두 조회. `grid.isError`가
+    `needs`(팀 계층 선택 유도) 검사보다 먼저였던 순서는 그대로 두고 조건만 `&& !g`로 좁힘.
+  - `ProjectListScreen.tsx`(오퍼레이터) — `page`.
+  - `ReportScreen.tsx`(오퍼레이터) — `report`. 배너에 `print:hidden`을 붙였다 — 인쇄
+    문서에 화면 전용 안내가 찍히면 안 된다(`ReportHead` 위 `PageHeader`와 같은 처리).
+  - `OverviewTab.tsx`(슈퍼어드민) — 저장량 카드 값이 `usage.isPending || usage.isError`일
+    때 `—`를 그리던 것을 `usage.data` 유무로만 판정하도록 바꿔 캐시된 값을 살렸다.
+    `CohortTable`(기수 표)도 같은 패턴.
+  - `CurriculumDetailScreen.tsx`(매니저·오퍼레이터 각각) — `head`/`curriculum`·
+    `sections`·`used`/`usedProjects` 세 조회 전부. 매니저 쪽은 `isAnalysisIncomplete`
+    분기도 `&& !sections.data`로 같이 좁혔다 — 배경 재조회가 우연히 "분석 미완료"류
+    에러코드를 물면 이미 있던 섹션 데이터를 지울 수 있었다.
+  - `DashboardScreen.tsx`(매니저) — 위 설명대로 `inbox.isError || !data` → `!data`.
+- **검산 — 이번에도 부분적.** 9개 파일 전부 이 세션에서 구조를 정독하고 조건·JSX
+  중첩을 직접 확인했다. `tsc -b`·`oxlint`·`npx prettier --write`(프로젝트 설정 기준)는
+  이 세션 환경 한계(45초 타임아웃, 마운트 `node_modules` 네이티브 바인딩 깨짐)로 아직
+  못 돌렸다 — **9개 화면 전부 진용님 로컬 typecheck·lint·prettier와 DevTools "요청 URL
+  차단" 렌더 확인이 병합 전 필요.**
+- **PR 구성 — 9개 화면을 한 이슈·한 PR로 묶는다**(이슈 #304). 코드 9 + 문서 1 = 10개로
+  git-convention.md "파일 10개 이내" 경계에 걸치지만, 전부 D41·D46과 같은 정책·같은
+  패턴이라는 근거는 동일하다.
+- **목적·효과:** D46이 남긴 배치 3 후보 중 뮤테이션·응시 중 화면을 뺀 나머지를 정리해
+  D41 결함 클래스의 남은 범위를 좁혔다. 다음 배치(4)는 `InterviewBriefScreen.tsx`
+  (원인·조회 에러가 섞인 배너 위치 설계 필요)·`SessionScreen.tsx`(`session.isError ||
+  !active` → `session.isError && !active`로 고칠 지점은 명확하나, 응시 중 화면이라
+  병합 전 로컬 렌더 확인이 특히 중요해 분리) 둘만 남는다.

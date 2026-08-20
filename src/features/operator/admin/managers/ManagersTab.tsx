@@ -1,7 +1,7 @@
 import StaleBlock from '@/components/common/StaleBlock'
 import { useState } from 'react'
 import { TriangleAlertIcon } from 'lucide-react'
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
+import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import {
@@ -251,19 +251,37 @@ export default function ManagersTab() {
         />
       </div>
 
+      {/* D41 — 배경 재조회 실패로 이미 보여준 매니저 목록을 덮지 않는다(D46, operator/admin 배치) */}
+      {page.isError && page.data && (
+        <Alert variant="warning" className="mb-4">
+          <AlertTitle>매니저 목록을 새로고침하지 못했습니다</AlertTitle>
+          <AlertDescription>마지막으로 불러온 목록을 보여드리고 있어요.</AlertDescription>
+          <AlertAction>
+            <Button variant="ghost" size="sm" onClick={() => void page.refetch()}>
+              다시 시도
+            </Button>
+          </AlertAction>
+        </Alert>
+      )}
+
       {page.isLoading ? (
         <TableSkeleton
           rows={PAGE_SIZE}
           cols={['w-28', 'w-52', 'w-20', 'w-36', 'w-24', 'w-24', 'w-32', 'w-40']}
         />
-      ) : page.isError ? (
+      ) : !page.data ? (
+        /*
+          D41 — `page.data`가 아예 없을 때(최초 진입 실패)만 전면 에러로 막는다.
+          배경 재조회만 실패한 경우는 위 배너가 알리고 아래 분기에서 기존 표를 그대로
+          보여준다(D46 — operator/admin 5개 탭 배치, decision-log.md 참고).
+        */
         <ErrorState
           error={page.error}
           subject="매니저"
           onRetry={() => void page.refetch()}
           retrying={page.isFetching}
         />
-      ) : !page.data || page.data.content.length === 0 ? (
+      ) : page.data.content.length === 0 ? (
         narrowed ? (
           <Empty variant="empty">
             <EmptyHeader>

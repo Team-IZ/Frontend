@@ -293,7 +293,13 @@ export default function InterviewListScreen() {
           cols={['w-[8%]', 'w-[14%]', 'w-[11%]', 'w-[27%]', 'w-[24%]', 'w-[16%]']}
           footerH={16}
         />
-      ) : (rounds.isError || list.isError) && !data ? (
+      ) : !data ? (
+        /*
+          D41 — `X.isError && !data`가 아니라 `!data`만 쓰는 이유는 HeatmapScreen.tsx의
+          같은 주석 참고. 위 스켈레톤 분기가 `!data && !rounds.isError && !list.isError`를
+          이미 걸러내서, 여기 남는 `!data`는 항상 에러 케이스이면서 TS가 아래 `data` 사용을
+          narrowing할 수 있다(`X.isError && !data`로 쓰면 21곳 TS18048 에러 실측).
+        */
         <Empty>
           <EmptyHeader>
             <EmptyTitle>목록을 불러오지 못했습니다</EmptyTitle>

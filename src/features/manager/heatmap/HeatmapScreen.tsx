@@ -248,7 +248,15 @@ export default function HeatmapScreen() {
           **값이 있나 없나**로 가른다.
         */
         <HeatmapSkeleton cols={lastCols} rows={lastRows} />
-      ) : (rounds.isError || heatmap.isError) && !view ? (
+      ) : !view ? (
+        /*
+          D41 — 여기서 `isError` 체크를 다시 안 하는 건 위 스켈레톤 분기가 이미
+          `!view && !rounds.isError && !heatmap.isError`(로딩 중)를 걸러냈기 때문 —
+          그 분기를 통과하고도 `!view`면 남는 경우는 하나뿐이다(rounds/heatmap 둘 중
+          하나가 에러). `X.isError && !view`로 다시 쓰면 로직은 같아도 TS가 아래
+          `view` 사용처에서 undefined narrowing을 못 해 `tsc`가 21곳에서 떨어진다
+          (실측, 진용님 로컬 typecheck) — `!view` 단독이 narrowing도 되고 뜻도 같다.
+        */
         <Empty>
           <EmptyHeader>
             <EmptyTitle>불러오지 못했습니다</EmptyTitle>

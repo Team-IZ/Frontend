@@ -343,13 +343,19 @@ export default function TraineeListScreen() {
           rowH={57.3}
           footerH={44}
         />
-      ) : roster.isError && !view ? (
+      ) : !view ? (
         /*
           D41 — `view`(roster.data)가 아예 없을 때(최초 진입 실패·캐시 만료)만 전면
           에러로 막는다. `view`가 있는데 배경 재조회만 실패한 경우는 아래 분기에서
           기존 명단을 그대로 보여주고 조용한 배너로만 알린다 — 안 그러면 사이드바
           재진입마다 이미 보여준 정상 명단이 배경 재조회 실패 하나로 지워진다
           (OrgListScreen·SA-01 파일럿과 같은 결함 클래스, decision-log.md D41 참고).
+
+          조건이 `roster.isError && !view`가 아니라 `!view`인 이유 — 위 스켈레톤 분기가
+          `!view && !roster.isError`를 이미 걸러내서, 여기 남는 `!view`는 항상
+          `roster.isError`인 케이스다. `X.isError && !view`로 쓰면 TS가 아래 `view`
+          사용 곳(표·페이지네이션)에서 undefined narrowing을 못 해 `tsc`가 21곳에서
+          떨어진다(진용님 로컬 typecheck 실측, TS18048).
         */
         <Empty>
           <EmptyHeader>

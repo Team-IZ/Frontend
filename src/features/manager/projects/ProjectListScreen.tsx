@@ -180,8 +180,13 @@ export default function ProjectListScreen() {
           rowH={96.1}
           footerH={0}
         />
-      ) : list.isError && !view ? (
+      ) : !view ? (
         /*
+          D41 — `list.isError && !view`가 아니라 `!view`만 쓰는 이유는 HeatmapScreen.tsx의
+          같은 주석 참고. 위 스켈레톤 분기가 `!view && !list.isError`를 이미 걸러내서, 여기
+          남는 `!view`는 항상 `list.isError`인 케이스다 — `X.isError && !view`로 쓰면 TS가
+          아래 `view` 사용을 narrowing 못 해 tsc가 떨어진다(실측).
+
           🔴 **네 실패가 한 문장이었다**(하드닝 실측). 403·404·400·500을 가로채도 전부
           「목록을 불러오지 못했습니다 · 잠시 후 다시 시도해 주세요」였고, **넷 다 「다시
           시도」가 붙었다** — 권한 없음·스코프 오류에 재시도를 주면 같은 실패를 반복시킨다.

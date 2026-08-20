@@ -40,7 +40,23 @@ function toView(s: Server): ReportsData {
 function toReport(r: ServerReport): RoundReport {
   const base = { id: r.id, label: r.label }
 
-  switch (r.status) {
+  /*
+    🔴 **`as ... | 'IN_PROGRESS'` 캐스트가 필요하다**(2026-08-20). 생성 타입
+    (`ServerReport['status']`, `npm run api:gen`으로 나온다)이 아직 이 값을 모른다 —
+    백엔드 PR이 머지·배포되고 스키마를 다시 생성하기 전까지는 그렇다. 캐스트를
+    빼면 컴파일은 되지만(스위치가 여전히 소진적이라) 실제로 서버가 `IN_PROGRESS`를
+    보내는 순간 아래 case가 죽은 코드 취급돼 무시되고 `undefined`가 반환돼 화면이
+    죽는다. 스키마 재생성 후에는 이 캐스트를 지워도 된다 — 그때는 생성 타입 자체가
+    `IN_PROGRESS`를 포함해서 필요 없어진다.
+
+    지역 변수로 뽑아서 switch를 거는 이유는, `r.status`를 캐스트 없이 그대로
+    switch에 걸어야 case 안에서 `r.status`를 다시 읽을 때도 좁혀진 타입을 그대로
+    받기 때문이다 — `switch (r.status as ...)`처럼 캐스트 식을 바로 걸면 TS가 그
+    좁힘을 `r.status`의 다른 참조로 전파하지 못한다.
+  */
+  const status = r.status as ServerReport['status'] | 'IN_PROGRESS'
+
+  switch (status) {
     case 'PUBLISHED':
       return {
         ...base,
@@ -57,11 +73,13 @@ function toReport(r: ServerReport): RoundReport {
       }
     case 'PENDING_PUBLISH':
       return { ...base, status: 'PENDING_PUBLISH', publishAfter: r.publishAfter ?? null }
+    case 'IN_PROGRESS':
+      return { ...base, status: 'IN_PROGRESS' }
     case 'NOT_STARTED':
     case 'NOT_ATTEMPTED':
     case 'VOID_ATTEMPT':
     case 'STOPPED':
-      return { ...base, status: r.status }
+      return { ...base, status }
   }
 }
 

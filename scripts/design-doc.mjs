@@ -254,7 +254,7 @@ function build() {
   )}`
 
   return pageShell({
-    title: 'IZ-Get · 디자인 시스템',
+    title: 'RealiZe · 디자인 시스템',
     kicker: '생성된 문서 · 직접 고치지 않는다',
     lede: `값은 <code>src/index.css</code>에서 읽어 만든다. 셸·컴포넌트는 <a href="./components.html">구현 문서</a>에 있다.`,
     howto: `<b>카드에 커서를 올리면</b> 언제 쓰는 색인지 나온다. <b>「왜 이렇게 정했나」를 누르면</b> 설계 근거가 열린다.

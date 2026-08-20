@@ -131,7 +131,7 @@ export default function ReportScreen() {
   const cohortName = report.data?.cohortName ?? scopeName
 
   /**
-   * 인쇄창의 기본 파일명이 "IZ-Get"이 아니라 실제 문서 제목이 되도록 인쇄
+   * 인쇄창의 기본 파일명이 "RealiZe"가 아니라 실제 문서 제목이 되도록 인쇄
    * 직전에만 잠깐 바꾼다 — `window.print()`가 동기라 인쇄 다이얼로그가 닫힌
    * 뒤 원래 제목으로 되돌리면 화면 탭 제목이 계속 바뀐 채로 남지 않는다.
    */

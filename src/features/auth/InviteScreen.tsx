@@ -356,7 +356,7 @@ export default function InviteScreen() {
             description="링크가 잘못되었거나 이 기수의 링크가 아니에요."
             aux="메일에 있는 링크를 다시 눌러 보세요. 계속 같으면 담당자에게 문의해 주세요."
             actions={
-              <Button nativeButton={false} render={<a href="mailto:support@iz-get.com" />}>
+              <Button nativeButton={false} render={<a href="mailto:support@realize.co.kr" />}>
                 문의하기
               </Button>
             }
@@ -386,7 +386,7 @@ export default function InviteScreen() {
               <Button
                 variant="ghost"
                 nativeButton={false}
-                render={<a href="mailto:support@iz-get.com" />}
+                render={<a href="mailto:support@realize.co.kr" />}
               >
                 문의하기
               </Button>
@@ -409,7 +409,7 @@ export default function InviteScreen() {
               <Button
                 variant="ghost"
                 nativeButton={false}
-                render={<a href="mailto:support@iz-get.com" />}
+                render={<a href="mailto:support@realize.co.kr" />}
               >
                 문의하기
               </Button>
@@ -454,7 +454,7 @@ export default function InviteScreen() {
                   {submitAlert.action === 'CONTACT' && (
                     <span className="ml-2">
                       <a
-                        href="mailto:support@iz-get.com"
+                        href="mailto:support@realize.co.kr"
                         className="text-[13px] font-medium text-primary underline-offset-2 hover:underline"
                       >
                         문의하기

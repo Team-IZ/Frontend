@@ -229,7 +229,7 @@ API 하나를 봤으니 이제 파일 전체다. **최상위 키가 7개뿐이�
 ```jsonc
 {
   "openapi": "3.1.0",        // 명세 버전 (문법 버전. 3.0과 3.1은 문법이 좀 다르다)
-  "info":    { "title": "IZ-Get", "version": "v0.1" },
+  "info":    { "title": "IZ-Get", "version": "v0.1" },   // ← 서버가 실제로 주는 값. 우리 제품명은 RealiZe다(D11)
   "servers": [{ "url": "https://…" }],
   "security":[{ "bearerAuth": [] }],           // 기본 인증 방식
   "tags":    [ … 9개 … ],                       // 분류 목록과 설명

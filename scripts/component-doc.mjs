@@ -233,7 +233,7 @@ function build() {
   `
 
   return pageShell({
-    title: 'IZ-Get · 셸 · 컴포넌트',
+    title: 'RealiZe · 셸 · 컴포넌트',
     kicker: '생성된 문서 · 직접 고치지 않는다',
     lede: `실제 화면을 짤 때 참고하는 문서다. 값(색·크기)은 <a href="./design-system.html">토큰 문서</a>와 같은 곳(<code>src/index.css</code>)에서 온다.`,
     howto: null,

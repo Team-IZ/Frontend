@@ -151,6 +151,10 @@ src/features/auth/
 **그건 "값 하나짜리 Zustand를 라이브러리 없이 만드는 것"** 이었다. 실무에서도 인터셉터가
 `store.getState()`로 토큰을 꺼내는 것이 표준이고, 구독·선택자가 공짜로 딸려온다.
 
+> ⚠ 아래 `name: 'iz-get.auth'`는 **그때 실제로 쓴 키 이름**이라 그대로 둔다(제품명이
+> RealiZe로 확정되기 전 이름 — 결정로그 D11). `authStore.ts`가 지금 이 키를 지우는
+> 청소 코드를 갖고 있어서, 문서에서 이름을 바꾸면 코드와 어긋난다.
+
 ```ts
 export const useAuthStore = create<AuthState>()(
   persist((set) => ({ accessToken: null, session: null, endReason: null, signIn, signOut }), {

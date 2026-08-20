@@ -1,4 +1,4 @@
-# IZ-Get Frontend
+# RealiZe Frontend
 
 AI 기반 교육생 역량 측정·진단 플랫폼의 프론트엔드.
 

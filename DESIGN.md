@@ -1,5 +1,5 @@
 ---
-name: IZ-Get
+name: RealiZe
 description: AI 기반 교육생 역량 측정·진단 플랫폼의 운영 콘솔
 colors:
   canvas: "#f4f5f7"
@@ -118,7 +118,7 @@ components:
     textColor: "{colors.nav-fg}"
 ---
 
-# Design System: IZ-Get
+# Design System: RealiZe
 
 > **토큰의 단일 원천은 `src/index.css`의 `@theme`이다.** 이 문서는 그 값을 읽기 좋게 옮긴 것이고,
 > 값의 근거(왜 이 색인가)는 `docs/plan/v1/definition/_source/design-tokens.md`,

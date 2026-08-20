@@ -941,3 +941,52 @@ git에는 `pre-stash`·`pre-reset` 훅이 없다. 그래서 Claude Code의 `PreT
   **(2026-08-20 후속) 진용님 로컬에서 `npx tsc -b --force`로 재검증 — 21건 전부 해소
   확인.** 증분 캐시(`.tsbuildinfo`)가 원인이었던 것으로 보임(같은 줄 번호로 반복 재현되던
   게 `--force` 한 번으로 없어짐). `typecheck`·`lint` 통과.
+
+## D46 · SPA 내비게이션 캐시 무효화 — operator/admin 5개 탭 배치, D44가 "구조가 다르다"고 미룬 화면이 실은 같은 버그였다
+
+- **배경:** D44가 "다음 배치로 이월"하며 근거로 든 것은 *"`X.isError ? 에러 : 표` 2단
+  분기라 D43·D44의 `X.isError || Y.isError || !view` 3단 분기와 다르다 — 확인 없이 같은
+  패치를 대면 스켈레톤 분기가 없을 때 잘못 건드릴 위험"*이었다(`ClassesTab.tsx`·
+  `CohortsTab.tsx`·`ManagersTab.tsx`·`RosterTab.tsx`·`CurriculaTab.tsx`, 반·기수·매니저·
+  명단·교안). 구조를 다시 읽어 보니 다섯 파일 전부 **스켈레톤 분기가 이미 있었다**
+  (`X.isLoading ? 스켈레톤 : X.isError ? ErrorState : …`) — D44가 우려한 "스켈레톤 분기
+  없음"은 사실이 아니었고, **분기 순서만 다를 뿐 결함은 D41과 완전히 같았다**: `X.isError`
+  단독 조건이 참이면 `X.data`(캐시된 이전 값)가 남아 있어도 `ErrorState`가 표 전체를
+  덮는다.
+- **근거 — `data`는 배경 재조회 실패에도 지워지지 않는다.** 전역 `QueryClient`
+  (`src/main.tsx`)에 데이터를 지우는 `onError`나 `structuralSharing: false` 같은 설정이
+  없다 — TanStack Query 기본 동작대로 배경 재조회가 실패하면 `data`는 마지막 성공 값을
+  유지한 채 `error`·`isError`만 같이 켜진다. 그래서 `X.isError`만으로 가르면 데이터가
+  있어도 에러 화면이 이긴다. 다섯 파일 모두 `SectionHeader`/`PageHeader`의 헤더 수·내역이
+  이미 `X.data ?`로 데이터 유무를 가려 왔다(`ClassesTab.tsx`의
+  `count={classes.data ? … : undefined}` 등) — "데이터 있음"의 판정 기준은 이미 화면
+  안에 있었다.
+- **수정 — 다섯 파일 모두 같은 두 가지를 더했다.**
+  1. `X.isError` 단독 분기를 **`!X.data`**로 바꿨다 — `X.data`가 아예 없을 때(최초 진입
+     실패)만 전면 `ErrorState`, 배경 재조회만 실패했으면 아래 표 분기로 그대로 넘어간다.
+  2. `X.isError && X.data`일 때 표 위에 경고 배너(공용 `Alert` warning, D44가 통일한
+     컴포넌트)를 얹어 "새로고침 실패, 마지막 값을 보여주는 중"임을 알린다.
+
+  `ManagersTab.tsx`는 원래 empty 분기가 `!page.data || page.data.content.length === 0`로
+  두 조건을 한 갈래에 묶어 뒀던 것도 **셋으로 갈랐다**(`!page.data` → 에러,
+  `content.length === 0` → 빈 상태) — 안 갈라 두면 `!page.data`가 참인 "진짜 에러" 케이스가
+  "필터에 안 걸림" 문구를 달고 나갈 뻔했다.
+- **D45의 `!view` narrowing 함정은 이번엔 안 걸린다.** D45가 고친 것은 `X.isError && !view`
+  처럼 **AND로 묶인 조건**이 TS 흐름 분석을 못 태우는 경우였다. 이번 다섯 파일은 조건을
+  처음부터 `!X.data` 단독으로 썼고(`X.isError && !view` 같은 AND 조합을 아예 안 만들었다),
+  분기 아래에서 `X.data`를 직접 non-null로 참조하는 곳도 `ManagersTab.tsx`의
+  `page.data.content.map(...)` 하나뿐이라 TS가 국소적으로도 문제없이 좁힌다 — 그래서 D45식
+  "`!view` 단독으로 되돌리는" 재작업이 필요 없었다(예방적으로 처음부터 그 모양으로 썼다).
+- **검산 — 이번에도 부분적.** `npx prettier --write` 5개 전부 파싱·포맷 통과(코드 파일만 —
+  이 문서는 `.prettierignore`가 마크다운을 통째로 뺀다). `tsc -b`·`oxlint`는 이 세션 환경
+  한계(45초 타임아웃, 마운트 `node_modules` 네이티브 바인딩 깨짐, `docs/dev/handoff.md`
+  알려진 문제)로 못 돌렸다 — **5개 탭 전부 진용님 로컬 typecheck·lint·DevTools 렌더
+  확인(Network 오프라인으로 배경 재조회 실패 재현)이 병합 전 필요.**
+- **PR 구성 — 5개 화면을 한 이슈·한 PR로 묶는다**(이슈 #300). 코드 5 + 문서 1 = 6개 파일로
+  git-convention.md "파일 10개 이내" 안에 들고, D44와 같은 "같은 정책·같은 패턴" 근거다.
+- **목적·효과:** D44가 "위험해서 미룬다"고 판단한 화면들이 실제로는 안전하게 옮길 수 있는
+  같은 결함이었다는 것을 재확인해 다음에 비슷한 판단을 할 때 "분기 순서가 다르다"만으로
+  구조가 다르다고 단정하지 않게 한다. `superadmin/settings/PlatformSettingsScreen.tsx`
+  (설정 폼)·`manager/interviews/InterviewBriefScreen.tsx`(mutation 섞임)·
+  `trainee/session/SessionScreen.tsx`(응시 중 화면)·`isError` 2~3회 등장하는 화면 8개는
+  이번에도 손대지 않았다 — 다음 배치의 시작점은 여전히 그 목록이다.

@@ -8,6 +8,8 @@ import type {
   findManagerHeatmap_Path,
   findManagerHeatmap_Query,
   findCohortGroupGaps_Path,
+  findManagerConceptScope_Path,
+  findManagerConceptScope_Query,
   findCohortComparison_Path,
   findCohortComparison_Query,
   findCohortActionsRequired_Path,
@@ -53,6 +55,16 @@ export const analyticsKeys = {
     ] as const,
   findCohortGroupGaps: (params: { path: findCohortGroupGaps_Path }) =>
     [...analyticsKeys.all, 'findCohortGroupGaps', params.path ?? null] as const,
+  findManagerConceptScope: (params: {
+    path: findManagerConceptScope_Path
+    query?: findManagerConceptScope_Query
+  }) =>
+    [
+      ...analyticsKeys.all,
+      'findManagerConceptScope',
+      params.path ?? null,
+      params.query ?? null,
+    ] as const,
   findCohortComparison: (params: {
     path: findCohortComparison_Path
     query?: findCohortComparison_Query

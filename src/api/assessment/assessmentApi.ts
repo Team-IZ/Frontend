@@ -17,6 +17,9 @@ import type {
   recordSessionActivityEvent_Response,
   openReviewSession_Body,
   openReviewSession_Response,
+  updateAssessmentAttemptValidity_Path,
+  updateAssessmentAttemptValidity_Body,
+  updateAssessmentAttemptValidity_Response,
   findSessionProblem_Path,
   findSessionProblem_Response,
   findCurrentSession_Response,
@@ -86,6 +89,21 @@ export const recordSessionActivityEvent = (
 export const openReviewSession = (params: { body: openReviewSession_Body } & RequestOptions) =>
   unwrap<openReviewSession_Response>(
     izClient.POST('/api/v0/assessment-sessions/reviews', {
+      body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 무효 응시 확정·복원 — `PATCH /api/v0/assessment-attempts/{attemptId}/validity` */
+export const updateAssessmentAttemptValidity = (
+  params: {
+    path: updateAssessmentAttemptValidity_Path
+    body: updateAssessmentAttemptValidity_Body
+  } & RequestOptions,
+) =>
+  unwrap<updateAssessmentAttemptValidity_Response>(
+    izClient.PATCH('/api/v0/assessment-attempts/{attemptId}/validity', {
+      params: { path: params.path },
       body: params.body,
       signal: params.signal,
     }) as never,

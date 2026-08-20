@@ -4,125 +4,6 @@
  */
 
 export interface paths {
-  '/api/v0/reports/{reportId}/disclosure': {
-    parameters: {
-      query?: never
-      header?: never
-      path?: never
-      cookie?: never
-    }
-    /**
-     * 내 리포트 공개 상태 조회 | ✅ 사용 가능
-     * @description TR-04에서 **본문이 안 열리는 이유**를 판별한다. `GET /reports`가 회차 상태까지
-     *     같이 주므로 화면이 매번 부를 필요는 없고, `PENDING_VISIBILITY`처럼
-     *     **공개 쪽 사정으로 잠긴 회차**를 눌렀을 때 확인용으로 쓴다.
-     *
-     *     **교육생 본인 것만 나간다.** `traineeId`를 받지 않고 인증 주체로 결정한다.
-     *
-     *     ## 요청
-     *
-     *     | 변수 | 필수 | 타입 | 설명 |
-     *     |---|---|---|---|
-     *     | `reportId` | **필수** | UUID | 리포트 식별자. `assessmentRoundId`가 아니다 |
-     *
-     *     ## 응답
-     *
-     *     | 필드 | 타입 | 설명 |
-     *     |---|---|---|
-     *     | `releaseStatus` | enum | **판별자.** `NOT_CONFIGURED` · `WITHHELD` · `RELEASED` |
-     *     | `scope` | enum? | `PRIVATE` · `SUMMARY` · `FULL`. 미지정이면 **키가 빠진다** |
-     *     | `publishedAt` | instant? | 발행 시각. 발행 전이면 키가 빠진다 |
-     *     | `releasedAt` | instant? | 공개 처리 시각. `RELEASED`에서만 |
-     *     | `bodyVisible` | boolean | 본문을 읽을 수 있는가 |
-     *     | `visibleFields` | object | `{said, curriculumRef, qa}` — 범위가 여는 필드 |
-     *
-     *     ## 상태 3종이 화면에서 뜻하는 것
-     *
-     *     | `releaseStatus` | 화면 |
-     *     |---|---|
-     *     | `NOT_CONFIGURED` | `공개 범위 미지정` — **결과는 나와 있고 매니저가 여는 시점만 남았다** |
-     *     | `WITHHELD` | 회차는 목록에 보이되 본문이 잠긴다 |
-     *     | `RELEASED` | `PUBLISHED` |
-     *
-     *     ⚠️ **셋 다 정상 상태라 오류를 던지지 않는다.** 본문 조회가 막히는 것과 다르다 —
-     *     이 API는 "왜 막혔나"를 알려 주는 쪽이므로 200으로 상태를 싣는다.
-     *
-     *     ## visibleFields — 범위→필드 규칙을 서버가 계산한다
-     *
-     *     | 범위 | `said` | `curriculumRef` | `qa` |
-     *     |---|---|---|---|
-     *     | `PRIVATE`·미지정 | ❌ | ❌ | ❌ |
-     *     | `SUMMARY` | ⭕ | ⭕ | ❌ |
-     *     | `FULL` | ⭕ | ⭕ | ⭕ |
-     *
-     *     프론트가 이 표를 다시 구현하면 서버와 어긋날 때 **학생에게 안 보여야 할 문답이
-     *     보이는 쪽**으로 틀릴 수 있다.
-     *
-     *     ## 오류
-     *
-     *     | 코드 | 상황 |
-     *     |---|---|
-     *     | 404 `REPORT_NOT_FOUND` | 없는 리포트 **또는 남의 리포트** |
-     *
-     *     남의 리포트를 403이 아니라 404로 돌려준다 — 403이면 그 id가 존재한다는 사실이 샌다.
-     */
-    get: operations['findMyDisclosure']
-    /**
-     * 리포트 공개 범위 설정 | ✅ 사용 가능
-     * @description 담당 매니저가 회차 결과를 교육생에게 연다. TR-04의 `공개 범위 미지정`을
-     *     푸는 유일한 경로다 — 이 호출이 없으면 리포트는 발행돼도 영원히 잠겨 있다.
-     *
-     *     ## 요청
-     *
-     *     | 필드 | 필수 | 타입 | 설명 |
-     *     |---|---|---|---|
-     *     | `scope` | **필수** | enum | `PRIVATE` · `SUMMARY` · `FULL` |
-     *
-     *     `NOT_CONFIGURED`는 보낼 수 없다. 미지정은 아직 아무도 정하지 않은 초기 상태이지
-     *     선택지가 아니며, 열었다 닫는 것은 `PRIVATE`이다.
-     *
-     *     ## scope가 상태 4컬럼을 결정한다
-     *
-     *     | 보낸 값 | 결과 상태 | 시각·주체 |
-     *     |---|---|---|
-     *     | `PRIVATE` | `WITHHELD` | 비운다 |
-     *     | `SUMMARY` · `FULL` | `RELEASED` | 지금 · 요청한 매니저 |
-     *
-     *     클라이언트가 상태·시각·주체를 직접 보내지 않는 이유는 DB CHECK
-     *     `ck_report_trainee_release_status_2`가 넷의 조합을 강제하기 때문이다 —
-     *     따로 받으면 제약을 어기는 조합을 만들 수 있다.
-     *
-     *     ## 발행 전에도 정할 수 있다
-     *
-     *     **발행(`publishedAt`)과 공개(`releaseStatus`)는 다른 사건**이라 순서를 강제하지 않는다.
-     *     발행 전에 범위를 정해 두면 발행되는 순간 바로 열린다. 다만 `bodyVisible`은
-     *     둘이 모두 갖춰져야 참이다.
-     *
-     *     ## 권한
-     *
-     *     요청 매니저가 **지금 담당하는 반**의 교육생 리포트만 바꿀 수 있다.
-     *     배정 이력이 해제된 반(`manager_assignment.unassigned_at`)과 이탈한 교육생
-     *     (`cohort_member.left_at`)은 제외된다 — 지난 기수에 잠깐 담당했던 매니저가
-     *     계속 공개 범위를 바꾸면 안 된다.
-     *
-     *     ## 오류
-     *
-     *     | 코드 | 상황 |
-     *     |---|---|
-     *     | 400 `REPORT_DISCLOSURE_SCOPE_INVALID` | 도메인이 막는 조합(공개인데 범위가 비공개) |
-     *     | 404 `REPORT_NOT_FOUND` | 없는 리포트 · **담당하지 않는 교육생** · 기수 단위 리포트 |
-     *
-     *     담당하지 않는 경우도 403이 아니라 404다 — 존재 여부를 흘리지 않기 위해
-     *     조회 실패와 권한 실패를 같은 응답으로 합쳤다.
-     */
-    put: operations['updateDisclosure']
-    post?: never
-    delete?: never
-    options?: never
-    head?: never
-    patch?: never
-    trace?: never
-  }
   '/api/v0/projects/{projectId}/requirements': {
     parameters: {
       query?: never
@@ -1699,6 +1580,61 @@ export interface paths {
      *     코드가 붙지 않기 때문**이다. 그 요청은 컨트롤러에 닿지 못해 코드 없는 500 이 된다.
      */
     post: operations['registerCurriculum']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v0/curricula/{materialId}/versions': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * 교안 새 버전 등록 | ✅ 사용 가능
+     * @description 기존 교안(material)에 새 버전을 올린다(42차 R1). **새 교안을 만들지 않는다** —
+     *     `materialId`가 가리키는 그 교안에 다음 버전이 하나 늘어난다.
+     *
+     *     ⚠ `POST /curricula`(새 교안 등록)와 다른 오퍼레이션이다. 새 개정판을 올리려는
+     *     것과 새 교안을 만들려는 것은 사용자 의도가 다르다는 것이 42차 문서의 요청이다 —
+     *     이 경로가 그 의도를 명시적으로 받는다.
+     *
+     *     **요청 (multipart/form-data)**
+     *     - file (필수): PDF 파일
+     *     - title (선택): 제목을 바꿔 달 때만 보낸다. 비우면 기존 제목을 그대로 쓴다
+     *
+     *     **응답 (201)**
+     *     - 새로 생긴 버전 정보(응답 필드는 `POST /curricula`와 동일)
+     *
+     *     ## versionNo는 이 교안의 현재 최신 버전 + 1이다
+     *
+     *     새 material을 만들지 않고, `materialId`는 그대로 유지된다. 새 버전의 번호는 이
+     *     교안에서 지금까지 가장 큰 `versionNo`에 1을 더한 값이다.
+     *
+     *     ## 기존 버전은 지우거나 바꾸지 않는다
+     *
+     *     기존 버전 행은 그대로 남는다 — 그 버전을 이미 연결해 쓰고 있는 회차
+     *     (`project_curriculum`)도 그대로다. 발행된 리포트가 가리키는 쪽 번호가 바뀌지
+     *     않는 이유가 이것이다.
+     *
+     *     바뀌는 것은 상태 하나뿐이다 — 기존 최신 버전이 `INACTIVE`로 넘어가
+     *     `GET /cohorts/{cohortId}/curricula`(연결 후보 목록) 같은 "고를 수 있는 교안"
+     *     조회에서 새 버전에게 자리를 내준다. **읽기 쪽 구버전 상세·버전 목록 API는 이번에도
+     *     추가하지 않는다** — 42차 문서가 명시적으로 요청하지 않았다.
+     *
+     *     ## 제목은 안 바꿔도 된다 — 바꾸면 그때만 중복 검사
+     *
+     *     title을 생략하면 material 제목은 그대로다. 이 경로로 올릴 때는 **같은 교안에
+     *     버전을 추가하는 것**이므로 자기 자신의 제목과 겹치는 것을 막을 이유가 없다 —
+     *     `POST /curricula`의 제목 UNIQUE 검사는 여기서 돌지 않는다. title을 보내 제목을
+     *     바꾸는 경우에만 (기관 + 새 제목)이 **다른** 교안과 겹치는지 검사한다.
+     */
+    post: operations['registerCurriculumVersion']
     delete?: never
     options?: never
     head?: never
@@ -3361,7 +3297,7 @@ export interface paths {
      *     | `reportId` | 필수 | UUID | 근거 리포트. `GET /assessment-rounds`의 `current.reportId` |
      *
      *     리포트는 **본인 것이고 공개된 것**이어야 한다(`lifecycle_status=ACTIVE` ·
-     *     `traineeReleaseStatus=RELEASED`). 회차·1차 응시는 리포트에서 도출하므로 따로 받지 않는다.
+     *     발행된 리포트여야 한다). 회차·1차 응시는 리포트에서 도출하므로 따로 받지 않는다.
      *
      *     스키마가 리포트를 요구한다 — `ck_measurement_attempt_attempt_type_2`가 REVIEW에
      *     리포트 ID와 스냅샷 ID를 둘 다 NOT NULL로 못박고 있다.
@@ -4668,7 +4604,7 @@ export interface paths {
     delete?: never
     options?: never
     head?: never
-    /** 무효 응시 확정·복원 | ⚠️ 사용 불가 */
+    /** 무효 응시 확정·복원 | ✅ 사용 가능 */
     patch: operations['updateAssessmentAttemptValidity']
     trace?: never
   }
@@ -5023,60 +4959,62 @@ export interface paths {
       cookie?: never
     }
     /**
-     * 담당 반 리포트 목록 조회 (매니저) | ✅ 사용 가능
-     * @description 매니저가 **담당하는 반**의 개인 리포트 목록. 발행 여부와 공개 상태만 준다.
+     * 담당 교육생 리포트 조회 (매니저) | ✅ 사용 가능
+     * @description 매니저가 담당 교육생 **한 명**의 리포트를 회차별로 본다. 교육생 상세 화면의 리포트 라인이다.
      *
-     *     ⚠️ 신설 직후라 **실제 DB로 검증되지 않았다.** SQL이 도는 것을 확인한 뒤
-     *     `✅ 사용 가능`으로 올린다 — 나머지 Reporting 오퍼레이션과 같은 기준이다.
+     *     ## 응답이 `GET /reports`와 똑같다
      *
-     *     ## 왜 필요한가
+     *     같은 `TraineeReportsResponse`다 — 좌측 레일(`rounds`)과 회차별 본문(`reportsById`)이
+     *     그대로 온다. **모양을 따로 두지 않은 것은 의도한 것이다.** 리포트 라인은 회차별로
+     *     "만들어졌나 · 발행됐나"를 보여주고 펼치면 본문을 그리는데, 그 본문이 학생이 보는
+     *     것과 달라야 할 이유가 없다. 두 벌로 나누면 같은 리포트를 설명하는 말이 두 가지가 된다.
      *
-     *     매니저에게 열린 리포트 API는 `PUT /reports/{reportId}/disclosure` 하나뿐이었다.
-     *     공개 범위를 정할 수는 있는데 **정할 대상을 찾을 방법이 없었다** —
-     *     상태를 확인하려면 상태를 바꿔야 하는 모순이라 이 API로 메운다.
+     *     회차 상태(`status`)도 같은 값을 쓴다.
      *
-     *     ## 본문은 들어 있지 않다
+     *     | 값 | 리포트 라인에 그릴 것 |
+     *     |---|---|
+     *     | `PUBLISHED` | 결과를 그린다(펼치면 본문) |
+     *     | `PENDING_PUBLISH` | `리포트 생성 중` |
+     *     | `NOT_STARTED` | 아직 응시 전(마감 전) |
+     *     | `NOT_ATTEMPTED` | 미응시 — **매니저 안내가 필요한 줄이다** |
+     *     | `VOID_ATTEMPT` | 확인 필요 |
+     *     | `STOPPED` | 중단 |
      *
-     *     개념·서술·문답은 나가지 않는다. 개인 리포트 본문 열람은 별개 정책이고,
-     *     이 API는 "어느 리포트가 발행됐고 지금 어떤 공개 상태인가"에만 답한다.
+     *     ## 🔴 다시 보기 잠금이 걸리지 않는다
      *
-     *     ## 권한 범위 — 담당 반 전체
+     *     교육생 화면에서는 다시 보기 대상(`level < 2`)이면서 아직 다시 보기를 마치지 않은
+     *     개념의 `qa`(자기 답변)와 `explain`(해설)이 **빠진다.** 매니저에게는 그 잠금을 걸지
+     *     않는다 — 잠금의 목적이 "학생이 답을 먼저 보고 다시 푸는 것"을 막는 것이라
+     *     매니저에게는 해당이 없고, 지도하려면 학생이 뭐라고 답했는지를 봐야 한다.
      *
-     *     요청 매니저가 **지금** 배정된 반의 교육생만 나온다.
-     *     해제된 배정(`manager_assignment.unassigned_at`)과 이탈한 교육생
-     *     (`cohort_member.left_at`)은 빠진다. 조인 경로가 `PUT .../disclosure`의
-     *     담당 판정과 **같아서**, 목록에 보이는 리포트는 반드시 수정도 된다.
-     *
-     *     면담 대상으로 좁히지 않는다 — 공개 범위 지정은 면담과 무관하게 회차마다
-     *     생기는 일이라, 면담 대상만 보이면 나머지 교육생 리포트가 영원히 미지정으로 남는다.
+     *     `retryState`는 **사실대로** 나간다(`NONE` · `PENDING` · `DONE`).
+     *     다시 보기를 아직 안 한 학생을 찾는 근거이므로 가리지 않는다.
      *
      *     ## 요청
      *
      *     | 파라미터 | 필수 | 타입 | 설명 |
      *     |---|---|---|---|
-     *     | `cohortId` | 선택 | UUID | 기수로 좁힌다 |
-     *     | `roundId` | 선택 | UUID | 회차로 좁힌다(`assessmentRoundId`) |
-     *     | `classId` | 선택 | UUID | 담당 반이 여럿일 때 하나만 |
+     *     | `traineeId` | **필수** | UUID | 교육생 `userId`. 회차 id도 리포트 id도 아니다 |
      *
-     *     ## 응답
+     *     ## 권한 — 지금 담당 중인 교육생만
      *
-     *     | 필드 | 설명 |
+     *     요청 매니저가 **지금** 배정된 반의 교육생이어야 한다. 해제된 배정
+     *     (`manager_assignment.unassigned_at`)과 이탈한 교육생(`cohort_member.left_at`)은
+     *     담당으로 치지 않는다 — 그러지 않으면 지난 기수에 잠깐 담당했던 매니저가
+     *     계속 남의 교육생 리포트를 본다.
+     *
+     *     ## 오류
+     *
+     *     | 코드 | 상황 |
      *     |---|---|
-     *     | `releaseStatus` | `NOT_CONFIGURED` · `WITHHELD` · `RELEASED` — **판별자** |
-     *     | `scope` | `PRIVATE` · `SUMMARY` · `FULL`. 미지정이면 **키가 빠진다** |
-     *     | `publishedAt` | 발행 시각. 발행 전이면 키가 빠진다 |
-     *     | `bodyVisible` | 교육생이 지금 본문을 읽을 수 있는가 |
+     *     | 404 `REPORT_NOT_FOUND` | 없는 교육생 **또는 담당하지 않는 교육생** |
      *
-     *     ⚠️ **`NOT_CONFIGURED`를 "비공개"로 그리면 안 된다.** 아직 아무도 정하지 않은
-     *     초기 상태이고, `WITHHELD`(정해서 닫았다)와 구분해야 한다.
+     *     ⚠️ 담당하지 않는 교육생을 403이 아니라 **404로 돌려준다.** 403으로 구분해 주면
+     *     "그 id의 교육생이 존재한다"는 사실이 새어 나간다(`GET /reports/{reportId}`와 같은 규칙).
      *
-     *     ## 담당하지 않는 리포트
-     *
-     *     목록에서 **빠질 뿐** 404가 아니다. 목록 조회에서 404는 "그런 반이 없다"는
-     *     뜻이 되어 실제로 담당이 없는 경우와 구분되지 않는다.
-     *     빈 목록도 정상이다 — 담당 반이 없거나, 회차가 아직 안 끝났거나, 필터가 좁은 경우다.
+     *     빈 `rounds`는 정상이다 — 그 교육생이 속한 기수에 회차가 아직 없는 경우다.
      */
-    get: operations['findManagedReports']
+    get: operations['findManagedTraineeReports']
     put?: never
     post?: never
     delete?: never
@@ -7304,7 +7242,7 @@ export interface paths {
      *     | 필드 | 타입 | 설명 |
      *     |---|---|---|
      *     | `itemId` | string | 항목 식별자. 원천에 따라 형식이 다르다(`ATTENDANCE:...`·`INVALID:...`·`INTERVIEW:...`·`REMINDER:...`) |
-     *     | `itemType` | string | 항목 유형. `SUBMISSION_MISSING`·`ANALYSIS_FAILED`·`ASSESSMENT_NOT_STARTED`·`REVIEW`·`ASSESSMENT`·`INVALID_ATTEMPT`·`INTERVIEW`·`REMINDER` |
+     *     | `itemType` | string | 항목 유형. `SUBMISSION_MISSING`·`ANALYSIS_FAILED`·`ASSESSMENT_NOT_STARTED`·`ABSENT`·`REVIEW`·`ASSESSMENT`·`INVALID_ATTEMPT`·`INTERVIEW`·`REMINDER`(41차 R1 — 미응시를 `ABSENT`로 실어 온 지 오래인데 목록에 빠져 있었다) |
      *     | `projectId` / `assessmentRoundId` / `classroomId` / `teamId` / `traineeId` | UUID | 이 항목이 걸린 대상 |
      *     | `subject` | string | 대상 이름(교육생명 또는 팀명) |
      *     | `sourceStatus` | string | 원천의 현재 상태 |
@@ -7863,7 +7801,7 @@ export interface paths {
       path?: never
       cookie?: never
     }
-    /** 면담 브리프 개념 소관 판정 | ⚠️ 사용 불가 */
+    /** 면담 브리프 개념 소관 판정 | ✅ 사용 가능 */
     get: operations['findManagerConceptScope']
     put?: never
     post?: never
@@ -8604,8 +8542,7 @@ export interface paths {
      *     | --- | --- | --- |
      *     | `reportId` | UUID? | 리포트 식별자 |
      *     | `reportPublishStatus` | enum | `PUBLISHED` · `GENERATING` · `NOT_PUBLISHED` |
-     *     | `traineeReleaseStatus` | enum | 리포트 행이 없으면 `NOT_CONFIGURED`로 정규화한다 |
-     *     | `canViewReport` | boolean | `traineeReleaseStatus=RELEASED`일 때만 `true` |
+     *     | `canViewReport` | boolean | `reportPublishStatus=PUBLISHED`일 때만 `true` |
      *     | `explanationStatus` | enum | `UNAVAILABLE` · `PARTIAL` · `AVAILABLE` |
      *
      *     **일정**
@@ -8698,7 +8635,7 @@ export interface paths {
      *     | `reviewStatus` | enum? | 다시 보기 상태. 배정이 없으면 `null` |
      *     | `completedReviewCount` | int | 완료한 다시 보기 건수 |
      *     | `reportId` | UUID? | 리포트 식별자 |
-     *     | `canViewReport` | boolean | `traineeReleaseStatus=RELEASED`일 때만 `true` |
+     *     | `canViewReport` | boolean | `reportPublishStatus=PUBLISHED`일 때만 `true` |
      *
      *     ⚠️ "완료 여부" boolean은 **일부러 두지 않는다.** `representativeStatus`가 완료와 미완료 사유를
      *     이미 구분하므로, 파생값을 더하면 계약이 둘로 갈린다.
@@ -8718,8 +8655,11 @@ export interface paths {
      *
      *     ### 리포트 열람
      *
-     *     **`canViewReport`의 판정 근거는 `traineeReleaseStatus` 하나다.** `reportPublishStatus`는 리포트
-     *     발행 진행 상태라 열람 판정에 넣지 않는다.
+     *     **`canViewReport`의 판정 근거는 `reportPublishStatus = 'PUBLISHED'` 하나다.**
+     *
+     *     🔴 **`traineeReleaseStatus`가 없어졌다**(2026-08-19). 종전에는 발행과 교육생 공개가 다른
+     *     사건이라 공개 상태(`NOT_CONFIGURED` · `WITHHELD` · `RELEASED`)가 열람을 따로 판정했다.
+     *     공개/비공개 개념이 폐지되면서 **발행이 곧 공개**가 됐고, 그 자리를 발행 상태가 물려받았다.
      *
      *     ### 커밋 이메일 배너
      *
@@ -8961,69 +8901,6 @@ export interface paths {
 export type webhooks = Record<string, never>
 export interface components {
   schemas: {
-    /**
-     * @description 리포트 공개 범위. SUMMARY(요약만) · PRIVATE(비공개) · FULL(전문)
-     * @enum {string}
-     */
-    DisclosureScope: 'SUMMARY' | 'PRIVATE' | 'FULL'
-    /**
-     * @description 리포트 공개 범위 설정 요청.
-     *
-     *     `scope`의 `PRIVATE`은 비공개 확정(withhold), `SUMMARY`·`FULL`은 공개(release)다.
-     *     `SUMMARY`는 축별 서술과 교안 위치까지, `FULL`은 문답 원문까지 연다.
-     */
-    UpdateReportDisclosureRequest: {
-      scope: components['schemas']['DisclosureScope']
-    }
-    /**
-     * @description 리포트 공개 상태. `releaseStatus`가 판별자이고 나머지는 그 값에 딸린다.
-     *
-     *     `scope`는 NOT_CONFIGURED이면 키가 없다. `publishedAt`은 발행 전이면, `releasedAt`은 RELEASED가
-     *     아니면 마찬가지로 키가 없다 — null을 실어 보내지 않는다.
-     */
-    ReportDisclosureResponse: {
-      /**
-       * Format: uuid
-       * @description 리포트 식별자
-       */
-      reportId: string
-      /**
-       * Format: uuid
-       * @description 어느 회차의 리포트인가
-       */
-      assessmentRoundId: string
-      releaseStatus: components['schemas']['TraineeReleaseStatus']
-      /** @description NOT_CONFIGURED이면 키가 없다 */
-      scope?: components['schemas']['DisclosureScope']
-      /**
-       * Format: date-time
-       * @description 발행 시각. 발행 전이면 키가 없다
-       */
-      publishedAt?: string
-      /**
-       * Format: date-time
-       * @description 공개 처리 시각. RELEASED에서만 있다. 그 외에는 키가 없다
-       */
-      releasedAt?: string
-      /** @description 교육생이 본문을 읽을 수 있는가 */
-      bodyVisible: boolean
-      /** @description 공개 범위별로 열리는 본문 필드 */
-      visibleFields: components['schemas']['VisibleFields']
-    }
-    /**
-     * @description 교육생 리포트 공개 상태. NOT_CONFIGURED(공개 범위 미지정) · WITHHELD(비공개) · RELEASED(공개)
-     * @enum {string}
-     */
-    TraineeReleaseStatus: 'NOT_CONFIGURED' | 'WITHHELD' | 'RELEASED'
-    /** @description 공개 범위별 본문 필드 노출 여부 */
-    VisibleFields: {
-      /** @description 축별 서술(`said`)이 학생에게 열리는가. SUMMARY 이상이면 true */
-      said: boolean
-      /** @description 교안 위치(`chapter`·`pages`·`title`)가 열리는가. SUMMARY 이상이면 true */
-      curriculumRef: boolean
-      /** @description 문답 원문이 열리는가 — `[내 답변] 펼침`이 이 값으로 열린다. FULL에서만 true */
-      qa: boolean
-    }
     /** @description 프로젝트 요구사항 전체 교체 요청 */
     ReplaceRequirementsRequest: {
       /**
@@ -9985,6 +9862,11 @@ export interface components {
       /** Format: int32 */
       closed: number
     }
+    /**
+     * @description 기관의 기수 결과 공개 범위 기본값. SUMMARY(요약만) · PRIVATE(비공개) · FULL(전문). ⚠️ 교육생 리포트 열람에는 반영되지 않는다 — 리포트는 발행 즉시 전문이 열린다.
+     * @enum {string}
+     */
+    DisclosureScope: 'SUMMARY' | 'PRIVATE' | 'FULL'
     /** @description 오퍼레이터 계정 요약 */
     Operator: {
       /** Format: uuid */
@@ -11241,7 +11123,7 @@ export interface components {
       /**
        * Format: uuid
        * @description 근거 리포트. `GET /assessment-rounds`의 `current.reportId`를 그대로 쓴다.
-       *     본인 것이고 공개된(`traineeReleaseStatus=RELEASED`) 리포트여야 한다.
+       *     본인 것이고 **발행된**(`published_at`이 있는) 리포트여야 한다.
        */
       reportId: string
     }
@@ -12027,13 +11909,16 @@ export interface components {
        *
        *     | 값 | 뜻 | 화면 |
        *     |---|---|---|
-       *     | `PUBLISHED` | 리포트가 공개됐다 | 결과를 그린다 |
-       *     | `PENDING_PUBLISH` | 아직 발행 전이다 | `publishAfter` 이후에 나온다 |
-       *     | `PENDING_VISIBILITY` | 발행됐지만 공개 범위가 안 정해졌다 | 매니저가 공개해야 열린다 |
+       *     | `PUBLISHED` | 리포트가 발행됐다 | 결과를 그린다 |
+       *     | `PENDING_PUBLISH` | 리포트를 만드는 중이다 | `리포트가 생성 중입니다` |
        *     | `NOT_STARTED` | **제출 마감 전인데 아직 응시 기록이 없다** | 아직 시간이 있다 |
        *     | `NOT_ATTEMPTED` | **마감이 지나도록 응시하지 않았다** | 놓쳤다 — 매니저 안내가 필요하다 |
        *     | `VOID_ATTEMPT` | 무효 응시 검토 중이거나 무효로 확정됐다 | `확인 필요` |
        *     | `STOPPED` | 세션을 시작했지만 끝내지 못했다 | 중단 |
+       *
+       *     🔴 **`PENDING_VISIBILITY`가 없어졌다**(2026-08-19). 종전에는 발행과 공개가 다른 사건이라
+       *     `발행은 됐지만 매니저가 아직 공개 범위를 안 정했다`는 상태가 있었는데, 공개/비공개 개념이
+       *     폐지되면서 사라졌다. **발행되면 그 즉시 `PUBLISHED`다.**
        *
        *     🔴 **`NOT_STARTED`와 `NOT_ATTEMPTED`를 한 문구로 묶지 않는다.** 둘을 같은 말로 그리면
        *     아직 시간이 있는 학생에게 놓쳤다고 말하거나, 정말 놓친 학생에게서 경고가 사라진다(26차 A1).
@@ -12044,7 +11929,6 @@ export interface components {
       status:
         | 'PUBLISHED'
         | 'PENDING_PUBLISH'
-        | 'PENDING_VISIBILITY'
         | 'NOT_STARTED'
         | 'NOT_ATTEMPTED'
         | 'VOID_ATTEMPT'
@@ -12055,7 +11939,6 @@ export interface components {
       publishedAt?: string
       /** @description PUBLISHED에서만. 그 외에는 키가 빠진다 */
       curriculum?: string
-      disclosureScope?: components['schemas']['DisclosureScope']
       completionStatus?: components['schemas']['ReportCompletionStatus']
       /**
        * Format: int32
@@ -12088,58 +11971,6 @@ export interface components {
       reportsById: {
         [key: string]: components['schemas']['RoundReportResponse']
       }
-    }
-    ManagedReportItem: {
-      /**
-       * Format: uuid
-       * @description 리포트 식별자. PUT /reports/{reportId}/disclosure에 그대로 쓴다
-       */
-      reportId: string
-      /**
-       * Format: uuid
-       * @description 회차 식별자. 리포트 id가 아니다
-       */
-      assessmentRoundId: string
-      /** @description 회차 이름(예: 미프 3차). 회차 행이 없으면 키가 빠진다 */
-      roundName?: string | null
-      /**
-       * Format: int32
-       * @description 기수 안 미니프로젝트 차수(1부터). 3이면 그 기수의 세 번째 미니프로젝트다.
-       *
-       *     ⚠️ `ProjectAssessmentRound.round_no`가 아니다. 그 컬럼은 `(project_id, round_no)`
-       *     UNIQUE라 프로젝트 안에서만 유일하고, 정의서가 "MINI_PROJECT는 활성 회차 정확히
-       *     1건, round_no=1"을 요구하므로 실제로는 항상 1이다. 여기서 내는 값은 정의서의
-       *     `analysis_sequence_no`(삭제되지 않은 MINI_PROJECT를 sequence_no 순으로 재번호화한
-       *     조회값)이며, 서버가 계산해 내려준다.
-       */
-      roundNo: number
-      /** Format: uuid */
-      traineeUserId: string
-      traineeName: string
-      /** Format: uuid */
-      classId: string
-      className: string
-      /**
-       * Format: date-time
-       * @description 발행 시각. 아직 발행 전이면 키가 빠진다
-       */
-      publishedAt?: string | null
-      /** @description 공개 상태 판별자 */
-      releaseStatus: components['schemas']['TraineeReleaseStatus']
-      /** @description 공개 범위. NOT_CONFIGURED이면 키가 빠진다 */
-      scope?: components['schemas']['DisclosureScope'] | null
-      /**
-       * Format: date-time
-       * @description 공개 처리 시각. RELEASED에서만 있다
-       */
-      releasedAt?: string | null
-      /** @description 교육생이 지금 본문을 읽을 수 있는가 */
-      bodyVisible: boolean
-    }
-    /** @description 매니저가 담당하는 반의 리포트 목록 */
-    ManagedReportListResponse: {
-      /** @description 담당 반 교육생의 개인 리포트. 담당이 없거나 필터가 좁으면 빈 배열 */
-      reports: components['schemas']['ManagedReportItem'][]
     }
     ClassRiskRate: {
       className: string
@@ -16776,9 +16607,7 @@ export interface components {
       reportId: string | null
       /** @enum {string} */
       reportPublishStatus: 'PUBLISHED' | 'GENERATING' | 'NOT_PUBLISHED'
-      /** @description 리포트 행이 없으면 NOT_CONFIGURED로 정규화한다 */
-      traineeReleaseStatus: components['schemas']['TraineeReleaseStatus']
-      /** @description traineeReleaseStatus = RELEASED일 때만 true */
+      /** @description reportPublishStatus = PUBLISHED일 때만 true */
       canViewReport: boolean
       /** @enum {string} */
       explanationStatus: 'UNAVAILABLE' | 'PARTIAL' | 'AVAILABLE'
@@ -16919,7 +16748,7 @@ export interface components {
       completedReviewCount: number
       /** Format: uuid */
       reportId: string
-      /** @description traineeReleaseStatus = RELEASED일 때만 true */
+      /** @description reportPublishStatus = PUBLISHED일 때만 true */
       canViewReport: boolean
     }
     /**
@@ -17062,90 +16891,6 @@ export interface components {
 }
 export type $defs = Record<string, never>
 export interface operations {
-  findMyDisclosure: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        reportId: string
-      }
-      cookie?: never
-    }
-    requestBody?: never
-    responses: {
-      /** @description OK */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ReportDisclosureResponse']
-        }
-      }
-      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
-  updateDisclosure: {
-    parameters: {
-      query?: never
-      header?: never
-      path: {
-        reportId: string
-      }
-      cookie?: never
-    }
-    requestBody: {
-      content: {
-        'application/json': components['schemas']['UpdateReportDisclosureRequest']
-      }
-    }
-    responses: {
-      /** @description OK */
-      200: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ReportDisclosureResponse']
-        }
-      }
-      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
-      401: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
-      403: {
-        headers: {
-          [name: string]: unknown
-        }
-        content: {
-          'application/json': components['schemas']['ErrorResponse']
-        }
-      }
-    }
-  }
   replaceRequirements: {
     parameters: {
       query?: never
@@ -19255,6 +19000,105 @@ export interface operations {
         }
       }
       /** @description CURRICULUM_FILE_STORE_FAILED 업로드한 파일을 저장하지 못함 — 재시도 안내(22차 R2) */
+      503: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  registerCurriculumVersion: {
+    parameters: {
+      query?: {
+        /** @description 제목을 바꿔 달 때만 보낸다. 비우면 기존 제목을 그대로 쓴다 */
+        title?: string
+      }
+      header?: never
+      path: {
+        /** @description 새 버전을 올릴 교안 ID(버전이 바뀌어도 유지되는 고정 식별자) */
+        materialId: string
+      }
+      cookie?: never
+    }
+    requestBody?: {
+      content: {
+        'multipart/form-data': {
+          /**
+           * Format: binary
+           * @description PDF 파일
+           */
+          file: string
+        }
+      }
+    }
+    responses: {
+      /** @description 새 버전 등록 성공 */
+      201: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['CurriculumVersionResponse']
+        }
+      }
+      /** @description CURRICULUM_FILE_REQUIRED 업로드할 파일이 없음 · CURRICULUM_FILE_TYPE_INVALID 내용이 PDF가 아님 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(이미 지운 교안·다른 기관의 교안 포함) */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description CURRICULUM_TITLE_DUPLICATED title을 보냈는데 다른 교안이 이미 그 제목을 쓰고 있음 */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description CURRICULUM_FILE_TOO_LARGE 앱 상한을 넘는 교안 파일 */
+      413: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description CURRICULUM_FILE_STORE_FAILED 업로드한 파일을 저장하지 못함 */
       503: {
         headers: {
           [name: string]: unknown
@@ -23129,12 +22973,10 @@ export interface operations {
       }
     }
   }
-  findManagedReports: {
+  findManagedTraineeReports: {
     parameters: {
-      query?: {
-        cohortId?: string
-        roundId?: string
-        classId?: string
+      query: {
+        traineeId: string
       }
       header?: never
       path?: never
@@ -23148,7 +22990,7 @@ export interface operations {
           [name: string]: unknown
         }
         content: {
-          'application/json': components['schemas']['ManagedReportListResponse']
+          'application/json': components['schemas']['TraineeReportsResponse']
         }
       }
       /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */

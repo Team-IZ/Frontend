@@ -2,7 +2,7 @@
 
 import type {
   findMyReport_Path,
-  findManagedReports_Query,
+  findManagedTraineeReports_Query,
   findClassDiagnosis_Query,
 } from './reportingTypes'
 
@@ -16,8 +16,8 @@ export const reportingKeys = {
   findMyReports: () => [...reportingKeys.all, 'findMyReports'] as const,
   findMyReport: (params: { path: findMyReport_Path }) =>
     [...reportingKeys.all, 'findMyReport', params.path ?? null] as const,
-  findManagedReports: (params: { query?: findManagedReports_Query }) =>
-    [...reportingKeys.all, 'findManagedReports', params.query ?? null] as const,
+  findManagedTraineeReports: (params: { query?: findManagedTraineeReports_Query }) =>
+    [...reportingKeys.all, 'findManagedTraineeReports', params.query ?? null] as const,
   findClassDiagnosis: (params: { query?: findClassDiagnosis_Query }) =>
     [...reportingKeys.all, 'findClassDiagnosis', params.query ?? null] as const,
 }

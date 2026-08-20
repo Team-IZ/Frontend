@@ -7,6 +7,7 @@ import {
   findCohortRiskTraineeRates,
   findManagerHeatmap,
   findCohortGroupGaps,
+  findManagerConceptScope,
   findCohortComparison,
   findCohortActionsRequired,
   findActionRequiredProjects,
@@ -24,6 +25,9 @@ import type {
   findManagerHeatmap_Response,
   findCohortGroupGaps_Path,
   findCohortGroupGaps_Response,
+  findManagerConceptScope_Path,
+  findManagerConceptScope_Query,
+  findManagerConceptScope_Response,
   findCohortComparison_Path,
   findCohortComparison_Query,
   findCohortComparison_Response,
@@ -77,6 +81,18 @@ export function useFindCohortGroupGaps(
   return useQuery({
     queryKey: analyticsKeys.findCohortGroupGaps(params),
     queryFn: ({ signal }) => findCohortGroupGaps({ ...params, signal }),
+    ...options,
+  })
+}
+
+/** 면담 브리프 개념 소관 판정 */
+export function useFindManagerConceptScope(
+  params: { path: findManagerConceptScope_Path; query: findManagerConceptScope_Query },
+  options?: QueryOptions<findManagerConceptScope_Response>,
+) {
+  return useQuery({
+    queryKey: analyticsKeys.findManagerConceptScope(params),
+    queryFn: ({ signal }) => findManagerConceptScope({ ...params, signal }),
     ...options,
   })
 }

@@ -20,14 +20,16 @@ export type findMyReport_Response =
 export type findMyReport_Item = NonNullable<findMyReport_Response['concepts']>[number]
 export type findMyReport_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
-// GET /api/v0/reports/managed — 담당 반 리포트 목록 조회 (매니저)
-export type findManagedReports_Query = NonNullable<
-  operations['findManagedReports']['parameters']['query']
+// GET /api/v0/reports/managed — 담당 교육생 리포트 조회 (매니저)
+export type findManagedTraineeReports_Query = NonNullable<
+  operations['findManagedTraineeReports']['parameters']['query']
 >
-export type findManagedReports_Response =
-  operations['findManagedReports']['responses'][200]['content']['application/json']
-export type findManagedReports_Item = NonNullable<findManagedReports_Response['reports']>[number]
-export type findManagedReports_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
+export type findManagedTraineeReports_Response =
+  operations['findManagedTraineeReports']['responses'][200]['content']['application/json']
+export type findManagedTraineeReports_Item = NonNullable<
+  findManagedTraineeReports_Response['rounds']
+>[number]
+export type findManagedTraineeReports_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // GET /api/v0/reports/class-diagnosis — 수업 진단 리포트 조회
 export type findClassDiagnosis_Query = NonNullable<

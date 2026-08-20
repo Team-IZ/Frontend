@@ -9,6 +9,7 @@ import {
   recordSessionActivity,
   recordSessionActivityEvent,
   openReviewSession,
+  updateAssessmentAttemptValidity,
 } from './assessmentApi'
 import { assessmentKeys } from './assessmentKeys'
 import type {
@@ -27,6 +28,9 @@ import type {
   recordSessionActivityEvent_Response,
   openReviewSession_Body,
   openReviewSession_Response,
+  updateAssessmentAttemptValidity_Path,
+  updateAssessmentAttemptValidity_Body,
+  updateAssessmentAttemptValidity_Response,
 } from './assessmentTypes'
 
 /*
@@ -135,6 +139,28 @@ export function useOpenReviewSession(
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (vars: { body: openReviewSession_Body }) => openReviewSession(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: assessmentKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 무효 응시 확정·복원 */
+export function useUpdateAssessmentAttemptValidity(
+  options?: MutationOptions<
+    updateAssessmentAttemptValidity_Response,
+    { path: updateAssessmentAttemptValidity_Path; body: updateAssessmentAttemptValidity_Body }
+  >,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: {
+      path: updateAssessmentAttemptValidity_Path
+      body: updateAssessmentAttemptValidity_Body
+    }) => updateAssessmentAttemptValidity(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다

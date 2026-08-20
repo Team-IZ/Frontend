@@ -1,15 +1,8 @@
-import { useMemo, useState } from 'react'
-import { AlertTriangle, Send } from 'lucide-react'
+import { useState } from 'react'
+import { AlertTriangle } from 'lucide-react'
 import type { UseQueryResult } from '@tanstack/react-query'
 import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/utils/cn'
-import ReportReleaseDialog from './ReportReleaseDialog'
-import {
-  pickByTrainee,
-  splitReports,
-  useManagedReports,
-  type ManagedReport,
-} from '../_/api/reports'
 import { Button } from '@/components/ui/Button'
 import { Alert, AlertTitle } from '@/components/ui/Alert'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -19,6 +12,7 @@ import {
   retryTargetCount,
   type EvaluationSummary,
   type ResultStatus,
+  type EvaluationTrainee,
 } from '../_/api/types'
 import PersonResultPanel from './PersonResultPanel'
 
@@ -33,12 +27,11 @@ import PersonResultPanel from './PersonResultPanel'
   `retrySentAt`·`retryDueAt`·`retryTakenAt`에 대응하는 필드도 없다 — 목이 화면
   안에서만 굴리던 상태다. 32차 요청서로 올린다.
 
-  ⚠ **「발행」 버튼은 없다 — 대신 「공개」가 있다**(`ReportRelease`). 둘은 다른 사건이다.
-  발행(`reportPublished`·`publishedAt`)은 회차 마감 후 서버가 한꺼번에 하고 매니저 손이
-  안 간다. 매니저가 하는 것은 **교육생에게 여는 일**(`PUT /reports/{id}/disclosure`)이고,
-  그 호출이 없으면 발행돼도 리포트는 영원히 잠겨 있다(스펙).
-  한때 「발행 버튼을 뺐다」고만 적어 뒀는데, 뺀 것이 아니라 **서버에 그런 오퍼레이션이
-  없었던 것**이고 공개 쪽은 처음부터 있었다.
+  🔴 **「리포트 공개」 개념이 사라졌다.** 검증 세션 종료 → 리포트 발행 → 교육생이
+  즉시 열람이라, 매니저가 여는 버튼(`PUT /reports/{id}/disclosure`)·모달·명단 상태가
+  전부 없어졌다. 남는 가림막은 도달 2단 미만 개념의 `qa`·`explanation`뿐이고 그마저도
+  다시 보기 완료 여부로 갈린다 — 리포트 단위가 아니라 **개념 단위**다(교육생 TR-04
+  소관). 여기서는 `reportPublished` 배지만 남는다.
 
   ⚠ **`resultAvailable`로 빈 상태를 가른다** — 목은 `result === null`이었다.
   아직 아무도 응시를 마치지 않은 것과 조회 실패는 다른 상태다.
@@ -55,19 +48,6 @@ type Props = {
 
 export default function ResultTab({ projectId, query }: Props) {
   const [selected, setSelected] = useState<string>('summary')
-  /*
-    개인 행에 붙일 공개 상태. **모달과 같은 조회다** — 쿼리 키가 같아 캐시를 공유하고,
-    모달에서 열면 이 레일도 같이 갱신된다(무효화가 한 번에 닿는다).
-
-    🔴 누구에게 열었는지는 **모달을 열지 않고도 알아야 하는 상태**다. 한때 「같은 목록이
-    두 번」이라며 명단을 통째로 걷어냈는데, 왼쪽 레일은 「채점 결과」 축이라 공개 상태를
-    갖고 있지 않았다 — 중복이 아니라 **빠진 축**이었다.
-  */
-  const reports = useManagedReports({ roundId: query.data?.assessmentRoundId })
-  const releaseByUser = useMemo(
-    () => new Map(pickByTrainee(reports.data ?? []).map((r) => [r.traineeUserId, r])),
-    [reports.data],
-  )
 
   if (!query.data && !query.isError) {
     /* 실측 — 틀 578 · 왼쪽 목록 폭 basis-64 · 항목 36px(27개는 스크롤이라 16개만 그린다) */
@@ -183,12 +163,6 @@ export default function ResultTab({ projectId, query }: Props) {
                 */}
                 <span className="flex flex-none items-center gap-1.5">
                   {/*
-                    공개 상태 — **색만으로 말하지 않는다**(화면 규칙). 짧은 글자를 쓰고,
-                    발행 전이면 아무것도 안 붙인다(열 수 없는 것에 상태를 달면 「닫혀
-                    있다」로 읽힌다).
-                  */}
-                  <ReleaseMark report={releaseByUser.get(t.userId)} />
-                  {/*
                     🔴 **`—`가 정반대로 읽혔다**(사용자 지적). 표에서 대시는 「값 없음」인데
                     여기서는 **「응시 완료 · 막힌 개념 0」**, 즉 가장 좋은 결과였다. 같은 열에
                     「응시 중」·「중단」이 섞여 있어 아직 안 한 상태로 보였다.
@@ -243,41 +217,8 @@ export default function ResultTab({ projectId, query }: Props) {
   )
 }
 
-/**
- * 개인 행의 공개 표시. 발행 전에는 아무것도 안 그린다 — 열 수 없는 것에 「닫힘」을
- * 달면 매니저가 닫아 둔 것처럼 읽힌다.
- */
-function ReleaseMark({ report }: { report?: ManagedReport }) {
-  if (!report?.publishedAt) return null
-  /*
-    🔴 **작은 글자로는 안 보였다**(스크린샷으로 확인). 오른쪽 「막힘 1 · —」과 붙어
-    한 덩어리로 읽혔다 — 둘은 다른 축이라(공개 여부 · 채점 결과) 모양을 갈라야 한다.
-    면을 깔아 칩으로 만들고, **색만으로 말하지 않게** 글자는 남긴다.
-  */
-  const open = report.bodyVisible
-  return (
-    <span
-      className={cn(
-        'rounded-full px-1.5 py-px text-2xs font-bold',
-        open ? 'bg-success-soft text-success' : 'bg-warning-soft text-warning',
-      )}
-      title={
-        open
-          ? `${report.scope === 'SUMMARY' ? '요약' : '전체'} 공개`
-          : '아직 교육생이 볼 수 없습니다'
-      }
-    >
-      {open ? '공개' : '비공개'}
-    </span>
-  )
-}
-
 function SummaryPane({ result }: { result: EvaluationSummary }) {
   const s = result.summary
-  const [releaseOpen, setReleaseOpen] = useState(false)
-  /* 버튼 옆 숫자만 쓴다 — 목록은 모달이 갖는다 */
-  const reports = useManagedReports({ roundId: result.assessmentRoundId })
-  const split = splitReports(reports.data ?? [])
 
   return (
     <div className="flex flex-col gap-4 p-5">
@@ -286,55 +227,49 @@ function SummaryPane({ result }: { result: EvaluationSummary }) {
         <Badge variant={result.reportPublished ? 'success' : 'neutral'}>
           {result.reportPublished ? '발행 완료' : '발행 전'}
         </Badge>
-
-        {/*
-          🔴 **「발행」과 「공개」를 나란히 두되 섞이지 않게 한다.** 위 배지는 서버가 한
-          발행이고, 오른쪽 버튼은 매니저가 하는 공개다 — 같은 줄에 두면 한 사건으로
-          읽히므로 **오른쪽 끝으로 밀고 숫자를 붙여** 다른 축임을 드러낸다.
-
-          목록은 모달 안에 있다(`ReportReleaseDialog` 머리말) — 여기서 이름을 늘어놓으면
-          왼쪽 레일이 이미 가진 목록이 한 화면에 두 번 생긴다.
-        */}
-        <span className="ml-auto flex items-center gap-2">
-          {reports.data && (
-            <span className="text-fg-muted text-xs tabular-nums">
-              공개 <b className="text-fg font-bold">{split.opened.length}</b>/
-              {split.published.length}
-            </span>
-          )}
-          {/* 이 탭에서 매니저가 하는 유일한 쓰기 액션이라 주 버튼(파랑)이다 */}
-          <Button size="sm" onClick={() => setReleaseOpen(true)}>
-            <Send />
-            리포트 공개
-          </Button>
-        </span>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <SummaryCard label="응시" value={`${s.attendedCount}명`} />
-        <SummaryCard label="불합격 인원" value={`${s.failedCount}명`} />
-        {/*
-          발행 전엔 합을 보여주지 않는다 — 아직 응시 안 한 인원이 빠진 임시 값이고,
-          서버가 이 합을 미리 계산하지 않는 이유도 그 화면 규칙 때문이다
-        */}
+      {/*
+        🔴 **카드 셋이 전부 분모 없는 절대수였다**(실데이터로 잡았다). 6차는
+        「응시 4명」이라고만 했는데 명단이 54명이고 48명이 아직 응시 중이다 —
+        4명이 전부인지 54명 중 4명인지 화면만 봐서는 알 수 없었다.
+
+        **이 화면이 답해야 하는 질문은 「누구를 봐야 하나」다.** 그러려면 먼저
+        「몇 명이 아직 안 끝났나」가 보여야 하는데, 카드 셋에는 그 수가 어디에도
+        없었다(응시 중 48 · 중단 2 · 무효 1이 통째로 빠졌다).
+
+        그래서 **깔때기 한 줄**을 먼저 두고 카드는 그 안의 판정만 말한다.
+        서버 `summary`에 진행 상태별 수가 없어 명단 행에서 센다 — 판정을 다시
+        하는 것이 아니라 서버가 준 `resultStatus`를 그대로 묶는 것이다
+        (`attendedCount`와 `AVAILABLE` 행 수가 4/4 회차에서 일치함을 확인했다).
+      */}
+      <ProgressBar trainees={result.trainees} total={s.totalCount} />
+
+      {/*
+        🔴 **카드 둘이 같은 숫자였다**(사용자 지적 · 실데이터로 확인). 「불합격」과
+        「다시 보기 대상」이 4/4 회차에서 전부 같은 값이었다 — `다시 보기 대상 =
+        불합격 + 미응시`인데 **미응시가 늘 0**이라 두 이름으로 같은 수를 두 번 말한
+        것이다. 매니저는 「왜 두 번 쓰지」에서 멈춘다.
+
+        **판정어(합격·불합격)가 아니라 매니저가 다음에 할 일(`다시 보기 대상`)로
+        카드 이름을 바꾼다.** 값도 `failedCount` 단독이 아니라 `retryTargetCount`
+        (불합격 + 미응시)로 — 이름과 값이 같은 개념을 가리켜야 한다.
+
+        세 번째 자리였던 「리포트 공개」 카드는 그 개념 자체가 없어져 뺐다 — 남는
+        원자 값(무효 등)은 위 진행 막대가 이미 말하고 있어 카드로 또 나누지 않는다.
+      */}
+      <div className="grid grid-cols-2 gap-3">
+        <SummaryCard
+          label="응시 완료"
+          value={`${s.attendedCount} / ${s.totalCount}명`}
+          caption={funnelCaption(result.trainees)}
+        />
         <SummaryCard
           label="다시 보기 대상"
-          value={result.reportPublished ? `${retryTargetCount(s)}명` : '—'}
-          caption={result.reportPublished ? '불합격 + 미응시' : '발행 후 정해짐'}
+          value={`${retryTargetCount(s)}명`}
+          caption={retryCaption(s)}
         />
       </div>
-
-      {!result.reportPublished && (
-        <p className="text-fg-subtle text-2xs">
-          아직 응시하지 않은 인원은 집계에서 빠져 있어요. 발행하면 그 시점 값으로 고정됩니다.
-        </p>
-      )}
-
-      <ReportReleaseDialog
-        assessmentRoundId={result.assessmentRoundId}
-        open={releaseOpen}
-        onOpenChange={setReleaseOpen}
-      />
 
       {result.classWarnings.length > 0 && (
         <div className="flex flex-col gap-2">
@@ -397,6 +332,95 @@ function SummaryPane({ result }: { result: EvaluationSummary }) {
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * 다시 보기 대상 카드 아래 한 줄 — 값(`retryTargetCount`)의 구성을 밝힌다.
+ * 미응시가 없으면 전부 막힘이라 따로 안 나눈다(같은 수를 두 번 말하지 않는다).
+ */
+function retryCaption(s: EvaluationSummary['summary']) {
+  if (s.attendedCount === 0 && s.notAttendedCount === 0) return '아직 응시한 사람이 없어요'
+  // 응시 완료 카드의 `funnelCaption`과 같은 방식 — 구성 값을 다 적는다(0은 뺀다)
+  const parts = [
+    s.failedCount > 0 && `막힘 ${s.failedCount}`,
+    s.notAttendedCount > 0 && `미응시 ${s.notAttendedCount}`,
+  ].filter(Boolean)
+  return parts.length > 0 ? parts.join(' · ') : '모두 통과했어요'
+}
+
+/** 명단을 진행 상태로 묶는다 — 서버 `resultStatus`를 그대로 센다(판정하지 않는다) */
+function countByStatus(trainees: EvaluationTrainee[]) {
+  const n = { done: 0, running: 0, stopped: 0, absent: 0, invalid: 0 }
+  for (const t of trainees) {
+    if (t.resultStatus === 'AVAILABLE') n.done += 1
+    else if (t.resultStatus === 'IN_PROGRESS') n.running += 1
+    else if (t.resultStatus === 'INCOMPLETE') n.stopped += 1
+    else if (t.resultStatus === 'NOT_ATTENDED') n.absent += 1
+    else if (t.resultStatus === 'INVALID') n.invalid += 1
+  }
+  return n
+}
+
+/** 응시 완료 카드 아래 한 줄 — **끝나지 않은 사람만** 적는다(0은 안 적는다) */
+function funnelCaption(trainees: EvaluationTrainee[]) {
+  const n = countByStatus(trainees)
+  const parts = [
+    n.running > 0 && `응시 중 ${n.running}`,
+    n.stopped > 0 && `중단 ${n.stopped}`,
+    n.absent > 0 && `미응시 ${n.absent}`,
+    n.invalid > 0 && `무효 ${n.invalid}`,
+  ].filter(Boolean)
+  return parts.length > 0 ? parts.join(' · ') : '모두 응시를 마쳤어요'
+}
+
+/**
+ * 진행 한 줄. **명단 전원이 어딘가에 들어간다** — 카드만 보면 응시 중·중단·무효가
+ * 어디로 갔는지 알 수 없었다.
+ *
+ * ⚠ 색만으로 말하지 않는다 — 아래 이름표에 수를 함께 적는다.
+ */
+function ProgressBar({ trainees, total }: { trainees: EvaluationTrainee[]; total: number }) {
+  const n = countByStatus(trainees)
+  /*
+    🔴 **처음에 완료를 `primary`, 응시 중을 `info`로 줬다가 바꿨다.** 둘 다 톤이 가까운
+    파랑이라 가장 큰 두 구간의 경계가 안 보였다 — 실측으로 66px과 795px이 붙어 있었는데
+    한 덩어리로 읽혔다.
+
+    **진행률 막대의 직관을 따른다** — 끝난 만큼만 채워지고 나머지는 비어 있다.
+    응시 중은 문제가 아니라 「아직」이라 중립이 맞고, 문제 상태(중단·미응시·무효)만
+    경고색을 갖는다.
+
+    ⚠ `bg-neutral`은 **없는 토큰**이었다(있는 것은 `neutral-soft`뿐) — 무효 구간이
+    투명해질 뻔했다. 지금 9기에 무효가 0이라 화면에 안 드러났다.
+  */
+  const seg = [
+    { key: 'done', label: '응시 완료', value: n.done, bar: 'bg-primary' },
+    { key: 'running', label: '응시 중', value: n.running, bar: 'bg-border-strong' },
+    { key: 'stopped', label: '중단', value: n.stopped, bar: 'bg-warning' },
+    { key: 'absent', label: '미응시', value: n.absent, bar: 'bg-danger' },
+    { key: 'invalid', label: '무효', value: n.invalid, bar: 'bg-fg-subtle' },
+  ].filter((x) => x.value > 0)
+
+  if (total === 0) return null
+
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="bg-surface-2 flex h-2 overflow-hidden rounded-full" aria-hidden>
+        {seg.map((x) => (
+          <span key={x.key} className={x.bar} style={{ width: `${(x.value / total) * 100}%` }} />
+        ))}
+      </div>
+      <div className="text-fg-muted flex flex-wrap items-center gap-x-3 gap-y-1 text-2xs">
+        <span className="text-fg-subtle">명단 {total}명</span>
+        {seg.map((x) => (
+          <span key={x.key} className="flex items-center gap-1">
+            <span className={cn('size-1.5 rounded-full', x.bar)} />
+            {x.label} <b className="text-fg font-bold tabular-nums">{x.value}</b>
+          </span>
+        ))}
       </div>
     </div>
   )

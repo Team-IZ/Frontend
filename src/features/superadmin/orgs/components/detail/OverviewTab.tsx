@@ -191,11 +191,11 @@ export default function OverviewTab({ org }: { org: Org }) {
           }
         />
         <InfoRow k="데이터 보존기간" v={`${org.dataRetentionDays}일`} />
-        {/* 활성 정책이 없으면 null이 온다 — 설정한 적이 없다는 뜻이라 대시로 둔다 */}
-        <InfoRow
-          k="공개 범위 기본값"
-          v={(org.defaultDisclosureScope && DISCLOSURE_LABEL[org.defaultDisclosureScope]) ?? '—'}
-        />
+        {/*
+          🔴 「공개 범위 기본값」을 뺐다(2026-08-20) — 백엔드가 리포트 공개/비공개
+          개념을 폐지해 `defaultDisclosureScope`가 적용될 대상이 없다(SettingsTab과
+          같은 이유).
+        */}
       </dl>
 
       <div>
@@ -206,13 +206,6 @@ export default function OverviewTab({ org }: { org: Org }) {
       </div>
     </div>
   )
-}
-
-/** 서버 enum → 화면 문구. 세 값 그대로 보여준다(지금 화면이 2값이던 것을 맞췄다) */
-const DISCLOSURE_LABEL: Record<string, string> = {
-  SUMMARY: '요약',
-  PRIVATE: '비공개',
-  FULL: '전체',
 }
 
 function CohortTable({ query }: { query: ReturnType<typeof useFindOrganizationCohorts> }) {

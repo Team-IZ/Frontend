@@ -1,4 +1,4 @@
-import { BookOpenIcon, CircleSlashIcon, LockOpenIcon } from 'lucide-react'
+import { BookOpenIcon, CircleSlashIcon, LockIcon, LockOpenIcon } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { REACH_LABEL, UNASKED_BODY, UNASKED_TITLE } from '../labels'
 import { clampLevel } from '../_/api/types'
@@ -77,8 +77,8 @@ export default function ConceptCard({ concept, isLast }: Props) {
   둘 다 회색 점선 박스였더니 구분이 안 됐다(실사용 피드백으로 발견). 뜻이 반대인데
   같은 옷을 입고 있었던 것이다.
 
-    잠금(SUMMARY) — 안에 내용이 **있는데** 아직 못 본다. 리포트 머리에서 한 번 말한다
-    문항 없음      — 안에 내용이 **없다.** 열릴 것도, 학생이 할 일도 없다
+    잠금       — 안에 내용이 **있는데** 아직 못 본다. 해당 카드에서 자물쇠로 말한다
+    문항 없음 — 안에 내용이 **없다.** 열릴 것도, 학생이 할 일도 없다
 
   그래서 **박스를 아예 그리지 않는다.** 박스가 있으면 "여기 뭔가 담겨 있다"로 읽히고,
   그게 잠금과 헷갈린 원인이다. 대신 카드 전체를 한 톤 죽이고(제목까지 fg-subtle)
@@ -133,13 +133,12 @@ function AskedBody({ concept }: { concept: Extract<ConceptReport, { asked: true 
       <p className="text-sm leading-relaxed text-fg-muted">{concept.said}</p>
 
       {/*
-        **잠금은 개념이 아니라 리포트에 걸린다.** `disclosureScope`는 *"이 리포트를
-        어디까지 공개하나"* 라 SUMMARY면 세 개념이 통째로 닫힌다 — 개념마다 자물쇠를
-        그리면 같은 말이 세 번 반복되고 "이 개념만 잠겼나"로 읽힌다. 그래서 잠금
-        안내는 리포트 머리에 한 번만 두고(`MyReportScreen`), 여기서는 **올 것이
-        왔을 때만** 그린다.
+        🔴 **잠금이 리포트 단위에서 개념 단위로 바뀌었다.** 예전엔 매니저의
+        `disclosureScope`가 리포트 하나를 통째로 열고 닫았다. 지금은 그 개념이
+        `isRetryTarget`(도달 2단 미만)인데 다시 보기를 아직 안 마쳤을 때만 서버가
+        `explanation`·`qa`를 가려서 보낸다 — 그래서 안내도 카드마다 각자 그린다.
       */}
-      {concept.explanation && (
+      {concept.explanation ? (
         // 열림 — 회색 대신 primary 색, 점선 대신 실선, 열린 자물쇠. 무게(배경+테두리)를
         // 카드 안 다른 박스와 같게 둬서 흐려 보이지 않게 한다(실사용 피드백으로 발견).
         <div className="mt-3 rounded-md border border-primary-border bg-primary-soft p-3 text-sm">
@@ -153,6 +152,13 @@ function AskedBody({ concept }: { concept: Extract<ConceptReport, { asked: true 
             </p>
           ))}
         </div>
+      ) : (
+        concept.isRetryTarget && (
+          <div className="mt-3 flex items-center gap-2 rounded-md border border-border bg-surface-2 px-3 py-2.5 text-sm text-fg-muted">
+            <LockIcon className="size-4 shrink-0" />
+            다시 보기를 마치면 자세한 해설과 문답을 볼 수 있어요
+          </div>
+        )
       )}
 
       {/*
@@ -171,7 +177,7 @@ function AskedBody({ concept }: { concept: Extract<ConceptReport, { asked: true 
         </div>
       )}
 
-      {/* SUMMARY면 문답 원문이 오지 않는다 — 없으면 목록 자체를 그리지 않는다 */}
+      {/* 잠긴 개념이면 문답 원문이 오지 않는다 — 없으면 목록 자체를 그리지 않는다 */}
       {concept.qa && <QaList entries={concept.qa} />}
     </>
   )

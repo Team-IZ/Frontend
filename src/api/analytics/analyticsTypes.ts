@@ -73,6 +73,16 @@ export type findCohortGroupGaps_Errors =
   | 'ACCESS_DENIED'
   | 'COHORT_NOT_FOUND'
 
+// GET /api/v0/cohorts/{cohortId}/analytics/concept-scope — 면담 브리프 개념 소관 판정
+export type findManagerConceptScope_Path =
+  operations['findManagerConceptScope']['parameters']['path']
+export type findManagerConceptScope_Query = NonNullable<
+  operations['findManagerConceptScope']['parameters']['query']
+>
+export type findManagerConceptScope_Response =
+  operations['findManagerConceptScope']['responses'][200]['content']['application/json']
+export type findManagerConceptScope_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
+
 // GET /api/v0/cohorts/{cohortId}/analytics/cohort-comparison — 두 기수의 검증 개념별 평균 도달 단계 비교
 export type findCohortComparison_Path = operations['findCohortComparison']['parameters']['path']
 export type findCohortComparison_Query = NonNullable<

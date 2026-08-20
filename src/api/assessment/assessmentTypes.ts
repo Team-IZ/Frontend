@@ -101,6 +101,16 @@ export type openReviewSession_Errors =
   | 'REVIEW_NOT_ELIGIBLE'
   | 'REVIEW_ALREADY_COMPLETED'
 
+// PATCH /api/v0/assessment-attempts/{attemptId}/validity — 무효 응시 확정·복원
+export type updateAssessmentAttemptValidity_Path =
+  operations['updateAssessmentAttemptValidity']['parameters']['path']
+export type updateAssessmentAttemptValidity_Body = NonNullable<
+  operations['updateAssessmentAttemptValidity']['requestBody']
+>['content']['application/json']
+export type updateAssessmentAttemptValidity_Response =
+  operations['updateAssessmentAttemptValidity']['responses'][200]['content']['application/json']
+export type updateAssessmentAttemptValidity_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
+
 // GET /api/v0/assessment-sessions/{sessionId}/problems/{problemNo} — 문제 하나의 코드·질문·문답 조회
 export type findSessionProblem_Path = operations['findSessionProblem']['parameters']['path']
 export type findSessionProblem_Response =

@@ -13,6 +13,9 @@ import type {
   findManagerHeatmap_Response,
   findCohortGroupGaps_Path,
   findCohortGroupGaps_Response,
+  findManagerConceptScope_Path,
+  findManagerConceptScope_Query,
+  findManagerConceptScope_Response,
   findCohortComparison_Path,
   findCohortComparison_Query,
   findCohortComparison_Response,
@@ -66,6 +69,20 @@ export const findCohortGroupGaps = (params: { path: findCohortGroupGaps_Path } &
   unwrap<findCohortGroupGaps_Response>(
     izClient.GET('/api/v0/cohorts/{cohortId}/analytics/group-gaps', {
       params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 면담 브리프 개념 소관 판정 — `GET /api/v0/cohorts/{cohortId}/analytics/concept-scope` */
+export const findManagerConceptScope = (
+  params: {
+    path: findManagerConceptScope_Path
+    query: findManagerConceptScope_Query
+  } & RequestOptions,
+) =>
+  unwrap<findManagerConceptScope_Response>(
+    izClient.GET('/api/v0/cohorts/{cohortId}/analytics/concept-scope', {
+      params: { path: params.path, query: params.query },
       signal: params.signal,
     }) as never,
   )

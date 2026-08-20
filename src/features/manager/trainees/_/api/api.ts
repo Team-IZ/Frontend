@@ -5,16 +5,20 @@ import {
   useFindTraineeRoster,
 } from '@/api/member/useMemberQueries'
 import { useFindTraineeEvaluationDetail } from '@/api/evaluation/useEvaluationQueries'
+import { useFindManagedTraineeReports } from '@/api/reporting/useReportingQueries'
 import type {
   findManagerTraineeDetail_Response,
   findManagerTraineeTimeline_Response,
   findTraineeRoster_Response,
 } from '@/api/member/memberTypes'
+import type { findManagedTraineeReports_Response } from '@/api/reporting/reportingTypes'
 import { listQueryOptions } from '@/lib/listQuery'
 import { stripSeverityTag } from '@/lib/riskSummary'
 import type {
   ConceptReach,
   DetailRound,
+  ManagedReportConcept,
+  ManagedRoundReport,
   RosterView,
   RoundBadgeKind,
   TimelineEvent,
@@ -197,6 +201,66 @@ export function useTraineeEvaluation(
     [query.data],
   )
   return { ...query, data }
+}
+
+/**
+ * MG-06 리포트 라인 — **「리포트 발행」을 펼칠 때만** 부른다(`AssessmentRow`와 같은
+ * 지연 조회 관례). 한 번의 `GET /reports/managed?traineeId=`가 그 교육생의
+ * **회차 전부**를 준다 — 회차별로 다시 안 부른다. 쿼리 키가 `traineeId`뿐이라 같은
+ * 사람의 다른 회차를 펼쳐도 캐시를 그대로 쓴다.
+ *
+ * 회차 id는 `reportsById`의 키다. 타임라인 쪽 `assessmentRoundId`와 같은 값임을
+ * 실측으로 확인했다(강동하 6차: 둘 다 `ad9fb0a0-…`).
+ *
+ * `query.isError`(조회 자체가 실패)와 `data.status !== 'PUBLISHED'`(조회는 됐는데
+ * 이 회차가 아직 리포트를 안 가짐)를 **화면이 구분해야 해서** 값을 뭉개지 않고
+ * `status`를 그대로 돌려준다 — `ManagedRoundReport` 주석의 노지우 6차 사례 참고.
+ */
+export function useManagedTraineeReport(
+  traineeId: string | undefined,
+  roundId: string,
+  enabled: boolean,
+) {
+  const query = useFindManagedTraineeReports(
+    { query: { traineeId: traineeId ?? '' } },
+    { enabled: enabled && !!traineeId },
+  )
+  const data = useMemo<ManagedRoundReport | undefined>(() => {
+    if (!query.data) return undefined
+    const raw = query.data.reportsById[roundId]
+    if (!raw) return { status: 'NOT_FOUND' }
+    if (raw.status !== 'PUBLISHED') return { status: raw.status }
+    return {
+      status: 'PUBLISHED',
+      concepts: (raw.concepts ?? []).map(toManagedConcept),
+      missingConceptCount: raw.missingConceptCount ?? 0,
+      retryState: raw.retryState ?? 'NONE',
+    }
+  }, [query.data, roundId])
+  return { ...query, data }
+}
+
+function clampLevel(level: number | null | undefined): 0 | 1 | 2 | 3 | 4 {
+  if (typeof level !== 'number' || !Number.isFinite(level)) return 0
+  return Math.min(4, Math.max(0, Math.round(level))) as 0 | 1 | 2 | 3 | 4
+}
+
+type ManagedServerConcept = NonNullable<
+  findManagedTraineeReports_Response['reportsById'][string]['concepts']
+>[number]
+
+function toManagedConcept(c: ManagedServerConcept): ManagedReportConcept {
+  if (!c.asked) return { asked: false, name: c.name }
+  return {
+    asked: true,
+    name: c.name,
+    reachedLevel: clampLevel(c.level),
+    said: c.said ?? '',
+    isRetryTarget: c.isRetryTarget,
+    curriculumRef: c.curriculumRef ?? null,
+    explanation: c.explain?.length ? c.explain : null,
+    qa: c.qa?.length ? c.qa.map((q) => ({ ...q })) : null,
+  }
 }
 
 /** 교육생 한 사람 — 헤더·회차 격자 */

@@ -186,6 +186,50 @@ export type TraineeEvaluation = {
   concepts: EvaluationConcept[]
 }
 
+/* ──────────────────── MG-06 리포트 라인(「리포트 발행」 펼치기) ──────────────────── */
+
+/*
+  교육생 TR-04(`features/trainee/report/_/api/types.ts`)와 **모양이 같다** — 서버가
+  같은 `TraineeReportsResponse`를 준다(39차 회신). 그래도 여기 따로 두는 이유는
+  레이어 린트가 features 간 교차 import를 막기 때문이다(decision-log D33 · SA-03과
+  같은 사정) — 계약은 같아도 타입은 각 feature가 자기 것을 갖는다.
+
+  ⚠ **여기는 잠금이 없다.** 교육생 쪽은 `isRetryTarget`인데 다시 보기 전이면
+  `explanation`·`qa`가 빠지지만, 매니저에게는 서버가 그 잠금을 걸지 않는다(스펙) —
+  지도하려면 학생이 뭐라고 답했는지를 봐야 하기 때문이다.
+*/
+export type ManagedReportConcept =
+  | { asked: false; name: string }
+  | {
+      asked: true
+      name: string
+      reachedLevel: 0 | 1 | 2 | 3 | 4
+      said: string
+      isRetryTarget: boolean
+      curriculumRef: { chapter: string; pages: string; title: string } | null
+      explanation: string[] | null
+      qa: { questionLabel: string; question: string; answer: string }[] | null
+    }
+
+/*
+  🔴 **「불러오지 못했습니다」 한 줄로 뭉개지 않는다.** 실제로 있었던 상황 —
+  타임라인에 `REPORT`(리포트 발행) 이벤트가 있는 회차인데도 `reportsById`가 그 회차를
+  아직 `PENDING_PUBLISH`로 준 적이 있다(노지우 6차, 실측). 조회 자체가 실패한 것과
+  회차가 아직 리포트를 안 가진 것은 다른 사건이라 화면이 구분해 말해야 한다 —
+  `status`를 그대로 들고 있다가 서버 문서(`RoundReportResponse.status` 표)의 말을
+  그대로 쓴다.
+*/
+export type ManagedRoundReport =
+  | {
+      status: 'PUBLISHED'
+      concepts: ManagedReportConcept[]
+      missingConceptCount: number
+      retryState: 'NONE' | 'PENDING' | 'DONE'
+    }
+  | { status: 'PENDING_PUBLISH' | 'NOT_STARTED' | 'NOT_ATTEMPTED' | 'VOID_ATTEMPT' | 'STOPPED' }
+  /** 회차 id가 `reportsById`에 아예 없다 — 정상 스펙엔 없는 경우라 방어적으로만 둔다 */
+  | { status: 'NOT_FOUND' }
+
 export type RosterView = {
   rows: TraineeRow[]
   /** 필터 적용 후 전체 인원 — 페이저의 분모 */

@@ -379,7 +379,14 @@ function ReportRow({
 
 /** `RoundReportResponse.status` 표(스펙)를 그대로 옮긴다 — 화면이 새로 판정하지 않는다 */
 const REPORT_STATUS_REASON: Record<Exclude<ManagedRoundReport['status'], 'PUBLISHED'>, string> = {
-  PENDING_PUBLISH: '리포트를 만드는 중이에요 — 회차 마감 후 한꺼번에 발행됩니다.',
+  PENDING_PUBLISH: '이해도 확인까지 마쳤어요 — 리포트는 회차 마감 후 한꺼번에 발행됩니다.',
+  /*
+    **`PENDING_PUBLISH`와 갈라야 한다**(2026-08-20 추가). 백엔드가 응시 미완료(코드
+    제출·분석·이해도 확인 세션 준비/진행 중)를 전부 그쪽으로 보내던 것을 갈라낸 값이라,
+    같은 문구를 쓰면 **아직 안 끝난 회차를 「마쳤다」고 말하게 된다.**
+    매니저가 이 줄을 보는 이유는 「누구를 챙겨야 하나」라서 그 구분이 곧 행동을 가른다.
+  */
+  IN_PROGRESS: '아직 응시가 끝나지 않았어요 — 제출·분석·이해도 확인이 진행 중입니다.',
   NOT_STARTED: '아직 응시 기록이 없어요 — 제출 마감 전입니다.',
   NOT_ATTEMPTED: '마감이 지나도록 응시하지 않았어요.',
   VOID_ATTEMPT: '무효 응시로 확인이 필요해요.',

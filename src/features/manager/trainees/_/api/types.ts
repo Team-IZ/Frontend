@@ -226,7 +226,23 @@ export type ManagedRoundReport =
       missingConceptCount: number
       retryState: 'NONE' | 'PENDING' | 'DONE'
     }
-  | { status: 'PENDING_PUBLISH' | 'NOT_STARTED' | 'NOT_ATTEMPTED' | 'VOID_ATTEMPT' | 'STOPPED' }
+  /*
+    ⚠ **이 유니온은 스키마 파생이 아니라 손으로 적은 것이다** — 서버가 상태를 늘려도
+    컴파일러가 안 잡아 준다. 늘면 여기와 `Timeline.tsx`의 `REPORT_STATUS_REASON`을
+    **같이** 고쳐야 한다(그쪽은 `Record`라 키가 빠지면 컴파일이 잡는다).
+
+    `IN_PROGRESS`가 2026-08-20에 그렇게 늘었다 — 백엔드가 응시 미완료(제출·분석·세션
+    준비/진행 중)를 `PENDING_PUBLISH`로 잘못 내려보내던 것을 갈라낸 값이다.
+  */
+  | {
+      status:
+        | 'PENDING_PUBLISH'
+        | 'IN_PROGRESS'
+        | 'NOT_STARTED'
+        | 'NOT_ATTEMPTED'
+        | 'VOID_ATTEMPT'
+        | 'STOPPED'
+    }
   /** 회차 id가 `reportsById`에 아예 없다 — 정상 스펙엔 없는 경우라 방어적으로만 둔다 */
   | { status: 'NOT_FOUND' }
 

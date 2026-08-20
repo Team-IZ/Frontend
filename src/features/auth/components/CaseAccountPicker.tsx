@@ -13,7 +13,7 @@ import {
 const ALL = '전체'
 
 /*
-  dev 전용 — 교육생 **상태별** 테스트 계정 고르개.
+  dev 전용 — 케이스(교육생 상태별 · 매니저/오퍼레이터 담당자별) 테스트 계정 고르개.
 
   ## 왜 접어 두나
   계정이 수십 개다. 펼쳐 둔 채로 로그인 화면에 놓으면 원래 있어야 할 것(역할 버튼 넷,
@@ -83,7 +83,7 @@ export default function CaseAccountPicker({
           className={cn('size-3 shrink-0 transition-transform', open && 'rotate-90')}
         />
         <span className="flex-1 text-left">
-          교육생 케이스별 계정 <span className="text-fg-subtle">{CASE_ACCOUNT_TOTAL}개</span>
+          케이스별 계정 <span className="text-fg-subtle">{CASE_ACCOUNT_TOTAL}개</span>
         </span>
         <span>{open ? '접기' : '펼치기'}</span>
       </button>

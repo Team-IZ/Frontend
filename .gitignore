@@ -45,3 +45,6 @@ docs/dev/portfolio-security-notes.md
 # .env는 같은 내용을 Vercel 환경변수에 붙여 넣을 한 줄이다
 dev-accounts.json
 dev-accounts.env
+
+# 매니저·오퍼레이터 담당자별 계정 — 손으로 관리한다(스크립트가 안 건드림, quickLoginAccounts.ts 참고)
+dev-team-accounts.json

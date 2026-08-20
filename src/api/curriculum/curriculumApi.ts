@@ -2,6 +2,8 @@
 
 import { izClient, unwrap, type RequestOptions } from '@/api/_contract'
 import type {
+  findCurriculumVersionHistory_Path,
+  findCurriculumVersionHistory_Response,
   requestAnalysis_Path,
   requestAnalysis_Query,
   requestAnalysis_Response,
@@ -9,12 +11,15 @@ import type {
   findOrganizationCurricula_Query,
   findOrganizationCurricula_Response,
   findCurriculum_Path,
+  findCurriculum_Query,
   findCurriculum_Response,
   deleteCurriculum_Path,
   deleteCurriculum_Response,
   findSections_Path,
+  findSections_Query,
   findSections_Response,
   findUsedProjects_Path,
+  findUsedProjects_Query,
   findUsedProjects_Response,
   findComparableCohorts_Query,
   findComparableCohorts_Response,
@@ -23,6 +28,17 @@ import type {
   findLinkableCurricula_Path,
   findLinkableCurricula_Response,
 } from './curriculumTypes'
+
+/** 교안 버전 이력 — `GET /api/v0/curricula/{materialId}/versions` */
+export const findCurriculumVersionHistory = (
+  params: { path: findCurriculumVersionHistory_Path } & RequestOptions,
+) =>
+  unwrap<findCurriculumVersionHistory_Response>(
+    izClient.GET('/api/v0/curricula/{materialId}/versions', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
 
 /** 재분석 요청 — `POST /api/v0/curricula/{materialId}/analyses` */
 export const requestAnalysis = (
@@ -50,10 +66,12 @@ export const findOrganizationCurricula = (
   )
 
 /** 교안 단건 상세 — `GET /api/v0/curricula/{materialId}` */
-export const findCurriculum = (params: { path: findCurriculum_Path } & RequestOptions) =>
+export const findCurriculum = (
+  params: { path: findCurriculum_Path; query?: findCurriculum_Query } & RequestOptions,
+) =>
   unwrap<findCurriculum_Response>(
     izClient.GET('/api/v0/curricula/{materialId}', {
-      params: { path: params.path },
+      params: { path: params.path, query: params.query ?? {} },
       signal: params.signal,
     }) as never,
   )
@@ -68,19 +86,23 @@ export const deleteCurriculum = (params: { path: deleteCurriculum_Path } & Reque
   )
 
 /** 교안 섹션·개념 조회 — `GET /api/v0/curricula/{materialId}/sections` */
-export const findSections = (params: { path: findSections_Path } & RequestOptions) =>
+export const findSections = (
+  params: { path: findSections_Path; query?: findSections_Query } & RequestOptions,
+) =>
   unwrap<findSections_Response>(
     izClient.GET('/api/v0/curricula/{materialId}/sections', {
-      params: { path: params.path },
+      params: { path: params.path, query: params.query ?? {} },
       signal: params.signal,
     }) as never,
   )
 
 /** 쓰인 회차 — `GET /api/v0/curricula/{materialId}/projects` */
-export const findUsedProjects = (params: { path: findUsedProjects_Path } & RequestOptions) =>
+export const findUsedProjects = (
+  params: { path: findUsedProjects_Path; query?: findUsedProjects_Query } & RequestOptions,
+) =>
   unwrap<findUsedProjects_Response>(
     izClient.GET('/api/v0/curricula/{materialId}/projects', {
-      params: { path: params.path },
+      params: { path: params.path, query: params.query ?? {} },
       signal: params.signal,
     }) as never,
   )

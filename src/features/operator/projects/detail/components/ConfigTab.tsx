@@ -98,14 +98,27 @@ export default function ConfigTab({
                     **교안 이름은 원본으로 가는 링크다.** 이 화면에는 교안을 볼 자리가
                     없어서(파일·쪽수·분석 상태는 운영 관리가 갖는다) 이름만 읽고 끝났다.
                     교안 버전 조회가 실패하면 이름이 없다 — 연결 자체는 있으므로 그 사실을 쓴다.
+
+                    🔴 **목록이 아니라 그 교안으로 간다.** 한때 `/operator/curricula`(목록)로만
+                    보내서, 눌러도 **어느 교안이었는지 다시 찾아야 했다.** 서버가
+                    `materialId`를 같이 주므로 바로 그 상세로 갈 수 있다.
+
+                    **연결된 버전을 실어 보낸다**(`?version=`) — 이 회차가 쓰는 것이 v1인데
+                    상세가 최신 v2를 그리면 쪽 번호가 어긋난 채로 읽힌다. 받는 쪽이 아직
+                    옛 버전을 못 그려서(44차 R1 대기) 지금은 그 사실을 안내로 말한다.
+
+                    `materialId`가 `null`일 수 있다(교안 버전 조회 실패) — 그때는 링크를
+                    안 걸고 이름만 남긴다. 갈 곳을 모르는 링크는 누르면 배신한다.
                   */}
-                  {c.originalFileName ? (
+                  {c.originalFileName && c.materialId ? (
                     <Link
-                      to="/operator/curricula"
+                      to={`/operator/curricula/${c.materialId}?versionId=${c.curriculumVersionId}`}
                       className="hover:text-primary font-semibold hover:underline"
                     >
                       {c.originalFileName}
                     </Link>
+                  ) : c.originalFileName ? (
+                    <b className="font-semibold">{c.originalFileName}</b>
                   ) : (
                     <b className="font-semibold">(이름을 불러오지 못함)</b>
                   )}
@@ -163,12 +176,17 @@ export default function ConfigTab({
                     {owner?.originalFileName && (
                       <>
                         {' · '}
-                        <Link
-                          to="/operator/curricula"
-                          className="hover:text-primary hover:underline"
-                        >
-                          {owner.originalFileName}
-                        </Link>
+                        {/* 위 교안 줄과 같은 규칙 — 그 교안의 그 버전으로 간다 */}
+                        {owner.materialId ? (
+                          <Link
+                            to={`/operator/curricula/${owner.materialId}?versionId=${owner.curriculumVersionId}`}
+                            className="hover:text-primary hover:underline"
+                          >
+                            {owner.originalFileName}
+                          </Link>
+                        ) : (
+                          owner.originalFileName
+                        )}
                       </>
                     )}
                     {owner?.versionNo != null && ` v${owner.versionNo}`}

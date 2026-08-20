@@ -40,7 +40,18 @@ function toView(s: Server): ReportsData {
 function toReport(r: ServerReport): RoundReport {
   const base = { id: r.id, label: r.label }
 
-  switch (r.status) {
+  /*
+    **캐스트를 지웠다**(2026-08-20). 백엔드가 배포되고 `npm run api:pull`·`api:gen`을
+    돌려 **생성 타입이 `IN_PROGRESS`를 실제로 포함하게 됐다** — 이 자리에 있던
+    `as ServerReport['status'] | 'IN_PROGRESS'`는 스키마가 그 값을 모르던 동안의
+    임시 조치였고, 그 주석이 "재생성 후에는 지워도 된다"고 적어 둔 그대로다.
+
+    이제 상태가 하나 늘면 **컴파일러가 이 switch에서 잡는다** — 캐스트가 남아 있으면
+    그 안전망이 계속 꺼져 있게 된다.
+  */
+  const status = r.status
+
+  switch (status) {
     case 'PUBLISHED':
       return {
         ...base,
@@ -57,11 +68,13 @@ function toReport(r: ServerReport): RoundReport {
       }
     case 'PENDING_PUBLISH':
       return { ...base, status: 'PENDING_PUBLISH', publishAfter: r.publishAfter ?? null }
+    case 'IN_PROGRESS':
+      return { ...base, status: 'IN_PROGRESS' }
     case 'NOT_STARTED':
     case 'NOT_ATTEMPTED':
     case 'VOID_ATTEMPT':
     case 'STOPPED':
-      return { ...base, status: r.status }
+      return { ...base, status }
   }
 }
 

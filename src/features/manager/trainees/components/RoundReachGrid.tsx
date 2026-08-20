@@ -85,6 +85,16 @@ export function RoundReachGrid({ rounds }: { rounds: DetailRound[] }) {
               >
                 {round.label}
               </p>
+              {/*
+                🔴 **개념 이름이 셋 다 잘려서 아무것도 못 읽었다**(78px + `truncate`,
+                렌더에서 잡았다) — `계층 분리와 의…`·`예외 처리와 롤…`처럼 앞머리만 남아
+                어느 개념인지 구분이 안 됐다. **개념 이름은 교안에서 오는 값이라 길이를
+                우리가 못 정한다**(히트맵에서 내린 것과 같은 판단).
+
+                그래서 칸을 넓히고(78 → 104px) `truncate`를 걷어 **두 줄로 접히게** 뒀다.
+                동시에 색 블록은 낮췄다(h-10 → h-8, 3120 → 2496px²) — 이름이 읽히는 것이
+                도달 숫자보다 먼저다. 숫자가 무엇에 대한 것인지 모르면 색도 소용없다.
+              */}
               <div className="flex gap-1">
                 {round.concepts.map((c) =>
                   /* null은 0단이 아니다 — 문항이 없거나 한 축도 답하지 않은 것이다 */
@@ -97,7 +107,7 @@ export function RoundReachGrid({ rounds }: { rounds: DetailRound[] }) {
                           : c.conceptName
                       }
                       style={NA_PATTERN}
-                      className="flex h-10 w-[78px] items-center justify-center rounded-md text-sm text-fg-subtle"
+                      className="flex h-8 w-[104px] items-center justify-center rounded-md text-xs text-fg-subtle"
                     >
                       ―
                     </span>
@@ -106,7 +116,7 @@ export function RoundReachGrid({ rounds }: { rounds: DetailRound[] }) {
                       key={c.problemNo}
                       title={c.conceptName}
                       className={cn(
-                        'flex h-10 w-[78px] items-center justify-center rounded-md text-sm font-bold tabular-nums',
+                        'flex h-8 w-[104px] items-center justify-center rounded-md text-xs font-bold tabular-nums',
                         REACH_STYLE[c.level],
                       )}
                     >
@@ -120,7 +130,7 @@ export function RoundReachGrid({ rounds }: { rounds: DetailRound[] }) {
                   <span
                     key={c.problemNo}
                     title={c.conceptName}
-                    className="w-[78px] truncate text-center text-2xs text-fg-subtle"
+                    className="w-[104px] text-center text-2xs leading-tight text-fg-subtle"
                   >
                     {c.conceptName}
                   </span>

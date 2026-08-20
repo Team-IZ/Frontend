@@ -5078,7 +5078,7 @@
           "Curriculum"
         ],
         "summary": "교안 등록 | ✅ 사용 가능",
-        "description": "PDF 파일을 업로드해 새 교안(material)과 첫 버전(version)을 만든다.\n⚠ 파일은 현재 로컬 디스크에 저장된다 — 나중에 S3 등으로 교체 예정.\n⚠ 등록 직후엔 분석이 안 된 상태다. 섹션·검증개념을 쓰려면 별도로\n`POST /curricula/{materialId}/analyses`를 호출해야 한다.\n\n**요청 (multipart/form-data)**\n- file (필수): PDF 파일\n- title (필수): 교안 제목\n- topic (선택): 주제\n\n**응답 (201)**\n- 생성된 교안 버전 정보(응답 필드는 \"기수 연결 교안 목록\"과 동일)\n\n## 🔴 22차 R2 — 코드 없는 500으로 나가던 두 실패\n\n`50KB짜리도 500`이라는 보고를 따라간 결과 **크기와 무관한 두 실패**가 있었다.\n둘 다 `ApiExceptionHandler`를 거치지 못해 코드 없는 500으로 나갔고, 스펙에도\n없는 상태였다. 이제 각각 코드를 가진다.\n\n| 코드 | 상태 | 언제 |\n|---|---|---|\n| `CURRICULUM_TITLE_DUPLICATED` | 409 | 같은 기관에 **같은 제목**의 교안이 이미 있다 |\n| `CURRICULUM_FILE_STORE_FAILED` | 503 | 저장 경로가 읽기 전용이거나 가득 찼다 |\n\n**제목 중복이 특히 잘 걸린다.** `uq_curriculum_material_org_id_normalized_title`이\n부분 인덱스가 아니라 전역 UNIQUE라 **논리 삭제된 교안도 제목을 계속 점유**한다.\n같은 제목으로 다시 시험하면 파일이 무엇이든 이 충돌이 난다. 화면은 이 코드로\n제목 입력란에 인라인 오류를 띄우면 된다(회차 이름의 `PROJECT_NAME_DUPLICATED`와 같다).\n\n> **Lambda 6MB 상한(요청서 ②)은 이 커밋의 범위가 아니다.** 본문이 base64로\n> 부풀어(×4/3) 실질 4.5MB에서 막히는 것이라 앱이 손댈 수 있는 층이 아니고,\n> presigned S3로 그 층을 비켜가는 것이 답이다 — 계약 변경이라 별건이다.\n\n## 파일 형식은 이름이 아니라 내용으로 판정한다\n\n앞 5바이트가 `%PDF-` 인지 **실제로 읽어** 확인한다. 확장자와 `Content-Type` 은\n보내는 쪽이 적는 값이라 근거가 되지 못한다 — 종전에는 `.jpg` 를 `.pdf` 로 이름만\n바꿔도 그대로 저장됐다. 제출물 ZIP 이 원래부터 쓰던 원칙을 교안에 맞춘 것이다.\n\n저장되는 `mimeType` 도 클라이언트 값이 아니라 서버가 확인한 `application/pdf` 다.\n\n| 코드 | 상태 | 언제 |\n|---|---|---|\n| `CURRICULUM_FILE_TYPE_INVALID` | 400 | 내용이 PDF 가 아니다 |\n| `CURRICULUM_FILE_TOO_LARGE` | 413 | 앱 상한(`curriculum.upload.max-bytes`, 기본 50MB)을 넘었다 |\n\n크기 상한을 앱에도 두는 이유는 **톰캣 multipart 상한(60MB)에서 먼저 걸리면 도메인\n코드가 붙지 않기 때문**이다. 그 요청은 컨트롤러에 닿지 못해 코드 없는 500 이 된다.\n",
+        "description": "PDF 파일을 업로드해 새 교안(material)과 첫 버전(version)을 만든다.\n⚠ 파일은 현재 로컬 디스크에 저장된다 — 나중에 S3 등으로 교체 예정.\n⚠ 등록 직후엔 분석이 안 된 상태다. 섹션·검증개념을 쓰려면 별도로\n`POST /curricula/{materialId}/analyses`를 호출해야 한다.\n\n**요청 (multipart/form-data)**\n- file (필수): PDF 파일\n- title (필수): 교안 제목\n- topic (선택): 주제\n\n**응답 (201)**\n- 생성된 교안 버전 정보(응답 필드는 \"기수 연결 교안 목록\"과 동일)\n\n## 🔴 22차 R2 — 코드 없는 500으로 나가던 두 실패\n\n`50KB짜리도 500`이라는 보고를 따라간 결과 **크기와 무관한 두 실패**가 있었다.\n둘 다 `ApiExceptionHandler`를 거치지 못해 코드 없는 500으로 나갔고, 스펙에도\n없는 상태였다. 이제 각각 코드를 가진다.\n\n| 코드 | 상태 | 언제 |\n|---|---|---|\n| `CURRICULUM_TITLE_DUPLICATED` | 409 | 같은 기관에 **같은 제목**의 교안이 이미 있다 |\n| `CURRICULUM_FILE_STORE_FAILED` | 503 | 저장 경로가 읽기 전용이거나 가득 찼다 |\n\n**(2026-08-20 정정)** `uq_curriculum_material_org_id_normalized_title`은 여전히\n부분 인덱스가 아니라 전역 UNIQUE지만, `CurriculumMaterial#softDelete()`가 삭제와\n동시에 `normalized_title`을 유일한 값으로 봉인해 **제목은 더 이상 점유되지 않는다.**\n논리 삭제된 교안과 같은 제목으로 다시 등록해도 통과한다. (raw SQL로 삭제 플래그만\n찍고 이 봉인을 거치지 않은 과거 행 56건도 소급 봉인 완료 — 지금은 재현되지 않는다.)\n화면은 이 코드로 제목 입력란에 인라인 오류를 띄우면 된다(회차 이름의\n`PROJECT_NAME_DUPLICATED`와 같다).\n\n> **Lambda 6MB 상한(요청서 ②)은 이 커밋의 범위가 아니다.** 본문이 base64로\n> 부풀어(×4/3) 실질 4.5MB에서 막히는 것이라 앱이 손댈 수 있는 층이 아니고,\n> presigned S3로 그 층을 비켜가는 것이 답이다 — 계약 변경이라 별건이다.\n\n## 파일 형식은 이름이 아니라 내용으로 판정한다\n\n앞 5바이트가 `%PDF-` 인지 **실제로 읽어** 확인한다. 확장자와 `Content-Type` 은\n보내는 쪽이 적는 값이라 근거가 되지 못한다 — 종전에는 `.jpg` 를 `.pdf` 로 이름만\n바꿔도 그대로 저장됐다. 제출물 ZIP 이 원래부터 쓰던 원칙을 교안에 맞춘 것이다.\n\n저장되는 `mimeType` 도 클라이언트 값이 아니라 서버가 확인한 `application/pdf` 다.\n\n| 코드 | 상태 | 언제 |\n|---|---|---|\n| `CURRICULUM_FILE_TYPE_INVALID` | 400 | 내용이 PDF 가 아니다 |\n| `CURRICULUM_FILE_TOO_LARGE` | 413 | 앱 상한(`curriculum.upload.max-bytes`, 기본 50MB)을 넘었다 |\n\n크기 상한을 앱에도 두는 이유는 **톰캣 multipart 상한(60MB)에서 먼저 걸리면 도메인\n코드가 붙지 않기 때문**이다. 그 요청은 컨트롤러에 닿지 못해 코드 없는 500 이 된다.\n",
         "operationId": "registerCurriculum",
         "parameters": [
           {
@@ -5299,12 +5299,119 @@
       }
     },
     "/api/v0/curricula/{materialId}/versions": {
+      "get": {
+        "tags": [
+          "Curriculum"
+        ],
+        "summary": "교안 버전 이력 | ✅ 사용 가능",
+        "description": "이 교안(material)의 전체 버전을 최신순으로 돌려준다. 상세 화면에서 \"예전 버전\"\n목록을 보여줄 때 쓴다.\n\n**요청**\n- materialId (경로): 교안 ID(버전이 바뀌어도 유지되는 고정 식별자)\n\n**응답 (200)**\n\n`versionNo` 내림차순 배열. 새 버전을 올려도 기존 버전 행이 지워지거나 바뀌지 않고\n그대로 남아 있고, 상태도 계속 `ACTIVE`로 유지되므로 과거 버전도 전부 포함된다.\n각 항목의 스키마는 `CurriculumVersionResponse`(연결 가능한 교안 목록과 동일)다.\n",
+        "operationId": "findCurriculumVersionHistory",
+        "parameters": [
+          {
+            "name": "materialId",
+            "in": "path",
+            "description": "교안 ID(버전이 바뀌어도 유지되는 고정 식별자)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "버전 이력 조회 성공",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CurriculumVersionResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "UNAUTHENTICATED": {
+                    "summary": "UNAUTHENTICATED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 401,
+                      "error": "Unauthenticated",
+                      "code": "UNAUTHENTICATED",
+                      "message": "로그인이 필요합니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "ACCESS_DENIED — 이 역할로는 부를 수 없다",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "ACCESS_DENIED": {
+                    "summary": "ACCESS_DENIED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 403,
+                      "error": "Access Denied",
+                      "code": "ACCESS_DENIED",
+                      "message": "접근 권한이 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "CURRICULUM_MATERIAL_NOT_FOUND 그 기관에 그 교안이 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "CURRICULUM_MATERIAL_NOT_FOUND": {
+                    "summary": "CURRICULUM_MATERIAL_NOT_FOUND",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 404,
+                      "error": "NOT_FOUND",
+                      "code": "CURRICULUM_MATERIAL_NOT_FOUND",
+                      "message": "교안을 찾을 수 없습니다."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "x-readiness": "available"
+      },
       "post": {
         "tags": [
           "Curriculum"
         ],
         "summary": "교안 새 버전 등록 | ✅ 사용 가능",
-        "description": "기존 교안(material)에 새 버전을 올린다(42차 R1). **새 교안을 만들지 않는다** —\n`materialId`가 가리키는 그 교안에 다음 버전이 하나 늘어난다.\n\n⚠ `POST /curricula`(새 교안 등록)와 다른 오퍼레이션이다. 새 개정판을 올리려는\n것과 새 교안을 만들려는 것은 사용자 의도가 다르다는 것이 42차 문서의 요청이다 —\n이 경로가 그 의도를 명시적으로 받는다.\n\n**요청 (multipart/form-data)**\n- file (필수): PDF 파일\n- title (선택): 제목을 바꿔 달 때만 보낸다. 비우면 기존 제목을 그대로 쓴다\n\n**응답 (201)**\n- 새로 생긴 버전 정보(응답 필드는 `POST /curricula`와 동일)\n\n## versionNo는 이 교안의 현재 최신 버전 + 1이다\n\n새 material을 만들지 않고, `materialId`는 그대로 유지된다. 새 버전의 번호는 이\n교안에서 지금까지 가장 큰 `versionNo`에 1을 더한 값이다.\n\n## 기존 버전은 지우거나 바꾸지 않는다\n\n기존 버전 행은 그대로 남는다 — 그 버전을 이미 연결해 쓰고 있는 회차\n(`project_curriculum`)도 그대로다. 발행된 리포트가 가리키는 쪽 번호가 바뀌지\n않는 이유가 이것이다.\n\n바뀌는 것은 상태 하나뿐이다 — 기존 최신 버전이 `INACTIVE`로 넘어가\n`GET /cohorts/{cohortId}/curricula`(연결 후보 목록) 같은 \"고를 수 있는 교안\"\n조회에서 새 버전에게 자리를 내준다. **읽기 쪽 구버전 상세·버전 목록 API는 이번에도\n추가하지 않는다** — 42차 문서가 명시적으로 요청하지 않았다.\n\n## 제목은 안 바꿔도 된다 — 바꾸면 그때만 중복 검사\n\ntitle을 생략하면 material 제목은 그대로다. 이 경로로 올릴 때는 **같은 교안에\n버전을 추가하는 것**이므로 자기 자신의 제목과 겹치는 것을 막을 이유가 없다 —\n`POST /curricula`의 제목 UNIQUE 검사는 여기서 돌지 않는다. title을 보내 제목을\n바꾸는 경우에만 (기관 + 새 제목)이 **다른** 교안과 겹치는지 검사한다.\n",
+        "description": "기존 교안(material)에 새 버전을 올린다(42차 R1). **새 교안을 만들지 않는다** —\n`materialId`가 가리키는 그 교안에 다음 버전이 하나 늘어난다.\n\n⚠ `POST /curricula`(새 교안 등록)와 다른 오퍼레이션이다. 새 개정판을 올리려는\n것과 새 교안을 만들려는 것은 사용자 의도가 다르다는 것이 42차 문서의 요청이다 —\n이 경로가 그 의도를 명시적으로 받는다.\n\n⚠ **등록 직후엔 이 버전만의 분석이 안 된 상태다.** `POST /curricula`(새 교안)와\n마찬가지로 이 엔드포인트도 분석을 자동으로 걸지 않는다 — **새 버전은 이전 버전과\n다른 파일이라 쪽 번호·섹션 구성이 바뀔 수 있고, 분석이 다시 돌지 않으면 검증\n개념을 못 뽑아 회차에 붙일 수 없는 상태로 남는다.** 새 버전의 섹션·검증개념을\n쓰려면 응답의 `versionId`로 `POST /curricula/{materialId}/analyses`를 별도 호출해야\n한다(44차 R4 회신, 2026-08-20 — 실제로는 이전부터 그래 왔고, 지금까지 이 문장이\n빠져 있었을 뿐이다).\n\n**요청 (multipart/form-data)**\n- file (필수): PDF 파일\n- title (선택): 제목을 바꿔 달 때만 보낸다. 비우면 기존 제목을 그대로 쓴다\n\n**응답 (201)**\n- 새로 생긴 버전 정보(응답 필드는 `POST /curricula`와 동일)\n\n## versionNo는 이 교안의 현재 최신 버전 + 1이다\n\n새 material을 만들지 않고, `materialId`는 그대로 유지된다. 새 버전의 번호는 이\n교안에서 지금까지 가장 큰 `versionNo`에 1을 더한 값이다.\n\n## 기존 버전은 지우거나 바꾸지 않는다\n\n기존 버전 행은 그대로 남는다 — 그 버전을 이미 연결해 쓰고 있는 회차\n(`project_curriculum`)도 그대로다. 발행된 리포트가 가리키는 쪽 번호가 바뀌지\n않는 이유가 이것이다.\n\n**(2026-08-20 정정)** 예전에는 여기서 \"기존 최신 버전이 `INACTIVE`로 넘어간다\"고\n적고 있었는데, 그 처리는 이미 코드에서 빠졌다 — 지금은 새 버전을 올려도 이전\n버전이 계속 `ACTIVE`로 남고, `GET /cohorts/{cohortId}/curricula`(연결 후보 목록)\n같은 \"고를 수 있는 교안\" 조회에도 옛 버전이 계속 뜬다. 읽기 쪽 구버전 상세·버전\n목록 API는 이후 커밋으로 추가됐다 — `GET /curricula/{materialId}/versions`\n(버전 목록), `GET /curricula/{materialId}/sections?versionId=`(특정 버전 섹션),\n`GET /curricula/{materialId}?versionId=`(특정 버전 상세, 44차 R1),\n`GET /curricula/{materialId}/projects?versionId=`(특정 버전이 쓰인 회차, 44차 R3)를\n쓴다.\n\n## 🔴 같은 내용의 파일을 다시 올리면 409다 (2026-08-20, 45차 R1 조사 중 발견)\n\n이 교안의 **다른 버전과 파일 내용이 완전히 같으면**(같은 바이트, `content_hash` 동일)\n`409 CURRICULUM_VERSION_CONTENT_DUPLICATED`다. 종전에는 이 경우 DB UNIQUE 제약\n위반이 그대로 올라가 코드 없는 500이었다 — 45차 R1의 \"버전 2개부터 교안이\n사라진다\"는 신고를 조사하다가 재현 로그에서 발견했다(R1 자체는 실제로는 같은\n교안을 조사 중 직접 삭제한 뒤의 정상 동작이었고 버그가 아니었다 — 별도 확인 완료).\n\n## 제목은 안 바꿔도 된다 — 바꾸면 그때만 중복 검사\n\ntitle을 생략하면 material 제목은 그대로다. 이 경로로 올릴 때는 **같은 교안에\n버전을 추가하는 것**이므로 자기 자신의 제목과 겹치는 것을 막을 이유가 없다 —\n`POST /curricula`의 제목 UNIQUE 검사는 여기서 돌지 않는다. title을 보내 제목을\n바꾸는 경우에만 (기관 + 새 제목)이 **다른** 교안과 겹치는지 검사한다.\n",
         "operationId": "registerCurriculumVersion",
         "parameters": [
           {
@@ -5456,7 +5563,7 @@
             }
           },
           "409": {
-            "description": "CURRICULUM_TITLE_DUPLICATED title을 보냈는데 다른 교안이 이미 그 제목을 쓰고 있음",
+            "description": "CURRICULUM_TITLE_DUPLICATED title을 보냈는데 다른 교안이 이미 그 제목을 쓰고 있음 또는 CURRICULUM_VERSION_CONTENT_DUPLICATED 이 교안의 다른 버전과 파일 내용이 완전히 같음(2026-08-20, 45차 R1 조사 중 발견 — 종전엔 코드 없는 500이었다)",
             "content": {
               "application/json": {
                 "schema": {
@@ -5471,6 +5578,16 @@
                       "error": "CONFLICT",
                       "code": "CURRICULUM_TITLE_DUPLICATED",
                       "message": "이미 존재하는 교안 제목입니다."
+                    }
+                  },
+                  "CURRICULUM_VERSION_CONTENT_DUPLICATED": {
+                    "summary": "CURRICULUM_VERSION_CONTENT_DUPLICATED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "code": "CURRICULUM_VERSION_CONTENT_DUPLICATED",
+                      "message": "이미 등록된 버전과 내용이 같은 파일입니다."
                     }
                   }
                 }
@@ -14805,7 +14922,7 @@
           "Reporting"
         ],
         "summary": "내 리포트 전량 조회 | ✅ 사용 가능",
-        "description": "TR-04 `내 리포트` 화면 전체를 이 응답 하나로 그린다.\n좌측 회차 레일(`rounds`)과 우측 본문(`reportsById`)이 함께 온다.\n\n> **2026-08-12 사용 가능으로 올림(16차 R4).** 조회 SQL이 읽는 뷰·컬럼이 정본 문서에\n> 있는지를 `TraineeReportCanonicalSqlContractTest`가 확인한다. 라이브 DB 없이 확인할 수\n> 있는 최대치가 여기까지이며, 조인 결과의 의미론은 이 테스트가 잡지 못한다.\n\n**교육생 본인 것만 나간다.** `traineeId` 파라미터를 받지 않는다 —\n인증 주체로 결정하므로 남의 리포트를 지정할 방법 자체가 없다.\n\n## 요청\n\n파라미터 없음. 본문 없음.\n\n## 응답 — 최상위\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `rounds[]` | array | 좌측 레일. **최신 회차가 앞**이다(서버가 정렬한다) |\n| `reportsById` | object | `rounds[].id`로 찾는 회차별 본문 |\n\n**rounds[] 각 항목**\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `id` | UUID | 회차 식별자(`assessmentRoundId`). **리포트 id가 아니다** |\n| `label` | string | 회차 이름(예: `미프 3차`) |\n| `hasPendingRetry` | boolean | 아직 안 한 다시 보기가 있다 — 레일에 점으로 표시 |\n\n## 회차 상태 6종 — `reportsById[id].status`\n\n| 값 | 언제 | 함께 오는 것 |\n|---|---|---|\n| `NOT_ATTEMPTED` | 응시 기록이 없거나 미제출·미출석으로 끝남 | — |\n| `VOID_ATTEMPT` | 무효 응시(검토 중 또는 무효 확정) | — |\n| `STOPPED` | 세션을 시작했지만 끝내지 못함 | — |\n| `PENDING_PUBLISH` | 아직 발행 전 | `publishAfter` |\n| `PENDING_VISIBILITY` | 발행됐지만 **공개 범위 미지정** | — |\n| `PUBLISHED` | 공개됨 | `publishedAt` · `curriculum` · `concepts[]` · `retryState` |\n\n⚠️ **`PENDING_VISIBILITY`를 빈 리포트로 그리면 안 된다.** 발행과 공개는 다른\n사건이라, 결과는 이미 확정됐고 공개 범위만 안 정해진 상태다.\n\n## concepts[] — `PUBLISHED`에서만\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `name` | string | 개념 이름 |\n| `asked` | boolean | **물었는가.** `false`면 아래 값이 전부 빠진다 |\n| `level` | int? | 도달 단계 **0~4**. `asked=false`면 키가 빠진다 |\n| `said` | string? | 학생에게 보여주는 서술 |\n| `isRetryTarget` | boolean | 다시 보기 대상 |\n| `curriculumRef` | object? | `{chapter, pages, title}` — 공개 범위 SUMMARY 이상 |\n| `qa[]` | array? | `{questionLabel, question, answer}` — **공개 범위 FULL에서만** |\n| `explain[]` | array? | 막힌 이유 해설. 다시 보기 대상일 때만 |\n| `comparedReach` | object? | `{before, after}` — 다시 보기를 마쳤을 때만 |\n\n🔴 **`level` 은 0~4 다섯 단계다.** `0` 은 통과한 축이 하나도 없다는 뜻이며\n**`1`(무엇을 하는지까지 설명함)과 전혀 다르다.** 0을 1로 올려 그리면\n학생에게 사실과 다른 말을 하게 된다.\n\n### 🔴 문항 없음 — 제3의 값 (`asked: false`)\n\n개념 3개 중 하나가 그 학생 코드에 없으면 문항이 만들어지지 않는다\n(`assessment_problem.generation_status='NOT_GENERATED'`). 그 개념도 **`concepts[]`에\n같이 들어오며** `asked=false`이고 `level`을 포함한 판정 필드가 전부 빠진다.\n\n**`level=0`과 합치면 안 된다.** 전자는 물었는데 통과한 축이 없는 것이고, 후자는 묻지\n않은 것이다. `GET /reports/class-diagnosis`가 `level0`과 `unasked`를 엄격히 구분하는\n것과 같은 규칙이다.\n\n⚠️ **`asked=false`는 다시 보기 대상이 아니다** — 다시 볼 문항이 없기 때문이다.\n`isRetryTarget`은 항상 `false`로 온다.\n\n> 이 개념들을 배열에서 빼지 않는 이유는, 빼면 화면에 개념이 2개만 뜨고 학생이 나머지\n> 하나가 어디 갔는지 알 수 없기 때문이다. *\"코드에 이 개념이 없어 묻지 못했습니다 —\n> 못한 것이 아닙니다\"* 를 그 자리에 그릴 수 있어야 한다.\n\n## 공개 범위가 응답을 바꾼다\n\n| 범위 | `said` | `curriculumRef` | `qa[]` |\n|---|---|---|---|\n| `PRIVATE` | ❌ 상태가 `PENDING_VISIBILITY`/비공개 | ❌ | ❌ |\n| `SUMMARY` | ⭕ | ⭕ | ❌ |\n| `FULL` | ⭕ | ⭕ | ⭕ |\n\n**선택 필드는 키 자체가 빠진다**(null 을 싣지 않는다). `qa` 가 없으면\n`[내 답변] 펼침`을 그리지 않으면 된다.\n",
+        "description": "TR-04 `내 리포트` 화면 전체를 이 응답 하나로 그린다.\n좌측 회차 레일(`rounds`)과 우측 본문(`reportsById`)이 함께 온다.\n\n> **2026-08-12 사용 가능으로 올림(16차 R4).** 조회 SQL이 읽는 뷰·컬럼이 정본 문서에\n> 있는지를 `TraineeReportCanonicalSqlContractTest`가 확인한다. 라이브 DB 없이 확인할 수\n> 있는 최대치가 여기까지이며, 조인 결과의 의미론은 이 테스트가 잡지 못한다.\n\n**교육생 본인 것만 나간다.** `traineeId` 파라미터를 받지 않는다 —\n인증 주체로 결정하므로 남의 리포트를 지정할 방법 자체가 없다.\n\n## 요청\n\n파라미터 없음. 본문 없음.\n\n## 응답 — 최상위\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `rounds[]` | array | 좌측 레일. **최신 회차가 앞**이다(서버가 정렬한다) |\n| `reportsById` | object | `rounds[].id`로 찾는 회차별 본문 |\n\n**rounds[] 각 항목**\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `id` | UUID | 회차 식별자(`assessmentRoundId`). **리포트 id가 아니다** |\n| `label` | string | 회차 이름(예: `미프 3차`) |\n| `hasPendingRetry` | boolean | 아직 안 한 다시 보기가 있다 — 레일에 점으로 표시 |\n\n## 회차 상태 7종 — `reportsById[id].status`\n\n**(2026-08-20 정정)** 아래 표는 실제와 어긋나 있었다 — `PENDING_VISIBILITY`는\n공개/비공개 폐지(2026-08-19)로 이미 없어졌고, `NOT_STARTED`(마감 전 미응시)가\n빠져 있었다. 같은 날 `IN_PROGRESS`도 새로 추가됐다(아래 참고).\n\n| 값 | 언제 | 함께 오는 것 |\n|---|---|---|\n| `NOT_STARTED` | 제출 마감 전인데 아직 응시 기록이 없다 | — |\n| `NOT_ATTEMPTED` | 마감이 지나도록 응시하지 않았거나 미제출·미출석으로 끝남 | — |\n| `VOID_ATTEMPT` | 무효 응시(검토 중 또는 무효 확정) | — |\n| `STOPPED` | 세션을 시작했지만 끝내지 못함 | — |\n| `IN_PROGRESS` | **응시 기록은 있지만 아직 안 끝났다**(제출·분석·이해도 확인 세션 준비/진행 중, 2026-08-20 추가) | — |\n| `PENDING_PUBLISH` | **이해도 확인까지 마쳤고** 아직 발행 전 | `publishAfter` |\n| `PUBLISHED` | 공개됨 | `publishedAt` · `curriculum` · `concepts[]` · `retryState` |\n\n## 🔴 `IN_PROGRESS` 추가 배경 (2026-08-20 발견·수정)\n\n고치기 전에는 `NOT_STARTED`·`NOT_ATTEMPTED`·`VOID_ATTEMPT`·`STOPPED` 넷 중 어디에도\n안 걸리는 진행 중인 응시(코드 제출·분석·이해도 확인 세션 준비 단계)가 전부\n`PENDING_PUBLISH`로 떨어졌다 — **아직 응시조차 시작 안 했거나 절반쯤 온 회차가\n\"응시 완료(리포트 생성 중)\"로 보이는 상태**였다(실사용 재현: 코드 분석이 진행 중인\n회차가 화면에 \"응시 완료\"로 뜸). `PENDING_PUBLISH`는 이제 **이해도 확인까지 실제로\n마친** 경우로만 좁혔고, 그 전 단계는 `IN_PROGRESS`다.\n\n## concepts[] — `PUBLISHED`에서만\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `name` | string | 개념 이름 |\n| `asked` | boolean | **물었는가.** `false`면 아래 값이 전부 빠진다 |\n| `level` | int? | 도달 단계 **0~4**. `asked=false`면 키가 빠진다 |\n| `said` | string? | 학생에게 보여주는 서술 |\n| `isRetryTarget` | boolean | 다시 보기 대상 |\n| `curriculumRef` | object? | `{chapter, pages, title}` — 공개 범위 SUMMARY 이상 |\n| `qa[]` | array? | `{questionLabel, question, answer}` — **공개 범위 FULL에서만** |\n| `explain[]` | array? | 막힌 이유 해설. 다시 보기 대상일 때만 |\n| `comparedReach` | object? | `{before, after}` — 다시 보기를 마쳤을 때만 |\n\n🔴 **`level` 은 0~4 다섯 단계다.** `0` 은 통과한 축이 하나도 없다는 뜻이며\n**`1`(무엇을 하는지까지 설명함)과 전혀 다르다.** 0을 1로 올려 그리면\n학생에게 사실과 다른 말을 하게 된다.\n\n### 🔴 문항 없음 — 제3의 값 (`asked: false`)\n\n개념 3개 중 하나가 그 학생 코드에 없으면 문항이 만들어지지 않는다\n(`assessment_problem.generation_status='NOT_GENERATED'`). 그 개념도 **`concepts[]`에\n같이 들어오며** `asked=false`이고 `level`을 포함한 판정 필드가 전부 빠진다.\n\n**`level=0`과 합치면 안 된다.** 전자는 물었는데 통과한 축이 없는 것이고, 후자는 묻지\n않은 것이다. `GET /reports/class-diagnosis`가 `level0`과 `unasked`를 엄격히 구분하는\n것과 같은 규칙이다.\n\n⚠️ **`asked=false`는 다시 보기 대상이 아니다** — 다시 볼 문항이 없기 때문이다.\n`isRetryTarget`은 항상 `false`로 온다.\n\n> 이 개념들을 배열에서 빼지 않는 이유는, 빼면 화면에 개념이 2개만 뜨고 학생이 나머지\n> 하나가 어디 갔는지 알 수 없기 때문이다. *\"코드에 이 개념이 없어 묻지 못했습니다 —\n> 못한 것이 아닙니다\"* 를 그 자리에 그릴 수 있어야 한다.\n\n## 공개 범위가 응답을 바꾼다\n\n| 범위 | `said` | `curriculumRef` | `qa[]` |\n|---|---|---|---|\n| `PRIVATE` | ❌ 상태가 `PENDING_VISIBILITY`/비공개 | ❌ | ❌ |\n| `SUMMARY` | ⭕ | ⭕ | ❌ |\n| `FULL` | ⭕ | ⭕ | ⭕ |\n\n**선택 필드는 키 자체가 빠진다**(null 을 싣지 않는다). `qa` 가 없으면\n`[내 답변] 펼침`을 그리지 않으면 된다.\n",
         "operationId": "findMyReports",
         "responses": {
           "200": {
@@ -14960,7 +15077,7 @@
           "Reporting"
         ],
         "summary": "담당 교육생 리포트 조회 (매니저) | ✅ 사용 가능",
-        "description": "매니저가 담당 교육생 **한 명**의 리포트를 회차별로 본다. 교육생 상세 화면의 리포트 라인이다.\n\n## 응답이 `GET /reports`와 똑같다\n\n같은 `TraineeReportsResponse`다 — 좌측 레일(`rounds`)과 회차별 본문(`reportsById`)이\n그대로 온다. **모양을 따로 두지 않은 것은 의도한 것이다.** 리포트 라인은 회차별로\n\"만들어졌나 · 발행됐나\"를 보여주고 펼치면 본문을 그리는데, 그 본문이 학생이 보는\n것과 달라야 할 이유가 없다. 두 벌로 나누면 같은 리포트를 설명하는 말이 두 가지가 된다.\n\n회차 상태(`status`)도 같은 값을 쓴다.\n\n| 값 | 리포트 라인에 그릴 것 |\n|---|---|\n| `PUBLISHED` | 결과를 그린다(펼치면 본문) |\n| `PENDING_PUBLISH` | `리포트 생성 중` |\n| `NOT_STARTED` | 아직 응시 전(마감 전) |\n| `NOT_ATTEMPTED` | 미응시 — **매니저 안내가 필요한 줄이다** |\n| `VOID_ATTEMPT` | 확인 필요 |\n| `STOPPED` | 중단 |\n\n## 🔴 다시 보기 잠금이 걸리지 않는다\n\n교육생 화면에서는 다시 보기 대상(`level < 2`)이면서 아직 다시 보기를 마치지 않은\n개념의 `qa`(자기 답변)와 `explain`(해설)이 **빠진다.** 매니저에게는 그 잠금을 걸지\n않는다 — 잠금의 목적이 \"학생이 답을 먼저 보고 다시 푸는 것\"을 막는 것이라\n매니저에게는 해당이 없고, 지도하려면 학생이 뭐라고 답했는지를 봐야 한다.\n\n`retryState`는 **사실대로** 나간다(`NONE` · `PENDING` · `DONE`).\n다시 보기를 아직 안 한 학생을 찾는 근거이므로 가리지 않는다.\n\n## 요청\n\n| 파라미터 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `traineeId` | **필수** | UUID | 교육생 `userId`. 회차 id도 리포트 id도 아니다 |\n\n## 권한 — 지금 담당 중인 교육생만\n\n요청 매니저가 **지금** 배정된 반의 교육생이어야 한다. 해제된 배정\n(`manager_assignment.unassigned_at`)과 이탈한 교육생(`cohort_member.left_at`)은\n담당으로 치지 않는다 — 그러지 않으면 지난 기수에 잠깐 담당했던 매니저가\n계속 남의 교육생 리포트를 본다.\n\n## 오류\n\n| 코드 | 상황 |\n|---|---|\n| 404 `REPORT_NOT_FOUND` | 없는 교육생 **또는 담당하지 않는 교육생** |\n\n⚠️ 담당하지 않는 교육생을 403이 아니라 **404로 돌려준다.** 403으로 구분해 주면\n\"그 id의 교육생이 존재한다\"는 사실이 새어 나간다(`GET /reports/{reportId}`와 같은 규칙).\n\n빈 `rounds`는 정상이다 — 그 교육생이 속한 기수에 회차가 아직 없는 경우다.\n",
+        "description": "매니저가 담당 교육생 **한 명**의 리포트를 회차별로 본다. 교육생 상세 화면의 리포트 라인이다.\n\n## 응답이 `GET /reports`와 똑같다\n\n같은 `TraineeReportsResponse`다 — 좌측 레일(`rounds`)과 회차별 본문(`reportsById`)이\n그대로 온다. **모양을 따로 두지 않은 것은 의도한 것이다.** 리포트 라인은 회차별로\n\"만들어졌나 · 발행됐나\"를 보여주고 펼치면 본문을 그리는데, 그 본문이 학생이 보는\n것과 달라야 할 이유가 없다. 두 벌로 나누면 같은 리포트를 설명하는 말이 두 가지가 된다.\n\n회차 상태(`status`)도 같은 값을 쓴다.\n\n| 값 | 리포트 라인에 그릴 것 |\n|---|---|\n| `PUBLISHED` | 결과를 그린다(펼치면 본문) |\n| `PENDING_PUBLISH` | 이해도 확인까지 마침, `리포트 생성 중` |\n| `IN_PROGRESS` | 아직 응시가 안 끝남(제출·분석·이해도 확인 세션 준비/진행 중, 2026-08-20 추가) — `PENDING_PUBLISH`와 구분해서 그린다 |\n| `NOT_STARTED` | 아직 응시 전(마감 전) |\n| `NOT_ATTEMPTED` | 미응시 — **매니저 안내가 필요한 줄이다** |\n| `VOID_ATTEMPT` | 확인 필요 |\n| `STOPPED` | 중단 |\n\n## 🔴 다시 보기 잠금이 걸리지 않는다\n\n교육생 화면에서는 다시 보기 대상(`level < 2`)이면서 아직 다시 보기를 마치지 않은\n개념의 `qa`(자기 답변)와 `explain`(해설)이 **빠진다.** 매니저에게는 그 잠금을 걸지\n않는다 — 잠금의 목적이 \"학생이 답을 먼저 보고 다시 푸는 것\"을 막는 것이라\n매니저에게는 해당이 없고, 지도하려면 학생이 뭐라고 답했는지를 봐야 한다.\n\n`retryState`는 **사실대로** 나간다(`NONE` · `PENDING` · `DONE`).\n다시 보기를 아직 안 한 학생을 찾는 근거이므로 가리지 않는다.\n\n## 요청\n\n| 파라미터 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `traineeId` | **필수** | UUID | 교육생 `userId`. 회차 id도 리포트 id도 아니다 |\n\n## 권한 — 지금 담당 중인 교육생만\n\n요청 매니저가 **지금** 배정된 반의 교육생이어야 한다. 해제된 배정\n(`manager_assignment.unassigned_at`)과 이탈한 교육생(`cohort_member.left_at`)은\n담당으로 치지 않는다 — 그러지 않으면 지난 기수에 잠깐 담당했던 매니저가\n계속 남의 교육생 리포트를 본다.\n\n## 오류\n\n| 코드 | 상황 |\n|---|---|\n| 404 `REPORT_NOT_FOUND` | 없는 교육생 **또는 담당하지 않는 교육생** |\n\n⚠️ 담당하지 않는 교육생을 403이 아니라 **404로 돌려준다.** 403으로 구분해 주면\n\"그 id의 교육생이 존재한다\"는 사실이 새어 나간다(`GET /reports/{reportId}`와 같은 규칙).\n\n빈 `rounds`는 정상이다 — 그 교육생이 속한 기수에 회차가 아직 없는 경우다.\n",
         "operationId": "findManagedTraineeReports",
         "parameters": [
           {
@@ -17856,7 +17973,7 @@
           "Curriculum"
         ],
         "summary": "교안 단건 상세 | ✅ 사용 가능",
-        "description": "교안 하나의 머리글을 조회한다(9차 R8).\n\n`sections`·`projects`는 있는데 **그 위에 놓일 머리글이 어디에서도 오지 않아** 교안 하나를 여는\n화면을 만들 수 없었다. 목록에서 넘어온 값을 들고 가는 수밖에 없었고, 주소로 바로 들어오면\n화면이 비어 있었다.\n\n**요청**\n- materialId (경로): 교안 ID(버전이 바뀌어도 유지되는 고정 식별자)\n\n**응답 (200)**\n\n`GET /organizations/{organizationId}/curricula`의 `content[]` 항목과 **완전히 같은 스키마**다 —\n목록에서 상세로 넘어갈 때 화면이 다루는 모양이 바뀌지 않는다.\n\n| 필드 | 설명 |\n|---|---|\n| `materialId` · `versionId` | 교안 ID / 최신 버전 ID |\n| `title` · `originalFileName` · `versionNo` · `pageCount` | 머리글 |\n| `analysisStatus` | 가장 최근 분석 **시도** 상태. 한 번도 분석하지 않았으면 null |\n| `sectionCount` · `conceptCount` | `12섹션 · 개념 48건` |\n| `usedProjectCount` | `3개 회차에서 사용 중` |\n| `uploadedAt` · `uploadedByName` | 업로드 시각 / 올린 사람 |\n\n**섹션 내용은 `GET /curricula/{materialId}/sections`, 쓰는 회차 목록은\n`GET /curricula/{materialId}/projects`가 따로 준다.** 이 API는 머리글만 담당한다 —\n섹션은 교안 하나에 수십 건이라 머리글만 필요한 화면이 그걸 다 받을 이유가 없다.\n",
+        "description": "교안 하나의 머리글을 조회한다(9차 R8).\n\n`sections`·`projects`는 있는데 **그 위에 놓일 머리글이 어디에서도 오지 않아** 교안 하나를 여는\n화면을 만들 수 없었다. 목록에서 넘어온 값을 들고 가는 수밖에 없었고, 주소로 바로 들어오면\n화면이 비어 있었다.\n\n**요청**\n- materialId (경로): 교안 ID(버전이 바뀌어도 유지되는 고정 식별자)\n- versionId (쿼리, 선택): 특정 옛 버전의 머리글을 보고 싶을 때 그 버전 ID를 넘긴다.\n  생략하면 최신 버전으로 해석한다(`sections`와 같은 규칙). 그 교안(materialId)의\n  버전이 아니거나 존재하지 않으면 404 `CURRICULUM_VERSION_NOT_FOUND`다\n  (2026-08-20, 44차 R1).\n\n**응답 (200)**\n\n`GET /organizations/{organizationId}/curricula`의 `content[]` 항목과 **완전히 같은 스키마**다 —\n목록에서 상세로 넘어갈 때 화면이 다루는 모양이 바뀌지 않는다.\n\n| 필드 | 설명 |\n|---|---|\n| `materialId` · `versionId` | 교안 ID / **기준 버전** ID(위 `versionId`를 생략하면 최신) |\n| `title` · `originalFileName` · `versionNo` · `pageCount` | 기준 버전의 머리글 |\n| `analysisStatus` | 기준 버전의 가장 최근 분석 **시도** 상태. 한 번도 분석하지 않았으면 null |\n| `sectionCount` · `conceptCount` | `12섹션 · 개념 48건` — 기준 버전 기준 |\n| `usedProjectCount` | `3개 회차에서 사용 중` — **교안 전체(모든 버전) 기준으로 고정**이다. 기준 버전을\n  바꿔도 이 값은 바뀌지 않는다(삭제 가드와 같은 모집단을 유지해야 하기 때문) |\n| `versionUsedProjectCount` | 기준 버전 **하나만** 쓴 회차 수 (2026-08-20, 44차 R1) |\n| `uploadedAt` · `uploadedByName` | 기준 버전 업로드 시각 / 올린 사람 |\n\n**섹션 내용은 `GET /curricula/{materialId}/sections?versionId=`, 쓰는 회차 목록은\n`GET /curricula/{materialId}/projects?versionId=`가 같은 `versionId`로 따로 준다.**\n이 API는 머리글만 담당한다 — 섹션은 교안 하나에 수십 건이라 머리글만 필요한 화면이\n그걸 다 받을 이유가 없다.\n",
         "operationId": "findCurriculum",
         "parameters": [
           {
@@ -17864,6 +17981,16 @@
             "in": "path",
             "description": "교안 ID(버전이 바뀌어도 유지되는 고정 식별자)",
             "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "versionId",
+            "in": "query",
+            "description": "특정 옛 버전의 머리글을 보고 싶을 때 그 버전 ID. 생략하면 최신 버전으로 해석한다.",
+            "required": false,
             "schema": {
               "type": "string",
               "format": "uuid"
@@ -17926,7 +18053,7 @@
             }
           },
           "404": {
-            "description": "CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(다른 기관의 교안도 여기로 온다)",
+            "description": "CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(다른 기관의 교안도 여기로 온다) 또는 CURRICULUM_VERSION_NOT_FOUND versionId를 넘겼는데 그 버전이 없거나 이 교안의 버전이 아님(44차 R1)",
             "content": {
               "application/json": {
                 "schema": {
@@ -17941,6 +18068,16 @@
                       "error": "NOT_FOUND",
                       "code": "CURRICULUM_MATERIAL_NOT_FOUND",
                       "message": "교안을 찾을 수 없습니다."
+                    }
+                  },
+                  "CURRICULUM_VERSION_NOT_FOUND": {
+                    "summary": "CURRICULUM_VERSION_NOT_FOUND",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 404,
+                      "error": "NOT_FOUND",
+                      "code": "CURRICULUM_VERSION_NOT_FOUND",
+                      "message": "등록되지 않은 교안입니다."
                     }
                   }
                 }
@@ -17960,7 +18097,7 @@
           "Curriculum"
         ],
         "summary": "교안 삭제 | ✅ 사용 가능",
-        "description": "교안 하나를 목록에서 지운다(25차 R11).\n\n종전에는 삭제 경로가 아예 없어 **한 번 올린 교안이 기관 목록에서 영원히 사라지지\n않았다.** 잘못 올린 파일·시험 삼아 올린 파일이 그대로 쌓이고, 회차를 만들 때\n그 목록에서 골라야 했다.\n\n**요청**\n- materialId (경로): 교안 ID\n\n**응답 (204)**\n- 본문 없음\n\n## 연결된 회차가 있으면 409다\n\n이 교안을 쓰는 회차가 하나라도 있으면 지우지 않고 `409 CURRICULUM_MATERIAL_IN_USE`다 —\n회차의 문항이 근거로 삼는 교안이 목록에서 사라지면 안 되기 때문이다. 판정 기준은\n목록·상세의 `usedProjectCount`와 **같은 식**이라, 화면이 `0개 회차에서 사용 중`으로\n읽은 교안이 삭제에서만 막히는 일은 없다.\n\n먼저 연결을 끊으려면 `DELETE /projects/{projectId}/curricula/{curriculumVersionId}`를\n쓴다. 어느 회차가 쓰는지는 `GET /curricula/{materialId}/projects`가 준다.\n\n## 행은 남는다 — 지우는 것은 목록에서다\n\n`deleted_at`만 찍는 논리 삭제다. 분석 이력·섹션·개념 매핑이 이 교안을 참조하고 있어\n물리 삭제는 그 이력까지 함께 지운다.\n\n⚠️ **제목은 계속 점유된다.** `uq_curriculum_material_org_id_normalized_title`이 부분\n인덱스가 아니라 전역 UNIQUE라, 지운 교안과 **같은 제목으로 다시 올리면**\n`409 CURRICULUM_TITLE_DUPLICATED`가 난다(22차 R2와 같은 자리). 다시 올릴 때는\n제목을 바꿔야 한다.\n",
+        "description": "교안 하나를 목록에서 지운다(25차 R11).\n\n종전에는 삭제 경로가 아예 없어 **한 번 올린 교안이 기관 목록에서 영원히 사라지지\n않았다.** 잘못 올린 파일·시험 삼아 올린 파일이 그대로 쌓이고, 회차를 만들 때\n그 목록에서 골라야 했다.\n\n**요청**\n- materialId (경로): 교안 ID\n\n**응답 (204)**\n- 본문 없음\n\n## 연결된 회차가 있으면 409다\n\n이 교안을 쓰는 회차가 하나라도 있으면 지우지 않고 `409 CURRICULUM_MATERIAL_IN_USE`다 —\n회차의 문항이 근거로 삼는 교안이 목록에서 사라지면 안 되기 때문이다. 판정 기준은\n목록·상세의 `usedProjectCount`와 **같은 식**이라, 화면이 `0개 회차에서 사용 중`으로\n읽은 교안이 삭제에서만 막히는 일은 없다.\n\n먼저 연결을 끊으려면 `DELETE /projects/{projectId}/curricula/{curriculumVersionId}`를\n쓴다. 어느 회차가 쓰는지는 `GET /curricula/{materialId}/projects`가 준다.\n\n## 행은 남는다 — 지우는 것은 목록에서다\n\n`deleted_at`만 찍는 논리 삭제다. 분석 이력·섹션·개념 매핑이 이 교안을 참조하고 있어\n물리 삭제는 그 이력까지 함께 지운다.\n\n**제목은 더 이상 점유되지 않는다.** 삭제와 동시에 내부적으로 제목을 봉인해 두므로,\n지운 교안과 같은 제목으로 바로 다시 등록할 수 있다.\n",
         "operationId": "deleteCurriculum",
         "parameters": [
           {
@@ -18081,7 +18218,7 @@
           "Curriculum"
         ],
         "summary": "교안 섹션·개념 조회 | ✅ 사용 가능",
-        "description": "materialId(교안 자체의 고정 식별자)를 받아 그 교안의 최신 버전으로 해석한 뒤,\n그 버전의 최근 성공한 분석이 만든 섹션 전체를 하위 항목(★ 검증 개념 표시 포함)까지\n트리로 내려준다.\n\n**요청**\n- materialId (경로): 교안 ID(버전이 바뀌어도 유지되는 고정 식별자)\n\n**응답 (200)**\n- sections[].sectionId / title / pageStart / pageEnd: 섹션 기본 정보\n- sections[].items[]: 섹션 안 항목(가르친 것) 목록\n  - mappingId / extractedName: 항목 ID / 이름\n  - description: 정의문. definitionMissing=true면 null\n  - definitionMissing: 정의문 미추출 여부\n  - usedAsVerificationConcept: ★ 표시(검증개념으로 확정된 적 있는지)\n  - usedRoundLabels: 검증개념으로 쓰인 회차 라벨 목록\n\n## 🔴 분석 전 교안은 409다 (18차 R1)\n\n이 교안의 최신 버전에 \"성공한 분석\"이 한 번도 없으면 **`409 CURRICULUM_ANALYSIS_NOT_COMPLETED`**\n를 즉시 반환한다. 화면은 이때 `분석이 끝나면 고를 수 있습니다`를 그리면 된다.\n\n**종전에는 503이었다.** 그런데 503은 \"서버가 지금 요청을 처리할 수 없다\"는 인프라\n신호라, 프론트 전역 재시도(`status >= 500`)가 자동으로 3회 붙고 그 재시도가 동시에\n나가면서 프록시 결함(15차 R3)을 밟아 `net::ERR_FAILED`가 됐다 — 화면에는\n**응답이 아예 오지 않는 것처럼** 보였다. 실제로는 요청이 지금 상태와 맞지 않는\n것이지 서버가 아픈 것이 아니므로 409가 정확하다.\n\n재시도해야 한다는 사실은 상태 코드가 아니라 `code`로 전달한다.\n\n⚠ 교안 자체가 없으면 그건 영구 실패라 여전히 **404**(`CURRICULUM_MATERIAL_NOT_FOUND`)다.\n",
+        "description": "materialId(교안 자체의 고정 식별자)를 받아 그 교안의 최신 버전으로 해석한 뒤,\n그 버전의 최근 성공한 분석이 만든 섹션 전체를 하위 항목(★ 검증 개념 표시 포함)까지\n트리로 내려준다.\n\n**요청**\n- materialId (경로): 교안 ID(버전이 바뀌어도 유지되는 고정 식별자)\n- versionId (쿼리, 선택): 특정 옛 버전의 섹션을 보고 싶을 때 그 버전 ID를 넘긴다.\n  생략하면 종전과 동일하게 최신 버전으로 해석한다. 그 교안(materialId)의 버전이\n  아니거나 존재하지 않으면 404 `CURRICULUM_VERSION_NOT_FOUND`다.\n\n**응답 (200)**\n- sections[].sectionId / title / pageStart / pageEnd: 섹션 기본 정보\n- sections[].items[]: 섹션 안 항목(가르친 것) 목록\n  - mappingId / extractedName: 항목 ID / 이름\n  - description: 정의문. definitionMissing=true면 null\n  - definitionMissing: 정의문 미추출 여부\n  - usedAsVerificationConcept: ★ 표시(검증개념으로 확정된 적 있는지)\n  - usedRoundLabels: 검증개념으로 쓰인 회차 라벨 목록\n\n## 🔴 분석 전 교안은 409다 (18차 R1)\n\n이 교안의 최신 버전에 \"성공한 분석\"이 한 번도 없으면 409를 즉시 반환한다 — 그런데\n`code`가 두 가지로 갈린다.\n\n- **`CURRICULUM_ANALYSIS_NOT_COMPLETED`**: 아직 분석을 안 걸었거나 PENDING·RUNNING 중.\n  **일시적**이다 — 화면은 `분석이 끝나면 고를 수 있습니다`를 그리면 된다.\n- **`CURRICULUM_ANALYSIS_FAILED`**: 가장 최근 분석 시도가 실패로 끝남. **영구적**이다 —\n  기다려도 저절로 풀리지 않는다. 화면은 `분석에 실패했습니다. 재분석을 요청해 주세요`를\n  그리고 재분석 버튼을 보여줘야 한다.\n\n**종전에는 503이었다.** 그런데 503은 \"서버가 지금 요청을 처리할 수 없다\"는 인프라\n신호라, 프론트 전역 재시도(`status >= 500`)가 자동으로 3회 붙고 그 재시도가 동시에\n나가면서 프록시 결함(15차 R3)을 밟아 `net::ERR_FAILED`가 됐다 — 화면에는\n**응답이 아예 오지 않는 것처럼** 보였다. 실제로는 요청이 지금 상태와 맞지 않는\n것이지 서버가 아픈 것이 아니므로 409가 정확하다.\n\n재시도해야 하는지·재분석을 걸어야 하는지는 상태 코드가 아니라 `code`로 전달한다.\n\n⚠ 교안 자체가 없으면 그건 영구 실패라 여전히 **404**(`CURRICULUM_MATERIAL_NOT_FOUND`)다.\n",
         "operationId": "findSections",
         "parameters": [
           {
@@ -18089,6 +18226,16 @@
             "in": "path",
             "description": "교안 ID(버전이 바뀌어도 유지되는 고정 식별자)",
             "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "versionId",
+            "in": "query",
+            "description": "특정 옛 버전의 섹션을 보고 싶을 때 그 버전 ID. 생략하면 최신 버전으로 해석한다.",
+            "required": false,
             "schema": {
               "type": "string",
               "format": "uuid"
@@ -18154,7 +18301,7 @@
             }
           },
           "404": {
-            "description": "CURRICULUM_MATERIAL_NOT_FOUND 그 기관에 그 교안이 없음(영구적)",
+            "description": "CURRICULUM_MATERIAL_NOT_FOUND 그 기관에 그 교안이 없음(영구적) 또는 CURRICULUM_VERSION_NOT_FOUND versionId를 넘겼는데 그 버전이 없거나 이 교안의 버전이 아님",
             "content": {
               "application/json": {
                 "schema": {
@@ -18170,13 +18317,23 @@
                       "code": "CURRICULUM_MATERIAL_NOT_FOUND",
                       "message": "교안을 찾을 수 없습니다."
                     }
+                  },
+                  "CURRICULUM_VERSION_NOT_FOUND": {
+                    "summary": "CURRICULUM_VERSION_NOT_FOUND",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 404,
+                      "error": "NOT_FOUND",
+                      "code": "CURRICULUM_VERSION_NOT_FOUND",
+                      "message": "등록되지 않은 교안입니다."
+                    }
                   }
                 }
               }
             }
           },
           "409": {
-            "description": "CURRICULUM_ANALYSIS_NOT_COMPLETED 최신 버전에 성공한 분석이 아직 없음(일시적 — 화면은 `분석이 끝나면 고를 수 있습니다`를 안내한다). **18차 R1로 503에서 내렸다** — 503은 인프라 신호라 프론트 전역 재시도와 프록시가 그대로 밟아 응답이 화면에 닿지 못했다",
+            "description": "CURRICULUM_ANALYSIS_NOT_COMPLETED 대상 버전에 성공한 분석이 아직 없음(일시적 — 화면은 `분석이 끝나면 고를 수 있습니다`를 안내한다) 또는 CURRICULUM_ANALYSIS_FAILED 가장 최근 분석이 실패로 끝남(영구적 — 화면은 재분석을 안내한다). **18차 R1로 503에서 내렸다** — 503은 인프라 신호라 프론트 전역 재시도와 프록시가 그대로 밟아 응답이 화면에 닿지 못했다",
             "content": {
               "application/json": {
                 "schema": {
@@ -18191,6 +18348,16 @@
                       "error": "CONFLICT",
                       "code": "CURRICULUM_ANALYSIS_NOT_COMPLETED",
                       "message": "분석이 아직 완료되지 않았습니다."
+                    }
+                  },
+                  "CURRICULUM_ANALYSIS_FAILED": {
+                    "summary": "CURRICULUM_ANALYSIS_FAILED",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 409,
+                      "error": "CONFLICT",
+                      "code": "CURRICULUM_ANALYSIS_FAILED",
+                      "message": "분석에 실패했습니다. 재분석을 요청해 주세요."
                     }
                   }
                 }
@@ -18212,7 +18379,7 @@
           "Curriculum"
         ],
         "summary": "쓰인 회차 | ✅ 사용 가능",
-        "description": "이 **교안**을 연결한 회차 목록을 조회한다. **재분석 경고를 좁히는 데 쓴다.**\n\n🔴 **13차 R1 — 경로 변수를 교안 ID로 읽도록 고쳤습니다.**\n예전에는 같은 자리를 **교안 버전 ID**로 읽었습니다. 경로 이름이 `materialId`이고\n목록 응답도 `materialId`를 주므로 화면은 교안 ID를 넣었는데, 두 ID는 값이 겹치지 않아\n**늘 빈 배열**이 됐습니다 — 목록이 `24개 회차에서 사용 중`이라고 쓰는데 상세는\n`쓰는 회차가 아직 없습니다`라고 답하던 원인입니다.\n\n⚠️ **11차 R3 — 응답이 문자열 배열에서 객체 배열로 바뀌었습니다.**\n예전에는 `[\"미니프로젝트 4차\", …]` 였습니다.\n\n**요청**\n- materialId (경로): **교안 ID**(버전이 바뀌어도 유지되는 고정 식별자).\n  교안 목록 응답의 `materialId`와 형제 엔드포인트 `GET /curricula/{materialId}/sections`가\n  받는 값과 **같은 것**이다\n\n**응답 (200)** — 연결된 회차가 없으면 빈 배열\n\n## 목록의 `usedProjectCount`와 같은 기준이다\n\n이 교안의 **모든 버전**을 쓰는 회차를 모은다. 삭제된 회차는 뺀다.\n교안 목록의 `usedProjectCount`가 세는 것과 같은 모집단이라\n**`usedProjectCount`와 이 배열의 길이가 일치한다.**\n\n최신 버전만 보지 않는 이유는 지난 버전으로 연결된 회차가 빠지면 두 숫자가 다시\n갈리기 때문이다 — 화면이 어느 쪽을 믿어야 할지 정할 수 없게 된다.\n\n| 필드 | 설명 |\n|---|---|\n| `projectId` | 회차 ID. 이름을 눌러 프로젝트 화면으로 보낼 때 쓴다 |\n| `name` | 기수 안에서 붙인 회차 이름 (`미니프로젝트 4차`) |\n| `roundLabel` | 기수를 포함한 라벨 (`9기 미프 4차`) |\n| `cohortId` \\ `cohortName` | 기수 |\n| **`attendedCount`** | **응시를 시작한 인원.** 재분석 경고의 문턱 |\n| `conceptNames` | 이 회차가 쓰는 확정 검증 개념 이름 |\n\n## `attendedCount`가 경고를 정한다\n\n`0`이면 아직 아무도 응시하지 않은 회차라 **다시 분석해도 발행된 리포트가 어긋나지 않는다.**\n1 이상이면 이미 문항을 받은 학생이 있으므로, 재분석으로 섹션·쪽 번호가 달라지면\n리포트가 가리키는 교안 위치가 실제와 어긋난다.\n\n**완료가 아니라 시작 기준이다.** 완료만 세면 진행 중인 응시가 빠져 경고를 놓친다.\n\n## 빅프로젝트는 라벨이 없다\n\n예전에는 연결된 회차 중 빅프로젝트가 하나라도 있으면 400으로 <b>조회 전체가 실패</b>했다.\n지금은 `roundLabel`만 `null`로 두고 나머지는 그대로 준다 — 목록 하나 때문에\n화면이 통째로 비는 편이 더 나쁘다.\n",
+        "description": "이 **교안**을 연결한 회차 목록을 조회한다. **재분석 경고를 좁히는 데 쓴다.**\n\n🔴 **13차 R1 — 경로 변수를 교안 ID로 읽도록 고쳤습니다.**\n예전에는 같은 자리를 **교안 버전 ID**로 읽었습니다. 경로 이름이 `materialId`이고\n목록 응답도 `materialId`를 주므로 화면은 교안 ID를 넣었는데, 두 ID는 값이 겹치지 않아\n**늘 빈 배열**이 됐습니다 — 목록이 `24개 회차에서 사용 중`이라고 쓰는데 상세는\n`쓰는 회차가 아직 없습니다`라고 답하던 원인입니다.\n\n⚠️ **11차 R3 — 응답이 문자열 배열에서 객체 배열로 바뀌었습니다.**\n예전에는 `[\"미니프로젝트 4차\", …]` 였습니다.\n\n**요청**\n- materialId (경로): **교안 ID**(버전이 바뀌어도 유지되는 고정 식별자).\n  교안 목록 응답의 `materialId`와 형제 엔드포인트 `GET /curricula/{materialId}/sections`가\n  받는 값과 **같은 것**이다\n- versionId (쿼리, 선택): 특정 버전만 쓴 회차로 좁힌다(2026-08-20, 44차 R3).\n  생략하면 아래 \"모든 버전\" 기준(종전과 동일)이다. 그 교안(materialId)의 버전이\n  아니거나 존재하지 않으면 404 `CURRICULUM_VERSION_NOT_FOUND`다\n\n**응답 (200)** — 연결된 회차가 없으면 빈 배열\n\n## `versionId`를 생략하면 목록의 `usedProjectCount`와 같은 기준이다\n\n이 교안의 **모든 버전**을 쓰는 회차를 모은다. 삭제된 회차는 뺀다.\n교안 목록의 `usedProjectCount`가 세는 것과 같은 모집단이라\n**`usedProjectCount`와 이 배열의 길이가 일치한다.**\n\n모든 버전을 보는 이유는 **삭제 가드**(`CURRICULUM_MATERIAL_IN_USE`)가 이 모집단을\n쓰기 때문이다 — 지난 버전으로 연결된 회차가 빠지면 삭제 버튼이 \"쓰는 회차 없음\"으로\n읽었는데 실제 삭제는 409로 막히는 어긋남이 생긴다.\n\n## `versionId`를 주면 그 버전만 쓴 회차로 좁혀진다 (2026-08-20, 44차 R3 회신)\n\n옛 버전 상세 화면에서 \"이 버전이 쓰인 회차\"만 보고 싶을 때 쓴다. **삭제 가드에는\n영향이 없다** — `versionId`를 지정해 받은 배열이 비어 있어도(그 버전은 안 쓰였어도)\n다른 버전이 쓰고 있으면 삭제는 여전히 409다. 이 파라미터는 표시용이고, 삭제 가능\n여부는 `versionId` 없이 부른 `usedProjectCount`(교안 전체)로만 판단해야 한다.\n`GET /curricula/{materialId}?versionId=`가 주는 `versionUsedProjectCount`와 같은\n모집단이다.\n\n| 필드 | 설명 |\n|---|---|\n| `projectId` | 회차 ID. 이름을 눌러 프로젝트 화면으로 보낼 때 쓴다 |\n| `name` | 기수 안에서 붙인 회차 이름 (`미니프로젝트 4차`) |\n| `roundLabel` | 기수를 포함한 라벨 (`9기 미프 4차`) |\n| `cohortId` \\ `cohortName` | 기수 |\n| **`attendedCount`** | **응시를 시작한 인원.** 재분석 경고의 문턱 |\n| `conceptNames` | 이 회차가 쓰는 확정 검증 개념 이름 |\n\n## `attendedCount`가 경고를 정한다\n\n`0`이면 아직 아무도 응시하지 않은 회차라 **다시 분석해도 발행된 리포트가 어긋나지 않는다.**\n1 이상이면 이미 문항을 받은 학생이 있으므로, 재분석으로 섹션·쪽 번호가 달라지면\n리포트가 가리키는 교안 위치가 실제와 어긋난다.\n\n**완료가 아니라 시작 기준이다.** 완료만 세면 진행 중인 응시가 빠져 경고를 놓친다.\n\n## 빅프로젝트는 라벨이 없다\n\n예전에는 연결된 회차 중 빅프로젝트가 하나라도 있으면 400으로 <b>조회 전체가 실패</b>했다.\n지금은 `roundLabel`만 `null`로 두고 나머지는 그대로 준다 — 목록 하나 때문에\n화면이 통째로 비는 편이 더 나쁘다.\n",
         "operationId": "findUsedProjects",
         "parameters": [
           {
@@ -18220,6 +18387,16 @@
             "in": "path",
             "description": "교안 ID(버전이 바뀌어도 유지되는 고정 식별자)",
             "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "versionId",
+            "in": "query",
+            "description": "특정 버전만 쓴 회차로 좁힌다. 생략하면 모든 버전(종전과 동일, usedProjectCount와 같은 기준).",
+            "required": false,
             "schema": {
               "type": "string",
               "format": "uuid"
@@ -18285,7 +18462,7 @@
             }
           },
           "404": {
-            "description": "CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(다른 기관의 교안 포함)",
+            "description": "CURRICULUM_MATERIAL_NOT_FOUND 교안을 찾을 수 없음(다른 기관의 교안 포함) 또는 CURRICULUM_VERSION_NOT_FOUND versionId를 넘겼는데 그 버전이 없거나 이 교안의 버전이 아님(44차 R3)",
             "content": {
               "application/json": {
                 "schema": {
@@ -18300,6 +18477,16 @@
                       "error": "NOT_FOUND",
                       "code": "CURRICULUM_MATERIAL_NOT_FOUND",
                       "message": "교안을 찾을 수 없습니다."
+                    }
+                  },
+                  "CURRICULUM_VERSION_NOT_FOUND": {
+                    "summary": "CURRICULUM_VERSION_NOT_FOUND",
+                    "value": {
+                      "timestamp": "2026-08-15T04:21:33.512Z",
+                      "status": 404,
+                      "error": "NOT_FOUND",
+                      "code": "CURRICULUM_VERSION_NOT_FOUND",
+                      "message": "등록되지 않은 교안입니다."
                     }
                   }
                 }
@@ -19315,7 +19502,7 @@
           "Curriculum"
         ],
         "summary": "기수에 연결된 교안 목록 | ✅ 사용 가능",
-        "description": "이 기수의 회차들이 **실제로 연결한** 교안만 조회한다(MG-09 교안 화면).\n읽기 전용이며 등록·재분석은 오퍼레이터 소관이라 이 화면에 쓰기 액션이 없다.\n\n## 🔴 30차 Q2 — 이 목록을 주는 조회가 없었다\n\n네 후보 모두 다른 값을 주고 있었다.\n\n| 조회 | 실제로 주던 것 |\n|---|---|\n| `GET /cohorts/{cohortId}/curricula` | **연결 가능한 후보**(기관 전체). 이름이 뜻과 어긋나 있었다 |\n| `GET /organizations/{organizationId}/curricula` | 기관 전체(페이지네이션) |\n| `GET /projects`의 `curriculumNames[]` | **이름만**. 상세로 갈 `materialId`가 없다 |\n| `GET /projects/{projectId}`의 `curricula[]` | 정확하지만 **회차 수만큼** 불러야 모인다 |\n\n마지막 모양을 피하려고 만든 조회다 — 기수당 회차가 여섯이면 여섯 콜이 되고,\n회차가 늘면 그만큼 늘어난다.\n\n## 요청\n\n| 파라미터 | 위치 | 필수 | 설명 |\n|---|---|---|---|\n| `cohortId` | 경로 | **필수** | 조회할 기수. **이번에는 실제로 목록을 좁힌다** |\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `versionId`·`materialId` | UUID | 교안 버전 ID·원장 ID. 상세로 갈 때 쓴다 |\n| `versionNo`·`originalFileName` | | 버전 번호·파일명 |\n| `pageCount` | int? | 페이지 수. 분석 전이면 null |\n| `analysisStatus` | enum? | 최근 분석 시도 상태. **한 번도 안 했으면 null**이며 `FAILED`와 다르다 |\n| `teachesCount` | int | 승인된 가르친 항목 수 |\n| `createdAt` | date-time | 등록 시각 |\n| `linkedProjects[]` | array | **이 교안을 쓴 회차들**. `projectId` · `projectName` · `sequenceNo` |\n\n**한 교안이 여러 회차에 걸리면 한 번만 나오고** `linkedProjects[]`에 그 회차가 모두\n담긴다. 이 배열이 이 화면의 맥락 전부라 비어 있는 채로 나오는 일은 없다 —\n연결이 있어야 목록에 들어오기 때문이다.\n\n회차 차수는 `sequenceNo`다. 미니프로젝트는 `round_no`가 늘 1이라 그것으로는\n차수를 셀 수 없다.\n\n연결이 하나도 없으면 빈 배열이다(기수가 아직 교안을 붙이지 않은 상태이며 정상이다).\n",
+        "description": "이 기수의 회차들이 **실제로 연결한** 교안만 조회한다(MG-09 교안 화면).\n읽기 전용이며 등록·재분석은 오퍼레이터 소관이라 이 화면에 쓰기 액션이 없다.\n\n## 🔴 30차 Q2 — 이 목록을 주는 조회가 없었다\n\n네 후보 모두 다른 값을 주고 있었다.\n\n| 조회 | 실제로 주던 것 |\n|---|---|\n| `GET /cohorts/{cohortId}/curricula` | **연결 가능한 후보**(기관 전체). 이름이 뜻과 어긋나 있었다 |\n| `GET /organizations/{organizationId}/curricula` | 기관 전체(페이지네이션) |\n| `GET /projects`의 `curriculumNames[]` | **이름만**. 상세로 갈 `materialId`가 없다 |\n| `GET /projects/{projectId}`의 `curricula[]` | 정확하지만 **회차 수만큼** 불러야 모인다 |\n\n마지막 모양을 피하려고 만든 조회다 — 기수당 회차가 여섯이면 여섯 콜이 되고,\n회차가 늘면 그만큼 늘어난다.\n\n## 요청\n\n| 파라미터 | 위치 | 필수 | 설명 |\n|---|---|---|---|\n| `cohortId` | 경로 | **필수** | 조회할 기수. **이번에는 실제로 목록을 좁힌다** |\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `versionId`·`materialId` | UUID | 교안 버전 ID·원장 ID. 상세로 갈 때 쓴다 |\n| `versionNo`·`originalFileName` | | 버전 번호·파일명 |\n| `pageCount` | int? | 페이지 수. 분석 전이면 null |\n| `analysisStatus` | enum? | 최근 분석 시도 상태. **한 번도 안 했으면 null**이며 `FAILED`와 다르다 |\n| `teachesCount` | int | 승인된 가르친 항목 수 |\n| `createdAt` | date-time | 등록 시각 |\n| `linkedProjects[]` | array | **이 행의 버전을 쓴 회차들**. `projectId` · `projectName` · `sequenceNo` ·\n  `curriculumVersionId`(2026-08-20, 44차 R2 — 이 행의 `versionId`와 항상 같다) |\n\n**행은 교안이 아니라 버전 단위다.** 한 교안이 여러 회차에 걸려도 **같은 버전**을\n연결한 회차끼리만 `linkedProjects[]`에 함께 담긴다 — 회차마다 다른 버전을 연결했다면\n행이 그만큼 나뉜다. 이 배열이 이 화면의 맥락 전부라 비어 있는 채로 나오는 일은 없다\n— 연결이 있어야 목록에 들어오기 때문이다.\n\n회차 차수는 `sequenceNo`다. 미니프로젝트는 `round_no`가 늘 1이라 그것으로는\n차수를 셀 수 없다.\n\n연결이 하나도 없으면 빈 배열이다(기수가 아직 교안을 붙이지 않은 상태이며 정상이다).\n\n## `versionId`가 단수인 이유 — 행이 이미 버전 하나만 대표한다 (2026-08-20, 44차 R2 회신)\n\n요청서는 \"한 교안이 여러 버전으로 개정돼 회차마다 다른 버전을 연결하면(예: 1차는\nv1, 3차 이후는 v2) 이 행이 어느 버전을 대표하는지 계약이 없다\"고 지목했다 — 그런데\n실제로 확인해 보니 **이 조회는 이미 버전 단위로 행을 나누고 있었다.** 위 예시를\n그대로 넣으면:\n\n| `versionId` | `versionNo` | `linkedProjects[]` |\n|---|---|---|\n| v1 | 1 | `[{sequenceNo: 1, curriculumVersionId: v1}]` |\n| v2 | 2 | `[{sequenceNo: 3, curriculumVersionId: v2}, …]` |\n\n같은 `materialId`가 **두 행**으로 나오고, 각 행의 `linkedProjects[]`에는 **그 행의\n`versionId`를 쓴 회차만** 담긴다 — 요청서가 제안한 \"옵션 1(버전 단위로 행 분리)\"이\n이미 동작이었다. 요청서가 지목한 것은 동작이 아니라 **이 문서의 옛 문구**(\"한 교안이\n여러 회차에 걸리면 한 번만 나온다\")였다 — 그 문구만 실제와 어긋나 있었다.\n\n추가로 요청서의 옵션 2도 함께 반영했다 — `linkedProjects[]`의 각 항목이\n`curriculumVersionId`를 직접 들고 있다(이 행의 `versionId`와 항상 같은 값이다).\n행을 순회하는 코드가 행 묶음 규칙을 몰라도 회차 하나만 보고 바로 버전을 읽을 수\n있도록 하기 위해서다.\n\n**상세로 들어갈 때 열 버전은 `GET /curricula/{materialId}?versionId=`로 이 행의\n`versionId`를 그대로 넘기면 된다**(44차 R1로 구현됨).\n",
         "operationId": "findCohortLinkedCurricula",
         "parameters": [
           {
@@ -27343,10 +27530,11 @@
           },
           "status": {
             "type": "string",
-            "description": "회차 카드의 상태.\n\n| 값 | 뜻 | 화면 |\n|---|---|---|\n| `PUBLISHED` | 리포트가 발행됐다 | 결과를 그린다 |\n| `PENDING_PUBLISH` | 리포트를 만드는 중이다 | `리포트가 생성 중입니다` |\n| `NOT_STARTED` | **제출 마감 전인데 아직 응시 기록이 없다** | 아직 시간이 있다 |\n| `NOT_ATTEMPTED` | **마감이 지나도록 응시하지 않았다** | 놓쳤다 — 매니저 안내가 필요하다 |\n| `VOID_ATTEMPT` | 무효 응시 검토 중이거나 무효로 확정됐다 | `확인 필요` |\n| `STOPPED` | 세션을 시작했지만 끝내지 못했다 | 중단 |\n\n🔴 **`PENDING_VISIBILITY`가 없어졌다**(2026-08-19). 종전에는 발행과 공개가 다른 사건이라\n`발행은 됐지만 매니저가 아직 공개 범위를 안 정했다`는 상태가 있었는데, 공개/비공개 개념이\n폐지되면서 사라졌다. **발행되면 그 즉시 `PUBLISHED`다.**\n\n🔴 **`NOT_STARTED`와 `NOT_ATTEMPTED`를 한 문구로 묶지 않는다.** 둘을 같은 말로 그리면\n아직 시간이 있는 학생에게 놓쳤다고 말하거나, 정말 놓친 학생에게서 경고가 사라진다(26차 A1).\n가르는 축은 **제출 마감**이며, 홈의 `SUBMISSION_REQUIRED` / `SUBMISSION_MISSED`와 같은 값으로\n갈리므로 두 화면이 같은 회차를 같은 말로 설명한다.",
+            "description": "회차 카드의 상태.\n\n| 값 | 뜻 | 화면 |\n|---|---|---|\n| `PUBLISHED` | 리포트가 발행됐다 | 결과를 그린다 |\n| `PENDING_PUBLISH` | **이해도 확인까지 마쳤고** 리포트를 만드는 중이다 | `리포트가 생성 중입니다` |\n| `IN_PROGRESS` | 응시 기록은 있지만 아직 안 끝났다(제출 전·분석 중·이해도 확인 세션 준비됨·진행 중) — 2026-08-20 추가 | 진행 상황을 그린다. `PENDING_PUBLISH`와 다른 말이어야 한다 |\n| `NOT_STARTED` | **제출 마감 전인데 아직 응시 기록이 없다** | 아직 시간이 있다 |\n| `NOT_ATTEMPTED` | **마감이 지나도록 응시하지 않았다** | 놓쳤다 — 매니저 안내가 필요하다 |\n| `VOID_ATTEMPT` | 무효 응시 검토 중이거나 무효로 확정됐다 | `확인 필요` |\n| `STOPPED` | 세션을 시작했지만 끝내지 못했다 | 중단 |\n\n🔴 **`PENDING_VISIBILITY`가 없어졌다**(2026-08-19). 종전에는 발행과 공개가 다른 사건이라\n`발행은 됐지만 매니저가 아직 공개 범위를 안 정했다`는 상태가 있었는데, 공개/비공개 개념이\n폐지되면서 사라졌다. **발행되면 그 즉시 `PUBLISHED`다.**\n\n🔴 **`NOT_STARTED`와 `NOT_ATTEMPTED`를 한 문구로 묶지 않는다.** 둘을 같은 말로 그리면\n아직 시간이 있는 학생에게 놓쳤다고 말하거나, 정말 놓친 학생에게서 경고가 사라진다(26차 A1).\n가르는 축은 **제출 마감**이며, 홈의 `SUBMISSION_REQUIRED` / `SUBMISSION_MISSED`와 같은 값으로\n갈리므로 두 화면이 같은 회차를 같은 말로 설명한다.\n\n🔴 **`PENDING_PUBLISH`와 `IN_PROGRESS`를 한 문구로 묶지 않는다**(2026-08-20 발견·수정).\n전자는 이해도 확인까지 **다 끝내고** 리포트만 기다리는 것이고, 후자는 **아직 응시 자체를\n끝내지 못한** 것이다 — 코드 제출·분석·이해도 확인 세션 준비 단계에서 이 둘을 섞으면\n학생이 하지도 않은 걸 \"응시 완료\"로 보게 된다(실사용 재현: 코드 분석 중인 회차가\n\"응시 완료\"로 표시).",
             "enum": [
               "PUBLISHED",
               "PENDING_PUBLISH",
+              "IN_PROGRESS",
               "NOT_STARTED",
               "NOT_ATTEMPTED",
               "VOID_ATTEMPT",
@@ -30232,7 +30420,7 @@
       },
       "CurriculumCatalogItem": {
         "type": "object",
-        "description": "교안 한 건(최신 버전 기준)",
+        "description": "교안 한 건(기준 버전 — 목록은 항상 최신, 상세는 `versionId`로 지정 가능)",
         "properties": {
           "materialId": {
             "type": "string",
@@ -30242,7 +30430,7 @@
           "versionId": {
             "type": "string",
             "format": "uuid",
-            "description": "최신 교안 버전 ID. 프로젝트에 연결할 때(`POST /projects/{id}/curricula`) 보내는 값"
+            "description": "기준 버전 ID(목록은 항상 최신, 상세는 `versionId`로 지정 가능). 프로젝트에 연결할 때(`POST /projects/{id}/curricula`) 보내는 값"
           },
           "title": {
             "type": [
@@ -30260,7 +30448,7 @@
           "versionNo": {
             "type": "integer",
             "format": "int32",
-            "description": "최신 버전 번호",
+            "description": "기준 버전 번호",
             "example": 1
           },
           "pageCount": {
@@ -30273,7 +30461,7 @@
             "example": 84
           },
           "analysisStatus": {
-            "description": "가장 최근 분석 **시도**의 상태. `분석 중`·`분석 완료`·`분석 실패` 배지의 근거다.\n**한 번도 분석하지 않은 교안은 null**이다 — 실패와 구분해야 해서 값을 만들어 넣지 않는다.\n`POST /curricula/{materialId}/analyses`로 재분석을 건 뒤 이 값을 폴링하면 된다.",
+            "description": "기준 버전의 가장 최근 분석 **시도** 상태. `분석 중`·`분석 완료`·`분석 실패` 배지의 근거다.\n**한 번도 분석하지 않은 버전은 null**이다 — 실패와 구분해야 해서 값을 만들어 넣지 않는다.\n`POST /curricula/{materialId}/analyses`로 재분석을 건 뒤 이 값을 폴링하면 된다.",
             "oneOf": [
               {
                 "$ref": "#/components/schemas/CurriculumAnalysisStatus"
@@ -30286,25 +30474,31 @@
           "sectionCount": {
             "type": "integer",
             "format": "int64",
-            "description": "가장 최근 **성공한** 분석이 만든 섹션 수. 성공 분석이 없으면 0",
+            "description": "기준 버전의 가장 최근 **성공한** 분석이 만든 섹션 수. 성공 분석이 없으면 0",
             "example": 12
           },
           "conceptCount": {
             "type": "integer",
             "format": "int64",
-            "description": "최신 버전의 승인된(ACTIVE) 개념 수. 화면의 `12섹션 · 개념 48건`에서 뒤 숫자",
+            "description": "기준 버전의 승인된(ACTIVE) 개념 수. 화면의 `12섹션 · 개념 48건`에서 뒤 숫자",
             "example": 48
           },
           "usedProjectCount": {
             "type": "integer",
             "format": "int64",
-            "description": "이 교안(모든 버전)을 연결한 **삭제되지 않은** 회차 수. 화면의 `3개 회차에서 사용 중`이며\n삭제·교체 판단 근거다. 0이면 아무 회차도 쓰고 있지 않다.",
+            "description": "이 교안(모든 버전)을 연결한 **삭제되지 않은** 회차 수. 화면의 `3개 회차에서 사용 중`이며\n삭제·교체 판단 근거다. 0이면 아무 회차도 쓰고 있지 않다.\n\n**`GET /curricula/{materialId}?versionId=`로 옛 버전을 봐도 이 값은 바뀌지 않는다**\n(2026-08-20, 44차 R1) — 삭제 가드와 같은 모집단을 유지해야 하기 때문이다. 그 버전만의\n개수는 `versionUsedProjectCount`를 쓴다.",
             "example": 3
+          },
+          "versionUsedProjectCount": {
+            "type": "integer",
+            "format": "int64",
+            "description": "이 행이 대표하는 **그 버전만** 연결한 삭제되지 않은 회차 수(2026-08-20, 44차 R1).\n목록에서는 최신 버전만의 개수이고, `?versionId=`로 옛 버전 상세를 열면 그 버전만의\n개수다. `usedProjectCount`(교안 전체)와 다른 모집단이다 — 삭제 가능 여부는 여전히\n`usedProjectCount`로 판단한다.",
+            "example": 1
           },
           "uploadedAt": {
             "type": "string",
             "format": "date-time",
-            "description": "최신 버전 업로드 시각"
+            "description": "기준 버전 업로드 시각"
           },
           "uploadedByName": {
             "type": [
@@ -30327,7 +30521,8 @@
           "uploadedByName",
           "usedProjectCount",
           "versionId",
-          "versionNo"
+          "versionNo",
+          "versionUsedProjectCount"
         ]
       },
       "CurriculumCatalogResponse": {
@@ -32523,9 +32718,15 @@
             "format": "int32",
             "description": "기수 안의 차수",
             "example": 3
+          },
+          "curriculumVersionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "이 회차가 실제로 연결한 버전 ID(2026-08-20, 44차 R2). 이 행의 `versionId`와\n**항상 같다** — 한 교안이 버전마다 다른 회차에 걸려 있으면 행 자체가 버전\n단위로 나뉘기 때문이다(위 `versionId` 필드 설명 참고). 회차별로 직접 들고\n있으므로, 여러 행을 순회할 때 행 묶음 규칙을 몰라도 회차 → 버전을 바로 읽을\n수 있다.\n"
           }
         },
         "required": [
+          "curriculumVersionId",
           "projectId",
           "projectName",
           "sequenceNo"
@@ -32589,7 +32790,7 @@
           },
           "linkedProjects": {
             "type": "array",
-            "description": "이 교안을 연결한 **회차들**이며 차수 오름차순입니다. **비어 있지 않습니다** —\n연결이 있어야 이 목록에 들어옵니다.\n\n한 교안이 여러 회차에 걸리면 교안은 한 번만 나오고 그 회차들이 여기 모입니다.\n이 값이 없으면 기관 전체 교안 목록과 구분되지 않습니다 — 「이 교안이 3차에 쓰였다」가\n이 화면의 맥락 전부입니다.\n",
+            "description": "이 행의 `versionId`를 연결한 **회차들**이며 차수 오름차순입니다. **비어 있지 않습니다** —\n연결이 있어야 이 목록에 들어옵니다.\n\n**(2026-08-20 정정, 44차 R2)** 묶는 단위는 교안이 아니라 **버전**입니다 — 같은 교안이라도\n회차마다 다른 버전을 연결했다면 행이 나뉘고, 여기에는 **이 행의 버전만** 쓴 회차만\n모입니다. 이 값이 없으면 기관 전체 교안 목록과 구분되지 않습니다 — 「이 버전이 3차에\n쓰였다」가 이 화면의 맥락 전부입니다.\n",
             "items": {
               "$ref": "#/components/schemas/CohortCurriculumLinkedProject"
             }

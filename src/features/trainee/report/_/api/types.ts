@@ -4,8 +4,9 @@ import type { findMyReports_Response } from '@/api/reporting/reportingTypes'
   TR-04 계약 — **서버 모양을 화면 어휘로 옮긴 것**(api-boundary §1-③).
   확정 모델은 `docs/dev/screens/tr-04-report.md`.
 
-  16차에 요청한 봉투(`rounds` + `reportsById`)가 그대로 왔다. 상태 6종도 글자까지 같아서
-  화면 분기가 산다. 그래서 여기서 새로 짓는 것은 **목이 지어냈던 두 군데뿐**이다.
+  16차에 요청한 봉투(`rounds` + `reportsById`)가 그대로 왔다. 상태는 글자까지 같아서
+  화면 분기가 산다(2026-08-20 기준 7종 — `IN_PROGRESS` 추가). 그래서 여기서 새로
+  짓는 것은 **목이 지어냈던 두 군데뿐**이다.
 */
 
 type Server = findMyReports_Response
@@ -84,7 +85,24 @@ export type PublishedReport = RoundBase & {
 
 export type RoundReport =
   | PublishedReport
+  /**
+   * **이해도 확인까지 실제로 마쳤고** 리포트만 아직 없다(2026-08-20 정정 — 기산점이
+   * 좁혀졌다). `IN_PROGRESS`와 갈라야 한다: 이쪽은 응시가 끝났고, 그쪽은 아직 끝나지
+   * 않았다.
+   */
   | (RoundBase & { status: 'PENDING_PUBLISH'; publishAfter: string | null })
+  /**
+   * 응시 기록은 있지만 **아직 COMPLETED에 이르지 못했다**(2026-08-20 추가) — 코드
+   * 제출 전이거나, 제출은 했는데 분석 중이거나, 분석은 끝났는데 이해도 확인 세션을
+   * 아직 시작 안 했거나, 세션이 진행 중인 경우를 전부 묶는다.
+   *
+   * 🔴 **`PENDING_PUBLISH`로 잘못 뜨던 버그를 고친 값이다.** 백엔드가 응시
+   * 미완료(코드 분석 중 등)를 `PENDING_PUBLISH`("응시 완료")로 잘못 내려보내던 것을
+   * 이 값으로 분리했다 — 실사용 재현: 코드 분석이 진행 중인 회차가 "응시 완료"로
+   * 표시됨. 세부 단계(제출 전/분석 중/세션 준비/세션 진행 중)는 이 화면 계약에
+   * 없다 — 필요하면 TR-01 홈의 스테퍼가 더 자세히 보여준다.
+   */
+  | (RoundBase & { status: 'IN_PROGRESS' })
   /**
    * 제출 마감 **전**이고 아직 응시하지 않았다 — 정상이고 아직 시간이 있다.
    * `NOT_ATTEMPTED`(마감이 지나도록 안 함)와 갈라야 한다(26차 A1) — 한 문구로 묶으면

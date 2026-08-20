@@ -86,13 +86,21 @@ export default function PersonResultPanel({
         </p>
       ) : (
         <>
-          <div className="flex flex-col gap-4">
+          {/*
+            ⚠ **간격을 gap-4에서 키웠다**(사용자 지적). 축을 색 블록에서 텍스트로 내리면서
+            개념 한 덩어리의 높이가 크게 줄었는데, 사이 간격은 그대로라 **셋이 다닥다닥
+            붙어 보였다** — 블록이 클 때 넉넉하던 값이 작아진 뒤에는 부족해진다.
+            구분선을 같이 둬서 어디서 개념이 갈리는지도 눈에 보이게 한다.
+          */}
+          <div className="divide-border flex flex-col divide-y">
             {d.concepts.map((c) => (
-              <ConceptBlock key={c.conceptId} concept={c} />
+              <div key={c.conceptId} className="py-4 first:pt-0 last:pb-0">
+                <ConceptBlock concept={c} />
+              </div>
             ))}
           </div>
 
-          <p className="text-fg-subtle mt-4 text-xs leading-relaxed">
+          <p className="border-border text-fg-subtle mt-6 border-t pt-4 text-xs leading-relaxed">
             <b className="text-fg-muted">도달 단계가 주 판정값이에요.</b> 축별 점수는 내부 값이라
             화면에 없습니다 — 매니저가 읽는 것은 <b className="text-fg-muted">어디까지 갔는지</b>와{' '}
             <b className="text-fg-muted">혼자 했는지</b>입니다.
@@ -124,17 +132,33 @@ function ConceptBlock({ concept }: { concept: TraineeEvaluation['concepts'][numb
         </p>
       ) : (
         <>
-          <div className="mb-2 flex items-stretch gap-3">
-            <div
+          {/*
+            🔴 **색 면적이 신호를 죽이고 있었다.** 도달 배지가 64×45(2880px²)에 축 넷도
+            같은 크기의 색 블록이라, 한 줄에 **색 다섯 덩어리**가 같은 무게로 경쟁했다 —
+            그런데 이 화면은 바로 아래에서 *"도달 단계가 주 판정값이고 축별 점수는 내부
+            값"* 이라고 말한다. **디자인이 그 문장을 배신하고 있었다.**
+
+            같은 5색 스케일을 쓰는 MG-05 명부는 멀쩡한데(26×22 = 572px², 숫자만) 여기만
+            투박했던 이유가 그것이다 — **채도 높은 색은 작을 때 신호가 되고 클 때 소음이
+            된다.**
+
+            그래서 **색은 도달 배지 하나만** 갖는다. 축은 「어디서 막혔나」만 답하면
+            되므로 블록을 걷어내고 텍스트 + 기호로 내린다 — 색이 하나뿐이면 그것이
+            주 판정값이라는 것이 형태로 읽힌다.
+
+            ⚠ 「도달」 글자를 뺐다 — **모든 배지에 똑같이 붙어 정보량이 0인데** 배지를
+            두 줄로 키우고 있었다. 그 뜻은 아래 안내 문구가 이미 말한다.
+          */}
+          <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <span
               className={cn(
-                'flex w-16 flex-none flex-col items-center justify-center rounded-md',
+                'flex-none rounded-md px-2 py-0.5 text-sm font-bold tabular-nums',
                 REACH_STYLE[reachLevel(concept.reachLevel)],
               )}
             >
-              <span className="text-xl leading-none font-bold">{concept.reachLevel}단</span>
-              <span className="text-2xs opacity-80">도달</span>
-            </div>
-            <div className="grid flex-1 grid-cols-4 gap-1.5">
+              {concept.reachLevel}단
+            </span>
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
               {[1, 2, 3, 4].map((no) => (
                 <StepCell key={no} stepNo={no} step={byStep.get(no)} />
               ))}
@@ -191,13 +215,6 @@ function stepStatusLabel(step: EvaluationStep): string {
   return `합격(도움 ${step.helpCount}회)`
 }
 
-const STEP_TONE_CLASS: Record<'success' | 'info' | 'warning' | 'danger', string> = {
-  success: 'border-success-border bg-success-soft text-success',
-  info: 'border-info-border bg-info-soft text-info',
-  warning: 'border-warning-border bg-warning-soft text-warning',
-  danger: 'border-danger-border bg-danger-soft text-danger',
-}
-
 const STEP_TEXT_CLASS: Record<'success' | 'info' | 'warning' | 'danger', string> = {
   success: 'text-success',
   info: 'text-info',
@@ -205,21 +222,37 @@ const STEP_TEXT_CLASS: Record<'success' | 'info' | 'warning' | 'danger', string>
   danger: 'text-danger',
 }
 
+/**
+ * 축 한 칸 — **색 블록이 아니라 텍스트다.**
+ *
+ * 도달 배지만 색을 갖게 하려고 내렸다(위 주석). 여기서 답할 질문은 *"어디서 막혔나"*
+ * 하나라, **막힌 축만 눈에 띄면 된다** — 통과한 축은 옅게 두고 실패·도움만 색을 쓴다.
+ *
+ * ⚠ **색만으로 말하지 않는다.** 기호(`✓`·`✗`·`—`)를 같이 둬서 색을 못 가리는 사람도
+ * 읽을 수 있게 한다. 도움 횟수는 색으로 접히므로 툴팁에 정확한 문구를 남긴다.
+ */
 function StepCell({ stepNo, step }: { stepNo: number; step: EvaluationStep | undefined }) {
   if (!step) {
     return (
-      <div className="border-border bg-surface-2 text-fg-subtle rounded-md border border-dashed px-2 py-1.5 text-center">
-        <p className="text-2xs font-semibold">{AXIS_LABEL[stepNo]}</p>
-        <p className="text-2xs">미도달</p>
-      </div>
+      <span className="text-fg-subtle text-2xs" title={`${AXIS_LABEL[stepNo]} 미도달`}>
+        <span aria-hidden>—</span> {AXIS_LABEL[stepNo]}
+      </span>
     )
   }
+  const tone = stepTone(step)
   return (
-    <div
-      className={cn('rounded-md border px-2 py-1.5 text-center', STEP_TONE_CLASS[stepTone(step)])}
+    <span
+      className={cn(
+        'text-2xs',
+        tone === 'success' ? 'text-fg-subtle' : cn('font-semibold', STEP_TEXT_CLASS[tone]),
+      )}
+      title={`${AXIS_LABEL[stepNo]} ${stepStatusLabel(step)}`}
     >
-      <p className="text-2xs font-semibold">{AXIS_LABEL[stepNo]}</p>
-      <p className="text-2xs">{stepStatusLabel(step)}</p>
-    </div>
+      <span aria-hidden>{step.passed ? '✓' : '✗'}</span> {AXIS_LABEL[stepNo]}
+      {/* 도움을 받은 것은 통과와 다른 사실이라 숫자를 남긴다 */}
+      {step.passed && step.helpCount > 0 && (
+        <span className="tabular-nums"> ·{step.helpCount}</span>
+      )}
+    </span>
   )
 }

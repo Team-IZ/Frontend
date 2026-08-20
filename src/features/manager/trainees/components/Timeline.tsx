@@ -7,13 +7,17 @@ import {
   Minus,
   FileOutput,
   MessageSquare,
+  BookOpenIcon,
+  CircleSlashIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { Empty, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
 import { RoundBadge } from './RoundBadge'
 import { REACH_STYLE } from '@/components/common/reach'
-import { useTraineeEvaluation } from '../_/api/api'
+import { useManagedTraineeReport, useTraineeEvaluation } from '../_/api/api'
 import type {
+  ManagedReportConcept,
+  ManagedRoundReport,
   RoundBadgeKind,
   TimelineEvent,
   TimelineGroup,
@@ -286,21 +290,174 @@ function ReviewRow({ event }: { event: TimelineEvent }) {
   )
 }
 
-function ReportRow({ event }: { event: TimelineEvent }) {
-  return (
-    <div className="flex items-start gap-4 border-t border-border px-5 py-3">
-      <DateCell label={event.dateLabel} />
-      <EventIcon tone="info">
-        <FileOutput className="size-3" />
-      </EventIcon>
-      <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2 text-sm">
-        <b className="font-bold">리포트 발행</b>
-        <span className="text-fg-muted">
-          {event.reviewTargetCount
-            ? `다시 보기 ${event.reviewTargetCount}건 지정`
-            : '다시 보기 없음'}
-        </span>
+/**
+ * MG-06 리포트 라인 — 펼치면 그 회차 리포트 본문을 그린다(교육생이 보는 것과 같은
+ * 내용, 잠금만 없다). `AssessmentRow`와 같은 지연 조회 관례 — 펼칠 때만 부른다.
+ */
+function ReportRow({
+  event,
+  traineeId,
+  roundId,
+}: {
+  event: TimelineEvent
+  traineeId: string
+  roundId: string
+}) {
+  const [opened, setOpened] = useState(false)
+  const report = useManagedTraineeReport(traineeId, roundId, opened)
+
+  const summary = (
+    <>
+      <b className="font-bold">리포트 발행</b>
+      <span className="text-fg-muted">
+        {event.reviewTargetCount ? `다시 보기 ${event.reviewTargetCount}건 지정` : '다시 보기 없음'}
       </span>
+    </>
+  )
+
+  return (
+    <details
+      className="group/ev border-t border-border"
+      onToggle={(e) => setOpened((e.currentTarget as HTMLDetailsElement).open)}
+    >
+      <summary className="flex cursor-pointer list-none items-start gap-4 px-5 py-3 marker:content-none hover:bg-surface-2 group-open/ev:bg-primary-soft">
+        <DateCell label={event.dateLabel} />
+        <EventIcon tone="info">
+          <FileOutput className="size-3" />
+        </EventIcon>
+        <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-2 text-sm">
+          {summary}
+          <span className="ml-auto flex shrink-0 items-center gap-1 text-2xs font-semibold text-primary">
+            <span className="group-open/ev:hidden">자세히</span>
+            <span className="hidden group-open/ev:inline">접기</span>
+            <ChevronRight
+              className="size-3 transition-transform duration-150 group-open/ev:rotate-90"
+              aria-hidden="true"
+            />
+          </span>
+        </span>
+      </summary>
+      <div className="border-t border-border bg-primary-soft py-3 pr-5 pl-[84px]">
+        {report.isPending && <p className="text-2xs text-fg-subtle">리포트를 불러오는 중…</p>}
+        {/*
+          🔴 **「불러오지 못했습니다」한 줄로 뭉개지 않는다** — 조회 자체가 실패한 것과
+          (네트워크·서버 오류) 회차가 아직 리포트를 안 가진 것(생성 중 등)은 다른
+          사건이다. 후자는 서버가 준 `status`로 정확히 말할 수 있는데 뭉개면 매니저가
+          "장애인가, 기다리면 되는 건가"를 판단할 근거가 없어진다.
+        */}
+        {report.isError && (
+          <p className="flex items-center gap-2 text-2xs text-danger">
+            리포트를 불러오지 못했어요 — 네트워크나 서버 오류입니다
+            <button
+              type="button"
+              onClick={() => void report.refetch()}
+              className="font-semibold underline underline-offset-2"
+            >
+              다시 시도
+            </button>
+          </p>
+        )}
+        {report.data && report.data.status !== 'PUBLISHED' && (
+          <p className="text-2xs text-fg-subtle">{REPORT_STATUS_REASON[report.data.status]}</p>
+        )}
+        {report.data?.status === 'PUBLISHED' && (
+          <>
+            {report.data.missingConceptCount > 0 && (
+              <p className="mb-2.5 text-2xs text-warning">
+                개념 {report.data.missingConceptCount}개는 생성에 실패해 결과가 없습니다
+              </p>
+            )}
+            {report.data.concepts.map((c, i) => (
+              <ReportConceptRow key={i} concept={c} />
+            ))}
+          </>
+        )}
+      </div>
+    </details>
+  )
+}
+
+/** `RoundReportResponse.status` 표(스펙)를 그대로 옮긴다 — 화면이 새로 판정하지 않는다 */
+const REPORT_STATUS_REASON: Record<Exclude<ManagedRoundReport['status'], 'PUBLISHED'>, string> = {
+  PENDING_PUBLISH: '이해도 확인까지 마쳤어요 — 리포트는 회차 마감 후 한꺼번에 발행됩니다.',
+  /*
+    **`PENDING_PUBLISH`와 갈라야 한다**(2026-08-20 추가). 백엔드가 응시 미완료(코드
+    제출·분석·이해도 확인 세션 준비/진행 중)를 전부 그쪽으로 보내던 것을 갈라낸 값이라,
+    같은 문구를 쓰면 **아직 안 끝난 회차를 「마쳤다」고 말하게 된다.**
+    매니저가 이 줄을 보는 이유는 「누구를 챙겨야 하나」라서 그 구분이 곧 행동을 가른다.
+  */
+  IN_PROGRESS: '아직 응시가 끝나지 않았어요 — 제출·분석·이해도 확인이 진행 중입니다.',
+  NOT_STARTED: '아직 응시 기록이 없어요 — 제출 마감 전입니다.',
+  NOT_ATTEMPTED: '마감이 지나도록 응시하지 않았어요.',
+  VOID_ATTEMPT: '무효 응시로 확인이 필요해요.',
+  STOPPED: '세션을 시작했지만 끝내지 못했어요.',
+  /** 정상 스펙엔 없는 경우 — 회차 id가 리포트 목록에 아예 없을 때만 */
+  NOT_FOUND: '이 회차의 리포트를 찾을 수 없어요.',
+}
+
+function ReportConceptRow({ concept }: { concept: ManagedReportConcept }) {
+  const [qaOpen, setQaOpen] = useState(false)
+
+  if (!concept.asked) {
+    return (
+      <div className="mb-2.5 flex items-start gap-1.5 text-xs text-fg-subtle last:mb-0">
+        <CircleSlashIcon aria-hidden="true" className="mt-0.5 size-3.5 shrink-0" />
+        {concept.name} — 코드에 이 개념이 없어 묻지 못했습니다
+      </div>
+    )
+  }
+
+  return (
+    <div className="mb-3 last:mb-0">
+      <p className="flex flex-wrap items-center gap-1.5 text-xs font-bold">
+        <span
+          className={cn(
+            'rounded-[5px] px-1.5 py-0.5 text-[11px]',
+            REACH_STYLE[concept.reachedLevel],
+          )}
+        >
+          {concept.reachedLevel}단
+        </span>
+        {concept.name}
+      </p>
+      <p className="mt-1 text-xs leading-relaxed text-fg-muted">{concept.said}</p>
+      {concept.curriculumRef && (
+        <div className="mt-1.5 inline-flex items-center gap-1.5 rounded-full border border-info-border bg-info-soft px-2 py-0.5 text-2xs text-info">
+          <BookOpenIcon aria-hidden="true" className="size-3 shrink-0" />
+          <span>
+            교안 {concept.curriculumRef.chapter} · {concept.curriculumRef.pages} ·{' '}
+            {concept.curriculumRef.title}
+          </span>
+        </div>
+      )}
+      {concept.qa && (
+        <div className="mt-1.5">
+          <button
+            type="button"
+            onClick={() => setQaOpen((v) => !v)}
+            aria-expanded={qaOpen}
+            className="flex items-center gap-1 text-2xs font-semibold text-primary"
+          >
+            <ChevronRight
+              className={cn('size-3 transition-transform', qaOpen && 'rotate-90')}
+              aria-hidden="true"
+            />
+            문답 {concept.qa.length}건 {qaOpen ? '접기' : '보기'}
+          </button>
+          {qaOpen && (
+            <div className="mt-1.5 flex flex-col gap-1.5">
+              {concept.qa.map((row, i) => (
+                <div key={i} className="rounded-md bg-surface p-2">
+                  <p className="text-2xs text-fg-subtle">
+                    <span className="font-medium">{row.questionLabel}</span> {row.question}
+                  </p>
+                  <p className="mt-0.5 text-xs text-fg">{row.answer}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -393,10 +550,12 @@ function EventRow({
   event,
   projectId,
   traineeId,
+  roundId,
 }: {
   event: TimelineEvent
   projectId: string
   traineeId: string
+  roundId: string
 }) {
   switch (event.kind) {
     case 'ASSESSMENT':
@@ -405,7 +564,7 @@ function EventRow({
     case 'REVIEW_CLOSED':
       return <ReviewRow event={event} />
     case 'REPORT':
-      return <ReportRow event={event} />
+      return <ReportRow event={event} traineeId={traineeId} roundId={roundId} />
     case 'INTERVIEW':
       return <InterviewRow event={event} />
   }
@@ -454,7 +613,13 @@ function RoundGroup({
       </button>
       {expanded &&
         events.map((e) => (
-          <EventRow key={e.id} event={e} projectId={group.projectId} traineeId={traineeId} />
+          <EventRow
+            key={e.id}
+            event={e}
+            projectId={group.projectId}
+            traineeId={traineeId}
+            roundId={group.assessmentRoundId}
+          />
         ))}
     </div>
   )

@@ -46,5 +46,6 @@ docs/dev/portfolio-security-notes.md
 dev-accounts.json
 dev-accounts.env
 
-# 매니저·오퍼레이터 담당자별 계정 — 손으로 관리한다(스크립트가 안 건드림, quickLoginAccounts.ts 참고)
+# 한 기수 전원 명부 — 기관이 준 마크다운을 scripts/dev-team-accounts.mjs가 바꾼 것
 dev-team-accounts.json
+dev-team-accounts.env

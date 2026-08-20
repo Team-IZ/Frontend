@@ -65,6 +65,14 @@ export function buildRailNote(report: RoundReport | undefined): string | undefin
       if (report.retryState === 'DONE') return '다시 보기 1개 완료'
       return undefined
     }
+    /*
+      2026-08-20 추가 — 백엔드가 응시 미완료(코드 제출 전·분석 중·이해도 확인 세션
+      준비/진행 중)를 `PENDING_PUBLISH`("응시 완료")로 잘못 내려보내던 버그를 고치며
+      새로 생긴 값이다. `PENDING_PUBLISH`와 다른 말이어야 한다 — 그건 "다 봤고
+      리포트만 기다리는 중"이고 이건 "아직 안 끝남"이다.
+    */
+    case 'IN_PROGRESS':
+      return '진행 중'
     // 마감 전(아직 할 수 있다)과 마감 후(기회가 지났다)를 레일에서도 가른다 — 본문과
     // 다른 말을 하면 목록을 훑을 때와 열었을 때 인상이 달라진다
     case 'NOT_STARTED':

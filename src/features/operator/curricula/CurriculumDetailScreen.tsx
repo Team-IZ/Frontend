@@ -7,6 +7,7 @@ import {
   RefreshCwIcon,
   Trash2Icon,
   TriangleAlertIcon,
+  UploadIcon,
 } from 'lucide-react'
 import ConsoleShell from '@/shells/ConsoleShell'
 import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
@@ -27,6 +28,7 @@ import {
   useFindCurriculum,
   useFindSections,
   useFindUsedProjects,
+  useFindCurriculumVersionHistory,
 } from '@/api/curriculum/useCurriculumQueries'
 import type {
   findCurriculum_Response,
@@ -42,6 +44,7 @@ import ErrorState from '@/components/common/ErrorState'
 import { CurriculumStatusBadge } from '../admin/_/components/StatusBadges'
 import ReanalyzeDialog from './components/ReanalyzeDialog'
 import DeleteCurriculumDialog from './components/DeleteCurriculumDialog'
+import NewVersionDialog from './components/NewVersionDialog'
 
 /*
   교안 상세 — 탭 2.
@@ -78,9 +81,29 @@ export default function CurriculumDetailScreen() {
   /* 목록으로 돌아갈 때 **`?cohort=`를 그대로 들고 간다** — 안 그러면 8기를 보다 들어왔다
      나가는 순간 목록이 기본값(진행 중 기수)으로 되돌아간다(`CurriculaTab.detailPath`) */
   const { search: urlQuery } = useLocation()
-  const listPath = `/operator/curricula${urlQuery}`
+  /*
+    ⚠ **목록으로 돌아갈 때 `?version=`은 들고 가지 않는다.** 그 값은 「이 회차가 쓰는
+    버전」이라 이 교안 상세에서만 뜻이 있고, 목록에 실어 보내면 `?cohort=`와 섞여
+    엉뚱한 상태를 만든다. 기수만 그대로 남긴다.
+  */
+  const listQuery = (() => {
+    const sp = new URLSearchParams(urlQuery)
+    sp.delete('versionId')
+    const s = sp.toString()
+    return s ? `?${s}` : ''
+  })()
+  const listPath = `/operator/curricula${listQuery}`
+  /*
+    회차 상세(구성 탭)가 실어 보내는 **「이 회차가 붙인 버전」**. 없으면 최신을 본다.
+
+    44차 R1·R3로 상세·쓰인 회차가 `versionId`를 받게 되어 **이제 진짜로 그 버전을
+    그린다** — 잠깐 「최신을 보고 있습니다」 안내로 때웠던 자리다.
+  */
+  const versionId = new URLSearchParams(urlQuery).get('versionId') ?? undefined
+  const versionQuery = versionId ? { versionId } : undefined
   const [reanalyzeOpen, setReanalyzeOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
+  const [newVersionOpen, setNewVersionOpen] = useState(false)
 
   const { data: me } = useGetCurrentMember()
   /*
@@ -89,9 +112,37 @@ export default function CurriculumDetailScreen() {
     고른 기수가 그대로 따라 들어온다.
   */
   const scope = useCohortId()
-  const curriculum = useFindCurriculum({ path: { materialId: id } }, { enabled: !!id })
-  const sections = useFindSections({ path: { materialId: id } }, { enabled: !!id })
+  const curriculum = useFindCurriculum(
+    { path: { materialId: id }, query: versionQuery },
+    { enabled: !!id },
+  )
+  const sections = useFindSections(
+    { path: { materialId: id }, query: versionQuery },
+    { enabled: !!id },
+  )
+  /*
+    🔴 **삭제 가드는 반드시 「교안 전체」 기준이다 — 여기에 `versionId`를 넣으면 안 된다.**
+
+    스펙이 명시한다: *"삭제 가능 여부는 `versionId` 없이 부른 `usedProjectCount`(교안
+    전체)로만 판단해야 한다."* v1을 보는 중에 이 값을 v1로 좁히면, v1은 안 쓰이고
+    v2만 쓰이는 교안에서 **삭제 버튼이 떠 놓고 서버가 409로 막는다.**
+  */
   const usedProjects = useFindUsedProjects({ path: { materialId: id } }, { enabled: !!id })
+  /*
+    표시용 — **보고 있는 그 버전이 쓰인 회차**로 좁힌다(44차 R3).
+    `versionId`가 없으면 위와 **쿼리 키가 같아** react-query가 한 요청으로 합친다 —
+    최신을 보는 흔한 경우에 콜이 늘지 않는다.
+  */
+  const shownProjects = useFindUsedProjects(
+    { path: { materialId: id }, query: versionQuery },
+    { enabled: !!id },
+  )
+  /*
+    버전 이력 — **「지금 최신을 보고 있나」를 판정하는 유일한 근거다**(아래 안내).
+    서버가 `versionNo` 내림차순으로 주므로 첫 항목이 최신이다.
+  */
+  const versions = useFindCurriculumVersionHistory({ path: { materialId: id } }, { enabled: !!id })
+  const latestVersionId = versions.data?.[0]?.versionId
 
   /*
     셸 설정을 한 번만 쓴다 — 아래 세 갈래(스켈레톤·오류·본문)가 모두 같은 머리를 그려야
@@ -228,6 +279,18 @@ export default function CurriculumDetailScreen() {
           */}
           <div className="flex items-center gap-2">
             {/*
+              **이 화면의 주 행동이다** — 유일한 primary 버튼이라 왼쪽 끝에 둔다.
+              다시 분석·삭제는 이미 있는 것을 손보는 일이고, 개정판을 올리는 것은
+              **새로 만드는 일**이라 무게가 다르다.
+
+              분석 실패 화면(`FailedState`)에서도 그대로 둔다 — 실패한 분석을 다시 돌리는
+              것 말고 **파일 자체를 고쳐 다시 올리는 것**이 진짜 해결인 경우가 많다
+              (암호 걸린 PDF·이미지 스캔본은 몇 번을 다시 분석해도 같은 결과다).
+            */}
+            <Button onClick={() => setNewVersionOpen(true)}>
+              <UploadIcon />새 버전 올리기
+            </Button>
+            {/*
               분석 실패한 교안에는 아래 `FailedState`가 같은 버튼을 다시 그린다 —
               그 화면에서는 그것이 **유일한 다음 행동**이라 본문 안에 있어야 한다.
             */}
@@ -261,6 +324,31 @@ export default function CurriculumDetailScreen() {
           </div>
         </div>
       </div>
+
+      {/*
+        🔴 **최신을 보고 있으면 아무 말도 하지 않는다.** 한때 `?versionId=`가 실려 있기만
+        하면 배너를 띄웠는데, 회차가 최신 버전을 쓰는 흔한 경우에도 떠서 **늘 있는
+        안내**가 됐다(사용자 지적). 늘 뜨면 읽히지 않는다.
+
+        **옛 버전을 보고 있을 때만** 말한다 — 그때는 실제로 알아야 하는 사실이고
+        (섹션·쪽 번호가 최신과 다르다) 할 일도 하나뿐이라 링크를 같이 준다.
+
+        판정을 버전 이력으로 한다 — `versions[0]`이 최신이다(서버가 `versionNo`
+        내림차순으로 준다). 이력이 아직 안 왔으면 **말하지 않는다**: 모르는 동안 넘겨짚어
+        경고하면 최신을 보는 사람에게 거짓말이 된다.
+      */}
+      {latestVersionId && data.versionId !== latestVersionId && (
+        <Alert variant="warning" className="mb-4">
+          <TriangleAlertIcon />
+          <AlertTitle>지나간 버전(v{data.versionNo})을 보고 있습니다</AlertTitle>
+          <AlertDescription>
+            아래 섹션·쪽 번호와 「연결된 프로젝트」가 이 버전 기준이라 최신과 다를 수 있습니다.{' '}
+            <Link to={`/operator/curricula/${id}${listQuery}`} className="underline">
+              최신 버전 보기
+            </Link>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {failed ? (
         <FailedState data={data} onReanalyze={() => setReanalyzeOpen(true)} />
@@ -328,34 +416,43 @@ export default function CurriculumDetailScreen() {
               `isLoading`은 `false`라(§1-9) 그 분기가 안 그려지는 사고가 이 저장소에서
               여러 번 났다.
             */}
-            {!used && !usedProjects.isError ? (
+            {/*
+              **여기는 `shownProjects`다 — 위 삭제 가드(`used`)와 다른 값이다.**
+              보고 있는 버전으로 좁힌 목록이라, v1을 열었으면 v1을 쓰는 회차만 나온다
+              (44차 R3). 최신을 볼 때는 둘이 같은 쿼리라 요청이 하나로 합쳐진다.
+            */}
+            {!shownProjects.data && !shownProjects.isError ? (
               <LinkedTabSkeleton />
-            ) : !used ? (
+            ) : shownProjects.isError && !shownProjects.data ? (
               /*
-                D41 — `used`가 아예 없을 때만 막는다. 배경 재조회만 실패했으면 아래
-                정상 렌더에서 배너로만 알린다(D46 패턴, decision-log D47).
+                D41 — `shownProjects.data`가 아예 없을 때만 막는다. 배경 재조회만
+                실패했으면 아래 정상 렌더에서 배너로만 알린다(D46 패턴, decision-log D47).
               */
               <ErrorState
-                error={usedProjects.error}
+                error={shownProjects.error}
                 subject="연결된 프로젝트"
-                onRetry={() => void usedProjects.refetch()}
-                retrying={usedProjects.isFetching}
+                onRetry={() => void shownProjects.refetch()}
+                retrying={shownProjects.isFetching}
               />
             ) : (
               <>
-                {usedProjects.isError && (
+                {shownProjects.isError && (
                   <Alert variant="warning" className="mb-3">
                     <AlertTitle>연결된 프로젝트를 새로고침하지 못했습니다</AlertTitle>
                     <AlertDescription>마지막으로 불러온 목록을 보여드리고 있어요.</AlertDescription>
                     <AlertAction>
-                      <Button variant="ghost" size="sm" onClick={() => void usedProjects.refetch()}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => void shownProjects.refetch()}
+                      >
                         다시 시도
                       </Button>
                     </AlertAction>
                   </Alert>
                 )}
                 <LinkedTab
-                  projects={used}
+                  projects={shownProjects.data}
                   cohortId={scope.cohortId}
                   cohortName={scope.current?.name}
                 />
@@ -380,6 +477,14 @@ export default function CurriculumDetailScreen() {
         materialId={id}
         inUse={inUse}
         analysisStatus={data.analysisStatus}
+      />
+
+      <NewVersionDialog
+        open={newVersionOpen}
+        onOpenChange={setNewVersionOpen}
+        materialId={id}
+        currentTitle={data.title ?? data.originalFileName}
+        currentVersionNo={data.versionNo}
       />
     </ConsoleShell>
   )

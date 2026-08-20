@@ -138,6 +138,23 @@ function RoundBody({ report }: { report: RoundReport }) {
         />
       )
     /*
+      2026-08-20 추가 — 백엔드가 응시 미완료(코드 제출 전·분석 중·이해도 확인 세션
+      준비/진행 중)를 PENDING_PUBLISH("응시 완료")로 잘못 내려보내던 버그를 고치며
+      새로 생긴 상태다. `PENDING_PUBLISH`와 같은 문구를 쓰면 안 된다 — 이해도 확인을
+      마쳤는지가 갈리는 축이다. 세부 단계는 이 화면 계약에 없다 — 홈의 스테퍼가
+      더 자세히 보여주므로 여기서는 "가서 이어서 하라"는 안내만 한다.
+    */
+    case 'IN_PROGRESS':
+      return (
+        <ReportStatusCard
+          variant="default"
+          icon={<ClockIcon className="size-5" />}
+          title="아직 진행 중이에요"
+          description="코드 제출부터 이해도 확인까지 마치면 리포트가 만들어집니다."
+          aux="홈에서 진행 상황을 이어서 확인할 수 있어요"
+        />
+      )
+    /*
       **`NOT_STARTED`와 `NOT_ATTEMPTED`는 정반대다**(26차 A1). 둘 다 "응시 기록이
       없다"지만 제출 마감을 기준으로 갈린다 — 앞은 아직 시간이 있는 정상이고, 뒤는
       기회가 지나간 것이다. 그래서 매니저 안내(`aux`)는 **뒤에만** 붙는다. 마감 전

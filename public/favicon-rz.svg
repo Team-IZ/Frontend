@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!--
+    워드마크의 RZ 배지를 파비콘으로 옮긴 것. 비율은 화면 배지와 같게 맞췄다 —
+    배지 26px · 모서리 4px · 글자 14px  →  32 : 4.9 : 17.23.
+    (글자 크기를 바꾸면 여기 `font-size`도 32 × 글자/26 으로 같이 바꾼다)
+
+    글자를 path로 따지 않고 <text>로 둔다. 두 글자뿐이라 어느 기기에서든 붙는 산세리프로
+    읽히고, path로 따면 폰트가 바뀌었을 때 화면 배지와 파비콘이 서로 달라진다.
+
+    세로 정렬은 화면 배지와 같은 원리다 — 대문자만 있어 디센더 자리가 비므로
+    `dominant-baseline="central"`(em 박스 중앙)에 캡 높이의 절반을 더해 **글자 자체**를
+    가운데 놓는다. CSS 쪽 설명은 components/common/Wordmark.tsx에 있다.
+  -->
+  <rect width="32" height="32" rx="4.9" fill="#3a4db8" />
+  <text
+    x="16"
+    y="16"
+    dy="0.355em"
+    text-anchor="middle"
+    font-family="system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+    font-size="17.23"
+    font-weight="700"
+    letter-spacing="-0.54"
+    fill="#ffffff"
+  >RZ</text>
+</svg>

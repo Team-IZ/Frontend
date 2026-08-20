@@ -48,7 +48,7 @@ export default function ManagerShell({ user, cohort, isLead = false, children }:
             >
               ◆
             </span>
-            IZ-Get
+            RealiZe
           </div>
 
           {/* 기수 선택기 — 전역 스코프. 바꾸면 하위 조회가 전부 다시 돈다 */}

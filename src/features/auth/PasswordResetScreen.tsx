@@ -245,7 +245,7 @@ function SetPasswordStage({ token }: { token: string }) {
           description="이 링크로는 비밀번호를 바꿀 수 없어요."
           aux="메일에 있는 링크를 다시 눌러 보세요. 계속 같으면 담당자에게 문의해 주세요."
           actions={
-            <Button nativeButton={false} render={<a href="mailto:support@iz-get.com" />}>
+            <Button nativeButton={false} render={<a href="mailto:support@realize.co.kr" />}>
               문의하기
             </Button>
           }
@@ -267,7 +267,7 @@ function SetPasswordStage({ token }: { token: string }) {
         description={tokenAlert.message}
         aux="잠시 후 링크를 다시 열어 주세요. 계속 같으면 담당자에게 문의해 주세요."
         actions={
-          <Button nativeButton={false} render={<a href="mailto:support@iz-get.com" />}>
+          <Button nativeButton={false} render={<a href="mailto:support@realize.co.kr" />}>
             문의하기
           </Button>
         }

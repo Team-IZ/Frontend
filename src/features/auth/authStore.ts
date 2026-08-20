@@ -63,6 +63,11 @@ export const useAuthStore = create<AuthState>()((set) => ({
   옛 버전이 sessionStorage에 세션을 저장했다. 지금은 아무도 읽지 않지만 **이미 켜 본 사람의
   브라우저에는 남아 있다** — "저장소에 인증 정보가 하나도 없다"를 그 사람들에게도 사실로 만든다.
   몇 주 뒤 지운다.
+
+  🔴 **`iz-get`을 `realize`로 바꾸지 말 것.** 이건 브랜드 표기가 아니라 **그때 실제로 쓴 키
+  이름**이다(서비스명이 RealiZe로 확정되기 전 이름 — 결정로그 D11). 바꾸면 지우려는 키와
+  이름이 달라져 **청소가 조용히 안 된다** — 옛 세션이 그 사람들 브라우저에 영영 남는다.
+  이 줄은 이름을 고치는 것이 아니라 통째로 지우는 것이 답이다.
 */
 sessionStorage.removeItem('iz-get.auth')
 sessionStorage.removeItem('iz-get.session')

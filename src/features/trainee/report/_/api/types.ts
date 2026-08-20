@@ -5,8 +5,8 @@ import type { findMyReports_Response } from '@/api/reporting/reportingTypes'
   확정 모델은 `docs/dev/screens/tr-04-report.md`.
 
   16차에 요청한 봉투(`rounds` + `reportsById`)가 그대로 왔다. 상태는 글자까지 같아서
-  화면 분기가 산다(2026-08-20 기준 7종 — `IN_PROGRESS` 추가). 그래서 여기서 새로
-  짓는 것은 **목이 지어냈던 두 군데뿐**이다.
+  화면 분기가 산다(2026-08-21 기준 8종 — `IN_PROGRESS`·`ANALYSIS_FAILED` 추가). 그래서
+  여기서 새로 짓는 것은 **목이 지어냈던 두 군데뿐**이다.
 */
 
 type Server = findMyReports_Response
@@ -103,6 +103,16 @@ export type RoundReport =
    * 없다 — 필요하면 TR-01 홈의 스테퍼가 더 자세히 보여준다.
    */
   | (RoundBase & { status: 'IN_PROGRESS' })
+  /**
+   * 코드 분석이 실패해 리포트를 만들 근거가 없다(2026-08-21 추가) — 리포트 행이 아예
+   * 없을 때만이다. `PENDING_PUBLISH`와 갈라야 한다: 이쪽은 리포트가 영영 안 나온다는
+   * 사실이고, 그쪽은 곧 나온다는 약속이다.
+   *
+   * 🔴 **`PENDING_PUBLISH`로 잘못 뜨던 버그를 고친 값이다.** 분석 실패로 끝난 회차가
+   * "리포트를 만들고 있어요 · 발행 예정 N월 N일 이후"로 뜨는데 그 발행 예정일은 이미
+   * 지나 있었다(실사용 재현: 문주안 계정 미니프로젝트 3차).
+   */
+  | (RoundBase & { status: 'ANALYSIS_FAILED' })
   /**
    * 제출 마감 **전**이고 아직 응시하지 않았다 — 정상이고 아직 시간이 있다.
    * `NOT_ATTEMPTED`(마감이 지나도록 안 함)와 갈라야 한다(26차 A1) — 한 문구로 묶으면

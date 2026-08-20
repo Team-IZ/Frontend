@@ -73,6 +73,13 @@ export function buildRailNote(report: RoundReport | undefined): string | undefin
     */
     case 'IN_PROGRESS':
       return '진행 중'
+    /*
+      2026-08-21 추가 — 분석 실패로 끝났고 리포트가 아예 없는 회차. `PENDING_PUBLISH`의
+      "응시 완료"를 그대로 쓰면 안 된다 — 리포트가 곧 나온다는 뜻인데 이쪽은 영영 안
+      나온다는 뜻이다.
+    */
+    case 'ANALYSIS_FAILED':
+      return '분석 실패'
     // 마감 전(아직 할 수 있다)과 마감 후(기회가 지났다)를 레일에서도 가른다 — 본문과
     // 다른 말을 하면 목록을 훑을 때와 열었을 때 인상이 달라진다
     case 'NOT_STARTED':

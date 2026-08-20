@@ -3,7 +3,6 @@ import {
   CircleHelpIcon,
   ClockIcon,
   InboxIcon,
-  LockIcon,
   MinusCircleIcon,
   PauseCircleIcon,
   RotateCcwIcon,
@@ -128,24 +127,14 @@ function RoundBody({ report }: { report: RoundReport }) {
         <ReportStatusCard
           variant="default"
           icon={<ClockIcon className="size-5" />}
-          title="아직 발행 전이에요"
+          title="리포트를 만들고 있어요"
           description="리포트는 회차 마감 후 한꺼번에 발행됩니다."
           /* 서버가 발행 예정일을 아직 안 정했을 수 있다 — 날짜를 지어내지 않고 뒷문장만 남긴다 */
           aux={
             report.publishAfter
-              ? `발행되면 알려드릴게요 · 발행 예정 ${formatDate(report.publishAfter)} 이후`
-              : '발행되면 알려드릴게요'
+              ? `다 되면 바로 볼 수 있어요 · 발행 예정 ${formatDate(report.publishAfter)} 이후`
+              : '다 되면 바로 볼 수 있어요'
           }
-        />
-      )
-    case 'PENDING_VISIBILITY':
-      return (
-        <ReportStatusCard
-          variant="default"
-          icon={<LockIcon className="size-5" />}
-          title="아직 공개되지 않았어요"
-          description="담당 매니저가 공개 범위를 정하면 확인할 수 있어요."
-          aux="회차는 끝났고 결과도 나와 있습니다 — 여는 시점만 남았어요"
         />
       )
     /*
@@ -253,26 +242,10 @@ function PublishedBody({ report }: { report: Extract<RoundReport, { status: 'PUB
       )}
 
       {/*
-        **공개 범위는 리포트 하나에 걸린다** — `SUMMARY`면 세 개념이 통째로 닫힌다.
-        그래서 개념마다 자물쇠를 그리지 않고 여기서 한 번만 말한다(같은 말을 세 번
-        하면 "이 개념만 잠겼나"로 읽힌다).
-
-        **여는 사람은 매니저다**(24차 R1 회신). 다시 보기를 마쳐도 안 열리는 회차가
-        실제로 있어서(1차 — REVIEW 완료인데 SUMMARY), 학생이 할 수 없는 일을 조건으로
-        걸면 영영 안 열리는 자물쇠를 기다리게 된다.
+        🔴 **리포트 단위 잠금은 없어졌다.** 남는 가림막은 도달 2단 미만 개념의
+        `qa`·`explanation`뿐이고, 다시 보기를 마치면 그 개념만 열린다(개념 단위) —
+        그래서 여기 배너 대신 `ConceptCard`가 잠긴 개념마다 각자 안내한다.
       */}
-      {report.scope === 'SUMMARY' && (
-        <div className="flex items-center gap-3 rounded-md bg-neutral-soft px-4 py-3">
-          <LockIcon className="size-5 shrink-0 text-fg-muted" />
-          <div>
-            <b className="text-fg">이 리포트는 요약만 공개돼 있어요</b>
-            {/* 회색 면 위라 `fg-subtle`은 3.93:1로 AA 미달이다(Badge와 같은 건) */}
-            <div className="text-xs text-fg-muted">
-              문답 원문과 자세한 해설은 매니저가 공개하면 열려요
-            </div>
-          </div>
-        </div>
-      )}
 
       {/*
         **AI 생성이 실패해 빠진 개념**(23차 Q1). 문항 없음(`asked: false`)과 다르다 —

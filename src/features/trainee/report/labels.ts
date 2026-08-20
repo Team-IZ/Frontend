@@ -76,7 +76,6 @@ export function buildRailNote(report: RoundReport | undefined): string | undefin
     case 'VOID_ATTEMPT':
       return '확인 필요'
     case 'PENDING_PUBLISH':
-    case 'PENDING_VISIBILITY':
       return '응시 완료'
   }
 }

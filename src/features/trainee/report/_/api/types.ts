@@ -49,9 +49,9 @@ export type ConceptReport =
       isRetryTarget: boolean
       /** 어디를 보고 오라는 안내 — 다시 보기의 전제다 */
       curriculumRef: CurriculumRef | null
-      /** 막힌 이유 상세. 공개 범위가 `FULL`일 때만 서버가 보낸다 */
+      /** 막힌 이유 상세. 도달 2단 미만인데 다시 보기를 아직 안 마쳤으면 서버가 가린다 */
       explanation: string[] | null
-      /** 문답 원문. `FULL`일 때만 — 질문과 힌트가 한 벌로 섞여 온다 */
+      /** 문답 원문. 질문과 힌트가 한 벌로 섞여 온다 — 위와 같은 조건으로 가려진다 */
       qa: QaEntry[] | null
       /** 재시험을 본 개념에만 붙는다 */
       comparedReach: ComparedReach | null
@@ -71,13 +71,6 @@ export type PublishedReport = RoundBase & {
   publishedAt: string
   curriculum: string
   concepts: ConceptReport[]
-  /**
-   * 공개 범위 — **리포트 단위다.**
-   *
-   * 목은 개념마다 따로 뒀는데 서버에는 그런 축이 없다. `SUMMARY`면 그 리포트의
-   * **모든** 개념에서 문답·해설이 통째로 빠진다(실응답으로 확인).
-   */
-  scope: 'FULL' | 'SUMMARY'
   /** `DONE`이면 재시험을 이미 썼다 — **기회는 1회뿐**이라 버튼이 사라진다 */
   retryState: 'NONE' | 'PENDING' | 'DONE'
   retryDueAt: string | null
@@ -92,7 +85,6 @@ export type PublishedReport = RoundBase & {
 export type RoundReport =
   | PublishedReport
   | (RoundBase & { status: 'PENDING_PUBLISH'; publishAfter: string | null })
-  | (RoundBase & { status: 'PENDING_VISIBILITY' })
   /**
    * 제출 마감 **전**이고 아직 응시하지 않았다 — 정상이고 아직 시간이 있다.
    * `NOT_ATTEMPTED`(마감이 지나도록 안 함)와 갈라야 한다(26차 A1) — 한 문구로 묶으면

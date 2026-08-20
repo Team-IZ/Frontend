@@ -79,7 +79,38 @@ export default function ChangeCurriculaDialog({
   const { ready, blocked } = splitByAvailability(
     curricula.filter((c) => !linkedIds.includes(c.versionId)),
   )
-  const linked = curricula.filter((c) => linkedIds.includes(c.versionId))
+
+  /*
+    🔴 **연결된 줄은 후보 목록이 아니라 `project.curricula`에서 만든다.**
+
+    한때 `curricula.filter(연결된 것)`이었다. 후보 목록(`GET /cohorts/{id}/curricula`)은
+    *"지금 새로 붙일 수 있는 것"* 이라 **이미 붙어 있는 것을 항상 담고 있지는 않다** —
+    개정판이 올라가 이전 버전이 후보에서 빠지면 그 줄이 통째로 사라진다. 그러면
+    v1에 연결된 회차를 열었을 때 「0개 연결」로 보이고, **떼는 것조차 못 한다**(떼려고
+    여는 자리인데).
+
+    지금은 이전 버전도 후보에 남아 있어 안 드러나지만, 그 동작은 백엔드가 고치는 중이다
+    (45차 R2) — 그때 조용히 깨지는 대신 **연결의 원천을 서버가 준 사실로 바꾼다.**
+
+    후보에 있으면 그쪽 값을 쓴다(쪽수·분석 상태가 들어 있다). 없으면 연결 정보만으로
+    최소한을 세운다 — 모르는 값은 지어내지 않고 `null`로 둔다.
+  */
+  const byVersionId = new Map(curricula.map((c) => [c.versionId, c]))
+  const linked: Curriculum[] = project.curricula.map(
+    (pc) =>
+      byVersionId.get(pc.curriculumVersionId) ?? {
+        versionId: pc.curriculumVersionId,
+        materialId: pc.materialId ?? '',
+        versionNo: pc.versionNo ?? 0,
+        originalFileName: pc.originalFileName ?? '(이름을 불러오지 못함)',
+        pageCount: null,
+        analysisStatus: null,
+        teachesCount: 0,
+        createdAt: pc.linkedAt,
+      },
+  )
+  /** 후보에 없는데 연결돼 있다 = 지나간 버전. 뗄 수는 있고 **다시 붙일 수는 없다** */
+  const superseded = new Set(linkedIds.filter((id) => !byVersionId.has(id)))
   const changed = picked.length !== linkedIds.length || picked.some((id) => !linkedIds.includes(id))
 
   return (
@@ -105,7 +136,13 @@ export default function ChangeCurriculaDialog({
             <p className="border-border-strong text-fg-subtle rounded-md border border-dashed p-5 text-center text-xs">
               교안을 불러오는 중
             </p>
-          ) : curricula.length === 0 ? (
+          ) : /*
+            ⚠ **빈 상태 판정에 `linked`를 같이 본다.** 후보 목록만 보고 갈랐더니, 후보가
+            비면 **이미 연결된 줄이 있어도** 「등록된 교안이 없습니다」로 덮였다(가로채기로
+            재현). 머리글은 「2개 연결」이라고 말하는데 본문은 없다고 하는 자리였고, 떼러
+            들어온 사람이 아무것도 못 하고 나가게 된다.
+          */
+          curricula.length === 0 && linked.length === 0 ? (
             <p className="border-border-strong text-fg-subtle rounded-md border border-dashed p-5 text-center text-xs">
               등록된 교안이 없습니다 —{' '}
               <b className="text-fg-muted font-semibold">운영 관리 › 교안</b>에서 먼저 등록하세요
@@ -123,7 +160,16 @@ export default function ChangeCurriculaDialog({
                   생성 모달(OP-03)과 같은 규칙이라 두 곳이 갈리면 안 된다.
                   **이미 붙어 있는 것은 건드리지 않는다** — 떼는 것은 막을 이유가 없다.
                 */
-                const blockedReason = checked ? null : curriculumBlockedReason(c)
+                /*
+                  **지나간 버전은 「분석 전」이 아니다.** 후보에 없어서 `analysisStatus`를
+                  모를 뿐인데 그대로 `curriculumBlockedReason`에 넣으면 분석을 안 한 것으로
+                  말하게 된다 — 뗀 뒤에 다시 붙이려 할 때 그 문구가 뜬다.
+                */
+                const blockedReason = checked
+                  ? null
+                  : superseded.has(c.versionId)
+                    ? '지나간 버전'
+                    : curriculumBlockedReason(c)
                 const locked =
                   !!blockedReason ||
                   (checked && !canUnlinkCurriculum(project.concepts, c.versionId))
@@ -172,7 +218,14 @@ export default function ChangeCurriculaDialog({
                         개념이 3건뿐이라 다 적어도 한 줄이고, 개수만 쓰면 검증 개념
                         섹션으로 돌아가 대조해야 하기 때문이다.
                       */}
-                      {locked && (
+                      {/*
+                        🔴 **`locked`가 아니라 `users`로 가른다.** 잠기는 이유가 둘인데
+                        (개념이 쓰고 있다 · 애초에 못 붙인다) `locked`로 그리면 후자에도
+                        이 문장이 나가 **「검증 개념 0건이 쓰고 있어 뺄 수 없습니다 —」**
+                        라는 자기모순이 뜬다(렌더에서 잡았다). 못 붙이는 이유는 위 칩이
+                        이미 말한다.
+                      */}
+                      {users.length > 0 && (
                         <span className="text-fg-subtle mt-1 block text-2xs">
                           검증 개념 {users.length}건이 쓰고 있어 뺄 수 없습니다 —{' '}
                           {users.map((k) => k.extractedName).join(' · ')}

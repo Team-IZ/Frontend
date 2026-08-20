@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router'
+import { NavLink, useSearchParams } from 'react-router'
 import type { SidebarGroup } from './sidebarConfig'
 
 /*
@@ -19,6 +19,18 @@ type Props = {
 }
 
 export default function Sidebar({ sidebar }: Props) {
+  /*
+    **고른 기수는 주소가 갖는다**(`stores/cohortScope.ts`) — 사이드바 이동도 예외가
+    아니다. `item.to`는 순수 경로 문자열이라 그대로 쓰면 `?cohort=`가 떨어져 나가고,
+    다음 화면은 주소에 기수가 없다고 보고 기본값(진행 중 기수)으로 되돌아간다 —
+    탭을 오갈 때마다 기수가 튀던 버그가 이래서 났다. 슈퍼어드민·교육생처럼 기수가
+    없는 역할은 애초에 주소에 `cohort`가 안 실리니 그대로 통과한다(역할별 분기를
+    여기 새로 두지 않는다).
+  */
+  const [params] = useSearchParams()
+  const cohort = params.get('cohort')
+  const cohortSuffix = cohort ? `?${new URLSearchParams({ cohort }).toString()}` : ''
+
   return (
     <nav
       aria-label="주요 메뉴"
@@ -30,7 +42,7 @@ export default function Sidebar({ sidebar }: Props) {
           {group.map((item) => (
             <NavLink
               key={item.to}
-              to={item.to}
+              to={`${item.to}${cohortSuffix}`}
               className={({ isActive }) =>
                 [
                   'mb-0.5 flex items-center gap-2 rounded-md px-3 py-[9px] text-sm',

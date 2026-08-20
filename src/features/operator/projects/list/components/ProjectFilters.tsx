@@ -107,11 +107,30 @@ export default function ProjectFilters({
     공용 `FilterSelect`가 **메뉴 안에서** 말한다 — 트리거는 고른 값만 그린다.
     `disabled`도 함께 걷어냈다(잠그면 왜 잠겼는지 말할 자리가 없다).
   */
+  /*
+    🔴 **버전이 아니라 교안으로 거른다.**
+
+    한때 선택지가 `versionId`였다. 그러면 같은 교안이 개정될 때마다 **`… v1` · `… v2`가
+    각각 한 줄씩** 쌓이는데, 여기서 답하려는 질문은 *"이 교안을 쓰는 회차"* 이지
+    *"이 교안 v1을 쓰는 회차"* 가 아니다. 게다가 이전 버전이 후보 목록에서 빠지면
+    (45차 R2, 백엔드 작업 중) **그 버전에 연결된 회차는 아예 못 거르게 된다.**
+
+    서버가 `curriculumId`에 **버전 ID와 자료 ID를 둘 다 받는다**(스펙 명시) — 자료 ID를
+    보내면 어느 버전에 연결됐든 그 교안을 쓰는 회차가 전부 걸린다.
+
+    ⚠ 대표는 **가장 최신 버전**으로 고른다 — 파일명이 개정에서 바뀌었을 수 있고, 그때
+    보여줄 이름은 지금 쓰는 쪽이다.
+  */
+  const latestByMaterial = new Map<string, (typeof curricula)[number]>()
+  for (const c of curricula) {
+    const kept = latestByMaterial.get(c.materialId)
+    if (!kept || c.versionNo > kept.versionNo) latestByMaterial.set(c.materialId, c)
+  }
   const curriculumOptions = curriculaLoading
     ? undefined
-    : curricula.map((c) => ({
-        value: c.versionId,
-        label: `${c.originalFileName} v${c.versionNo}`,
+    : [...latestByMaterial.values()].map((c) => ({
+        value: c.materialId,
+        label: c.originalFileName,
       }))
 
   return (

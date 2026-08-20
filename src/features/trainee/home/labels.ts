@@ -102,7 +102,6 @@ const ACTION_ROUTES: Partial<Record<ActionCode, string>> = {
   RESUBMIT_REPOSITORY: '/trainee/submission',
   RESUBMIT_ZIP: '/trainee/submission',
   START_ASSESSMENT: '/trainee/session',
-  START_REVIEW: '/trainee/session?retry=1',
   /*
     **이어하기를 연다.** 예전에는 일부러 경로를 안 줬다 — "시작하면 중간에 나갈 수
     없어요"라는 약속을 지키려고. 그런데 실제로 일어나는 일은 학생이 *약속을 어기는* 것이
@@ -314,6 +313,16 @@ function buildCta(round: CurrentRound, now: number): StatusContent['cta'] {
     `undefined`를 그리다 터진다(실측). 갈 수 있는지 판정은 `canViewReport`가 한다.
   */
   if (action === 'VIEW_REPORT' && round.canViewReport && round.id) {
+    return { label: ACTION_LABELS[action], to: `/trainee/report?round=${round.id}` }
+  }
+
+  /*
+    🔴 **`/trainee/session?retry=1`로 바로 보내지 않는다.** 다시 보기 응시를 실제로
+    만드는 것은 리포트 화면의 버튼뿐이다(`POST /assessment-sessions/reviews` 개설 호출) —
+    세션 화면은 그 쿼리를 읽지 않아 곧장 보내면 "응시 없음" 화면으로 빠진다(실사용
+    재현). 리포트로 보내면 같은 버튼을 타므로 개설 → 시작이 항상 붙어 다닌다.
+  */
+  if (action === 'START_REVIEW' && round.canViewReport && round.id) {
     return { label: ACTION_LABELS[action], to: `/trainee/report?round=${round.id}` }
   }
 

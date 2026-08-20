@@ -9,8 +9,11 @@ import {
   TriangleAlertIcon,
 } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
+import { isApiError } from '@/api/_contract'
+import { useOpenReviewSession } from '@/api/assessment/useAssessmentMutations'
 import StatusMessageCard from '@/components/common/StatusMessageCard'
+import { Alert } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/Empty'
@@ -155,6 +158,22 @@ function RoundBody({ report }: { report: RoundReport }) {
         />
       )
     /*
+      2026-08-21 추가 — 코드 분석이 실패해 이해도 확인 문항 자체가 없는 회차. `PENDING_PUBLISH`와
+      같은 문구를 쓰면 안 된다 — 저쪽은 "곧 나온다"는 약속이고 이쪽은 "이 회차는 리포트가
+      안 나온다"는 사실이다(실사용 재현: 이미 지난 발행 예정일을 계속 기다리게 보임).
+      정확한 실패 사유는 이 화면 계약에 없다 — 홈의 ANALYSIS_FAILED 안내가 더 자세히 보여준다.
+    */
+    case 'ANALYSIS_FAILED':
+      return (
+        <ReportStatusCard
+          variant="warning"
+          icon={<TriangleAlertIcon className="size-5" />}
+          title="코드를 분석하지 못했어요"
+          description="제출한 코드 분석이 실패해서 이 회차는 리포트를 만들 수 없어요."
+          aux="제출 화면에서 다시 제출하면 분석이 다시 시작돼요 — 계속 안 되면 매니저에게 알려 주세요"
+        />
+      )
+    /*
       **`NOT_STARTED`와 `NOT_ATTEMPTED`는 정반대다**(26차 A1). 둘 다 "응시 기록이
       없다"지만 제출 마감을 기준으로 갈린다 — 앞은 아직 시간이 있는 정상이고, 뒤는
       기회가 지나간 것이다. 그래서 매니저 안내(`aux`)는 **뒤에만** 붙는다. 마감 전
@@ -211,10 +230,55 @@ function RoundBody({ report }: { report: RoundReport }) {
   }
 }
 
+/*
+  `POST /assessment-sessions/reviews`의 오류 4종 — schema.d.ts의 표를 그대로 옮긴다.
+  `REVIEW_NOT_ELIGIBLE`은 실패가 아니라 안내다(스펙 명시) — 그래서 톤을 `info`로 가른다.
+*/
+function reviewOpenErrorMessage(e: unknown): { variant: 'info' | 'danger'; text: string } {
+  const code = isApiError(e) ? e.code : null
+  switch (code) {
+    case 'REVIEW_NOT_ELIGIBLE':
+      return { variant: 'info', text: '다시 볼 개념이 없어요.' }
+    case 'REVIEW_ALREADY_COMPLETED':
+      return { variant: 'info', text: '이 회차의 다시 보기를 이미 마쳤어요. 새로고침해 주세요.' }
+    case 'REVIEW_SOURCE_NOT_READY':
+      return { variant: 'danger', text: '아직 준비되지 않았어요. 잠시 후 다시 시도해 주세요.' }
+    case 'REVIEW_REPORT_NOT_ACCESSIBLE':
+      return { variant: 'danger', text: '리포트를 찾을 수 없어요. 새로고침해 주세요.' }
+    default:
+      return {
+        variant: 'danger',
+        text: '다시 보기를 시작하지 못했어요. 잠시 후 다시 시도해 주세요.',
+      }
+  }
+}
+
 function PublishedBody({ report }: { report: Extract<RoundReport, { status: 'PUBLISHED' }> }) {
   // 문항 없음은 재시험 대상이 아니다 — 못한 게 아니라 안 물어본 것이라 다시 볼 것도 없다
   const retryCount = askedConcepts(report.concepts).filter((c) => c.isRetryTarget).length
   const relative = formatRelativeMonths(report.publishedAt, Date.now())
+  const navigate = useNavigate()
+  const openReview = useOpenReviewSession()
+  const [reviewError, setReviewError] = useState<{
+    variant: 'info' | 'danger'
+    text: string
+  } | null>(null)
+
+  /*
+    🔴 **버튼이 예전엔 그냥 `<Link to="/trainee/session?retry=1">`였다.** 세션 화면은
+    `retry` 쿼리를 어디서도 읽지 않고, REVIEW 응시를 만드는 것은 이 개설 API뿐이다
+    (`AssessmentReviewService.openReview` 참고) — 그래서 눌러도 "응시 없음" 화면으로
+    빠졌다(실사용 재현: 배하린 계정 등). 개설부터 하고 성공했을 때만 세션으로 보낸다.
+  */
+  async function handleStartReview() {
+    setReviewError(null)
+    try {
+      await openReview.mutateAsync({ body: { reportId: report.reportId } })
+      navigate('/trainee/session')
+    } catch (e) {
+      setReviewError(reviewOpenErrorMessage(e))
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -250,13 +314,15 @@ function PublishedBody({ report }: { report: Extract<RoundReport, { status: 'PUB
           <Button
             size="sm"
             className="shrink-0"
-            nativeButton={false}
-            render={<Link to="/trainee/session?retry=1" />}
+            disabled={openReview.isPending}
+            onClick={handleStartReview}
           >
-            다시 보기
+            {openReview.isPending ? '여는 중…' : '다시 보기'}
           </Button>
         </div>
       )}
+
+      {reviewError && <Alert variant={reviewError.variant}>{reviewError.text}</Alert>}
 
       {/*
         🔴 **리포트 단위 잠금은 없어졌다.** 남는 가림막은 도달 2단 미만 개념의

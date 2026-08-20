@@ -17,7 +17,7 @@ import { Skeleton } from '@/components/ui/Skeleton'
 
       ⑤ 기록    149px  (상세 사유 · 조치 · 추후 계획)
       액션 줄    34px
-      바깥 폭   max-w-[820px] · pb-8
+      바깥 폭   mx-auto max-w-[820px] · pb-8  (본문과 **같은 틀** — 안 맞추면 도착에서 좌우로 튄다)
 
   ⚠ 질문 수는 사람마다 다르다(4~7개 관측). **직전에 본 개수를 넘길 수 없는 화면**이라
   ②만 평균값으로 두고, 나머지는 내용 길이가 고정에 가까워 그대로 박는다.
@@ -43,7 +43,7 @@ function Block({ bodyH, children }: { bodyH: number; children: React.ReactNode }
 
 export default function BriefSkeleton() {
   return (
-    <div aria-hidden className="pb-8">
+    <div aria-hidden className="mx-auto w-full max-w-[820px] pb-8">
       {/* 머리 — 이름 · 기수 · 반 · 위험 배지 (34px + mb-5) */}
       <div className="mb-5 flex h-[34px] items-center gap-3">
         <Skeleton className="size-8 rounded-md" />

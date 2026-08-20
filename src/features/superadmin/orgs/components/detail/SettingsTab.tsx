@@ -42,7 +42,6 @@ import DeleteOrgDialog from './DeleteOrgDialog'
 type Org = findOrganization_Response
 type Settings = findOrganizationOperationSettings_Response
 
-const DISCLOSURE_ITEMS = { SUMMARY: '요약', PRIVATE: '비공개', FULL: '전체' } as const
 const TIER_ITEMS = {
   ACCURACY_FIRST: '정확도 우선',
   BALANCED: '균형',
@@ -207,10 +206,10 @@ export default function SettingsTab({ org }: { org: Org }) {
 
         <SettingRow
           title="데이터 정책"
-          description="종료 기수의 코드·문답 원문·채점 근거 보관 기간과 신규 기수 공개 범위"
+          description="종료 기수의 코드·문답 원문·채점 근거 보관 기간"
         >
           <ChangeButton
-            value={`${s.dataRetentionDays}일 · ${DISCLOSURE_ITEMS[s.defaultDisclosureScope] ?? s.defaultDisclosureScope}`}
+            value={`${s.dataRetentionDays}일`}
             onClick={() => setOpen('data')}
             disabled={settingsLocked}
             title={lockedTitle}
@@ -317,6 +316,12 @@ export default function SettingsTab({ org }: { org: Org }) {
         )}
       </SettingEditDialog>
 
+      {/*
+        🔴 **「신규 기수 공개 범위 기본값」을 뺐다(2026-08-20).** 백엔드가 리포트
+        공개/비공개 개념 자체를 폐지해 `defaultDisclosureScope`를 적용할 대상이
+        없다 — 이 필드는 `PATCH`에서 여전히 받지만 아무 효과가 없는 죽은 설정이라,
+        오퍼레이터가 뭔가 제어하고 있다고 오해하지 않게 화면에서 숨긴다.
+      */}
       <SettingEditDialog
         open={open === 'data'}
         onOpenChange={close}
@@ -324,31 +329,21 @@ export default function SettingsTab({ org }: { org: Org }) {
         title="데이터 정책"
         initial={{
           retention: String(s.dataRetentionDays) as keyof typeof RETENTION_DAYS,
-          scope: s.defaultDisclosureScope,
         }}
         toPatch={(d, i) => {
           const patch: SettingsPatch = {}
           if (d.retention !== i.retention) patch.dataRetentionDays = RETENTION_DAYS[d.retention]
-          if (d.scope !== i.scope) patch.defaultDisclosureScope = d.scope
           return patch
         }}
       >
         {(d, set) => (
-          <>
-            <PickerField
-              label="데이터 보존기간"
-              description="종료 기수의 코드·문답 원문·채점 근거를 이 기간만큼 보관합니다"
-              value={d.retention}
-              items={RETENTION_ITEMS}
-              onChange={(v) => set({ retention: v as typeof d.retention })}
-            />
-            <PickerField
-              label="신규 기수 공개 범위 기본값"
-              value={d.scope}
-              items={DISCLOSURE_ITEMS}
-              onChange={(v) => set({ scope: v as typeof d.scope })}
-            />
-          </>
+          <PickerField
+            label="데이터 보존기간"
+            description="종료 기수의 코드·문답 원문·채점 근거를 이 기간만큼 보관합니다"
+            value={d.retention}
+            items={RETENTION_ITEMS}
+            onChange={(v) => set({ retention: v as typeof d.retention })}
+          />
         )}
       </SettingEditDialog>
 

@@ -60,7 +60,8 @@ export default function DetailHeader({
           <ArrowLeft className="size-5" />
         </Button>
         <div className="flex flex-wrap items-baseline gap-2">
-          <h1 className="text-xl font-bold tracking-[-0.01em]">{project.name}</h1>
+          {/* 실제 h1은 위 PageHeader(sr-only)가 갖는다 — 화면당 h1 하나 원칙(교안 상세와 같은 패턴) */}
+          <span className="text-xl font-bold tracking-[-0.01em]">{project.name}</span>
           <Badge variant={STATUS_BADGE[project.status]}>{STATUS_LABEL[project.status]}</Badge>
         </div>
       </div>

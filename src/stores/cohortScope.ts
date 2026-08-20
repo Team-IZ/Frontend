@@ -46,11 +46,20 @@ export type CohortScope = {
  *
  * (이슈 277 — admin/_/cohortScope.ts의 `pickDefault`를 그대로 흡수했다. 전에는 이
  * 훅이 `RUNNING > 첫 기수` 2단이라 운영 관리 탭과 다른 값을 고를 수 있었다.)
+ *
+ * **같은 상태 안에서는 가장 최근에 시작한 기수를 고른다.** 서버 응답에 생성일이
+ * 따로 없다 — 있는 시간 필드는 `startDate`(기수 시작일)뿐이라 그것으로 근사한다.
+ * 지금은 RUNNING이 보통 하나뿐이라 차이가 안 보이지만, 여러 기수가 동시에 진행
+ * 중일 때 목록에 먼저 온 것이 아니라 **가장 최근에 시작한 기수**가 열려야 한다.
  */
+function newestFirst(cohorts: readonly Cohort[]): Cohort[] {
+  return [...cohorts].sort((a, b) => (b.startDate ?? '').localeCompare(a.startDate ?? ''))
+}
+
 function pickDefault(cohorts: readonly Cohort[]): Cohort | undefined {
   return (
-    cohorts.find((c) => c.status === 'RUNNING') ??
-    cohorts.find((c) => c.status === 'PLANNED') ??
+    newestFirst(cohorts.filter((c) => c.status === 'RUNNING'))[0] ??
+    newestFirst(cohorts.filter((c) => c.status === 'PLANNED'))[0] ??
     cohorts[0]
   )
 }

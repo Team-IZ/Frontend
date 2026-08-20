@@ -157,8 +157,14 @@ export default function CurriculumScreen() {
           <TableBody>
             {list.map((c) => {
               const analysis = analysisLabel(c.analysisStatus)
-              /* 상세 조회 셋은 전부 `materialId`를 받는다 — `versionId`가 아니다 */
-              const detailPath = `/manager/curriculum/${c.materialId}`
+              /*
+                상세 조회 셋은 전부 `materialId`를 받는다 — `versionId`가 아니다.
+
+                **이 기수가 연결한 버전을 실어 보낸다**(`?version=`). 이 목록의 한 행은
+                *"이 기수가 실제로 붙인 교안"* 이라 최신이 아닐 수 있는데, 그냥 보내면
+                상세가 최신을 그려 **쪽 번호가 어긋난 채로** 읽힌다.
+              */
+              const detailPath = `/manager/curriculum/${c.materialId}?versionId=${c.versionId}`
               return (
                 <TableRow
                   key={c.versionId}

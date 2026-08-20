@@ -67,13 +67,41 @@ export default function DetailHeader({
       </div>
       <div className="text-fg-subtle mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
         {classScope && <span>{classScope}</span>}
+        {/*
+          🔴 **교안 이름이 평문이었다.** 매니저가 「이 회차가 무슨 교안을 쓰나」를 보고
+          그 교안을 열어 보려면 교안 화면(MG-09)으로 가서 이름으로 다시 찾아야 했다 —
+          서버가 `materialId`를 이미 주고 있는데도.
+
+          **연결된 버전을 실어 보낸다**(`?version=`). 1기가 v1을 쓰고 7기가 v2를 쓰면
+          같은 교안이라도 **이 회차가 실제로 쓴 그 버전**을 열어야 쪽 번호가 맞는다.
+
+          `materialId`가 `null`일 수 있다(교안 버전 조회 실패, 스펙) — 그때는 링크를
+          안 걸고 이름만 남긴다.
+        */}
         <span>
           교안{' '}
-          <b className="text-fg-muted font-bold">
-            {project.curriculumCount > 0
-              ? project.curricula.map((c) => c.originalFileName ?? '이름 없음').join(' · ')
-              : '연결 안 됨'}
-          </b>
+          {project.curriculumCount === 0 ? (
+            <b className="text-fg-muted font-bold">연결 안 됨</b>
+          ) : (
+            project.curricula.map((c, i) => {
+              const label = c.originalFileName ?? '이름 없음'
+              return (
+                <span key={c.projectCurriculumId}>
+                  {i > 0 && ' · '}
+                  {c.materialId ? (
+                    <Link
+                      to={`/manager/curriculum/${c.materialId}?versionId=${c.curriculumVersionId}`}
+                      className="text-fg-muted hover:text-primary font-bold hover:underline"
+                    >
+                      {label}
+                    </Link>
+                  ) : (
+                    <b className="text-fg-muted font-bold">{label}</b>
+                  )}
+                </span>
+              )
+            })
+          )}
         </span>
         <span>
           검증 개념 {/* 미확정 판정은 **개수로 한다** — 이름 배열은 못 찾은 항목이 빠질 수 있다 */}

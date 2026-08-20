@@ -4,20 +4,24 @@
   역할 선택 UI는 정책상 화면에 없다(LoginScreen 주석). 이건 **폼을 우회하는 지름길**일 뿐,
   서버가 역할을 판정하는 로그인 흐름 자체는 그대로 재사용한다.
 
-  ## 두 갈래로 들어온다
+  ## 세 갈래로 들어온다
 
   | | 어디서 | 무엇 |
   |---|---|---|
-  | **역할 버튼** | `.env.local`의 `VITE_DEV_ACCOUNTS` | 역할별 대표 계정 몇 개 |
+  | **역할 버튼** | `.env.local`의 `VITE_DEV_ACCOUNTS` | 역할별 대표 계정 몇 개(담당자 구분 없음) |
   | **상태별 목록** | `dev-accounts.json` | 교육생 상태별 테스트 계정 수십 개 |
+  | **담당자별 목록** | `dev-team-accounts.json` | 매니저·오퍼레이터를 팀원별로 나눈 계정 |
 
-  나눈 이유는 **수와 수명이 다르다.** 앞은 손으로 관리하는 소수이고, 뒤는 백엔드가 준
-  엑셀에서 스크립트로 만든 것이라(`scripts/dev-accounts.mjs`) 엑셀이 갱신되면 통째로
-  다시 만든다. 한 곳에 섞으면 손으로 넣은 것이 재생성 때 날아간다.
+  나눈 이유는 **수와 수명이 다르다.** 역할 버튼은 손으로 관리하는 소수이고, 상태별
+  목록은 백엔드가 준 엑셀에서 스크립트로 만든 것이라(`scripts/dev-accounts.mjs`) 엑셀이
+  갱신되면 통째로 다시 만든다. 담당자별 목록도 손으로 관리하지만 상태별 목록과 같은
+  파일에 두면 스크립트가 재생성할 때 같이 날아가므로 파일을 분리했다(자세한 이유는
+  `readTeamData` 주석). 셋 다 같은 담당자 필터 UI(`CaseAccountPicker`)를 함께 쓴다 —
+  상태별·담당자별 목록은 형태가 같아서(`CaseData`) 그룹만 합친다.
 
   ## 자격 증명을 저장소에 두지 않는다
 
-  둘 다 gitignore 대상이다. **없으면 UI가 아예 안 나온다** — 기능이 조용히 반쯤
+  셋 다 gitignore 대상이다. **없으면 UI가 아예 안 나온다** — 기능이 조용히 반쯤
   동작하는 것보다 없는 편이 낫다.
 
   화면 노출은 이 파일이 아니라 호출부가 막는다(`import.meta.env.DEV || __GIT_BRANCH__`).
@@ -25,7 +29,11 @@
 */
 export type QuickLoginAccount = { label: string; email: string; password: string }
 
-/** 교육생 테스트 계정 하나 — 어느 반·팀 누구인지까지 보여줘야 고를 수 있다 */
+/**
+ * 케이스 계정 하나. 교육생은 어느 반·팀 누구인지까지 보여줘야 고를 수 있고,
+ * 매니저·오퍼레이터처럼 반·팀이 없는 역할은 `className`·`teamName`을 빈 문자열로 둔다
+ * (표시부는 빈 값을 알아서 건너뛴다).
+ */
 export type CaseAccount = {
   email: string
   password: string
@@ -119,8 +127,32 @@ function readCaseData(): CaseData {
 
 const caseData = readCaseData()
 
-function readCaseGroups(): CaseGroup[] {
-  const groups = caseData.groups
+/*
+  매니저·오퍼레이터 담당자별 계정 — **스크립트가 안 건드리는** 별도 소스.
+  위 `dev-accounts.json`은 교육생 엑셀을 다시 돌릴 때마다 통째로 새로 써진다(스크립트
+  자체 동작). 매니저/오퍼레이터를 그 파일 안에 손으로 끼워 넣으면 다음 재생성 때
+  조용히 사라진다 — 그래서 파일을 분리한다. 같은 `CaseData` 모양이라 그룹만 합친다.
+*/
+const teamModules = import.meta.glob<CaseData>('/dev-team-accounts.json', { eager: true })
+
+function readTeamData(): CaseData {
+  const fromFile = Object.values(teamModules)[0]
+  if (Array.isArray(fromFile?.groups)) return fromFile
+
+  const raw = import.meta.env.VITE_TEAM_ACCOUNTS
+  if (!raw) return {}
+  try {
+    return JSON.parse(raw) as CaseData
+  } catch (e) {
+    console.warn('[dev] VITE_TEAM_ACCOUNTS를 읽지 못했습니다', e)
+    return {}
+  }
+}
+
+const teamData = readTeamData()
+
+function readGroups(data: CaseData): CaseGroup[] {
+  const groups = data.groups
   if (!Array.isArray(groups)) return []
   return groups.filter(
     (g): g is CaseGroup =>
@@ -128,7 +160,7 @@ function readCaseGroups(): CaseGroup[] {
   )
 }
 
-export const CASE_ACCOUNT_GROUPS = readCaseGroups()
+export const CASE_ACCOUNT_GROUPS = [...readGroups(caseData), ...readGroups(teamData)]
 
 /**
  * 이 목록의 상태를 **언제 쟀나**.
@@ -145,7 +177,9 @@ export const CASE_ACCOUNT_MEASURED_AT = caseData.measuredAt ?? null
  * 계정을 훑어 모으지 않고 스크립트가 낸 값을 그대로 쓴다. 렌더마다 194개를 도는 것도
  * 아깝고, **순서가 화면마다 흔들리면** 어제 눌렀던 자리에 다른 이름이 온다.
  */
-export const CASE_ACCOUNT_OWNERS = caseData.owners ?? []
+export const CASE_ACCOUNT_OWNERS = [
+  ...new Set([...(caseData.owners ?? []), ...(teamData.owners ?? [])]),
+]
 
 /** 고른 계정 총수 — 토글 라벨이 "N개"를 말하려면 필요하다 */
 export const CASE_ACCOUNT_TOTAL = CASE_ACCOUNT_GROUPS.reduce((n, g) => n + g.accounts.length, 0)

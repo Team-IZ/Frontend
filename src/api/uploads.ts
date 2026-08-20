@@ -24,6 +24,9 @@ type CsvPreviewResponse =
   operations['previewTraineesFromCsv']['responses'][200]['content']['application/json']
 type RegisterCurriculumResponse =
   operations['registerCurriculum']['responses'][201]['content']['application/json']
+/** 새 버전 등록. **새 교안 등록과 응답이 같다**(스펙 명시) — 그래도 각자 뽑아 둔다 */
+type RegisterCurriculumVersionResponse =
+  operations['registerCurriculumVersion']['responses'][201]['content']['application/json']
 /*
   **`202` — 접수만 하고 분석은 비동기로 돌린다.** 한동안 스펙이 `200`으로 적혀 있었는데
   서버는 그때도 202를 보내고 있었고, 23차 요청으로 표기가 사실에 맞춰졌다.
@@ -106,21 +109,62 @@ export const previewTraineesFromCsv = (params: CsvUpload) =>
 const WARMUP_RETRIES = 3
 const WARMUP_RETRY_DELAY_MS = 2000
 
-export const registerCurriculum = async (
-  params: { query: { title: string; topic?: string }; file: File } & RequestOptions,
-) => {
+/** origin으로 파일을 보내기 전 App Runner를 깨운다 — 실패하면 던진다(위 주석 참고) */
+const warmUpOrigin = async (signal: RequestOptions['signal']) => {
   let warmed = false
   for (let attempt = 0; attempt < WARMUP_RETRIES && !warmed; attempt++) {
     if (attempt > 0) await new Promise((resolve) => setTimeout(resolve, WARMUP_RETRY_DELAY_MS))
-    const { error } = await izClient.GET('/api/v0/members/me', { signal: params.signal })
+    const { error } = await izClient.GET('/api/v0/members/me', { signal })
     warmed = !error
   }
   if (!warmed) {
     throw new Error('서버를 깨우지 못했습니다. 잠시 후 다시 시도해주세요.')
   }
+}
+
+export const registerCurriculum = async (
+  params: { query: { title: string; topic?: string }; file: File } & RequestOptions,
+) => {
+  await warmUpOrigin(params.signal)
   return unwrap<RegisterCurriculumResponse>(
     izOriginClient.POST('/api/v0/curricula', {
       params: { query: params.query },
+      body: csvBody(params.file) as never,
+      signal: params.signal,
+    }) as never,
+  )
+}
+
+/**
+ * 교안 **새 버전** 등록 — `POST /api/v0/curricula/{materialId}/versions` (PDF)
+ *
+ * **새 교안을 만들지 않는다** — `materialId`가 가리키는 그 교안에 다음 버전이 하나 는다.
+ * 번호는 서버가 매긴다(현재 최신 + 1). 기존 버전 행은 지워지지 않고 그대로 남는다 —
+ * 이미 그 버전을 연결해 쓰는 회차와, 발행된 리포트가 가리키는 쪽 번호를 지키기 위해서다.
+ *
+ * **`title`은 제목을 바꿀 때만 보낸다.** 생략하면 기존 제목을 그대로 쓰고, 그때는 제목
+ * 중복 검사도 돌지 않는다(같은 교안에 버전을 더하는 것이라 자기 자신과 겹칠 이유가 없다).
+ *
+ * 🔴 **분석은 자동으로 안 걸린다**(44차 R4 회신). 새 버전은 내용이 비슷해도 **다른 파일**
+ * 이라 쪽 번호·섹션 구성이 바뀔 수 있는데, 분석이 다시 돌지 않으면 검증 개념을 못 뽑아
+ * **회차에 붙일 수 없는 상태로 남는다.** 부르는 쪽이 응답의 `materialId`로
+ * `POST /curricula/{materialId}/analyses`를 이어 붙여야 한다.
+ *
+ * 업로드 경로는 새 교안 등록과 같다 — Lambda 6MB 상한을 피해 origin으로 보내고, 그 전에
+ * 깨운다(`registerCurriculum` 주석 참고).
+ */
+export const registerCurriculumVersion = async (
+  params: {
+    path: { materialId: string }
+    /** 제목을 바꿀 때만. 비우면 기존 제목 유지 */
+    query?: { title?: string }
+    file: File
+  } & RequestOptions,
+) => {
+  await warmUpOrigin(params.signal)
+  return unwrap<RegisterCurriculumVersionResponse>(
+    izOriginClient.POST('/api/v0/curricula/{materialId}/versions', {
+      params: { path: params.path, query: params.query ?? {} },
       body: csvBody(params.file) as never,
       signal: params.signal,
     }) as never,

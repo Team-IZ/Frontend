@@ -21,13 +21,22 @@ import type { HeatmapCell, HeatmapRow, HeatmapView } from '../_/api/types'
   ⚠ 취약·주의 글자 라벨과 2단 이하 밑줄은 뺐다(렌더 확인 후 사용자 지시) — 색과
   집단 미달 테두리만으로 판정을 표시한다.
 
-  ⚠ 셀 폭은 정의서 §3 제안값(92px)의 2배(렌더 확인 후 사용자 지시), y축은 220px.
+  ⚠ **셀 폭을 정의서 §3 제안값(92px)으로 되돌렸다**(2026-08-20, 렌더 실측 후 사용자
+  지시). 한때 그 2배(184px)로 넓혀 뒀는데, 반이 하나뿐인 기수에서 재 보니 셀 하나가
+  **161×56 = 9005px²** — 같은 5색 스케일을 쓰는 MG-05 명부 칸(572px²)의 **16배**였다.
+  채도 높은 색은 그 면적이면 신호가 아니라 배경이 되어, 화면이 색 덩어리 몇 개로
+  덮인다. 격자는 색이 본체라 색을 뺄 수 없으므로 **면적으로 조절한다.**
+
+  92px까지 줄였다가 140px로 되돌렸다 — 92px에서는 개념 이름이 세 줄로 접혀 머리글이
+  셀보다 높아졌다. **개념 이름은 교안에서 오는 값이라 길이를 우리가 못 정한다**(실데이터에
+  `Optional을 활용한 값 존재 여부 처리`처럼 긴 것이 있다) — 좁게 잡으면 회차마다 머리글
+  높이가 튄다. 색 면적은 여전히 예전의 2/3고(9005 → 6160px²), 이름이 두 줄에 들어간다.
 
   ⚠ **클릭 가능 텍스트에 지속적인 링크 스타일**(렌더 확인 후 사용자 지시) — 호버
   전에도 `text-primary` + 옅은 밑줄을 깔아 「이건 링크다」를 색 말고도 알린다.
 */
 const Y_COL_W = 220
-const CELL_COL_W = 184
+const CELL_COL_W = 140
 
 function colorLevel(v: number): 0 | 1 | 2 | 3 | 4 {
   return Math.min(4, Math.max(0, Math.round(v))) as 0 | 1 | 2 | 3 | 4
@@ -56,7 +65,17 @@ const isEmptyCell = (c: HeatmapCell) =>
 
 function CellView({ cell, level }: { cell: HeatmapCell; level: HeatmapView['level'] }) {
   const person = level === 'TRAINEE'
-  const h = person ? 'h-11' : 'h-14'
+  /*
+    🔴 **셀이 표 폭을 따라 무한정 커졌다.** 반이 하나뿐인 기수에서 실측하니 셀 하나가
+    **161×56 = 9005px²** — 같은 5색 스케일을 쓰는 MG-05 명부 칸(572px²)의 **16배**다.
+    채도 높은 색은 그 면적이면 신호가 아니라 배경이 되고, 화면이 색 덩어리 몇 개로
+    덮인다(개인 결과 패널에서 고친 것과 같은 문제, 여기가 더 심했다).
+
+    **격자는 색이 본체라 색을 뺄 수 없다** — 대신 셀이 커지는 것을 막는다. 폭 상한을
+    두면 반·개념이 적은 기수에서도 칸이 일정하게 유지되고, 값(숫자)과 색의 비율이
+    다른 화면과 같은 급이 된다.
+  */
+  const h = person ? 'h-10' : 'h-11'
 
   if (isEmptyCell(cell)) {
     return (
@@ -80,7 +99,7 @@ function CellView({ cell, level }: { cell: HeatmapCell; level: HeatmapView['leve
       title={countsLabel(cell)}
     >
       {/* 개인은 도달 단계 그대로, 반·팀은 평균이라 소수 한 자리 */}
-      <span className="text-xl">
+      <span className="text-sm">
         {person ? `${colorLevel(cell.value ?? 0)}단` : (cell.value ?? 0).toFixed(1)}
       </span>
     </td>

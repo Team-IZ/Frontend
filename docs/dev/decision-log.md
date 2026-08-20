@@ -810,3 +810,102 @@ git에는 `pre-stash`·`pre-reset` 훅이 없다. 그래서 Claude Code의 `PreT
 - **목적·효과:** "레포 전체 폼에 영향"이라 팀장과 조율이 먼저라고 이미 적혀 있던
   `handoff.md`의 판단을 실제 git 이력으로 재확인하고, 팀장과 나눌 논의를 시작할 수 있게
   구체적인 기술 제안 형태로 정리해 둔다.
+
+## D43 · SPA 내비게이션 캐시 무효화 — `TraineeListScreen.tsx`(MG-05)에 D41 정책 적용 (19개 후속 화면 중 1번째)
+
+- **배경:** D41에서 정한 정책("data 있으면 data 우선, 배경 재조회 실패로 전면 에러를 덮지
+  않는다")을 `OrgListScreen.tsx`(SA-01) 파일럿에만 적용하고, 같은 결함 클래스를 쓰는
+  나머지 19개 화면은 화면별로 이슈를 새로 따는 후속 작업으로 남겨뒀다 — 그중 첫 번째로
+  매니저 › 교육생(`TraineeListScreen.tsx`, MG-05)을 골랐다.
+- **원인 확인 — 이 화면은 리터럴 `isError ?` 삼항이 아니라 `roster.isError || !view` 형태였다.**
+  D41의 grep 패턴(`isError ?`)은 파일 안 다른 줄(스켈레톤 분기의 `!view && !roster.isError`)에
+  걸려 후보로 잡힌 것이고, 실제 결함은 표 렌더 3단 분기의 마지막 조건
+  `roster.isError || !view ? <전면 에러/> : <표/>`에 있었다 — `view`(캐시된 명단)가 있어도
+  `roster.isError`만 true면 전면 에러가 표를 덮는다. OrgListScreen과 코드 형태는 다르지만
+  결함의 본질(배경 재조회 실패가 신선한 데이터를 지운다)은 동일한 D41 클래스.
+- **수정 — 조건을 `roster.isError && !view`로 좁히고, `view`가 있을 때의 배경 재조회 실패는
+  조용한 인라인 배너로만 알린다.** 배너 문구·스타일은 OrgListScreen과 동일한 패턴
+  ("명단을 새로고침하지 못했습니다 — 마지막으로 불러온 명단을 보여드리고 있어요." + 다시
+  시도 버튼, `role="status"`, warning 톤).
+- **배치 — 배너를 3단 분기 안(`StaleBlock` 내부)이 아니라 그 바깥, 최상위에 뒀다.** 분기
+  안에 넣으려면 `else` 갈래 전체(표·페이지네이션 렌더 코드 전부)를 `<>...</>`로 다시 싸야
+  해서 표 렌더 코드 100줄 이상이 통째로 재인덴트되는 diff가 났다(1차 시도, 178
+  insertions/154 deletions로 실측) — 리뷰하기 어렵다고 판단해, 배너를
+  `{roster.isError && view && (...)}`로 3단 분기 바로 위에 독립시켜 표 렌더 코드는 한 줄도
+  안 건드리도록 재작업했다(최종 diff 27 insertions/1 deletion). 조건은 등가 —
+  `view`(=`!isPending`이자 `!skeleton` 상태)가 있고 `isError`면 뜨는 것은 같다.
+- **스코프 밖으로 의도적으로 뺀 것 — `FilterSelect`의 `failed={roster.isError}` ·
+  `failed={classrooms.isError}`(회차·반 드롭다운).** 이건 전면 렌더를 덮는 게 아니라
+  드롭다운 하나가 "실패" 상태를 보여주는 다른 메커니즘이라 D41이 겨냥한 결함(신선한
+  데이터를 통째로 지우는 것)이 아니다 — OrgListScreen이 `summary.isError`
+  (`OrgMetricsFailed`)를 같은 이유로 스코프 밖으로 뺀 것과 같은 판단.
+- **검산:** `npx prettier --check` 통과(디바이스 브리지로 실제 파일 위치에서 확인). `tsc
+  -b`는 이 세션 환경에서 45초 안에 못 끝나(백그라운드로 세션 간 유지도 안 됨 — 매 호출이
+  새 컨테이너), `oxlint`는 이 세션에서 늘 나던 마운트 폴더 네이티브 바인딩 문제
+  (`Cannot find native binding`, handoff.md "알려진 문제")로 둘 다 이 세션에서 못 돌렸다 —
+  **D41과 같은 방식으로 진용님 로컬 확인 필요**(`typecheck`·`lint`). **렌더 확인도 아직
+  안 됨** — OrgListScreen 때처럼 DevTools "요청 조건"으로 명단 조회(`GET .../roster` 계열)를
+  강제 차단해 ① 캐시 있는 상태에서 차단 → 표 유지 + 배너만 뜨는지 ② 강력 새로고침 후 첫
+  요청부터 차단 → 예전처럼 전면 에러가 뜨는지(회귀 없음) 두 가지를 사용자가 직접 확인해야
+  한다.
+- **목적·효과:** D41이 파일럿에서 확정한 정책을 실제로 다른 화면에 옮겨보면서, "화면마다
+  결함이 리터럴로 같은 형태가 아닐 수 있다"(이번엔 `isError || !view`였지 `isError ?`가
+  아니었다)는 것과 "배너 배치를 최상위로 빼면 표 렌더 코드를 안 건드리는 diff가 나온다"는
+  재사용 가능한 패턴 두 가지를 다음 18개 화면 작업을 위해 남긴다.
+
+## D44 · SPA 내비게이션 캐시 무효화 — 3개 화면 일괄 적용(히트맵·면담 목록·프로젝트 목록), Alert 공용 컴포넌트로 배너 통일
+
+- **배경:** D43 직후 진용님이 "시간이 많지 않다, 화면을 줄이거나 이슈·PR을 최소화하고
+  싶다"고 요청 — D41이 정한 "화면마다 이슈를 새로 딴다"는 원칙을 이번엔 **하나의
+  이슈·PR에 여러 화면을 묶는 쪽으로 완화**했다. 대신 위험을 낮추려고 **같은 리터럴
+  구조(`X.isError || Y.isError || !view` 3단 분기)인 화면만 골랐다** — 이미
+  `TraineeListScreen.tsx`(D43)에서 검증한 패턴을 그대로 옮길 수 있는 것들.
+- **고른 화면 3개(+ D43의 TraineeListScreen 포함 총 4개를 한 PR로):**
+  `HeatmapScreen.tsx`(MG-02 도달 히트맵)·`InterviewListScreen.tsx`(MG-03 면담
+  목록)·`ProjectListScreen.tsx`(MG-07 프로젝트 목록, 매니저). 셋 다 D43과 리터럴까지
+  같은 3단 분기(`!view && !X.isError && !Y.isError` → 스켈레톤, `X.isError || Y.isError
+  || !view` → 전면 에러, else → 표)라 렌더 확인 리스크가 낮다고 판단.
+- **일부러 이번에 안 고른 화면들 — 구조가 다르거나 위험도가 높음(다음 배치로 이월):**
+  - `operator/admin/*Tab.tsx`(반·기수·매니저·명단), `operator/curricula/CurriculaTab.tsx` —
+    `X.isError ? <에러/> : <표/>` **2단 분기뿐**이라 "로딩 중"과 "데이터 있음" 판정이
+    이번 4개와 다른 방식일 가능성이 있음 — 확인 없이 같은 패치를 대면 스켈레톤 분기가
+    없을 때 잘못 건드릴 위험. 다음 배치에서 구조부터 다시 볼 것.
+  - `superadmin/settings/PlatformSettingsScreen.tsx` — 목록이 아니라 설정 폼(싱글턴)이라
+    "배경 재조회 실패 시 옛 값 유지"가 같은 정책으로 맞는지 자체가 재검토 필요.
+  - `trainee/session/SessionScreen.tsx` — **교육생이 실제로 응시 중인 화면**이라 잘못
+    건드리면 응시 자체를 막을 위험 — 시간 압박 속에서 성급하게 손댈 화면이 아니라고
+    판단, 의도적으로 제외.
+  - `manager/interviews/InterviewBriefScreen.tsx` — 조회 실패(`brief.isError`)와 별개로
+    `create.isError`(면담 결과 등록 mutation 실패)가 섞여 있어 이번 정책과 무관한
+    로직까지 같이 읽어야 함 — 시간 안에 안전하게 못 끝낼 화면이라 제외.
+  - `manager/trainees/TraineeDetailScreen.tsx`·`operator/analysis/AnalysisScreen.tsx`·
+    `operator/projects/list/ProjectListScreen.tsx`(오퍼레이터)·`operator/report/
+    ReportScreen.tsx`·`superadmin/orgs/components/detail/OverviewTab.tsx`(`isError ?`
+    2회)·`manager/curriculum/CurriculumDetailScreen.tsx`·`manager/dashboard/_/api/api.ts`·
+    `operator/curricula/CurriculumDetailScreen.tsx`(3회) — 전부 `isError ?` 출현이
+    2~3회라 화면 하나에 판정 지점이 여럿(예: 탭마다 다른 로딩 상태) 있을 가능성이 높음 —
+    구조 파악에 시간이 더 걸려 이번 "빠른 배치"에서 제외.
+- **배너 컴포넌트를 바꿈 — `<div role="status">` 직접 작성 대신 공용 `Alert`
+  (`components/ui/Alert.tsx`) 사용.** `InterviewListScreen.tsx`가 이미 같은 화면에서
+  `rowFailed`·`undoBanner` 배너에 `Alert`/`AlertTitle`/`AlertDescription`/`AlertAction`을
+  쓰고 있는 걸 보고 발견 — `warning` variant가 D41 배너가 쓰던 `bg-warning-soft
+  text-warning border-warning-border`와 스타일이 그대로 같다(CLAUDE.md §7, 공용
+  컴포넌트 우선). **D43에서 만든 `TraineeListScreen.tsx`·`HeatmapScreen.tsx`의 배너도
+  이번에 `Alert`로 바꿔 4개 화면 전부 같은 컴포넌트를 쓰도록 통일했다** — `OrgListScreen.tsx`
+  (D41 파일럿, `<div role="status">` 그대로)는 이미 develop에 머지돼 있어 이번 스코프에서
+  손대지 않는다(팀장 코드 아니라 손댈 수는 있지만, 이번 "빠르게" 요청과 무관한 리팩터라
+  범위 밖으로 뺌 — 필요하면 다음에 별도로).
+- **검산 — 이번에도 부분적, D43과 같은 한계.** `npx prettier --write`가 4개 파일 전부
+  파싱·포맷 통과(파싱에 실패하면 prettier가 에러를 던지므로 최소한의 문법 검증은 됨).
+  `tsc -b`·`oxlint`는 이 세션 환경 한계(45초 타임아웃, 네이티브 바인딩 깨짐)로 여전히
+  못 돌림 — **4개 화면 전부 진용님 로컬 typecheck·lint·DevTools 렌더 확인이 병합 전
+  필요.**
+- **PR 구성 — 이번엔 4개 화면(D43 TraineeListScreen 포함)을 한 이슈·한 PR로 묶는다.**
+  git-convention.md "파일 10개 이내" 안에 들고(코드 4 + 문서 1 = 5개), 4개 다 같은
+  정책·같은 패턴이라 리뷰어가 한 화면 보는 법을 알면 나머지 셋도 같은 방식으로 볼 수
+  있어 "하나의 PR = 하나의 기능"(정책 이름: SPA 캐시 무효화 잔여 화면 1차 배치) 원칙에서
+  크게 벗어나지 않는다고 판단.
+- **목적·효과:** 시간이 부족한 상황에서 "안전하게 빨리 끝낼 수 있는 것만" 골라 리스크를
+  낮추고, 이슈·PR 개수를 압축해 진용님의 검토·등록 부담을 줄인다. 구조가 다르거나
+  위험한 화면은 성급하게 손대지 않고 다음 배치로 명시적으로 이월한다(위 "일부러 안 고른
+  화면들" 목록이 다음 배치의 시작점).

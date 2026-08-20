@@ -213,7 +213,13 @@ export default function OrgListScreen() {
         <OrgMetrics summary={summary.data} />
       ) : null}
 
-      {isError ? (
+      {isError && !data ? (
+        /*
+          D41 — `data`가 아예 없을 때(최초 진입 실패·캐시 만료)만 전면 에러로 막는다.
+          `data`가 있는데 배경 재조회만 실패한 경우는 아래 분기에서 기존 목록을 그대로
+          보여주고 조용한 배너로만 알린다 — 안 그러면 사이드바 재진입마다 이미 보여준
+          정상 목록이 배경 503 하나로 지워진다(SA-01 세션, 2026-08-12 실측).
+        */
         <Empty>
           <EmptyHeader>
             <EmptyTitle>기관 목록을 불러오지 못했습니다</EmptyTitle>
@@ -235,6 +241,20 @@ export default function OrgListScreen() {
         </Empty>
       ) : (
         <>
+          {isError && (
+            <div
+              role="status"
+              className="border-warning-soft bg-warning-soft text-warning mb-3 flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-xs"
+            >
+              <span>
+                목록을 새로고침하지 못했습니다 — 마지막으로 불러온 목록을 보여드리고 있어요.
+              </span>
+              <Button variant="ghost" size="sm" onClick={() => refetch()}>
+                다시 시도
+              </Button>
+            </div>
+          )}
+
           <div className="mb-4 flex flex-wrap items-center gap-2">
             <InputGroup className="h-9 w-64">
               <InputGroupAddon>

@@ -15,6 +15,7 @@ import {
 import { Avatar, AvatarFallback } from '@/components/ui/Avatar'
 import { Button } from '@/components/ui/Button'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import StaleBlock from '@/components/common/StaleBlock'
 import TableSkeleton from '@/components/common/TableSkeleton'
 import {
@@ -298,6 +299,25 @@ export default function TraineeListScreen() {
         />
       </div>
 
+      {/*
+        D41 — `view`(roster.data)가 있는데 배경 재조회만 실패했을 때 쓰는 조용한 배너.
+        아래 3단 분기와 별개로 최상위에 둔 것은, 분기 안(`StaleBlock`)에 넣으면 그 블록을
+        감싸려고 JSX 전체를 `<>...</>`로 다시 싸야 해서 표 렌더 부분까지 통째로 재인덴트되기
+        때문 — 여기 두면 표 렌더 코드는 한 줄도 안 건드리고 배너만 얹을 수 있다.
+        (OrgListScreen·SA-01 파일럿과 같은 결함 클래스, decision-log.md D41 참고.)
+      */}
+      {roster.isError && view && (
+        <Alert variant="warning" className="mb-3">
+          <AlertTitle>명단을 새로고침하지 못했습니다</AlertTitle>
+          <AlertDescription>마지막으로 불러온 명단을 보여드리고 있어요.</AlertDescription>
+          <AlertAction>
+            <Button variant="ghost" size="sm" onClick={() => roster.refetch()}>
+              다시 시도
+            </Button>
+          </AlertAction>
+        </Alert>
+      )}
+
       {cohortFailed ? (
         <Empty>
           <EmptyHeader>
@@ -323,7 +343,14 @@ export default function TraineeListScreen() {
           rowH={57.3}
           footerH={44}
         />
-      ) : roster.isError || !view ? (
+      ) : roster.isError && !view ? (
+        /*
+          D41 — `view`(roster.data)가 아예 없을 때(최초 진입 실패·캐시 만료)만 전면
+          에러로 막는다. `view`가 있는데 배경 재조회만 실패한 경우는 아래 분기에서
+          기존 명단을 그대로 보여주고 조용한 배너로만 알린다 — 안 그러면 사이드바
+          재진입마다 이미 보여준 정상 명단이 배경 재조회 실패 하나로 지워진다
+          (OrgListScreen·SA-01 파일럿과 같은 결함 클래스, decision-log.md D41 참고).
+        */
         <Empty>
           <EmptyHeader>
             <EmptyTitle>명단을 불러오지 못했습니다</EmptyTitle>

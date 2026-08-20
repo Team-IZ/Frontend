@@ -263,6 +263,19 @@ export default function InterviewListScreen() {
         </Alert>
       )}
 
+      {/* D41 — 배경 재조회 실패로 이미 보여준 목록을 덮지 않는다(TraineeListScreen·D43과 같은 패턴) */}
+      {(rounds.isError || list.isError) && data && (
+        <Alert variant="warning" className="mb-3">
+          <AlertTitle>목록을 새로고침하지 못했습니다</AlertTitle>
+          <AlertDescription>마지막으로 불러온 목록을 보여드리고 있어요.</AlertDescription>
+          <AlertAction>
+            <Button variant="ghost" size="sm" onClick={() => void list.refetch()}>
+              다시 시도
+            </Button>
+          </AlertAction>
+        </Alert>
+      )}
+
       {!data && !list.isError && !rounds.isError ? (
         /*
           🔴 **첫 진입은 스켈레톤이다**(화면 규칙 E · async-states §1-2). 스피너
@@ -280,7 +293,7 @@ export default function InterviewListScreen() {
           cols={['w-[8%]', 'w-[14%]', 'w-[11%]', 'w-[27%]', 'w-[24%]', 'w-[16%]']}
           footerH={16}
         />
-      ) : rounds.isError || list.isError || !data ? (
+      ) : (rounds.isError || list.isError) && !data ? (
         <Empty>
           <EmptyHeader>
             <EmptyTitle>목록을 불러오지 못했습니다</EmptyTitle>

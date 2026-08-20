@@ -14,6 +14,7 @@ import {
   TableCell,
 } from '@/components/ui/Table'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
+import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { errorCopy } from '@/lib/errorCopy'
 import { useDebounced } from '@/lib/useDebounced'
@@ -130,6 +131,19 @@ export default function ProjectListScreen() {
         onChange={(patch) => setFilters((f) => ({ ...f, ...patch }))}
       />
 
+      {/* D41 — 배경 재조회 실패로 이미 보여준 목록을 덮지 않는다(TraineeListScreen·D43과 같은 패턴) */}
+      {list.isError && view && (
+        <Alert variant="warning" className="mb-3">
+          <AlertTitle>목록을 새로고침하지 못했습니다</AlertTitle>
+          <AlertDescription>마지막으로 불러온 목록을 보여드리고 있어요.</AlertDescription>
+          <AlertAction>
+            <Button variant="ghost" size="sm" onClick={() => void list.refetch()}>
+              다시 시도
+            </Button>
+          </AlertAction>
+        </Alert>
+      )}
+
       {cohortFailed ? (
         <Empty>
           <EmptyHeader>
@@ -166,7 +180,7 @@ export default function ProjectListScreen() {
           rowH={96.1}
           footerH={0}
         />
-      ) : list.isError || !view ? (
+      ) : list.isError && !view ? (
         /*
           🔴 **네 실패가 한 문장이었다**(하드닝 실측). 403·404·400·500을 가로채도 전부
           「목록을 불러오지 못했습니다 · 잠시 후 다시 시도해 주세요」였고, **넷 다 「다시

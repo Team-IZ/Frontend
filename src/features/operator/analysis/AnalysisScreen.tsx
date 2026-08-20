@@ -492,8 +492,8 @@ export default function AnalysisScreen() {
                 </div>
                 {/* 필수/선택 경계가 곧 위험 판정 기준이다 */}
                 <span className="text-fg-subtle text-2xs leading-tight">
-                  1·2단이 <b className="text-fg-muted font-medium">필수</b>
-                  <span className="block">그 아래면 처방 대상입니다</span>
+                  <b className="text-fg-muted font-medium">2단 미만</b>에 도달할 경우
+                  <span className="block">조치 대상으로 판단합니다.</span>
                 </span>
               </div>
             </StaleBlock>

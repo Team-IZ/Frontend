@@ -106,14 +106,16 @@ export const REACH_STEPS = [
  * 아니라 **표의 용도**라 걸리지 않는다 — 다만 한 줄을 넘기면 그때부터 잔소리다.
  */
 export const TAB_PURPOSE = {
-  rounds: '기수와 견줘 어느 반이 계속 벗어나 있는지 봅니다 — 붉은 칸이 가로로 이어지면 그 반입니다',
-  cohorts: '교안을 고친 것이 효과가 있었는지 봅니다 — 버전이 바뀐 개념의 값을 견줍니다',
+  rounds: '기수 전체와 비교해 어느 반이 계속 벗어나는지 보여줍니다.',
+  cohorts: '교안을 변경한 것이 효과가 있었는지 확인합니다.',
 } as const
 
 /** 정렬 4종은 **서로 다른 질문**이다(OP-02 §4-3) */
 export const ROUND_SORT_LABEL: Record<RoundSort, string> = {
-  LATEST_WORST: '최근 발행 프로젝트 나쁜 순',
-  WORSE_COUNT: '기준보다 나쁜 프로젝트가 많은 순',
+  // 문구 다듬음(사용자 지적) — WORSE_COUNT가 15자라 트리거(w-60)에서 잘렸다.
+  // 뜻은 그대로 두고 이 레포가 이미 같은 뜻으로 쓰는 "미달"(ClassOps.tsx 등)을 썼다.
+  LATEST_WORST: '최근 프로젝트 나쁜 순',
+  WORSE_COUNT: '기준 미달 많은 순',
   UNCOUNTED: '미집계 많은 순',
   NAME: '이름순',
 }

@@ -423,13 +423,25 @@ function RoundSelect({
         {label && <ControlLabel>{label}</ControlLabel>}
         <SelectValue placeholder={loading ? '불러오는 중' : '고르세요'} />
       </SelectTrigger>
-      <SelectContent>
+      {/*
+        min-w-64 — 기본 min-w-36(144px)이 "10차 미니프로젝트"를 못 담아 "..." 없이
+        그냥 잘렸다(사용자 지적, 실측 렌더 확인). 트리거 폭(placeholder 기준, 위 주석)은
+        그대로 두고 팝업 폭만 넓힌다 — anchor-width보다 min-width가 더 넓으면 그만큼
+        커진다.
+      */}
+      <SelectContent className="min-w-64">
         {rounds.map((r) => (
-          <SelectItem key={r.projectId} value={String(r.no)}>
-            {r.label}
-            <span className="text-fg-subtle ml-1.5 text-2xs">{r.projectName}</span>
+          <SelectItem
+            key={r.projectId}
+            value={String(r.no)}
+            title={`${r.label} · ${r.projectName}${r.published ? '' : ' · 미발행'}`}
+          >
+            {/* 회차 번호는 절대 줄지 않고, 교안명만 남는 공간에서 줄어들다 넘치면
+                "..."로 생략한다(min-w-0이 있어야 flex 안에서 실제로 줄어든다) */}
+            <span className="shrink-0">{r.label}</span>
+            <span className="text-fg-subtle min-w-0 flex-1 truncate text-2xs">{r.projectName}</span>
             {/* **왜 값이 없는지**를 고르는 자리에서 말한다 — 고르고 나서 빈 열을 보지 않게 */}
-            {!r.published && <span className="text-fg-subtle ml-1.5 text-2xs">미발행</span>}
+            {!r.published && <span className="text-fg-subtle shrink-0 text-2xs">미발행</span>}
           </SelectItem>
         ))}
         {/*

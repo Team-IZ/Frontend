@@ -385,7 +385,11 @@ function RoundSelect({
   disabled,
   loading,
 }: {
-  /** `null`이면 아직 안 고른 상태 — 트리거에 `고르세요`가 뜬다 */
+  /**
+   * `null`이면 아직 안 고른 상태 — 트리거는 라벨(`프로젝트`)만 두고 값 칸은 비워 둔다.
+   * `고르세요`를 넣었더니 `프로젝트 · 고르세요`가 트리거 폭 안에서 잘렸다(사용자 지적,
+   * 실측 렌더 확인) — 값이 없다는 것 자체가 "고르라"는 뜻이라 굳이 다시 말 안 해도 된다.
+   */
   value: number | null
   rounds: RoundColumn[]
   onChange: (v: number) => void
@@ -421,7 +425,8 @@ function RoundSelect({
       {/* 폭은 가장 긴 문구(`불러오는 중`)에 맞춘다 — 라벨이 붙는 쪽이 더 넓다 */}
       <SelectTrigger className={label ? 'w-36' : 'w-24'} aria-label="프로젝트" disabled={disabled}>
         {label && <ControlLabel>{label}</ControlLabel>}
-        <SelectValue placeholder={loading ? '불러오는 중' : '고르세요'} />
+        {/* 안 고른 기본값은 비워 둔다 — `고르세요`까지 넣으면 라벨과 합쳐 트리거 폭 안에서 잘렸다 */}
+        <SelectValue placeholder={loading ? '불러오는 중' : ''} />
       </SelectTrigger>
       {/*
         min-w-64 — 기본 min-w-36(144px)이 "10차 미니프로젝트"를 못 담아 "..." 없이

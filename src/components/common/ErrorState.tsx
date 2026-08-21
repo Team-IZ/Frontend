@@ -31,7 +31,7 @@ export default function ErrorState({ error, subject, onRetry, retrying, action }
     <Empty variant={copy.tone}>
       <EmptyHeader>
         <EmptyTitle>{copy.title}</EmptyTitle>
-        <EmptyDescription>{copy.description}</EmptyDescription>
+        <EmptyDescription className="whitespace-pre-line">{copy.description}</EmptyDescription>
       </EmptyHeader>
       {/* 둘 다 있으면 한 줄에 둔다 — 세로로 쌓이면 아래쪽이 부차적인 선택으로 안 읽힌다 */}
       <div className="flex flex-wrap items-center justify-center gap-2">

@@ -291,14 +291,17 @@ export default function TraineeListScreen() {
           value={accountFilter}
           onChange={(v) => changeFilters({ accountFilter: v as FilterValues['accountFilter'] })}
           options={ACCOUNT_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
-          // 기본 w-32(128px)가 "초대 대기"를 못 담아 잘렸다(사용자 지적, 실측 렌더 확인)
-          className="w-36"
+          // 기본 w-32(128px)가 "초대 대기"를 못 담아 잘렸다(사용자 지적, 실측 렌더 확인).
+          // w-36도 너무 빠듯해 보인다는 지적으로 w-40까지 넓힘(2차 실측 렌더 확인)
+          className="w-40"
         />
         <FilterSelect
           label="정렬"
           value={sort}
           onChange={(v) => changeFilters({ sort: v as TraineeSort })}
           options={SORT_OPTIONS.map((o) => ({ value: o.value, label: o.label }))}
+          // "계정"과 같은 폭으로 맞춘다
+          className="w-40"
         />
       </div>
 

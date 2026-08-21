@@ -9,8 +9,11 @@ import {
   TriangleAlertIcon,
 } from 'lucide-react'
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { useNavigate, useSearchParams } from 'react-router'
+import { isApiError } from '@/api/_contract'
+import { useOpenReviewSession } from '@/api/assessment/useAssessmentMutations'
 import StatusMessageCard from '@/components/common/StatusMessageCard'
+import { Alert, AlertDescription } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
 import { Card } from '@/components/ui/Card'
 import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/Empty'
@@ -128,8 +131,12 @@ function RoundBody({ report }: { report: RoundReport }) {
           variant="default"
           icon={<ClockIcon className="size-5" />}
           title="리포트를 만들고 있어요"
-          description="리포트는 회차 마감 후 한꺼번에 발행됩니다."
-          /* 서버가 발행 예정일을 아직 안 정했을 수 있다 — 날짜를 지어내지 않고 뒷문장만 남긴다 */
+          description="이해도 확인은 끝났어요. 결과를 정리하는 중입니다."
+          /*
+            `publishAfter`는 **대개 `null`로 온다**(실측). 발행이 응시 직후로 옮겨져
+            발행 하한을 둘 이유가 없어진 자리라, 값이 오면 그대로 말하고 없으면
+            날짜를 지어내지 않는다.
+          */
           aux={
             report.publishAfter
               ? `다 되면 바로 볼 수 있어요 · 발행 예정 ${formatDate(report.publishAfter)} 이후`
@@ -206,15 +213,107 @@ function RoundBody({ report }: { report: RoundReport }) {
           aux="사정이 있었다면 매니저에게 알려 주세요 — 다시 응시할지는 매니저가 정합니다"
         />
       )
+    /*
+      **기다려도 안 나온다**는 점에서 `IN_PROGRESS`와 정반대다. 학생이 할 일은
+      재제출이므로 그 자리를 알려 준다 — 여기서 기다리게 두면 마감만 지나간다.
+    */
+    case 'ANALYSIS_FAILED':
+      return (
+        <ReportStatusCard
+          variant="warning"
+          icon={<TriangleAlertIcon className="size-5" />}
+          title="코드를 분석하지 못해 리포트가 없어요"
+          description="분석이 실패해 리포트를 만들 근거가 없습니다."
+          aux="제출 화면에서 다시 내면 분석이 새로 돌아요 — 계속 안 되면 매니저에게 알려 주세요"
+        />
+      )
     case 'PUBLISHED':
       return <PublishedBody report={report} />
   }
+}
+
+/*
+  다시 보기를 열지 못했을 때 학생에게 할 말 — `POST /assessment-sessions/reviews`의
+  오류표(`schema.d.ts`) 그대로다.
+
+  `REVIEW_NOT_ELIGIBLE`만 톤이 다르다. 스펙이 *"실패가 아니라 안내"* 라고 못박았다 —
+  다시 볼 것이 없다는 뜻이라 학생이 뭘 잘못한 것이 아니다.
+*/
+const OPEN_REVIEW_FAILURE: Record<string, { variant: 'info' | 'danger'; text: string }> = {
+  REVIEW_NOT_ELIGIBLE: { variant: 'info', text: '다시 볼 개념이 없어요.' },
+  REVIEW_ALREADY_COMPLETED: {
+    variant: 'info',
+    text: '이 회차의 다시 보기를 이미 마쳤어요. 새로고침하면 결과를 볼 수 있어요.',
+  },
+  REVIEW_SOURCE_NOT_READY: {
+    variant: 'danger',
+    text: '결과가 아직 정리되지 않았어요. 잠시 후 다시 시도해 주세요.',
+  },
+  REVIEW_REPORT_NOT_ACCESSIBLE: {
+    variant: 'danger',
+    text: '이 리포트를 열 수 없어요. 새로고침해 주세요.',
+  },
+  /*
+    **경계에서 실제로 난다.** 창이 지나면 `retryState`가 `NONE`이 되어 버튼이 사라지지만,
+    화면을 띄워 둔 채 마감을 넘기면 이미 그려진 버튼이 남아 있다(백엔드 회신 2026-08-21 ③).
+    학생 잘못이 아니라 시간이 지난 것이라 `info`로 말하고, 새로고침하면 버튼도 사라진다.
+  */
+  REVIEW_DUE_AT_PASSED: {
+    variant: 'info',
+    text: '다시 보기 기간이 지났어요. 새로고침하면 최신 상태로 보여요.',
+  },
+}
+
+function openReviewFailure(e: unknown) {
+  if (!isApiError(e)) {
+    return { variant: 'danger' as const, text: '다시 보기를 열지 못했어요. 다시 시도해 주세요.' }
+  }
+  const known = OPEN_REVIEW_FAILURE[e.code]
+  if (known) return known
+  /*
+    모르는 코드는 **서버 문장과 코드를 그대로** 보여준다. 스펙이 `code`는 분기용,
+    `message`는 사람이 읽는 폴백이라고 나눠 두었다 — 우리가 지어내는 것보다 정확하고,
+    문구만 주면 학생 → 매니저 → 우리로 옮겨지는 사이에 원인이 사라진다.
+  */
+  const detail = e.message || '다시 보기를 열지 못했어요'
+  return { variant: 'danger' as const, text: `${detail} (${e.code})` }
 }
 
 function PublishedBody({ report }: { report: Extract<RoundReport, { status: 'PUBLISHED' }> }) {
   // 문항 없음은 재시험 대상이 아니다 — 못한 게 아니라 안 물어본 것이라 다시 볼 것도 없다
   const retryCount = askedConcepts(report.concepts).filter((c) => c.isRetryTarget).length
   const relative = formatRelativeMonths(report.publishedAt, Date.now())
+
+  /*
+    🔴 **버튼이 예전에는 그냥 `<Link to="/trainee/session?retry=1">`였다.**
+
+    세션 화면은 `retry` 쿼리를 어디서도 읽지 않고, 다시 보기 응시를 만드는 것은 이
+    개설 호출뿐이다. 그래서 눌러도 응시가 안 생기고 세션 화면이 `204`를 받아 「지금 할
+    수 있는 응시가 없어요」로 떨어졌다. **개설부터 하고, 성공했을 때만 보낸다.**
+  */
+  const navigate = useNavigate()
+  const open = useOpenReviewSession()
+  const [openError, setOpenError] = useState<{
+    variant: 'info' | 'danger'
+    text: string
+  } | null>(null)
+  const [opening, setOpening] = useState(false)
+
+  async function openReview() {
+    setOpenError(null)
+    setOpening(true)
+    try {
+      await open.mutateAsync({ body: { reportId: report.reportId } })
+      navigate('/trainee/session')
+    } catch (e) {
+      setOpenError(openReviewFailure(e))
+      /*
+        **실패했을 때만 여기서 끈다.** 성공하면 켠 채로 둔다 — 무효화된 조회가 다시
+        오는 동안 버튼이 잠깐 되살아나면 그 사이 한 번 더 눌린다.
+      */
+      setOpening(false)
+    }
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -236,26 +335,30 @@ function PublishedBody({ report }: { report: Extract<RoundReport, { status: 'PUB
         *"다시 볼 수 있는 문제가 0개 있어요"* 라는 배너 아래에 아무것도 없고, 버튼을
         누르면 빈 세션으로 들어간다. 할 일이 없으면 할 일이 있다고 말하지 않는다.
       */}
-      {report.retryState === 'PENDING' && report.retryDueAt && retryCount > 0 && (
+      {report.retryState === 'PENDING' && report.reportId && retryCount > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-md bg-warning-soft px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
             <RotateCcwIcon className="size-5 shrink-0 text-warning" />
             <div>
               <b className="text-warning">다시 볼 수 있는 문제가 {retryCount}개 있어요</b>
               <div className="text-xs text-fg-subtle">
-                {formatDate(report.retryDueAt)}까지 · 결과는 기록에만 남고 지금 결과는 그대로예요
+                {/* 마감이 `null`로 오는 회차가 있다 — 없는 날짜를 지어내지 않고 뒷문장만 남긴다 */}
+                {report.retryDueAt && `${formatDate(report.retryDueAt)}까지 · `}
+                결과는 기록에만 남고 지금 결과는 그대로예요
               </div>
             </div>
           </div>
-          <Button
-            size="sm"
-            className="shrink-0"
-            nativeButton={false}
-            render={<Link to="/trainee/session?retry=1" />}
-          >
-            다시 보기
+          <Button size="sm" className="shrink-0" disabled={opening} onClick={openReview}>
+            {opening ? '여는 중…' : '다시 보기'}
           </Button>
         </div>
+      )}
+
+      {/* 열지 못했으면 그 자리에서 말한다 — 버튼이 반응만 하고 아무 일도 없으면 고장으로 읽힌다 */}
+      {openError && (
+        <Alert variant={openError.variant}>
+          <AlertDescription>{openError.text}</AlertDescription>
+        </Alert>
       )}
 
       {/*

@@ -93,14 +93,14 @@ function toCurrent(res: Server, className: string | null): CurrentRound {
     problemCount: c.preparedProblemCount ?? null,
 
     /*
-      다시 볼 개념 수를 **서버가 숫자로 주지 않는다.** `reviewStatus`(상태)와
-      `completedReviewCount`(완료 건수)만 온다.
-
-      ponytail: 지금은 "다시 보기가 배정됐고 아직 안 끝났다"를 1건으로 센다 — 카드가
-      개수를 문장에 넣기 때문이다(`다시 볼 수 있는 문제가 N개`). 실제 개념 수는
-      리포트를 열어야 나오므로, 정확한 수가 필요해지면 백엔드에 요청한다.
+      **서버가 개수를 준다**(2026-08-21). 예전에는 `reviewStatus`(상태)와
+      `completedReviewCount`(완료 건수)뿐이라 "배정됐고 안 끝났다"를 **무조건 1건**으로
+      셌는데, 그러면 실제로 셋이 밀린 학생에게도 *"다시 볼 수 있는 문제가 1개 있어요"*
+      라고 말한다. 이제 셋 다 그대로 받는다.
     */
-    reviewPendingCount: c.representativeStatus === 'REVIEW_REQUIRED' ? 1 : 0,
+    retryState: c.retryState ?? 'NONE',
+    retryTargetCount: c.retryTargetCount ?? 0,
+    retryDueAt: c.retryDueAt ?? null,
     canViewReport: c.canViewReport ?? false,
     reportId: c.reportId ?? null,
   }

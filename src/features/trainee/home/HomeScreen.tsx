@@ -46,24 +46,11 @@ export default function HomeScreen() {
             </div>
 
             {/*
-              이번 회차 리포트 — 다시 보기 대상일 때만. 카드의 CTA는 다시 보기로 가므로
-              리포트로 가는 길을 여기 따로 둔다(어디를 다시 볼지는 리포트가 알려준다).
+              「이번 회차 리포트」 줄을 지웠다(2026-08-21). **목적지가 갈렸을 때만 필요한
+              우회로였다** — 카드 버튼이 세션으로 가던 시절에 "일단 읽고 싶다"는 학생의
+              길이었는데, 이제 카드 버튼도 리포트로 간다. 같은 곳으로 가는 링크가 둘이면
+              학생이 매번 "뭐가 다르지"를 고른다.
             */}
-            {data.current.status === 'REVIEW_REQUIRED' &&
-              data.current.canViewReport &&
-              data.current.reportId && (
-                <div>
-                  <div className="mb-2 text-xs font-semibold text-fg-subtle">이번 회차 리포트</div>
-                  <Card className="gap-0 divide-y divide-border py-0">
-                    <RoundListRow
-                      kind="past"
-                      label={data.current.roundName ?? '이번 회차'}
-                      detail="발행됨 · 자세한 해설은 다시 보기 후 열려요"
-                      to={`/trainee/report?round=${data.current.id}`}
-                    />
-                  </Card>
-                </div>
-              )}
 
             {data.upcoming.length > 0 && (
               <div>
@@ -105,8 +92,8 @@ export default function HomeScreen() {
                       label={r.roundName}
                       detail={pastSummary(r.status, r.completedReviewCount)}
                       /*
-                        **`canViewReport`를 서버가 판정한다.** 매니저가 아직 안 열었으면
-                        false라 링크를 걸지 않는다 — 화면이 발행 상태를 다시 보지 않는다.
+                        **`canViewReport`를 서버가 판정한다.** 아직 발행 전이면 false라
+                        링크를 걸지 않는다 — 화면이 발행 상태를 다시 보지 않는다.
                       */
                       to={
                         /*

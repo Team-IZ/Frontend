@@ -102,7 +102,14 @@ const ACTION_ROUTES: Partial<Record<ActionCode, string>> = {
   RESUBMIT_REPOSITORY: '/trainee/submission',
   RESUBMIT_ZIP: '/trainee/submission',
   START_ASSESSMENT: '/trainee/session',
-  START_REVIEW: '/trainee/session?retry=1',
+  /*
+    🔴 **다시 보기는 여기서 경로를 주지 않는다.** 예전에는 `/trainee/session?retry=1`이
+    었는데 세션 화면이 그 쿼리를 읽지 않아 곧장 막다른 화면으로 갔다.
+
+    다시 보기 응시를 만드는 것은 `POST /assessment-sessions/reviews`뿐이고 그것을 부르는
+    버튼은 리포트 화면에 있다. 그래서 홈은 **리포트로 보낸다**(`buildCta` 참고) —
+    개설과 시작이 항상 붙어 다니게 된다.
+  */
   /*
     **이어하기를 연다.** 예전에는 일부러 경로를 안 줬다 — "시작하면 중간에 나갈 수
     없어요"라는 약속을 지키려고. 그런데 실제로 일어나는 일은 학생이 *약속을 어기는* 것이
@@ -122,7 +129,11 @@ const ACTION_ROUTES: Partial<Record<ActionCode, string>> = {
 */
 const ACTION_ASIDES: Partial<Record<ActionCode, string>> = {
   WAIT_FOR_ANALYSIS: '분석이 끝나면 열려요',
-  WAIT_FOR_REPORT: '발행되면 알려드릴게요',
+  /*
+    「발행되면 알려드릴게요」에서 바꿨다. **알림이 없다** — 학생이 홈을 다시 열어야
+    안다. 없는 알림을 기다리게 하면 그만큼 늦게 본다.
+  */
+  WAIT_FOR_REPORT: '다 되면 여기서 볼 수 있어요',
 }
 
 /** 경고 배지 — 배열이라 여러 개가 동시에 온다 */
@@ -164,8 +175,48 @@ function buildStrip(round: CurrentRound, now: number): StatusContent['strip'] {
   return null
 }
 
+/**
+ * 다시 볼 것이 있고 **리포트로 갈 수 있는가.**
+ *
+ * 제목·안내·버튼이 같은 기준을 써야 한다 — 하나만 갈리면 제목은 「3개 있어요」인데
+ * 버튼은 딴 데로 가는 카드가 된다. `canViewReport`가 빠지면 발행 전 회차에서 그렇게 된다
+ * (`buildCta` 주석 참고).
+ */
+const showsRetry = (round: CurrentRound) =>
+  round.retryState === 'PENDING' && round.retryTargetCount > 0 && round.canViewReport
+
+/** 다시 보기 안내 — 상태로 오는 경우와 `retryState`로 오는 경우가 같은 말을 해야 한다 */
+const REVIEW_GUIDE: GuideLine[] = [
+  /*
+    **얻는 것을 먼저 말한다.** 다시 보기는 성적을 바꾸지 않는다 — 그것만 말하면
+    "안 해도 그만"으로 읽힌다. 실제로 달라지는 것은 **막힌 개념의 내 답변과 해설이
+    열린다**는 점이고(도달 2단 미만이면 그때까지 가려져 있다), 그게 학생이 움직일
+    유일한 이유다.
+  */
+  {
+    icon: RotateCcwIcon,
+    text: '다시 보면 그 개념의 내 답변과 자세한 해설이 열려요.',
+  },
+  {
+    icon: InfoIcon,
+    text: '처음 단계부터 다시 물어요. 리포트에서 안내한 교안을 보고 오면 됩니다.',
+  },
+  {
+    icon: InfoIcon,
+    text: '기회는 한 번이에요. 성적은 그대로이고 다시 본 것은 기록에만 남아요.',
+  },
+]
+
 /** 상태별 안내 문장. 서버 코드를 사람 말로 옮기는 유일한 자리 */
 function buildGuide(round: CurrentRound): GuideLine[] {
+  /*
+    **제목·버튼과 같은 기준으로 갈라야 한다.** 다시 볼 것이 있는 학생의 대표 상태는
+    보통 `ASSESSMENT_COMPLETED`인데, 상태로만 문구를 고르면 제목이 *"다시 볼 수 있는
+    문제가 2개 있어요"* 인 카드 안에서 *"리포트를 만들고 있어요"* 라고 말하게 된다.
+    이 화면이 예전에 겪은 어긋남과 같은 자리다(`reportReady` 주석).
+  */
+  if (showsRetry(round)) return REVIEW_GUIDE
+
   switch (round.status) {
     case 'SUBMISSION_REQUIRED':
       return [
@@ -247,20 +298,11 @@ function buildGuide(round: CurrentRound): GuideLine[] {
           // 이미 열렸으면 기다리라고 하지 않는다 — 버튼이 눌리는데 문장이 말리면 안 누른다
           text: reportReady(round)
             ? '개념별로 어디까지 설명했는지 확인할 수 있어요.'
-            : '리포트는 회차 마감 후 한꺼번에 발행됩니다. 발행되면 알려드릴게요.',
+            : '리포트를 만들고 있어요. 다 되면 여기서 바로 볼 수 있어요.',
         },
       ]
     case 'REVIEW_REQUIRED':
-      return [
-        {
-          icon: RotateCcwIcon,
-          text: '처음 단계부터 다시 봐요. 리포트에서 안내한 교안을 보고 오면 됩니다.',
-        },
-        {
-          icon: InfoIcon,
-          text: '기회는 한 번이에요. 기존 결과는 그대로이고 다시 본 것은 기록에만 남아요.',
-        },
-      ]
+      return REVIEW_GUIDE
     case 'SUBMISSION_MISSED':
       return [
         {
@@ -291,6 +333,44 @@ function buildGuide(round: CurrentRound): GuideLine[] {
 
 function buildCta(round: CurrentRound, now: number): StatusContent['cta'] {
   const { action } = round
+
+  /*
+    **다시 볼 것이 있으면 무엇보다 먼저 그 버튼을 세운다.**
+
+    액션 코드로는 이 자리를 못 잡는다 — `START_REVIEW`는 다시 보기를 **연 뒤에야**
+    오고, 아직 안 연 학생의 액션은 `WAIT_FOR_REPORT`이거나 `NONE`이다. 그러면 정작
+    다시 봐야 하는 학생에게 버튼이 없다.
+
+    마감을 함께 말한다. 기회가 한 번뿐이고 창이 3일이라, 날짜를 안 보여주면 남은 시간을
+    모른 채 미룬다. 다만 **`null`로 오는 구간이 있어** 있을 때만 붙인다(아래 참고).
+
+    🔴 **`canViewReport`를 함께 본다.** 발행 전인데 `retryState: PENDING`이 오는 회차가
+    있다(실측 — `reportPublishStatus: NOT_PUBLISHED`인데 `retryTargetCount: 3`, 그때
+    `retryDueAt`은 `null`이다). 그대로 보내면 *"다시 볼 문제가 3개 있어요"* 를 읽고
+    누른 학생이 **「리포트를 만들고 있어요」** 빈 화면에 도착한다.
+
+    발행이 곧 열람이므로(공개 단계 폐지) `canViewReport`가 **리포트에 보낼 수 있는지**를
+    그대로 말해 준다. 발행되면 이 카드로 저절로 바뀐다.
+  */
+  if (showsRetry(round) && round.id) {
+    return {
+      /*
+        **버튼 이름은 목적지를 말한다.** 「다시 보기」라고 써 놓고 리포트로 보내면
+        작은 거짓말이고, 한 번 어긋난 버튼은 그다음부터 안 믿는다.
+
+        다시 보기는 **리포트를 읽고 들어가야 하는 일**이다 — 기회가 한 번뿐이고 L1부터
+        다시 묻는데, 어느 개념이 막혔고 교안 어디를 보면 되는지는 리포트에만 있다.
+        홈에서 곧장 응시로 보내면 그 한 번을 준비 없이 태운다.
+
+        그래서 **버튼은 리포트 하나**로 두고, 다시 볼 것이 있다는 사실은 제목·안내·마감이
+        말한다(`buildStatusContent`·`REVIEW_GUIDE`).
+      */
+      label: ACTION_LABELS.VIEW_REPORT,
+      to: `/trainee/report?round=${round.id}`,
+      aside: round.retryDueAt ? `${formatDate(round.retryDueAt)}까지` : undefined,
+    }
+  }
+
   if (action === 'NONE' || action === 'CONTACT_MANAGER') return null
 
   const to = ACTION_ROUTES[action]
@@ -317,6 +397,15 @@ function buildCta(round: CurrentRound, now: number): StatusContent['cta'] {
     return { label: ACTION_LABELS[action], to: `/trainee/report?round=${round.id}` }
   }
 
+  /*
+    **이미 연 다시 보기를 이어서 하는 자리.** 위 `retryState` 분기가 아직 안 연 학생을
+    잡으므로 여기 걸리는 것은 열어 둔 응시가 있는 경우다. 그때도 리포트로 보낸다 —
+    개설 호출이 거기 있고, 이미 열려 있으면 서버가 그것을 그대로 돌려준다(스펙).
+  */
+  if (action === 'START_REVIEW' && round.id) {
+    return { label: ACTION_LABELS[action], to: `/trainee/report?round=${round.id}` }
+  }
+
   return { label: ACTION_LABELS[action], to, disabled: !to, aside }
 }
 
@@ -340,10 +429,15 @@ const reportReady = (round: CurrentRound) =>
 
 export function buildStatusContent(round: CurrentRound, now: number): StatusContent {
   return {
+    /*
+      **다시 볼 것이 있으면 상태보다 그것을 먼저 말한다.** 판정은 `retryState` 하나로
+      한다 — `REVIEW_REQUIRED`(대표 상태)는 다시 보기를 **연 뒤에야** 붙어서, 아직 안
+      연 학생에게는 안 걸린다. 서버가 3일 창까지 보고 준 값이 `retryState`다.
+    */
     title: reportReady(round)
       ? '리포트가 나왔어요'
-      : round.status === 'REVIEW_REQUIRED' && round.reviewPendingCount > 0
-        ? `다시 볼 수 있는 문제가 ${round.reviewPendingCount}개 있어요`
+      : showsRetry(round)
+        ? `다시 볼 수 있는 문제가 ${round.retryTargetCount}개 있어요`
         : TITLES[round.status],
     steps: STEPS[round.status] ?? null,
     strip: buildStrip(round, now),

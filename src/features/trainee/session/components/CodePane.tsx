@@ -78,21 +78,30 @@ export default function CodePane({
           ref={preRef}
           className="h-full overflow-auto rounded-md bg-code py-3 font-mono text-sm leading-relaxed text-code-fg"
         >
-          {lines.map((row) => (
-            <div
-              key={row.line}
-              data-line={row.line}
-              className={cn(
-                'px-4',
-                inRange(row.line, highlight) && 'border-l-2 border-primary bg-primary/34',
-              )}
-            >
-              <span className="mr-3 inline-block w-6 text-right text-code-dim select-none">
-                {row.line}
-              </span>
-              {row.text}
-            </div>
-          ))}
+          {/*
+            줄을 감싸는 이 div가 **가장 긴 줄의 폭**을 갖는다(w-max) — 줄들은 그 안을
+            100%로 채우므로 어디까지 스크롤해도 하이라이트가 끊기지 않고 오른쪽 끝도
+            가지런하다. 이게 없으면 각 줄이 "보이는 폭"까지만 그려져 가로로 넘친 코드에는
+            하이라이트가 안 깔린다(실측: 380px에서 잘리고 실제 줄은 959px).
+            min-w-full은 파일이 전부 짧을 때 패널을 채우기 위한 것이다.
+          */}
+          <div className="w-max min-w-full">
+            {lines.map((row) => (
+              <div
+                key={row.line}
+                data-line={row.line}
+                className={cn(
+                  'px-4',
+                  inRange(row.line, highlight) && 'border-l-2 border-primary bg-primary/34',
+                )}
+              >
+                <span className="mr-3 inline-block w-6 text-right text-code-dim select-none">
+                  {row.line}
+                </span>
+                {row.text}
+              </div>
+            ))}
+          </div>
         </pre>
       </div>
 

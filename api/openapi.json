@@ -136,8 +136,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -284,8 +284,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -796,8 +796,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -1778,8 +1778,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -2084,8 +2084,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -2565,8 +2565,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -2723,8 +2723,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -2990,8 +2990,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -3207,8 +3207,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -3384,8 +3384,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -5169,8 +5169,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -5865,8 +5865,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -5996,8 +5996,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -6291,8 +6291,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -6843,8 +6843,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -7059,8 +7059,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -7249,8 +7249,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -7474,8 +7474,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -7617,8 +7617,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -7772,8 +7772,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -8075,8 +8075,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -8707,8 +8707,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -8791,8 +8791,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -9184,8 +9184,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -9486,8 +9486,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -10029,8 +10029,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -10270,8 +10270,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -10449,8 +10449,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -10649,8 +10649,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -11059,8 +11059,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -11336,8 +11336,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -11568,8 +11568,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -12219,8 +12219,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -12592,8 +12592,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -12801,8 +12801,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -13482,8 +13482,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -13682,8 +13682,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -13980,8 +13980,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -14159,8 +14159,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -14315,8 +14315,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -14471,8 +14471,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -14682,8 +14682,8 @@
           "Submission"
         ],
         "summary": "코드 분석 진행 상태·실패 사유 조회 | ✅ 사용 가능",
-        "description": "제출 후 화면이 초 단위로 도는 폴링 대상이다. 폴링 대상이 `code_analysis`가 아니라\n`analysis_job`인 이유는, 전자가 성공했을 때에만 생기는 결과물이라 \"진행 중\"과 \"분석 없음\"을\n구분할 수 없고 실패 사유도 갖지 않기 때문이다.\n\n**분석 실행 API는 교육생에게 제공하지 않는다.** 실행 주체는 제출 이벤트를 받는 배치뿐이고,\n아직 집어가기 전이라면 정상적으로 `phase=NOT_STARTED`를 반환한다.\n\n제출은 팀 단위라 같은 팀이면 누가 조회해도 같은 결과가 나온다. 다만 **세션 준비 여부만은\n조회자 본인 기준**이다 — 아래 `SESSION_PREPARATION_FAILED` 참고.\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n| --- | --- | --- | --- |\n| `submissionId` | 필수 | UUID | 조회할 제출. 같은 팀의 제출만 볼 수 있다 |\n\n쿼리 파라미터는 없다.\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `submissionId` | UUID | 조회한 제출 |\n| `phase` | enum | `NOT_STARTED` · `QUEUED` · `RUNNING` · `SUCCEEDED` · `PARTIAL` · `FAILED` |\n| `analysisJobId` | UUID? | 분석 실행. 시작 전이면 `null` |\n| `executionNo` | int? | 재시도 회차(1부터). 시작 전이면 `null` |\n| `startedAt` | datetime? | 분석 시작 시각 |\n| `completedAt` | datetime? | 분석 종료 시각 |\n| `failureCode` | string? | `FAILED`일 때만. 아래 표 참고 |\n| `failureReason` | string? | 실패 사유 원문 |\n| `codeAnalysisId` | UUID? | 성공 시 생성된 분석 결과. 그 외에는 `null` |\n\n### phase\n\n| 값 | 뜻 |\n| --- | --- |\n| `NOT_STARTED` | 배치가 아직 이 제출을 집어가지 않았다. 제출 직후의 정상 상태다 |\n| `QUEUED` | AI 서버가 요청을 접수했다 |\n| `RUNNING` | 분석 중. 실측 5분 안팎이다 |\n| `SUCCEEDED` | 분석 완료. 결과는 `.../analysis/result`로 읽는다 |\n| `PARTIAL` | 일부 개념만 문항을 만들었다. 결과는 있으므로 성공과 같게 다룬다 |\n| `FAILED` | 실패. `failureCode`로 사유를 가른다 |\n\n### failureCode\n\n분석 실행 실패와 저장소 접근 실패, ZIP 내용 검증을 합해 **12종**이다. 저장소 주소 오류도\n제출이 아니라 여기로 드러난다.\n\n| 묶음 | 값 |\n| --- | --- |\n| 분석 실행 | `TEMPORARY_ERROR` · `ANALYSIS_TIMEOUT` · `MODEL_ERROR` · `SOURCE_UNREACHABLE` · `UNSUPPORTED_LANGUAGE` |\n| 저장소 접근 | `INVALID_REPOSITORY_URL` · `REPO_NOT_FOUND` · `REPOSITORY_ACCESS_DENIED` · `BRANCH_NOT_FOUND` · `UNSUPPORTED_HOST` |\n| ZIP 내용 | `EMPTY_CODE` · `GIT_LOG_MISSING` |\n\n⚠️ 종전 설명은 15종이라 적고 ZIP 묶음에 `FILE_TOO_LARGE`·`ARCHIVE_INVALID`·`PROHIBITED_FILE`을\n함께 실었는데 **셋 다 이 필드로 올 수 없다**(2026-08-16 정정). ZIP 파일 자체의 문제라 업로드가\n`400 ARCHIVE_INVALID`·`413 FILE_TOO_LARGE`로 먼저 거절하고 제출 행조차 만들지 않으므로 분석이\n시작되지 않는다 — 그 셋은 **제출 API의 에러 응답**에서 받는다.\n\n🔴 **`SESSION_PREPARATION_FAILED`만 예외다.** `analysis_job.failure_code`에 없는 값이며\n서버가 조회 시점에 판정해 내려 준다. **분석은 성공했지만 이 교육생의 세션·문항이 준비되지\n않아 응시를 시작할 수 없다**는 뜻이다(응시 행이 없거나, 팀 배정이 끊겼거나, AI가 4축 질문·\n힌트를 온전히 주지 않아 문항이 통째로 스킵된 경우). 이때 `phase=FAILED`, `codeAnalysisId=null`로\n내려가며 원장의 job은 `SUCCEEDED`로 남는다 — 분석 자체는 실제로 성공했고 비용도 이미 나갔기\n때문이다. 화면은 재제출을 안내하면 된다.\n\n🔴 **`EXTERNAL_JOB_ID_LOST`도 `analysis_job.failure_code`에 없는 값이다.** 분석 행은\n아직 진행 중(`QUEUED`·`RUNNING`)인데 AI가 발급한 작업 ID가 사라져 상태를 더 따라갈 수\n없다는 뜻이며, 이때 `phase=FAILED`, `codeAnalysisId=null`로 내려간다. 서버 폴러가 1분 안에\n같은 실행을 `MODEL_ERROR`로 닫고 재시도 여지가 남아 있으면 다시 요청하므로, 폴링을 계속하면\n새 실행의 `QUEUED`가 이어질 수 있다. 화면은 재제출을 안내하면 된다.\n\n## 오류\n\n| 코드 | 상태 | 언제 |\n| --- | --- | --- |\n| `SUBMISSION_NOT_FOUND` | 404 | 그런 제출이 없다 |\n| `SUBMISSION_ACCESS_DENIED` | 403 | 다른 팀의 제출이다 |",
-        "operationId": "getAnalysis",
+        "description": "제출 후 화면이 초 단위로 도는 폴링 대상이다. 폴링 대상이 `code_analysis`가 아니라\n`analysis_job`인 이유는, 전자가 성공했을 때에만 생기는 결과물이라 \"진행 중\"과 \"분석 없음\"을\n구분할 수 없고 실패 사유도 갖지 않기 때문이다.\n\n**분석 실행 API는 교육생에게 제공하지 않는다.** 실행 주체는 제출 이벤트를 받는 배치뿐이고,\n아직 집어가기 전이라면 정상적으로 `phase=NOT_STARTED`를 반환한다.\n\n제출은 팀 단위라 같은 팀이면 누가 조회해도 같은 결과가 나온다. 다만 **세션 준비 여부만은\n조회자 본인 기준**이다 — 아래 `SESSION_PREPARATION_FAILED` 참고.\n\n## 이 API와 `GET /assessment-rounds`를 어떻게 나눠 쓰는가\n\n| | `GET /assessment-rounds` | 이 API |\n| --- | --- | --- |\n| 목적 | 회차 전체 요약 카드(\"지금 할 일\") | 제출 1건의 분석 진행 상태 |\n| 설계 의도 | 진입/새로고침 시 1회 조회 | **초 단위 폴링 전용** |\n| 상태 표현 | 뭉뚱그린 5단계(`analysisPhase`) | 원시 job 상태 그대로(`phase`) |\n| 실패 사유 | 있음/없음만(`analysisFailureCode`, `ANALYSIS_FAILED` 1종) | 구체적 사유 코드 최대 14종(아래 `failureCode`) |\n| `submissionId` 필요 여부 | 불필요 | **필수**(제출 응답 또는 TR-02 `GET /projects/{projectId}/submissions/me`에서 얻는다) |\n\n**권장 흐름**: 화면 진입 시 `assessment-rounds`로 그리고, `analysisPhase=ANALYZING`인\n동안만 이 API를 60초 간격으로 폴링해 그 순간 \"분석 완료\"·\"분석 실패\"로 전환한다. 그보다\n짧게 돌려도 새 정보를 못 받는다 — `analysis_job.status`는 백엔드-AI 폴링 스케줄러가\n`ai.analysis.scheduler.poll-delay`(기본 `PT1M`) 주기로만 갱신한다.\n\n같은 분석 job을 세 API가 서로 다른 이름·값 개수의 enum으로 표현한다. 대응표:\n\n| 상황 | `assessment-rounds`<br>`analysisPhase` | `assessment-rounds`<br>`analysisJobStatus` | 이 API의 `phase` |\n| --- | --- | --- | --- |\n| 아직 제출 안 함 | `NOT_SUBMITTED` | (없음, `null`) | `NOT_STARTED` |\n| 대기 중 | `ANALYZING` | `QUEUED` | `QUEUED` |\n| 분석 중 | `ANALYZING` | `RUNNING` | `RUNNING` |\n| 성공 | `COMPLETED` | `SUCCEEDED` | `SUCCEEDED` |\n| 부분 성공 | ⚠️ `WAITING`(`COMPLETED`가 아니다 — 뷰의 분기가 `PARTIAL`을 안 잡아 `ELSE`로 떨어진다) | `PARTIAL` | `PARTIAL` |\n| 실패 | `FAILED` | `FAILED` | `FAILED` |\n\n**폴링을 멈춰야 하는 시점은 `phase`가 `QUEUED`·`RUNNING`을 벗어나는 순간**이다\n(`SUCCEEDED`·`PARTIAL`은 결과 조회로, `FAILED`는 실패 안내로 넘어간다).\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n| --- | --- | --- | --- |\n| `submissionId` | 필수 | UUID | 조회할 제출. 같은 팀의 제출만 볼 수 있다 |\n\n쿼리 파라미터는 없다.\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `submissionId` | UUID | 조회한 제출 |\n| `phase` | enum | `NOT_STARTED` · `QUEUED` · `RUNNING` · `SUCCEEDED` · `PARTIAL` · `FAILED` |\n| `analysisJobId` | UUID? | 분석 실행. 시작 전이면 `null` |\n| `executionNo` | int? | 재시도 회차(1부터). 시작 전이면 `null` |\n| `startedAt` | datetime? | 분석 시작 시각 |\n| `completedAt` | datetime? | 분석 종료 시각 |\n| `failureCode` | string? | `FAILED`일 때만. 아래 표 참고 |\n| `failureReason` | string? | 실패 사유 원문 |\n| `codeAnalysisId` | UUID? | 성공 시 생성된 분석 결과. 그 외에는 `null` |\n\n### phase\n\n| 값 | 뜻 |\n| --- | --- |\n| `NOT_STARTED` | 배치가 아직 이 제출을 집어가지 않았다. 제출 직후의 정상 상태다 |\n| `QUEUED` | AI 서버가 요청을 접수했다 |\n| `RUNNING` | 분석 중. 실측 5분 안팎이다 |\n| `SUCCEEDED` | 분석 완료. 결과는 `.../analysis/result`로 읽는다 |\n| `PARTIAL` | 일부 개념만 문항을 만들었다. 결과는 있으므로 성공과 같게 다룬다 |\n| `FAILED` | 실패. `failureCode`로 사유를 가른다 |\n\n### failureCode\n\n분석 실행 실패와 저장소 접근 실패, ZIP 내용 검증을 합해 **12종**이다. 저장소 주소 오류도\n제출이 아니라 여기로 드러난다.\n\n| 묶음 | 값 |\n| --- | --- |\n| 분석 실행 | `TEMPORARY_ERROR` · `ANALYSIS_TIMEOUT` · `MODEL_ERROR` · `SOURCE_UNREACHABLE` · `UNSUPPORTED_LANGUAGE` |\n| 저장소 접근 | `INVALID_REPOSITORY_URL` · `REPO_NOT_FOUND` · `REPOSITORY_ACCESS_DENIED` · `BRANCH_NOT_FOUND` · `UNSUPPORTED_HOST` |\n| ZIP 내용 | `EMPTY_CODE` · `GIT_LOG_MISSING` |\n\n⚠️ 종전 설명은 15종이라 적고 ZIP 묶음에 `FILE_TOO_LARGE`·`ARCHIVE_INVALID`·`PROHIBITED_FILE`을\n함께 실었는데 **셋 다 이 필드로 올 수 없다**(2026-08-16 정정). ZIP 파일 자체의 문제라 업로드가\n`400 ARCHIVE_INVALID`·`413 FILE_TOO_LARGE`로 먼저 거절하고 제출 행조차 만들지 않으므로 분석이\n시작되지 않는다 — 그 셋은 **제출 API의 에러 응답**에서 받는다.\n\n🔴 **`SESSION_PREPARATION_FAILED`만 예외다.** `analysis_job.failure_code`에 없는 값이며\n서버가 조회 시점에 판정해 내려 준다. **분석은 성공했지만 이 교육생의 세션·문항이 준비되지\n않아 응시를 시작할 수 없다**는 뜻이다(응시 행이 없거나, 팀 배정이 끊겼거나, AI가 4축 질문·\n힌트를 온전히 주지 않아 문항이 통째로 스킵된 경우). 이때 `phase=FAILED`, `codeAnalysisId=null`로\n내려가며 원장의 job은 `SUCCEEDED`로 남는다 — 분석 자체는 실제로 성공했고 비용도 이미 나갔기\n때문이다. 화면은 재제출을 안내하면 된다.\n\n🔴 **`EXTERNAL_JOB_ID_LOST`도 `analysis_job.failure_code`에 없는 값이다.** 분석 행은\n아직 진행 중(`QUEUED`·`RUNNING`)인데 AI가 발급한 작업 ID가 사라져 상태를 더 따라갈 수\n없다는 뜻이며, 이때 `phase=FAILED`, `codeAnalysisId=null`로 내려간다. 서버 폴러가 1분 안에\n같은 실행을 `MODEL_ERROR`로 닫고 재시도 여지가 남아 있으면 다시 요청하므로, 폴링을 계속하면\n새 실행의 `QUEUED`가 이어질 수 있다. 화면은 재제출을 안내하면 된다.\n\n## 오류\n\n| 코드 | 상태 | 언제 |\n| --- | --- | --- |\n| `SUBMISSION_NOT_FOUND` | 404 | 그런 제출이 없다 |\n| `SUBMISSION_ACCESS_DENIED` | 403 | 다른 팀의 제출이다 |",
+        "operationId": "getSubmissionAnalysis",
         "parameters": [
           {
             "name": "submissionId",
@@ -14702,6 +14702,78 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SubmissionAnalysisResponse"
+                },
+                "examples": {
+                  "NOT_STARTED — 아직 배치가 안 집어감": {
+                    "description": "NOT_STARTED — 아직 배치가 안 집어감",
+                    "value": {
+                      "submissionId": "7d3c8a15-6e29-4b70-9c81-2f5a4d0b6e37",
+                      "phase": "NOT_STARTED",
+                      "analysisJobId": null,
+                      "executionNo": null,
+                      "startedAt": null,
+                      "completedAt": null,
+                      "failureCode": null,
+                      "failureReason": null,
+                      "codeAnalysisId": null
+                    }
+                  },
+                  "RUNNING — 분석 중(폴링 유지)": {
+                    "description": "RUNNING — 분석 중(폴링 유지)",
+                    "value": {
+                      "submissionId": "7d3c8a15-6e29-4b70-9c81-2f5a4d0b6e37",
+                      "phase": "RUNNING",
+                      "analysisJobId": "3f6b0e97-8c24-4a15-9d38-2b7e5c1a4f60",
+                      "executionNo": 1,
+                      "startedAt": "2026-08-21T04:02:20Z",
+                      "completedAt": null,
+                      "failureCode": null,
+                      "failureReason": null,
+                      "codeAnalysisId": null
+                    }
+                  },
+                  "SUCCEEDED — 폴링 중단, 결과 조회로": {
+                    "description": "SUCCEEDED — 폴링 중단, 결과 조회로",
+                    "value": {
+                      "submissionId": "7d3c8a15-6e29-4b70-9c81-2f5a4d0b6e37",
+                      "phase": "SUCCEEDED",
+                      "analysisJobId": "3f6b0e97-8c24-4a15-9d38-2b7e5c1a4f60",
+                      "executionNo": 1,
+                      "startedAt": "2026-08-21T04:02:20Z",
+                      "completedAt": "2026-08-21T04:07:41Z",
+                      "failureCode": null,
+                      "failureReason": null,
+                      "codeAnalysisId": "9c0b5e28-4a76-4d31-8f92-7e3d1a6c5b04"
+                    }
+                  },
+                  "FAILED — 저장소 접근 실패(재제출 유도)": {
+                    "description": "FAILED — 저장소 접근 실패(재제출 유도)",
+                    "value": {
+                      "submissionId": "7d3c8a15-6e29-4b70-9c81-2f5a4d0b6e37",
+                      "phase": "FAILED",
+                      "analysisJobId": "3f6b0e97-8c24-4a15-9d38-2b7e5c1a4f60",
+                      "executionNo": 1,
+                      "startedAt": "2026-08-21T04:02:20Z",
+                      "completedAt": "2026-08-21T04:02:35Z",
+                      "failureCode": "REPO_NOT_FOUND",
+                      "failureReason": "저장소를 찾을 수 없습니다: github.com/team/repo",
+                      "codeAnalysisId": null
+                    }
+                  },
+                  "FAILED — SESSION_PREPARATION_FAILED(분석은 성공)": {
+                    "description": "분석 자체는 성공했지만 조회자 본인 세션이 준비되지 않았다.",
+                    "value": {
+                      "submissionId": "7d3c8a15-6e29-4b70-9c81-2f5a4d0b6e37",
+                      "phase": "FAILED",
+                      "analysisJobId": "3f6b0e97-8c24-4a15-9d38-2b7e5c1a4f60",
+                      "executionNo": 1,
+                      "startedAt": "2026-08-21T04:02:20Z",
+                      "completedAt": "2026-08-21T04:07:41Z",
+                      "failureCode": "SESSION_PREPARATION_FAILED",
+                      "failureReason": "이 교육생의 세션·문항이 준비되지 않았습니다",
+                      "codeAnalysisId": null
+                    }
+                  }
                 }
               }
             }
@@ -14798,7 +14870,7 @@
         ],
         "summary": "코드 분석 결과 조회 | ✅ 사용 가능",
         "description": "분석이 성공한 뒤 화면이 한 번 읽는 결과 본체다. 문제 슬롯·요구사항 판정·본인 세션을 함께 준다.\n\n**진행 상태 폴링은 `GET /submissions/{submissionId}/analysis`로 한다.** 둘을 나눈 이유는\n폴링이 초 단위로 도는 반면 결과는 한 번만 읽기 때문이다 — 한 응답에 합치면 \"분석 중\"을\n확인하는 요청마다 문제·근거를 함께 조회하게 된다.\n\n제출은 팀 단위라 같은 팀이면 누가 조회해도 같은 결과가 나오지만, `session`만은\n**조회자 본인의 응시**다. 응시는 개인 단위이기 때문이다.\n\n## 요청 (경로 파라미터)\n\n| 파라미터 | 필수 | 타입 | 설명 |\n| --- | --- | --- | --- |\n| `submissionId` | 필수 | UUID | 조회할 제출. 같은 팀의 제출만 볼 수 있다 |\n\n쿼리 파라미터는 없다.\n\n## 응답 (200)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `submissionId` | UUID | 조회한 제출 |\n| `analysisId` | UUID | 분석 결과 식별자 |\n| `appliedScope` | string | AI가 실제로 적용한 추출 범위. 예: `TOTAL` |\n| `scopeFallback` | boolean | `true`면 요청보다 넓게 분석됐다. 개인 커밋 기준으로 볼 수 없어 경고를 띄운다 |\n| `fallbackReason` | string? | 범위가 확대된 사유 |\n| `resolvedBranch` | string? | AI가 실제로 분석한 브랜치. ZIP 제출은 `null` |\n| `headCommit` | object? | `{ commitHash, commitMessage, committedAt }` |\n| `analyzedAt` | datetime | 분석 완료 시각 (ISO-8601 UTC) |\n| `problems[]` | array | 문제 슬롯. 구조는 아래 |\n| `requirementResults[]` | array | 요구사항 P/F 판정. 구조는 아래 |\n| `session` | object? | 조회자 **본인**의 세션. 구조는 아래 |\n\n### problems[] 각 항목\n\n근거를 찾지 못한 슬롯도 `generationStatus=NOT_GENERATED`로 **함께 온다.** 화면에서\n`―`(문항 없음)로 표시할 근거이며 **0단(물어봤는데 못 풀었음)과 다르다.**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `problemNo` | int | 문제 번호. `1`~`3` |\n| `generationStatus` | enum | `GENERATED` · `NOT_GENERATED` |\n| `notGeneratedReason` | string? | 문항을 만들지 못한 사유. `GENERATED`면 `null` |\n| `title` | string? | 문제 제목. `NOT_GENERATED`면 `null` |\n| `problemType` | string? | 문제 유형. 예: `DESIGN_CHOICE` |\n| `codeLanguage` | string? | 코드 언어 |\n| `sourcePath` | string? | 근거 파일 경로 |\n| `lineStart` / `lineEnd` | int? | 근거 라인 범위 |\n| `codeSnippet` | string? | 출제에 쓰인 코드 원문. `NOT_GENERATED` 슬롯은 `null` |\n\n### requirementResults[] 각 항목\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `requirementKey` | string | 요구사항 키 |\n| `title` | string | 요구사항 제목 |\n| `result` | enum | `PENDING` · `PASS` · `FAIL` |\n| `evidence` | string? | 판정 근거 요약 |\n| `judgedByAi` | boolean | AI 판정이면 `true`, 사람이 판정했으면 `false` |\n\n### session (object)\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `sessionId` | UUID | 응시를 시작할 때 쓰는 세션 식별자 |\n| `status` | enum | `READY` · `IN_PROGRESS` · `PAUSED` · `COMPLETED` 등 |\n| `stageCount` | int | 깔린 문제 단계 수. **문항 3개면 12**(3 × 4축)다 |\n\n⚠️ `session`이 `null`이거나 `stageCount`가 `GENERATED 문제 수 × 4`보다 작으면 **응시를 시작할\n수 없는 상태**다. 그 판정은 `GET /submissions/{submissionId}/analysis`가\n`SESSION_PREPARATION_FAILED`로 먼저 알려 준다.\n\n## 오류\n\n| 코드 | 상태 | 언제 |\n| --- | --- | --- |\n| `SUBMISSION_NOT_FOUND` | 404 | 그런 제출이 없다 |\n| `ANALYSIS_RESULT_NOT_FOUND` | 404 | 분석이 아직 성공하지 않았다. 진행 중인지 실패인지는 상태 조회의 `phase`로 구분한다 |\n| `SUBMISSION_ACCESS_DENIED` | 403 | 다른 팀의 제출이다 |",
-        "operationId": "getAnalysisResult",
+        "operationId": "getSubmissionAnalysisResult",
         "parameters": [
           {
             "name": "submissionId",
@@ -14922,7 +14994,7 @@
           "Reporting"
         ],
         "summary": "내 리포트 전량 조회 | ✅ 사용 가능",
-        "description": "TR-04 `내 리포트` 화면 전체를 이 응답 하나로 그린다.\n좌측 회차 레일(`rounds`)과 우측 본문(`reportsById`)이 함께 온다.\n\n> **2026-08-12 사용 가능으로 올림(16차 R4).** 조회 SQL이 읽는 뷰·컬럼이 정본 문서에\n> 있는지를 `TraineeReportCanonicalSqlContractTest`가 확인한다. 라이브 DB 없이 확인할 수\n> 있는 최대치가 여기까지이며, 조인 결과의 의미론은 이 테스트가 잡지 못한다.\n\n**교육생 본인 것만 나간다.** `traineeId` 파라미터를 받지 않는다 —\n인증 주체로 결정하므로 남의 리포트를 지정할 방법 자체가 없다.\n\n## 요청\n\n파라미터 없음. 본문 없음.\n\n## 응답 — 최상위\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `rounds[]` | array | 좌측 레일. **최신 회차가 앞**이다(서버가 정렬한다) |\n| `reportsById` | object | `rounds[].id`로 찾는 회차별 본문 |\n\n**rounds[] 각 항목**\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `id` | UUID | 회차 식별자(`assessmentRoundId`). **리포트 id가 아니다** |\n| `label` | string | 회차 이름(예: `미프 3차`) |\n| `hasPendingRetry` | boolean | 아직 안 한 다시 보기가 있다 — 레일에 점으로 표시 |\n\n## 회차 상태 7종 — `reportsById[id].status`\n\n**(2026-08-20 정정)** 아래 표는 실제와 어긋나 있었다 — `PENDING_VISIBILITY`는\n공개/비공개 폐지(2026-08-19)로 이미 없어졌고, `NOT_STARTED`(마감 전 미응시)가\n빠져 있었다. 같은 날 `IN_PROGRESS`도 새로 추가됐다(아래 참고).\n\n| 값 | 언제 | 함께 오는 것 |\n|---|---|---|\n| `NOT_STARTED` | 제출 마감 전인데 아직 응시 기록이 없다 | — |\n| `NOT_ATTEMPTED` | 마감이 지나도록 응시하지 않았거나 미제출·미출석으로 끝남 | — |\n| `VOID_ATTEMPT` | 무효 응시(검토 중 또는 무효 확정) | — |\n| `STOPPED` | 세션을 시작했지만 끝내지 못함 | — |\n| `IN_PROGRESS` | **응시 기록은 있지만 아직 안 끝났다**(제출·분석·이해도 확인 세션 준비/진행 중, 2026-08-20 추가) | — |\n| `PENDING_PUBLISH` | **이해도 확인까지 마쳤고** 아직 발행 전 | `publishAfter` |\n| `PUBLISHED` | 공개됨 | `publishedAt` · `curriculum` · `concepts[]` · `retryState` |\n\n## 🔴 `IN_PROGRESS` 추가 배경 (2026-08-20 발견·수정)\n\n고치기 전에는 `NOT_STARTED`·`NOT_ATTEMPTED`·`VOID_ATTEMPT`·`STOPPED` 넷 중 어디에도\n안 걸리는 진행 중인 응시(코드 제출·분석·이해도 확인 세션 준비 단계)가 전부\n`PENDING_PUBLISH`로 떨어졌다 — **아직 응시조차 시작 안 했거나 절반쯤 온 회차가\n\"응시 완료(리포트 생성 중)\"로 보이는 상태**였다(실사용 재현: 코드 분석이 진행 중인\n회차가 화면에 \"응시 완료\"로 뜸). `PENDING_PUBLISH`는 이제 **이해도 확인까지 실제로\n마친** 경우로만 좁혔고, 그 전 단계는 `IN_PROGRESS`다.\n\n## concepts[] — `PUBLISHED`에서만\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `name` | string | 개념 이름 |\n| `asked` | boolean | **물었는가.** `false`면 아래 값이 전부 빠진다 |\n| `level` | int? | 도달 단계 **0~4**. `asked=false`면 키가 빠진다 |\n| `said` | string? | 학생에게 보여주는 서술 |\n| `isRetryTarget` | boolean | 다시 보기 대상 |\n| `curriculumRef` | object? | `{chapter, pages, title}` — 공개 범위 SUMMARY 이상 |\n| `qa[]` | array? | `{questionLabel, question, answer}` — **공개 범위 FULL에서만** |\n| `explain[]` | array? | 막힌 이유 해설. 다시 보기 대상일 때만 |\n| `comparedReach` | object? | `{before, after}` — 다시 보기를 마쳤을 때만 |\n\n🔴 **`level` 은 0~4 다섯 단계다.** `0` 은 통과한 축이 하나도 없다는 뜻이며\n**`1`(무엇을 하는지까지 설명함)과 전혀 다르다.** 0을 1로 올려 그리면\n학생에게 사실과 다른 말을 하게 된다.\n\n### 🔴 문항 없음 — 제3의 값 (`asked: false`)\n\n개념 3개 중 하나가 그 학생 코드에 없으면 문항이 만들어지지 않는다\n(`assessment_problem.generation_status='NOT_GENERATED'`). 그 개념도 **`concepts[]`에\n같이 들어오며** `asked=false`이고 `level`을 포함한 판정 필드가 전부 빠진다.\n\n**`level=0`과 합치면 안 된다.** 전자는 물었는데 통과한 축이 없는 것이고, 후자는 묻지\n않은 것이다. `GET /reports/class-diagnosis`가 `level0`과 `unasked`를 엄격히 구분하는\n것과 같은 규칙이다.\n\n⚠️ **`asked=false`는 다시 보기 대상이 아니다** — 다시 볼 문항이 없기 때문이다.\n`isRetryTarget`은 항상 `false`로 온다.\n\n> 이 개념들을 배열에서 빼지 않는 이유는, 빼면 화면에 개념이 2개만 뜨고 학생이 나머지\n> 하나가 어디 갔는지 알 수 없기 때문이다. *\"코드에 이 개념이 없어 묻지 못했습니다 —\n> 못한 것이 아닙니다\"* 를 그 자리에 그릴 수 있어야 한다.\n\n## 공개 범위가 응답을 바꾼다\n\n| 범위 | `said` | `curriculumRef` | `qa[]` |\n|---|---|---|---|\n| `PRIVATE` | ❌ 상태가 `PENDING_VISIBILITY`/비공개 | ❌ | ❌ |\n| `SUMMARY` | ⭕ | ⭕ | ❌ |\n| `FULL` | ⭕ | ⭕ | ⭕ |\n\n**선택 필드는 키 자체가 빠진다**(null 을 싣지 않는다). `qa` 가 없으면\n`[내 답변] 펼침`을 그리지 않으면 된다.\n",
+        "description": "TR-04 `내 리포트` 화면 전체를 이 응답 하나로 그린다.\n좌측 회차 레일(`rounds`)과 우측 본문(`reportsById`)이 함께 온다.\n\n> **2026-08-12 사용 가능으로 올림(16차 R4).** 조회 SQL이 읽는 뷰·컬럼이 정본 문서에\n> 있는지를 `TraineeReportCanonicalSqlContractTest`가 확인한다. 라이브 DB 없이 확인할 수\n> 있는 최대치가 여기까지이며, 조인 결과의 의미론은 이 테스트가 잡지 못한다.\n\n**교육생 본인 것만 나간다.** `traineeId` 파라미터를 받지 않는다 —\n인증 주체로 결정하므로 남의 리포트를 지정할 방법 자체가 없다.\n\n## 요청\n\n파라미터 없음. 본문 없음.\n\n## 응답 — 최상위\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `rounds[]` | array | 좌측 레일. **최신 회차가 앞**이다(서버가 정렬한다) |\n| `reportsById` | object | `rounds[].id`로 찾는 회차별 본문 |\n\n**rounds[] 각 항목**\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `id` | UUID | 회차 식별자(`assessmentRoundId`). **리포트 id가 아니다** |\n| `label` | string | 회차 이름(예: `미프 3차`) |\n| `hasPendingRetry` | boolean | 아직 안 한 다시 보기가 있다 — 레일에 점으로 표시 |\n\n## 회차 상태 8종 — `reportsById[id].status`\n\n**(2026-08-20 정정)** 아래 표는 실제와 어긋나 있었다 — `PENDING_VISIBILITY`는\n공개/비공개 폐지(2026-08-19)로 이미 없어졌고, `NOT_STARTED`(마감 전 미응시)가\n빠져 있었다. 같은 날 `IN_PROGRESS`도 새로 추가됐다(아래 참고).\n\n| 값 | 언제 | 함께 오는 것 |\n|---|---|---|\n| `NOT_STARTED` | 제출 마감 전인데 아직 응시 기록이 없다 | — |\n| `NOT_ATTEMPTED` | 마감이 지나도록 응시하지 않았거나 미제출·미출석으로 끝남 | — |\n| `VOID_ATTEMPT` | 무효 응시(검토 중 또는 무효 확정) | — |\n| `STOPPED` | 세션을 시작했지만 끝내지 못함 | — |\n| `IN_PROGRESS` | **응시 기록은 있지만 아직 안 끝났다**(제출·분석·이해도 확인 세션 준비/진행 중, 2026-08-20 추가) | — |\n| `ANALYSIS_FAILED` | **코드 분석이 실패해 리포트를 만들 근거가 없다**(리포트 행이 없을 때만, 2026-08-21 추가) | — |\n| `PENDING_PUBLISH` | **이해도 확인까지 마쳤고** 아직 발행 전 | `publishAfter` |\n| `PUBLISHED` | 공개됨 | `publishedAt` · `curriculum` · `concepts[]` · `retryState` |\n\n`IN_PROGRESS`·`ANALYSIS_FAILED`는 분석 job 기준 상태와 대응한다 — `GET /assessment-rounds`의\n`analysisJobStatus`가 `QUEUED`·`RUNNING`인 동안은 이 API도 `IN_PROGRESS`를, `FAILED`가\n되면(리포트 행이 아직 없는 한) `ANALYSIS_FAILED`를 반환한다. 구체적 사유·초 단위 폴링은\nTR-02(`GET /submissions/{submissionId}/analysis`)에서 확인한다.\n\n## 🔴 `IN_PROGRESS` 추가 배경 (2026-08-20 발견·수정)\n\n고치기 전에는 `NOT_STARTED`·`NOT_ATTEMPTED`·`VOID_ATTEMPT`·`STOPPED` 넷 중 어디에도\n안 걸리는 진행 중인 응시(코드 제출·분석·이해도 확인 세션 준비 단계)가 전부\n`PENDING_PUBLISH`로 떨어졌다 — **아직 응시조차 시작 안 했거나 절반쯤 온 회차가\n\"응시 완료(리포트 생성 중)\"로 보이는 상태**였다(실사용 재현: 코드 분석이 진행 중인\n회차가 화면에 \"응시 완료\"로 뜸). `PENDING_PUBLISH`는 이제 **이해도 확인까지 실제로\n마친** 경우로만 좁혔고, 그 전 단계는 `IN_PROGRESS`다.\n\n## 🔴 `ANALYSIS_FAILED` 추가 배경 (2026-08-21 발견·수정)\n\n코드 분석이 실패하면 이해도 확인 문항 자체가 없어 리포트를 만들 근거가 없는데, 이 사실을\n거르는 자리가 없어 `PENDING_PUBLISH`로 떨어졌다 — **분석 실패로 끝난 회차가 \"리포트를\n만들고 있어요 · 발행 예정 N월 N일 이후\"로 보이고, 그 발행 예정일은 이미 지나 있는\n상태**였다(실사용 재현). 리포트 행이 아예 없는 분석 실패 회차만 이 값이고, 리포트 행이\n있으면(예: 다른 종류의 리포트가 같은 회차에 걸린 기존 사례) `PENDING_PUBLISH`/\n`PUBLISHED` 판정을 그대로 따른다.\n\n## concepts[] — `PUBLISHED`에서만\n\n| 필드 | 타입 | 설명 |\n|---|---|---|\n| `name` | string | 개념 이름 |\n| `asked` | boolean | **물었는가.** `false`면 아래 값이 전부 빠진다 |\n| `level` | int? | 도달 단계 **0~4**. `asked=false`면 키가 빠진다 |\n| `said` | string? | 학생에게 보여주는 서술 |\n| `isRetryTarget` | boolean | 다시 보기 대상 |\n| `curriculumRef` | object? | `{chapter, pages, title}` — 공개 범위 SUMMARY 이상 |\n| `qa[]` | array? | `{questionLabel, question, answer}` — **공개 범위 FULL에서만** |\n| `explain[]` | array? | 막힌 이유 해설. 다시 보기 대상일 때만 |\n| `comparedReach` | object? | `{before, after}` — 다시 보기를 마쳤을 때만 |\n\n🔴 **`level` 은 0~4 다섯 단계다.** `0` 은 통과한 축이 하나도 없다는 뜻이며\n**`1`(무엇을 하는지까지 설명함)과 전혀 다르다.** 0을 1로 올려 그리면\n학생에게 사실과 다른 말을 하게 된다.\n\n### 🔴 문항 없음 — 제3의 값 (`asked: false`)\n\n개념 3개 중 하나가 그 학생 코드에 없으면 문항이 만들어지지 않는다\n(`assessment_problem.generation_status='NOT_GENERATED'`). 그 개념도 **`concepts[]`에\n같이 들어오며** `asked=false`이고 `level`을 포함한 판정 필드가 전부 빠진다.\n\n**`level=0`과 합치면 안 된다.** 전자는 물었는데 통과한 축이 없는 것이고, 후자는 묻지\n않은 것이다. `GET /reports/class-diagnosis`가 `level0`과 `unasked`를 엄격히 구분하는\n것과 같은 규칙이다.\n\n⚠️ **`asked=false`는 다시 보기 대상이 아니다** — 다시 볼 문항이 없기 때문이다.\n`isRetryTarget`은 항상 `false`로 온다.\n\n> 이 개념들을 배열에서 빼지 않는 이유는, 빼면 화면에 개념이 2개만 뜨고 학생이 나머지\n> 하나가 어디 갔는지 알 수 없기 때문이다. *\"코드에 이 개념이 없어 묻지 못했습니다 —\n> 못한 것이 아닙니다\"* 를 그 자리에 그릴 수 있어야 한다.\n\n## 공개 범위가 응답을 바꾼다\n\n| 범위 | `said` | `curriculumRef` | `qa[]` |\n|---|---|---|---|\n| `PRIVATE` | ❌ 상태가 `PENDING_VISIBILITY`/비공개 | ❌ | ❌ |\n| `SUMMARY` | ⭕ | ⭕ | ❌ |\n| `FULL` | ⭕ | ⭕ | ⭕ |\n\n**선택 필드는 키 자체가 빠진다**(null 을 싣지 않는다). `qa` 가 없으면\n`[내 답변] 펼침`을 그리지 않으면 된다.\n",
         "operationId": "findMyReports",
         "responses": {
           "200": {
@@ -15077,7 +15149,7 @@
           "Reporting"
         ],
         "summary": "담당 교육생 리포트 조회 (매니저) | ✅ 사용 가능",
-        "description": "매니저가 담당 교육생 **한 명**의 리포트를 회차별로 본다. 교육생 상세 화면의 리포트 라인이다.\n\n## 응답이 `GET /reports`와 똑같다\n\n같은 `TraineeReportsResponse`다 — 좌측 레일(`rounds`)과 회차별 본문(`reportsById`)이\n그대로 온다. **모양을 따로 두지 않은 것은 의도한 것이다.** 리포트 라인은 회차별로\n\"만들어졌나 · 발행됐나\"를 보여주고 펼치면 본문을 그리는데, 그 본문이 학생이 보는\n것과 달라야 할 이유가 없다. 두 벌로 나누면 같은 리포트를 설명하는 말이 두 가지가 된다.\n\n회차 상태(`status`)도 같은 값을 쓴다.\n\n| 값 | 리포트 라인에 그릴 것 |\n|---|---|\n| `PUBLISHED` | 결과를 그린다(펼치면 본문) |\n| `PENDING_PUBLISH` | 이해도 확인까지 마침, `리포트 생성 중` |\n| `IN_PROGRESS` | 아직 응시가 안 끝남(제출·분석·이해도 확인 세션 준비/진행 중, 2026-08-20 추가) — `PENDING_PUBLISH`와 구분해서 그린다 |\n| `NOT_STARTED` | 아직 응시 전(마감 전) |\n| `NOT_ATTEMPTED` | 미응시 — **매니저 안내가 필요한 줄이다** |\n| `VOID_ATTEMPT` | 확인 필요 |\n| `STOPPED` | 중단 |\n\n## 🔴 다시 보기 잠금이 걸리지 않는다\n\n교육생 화면에서는 다시 보기 대상(`level < 2`)이면서 아직 다시 보기를 마치지 않은\n개념의 `qa`(자기 답변)와 `explain`(해설)이 **빠진다.** 매니저에게는 그 잠금을 걸지\n않는다 — 잠금의 목적이 \"학생이 답을 먼저 보고 다시 푸는 것\"을 막는 것이라\n매니저에게는 해당이 없고, 지도하려면 학생이 뭐라고 답했는지를 봐야 한다.\n\n`retryState`는 **사실대로** 나간다(`NONE` · `PENDING` · `DONE`).\n다시 보기를 아직 안 한 학생을 찾는 근거이므로 가리지 않는다.\n\n## 요청\n\n| 파라미터 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `traineeId` | **필수** | UUID | 교육생 `userId`. 회차 id도 리포트 id도 아니다 |\n\n## 권한 — 지금 담당 중인 교육생만\n\n요청 매니저가 **지금** 배정된 반의 교육생이어야 한다. 해제된 배정\n(`manager_assignment.unassigned_at`)과 이탈한 교육생(`cohort_member.left_at`)은\n담당으로 치지 않는다 — 그러지 않으면 지난 기수에 잠깐 담당했던 매니저가\n계속 남의 교육생 리포트를 본다.\n\n## 오류\n\n| 코드 | 상황 |\n|---|---|\n| 404 `REPORT_NOT_FOUND` | 없는 교육생 **또는 담당하지 않는 교육생** |\n\n⚠️ 담당하지 않는 교육생을 403이 아니라 **404로 돌려준다.** 403으로 구분해 주면\n\"그 id의 교육생이 존재한다\"는 사실이 새어 나간다(`GET /reports/{reportId}`와 같은 규칙).\n\n빈 `rounds`는 정상이다 — 그 교육생이 속한 기수에 회차가 아직 없는 경우다.\n",
+        "description": "매니저가 담당 교육생 **한 명**의 리포트를 회차별로 본다. 교육생 상세 화면의 리포트 라인이다.\n\n## 응답이 `GET /reports`와 똑같다\n\n같은 `TraineeReportsResponse`다 — 좌측 레일(`rounds`)과 회차별 본문(`reportsById`)이\n그대로 온다. **모양을 따로 두지 않은 것은 의도한 것이다.** 리포트 라인은 회차별로\n\"만들어졌나 · 발행됐나\"를 보여주고 펼치면 본문을 그리는데, 그 본문이 학생이 보는\n것과 달라야 할 이유가 없다. 두 벌로 나누면 같은 리포트를 설명하는 말이 두 가지가 된다.\n\n회차 상태(`status`)도 같은 값을 쓴다.\n\n| 값 | 리포트 라인에 그릴 것 |\n|---|---|\n| `PUBLISHED` | 결과를 그린다(펼치면 본문) |\n| `PENDING_PUBLISH` | 이해도 확인까지 마침, `리포트 생성 중` |\n| `IN_PROGRESS` | 아직 응시가 안 끝남(제출·분석·이해도 확인 세션 준비/진행 중, 2026-08-20 추가) — `PENDING_PUBLISH`와 구분해서 그린다 |\n| `ANALYSIS_FAILED` | 분석 실패로 리포트를 만들 수 없음(리포트 행 없을 때만, 2026-08-21 추가) — `PENDING_PUBLISH`와 구분해서 그린다 |\n| `NOT_STARTED` | 아직 응시 전(마감 전) |\n| `NOT_ATTEMPTED` | 미응시 — **매니저 안내가 필요한 줄이다** |\n| `VOID_ATTEMPT` | 확인 필요 |\n| `STOPPED` | 중단 |\n\n## 🔴 다시 보기 잠금이 걸리지 않는다\n\n교육생 화면에서는 다시 보기 대상(`level < 2`)이면서 아직 다시 보기를 마치지 않은\n개념의 `qa`(자기 답변)와 `explain`(해설)이 **빠진다.** 매니저에게는 그 잠금을 걸지\n않는다 — 잠금의 목적이 \"학생이 답을 먼저 보고 다시 푸는 것\"을 막는 것이라\n매니저에게는 해당이 없고, 지도하려면 학생이 뭐라고 답했는지를 봐야 한다.\n\n`retryState`는 **사실대로** 나간다(`NONE` · `PENDING` · `DONE`).\n다시 보기를 아직 안 한 학생을 찾는 근거이므로 가리지 않는다.\n\n## 요청\n\n| 파라미터 | 필수 | 타입 | 설명 |\n|---|---|---|---|\n| `traineeId` | **필수** | UUID | 교육생 `userId`. 회차 id도 리포트 id도 아니다 |\n\n## 권한 — 지금 담당 중인 교육생만\n\n요청 매니저가 **지금** 배정된 반의 교육생이어야 한다. 해제된 배정\n(`manager_assignment.unassigned_at`)과 이탈한 교육생(`cohort_member.left_at`)은\n담당으로 치지 않는다 — 그러지 않으면 지난 기수에 잠깐 담당했던 매니저가\n계속 남의 교육생 리포트를 본다.\n\n## 오류\n\n| 코드 | 상황 |\n|---|---|\n| 404 `REPORT_NOT_FOUND` | 없는 교육생 **또는 담당하지 않는 교육생** |\n\n⚠️ 담당하지 않는 교육생을 403이 아니라 **404로 돌려준다.** 403으로 구분해 주면\n\"그 id의 교육생이 존재한다\"는 사실이 새어 나간다(`GET /reports/{reportId}`와 같은 규칙).\n\n빈 `rounds`는 정상이다 — 그 교육생이 속한 기수에 회차가 아직 없는 경우다.\n",
         "operationId": "findManagedTraineeReports",
         "parameters": [
           {
@@ -15359,8 +15431,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -15496,8 +15568,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -15909,8 +15981,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -17033,8 +17105,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -17638,8 +17710,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -18665,8 +18737,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -18946,8 +19018,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -21287,8 +21359,8 @@
                       "fieldErrors": [
                         {
                           "field": "answerText",
-                          "message": "must not be blank",
-                          "code": "NOT_BLANK"
+                          "code": "NOT_BLANK",
+                          "message": "must not be blank"
                         }
                       ]
                     }
@@ -21530,7 +21602,7 @@
           "Assessment"
         ],
         "summary": "교육생 홈 3구획 조회 | ✅ 사용 가능",
-        "description": "교육생 홈이 한 화면에 세 구획(지금 할 일 · 예정 · 지난 회차)을 그리므로 요청 하나로 묶는다.\n원천은 `trainee_home_round_view` 단일 조회이며 스코프는 경로가 아니라 **액세스 토큰에서\n도출**한다.\n\n**구획별 필드 집합이 다르다** — 클라이언트 표시 방식이 달라 공유하지 않는다.\n`current` 35필드 · `upcoming` 7필드 · `past` 8필드.\n\n## 요청\n\n경로·쿼리 파라미터가 **없다.** 조회 대상 교육생은 `Authorization` 헤더의 액세스 토큰에서\n정한다.\n\n**페이지네이션도 없다.** 한 기수의 회차가 10건 미만이라 전량 반환한다.\n\n## 응답 (200)\n\n**빈 결과라는 것은 없다.** 진행 회차가 없거나 기수에 소속되지 않았어도 네 필드가 모두 온다.\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `membership` | object | 기수·반 소속. 객체 자체는 항상 존재 |\n| `current` | object | 지금 할 일 카드. 진행 회차가 없으면 `NO_ACTIVE_ROUND` 합성 카드 |\n| `upcoming[]` | array | 예정 회차. 없으면 빈 배열 |\n| `past[]` | array | 지난 회차. 없으면 빈 배열 |\n\n### membership (object)\n\n**팀은 여기 없다.** 교육생은 회차마다 팀이 바뀌고(`team.project_id`가 NOT NULL) View가 회차의\n`submission_due_at` 시점으로 소속을 확정하므로, 팀은 회차 스코프인 `current`에 둔다.\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `cohortId` | UUID? | 기수 ID. 기수 미소속이면 이 객체의 전 필드가 `null` |\n| `cohortName` | string? | 기수 표시명. 예: `7기` |\n| `classId` | UUID? | 반 ID. 반 미배정이면 `null` |\n| `className` | string? | 반 표시명. 예: `A반` |\n\n### current (object) — 35필드\n\n회차가 없으면 서버가 합성 카드를 만든다. 이때 식별·일정 필드는 전부 `null`이고\n`representativeStatus=NO_ACTIVE_ROUND` · `defaultActionCode=NONE` · `analysisPhase=NOT_SUBMITTED`\n가 된다. **View는 이 상태를 만들지 못한다** — 진행 중인 프로젝트가 없으면 원천이 0행이다.\n\n**회차·프로젝트**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID? | 합성 카드일 때만 `null` |\n| `roundNo` | int? | 회차 번호 |\n| `roundName` | string? | 회차명. 예: `미프 3차` |\n| `roundStatus` | enum? | 실제 회차면 항상 `OPEN` |\n| `projectId` | UUID? | 프로젝트 ID |\n| `projectName` | string? | 프로젝트명 |\n| `projectCategory` | enum? | `MINI_PROJECT` · `BIG_PROJECT` |\n| `curriculumNames[]` | array | 교안 표시명. 없으면 빈 배열 |\n\n**팀 (회차 스코프)**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `teamId` | UUID? | 팀 미편성이면 `null` |\n| `teamNumber` | string? | 팀 번호. 예: `3` |\n| `teamName` | string? | 팀명. 예: `3팀` |\n\n**대표 상태·액션**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `representativeStatus` | enum | 카드 배지. 값 집합은 아래 표 |\n| `defaultActionCode` | enum | 기본 버튼. 값 집합은 아래 표 |\n| `actionUnavailableReasonCode` | enum? | `SUBMISSION_DEADLINE_PASSED` · `ASSESSMENT_WINDOW_CLOSED`. 없으면 `null` |\n| `warningCodes[]` | array | 경고 배지. 없으면 빈 배열. 값 집합은 아래 표 |\n\n**제출**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `commitEmailStatus` | enum? | **`null`은 미등록**을 뜻한다. 아래 배너 규칙 참고 |\n| `availableSubmissionMethods[]` | array | 기관 정책이 허용한 수단. `GITHUB_URL` · `ZIP_WITH_GITLOG` |\n| `submissionMethod` | enum? | 실제 제출 수단. 미제출이면 `null` |\n| `submissionStatus` | enum? | `VALIDATING` · `ACCEPTED` · `FETCH_FAILED` · `INVALID` |\n| `submittedAt` | datetime? | 제출 시각 (ISO-8601 UTC) |\n| `canSubmit` | boolean | 마감 전이고 아직 세션을 시작하지 않았으면 `true` |\n| `canResubmit` | boolean | 위 조건 + 이미 제출이 있으면 `true` |\n\n**분석**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `analysisPhase` | enum | `NOT_SUBMITTED` · `ANALYZING` · `FAILED` · `COMPLETED` · `WAITING` |\n| `analysisJobStatus` | enum? | `QUEUED` · `RUNNING` · `SUCCEEDED` · `PARTIAL` · `FAILED` |\n| `analysisFailureCode` | string? | 실패했는가만 알린다. 값은 `ANALYSIS_FAILED` 하나. **사유는 TR-02에 있다** |\n\n**이해도 확인·다시 보기**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `initialAttemptStatus` | enum? | `NOT_STARTED` · `SUBMITTED` · `ANALYZING` · `SESSION_READY` · `SESSION_IN_PROGRESS` · `COMPLETED` · `FAILED` · `EXPIRED` |\n| `initialSessionStatus` | enum? | `READY` · `IN_PROGRESS` · `PAUSED` · `COMPLETED` 등 |\n| `preparedProblemCount` | int | 실제로 출제된 문제 수 `0`~`3`. ⚠️ **`3`이 아닐 수 있다** |\n| `reviewStatus` | enum? | 다시 보기 상태. 배정이 없으면 `null` |\n| `completedReviewCount` | int | 완료한 다시 보기 건수 |\n\n⚠️ **`preparedProblemCount`를 `3`으로 가정하지 말 것.** 검증 개념은 항상 3건이 계획되지만\n코드에 근거가 없는 개념은 문항이 만들어지지 않고(`NOT_GENERATED`) 세션에도 나오지 않는다.\n이 값은 **교육생이 실제로 받게 될 문제 수**이며 세션 API의 `problemTotal`과 같다.\n세션이 열리기 전(분석 중·분석 실패)에는 `0`이다.\n\n**리포트**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `reportId` | UUID? | 리포트 식별자 |\n| `reportPublishStatus` | enum | `PUBLISHED` · `GENERATING` · `NOT_PUBLISHED` |\n| `canViewReport` | boolean | `reportPublishStatus=PUBLISHED`일 때만 `true` |\n| `explanationStatus` | enum | `UNAVAILABLE` · `PARTIAL` · `AVAILABLE` |\n\n**일정**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `submissionDueAt` | datetime? | 제출 마감 |\n| `roundAssessmentOpenAt` | datetime? | 🔴 **폐기. 언제나 `null`**(2026-08-16) |\n| `roundAssessmentDueAt` | datetime? | 🔴 **폐기. 언제나 `null`**(2026-08-16) |\n| `assessmentOpenAt` | datetime? | **개인** 응시 창 시작. 응시 생성 전이면 `null`. **응시 가능 판정은 이것뿐** |\n| `assessmentCloseAt` | datetime? | **개인** 응시 창 종료. 응시 생성 전이면 `null`. ⚠️ `min(…, roundAssessmentDueAt)` 금지 — JS에서 1970년이 된다 |\n| `initialTerminalAt` | datetime? | 응시 종료 시각 |\n| `reportPublishMode` | enum? | `ROUND_BATCH` |\n| `reportPublishNotBeforeAt` | datetime? | 이 시각 이전에는 발행하지 않는다 |\n\n**기타**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `manager` | object? | `{ userId, name }`. 반에 활성 배정이 없으면 객체 자체가 `null` |\n| `asOfAt` | datetime | 서버 조회 시각 |\n\n#### representativeStatus 값 집합\n\n위에서부터 먼저 맞는 것 하나로 정해진다.\n\n| 값 | 언제 |\n| --- | --- |\n| `REVIEW_REQUIRED` | 다시 보기 배정이 있고 아직 끝나지 않았다 |\n| `ASSESSMENT_COMPLETED` | 응시를 완료했다 |\n| `ASSESSMENT_WINDOW_CLOSED` | 미응시·중단이거나 개인 응시 창이 닫혔다 |\n| `ASSESSMENT_IN_PROGRESS` | 세션을 풀고 있거나 일시정지했다 |\n| `ASSESSMENT_AVAILABLE` | 응시할 수 있다 |\n| `ANALYSIS_FAILED` | 분석이 실패했다 |\n| `SUBMISSION_MISSED` | 마감까지 제출하지 않았다 |\n| `SUBMISSION_REQUIRED` | 아직 제출하지 않았다(마감 전) |\n| `ANALYZING` | 위 어디에도 해당하지 않는다(제출 후 분석 중) |\n| `NO_ACTIVE_ROUND` | 진행 회차가 없다. **서버 합성 카드 전용** |\n\n#### defaultActionCode 값 집합\n\n| 값 | 화면 동작 |\n| --- | --- |\n| `VIEW_REPORT` | 리포트 보기 |\n| `WAIT_FOR_REPORT` | 리포트 발행 대기 |\n| `START_REVIEW` | 다시 보기 시작 |\n| `RESUME_ASSESSMENT` | 응시 이어하기 |\n| `START_ASSESSMENT` | 응시 시작 |\n| `RESUBMIT_REPOSITORY` | 저장소 재제출 (분석 실패 + 마감 전) |\n| `RESUBMIT_ZIP` | ZIP 재업로드 (분석 실패 + 마감 전) |\n| `CONTACT_MANAGER` | 매니저 문의 (복구 경로가 없다) |\n| `SUBMIT_CODE` | 코드 제출 |\n| `WAIT_FOR_ANALYSIS` | 분석 대기 |\n| `NONE` | 할 일이 없다 |\n\n#### warningCodes 값 집합\n\n배열이므로 **여러 개가 동시에 올 수 있다.**\n\n| 값 | 언제 |\n| --- | --- |\n| `SUBMISSION_DEADLINE_PASSED` | 제출 마감이 지났다 |\n| `ANALYSIS_FAILED` | 분석이 실패했다 |\n| `ASSESSMENT_WINDOW_CLOSED` | 응시 창이 닫혔는데 완료하지 못했다 |\n| `PROBLEM_NOT_GENERATED` | 코드 근거가 부족해 문항을 만들지 못했다 |\n\n### upcoming[] 각 항목 — 7필드\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID | 회차 ID |\n| `roundNo` | int | 회차 번호 |\n| `roundName` | string | 회차명. 예: `미프 4차` |\n| `roundStatus` | enum | 항상 `PLANNED` |\n| `submissionDueAt` | datetime | 제출 마감 |\n| `roundAssessmentOpenAt` | datetime? | 이해도 확인 시작. **`PLANNED`에서는 `null`일 수 있다** |\n| `roundAssessmentDueAt` | datetime? | 이해도 확인 종료. 위와 같은 이유로 `null` 가능 |\n\n⚠️ 두 일정이 `null`일 수 있는 이유는 `ck_project_assessment_round_assessment_window_required`가\n`PLANNED` 회차만 면제하기 때문이다.\n\n### past[] 각 항목 — 8필드\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID | 회차 ID |\n| `roundNo` | int | 회차 번호 |\n| `roundName` | string | 회차명. 예: `미프 2차` |\n| `representativeStatus` | enum | 세션 완료 여부 판정용. `ASSESSMENT_COMPLETED`이면 완료 |\n| `reviewStatus` | enum? | 다시 보기 상태. 배정이 없으면 `null` |\n| `completedReviewCount` | int | 완료한 다시 보기 건수 |\n| `reportId` | UUID? | 리포트 식별자 |\n| `canViewReport` | boolean | `reportPublishStatus=PUBLISHED`일 때만 `true` |\n\n⚠️ \"완료 여부\" boolean은 **일부러 두지 않는다.** `representativeStatus`가 완료와 미완료 사유를\n이미 구분하므로, 파생값을 더하면 계약이 둘로 갈린다.\n\n## 화면 규칙\n\n### 4단계 진행 표시\n\n파생 필드 없이 원시 상태값으로 클라이언트가 판정한다.\n\n| 단계 | 완료 조건 |\n| --- | --- |\n| ① 코드 제출 | `submissionStatus = 'ACCEPTED'` |\n| ② 코드 분석 | `analysisPhase = 'COMPLETED'` |\n| ③ 이해도 확인 | `initialAttemptStatus = 'COMPLETED'` |\n| ④ 리포트 | `canViewReport = true` |\n\n### 리포트 열람\n\n**`canViewReport`의 판정 근거는 `reportPublishStatus = 'PUBLISHED'` 하나다.**\n\n🔴 **`traineeReleaseStatus`가 없어졌다**(2026-08-19). 종전에는 발행과 교육생 공개가 다른\n사건이라 공개 상태(`NOT_CONFIGURED` · `WITHHELD` · `RELEASED`)가 열람을 따로 판정했다.\n공개/비공개 개념이 폐지되면서 **발행이 곧 공개**가 됐고, 그 자리를 발행 상태가 물려받았다.\n\n### 커밋 이메일 배너\n\n`commitEmailStatus !== \"VERIFIED\"`일 때 띄운다. `null`은 미등록을 뜻하며, 미등록·미검증이\n제출을 막지는 않는다. 다만 빅프로젝트(`projectCategory = 'BIG_PROJECT'`)에서는 커밋 귀속이\n비어 문제가 생성되지 않으므로 배너 강도를 `projectCategory`로 구분한다.\n\n## 오류\n\n| 상태 | 언제 |\n| --- | --- |\n| 401 | 액세스 토큰이 없거나 인증 사용자를 찾을 수 없다 |\n| 403 | 호출자가 교육생(`TRAINEE`)이 아니다 |\n",
+        "description": "교육생 홈이 한 화면에 세 구획(지금 할 일 · 예정 · 지난 회차)을 그리므로 요청 하나로 묶는다.\n원천은 `trainee_home_round_view` 단일 조회이며 스코프는 경로가 아니라 **액세스 토큰에서\n도출**한다.\n\n**구획별 필드 집합이 다르다** — 클라이언트 표시 방식이 달라 공유하지 않는다.\n`current` 35필드 · `upcoming` 7필드 · `past` 8필드.\n\n## 요청\n\n경로·쿼리 파라미터가 **없다.** 조회 대상 교육생은 `Authorization` 헤더의 액세스 토큰에서\n정한다.\n\n**페이지네이션도 없다.** 한 기수의 회차가 10건 미만이라 전량 반환한다.\n\n## 응답 (200)\n\n**빈 결과라는 것은 없다.** 진행 회차가 없거나 기수에 소속되지 않았어도 네 필드가 모두 온다.\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `membership` | object | 기수·반 소속. 객체 자체는 항상 존재 |\n| `current` | object | 지금 할 일 카드. 진행 회차가 없으면 `NO_ACTIVE_ROUND` 합성 카드 |\n| `upcoming[]` | array | 예정 회차. 없으면 빈 배열 |\n| `past[]` | array | 지난 회차. 없으면 빈 배열 |\n\n### membership (object)\n\n**팀은 여기 없다.** 교육생은 회차마다 팀이 바뀌고(`team.project_id`가 NOT NULL) View가 회차의\n`submission_due_at` 시점으로 소속을 확정하므로, 팀은 회차 스코프인 `current`에 둔다.\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `cohortId` | UUID? | 기수 ID. 기수 미소속이면 이 객체의 전 필드가 `null` |\n| `cohortName` | string? | 기수 표시명. 예: `7기` |\n| `classId` | UUID? | 반 ID. 반 미배정이면 `null` |\n| `className` | string? | 반 표시명. 예: `A반` |\n\n### current (object) — 35필드\n\n회차가 없으면 서버가 합성 카드를 만든다. 이때 식별·일정 필드는 전부 `null`이고\n`representativeStatus=NO_ACTIVE_ROUND` · `defaultActionCode=NONE` · `analysisPhase=NOT_SUBMITTED`\n가 된다. **View는 이 상태를 만들지 못한다** — 진행 중인 프로젝트가 없으면 원천이 0행이다.\n\n**회차·프로젝트**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID? | 합성 카드일 때만 `null` |\n| `roundNo` | int? | 회차 번호 |\n| `roundName` | string? | 회차명. 예: `미프 3차` |\n| `roundStatus` | enum? | 실제 회차면 항상 `OPEN` |\n| `projectId` | UUID? | 프로젝트 ID |\n| `projectName` | string? | 프로젝트명 |\n| `projectCategory` | enum? | `MINI_PROJECT` · `BIG_PROJECT` |\n| `curriculumNames[]` | array | 교안 표시명. 없으면 빈 배열 |\n\n**팀 (회차 스코프)**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `teamId` | UUID? | 팀 미편성이면 `null` |\n| `teamNumber` | string? | 팀 번호. 예: `3` |\n| `teamName` | string? | 팀명. 예: `3팀` |\n\n**대표 상태·액션**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `representativeStatus` | enum | 카드 배지. 값 집합은 아래 표 |\n| `defaultActionCode` | enum | 기본 버튼. 값 집합은 아래 표 |\n| `actionUnavailableReasonCode` | enum? | `SUBMISSION_DEADLINE_PASSED` · `ASSESSMENT_WINDOW_CLOSED`. 없으면 `null` |\n| `warningCodes[]` | array | 경고 배지. 없으면 빈 배열. 값 집합은 아래 표 |\n\n**제출**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `commitEmailStatus` | enum? | **`null`은 미등록**을 뜻한다. 아래 배너 규칙 참고 |\n| `availableSubmissionMethods[]` | array | 기관 정책이 허용한 수단. `GITHUB_URL` · `ZIP_WITH_GITLOG` |\n| `submissionMethod` | enum? | 실제 제출 수단. 미제출이면 `null` |\n| `submissionStatus` | enum? | `VALIDATING` · `ACCEPTED` · `FETCH_FAILED` · `INVALID` |\n| `submittedAt` | datetime? | 제출 시각 (ISO-8601 UTC) |\n| `canSubmit` | boolean | 마감 전이고 아직 세션을 시작하지 않았으면 `true` |\n| `canResubmit` | boolean | 위 조건 + 이미 제출이 있으면 `true` |\n\n**분석**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `analysisPhase` | enum | `NOT_SUBMITTED` · `ANALYZING` · `FAILED` · `COMPLETED` · `WAITING` |\n| `analysisJobStatus` | enum? | `QUEUED` · `RUNNING` · `SUCCEEDED` · `PARTIAL` · `FAILED` |\n| `analysisFailureCode` | string? | 실패했는가만 알린다. 값은 `ANALYSIS_FAILED` 하나. **구체적 사유(최대 14종)·초 단위 폴링은 TR-02(`GET /submissions/{submissionId}/analysis`)에서** |\n\n이 셋은 같은 분석 job을 요약해서 보여준다. TR-02의 `phase`(6값)와 이름·값 개수가\n다르므로 두 API를 함께 쓸 때는 아래 표로 대응시킨다.\n\n| 상황 | `analysisPhase`(이 API) | `analysisJobStatus`(이 API) | TR-02 `phase` |\n| --- | --- | --- | --- |\n| 아직 제출 안 함 | `NOT_SUBMITTED` | `null` | `NOT_STARTED` |\n| 대기 중 | `ANALYZING` | `QUEUED` | `QUEUED` |\n| 분석 중 | `ANALYZING` | `RUNNING` | `RUNNING` |\n| 성공 | `COMPLETED` | `SUCCEEDED` | `SUCCEEDED` |\n| 부분 성공 | ⚠️ `WAITING`(`COMPLETED`가 아니다) | `PARTIAL` | `PARTIAL` |\n| 실패 | `FAILED` | `FAILED` | `FAILED` |\n\n`analysisPhase = ANALYZING`이 된 시점부터가 TR-02를 60초 간격으로 폴링할 시점이다\n(그보다 짧게 돌려도 새 정보를 못 받는다 — 원장 갱신 주기가 `poll-delay` 기본 `PT1M`).\n\n**이해도 확인·다시 보기**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `initialAttemptStatus` | enum? | `NOT_STARTED` · `SUBMITTED` · `ANALYZING` · `SESSION_READY` · `SESSION_IN_PROGRESS` · `COMPLETED` · `FAILED` · `EXPIRED` |\n| `initialSessionStatus` | enum? | `READY` · `IN_PROGRESS` · `PAUSED` · `COMPLETED` 등 |\n| `preparedProblemCount` | int | 실제로 출제된 문제 수 `0`~`3`. ⚠️ **`3`이 아닐 수 있다** |\n| `reviewStatus` | enum? | 다시 보기 상태. 배정이 없으면 `null` |\n| `completedReviewCount` | int | 완료한 다시 보기 건수 |\n\n⚠️ **`preparedProblemCount`를 `3`으로 가정하지 말 것.** 검증 개념은 항상 3건이 계획되지만\n코드에 근거가 없는 개념은 문항이 만들어지지 않고(`NOT_GENERATED`) 세션에도 나오지 않는다.\n이 값은 **교육생이 실제로 받게 될 문제 수**이며 세션 API의 `problemTotal`과 같다.\n세션이 열리기 전(분석 중·분석 실패)에는 `0`이다.\n\n**리포트**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `reportId` | UUID? | 리포트 식별자 |\n| `reportPublishStatus` | enum | `PUBLISHED` · `GENERATING` · `NOT_PUBLISHED` |\n| `canViewReport` | boolean | `reportPublishStatus=PUBLISHED`일 때만 `true` |\n| `explanationStatus` | enum | `UNAVAILABLE` · `PARTIAL` · `AVAILABLE` |\n| `retryState` | enum | `NONE` · `PENDING` · `DONE`. `DONE`은 대상 수와 무관하게 REVIEW 응시를 마쳤다는 사실이다 |\n| `retryTargetCount` | int | 다시 볼 개념 수. 활성 스냅샷이 없으면 `0` |\n| `retryDueAt` | datetime? | 다시 보기 마감. `retryState=PENDING`이면 항상 값이 있다 |\n\n**일정**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `submissionDueAt` | datetime? | 제출 마감 |\n| `roundAssessmentOpenAt` | datetime? | 🔴 **폐기. 언제나 `null`**(2026-08-16) |\n| `roundAssessmentDueAt` | datetime? | 🔴 **폐기. 언제나 `null`**(2026-08-16) |\n| `assessmentOpenAt` | datetime? | **개인** 응시 창 시작. 응시 생성 전이면 `null`. **응시 가능 판정은 이것뿐** |\n| `assessmentCloseAt` | datetime? | **개인** 응시 창 종료. 응시 생성 전이면 `null`. ⚠️ `min(…, roundAssessmentDueAt)` 금지 — JS에서 1970년이 된다 |\n| `initialTerminalAt` | datetime? | 응시 종료 시각 |\n| `reportPublishMode` | enum? | `ROUND_BATCH` |\n| `reportPublishNotBeforeAt` | datetime? | 이 시각 이전에는 발행하지 않는다 |\n\n**기타**\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `manager` | object? | `{ userId, name }`. 반에 활성 배정이 없으면 객체 자체가 `null` |\n| `asOfAt` | datetime | 서버 조회 시각 |\n\n#### representativeStatus 값 집합\n\n위에서부터 먼저 맞는 것 하나로 정해진다.\n\n| 값 | 언제 |\n| --- | --- |\n| `REVIEW_REQUIRED` | 다시 보기 배정이 있고 아직 끝나지 않았다 |\n| `ASSESSMENT_COMPLETED` | 응시를 완료했다 |\n| `ASSESSMENT_WINDOW_CLOSED` | 미응시·중단이거나 개인 응시 창이 닫혔다 |\n| `ASSESSMENT_IN_PROGRESS` | 세션을 풀고 있거나 일시정지했다 |\n| `ASSESSMENT_AVAILABLE` | 응시할 수 있다 |\n| `ANALYSIS_FAILED` | 분석이 실패했다 |\n| `SUBMISSION_MISSED` | 마감까지 제출하지 않았다 |\n| `SUBMISSION_REQUIRED` | 아직 제출하지 않았다(마감 전) |\n| `ANALYZING` | 위 어디에도 해당하지 않는다(제출 후 분석 중) |\n| `NO_ACTIVE_ROUND` | 진행 회차가 없다. **서버 합성 카드 전용** |\n\n#### defaultActionCode 값 집합\n\n| 값 | 화면 동작 |\n| --- | --- |\n| `VIEW_REPORT` | 리포트 보기 |\n| `WAIT_FOR_REPORT` | 리포트 발행 대기 |\n| `START_REVIEW` | 다시 보기 시작 |\n| `RESUME_ASSESSMENT` | 응시 이어하기 |\n| `START_ASSESSMENT` | 응시 시작 |\n| `RESUBMIT_REPOSITORY` | 저장소 재제출 (분석 실패 + 마감 전) |\n| `RESUBMIT_ZIP` | ZIP 재업로드 (분석 실패 + 마감 전) |\n| `CONTACT_MANAGER` | 매니저 문의 (복구 경로가 없다) |\n| `SUBMIT_CODE` | 코드 제출 |\n| `WAIT_FOR_ANALYSIS` | 분석 대기 |\n| `NONE` | 할 일이 없다 |\n\n#### warningCodes 값 집합\n\n배열이므로 **여러 개가 동시에 올 수 있다.**\n\n| 값 | 언제 |\n| --- | --- |\n| `SUBMISSION_DEADLINE_PASSED` | 제출 마감이 지났다 |\n| `ANALYSIS_FAILED` | 분석이 실패했다 |\n| `ASSESSMENT_WINDOW_CLOSED` | 응시 창이 닫혔는데 완료하지 못했다 |\n| `PROBLEM_NOT_GENERATED` | 코드 근거가 부족해 문항을 만들지 못했다 |\n\n### upcoming[] 각 항목 — 7필드\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID | 회차 ID |\n| `roundNo` | int | 회차 번호 |\n| `roundName` | string | 회차명. 예: `미프 4차` |\n| `roundStatus` | enum | 항상 `PLANNED` |\n| `submissionDueAt` | datetime | 제출 마감 |\n| `roundAssessmentOpenAt` | datetime? | 이해도 확인 시작. **`PLANNED`에서는 `null`일 수 있다** |\n| `roundAssessmentDueAt` | datetime? | 이해도 확인 종료. 위와 같은 이유로 `null` 가능 |\n\n⚠️ 두 일정이 `null`일 수 있는 이유는 `ck_project_assessment_round_assessment_window_required`가\n`PLANNED` 회차만 면제하기 때문이다.\n\n### past[] 각 항목 — 11필드\n\n| 필드 | 타입 | 설명 |\n| --- | --- | --- |\n| `assessmentRoundId` | UUID | 회차 ID |\n| `roundNo` | int | 회차 번호 |\n| `roundName` | string | 회차명. 예: `미프 2차` |\n| `representativeStatus` | enum | 세션 완료 여부 판정용. `ASSESSMENT_COMPLETED`이면 완료 |\n| `reviewStatus` | enum? | 다시 보기 상태. 배정이 없으면 `null` |\n| `completedReviewCount` | int | 완료한 다시 보기 건수 |\n| `reportId` | UUID? | 리포트 식별자 |\n| `canViewReport` | boolean | `reportPublishStatus=PUBLISHED`일 때만 `true` |\n| `retryState` | enum | `NONE` · `PENDING` · `DONE`. `current[].retryState`와 같은 판정 |\n| `retryTargetCount` | int | 다시 볼 개념 수. 활성 스냅샷이 없으면 `0` |\n| `retryDueAt` | datetime? | 다시 보기 마감. `retryState=PENDING`이면 항상 값이 있다 |\n\n⚠️ \"완료 여부\" boolean은 **일부러 두지 않는다.** `representativeStatus`가 완료와 미완료 사유를\n이미 구분하므로, 파생값을 더하면 계약이 둘로 갈린다.\n\n## 화면 규칙\n\n### 4단계 진행 표시\n\n파생 필드 없이 원시 상태값으로 클라이언트가 판정한다.\n\n| 단계 | 완료 조건 |\n| --- | --- |\n| ① 코드 제출 | `submissionStatus = 'ACCEPTED'` |\n| ② 코드 분석 | `analysisPhase = 'COMPLETED'` |\n| ③ 이해도 확인 | `initialAttemptStatus = 'COMPLETED'` |\n| ④ 리포트 | `canViewReport = true` |\n\n### 리포트 열람\n\n**`canViewReport`의 판정 근거는 `reportPublishStatus = 'PUBLISHED'` 하나다.**\n\n🔴 **`traineeReleaseStatus`가 없어졌다**(2026-08-19). 종전에는 발행과 교육생 공개가 다른\n사건이라 공개 상태(`NOT_CONFIGURED` · `WITHHELD` · `RELEASED`)가 열람을 따로 판정했다.\n공개/비공개 개념이 폐지되면서 **발행이 곧 공개**가 됐고, 그 자리를 발행 상태가 물려받았다.\n\n### 커밋 이메일 배너\n\n`commitEmailStatus !== \"VERIFIED\"`일 때 띄운다. `null`은 미등록을 뜻하며, 미등록·미검증이\n제출을 막지는 않는다. 다만 빅프로젝트(`projectCategory = 'BIG_PROJECT'`)에서는 커밋 귀속이\n비어 문제가 생성되지 않으므로 배너 강도를 `projectCategory`로 구분한다.\n\n## 오류\n\n| 상태 | 언제 |\n| --- | --- |\n| 401 | 액세스 토큰이 없거나 인증 사용자를 찾을 수 없다 |\n| 403 | 호출자가 교육생(`TRAINEE`)이 아니다 |\n",
         "operationId": "getMyAssessmentRounds",
         "responses": {
           "200": {
@@ -21590,6 +21662,9 @@
                         "reportPublishStatus": "NOT_PUBLISHED",
                         "canViewReport": false,
                         "explanationStatus": "UNAVAILABLE",
+                        "retryState": "NONE",
+                        "retryTargetCount": 0,
+                        "retryDueAt": null,
                         "submissionDueAt": "2026-07-14T09:00:00Z",
                         "roundAssessmentOpenAt": "2026-07-14T15:00:00Z",
                         "roundAssessmentDueAt": "2026-07-15T14:59:59Z",
@@ -21624,7 +21699,10 @@
                           "reviewStatus": null,
                           "completedReviewCount": 1,
                           "reportId": "3f6b0e97-8c24-4a15-9d38-2b7e5c1a4f60",
-                          "canViewReport": true
+                          "canViewReport": true,
+                          "retryState": "DONE",
+                          "retryTargetCount": 2,
+                          "retryDueAt": "2026-07-05T10:30:00Z"
                         }
                       ]
                     }
@@ -21673,6 +21751,9 @@
                         "reportPublishStatus": "NOT_PUBLISHED",
                         "canViewReport": false,
                         "explanationStatus": "UNAVAILABLE",
+                        "retryState": "NONE",
+                        "retryTargetCount": 0,
+                        "retryDueAt": null,
                         "submissionDueAt": null,
                         "roundAssessmentOpenAt": null,
                         "roundAssessmentDueAt": null,
@@ -27118,7 +27199,23 @@
           },
           "failureCode": {
             "type": "string",
-            "description": "FAILED일 때만 값이 있다. 분석 실행 실패 6종과 저장소 접근 실패 5종을 합한 11종이다 —\n저장소 주소 오류도 제출이 아니라 여기로 드러난다.\n\nSESSION_PREPARATION_FAILED와 EXTERNAL_JOB_ID_LOST는 analysis_job.failure_code에 없는\n값이다. 둘 다 서버가 조회 시점에 판정해 내려 준다 — 전자는 분석은 성공했지만 이 교육생의\n세션·문항이 준비되지 않은 경우, 후자는 활성 분석 행이 AI 작업 ID를 잃어 상태를 더 따라갈\n수 없는 경우다.",
+            "description": "FAILED일 때만 값이 있다. 분석 실행 실패 5종·저장소 접근 실패 5종·ZIP 내용 검증 2종을\n합한 12종이 analysis_job.failure_code 실값이다 — 저장소 주소 오류도 제출이 아니라\n여기로 드러난다.\n\nSESSION_PREPARATION_FAILED와 EXTERNAL_JOB_ID_LOST는 analysis_job.failure_code에 없는\n값이다. 둘 다 서버가 조회 시점에 판정해 내려 준다 — 전자는 분석은 성공했지만 이 교육생의\n세션·문항이 준비되지 않은 경우, 후자는 활성 분석 행이 AI 작업 ID를 잃어 상태를 더 따라갈\n수 없는 경우다.",
+            "enum": [
+              "TEMPORARY_ERROR",
+              "ANALYSIS_TIMEOUT",
+              "MODEL_ERROR",
+              "SOURCE_UNREACHABLE",
+              "UNSUPPORTED_LANGUAGE",
+              "INVALID_REPOSITORY_URL",
+              "REPO_NOT_FOUND",
+              "REPOSITORY_ACCESS_DENIED",
+              "BRANCH_NOT_FOUND",
+              "UNSUPPORTED_HOST",
+              "EMPTY_CODE",
+              "GIT_LOG_MISSING",
+              "SESSION_PREPARATION_FAILED",
+              "EXTERNAL_JOB_ID_LOST"
+            ],
             "example": "REPO_NOT_FOUND"
           },
           "failureReason": {
@@ -27530,11 +27627,12 @@
           },
           "status": {
             "type": "string",
-            "description": "회차 카드의 상태.\n\n| 값 | 뜻 | 화면 |\n|---|---|---|\n| `PUBLISHED` | 리포트가 발행됐다 | 결과를 그린다 |\n| `PENDING_PUBLISH` | **이해도 확인까지 마쳤고** 리포트를 만드는 중이다 | `리포트가 생성 중입니다` |\n| `IN_PROGRESS` | 응시 기록은 있지만 아직 안 끝났다(제출 전·분석 중·이해도 확인 세션 준비됨·진행 중) — 2026-08-20 추가 | 진행 상황을 그린다. `PENDING_PUBLISH`와 다른 말이어야 한다 |\n| `NOT_STARTED` | **제출 마감 전인데 아직 응시 기록이 없다** | 아직 시간이 있다 |\n| `NOT_ATTEMPTED` | **마감이 지나도록 응시하지 않았다** | 놓쳤다 — 매니저 안내가 필요하다 |\n| `VOID_ATTEMPT` | 무효 응시 검토 중이거나 무효로 확정됐다 | `확인 필요` |\n| `STOPPED` | 세션을 시작했지만 끝내지 못했다 | 중단 |\n\n🔴 **`PENDING_VISIBILITY`가 없어졌다**(2026-08-19). 종전에는 발행과 공개가 다른 사건이라\n`발행은 됐지만 매니저가 아직 공개 범위를 안 정했다`는 상태가 있었는데, 공개/비공개 개념이\n폐지되면서 사라졌다. **발행되면 그 즉시 `PUBLISHED`다.**\n\n🔴 **`NOT_STARTED`와 `NOT_ATTEMPTED`를 한 문구로 묶지 않는다.** 둘을 같은 말로 그리면\n아직 시간이 있는 학생에게 놓쳤다고 말하거나, 정말 놓친 학생에게서 경고가 사라진다(26차 A1).\n가르는 축은 **제출 마감**이며, 홈의 `SUBMISSION_REQUIRED` / `SUBMISSION_MISSED`와 같은 값으로\n갈리므로 두 화면이 같은 회차를 같은 말로 설명한다.\n\n🔴 **`PENDING_PUBLISH`와 `IN_PROGRESS`를 한 문구로 묶지 않는다**(2026-08-20 발견·수정).\n전자는 이해도 확인까지 **다 끝내고** 리포트만 기다리는 것이고, 후자는 **아직 응시 자체를\n끝내지 못한** 것이다 — 코드 제출·분석·이해도 확인 세션 준비 단계에서 이 둘을 섞으면\n학생이 하지도 않은 걸 \"응시 완료\"로 보게 된다(실사용 재현: 코드 분석 중인 회차가\n\"응시 완료\"로 표시).",
+            "description": "회차 카드의 상태.\n\n| 값 | 뜻 | 화면 |\n|---|---|---|\n| `PUBLISHED` | 리포트가 발행됐다 | 결과를 그린다 |\n| `PENDING_PUBLISH` | **이해도 확인까지 마쳤고** 리포트를 만드는 중이다 | `리포트가 생성 중입니다` |\n| `IN_PROGRESS` | 응시 기록은 있지만 아직 안 끝났다(제출 전·분석 중·이해도 확인 세션 준비됨·진행 중) — 2026-08-20 추가 | 진행 상황을 그린다. `PENDING_PUBLISH`와 다른 말이어야 한다 |\n| `ANALYSIS_FAILED` | 코드 분석이 실패해 리포트를 만들 근거가 없다(리포트 행이 아예 없을 때만) — 2026-08-21 추가 | 다시 제출을 안내한다 |\n| `NOT_STARTED` | **제출 마감 전인데 아직 응시 기록이 없다** | 아직 시간이 있다 |\n| `NOT_ATTEMPTED` | **마감이 지나도록 응시하지 않았다** | 놓쳤다 — 매니저 안내가 필요하다 |\n| `VOID_ATTEMPT` | 무효 응시 검토 중이거나 무효로 확정됐다 | `확인 필요` |\n| `STOPPED` | 세션을 시작했지만 끝내지 못했다 | 중단 |\n\n🔴 **`PENDING_VISIBILITY`가 없어졌다**(2026-08-19). 종전에는 발행과 공개가 다른 사건이라\n`발행은 됐지만 매니저가 아직 공개 범위를 안 정했다`는 상태가 있었는데, 공개/비공개 개념이\n폐지되면서 사라졌다. **발행되면 그 즉시 `PUBLISHED`다.**\n\n🔴 **`NOT_STARTED`와 `NOT_ATTEMPTED`를 한 문구로 묶지 않는다.** 둘을 같은 말로 그리면\n아직 시간이 있는 학생에게 놓쳤다고 말하거나, 정말 놓친 학생에게서 경고가 사라진다(26차 A1).\n가르는 축은 **제출 마감**이며, 홈의 `SUBMISSION_REQUIRED` / `SUBMISSION_MISSED`와 같은 값으로\n갈리므로 두 화면이 같은 회차를 같은 말로 설명한다.\n\n🔴 **`PENDING_PUBLISH`와 `IN_PROGRESS`를 한 문구로 묶지 않는다**(2026-08-20 발견·수정).\n전자는 이해도 확인까지 **다 끝내고** 리포트만 기다리는 것이고, 후자는 **아직 응시 자체를\n끝내지 못한** 것이다 — 코드 제출·분석·이해도 확인 세션 준비 단계에서 이 둘을 섞으면\n학생이 하지도 않은 걸 \"응시 완료\"로 보게 된다(실사용 재현: 코드 분석 중인 회차가\n\"응시 완료\"로 표시).\n\n🔴 **`PENDING_PUBLISH`와 `ANALYSIS_FAILED`도 한 문구로 묶지 않는다**(2026-08-21\n발견·수정). 전자는 리포트가 곧 나올 것이라는 약속이고, 후자는 **분석이 실패해 이\n회차의 리포트가 만들어질 수 없다**는 사실이다 — 리포트 행이 없는 채로 이 둘을 섞으면\n학생이 이미 지난 발행 예정일을 계속 기다리게 된다(실사용 재현: 코드 분석이 실패한\n회차가 \"리포트를 만들고 있어요 · 발행 예정 N월 N일 이후\"로 표시, 그 날짜는 이미\n지났음). 단, 분석 실패 회차에도 리포트 행이 실제로 걸려 있으면(예: 다른 종류의\n리포트가 같은 회차 id를 공유하는 기존 사례) 이 값 대신 그대로 `PUBLISHED`/\n`PENDING_PUBLISH`로 판정한다 — 리포트 행의 유무가 갈림점이다.",
             "enum": [
               "PUBLISHED",
               "PENDING_PUBLISH",
               "IN_PROGRESS",
+              "ANALYSIS_FAILED",
               "NOT_STARTED",
               "NOT_ATTEMPTED",
               "VOID_ATTEMPT",
@@ -35142,6 +35240,30 @@
               "AVAILABLE"
             ]
           },
+          "retryState": {
+            "type": "string",
+            "description": "다시 보기 상태. `DONE`은 REVIEW 응시를 마쳤다는 사실의 기록이라 지금 대상 수와\n무관하게 참이다 — 대상이 0개여도 이미 봤다면 `DONE`이다. `TraineeReportServiceImpl\n.retryState`와 같은 판정이다.",
+            "enum": [
+              "NONE",
+              "PENDING",
+              "DONE"
+            ],
+            "example": "PENDING"
+          },
+          "retryTargetCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "다시 볼 개념 수. 리포트 미발행 등으로 활성 스냅샷이 없으면 0",
+            "example": 2
+          },
+          "retryDueAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "다시 보기 마감일. `retryState = PENDING`이면 항상 값이 있다 — REVIEW 응시를 아직\n안 열었어도 발행일 + 다시 보기 창으로 계산해서 채운다."
+          },
           "submissionDueAt": {
             "type": [
               "string",
@@ -35252,6 +35374,9 @@
           "reportPublishNotBeforeAt",
           "reportPublishStatus",
           "representativeStatus",
+          "retryDueAt",
+          "retryState",
+          "retryTargetCount",
           "reviewStatus",
           "roundAssessmentDueAt",
           "roundAssessmentOpenAt",
@@ -35346,7 +35471,7 @@
       },
       "PastRoundResponse": {
         "type": "object",
-        "description": "지난 회차. 8필드로 고정한다.",
+        "description": "지난 회차. 11필드로 고정한다.",
         "properties": {
           "assessmentRoundId": {
             "type": "string",
@@ -35389,6 +35514,30 @@
           "canViewReport": {
             "type": "boolean",
             "description": "reportPublishStatus = PUBLISHED일 때만 true"
+          },
+          "retryState": {
+            "type": "string",
+            "description": "다시 보기 상태. CurrentRoundResponse.retryState와 같은 판정",
+            "enum": [
+              "NONE",
+              "PENDING",
+              "DONE"
+            ],
+            "example": "NONE"
+          },
+          "retryTargetCount": {
+            "type": "integer",
+            "format": "int32",
+            "description": "다시 볼 개념 수. 활성 스냅샷이 없으면 0",
+            "example": 0
+          },
+          "retryDueAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time",
+            "description": "다시 보기 마감일. retryState = PENDING이면 항상 값이 있다"
           }
         },
         "required": [
@@ -35397,6 +35546,9 @@
           "completedReviewCount",
           "reportId",
           "representativeStatus",
+          "retryDueAt",
+          "retryState",
+          "retryTargetCount",
           "reviewStatus",
           "roundName",
           "roundNo"

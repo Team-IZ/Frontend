@@ -1,9 +1,12 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isApiError } from '@/api/_contract'
 import { useGetMyAssessmentRounds } from '@/api/assessment/useAssessmentQueries'
 import { assessmentKeys } from '@/api/assessment/assessmentKeys'
-import { useFindMySubmission } from '@/api/submission/useSubmissionQueries'
+import {
+  useFindMySubmission,
+  useGetSubmissionAnalysis,
+} from '@/api/submission/useSubmissionQueries'
 import { submissionKeys } from '@/api/submission/submissionKeys'
 import type { findMySubmission_Response } from '@/api/submission/submissionTypes'
 import { useCheckRepository, useSubmitGithubUrl } from '@/api/submission/useSubmissionMutations'
@@ -41,18 +44,135 @@ export function useSubmission() {
     [home.data],
   )
 
-  const data = useMemo(
+  const raw = useMemo(
     () => (query.data ? toView(query.data, availableMethods) : undefined),
     [query.data, availableMethods],
   )
 
+  /*
+    **요약이 끝났다고 말하는 세 상태 모두에서 한 번은 묻는다.**
+
+    `ANALYZING`  진행 중 — 원래 목적이다
+    `READY`(문항 0) 요약이 **성공이라고 말하는 실패**가 있다(아래 `failed` 주석)
+    `ANALYSIS_FAILED` **서버가 자동으로 다시 돌리고 있을 수 있다**
+
+    마지막이 실측으로 나왔다 — 실패 직후 `executionNo: 2`로 `RUNNING`이 다시 시작됐는데
+    화면은 「다시 제출해 주세요」에 멈춰 있었다. 학생이 필요 없는 재제출을 하거나, 재시도가
+    성공해도 새로고침 전까지 모른다.
+
+    끝난 응답(`SUCCEEDED`·`PARTIAL`·`FAILED`)을 받으면 `refetchInterval`이 스스로 멈추므로,
+    진짜로 끝난 실패에서는 **요청이 한 번뿐**이다.
+  */
+  const problems = home.data?.current?.preparedProblemCount ?? null
+  const analysis = useAnalysisWatch(
+    raw?.submissionId ?? null,
+    raw?.status === 'ANALYZING' ||
+      raw?.status === 'ANALYSIS_FAILED' ||
+      (raw?.status === 'READY' && problems === 0),
+  )
+
+  /*
+    🔴 **요약과 분석 조회가 다르면 분석 조회를 믿는다.**
+
+    같은 제출을 세 곳이 다르게 말한다(2026-08-21 실측 — `SESSION_PREPARATION_FAILED`):
+
+      analysis        FAILED · SESSION_PREPARATION_FAILED
+      my-submission   READY   ← 이 화면이 보는 값
+      홈              ANALYZING · 버튼 없음
+
+    그대로 두면 화면이 *"분석이 끝났어요 · 이해도 확인을 시작할 수 있습니다"* 라고 하는데
+    **문항이 0개라 시작할 것이 없다.** 학생은 홈으로 갔다가 버튼이 없어 되돌아온다.
+
+    셋 중 **가장 구체적인 값**이 분석 조회다 — 사유 코드 14종을 가진 쪽이고, 그중 둘은
+    원장에 없어 요약이 애초에 알 수 없다. 백엔드도 *"셋이 다르면 후자를 우선해 달라"* 고
+    확인해 주었다(분석 상태 불일치 진단서 2026-08-21). 서버가 요약을 맞추면 이 덮어쓰기는
+    같은 값이 되어 저절로 무해해진다.
+
+    **아직 돌고 있으면 돌고 있다고 말한다.** 서버가 실패한 잡을 스스로 다시 돌리는데
+    (실측 — `executionNo: 2`), 요약은 앞선 실패를 그대로 들고 있다. 그 사이 화면이
+    「다시 제출해 주세요」를 띄우면 학생이 필요 없는 재제출을 한다.
+  */
+  const phase = analysis?.phase
+  const override =
+    phase === 'FAILED'
+      ? ('ANALYSIS_FAILED' as const)
+      : phase === 'QUEUED' || phase === 'RUNNING'
+        ? ('ANALYZING' as const)
+        : null
+
+  const data = useMemo(
+    () => (raw && override && raw.status !== override ? { ...raw, status: override } : raw),
+    [raw, override],
+  )
+
   return {
     data,
+    /**
+     * 분석이 실패한 이유 **원문**. 서버가 *"화면에 그대로 노출 가능"* 이라고 명시한
+     * 값이라(백엔드 권장안 §4.2) 우리가 지어낸 문구보다 정확하다.
+     *
+     * 사유 코드는 14종인데 그중 둘(`SESSION_PREPARATION_FAILED`·`EXTERNAL_JOB_ID_LOST`)은
+     * **원장에 없고 조회 시점에 판정된다** — 회차 요약(`analysisFailureCode`)에는 영영
+     * 안 나타나므로 이 경로로만 알 수 있다.
+     */
+    analysisFailureReason: analysis?.phase === 'FAILED' ? (analysis.failureReason ?? null) : null,
     /** 홈을 아직 못 읽었으면 그것도 로딩이다 — 화면은 하나의 스피너만 본다 */
     isPending: home.isPending || (!!projectId && query.isPending),
     isError: home.isError || query.isError,
     refetch: query.refetch,
   }
+}
+
+/*
+  분석이 끝나는 **그 순간** 화면을 바꾼다.
+
+  `my-submission`·홈은 회차 요약이라 화면이 다시 묻기 전까지 낡은 채로 있다. 학생은
+  분석이 끝났는지 보려고 새로고침을 반복하게 되고, 실패했으면 그만큼 재제출이 늦어진다
+  (마감이 가까울수록 비싸다).
+
+  `GET /submissions/{id}/analysis`는 **폴링을 전제로 만들어진 조회**다(백엔드 권장안
+  2026-08-21). 끝나면 두 요약을 무효화해 화면이 스스로 다음 상태로 넘어간다.
+
+  ## 60초인 이유
+
+  백엔드가 AI 서버를 **1분에 한 번** 훑어 `analysis_job.status`를 갱신한다
+  (`AI_ANALYSIS_POLL_DELAY`, 기본 `PT1M`). 그보다 자주 물어야 **같은 값을 다시 받을
+  뿐이고** 서버만 두드린다. 그 설정이 바뀌면 이 값도 같이 옮겨야 한다.
+*/
+const ANALYSIS_POLL_MS = 60_000
+
+/** 여기 닿으면 분석이 끝난 것이다 — `PARTIAL`은 일부만 만들어졌을 뿐 완료로 친다 */
+const ANALYSIS_TERMINAL = ['SUCCEEDED', 'PARTIAL', 'FAILED']
+
+function useAnalysisWatch(submissionId: string | null, analyzing: boolean) {
+  const queryClient = useQueryClient()
+  const enabled = !!submissionId && analyzing
+
+  const { data } = useGetSubmissionAnalysis(
+    { path: { submissionId: submissionId! } },
+    {
+      enabled,
+      /*
+        끝났으면 스스로 멈춘다. `refetchInterval`에 함수를 주면 **직전 응답을 보고**
+        다음 간격을 정할 수 있다 — 별도 상태를 두고 끄는 것보다 어긋날 자리가 없다.
+      */
+      refetchInterval: (q) =>
+        ANALYSIS_TERMINAL.includes(String(q.state.data?.phase)) ? false : ANALYSIS_POLL_MS,
+    },
+  )
+
+  const phase = data?.phase
+  useEffect(() => {
+    if (!enabled || !phase || !ANALYSIS_TERMINAL.includes(String(phase))) return
+    /*
+      분석이 끝났다는 것은 **요약 두 개가 낡았다**는 뜻이다. 여기서 상태를 지어내지
+      않고 서버에 다시 묻는다 — 제출 화면은 `my-submission`, 홈 카드는 회차 조회를 본다.
+    */
+    queryClient.invalidateQueries({ queryKey: submissionKeys.all })
+    queryClient.invalidateQueries({ queryKey: assessmentKeys.all })
+  }, [enabled, phase, queryClient])
+
+  return data ?? null
 }
 
 function toView(s: Server, availableMethods: SubmissionMethod[]): SubmissionView {
@@ -61,6 +181,7 @@ function toView(s: Server, availableMethods: SubmissionMethod[]): SubmissionView
     assessmentRoundId: s.assessmentRoundId,
     roundLabel: s.roundLabel,
     submissionDueAt: s.submissionDueAt,
+    submissionId: s.submissionId ?? null,
     method: (s.method ?? null) as SubmissionMethod | null,
     submittedAt: s.submittedAt ?? null,
     analyzedAt: s.analyzedAt ?? null,

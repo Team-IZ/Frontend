@@ -41,17 +41,18 @@ export type checkRepository_Errors =
   'INVALID_REPOSITORY_URL' | 'UNSUPPORTED_HOST' | 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 
 // GET /api/v0/submissions/{submissionId}/analysis — 코드 분석 진행 상태·실패 사유 조회
-export type getAnalysis_Path = operations['getAnalysis']['parameters']['path']
-export type getAnalysis_Response =
-  operations['getAnalysis']['responses'][200]['content']['application/json']
-export type getAnalysis_Errors =
+export type getSubmissionAnalysis_Path = operations['getSubmissionAnalysis']['parameters']['path']
+export type getSubmissionAnalysis_Response =
+  operations['getSubmissionAnalysis']['responses'][200]['content']['application/json']
+export type getSubmissionAnalysis_Errors =
   'UNAUTHENTICATED' | 'SUBMISSION_ACCESS_DENIED' | 'ACCESS_DENIED' | 'SUBMISSION_NOT_FOUND'
 
 // GET /api/v0/submissions/{submissionId}/analysis/result — 코드 분석 결과 조회
-export type getAnalysisResult_Path = operations['getAnalysisResult']['parameters']['path']
-export type getAnalysisResult_Response =
-  operations['getAnalysisResult']['responses'][200]['content']['application/json']
-export type getAnalysisResult_Errors =
+export type getSubmissionAnalysisResult_Path =
+  operations['getSubmissionAnalysisResult']['parameters']['path']
+export type getSubmissionAnalysisResult_Response =
+  operations['getSubmissionAnalysisResult']['responses'][200]['content']['application/json']
+export type getSubmissionAnalysisResult_Errors =
   | 'UNAUTHENTICATED'
   | 'SUBMISSION_ACCESS_DENIED'
   | 'ACCESS_DENIED'

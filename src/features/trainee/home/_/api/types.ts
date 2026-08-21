@@ -81,8 +81,17 @@ export type CurrentRound = {
    */
   problemCount: number | null
 
-  /** 다시 볼 개념 수. 0이면 다시 보기 대상이 아니다 */
-  reviewPendingCount: number
+  /**
+   * 다시 보기 상태 — **서버가 3일 창까지 보고 판정한다.**
+   *
+   * `DONE`은 "지금 다시 볼 게 있나"가 아니라 **다시 보기를 마친 적이 있다**는 사실이다.
+   * 그래서 대상 수가 0이 되어도 `NONE`으로 돌아가지 않는다.
+   */
+  retryState: 'NONE' | 'PENDING' | 'DONE'
+  /** 다시 볼 개념 수. `PENDING`인데 `0`인 경우는 없다(서버가 그러면 `NONE`을 준다) */
+  retryTargetCount: number
+  /** 다시 보기 마감. **`PENDING`이면 항상 온다** — 창 계산은 서버가 끝냈다 */
+  retryDueAt: string | null
   /** 리포트로 갈 수 있는가 — 서버가 공개 상태까지 보고 판정한다 */
   canViewReport: boolean
   reportId: string | null
@@ -105,6 +114,11 @@ export type PastRound = {
   completedReviewCount: number
   reportId: string | null
   canViewReport: boolean
+  /*
+    ⚠️ 서버는 `past[]`에도 `retryState`·`retryTargetCount`·`retryDueAt`을 준다.
+    **여기서는 안 쓴다** — 다시 보기는 이번 회차의 일이고, 지난 회차 줄에 그것을 그리면
+    끝난 회차를 다시 열라고 말하게 된다. 필요해지면 그때 싣는다.
+  */
 }
 
 export type HomeView = {

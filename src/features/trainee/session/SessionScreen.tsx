@@ -742,7 +742,8 @@ function noSessionMessage(status: string | null) {
     case 'ASSESSMENT_COMPLETED':
       return {
         title: '이해도 확인을 마쳤어요',
-        description: '리포트는 회차 마감 후 한꺼번에 발행됩니다.',
+        // 발행이 응시 직후로 옮겨졌다(EndScreen 주석) — 마감까지 기다리라고 하지 않는다
+        description: '리포트는 곧 만들어져요. 다 되면 홈에서 볼 수 있어요.',
       }
     case 'ASSESSMENT_WINDOW_CLOSED':
       return {

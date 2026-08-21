@@ -1,8 +1,8 @@
 /* 자동 생성 — 손으로 고치지 마세요. 다시 만들려면: npm run api:gen */
 
 import type {
-  getAnalysis_Path,
-  getAnalysisResult_Path,
+  getSubmissionAnalysis_Path,
+  getSubmissionAnalysisResult_Path,
   findProjectSubmissionStatus_Path,
   findProjectSubmissionStatus_Query,
   findMySubmission_Path,
@@ -15,10 +15,10 @@ import type {
 */
 export const submissionKeys = {
   all: ['submission'] as const,
-  getAnalysis: (params: { path: getAnalysis_Path }) =>
-    [...submissionKeys.all, 'getAnalysis', params.path ?? null] as const,
-  getAnalysisResult: (params: { path: getAnalysisResult_Path }) =>
-    [...submissionKeys.all, 'getAnalysisResult', params.path ?? null] as const,
+  getSubmissionAnalysis: (params: { path: getSubmissionAnalysis_Path }) =>
+    [...submissionKeys.all, 'getSubmissionAnalysis', params.path ?? null] as const,
+  getSubmissionAnalysisResult: (params: { path: getSubmissionAnalysisResult_Path }) =>
+    [...submissionKeys.all, 'getSubmissionAnalysisResult', params.path ?? null] as const,
   findProjectSubmissionStatus: (params: {
     path: findProjectSubmissionStatus_Path
     query?: findProjectSubmissionStatus_Query

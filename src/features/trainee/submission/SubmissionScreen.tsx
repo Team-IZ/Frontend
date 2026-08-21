@@ -34,7 +34,7 @@ const failureOf = (e: unknown): SubmitFailure | null =>
   e == null ? null : submitFailureOf(isApiError(e) ? e.code : null)
 
 export default function SubmissionScreen() {
-  const { data, isPending, isError, refetch } = useSubmission()
+  const { data, isPending, isError, refetch, analysisFailureReason } = useSubmission()
   const submit = useSubmitZip()
   const github = useSubmitGithub()
   const repoCheck = useRepositoryCheck()
@@ -92,6 +92,7 @@ export default function SubmissionScreen() {
         ) : (
           <SubmissionBody
             view={data}
+            analysisFailureReason={analysisFailureReason}
             resubmitting={resubmitting}
             submitting={submit.isPending || github.isPending}
             failure={failureOf(submit.error ?? github.error)}
@@ -110,6 +111,7 @@ export default function SubmissionScreen() {
 
 function SubmissionBody({
   view,
+  analysisFailureReason,
   resubmitting,
   submitting,
   failure,
@@ -121,6 +123,8 @@ function SubmissionBody({
   checking,
 }: {
   view: SubmissionView
+  /** 분석 조회가 준 실패 사유 원문 — 아는 코드가 아닐 때만 쓰인다(`buildStateBanner`) */
+  analysisFailureReason: string | null
   resubmitting: boolean
   submitting: boolean
   /** 접수가 거절된 이유. 성공했거나 아직 안 눌렀으면 `null` */
@@ -134,7 +138,7 @@ function SubmissionBody({
 }) {
   // 재제출 폼을 펴면 "분석이 끝났어요" 성공 배너를 감춘다 — 지금 하려는 일과 반대되는
   // 메시지("시작하세요")가 폼 위에 남으면 서로 부딪힌다.
-  const banner = resubmitting ? null : buildStateBanner(view)
+  const banner = resubmitting ? null : buildStateBanner(view, analysisFailureReason)
 
   return (
     <>

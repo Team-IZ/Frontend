@@ -36,6 +36,12 @@ export type SubmissionView = {
   roundLabel: string
   submissionDueAt: string
 
+  /**
+   * 이번 제출의 식별자. **분석 진행 상태를 물으려면 이 값이 필요하다**
+   * (`GET /submissions/{submissionId}/analysis`). 미제출이면 서버가 키를 뺀다.
+   */
+  submissionId: string | null
+
   /** 어떤 수단으로 냈나. 미제출이면 없다 */
   method: SubmissionMethod | null
   submittedAt: string | null

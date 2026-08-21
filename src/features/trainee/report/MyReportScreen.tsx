@@ -131,8 +131,12 @@ function RoundBody({ report }: { report: RoundReport }) {
           variant="default"
           icon={<ClockIcon className="size-5" />}
           title="리포트를 만들고 있어요"
-          description="리포트는 회차 마감 후 한꺼번에 발행됩니다."
-          /* 서버가 발행 예정일을 아직 안 정했을 수 있다 — 날짜를 지어내지 않고 뒷문장만 남긴다 */
+          description="이해도 확인은 끝났어요. 결과를 정리하는 중입니다."
+          /*
+            **「회차 마감 후 한꺼번에」를 뺐다** — 발행이 응시 직후로 옮겨졌다.
+            `publishAfter`도 대개 `null`로 온다(실측) — 발행 하한을 둘 이유가 없어진
+            자리라, 값이 오면 그대로 말하고 없으면 날짜를 지어내지 않는다.
+          */
           aux={
             report.publishAfter
               ? `다 되면 바로 볼 수 있어요 · 발행 예정 ${formatDate(report.publishAfter)} 이후`
@@ -245,6 +249,16 @@ function reviewOpenErrorMessage(e: unknown): { variant: 'info' | 'danger'; text:
       return { variant: 'danger', text: '아직 준비되지 않았어요. 잠시 후 다시 시도해 주세요.' }
     case 'REVIEW_REPORT_NOT_ACCESSIBLE':
       return { variant: 'danger', text: '리포트를 찾을 수 없어요. 새로고침해 주세요.' }
+    /*
+      **경계에서 실제로 난다**(백엔드 회신 2026-08-21). 창이 지나면 `retryState`가 `NONE`이
+      되어 버튼이 사라지지만, 화면을 띄워 둔 채 마감을 넘기면 이미 그려진 버튼이 남는다.
+      학생 잘못이 아니라 시간이 지난 것이라 `info`로 말하고, 다시 읽으면 버튼도 사라진다.
+    */
+    case 'REVIEW_DUE_AT_PASSED':
+      return {
+        variant: 'info',
+        text: '다시 보기 기간이 지났어요. 새로고침하면 최신 상태로 보여요.',
+      }
     default:
       return {
         variant: 'danger',
@@ -300,14 +314,24 @@ function PublishedBody({ report }: { report: Extract<RoundReport, { status: 'PUB
         *"다시 볼 수 있는 문제가 0개 있어요"* 라는 배너 아래에 아무것도 없고, 버튼을
         누르면 빈 세션으로 들어간다. 할 일이 없으면 할 일이 있다고 말하지 않는다.
       */}
-      {report.retryState === 'PENDING' && report.retryDueAt && retryCount > 0 && (
+      {/*
+        🔴 **마감(`retryDueAt`)을 조건에서 뺐다.** `PENDING`이면 항상 온다고 스펙이
+        적어 두었지만 **`null`로 오는 회차가 실제로 있다**(실측 — 발행 전인데 `PENDING`인
+        구간). 그때 배너째로 사라져 다시 볼 것이 있다는 사실 자체가 안 보였다.
+
+        창이 지났는지는 서버가 이미 판정해 `retryState`를 `NONE`으로 떨어뜨린다 —
+        화면이 날짜를 다시 비교하면 그 판정이 두 벌이 된다. 마감은 **안내 문구에만** 쓰고,
+        없으면 그 문장만 뺀다.
+      */}
+      {report.retryState === 'PENDING' && retryCount > 0 && (
         <div className="flex flex-wrap items-center justify-between gap-4 rounded-md bg-warning-soft px-4 py-3">
           <div className="flex min-w-0 items-center gap-3">
             <RotateCcwIcon className="size-5 shrink-0 text-warning" />
             <div>
               <b className="text-warning">다시 볼 수 있는 문제가 {retryCount}개 있어요</b>
               <div className="text-xs text-fg-subtle">
-                {formatDate(report.retryDueAt)}까지 · 결과는 기록에만 남고 지금 결과는 그대로예요
+                {report.retryDueAt && `${formatDate(report.retryDueAt)}까지 · `}
+                결과는 기록에만 남고 지금 결과는 그대로예요
               </div>
             </div>
           </div>

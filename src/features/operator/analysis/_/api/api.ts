@@ -175,9 +175,11 @@ async function loadRoundGrid(q: RoundQuery): Promise<RoundGrid> {
   }
 
   /*
-    팀 계층은 **회차 목록을 따로 받는다.** 팀 조회는 고른 회차 하나만 돌려주므로
-    그 응답으로 선택지를 만들면 **고르는 순간 나머지 회차가 사라진다** — 다른 회차로
-    옮길 방법이 없어진다. 반별 조회 한 건이 회차 전체를 준다.
+    **선택지 목록은 항상 무필터 전체 조회에서 만든다.** 위 조회(`r`)는 회차 범위·반
+    필터가 걸린 응답이라 선택지로 못 쓴다 — 반별도 `fromRoundNo`·`toRoundNo`를 보내므로,
+    `r`로 회차 선택지를 만들면 **범위를 좁히는 순간 그 밖의 회차가 선택지에서
+    사라졌다**(사용자 지적, 실측 렌더 확인 — 6차 하나로 좁히면 1~5차가 통째로 없어짐).
+    팀 계층에서 먼저 발견된 것과 같은 문제라, 계층 상관없이 항상 따로 받는다.
   */
   const [r, all] = await Promise.all([
     findCohortRiskTraineeRates({
@@ -191,12 +193,11 @@ async function loadRoundGrid(q: RoundQuery): Promise<RoundGrid> {
         sort: SORT[q.sort],
       },
     }),
-    isTeam ? findCohortRiskTraineeRates({ path: { cohortId: q.cohortId } }) : null,
+    findCohortRiskTraineeRates({ path: { cohortId: q.cohortId } }),
   ])
 
   const columns = toColumns(r.rounds)
-  /** 선택지는 전체, 열은 조회 결과 — 팀 계층에서 둘이 갈린다 */
-  const allRounds = all ? toColumns(all.rounds) : columns
+  const allRounds = toColumns(all.rounds)
 
   /*
     **기준선이 계층에 따라 바뀐다**(OP-02 §3) — 반별이면 기수 전체, 팀이면 **그 반**이다.
@@ -230,11 +231,11 @@ async function loadRoundGrid(q: RoundQuery): Promise<RoundGrid> {
     baselineName: isTeam ? (r.classes[0]?.className ?? '') : '기수 전체',
     level: q.level,
     /*
-      **반 목록은 전량이어야 한다.** 팀 조회 응답(`r`)은 **고른 반 하나만** 담고 있어서
-      그것으로 선택지를 만들면 툴바가 `전체 1반`이 되고 **다른 반으로 옮길 수가 없다**
-      (실측). 회차 목록을 따로 받는 것과 같은 이유다.
+      **반 목록도 전량이어야 한다.** `r`은 반 필터·회차 범위가 걸린 응답이라 그것으로
+      선택지를 만들면 **이미 고른 반만 남고 나머지가 체크박스 목록에서 사라진다** —
+      회차와 같은 이유로 항상 무필터 응답(`all`)에서 만든다.
     */
-    allClasses: toClassOptions(all ?? r),
+    allClasses: toClassOptions(all),
   }
 }
 

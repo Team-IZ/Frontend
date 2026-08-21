@@ -122,12 +122,13 @@ function RequestStage() {
           autoComplete="username"
           disabled={isSubmitting}
           aria-invalid={!!errors.email}
+          aria-describedby={errors.email ? 'reset-email-error' : undefined}
           {...register('email', {
             required: '이메일을 입력해주세요.',
             pattern: { value: EMAIL_PATTERN, message: EMAIL_INVALID_MESSAGE },
           })}
         />
-        <FieldError>{errors.email?.message}</FieldError>
+        <FieldError id="reset-email-error">{errors.email?.message}</FieldError>
       </Field>
 
       <div className="pt-1">
@@ -307,6 +308,9 @@ function SetPasswordStage({ token }: { token: string }) {
             autoComplete="new-password"
             disabled={isSubmitting}
             aria-invalid={!!errors.password}
+            aria-describedby={
+              errors.password ? 'reset-password-error' : 'reset-password-description'
+            }
             {...passwordField}
             onKeyDown={passwordCaps.onKeyDown}
             onKeyUp={passwordCaps.onKeyUp}
@@ -334,11 +338,13 @@ function SetPasswordStage({ token }: { token: string }) {
           </p>
         )}
         {errors.password ? (
-          <FieldError>
+          <FieldError id="reset-password-error">
             {policyUnmet.length > 0 ? policyUnmet.join(' · ') : errors.password.message}
           </FieldError>
         ) : (
-          <FieldDescription>8자 이상 · 영문·숫자·특수문자 포함</FieldDescription>
+          <FieldDescription id="reset-password-description">
+            8자 이상 · 영문·숫자·특수문자 포함
+          </FieldDescription>
         )}
       </Field>
 
@@ -352,6 +358,7 @@ function SetPasswordStage({ token }: { token: string }) {
             autoComplete="new-password"
             disabled={isSubmitting}
             aria-invalid={!!errors.passwordConfirm}
+            aria-describedby={errors.passwordConfirm ? 'reset-password-confirm-error' : undefined}
             {...passwordConfirmField}
             onKeyDown={passwordConfirmCaps.onKeyDown}
             onKeyUp={passwordConfirmCaps.onKeyUp}
@@ -378,7 +385,7 @@ function SetPasswordStage({ token }: { token: string }) {
             <Kbd>⇪ Caps Lock</Kbd> 켜짐 — 대문자로 입력됩니다.
           </p>
         )}
-        <FieldError>{errors.passwordConfirm?.message}</FieldError>
+        <FieldError id="reset-password-confirm-error">{errors.passwordConfirm?.message}</FieldError>
       </Field>
 
       <div className="pt-1">

@@ -501,6 +501,11 @@ export default function InviteScreen() {
                     autoComplete="new-password"
                     disabled={isSubmitting}
                     aria-invalid={!!errors.password}
+                    aria-describedby={
+                      policyUnmet.length > 0
+                        ? 'invite-password-error'
+                        : 'invite-password-description'
+                    }
                     {...passwordField}
                     onKeyDown={passwordCaps.onKeyDown}
                     onKeyUp={passwordCaps.onKeyUp}
@@ -529,9 +534,11 @@ export default function InviteScreen() {
                 )}
                 {/* 정책은 상시 노출, 제출 실패 시 미충족 기준만 danger로 (case6) */}
                 {policyUnmet.length > 0 ? (
-                  <FieldError>{policyUnmet.join(' · ')}</FieldError>
+                  <FieldError id="invite-password-error">{policyUnmet.join(' · ')}</FieldError>
                 ) : (
-                  <FieldDescription>8자 이상 · 영문·숫자·특수문자 포함</FieldDescription>
+                  <FieldDescription id="invite-password-description">
+                    8자 이상 · 영문·숫자·특수문자 포함
+                  </FieldDescription>
                 )}
               </Field>
 
@@ -545,6 +552,9 @@ export default function InviteScreen() {
                     autoComplete="new-password"
                     disabled={isSubmitting}
                     aria-invalid={!!errors.passwordConfirm}
+                    aria-describedby={
+                      errors.passwordConfirm ? 'invite-password-confirm-error' : undefined
+                    }
                     {...passwordConfirmField}
                     onKeyDown={passwordConfirmCaps.onKeyDown}
                     onKeyUp={passwordConfirmCaps.onKeyUp}
@@ -571,7 +581,9 @@ export default function InviteScreen() {
                     <Kbd>⇪ Caps Lock</Kbd> 켜짐 — 대문자로 입력됩니다.
                   </p>
                 )}
-                <FieldError>{errors.passwordConfirm?.message}</FieldError>
+                <FieldError id="invite-password-confirm-error">
+                  {errors.passwordConfirm?.message}
+                </FieldError>
               </Field>
 
               <ConsentList

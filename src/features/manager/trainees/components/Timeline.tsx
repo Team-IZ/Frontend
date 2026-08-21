@@ -380,7 +380,12 @@ function ReportRow({
 
 /** `RoundReportResponse.status` 표(스펙)를 그대로 옮긴다 — 화면이 새로 판정하지 않는다 */
 const REPORT_STATUS_REASON: Record<Exclude<ManagedRoundReport['status'], 'PUBLISHED'>, string> = {
-  PENDING_PUBLISH: '이해도 확인까지 마쳤어요 — 리포트는 회차 마감 후 한꺼번에 발행됩니다.',
+  PENDING_PUBLISH: '이해도 확인까지 마쳤어요 — 리포트를 만드는 중입니다.',
+  /*
+    **기다려도 안 나온다** — `IN_PROGRESS`와 정반대다(2026-08-21 추가). 분석이 실패해
+    리포트를 만들 근거 자체가 없으므로 매니저가 재제출을 챙겨야 하는 줄이다.
+  */
+  ANALYSIS_FAILED: '코드 분석이 실패해 리포트를 만들지 못했어요 — 재제출이 필요합니다.',
   /*
     **`PENDING_PUBLISH`와 갈라야 한다**(2026-08-20 추가). 백엔드가 응시 미완료(코드
     제출·분석·이해도 확인 세션 준비/진행 중)를 전부 그쪽으로 보내던 것을 갈라낸 값이라,

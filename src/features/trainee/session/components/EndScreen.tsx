@@ -63,12 +63,15 @@ export default function EndScreen({ mode, reason }: Props) {
         variant="success"
         icon={<CheckIcon className="size-6" />}
         title="끝났어요. 수고했어요"
-        description={
-          <>
-            리포트는 <b className="text-fg">회차 마감 후 한꺼번에</b> 발행됩니다. 발행되면
-            알려드릴게요.
-          </>
-        }
+        /*
+          🔴 「회차 마감 후 한꺼번에」에서 바꿨다 — **발행이 응시 직후로 옮겨졌다**
+          (백엔드 2026-08-20 머지: 세션 종료 뒤 곧 리포트 생성을 건다). 마감까지
+          기다리라고 하면 학생이 홈을 안 열어 본다.
+
+          **몇 분이라고 못박지 않는다.** 생성은 큐를 타므로 밀릴 수 있고, 숫자를
+          말했다가 그보다 늦으면 화면이 거짓말이 된다.
+        */
+        description="리포트는 곧 만들어져요. 다 되면 홈에서 볼 수 있어요."
         aux="막힌 부분은 리포트에서 자세히 설명해드려요 · 교안에서 어디를 보면 되는지도 함께"
         actions={
           <Button nativeButton={false} render={<Link to="/trainee/home" />}>

@@ -66,7 +66,7 @@ const BY_CODE: Record<string, (ctx: Ctx) => ErrorCopy> = {
   */
   COHORT_REPORT_NOT_FOUND: () => ({
     title: '아직 발행된 리포트가 없습니다',
-    description: '미니프로젝트가 모두 끝나고 진단이 확정되면 여기에 리포트가 생깁니다.',
+    description: '미니프로젝트가 모두 끝나고\n진단이 확정되면 여기에 리포트가 생깁니다.',
     retry: false,
     tone: 'pending',
   }),

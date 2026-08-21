@@ -253,15 +253,15 @@ export default function AnalysisScreen() {
               <EmptyHeader>
                 <EmptyTitle>
                   {needs === 'ROUND'
-                    ? '어느 프로젝트의 팀을 볼지 골라 주세요'
+                    ? '프로젝트를 먼저 골라 주세요'
                     : needs === 'CLASS'
-                      ? '어느 반의 팀을 볼지 골라 주세요'
-                      : '프로젝트와 반을 골라 주세요'}
+                      ? '반을 먼저 골라 주세요'
+                      : '프로젝트와 반을 먼저 골라 주세요'}
                 </EmptyTitle>
                 <EmptyDescription>
-                  팀 번호는 반 안에서만 유일하고,{' '}
-                  <b className="font-semibold">팀은 프로젝트마다 다시 짜일 수 있어</b> 프로젝트를
-                  가로질러 같은 팀으로 볼 수 없습니다.
+                  <b className="font-semibold">팀은 프로젝트마다 다시 구성될 수 있어</b>
+                  <br />
+                  프로젝트를 변경하면 같은 팀이 아닐 수도 있습니다.
                 </EmptyDescription>
               </EmptyHeader>
             </Empty>
@@ -437,7 +437,7 @@ export default function AnalysisScreen() {
               <EmptyHeader>
                 <EmptyTitle>
                   {compare.data.availableCohorts.some((c) => c.comparable)
-                    ? '견줄 기수를 골라 주세요'
+                    ? '비교할 기수를 선택해 주세요'
                     : '비교할 기수가 없습니다'}
                 </EmptyTitle>
                 <EmptyDescription>

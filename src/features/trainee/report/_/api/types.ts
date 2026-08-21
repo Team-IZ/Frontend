@@ -69,11 +69,27 @@ type RoundBase = { id: string; label: string }
 
 export type PublishedReport = RoundBase & {
   status: 'PUBLISHED'
+  /**
+   * 다시 보기 개설(`POST /assessment-sessions/reviews`)에 넘기는 값.
+   *
+   * ⚠️ `id`(회차)와 **다른 값이다.** 회차 id를 넘기면 서버가 못 찾는다.
+   */
+  reportId: string
   publishedAt: string
   curriculum: string
   concepts: ConceptReport[]
   /** `DONE`이면 재시험을 이미 썼다 — **기회는 1회뿐**이라 버튼이 사라진다 */
   retryState: 'NONE' | 'PENDING' | 'DONE'
+  /**
+   * 다시 보기 마감 — **서버가 `발행일 + 3일`을 계산해 응답에만 담는다**(DB에 없다).
+   * 창이 지나면 `retryState`가 `NONE`으로 떨어지므로 이 값도 함께 사라진다.
+   *
+   * ⚠️ 학생이 버튼을 누르는 순간 **실제 마감은 다시 잡힌다**(`누른 시각 + 3일`,
+   * 세션의 `reviewDueAt`). 발행 이틀 뒤에 누르면 실제로는 발행+5일이 마감이다.
+   * 여기 값은 **아직 안 누른 학생에게 보여줄 예상치**이고, 시작한 뒤로는 세션 쪽을 본다.
+   *
+   * 표시에만 쓴다 — 버튼을 그릴지는 `retryState`가 이미 창까지 보고 판정한다.
+   */
   retryDueAt: string | null
   retryCompletedAt: string | null
   /**
@@ -112,6 +128,13 @@ export type RoundReport =
   | (RoundBase & { status: 'NOT_ATTEMPTED' })
   | (RoundBase & { status: 'VOID_ATTEMPT' })
   | (RoundBase & { status: 'STOPPED' })
+  /**
+   * **코드 분석이 실패해 리포트를 만들 근거가 없다**(2026-08-21 신설).
+   *
+   * `IN_PROGRESS`와 갈라야 한다 — 그쪽은 기다리면 되고 이쪽은 **기다려도 안 나온다.**
+   * 학생이 할 일은 재제출이므로 그 자리를 알려 준다.
+   */
+  | (RoundBase & { status: 'ANALYSIS_FAILED' })
 
 export type ReportsData = {
   rounds: RoundListItem[]

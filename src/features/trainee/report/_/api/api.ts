@@ -58,6 +58,12 @@ function toReport(r: ServerReport): RoundReport {
         status: 'PUBLISHED',
         // 상태가 PUBLISHED면 서버가 반드시 채우는 값들 — 스키마는 옵셔널이지만
         // 설명문이 "PUBLISHED에서만"이라고 못박았다. 없으면 빈 값이 낫다(화면이 죽지 않는다)
+        /*
+          `reportId`만 예외로 **빈 문자열을 그대로 둔다.** 이 값은 다시 보기 개설에
+          넘어가는데, 없는 것을 회차 id로 메우면 서버가 남의 리포트를 볼 수도 있다.
+          비워 두면 아래 버튼이 스스로 안 그려진다(`MyReportScreen`).
+        */
+        reportId: r.reportId ?? '',
         publishedAt: r.publishedAt ?? '',
         curriculum: r.curriculum ?? '',
         concepts: (r.concepts ?? []).map(toConcept),
@@ -74,6 +80,7 @@ function toReport(r: ServerReport): RoundReport {
     case 'NOT_ATTEMPTED':
     case 'VOID_ATTEMPT':
     case 'STOPPED':
+    case 'ANALYSIS_FAILED':
       return { ...base, status }
   }
 }

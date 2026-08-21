@@ -4879,7 +4879,7 @@ export interface paths {
      *     | `label` | string | 회차 이름(예: `미프 3차`) |
      *     | `hasPendingRetry` | boolean | 아직 안 한 다시 보기가 있다 — 레일에 점으로 표시 |
      *
-     *     ## 회차 상태 7종 — `reportsById[id].status`
+     *     ## 회차 상태 8종 — `reportsById[id].status`
      *
      *     **(2026-08-20 정정)** 아래 표는 실제와 어긋나 있었다 — `PENDING_VISIBILITY`는
      *     공개/비공개 폐지(2026-08-19)로 이미 없어졌고, `NOT_STARTED`(마감 전 미응시)가
@@ -4892,6 +4892,7 @@ export interface paths {
      *     | `VOID_ATTEMPT` | 무효 응시(검토 중 또는 무효 확정) | — |
      *     | `STOPPED` | 세션을 시작했지만 끝내지 못함 | — |
      *     | `IN_PROGRESS` | **응시 기록은 있지만 아직 안 끝났다**(제출·분석·이해도 확인 세션 준비/진행 중, 2026-08-20 추가) | — |
+     *     | `ANALYSIS_FAILED` | **코드 분석이 실패해 리포트를 만들 근거가 없다**(리포트 행이 없을 때만, 2026-08-21 추가) | — |
      *     | `PENDING_PUBLISH` | **이해도 확인까지 마쳤고** 아직 발행 전 | `publishAfter` |
      *     | `PUBLISHED` | 공개됨 | `publishedAt` · `curriculum` · `concepts[]` · `retryState` |
      *
@@ -4903,6 +4904,15 @@ export interface paths {
      *     "응시 완료(리포트 생성 중)"로 보이는 상태**였다(실사용 재현: 코드 분석이 진행 중인
      *     회차가 화면에 "응시 완료"로 뜸). `PENDING_PUBLISH`는 이제 **이해도 확인까지 실제로
      *     마친** 경우로만 좁혔고, 그 전 단계는 `IN_PROGRESS`다.
+     *
+     *     ## 🔴 `ANALYSIS_FAILED` 추가 배경 (2026-08-21 발견·수정)
+     *
+     *     코드 분석이 실패하면 이해도 확인 문항 자체가 없어 리포트를 만들 근거가 없는데, 이 사실을
+     *     거르는 자리가 없어 `PENDING_PUBLISH`로 떨어졌다 — **분석 실패로 끝난 회차가 "리포트를
+     *     만들고 있어요 · 발행 예정 N월 N일 이후"로 보이고, 그 발행 예정일은 이미 지나 있는
+     *     상태**였다(실사용 재현). 리포트 행이 아예 없는 분석 실패 회차만 이 값이고, 리포트 행이
+     *     있으면(예: 다른 종류의 리포트가 같은 회차에 걸린 기존 사례) `PENDING_PUBLISH`/
+     *     `PUBLISHED` 판정을 그대로 따른다.
      *
      *     ## concepts[] — `PUBLISHED`에서만
      *
@@ -5025,6 +5035,7 @@ export interface paths {
      *     | `PUBLISHED` | 결과를 그린다(펼치면 본문) |
      *     | `PENDING_PUBLISH` | 이해도 확인까지 마침, `리포트 생성 중` |
      *     | `IN_PROGRESS` | 아직 응시가 안 끝남(제출·분석·이해도 확인 세션 준비/진행 중, 2026-08-20 추가) — `PENDING_PUBLISH`와 구분해서 그린다 |
+     *     | `ANALYSIS_FAILED` | 분석 실패로 리포트를 만들 수 없음(리포트 행 없을 때만, 2026-08-21 추가) — `PENDING_PUBLISH`와 구분해서 그린다 |
      *     | `NOT_STARTED` | 아직 응시 전(마감 전) |
      *     | `NOT_ATTEMPTED` | 미응시 — **매니저 안내가 필요한 줄이다** |
      *     | `VOID_ATTEMPT` | 확인 필요 |
@@ -8648,6 +8659,9 @@ export interface paths {
      *     | `reportPublishStatus` | enum | `PUBLISHED` · `GENERATING` · `NOT_PUBLISHED` |
      *     | `canViewReport` | boolean | `reportPublishStatus=PUBLISHED`일 때만 `true` |
      *     | `explanationStatus` | enum | `UNAVAILABLE` · `PARTIAL` · `AVAILABLE` |
+     *     | `retryState` | enum | `NONE` · `PENDING` · `DONE`. `DONE`은 대상 수와 무관하게 REVIEW 응시를 마쳤다는 사실이다 |
+     *     | `retryTargetCount` | int | 다시 볼 개념 수. 활성 스냅샷이 없으면 `0` |
+     *     | `retryDueAt` | datetime? | 다시 보기 마감. `retryState=PENDING`이면 항상 값이 있다 |
      *
      *     **일정**
      *
@@ -8728,7 +8742,7 @@ export interface paths {
      *     ⚠️ 두 일정이 `null`일 수 있는 이유는 `ck_project_assessment_round_assessment_window_required`가
      *     `PLANNED` 회차만 면제하기 때문이다.
      *
-     *     ### past[] 각 항목 — 8필드
+     *     ### past[] 각 항목 — 11필드
      *
      *     | 필드 | 타입 | 설명 |
      *     | --- | --- | --- |
@@ -8740,6 +8754,9 @@ export interface paths {
      *     | `completedReviewCount` | int | 완료한 다시 보기 건수 |
      *     | `reportId` | UUID? | 리포트 식별자 |
      *     | `canViewReport` | boolean | `reportPublishStatus=PUBLISHED`일 때만 `true` |
+     *     | `retryState` | enum | `NONE` · `PENDING` · `DONE`. `current[].retryState`와 같은 판정 |
+     *     | `retryTargetCount` | int | 다시 볼 개념 수. 활성 스냅샷이 없으면 `0` |
+     *     | `retryDueAt` | datetime? | 다시 보기 마감. `retryState=PENDING`이면 항상 값이 있다 |
      *
      *     ⚠️ "완료 여부" boolean은 **일부러 두지 않는다.** `representativeStatus`가 완료와 미완료 사유를
      *     이미 구분하므로, 파생값을 더하면 계약이 둘로 갈린다.
@@ -12016,6 +12033,7 @@ export interface components {
        *     | `PUBLISHED` | 리포트가 발행됐다 | 결과를 그린다 |
        *     | `PENDING_PUBLISH` | **이해도 확인까지 마쳤고** 리포트를 만드는 중이다 | `리포트가 생성 중입니다` |
        *     | `IN_PROGRESS` | 응시 기록은 있지만 아직 안 끝났다(제출 전·분석 중·이해도 확인 세션 준비됨·진행 중) — 2026-08-20 추가 | 진행 상황을 그린다. `PENDING_PUBLISH`와 다른 말이어야 한다 |
+       *     | `ANALYSIS_FAILED` | 코드 분석이 실패해 리포트를 만들 근거가 없다(리포트 행이 아예 없을 때만) — 2026-08-21 추가 | 다시 제출을 안내한다 |
        *     | `NOT_STARTED` | **제출 마감 전인데 아직 응시 기록이 없다** | 아직 시간이 있다 |
        *     | `NOT_ATTEMPTED` | **마감이 지나도록 응시하지 않았다** | 놓쳤다 — 매니저 안내가 필요하다 |
        *     | `VOID_ATTEMPT` | 무효 응시 검토 중이거나 무효로 확정됐다 | `확인 필요` |
@@ -12035,12 +12053,22 @@ export interface components {
        *     끝내지 못한** 것이다 — 코드 제출·분석·이해도 확인 세션 준비 단계에서 이 둘을 섞으면
        *     학생이 하지도 않은 걸 "응시 완료"로 보게 된다(실사용 재현: 코드 분석 중인 회차가
        *     "응시 완료"로 표시).
+       *
+       *     🔴 **`PENDING_PUBLISH`와 `ANALYSIS_FAILED`도 한 문구로 묶지 않는다**(2026-08-21
+       *     발견·수정). 전자는 리포트가 곧 나올 것이라는 약속이고, 후자는 **분석이 실패해 이
+       *     회차의 리포트가 만들어질 수 없다**는 사실이다 — 리포트 행이 없는 채로 이 둘을 섞으면
+       *     학생이 이미 지난 발행 예정일을 계속 기다리게 된다(실사용 재현: 코드 분석이 실패한
+       *     회차가 "리포트를 만들고 있어요 · 발행 예정 N월 N일 이후"로 표시, 그 날짜는 이미
+       *     지났음). 단, 분석 실패 회차에도 리포트 행이 실제로 걸려 있으면(예: 다른 종류의
+       *     리포트가 같은 회차 id를 공유하는 기존 사례) 이 값 대신 그대로 `PUBLISHED`/
+       *     `PENDING_PUBLISH`로 판정한다 — 리포트 행의 유무가 갈림점이다.
        * @enum {string}
        */
       status:
         | 'PUBLISHED'
         | 'PENDING_PUBLISH'
         | 'IN_PROGRESS'
+        | 'ANALYSIS_FAILED'
         | 'NOT_STARTED'
         | 'NOT_ATTEMPTED'
         | 'VOID_ATTEMPT'
@@ -16746,6 +16774,26 @@ export interface components {
       canViewReport: boolean
       /** @enum {string} */
       explanationStatus: 'UNAVAILABLE' | 'PARTIAL' | 'AVAILABLE'
+      /**
+       * @description 다시 보기 상태. `DONE`은 REVIEW 응시를 마쳤다는 사실의 기록이라 지금 대상 수와
+       *     무관하게 참이다 — 대상이 0개여도 이미 봤다면 `DONE`이다. `TraineeReportServiceImpl
+       *     .retryState`와 같은 판정이다.
+       * @example PENDING
+       * @enum {string}
+       */
+      retryState: 'NONE' | 'PENDING' | 'DONE'
+      /**
+       * Format: int32
+       * @description 다시 볼 개념 수. 리포트 미발행 등으로 활성 스냅샷이 없으면 0
+       * @example 2
+       */
+      retryTargetCount: number
+      /**
+       * Format: date-time
+       * @description 다시 보기 마감일. `retryState = PENDING`이면 항상 값이 있다 — REVIEW 응시를 아직
+       *     안 열었어도 발행일 + 다시 보기 창으로 계산해서 채운다.
+       */
+      retryDueAt: string | null
       /** Format: date-time */
       submissionDueAt: string | null
       /**
@@ -16860,7 +16908,7 @@ export interface components {
        */
       className: string | null
     }
-    /** @description 지난 회차. 8필드로 고정한다. */
+    /** @description 지난 회차. 11필드로 고정한다. */
     PastRoundResponse: {
       /** Format: uuid */
       assessmentRoundId: string
@@ -16885,6 +16933,23 @@ export interface components {
       reportId: string
       /** @description reportPublishStatus = PUBLISHED일 때만 true */
       canViewReport: boolean
+      /**
+       * @description 다시 보기 상태. CurrentRoundResponse.retryState와 같은 판정
+       * @example NONE
+       * @enum {string}
+       */
+      retryState: 'NONE' | 'PENDING' | 'DONE'
+      /**
+       * Format: int32
+       * @description 다시 볼 개념 수. 활성 스냅샷이 없으면 0
+       * @example 0
+       */
+      retryTargetCount: number
+      /**
+       * Format: date-time
+       * @description 다시 보기 마감일. retryState = PENDING이면 항상 값이 있다
+       */
+      retryDueAt: string | null
     }
     /**
      * @description 교육생 홈 카드의 기본 버튼.

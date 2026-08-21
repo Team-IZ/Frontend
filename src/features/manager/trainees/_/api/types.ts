@@ -233,11 +233,14 @@ export type ManagedRoundReport =
 
     `IN_PROGRESS`가 2026-08-20에 그렇게 늘었다 — 백엔드가 응시 미완료(제출·분석·세션
     준비/진행 중)를 `PENDING_PUBLISH`로 잘못 내려보내던 것을 갈라낸 값이다.
+    `ANALYSIS_FAILED`는 2026-08-21에 늘었다 — 분석이 실패해 리포트를 만들 근거 자체가
+    없는 경우이고, 기다리면 되는 `IN_PROGRESS`와 반대다.
   */
   | {
       status:
         | 'PENDING_PUBLISH'
         | 'IN_PROGRESS'
+        | 'ANALYSIS_FAILED'
         | 'NOT_STARTED'
         | 'NOT_ATTEMPTED'
         | 'VOID_ATTEMPT'

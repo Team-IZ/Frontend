@@ -7,10 +7,10 @@ import type {
   submitGithubUrl_Response,
   checkRepository_Body,
   checkRepository_Response,
-  getAnalysis_Path,
-  getAnalysis_Response,
-  getAnalysisResult_Path,
-  getAnalysisResult_Response,
+  getSubmissionAnalysis_Path,
+  getSubmissionAnalysis_Response,
+  getSubmissionAnalysisResult_Path,
+  getSubmissionAnalysisResult_Response,
   findProjectSubmissionStatus_Path,
   findProjectSubmissionStatus_Query,
   findProjectSubmissionStatus_Response,
@@ -40,8 +40,10 @@ export const checkRepository = (params: { body: checkRepository_Body } & Request
   )
 
 /** 코드 분석 진행 상태·실패 사유 조회 — `GET /api/v0/submissions/{submissionId}/analysis` */
-export const getAnalysis = (params: { path: getAnalysis_Path } & RequestOptions) =>
-  unwrap<getAnalysis_Response>(
+export const getSubmissionAnalysis = (
+  params: { path: getSubmissionAnalysis_Path } & RequestOptions,
+) =>
+  unwrap<getSubmissionAnalysis_Response>(
     izClient.GET('/api/v0/submissions/{submissionId}/analysis', {
       params: { path: params.path },
       signal: params.signal,
@@ -49,8 +51,10 @@ export const getAnalysis = (params: { path: getAnalysis_Path } & RequestOptions)
   )
 
 /** 코드 분석 결과 조회 — `GET /api/v0/submissions/{submissionId}/analysis/result` */
-export const getAnalysisResult = (params: { path: getAnalysisResult_Path } & RequestOptions) =>
-  unwrap<getAnalysisResult_Response>(
+export const getSubmissionAnalysisResult = (
+  params: { path: getSubmissionAnalysisResult_Path } & RequestOptions,
+) =>
+  unwrap<getSubmissionAnalysisResult_Response>(
     izClient.GET('/api/v0/submissions/{submissionId}/analysis/result', {
       params: { path: params.path },
       signal: params.signal,

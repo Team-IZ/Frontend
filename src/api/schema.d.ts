@@ -4665,6 +4665,35 @@ export interface paths {
      *     제출은 팀 단위라 같은 팀이면 누가 조회해도 같은 결과가 나온다. 다만 **세션 준비 여부만은
      *     조회자 본인 기준**이다 — 아래 `SESSION_PREPARATION_FAILED` 참고.
      *
+     *     ## 이 API와 `GET /assessment-rounds`를 어떻게 나눠 쓰는가
+     *
+     *     | | `GET /assessment-rounds` | 이 API |
+     *     | --- | --- | --- |
+     *     | 목적 | 회차 전체 요약 카드("지금 할 일") | 제출 1건의 분석 진행 상태 |
+     *     | 설계 의도 | 진입/새로고침 시 1회 조회 | **초 단위 폴링 전용** |
+     *     | 상태 표현 | 뭉뚱그린 5단계(`analysisPhase`) | 원시 job 상태 그대로(`phase`) |
+     *     | 실패 사유 | 있음/없음만(`analysisFailureCode`, `ANALYSIS_FAILED` 1종) | 구체적 사유 코드 최대 14종(아래 `failureCode`) |
+     *     | `submissionId` 필요 여부 | 불필요 | **필수**(제출 응답 또는 TR-02 `GET /projects/{projectId}/submissions/me`에서 얻는다) |
+     *
+     *     **권장 흐름**: 화면 진입 시 `assessment-rounds`로 그리고, `analysisPhase=ANALYZING`인
+     *     동안만 이 API를 60초 간격으로 폴링해 그 순간 "분석 완료"·"분석 실패"로 전환한다. 그보다
+     *     짧게 돌려도 새 정보를 못 받는다 — `analysis_job.status`는 백엔드-AI 폴링 스케줄러가
+     *     `ai.analysis.scheduler.poll-delay`(기본 `PT1M`) 주기로만 갱신한다.
+     *
+     *     같은 분석 job을 세 API가 서로 다른 이름·값 개수의 enum으로 표현한다. 대응표:
+     *
+     *     | 상황 | `assessment-rounds`<br>`analysisPhase` | `assessment-rounds`<br>`analysisJobStatus` | 이 API의 `phase` |
+     *     | --- | --- | --- | --- |
+     *     | 아직 제출 안 함 | `NOT_SUBMITTED` | (없음, `null`) | `NOT_STARTED` |
+     *     | 대기 중 | `ANALYZING` | `QUEUED` | `QUEUED` |
+     *     | 분석 중 | `ANALYZING` | `RUNNING` | `RUNNING` |
+     *     | 성공 | `COMPLETED` | `SUCCEEDED` | `SUCCEEDED` |
+     *     | 부분 성공 | ⚠️ `WAITING`(`COMPLETED`가 아니다 — 뷰의 분기가 `PARTIAL`을 안 잡아 `ELSE`로 떨어진다) | `PARTIAL` | `PARTIAL` |
+     *     | 실패 | `FAILED` | `FAILED` | `FAILED` |
+     *
+     *     **폴링을 멈춰야 하는 시점은 `phase`가 `QUEUED`·`RUNNING`을 벗어나는 순간**이다
+     *     (`SUCCEEDED`·`PARTIAL`은 결과 조회로, `FAILED`는 실패 안내로 넘어간다).
+     *
      *     ## 요청 (경로 파라미터)
      *
      *     | 파라미터 | 필수 | 타입 | 설명 |
@@ -4734,7 +4763,7 @@ export interface paths {
      *     | `SUBMISSION_NOT_FOUND` | 404 | 그런 제출이 없다 |
      *     | `SUBMISSION_ACCESS_DENIED` | 403 | 다른 팀의 제출이다 |
      */
-    get: operations['getAnalysis']
+    get: operations['getSubmissionAnalysis']
     put?: never
     post?: never
     delete?: never
@@ -4832,7 +4861,7 @@ export interface paths {
      *     | `ANALYSIS_RESULT_NOT_FOUND` | 404 | 분석이 아직 성공하지 않았다. 진행 중인지 실패인지는 상태 조회의 `phase`로 구분한다 |
      *     | `SUBMISSION_ACCESS_DENIED` | 403 | 다른 팀의 제출이다 |
      */
-    get: operations['getAnalysisResult']
+    get: operations['getSubmissionAnalysisResult']
     put?: never
     post?: never
     delete?: never
@@ -4879,7 +4908,7 @@ export interface paths {
      *     | `label` | string | 회차 이름(예: `미프 3차`) |
      *     | `hasPendingRetry` | boolean | 아직 안 한 다시 보기가 있다 — 레일에 점으로 표시 |
      *
-     *     ## 회차 상태 7종 — `reportsById[id].status`
+     *     ## 회차 상태 8종 — `reportsById[id].status`
      *
      *     **(2026-08-20 정정)** 아래 표는 실제와 어긋나 있었다 — `PENDING_VISIBILITY`는
      *     공개/비공개 폐지(2026-08-19)로 이미 없어졌고, `NOT_STARTED`(마감 전 미응시)가
@@ -4892,8 +4921,14 @@ export interface paths {
      *     | `VOID_ATTEMPT` | 무효 응시(검토 중 또는 무효 확정) | — |
      *     | `STOPPED` | 세션을 시작했지만 끝내지 못함 | — |
      *     | `IN_PROGRESS` | **응시 기록은 있지만 아직 안 끝났다**(제출·분석·이해도 확인 세션 준비/진행 중, 2026-08-20 추가) | — |
+     *     | `ANALYSIS_FAILED` | **코드 분석이 실패해 리포트를 만들 근거가 없다**(리포트 행이 없을 때만, 2026-08-21 추가) | — |
      *     | `PENDING_PUBLISH` | **이해도 확인까지 마쳤고** 아직 발행 전 | `publishAfter` |
      *     | `PUBLISHED` | 공개됨 | `publishedAt` · `curriculum` · `concepts[]` · `retryState` |
+     *
+     *     `IN_PROGRESS`·`ANALYSIS_FAILED`는 분석 job 기준 상태와 대응한다 — `GET /assessment-rounds`의
+     *     `analysisJobStatus`가 `QUEUED`·`RUNNING`인 동안은 이 API도 `IN_PROGRESS`를, `FAILED`가
+     *     되면(리포트 행이 아직 없는 한) `ANALYSIS_FAILED`를 반환한다. 구체적 사유·초 단위 폴링은
+     *     TR-02(`GET /submissions/{submissionId}/analysis`)에서 확인한다.
      *
      *     ## 🔴 `IN_PROGRESS` 추가 배경 (2026-08-20 발견·수정)
      *
@@ -4903,6 +4938,15 @@ export interface paths {
      *     "응시 완료(리포트 생성 중)"로 보이는 상태**였다(실사용 재현: 코드 분석이 진행 중인
      *     회차가 화면에 "응시 완료"로 뜸). `PENDING_PUBLISH`는 이제 **이해도 확인까지 실제로
      *     마친** 경우로만 좁혔고, 그 전 단계는 `IN_PROGRESS`다.
+     *
+     *     ## 🔴 `ANALYSIS_FAILED` 추가 배경 (2026-08-21 발견·수정)
+     *
+     *     코드 분석이 실패하면 이해도 확인 문항 자체가 없어 리포트를 만들 근거가 없는데, 이 사실을
+     *     거르는 자리가 없어 `PENDING_PUBLISH`로 떨어졌다 — **분석 실패로 끝난 회차가 "리포트를
+     *     만들고 있어요 · 발행 예정 N월 N일 이후"로 보이고, 그 발행 예정일은 이미 지나 있는
+     *     상태**였다(실사용 재현). 리포트 행이 아예 없는 분석 실패 회차만 이 값이고, 리포트 행이
+     *     있으면(예: 다른 종류의 리포트가 같은 회차에 걸린 기존 사례) `PENDING_PUBLISH`/
+     *     `PUBLISHED` 판정을 그대로 따른다.
      *
      *     ## concepts[] — `PUBLISHED`에서만
      *
@@ -5025,6 +5069,7 @@ export interface paths {
      *     | `PUBLISHED` | 결과를 그린다(펼치면 본문) |
      *     | `PENDING_PUBLISH` | 이해도 확인까지 마침, `리포트 생성 중` |
      *     | `IN_PROGRESS` | 아직 응시가 안 끝남(제출·분석·이해도 확인 세션 준비/진행 중, 2026-08-20 추가) — `PENDING_PUBLISH`와 구분해서 그린다 |
+     *     | `ANALYSIS_FAILED` | 분석 실패로 리포트를 만들 수 없음(리포트 행 없을 때만, 2026-08-21 추가) — `PENDING_PUBLISH`와 구분해서 그린다 |
      *     | `NOT_STARTED` | 아직 응시 전(마감 전) |
      *     | `NOT_ATTEMPTED` | 미응시 — **매니저 안내가 필요한 줄이다** |
      *     | `VOID_ATTEMPT` | 확인 필요 |
@@ -8623,7 +8668,22 @@ export interface paths {
      *     | --- | --- | --- |
      *     | `analysisPhase` | enum | `NOT_SUBMITTED` · `ANALYZING` · `FAILED` · `COMPLETED` · `WAITING` |
      *     | `analysisJobStatus` | enum? | `QUEUED` · `RUNNING` · `SUCCEEDED` · `PARTIAL` · `FAILED` |
-     *     | `analysisFailureCode` | string? | 실패했는가만 알린다. 값은 `ANALYSIS_FAILED` 하나. **사유는 TR-02에 있다** |
+     *     | `analysisFailureCode` | string? | 실패했는가만 알린다. 값은 `ANALYSIS_FAILED` 하나. **구체적 사유(최대 14종)·초 단위 폴링은 TR-02(`GET /submissions/{submissionId}/analysis`)에서** |
+     *
+     *     이 셋은 같은 분석 job을 요약해서 보여준다. TR-02의 `phase`(6값)와 이름·값 개수가
+     *     다르므로 두 API를 함께 쓸 때는 아래 표로 대응시킨다.
+     *
+     *     | 상황 | `analysisPhase`(이 API) | `analysisJobStatus`(이 API) | TR-02 `phase` |
+     *     | --- | --- | --- | --- |
+     *     | 아직 제출 안 함 | `NOT_SUBMITTED` | `null` | `NOT_STARTED` |
+     *     | 대기 중 | `ANALYZING` | `QUEUED` | `QUEUED` |
+     *     | 분석 중 | `ANALYZING` | `RUNNING` | `RUNNING` |
+     *     | 성공 | `COMPLETED` | `SUCCEEDED` | `SUCCEEDED` |
+     *     | 부분 성공 | ⚠️ `WAITING`(`COMPLETED`가 아니다) | `PARTIAL` | `PARTIAL` |
+     *     | 실패 | `FAILED` | `FAILED` | `FAILED` |
+     *
+     *     `analysisPhase = ANALYZING`이 된 시점부터가 TR-02를 60초 간격으로 폴링할 시점이다
+     *     (그보다 짧게 돌려도 새 정보를 못 받는다 — 원장 갱신 주기가 `poll-delay` 기본 `PT1M`).
      *
      *     **이해도 확인·다시 보기**
      *
@@ -8648,6 +8708,9 @@ export interface paths {
      *     | `reportPublishStatus` | enum | `PUBLISHED` · `GENERATING` · `NOT_PUBLISHED` |
      *     | `canViewReport` | boolean | `reportPublishStatus=PUBLISHED`일 때만 `true` |
      *     | `explanationStatus` | enum | `UNAVAILABLE` · `PARTIAL` · `AVAILABLE` |
+     *     | `retryState` | enum | `NONE` · `PENDING` · `DONE`. `DONE`은 대상 수와 무관하게 REVIEW 응시를 마쳤다는 사실이다 |
+     *     | `retryTargetCount` | int | 다시 볼 개념 수. 활성 스냅샷이 없으면 `0` |
+     *     | `retryDueAt` | datetime? | 다시 보기 마감. `retryState=PENDING`이면 항상 값이 있다 |
      *
      *     **일정**
      *
@@ -8728,7 +8791,7 @@ export interface paths {
      *     ⚠️ 두 일정이 `null`일 수 있는 이유는 `ck_project_assessment_round_assessment_window_required`가
      *     `PLANNED` 회차만 면제하기 때문이다.
      *
-     *     ### past[] 각 항목 — 8필드
+     *     ### past[] 각 항목 — 11필드
      *
      *     | 필드 | 타입 | 설명 |
      *     | --- | --- | --- |
@@ -8740,6 +8803,9 @@ export interface paths {
      *     | `completedReviewCount` | int | 완료한 다시 보기 건수 |
      *     | `reportId` | UUID? | 리포트 식별자 |
      *     | `canViewReport` | boolean | `reportPublishStatus=PUBLISHED`일 때만 `true` |
+     *     | `retryState` | enum | `NONE` · `PENDING` · `DONE`. `current[].retryState`와 같은 판정 |
+     *     | `retryTargetCount` | int | 다시 볼 개념 수. 활성 스냅샷이 없으면 `0` |
+     *     | `retryDueAt` | datetime? | 다시 보기 마감. `retryState=PENDING`이면 항상 값이 있다 |
      *
      *     ⚠️ "완료 여부" boolean은 **일부러 두지 않는다.** `representativeStatus`가 완료와 미완료 사유를
      *     이미 구분하므로, 파생값을 더하면 계약이 둘로 갈린다.
@@ -11826,16 +11892,32 @@ export interface components {
       /** Format: date-time */
       completedAt: string
       /**
-       * @description FAILED일 때만 값이 있다. 분석 실행 실패 6종과 저장소 접근 실패 5종을 합한 11종이다 —
-       *     저장소 주소 오류도 제출이 아니라 여기로 드러난다.
+       * @description FAILED일 때만 값이 있다. 분석 실행 실패 5종·저장소 접근 실패 5종·ZIP 내용 검증 2종을
+       *     합한 12종이 analysis_job.failure_code 실값이다 — 저장소 주소 오류도 제출이 아니라
+       *     여기로 드러난다.
        *
        *     SESSION_PREPARATION_FAILED와 EXTERNAL_JOB_ID_LOST는 analysis_job.failure_code에 없는
        *     값이다. 둘 다 서버가 조회 시점에 판정해 내려 준다 — 전자는 분석은 성공했지만 이 교육생의
        *     세션·문항이 준비되지 않은 경우, 후자는 활성 분석 행이 AI 작업 ID를 잃어 상태를 더 따라갈
        *     수 없는 경우다.
        * @example REPO_NOT_FOUND
+       * @enum {string}
        */
-      failureCode: string
+      failureCode:
+        | 'TEMPORARY_ERROR'
+        | 'ANALYSIS_TIMEOUT'
+        | 'MODEL_ERROR'
+        | 'SOURCE_UNREACHABLE'
+        | 'UNSUPPORTED_LANGUAGE'
+        | 'INVALID_REPOSITORY_URL'
+        | 'REPO_NOT_FOUND'
+        | 'REPOSITORY_ACCESS_DENIED'
+        | 'BRANCH_NOT_FOUND'
+        | 'UNSUPPORTED_HOST'
+        | 'EMPTY_CODE'
+        | 'GIT_LOG_MISSING'
+        | 'SESSION_PREPARATION_FAILED'
+        | 'EXTERNAL_JOB_ID_LOST'
       failureReason: string
       /**
        * Format: uuid
@@ -12016,6 +12098,7 @@ export interface components {
        *     | `PUBLISHED` | 리포트가 발행됐다 | 결과를 그린다 |
        *     | `PENDING_PUBLISH` | **이해도 확인까지 마쳤고** 리포트를 만드는 중이다 | `리포트가 생성 중입니다` |
        *     | `IN_PROGRESS` | 응시 기록은 있지만 아직 안 끝났다(제출 전·분석 중·이해도 확인 세션 준비됨·진행 중) — 2026-08-20 추가 | 진행 상황을 그린다. `PENDING_PUBLISH`와 다른 말이어야 한다 |
+       *     | `ANALYSIS_FAILED` | 코드 분석이 실패해 리포트를 만들 근거가 없다(리포트 행이 아예 없을 때만) — 2026-08-21 추가 | 다시 제출을 안내한다 |
        *     | `NOT_STARTED` | **제출 마감 전인데 아직 응시 기록이 없다** | 아직 시간이 있다 |
        *     | `NOT_ATTEMPTED` | **마감이 지나도록 응시하지 않았다** | 놓쳤다 — 매니저 안내가 필요하다 |
        *     | `VOID_ATTEMPT` | 무효 응시 검토 중이거나 무효로 확정됐다 | `확인 필요` |
@@ -12035,12 +12118,22 @@ export interface components {
        *     끝내지 못한** 것이다 — 코드 제출·분석·이해도 확인 세션 준비 단계에서 이 둘을 섞으면
        *     학생이 하지도 않은 걸 "응시 완료"로 보게 된다(실사용 재현: 코드 분석 중인 회차가
        *     "응시 완료"로 표시).
+       *
+       *     🔴 **`PENDING_PUBLISH`와 `ANALYSIS_FAILED`도 한 문구로 묶지 않는다**(2026-08-21
+       *     발견·수정). 전자는 리포트가 곧 나올 것이라는 약속이고, 후자는 **분석이 실패해 이
+       *     회차의 리포트가 만들어질 수 없다**는 사실이다 — 리포트 행이 없는 채로 이 둘을 섞으면
+       *     학생이 이미 지난 발행 예정일을 계속 기다리게 된다(실사용 재현: 코드 분석이 실패한
+       *     회차가 "리포트를 만들고 있어요 · 발행 예정 N월 N일 이후"로 표시, 그 날짜는 이미
+       *     지났음). 단, 분석 실패 회차에도 리포트 행이 실제로 걸려 있으면(예: 다른 종류의
+       *     리포트가 같은 회차 id를 공유하는 기존 사례) 이 값 대신 그대로 `PUBLISHED`/
+       *     `PENDING_PUBLISH`로 판정한다 — 리포트 행의 유무가 갈림점이다.
        * @enum {string}
        */
       status:
         | 'PUBLISHED'
         | 'PENDING_PUBLISH'
         | 'IN_PROGRESS'
+        | 'ANALYSIS_FAILED'
         | 'NOT_STARTED'
         | 'NOT_ATTEMPTED'
         | 'VOID_ATTEMPT'
@@ -16746,6 +16839,26 @@ export interface components {
       canViewReport: boolean
       /** @enum {string} */
       explanationStatus: 'UNAVAILABLE' | 'PARTIAL' | 'AVAILABLE'
+      /**
+       * @description 다시 보기 상태. `DONE`은 REVIEW 응시를 마쳤다는 사실의 기록이라 지금 대상 수와
+       *     무관하게 참이다 — 대상이 0개여도 이미 봤다면 `DONE`이다. `TraineeReportServiceImpl
+       *     .retryState`와 같은 판정이다.
+       * @example PENDING
+       * @enum {string}
+       */
+      retryState: 'NONE' | 'PENDING' | 'DONE'
+      /**
+       * Format: int32
+       * @description 다시 볼 개념 수. 리포트 미발행 등으로 활성 스냅샷이 없으면 0
+       * @example 2
+       */
+      retryTargetCount: number
+      /**
+       * Format: date-time
+       * @description 다시 보기 마감일. `retryState = PENDING`이면 항상 값이 있다 — REVIEW 응시를 아직
+       *     안 열었어도 발행일 + 다시 보기 창으로 계산해서 채운다.
+       */
+      retryDueAt: string | null
       /** Format: date-time */
       submissionDueAt: string | null
       /**
@@ -16860,7 +16973,7 @@ export interface components {
        */
       className: string | null
     }
-    /** @description 지난 회차. 8필드로 고정한다. */
+    /** @description 지난 회차. 11필드로 고정한다. */
     PastRoundResponse: {
       /** Format: uuid */
       assessmentRoundId: string
@@ -16885,6 +16998,23 @@ export interface components {
       reportId: string
       /** @description reportPublishStatus = PUBLISHED일 때만 true */
       canViewReport: boolean
+      /**
+       * @description 다시 보기 상태. CurrentRoundResponse.retryState와 같은 판정
+       * @example NONE
+       * @enum {string}
+       */
+      retryState: 'NONE' | 'PENDING' | 'DONE'
+      /**
+       * Format: int32
+       * @description 다시 볼 개념 수. 활성 스냅샷이 없으면 0
+       * @example 0
+       */
+      retryTargetCount: number
+      /**
+       * Format: date-time
+       * @description 다시 보기 마감일. retryState = PENDING이면 항상 값이 있다
+       */
+      retryDueAt: string | null
     }
     /**
      * @description 교육생 홈 카드의 기본 버튼.
@@ -22982,7 +23112,7 @@ export interface operations {
       }
     }
   }
-  getAnalysis: {
+  getSubmissionAnalysis: {
     parameters: {
       query?: never
       header?: never
@@ -23031,7 +23161,7 @@ export interface operations {
       }
     }
   }
-  getAnalysisResult: {
+  getSubmissionAnalysisResult: {
     parameters: {
       query?: never
       header?: never

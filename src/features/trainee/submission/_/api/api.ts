@@ -3,7 +3,10 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isApiError } from '@/api/_contract'
 import { useGetMyAssessmentRounds } from '@/api/assessment/useAssessmentQueries'
 import { assessmentKeys } from '@/api/assessment/assessmentKeys'
-import { useFindMySubmission, useGetAnalysis } from '@/api/submission/useSubmissionQueries'
+import {
+  useFindMySubmission,
+  useGetSubmissionAnalysis,
+} from '@/api/submission/useSubmissionQueries'
 import { submissionKeys } from '@/api/submission/submissionKeys'
 import type { findMySubmission_Response } from '@/api/submission/submissionTypes'
 import { useCheckRepository, useSubmitGithubUrl } from '@/api/submission/useSubmissionMutations'
@@ -145,7 +148,7 @@ function useAnalysisWatch(submissionId: string | null, analyzing: boolean) {
   const queryClient = useQueryClient()
   const enabled = !!submissionId && analyzing
 
-  const { data } = useGetAnalysis(
+  const { data } = useGetSubmissionAnalysis(
     { path: { submissionId: submissionId! } },
     {
       enabled,

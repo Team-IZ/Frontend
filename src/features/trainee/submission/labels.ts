@@ -32,7 +32,17 @@ export type StateBannerContent = {
 }
 
 /** 상태별 상단 배너 — 목업의 `.state`(아이콘·제목·설명·보조문구) 카드 */
-export function buildStateBanner(view: SubmissionView): StateBannerContent | null {
+export function buildStateBanner(
+  view: SubmissionView,
+  /*
+    분석 조회가 준 **실패 사유 원문**. 회차 요약의 `failureCode`는 15종을 우리 문구로
+    갈라 주지만, 사유 둘(`SESSION_PREPARATION_FAILED`·`EXTERNAL_JOB_ID_LOST`)은
+    **원장에 없어 그 코드로는 영영 안 온다**(백엔드 권장안 §4.4). 그 경우 화면이
+    「코드를 읽지 못했어요」라는 엉뚱한 기본 문구를 쓰게 되므로, 서버가 준 문장을 쓴다 —
+    *"화면에 그대로 노출 가능"* 이라고 스펙이 명시한 값이다.
+  */
+  analysisFailureReason?: string | null,
+): StateBannerContent | null {
   switch (view.status) {
     case 'DRAFT':
       return null // 아직 아무것도 안 일어났다 — 배너 대신 폼만 있다
@@ -74,7 +84,8 @@ export function buildStateBanner(view: SubmissionView): StateBannerContent | nul
         weight: 'card',
         icon: TriangleAlertIcon,
         title: '코드를 분석하지 못했어요',
-        description: failureText(view.failureCode),
+        // 아는 코드면 우리 문구, 모르는 실패면 서버가 준 문장 — 그것도 없으면 기본값
+        description: failureText(view.failureCode, analysisFailureReason),
         sub: '계속 안 되면 매니저에게 알려 주세요.',
       }
     case 'SUBMISSION_CLOSED':
@@ -102,8 +113,10 @@ const FAILURE_TEXT: Record<string, string> = {
   MODEL_ERROR: '분석 중 문제가 생겼어요. 다시 제출해 주세요.',
 }
 
-const failureText = (code: string | null) =>
-  (code && FAILURE_TEXT[code]) ?? '제출한 코드를 읽지 못했어요. 파일을 확인하고 다시 올려 주세요.'
+const failureText = (code: string | null, serverReason?: string | null) =>
+  (code && FAILURE_TEXT[code]) ??
+  serverReason ??
+  '제출한 코드를 읽지 못했어요. 파일을 확인하고 다시 올려 주세요.'
 
 /*
   🔴 **서버 상한과 정확히 같은 값이다** — `app.submission.max-zip-bytes` 기본값이고,

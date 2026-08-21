@@ -196,12 +196,13 @@ export default function LoginScreen() {
                 autoComplete="username"
                 disabled={isSubmitting}
                 aria-invalid={!!errors.email}
+                aria-describedby={errors.email ? 'login-email-error' : undefined}
                 {...register('email', {
                   required: '이메일을 입력해주세요.',
                   pattern: { value: EMAIL_PATTERN, message: EMAIL_INVALID_MESSAGE },
                 })}
               />
-              <FieldError>{errors.email?.message}</FieldError>
+              <FieldError id="login-email-error">{errors.email?.message}</FieldError>
             </Field>
 
             <Field data-invalid={!!errors.password}>
@@ -214,6 +215,7 @@ export default function LoginScreen() {
                   autoComplete="current-password"
                   disabled={isSubmitting}
                   aria-invalid={!!errors.password}
+                  aria-describedby={errors.password ? 'login-password-error' : undefined}
                   {...passwordField}
                   onKeyDown={passwordCaps.onKeyDown}
                   onKeyUp={passwordCaps.onKeyUp}
@@ -241,7 +243,7 @@ export default function LoginScreen() {
                   <Kbd>⇪ Caps Lock</Kbd> 켜짐 — 대문자로 입력됩니다.
                 </p>
               )}
-              <FieldError>{errors.password?.message}</FieldError>
+              <FieldError id="login-password-error">{errors.password?.message}</FieldError>
             </Field>
 
             {/* 알림은 비밀번호 아래 · 버튼 위 — 폼 위쪽에 두면 뜰 때마다 입력 필드가 밀린다 */}

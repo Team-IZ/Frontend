@@ -2,6 +2,10 @@
 
 import { izClient, unwrap, type RequestOptions } from '@/api/_contract'
 import type {
+  regenerateReport_Path,
+  regenerateReport_Response,
+  forceGenerateReport_Path,
+  forceGenerateReport_Response,
   findMyReports_Response,
   findMyReport_Path,
   findMyReport_Response,
@@ -10,6 +14,24 @@ import type {
   findClassDiagnosis_Query,
   findClassDiagnosis_Response,
 } from './reportingTypes'
+
+/** 세션 지정 리포트 재생성 — `POST /api/v0/reports/sessions/{sessionId}/regeneration` */
+export const regenerateReport = (params: { path: regenerateReport_Path } & RequestOptions) =>
+  unwrap<regenerateReport_Response>(
+    izClient.POST('/api/v0/reports/sessions/{sessionId}/regeneration', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
+
+/** [연동 시험] 세션 지정 리포트 강제 생성 — `POST /api/v0/reports/sessions/{sessionId}/generation` */
+export const forceGenerateReport = (params: { path: forceGenerateReport_Path } & RequestOptions) =>
+  unwrap<forceGenerateReport_Response>(
+    izClient.POST('/api/v0/reports/sessions/{sessionId}/generation', {
+      params: { path: params.path },
+      signal: params.signal,
+    }) as never,
+  )
 
 /** 내 리포트 전량 조회 — `GET /api/v0/reports` */
 export const findMyReports = (params: RequestOptions = {}) =>

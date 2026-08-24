@@ -264,9 +264,10 @@ export default function DashboardScreen() {
                         key={item.id}
                         item={item}
                         projectId={data.projectId}
+                        cohortId={cohortId}
                         onOpenBrief={() =>
                           item.kind === 'INTERVIEW' &&
-                          navigate(briefPath(item.caseId, item.briefState))
+                          navigate(briefPath(item.caseId, item.briefState, cohortId))
                         }
                         onReviewVoid={() =>
                           item.kind === 'INVALID' &&

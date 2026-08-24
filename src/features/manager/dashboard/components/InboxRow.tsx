@@ -26,7 +26,12 @@ import type { InboxBand, InboxItem } from '../_/api/types'
   갈아탈 때 같이 들어온다(`_/api/api.ts` 머리말). `SESSION_INCOMPLETE`(응시 중단)는 반대로 **새로 생겼다**.
 */
 
-const traineePath = (id: string) => `/manager/trainees/${id}`
+/*
+  🔴 33차(백엔드 R2, 실측 재현) — 기수를 함께 싣는다. 안 실으면 상세 화면이 기본
+  기수(진행 중인 기수)로 물러선다(다중 기수 매니저 계정으로 실측).
+*/
+const traineePath = (id: string, cohortId: string | undefined) =>
+  `/manager/trainees/${id}?cohort=${cohortId ?? ''}`
 /**
  * 🔴 **`?state=`를 반드시 붙인다**(렌더에서 잡았다). 브리프 화면은 이 값으로
  * 「`GET`할지 `POST`로 만들지」를 가른다 — 없으면 있다고 보고 `GET`하는데,
@@ -35,9 +40,24 @@ const traineePath = (id: string) => `/manager/trainees/${id}`
  * 오지만, **없는 것을 부르지 않는 것이 계약**이라 이 분기는 그대로다.
  * 5차는 대기 4건이 전부 `NONE`이다. MG-03 목록과 같은 형식이다.
  */
-const briefPath = (caseId: string, briefState: string | null) =>
-  `/manager/interviews/${caseId}/brief${briefState ? `?state=${briefState}` : ''}`
-const projectPath = (id: string) => `/manager/projects/${id}`
+/*
+  🔴 33차 후속(실측 재현) — `brief` 화면도 `useManagerCohort`로 헤더 기수를
+  고른다(`InterviewBriefScreen.tsx`). `?cohort=`가 없으면 여기서도 기본 기수
+  (진행 중인 기수)로 물러서 헤더가 7기로 바뀐다 — 위 `traineePath`와 같은 문제다.
+*/
+const briefPath = (caseId: string, briefState: string | null, cohortId: string | undefined) => {
+  const params = new URLSearchParams()
+  if (briefState) params.set('state', briefState)
+  params.set('cohort', cohortId ?? '')
+  return `/manager/interviews/${caseId}/brief?${params.toString()}`
+}
+/*
+  🔴 33차 후속(실측 재현) — 프로젝트 상세도 `useManagerCohort`로 헤더 기수를
+  고른다(`ProjectListScreen.tsx`와 같은 이유). `?cohort=`가 없으면 기본 기수
+  (진행 중인 기수)로 물러선다.
+*/
+const projectPath = (id: string, cohortId: string | undefined) =>
+  `/manager/projects/${id}?cohort=${cohortId ?? ''}`
 
 const KIND_LABEL: Record<InboxItem['kind'], string> = {
   /*
@@ -119,7 +139,7 @@ function ItemWhy({ item }: { item: InboxItem }) {
 }
 
 /** 누구 — 교육생이면 이름·반, 팀·반 단위면 그 이름 */
-function WhoCell({ item }: { item: InboxItem }) {
+function WhoCell({ item, cohortId }: { item: InboxItem; cohortId: string | undefined }) {
   if (item.kind === 'UNSUBMITTED') {
     /* 팀 이름이 있으면 팀이 대상이다 — 없으면 반이 대상이다(옛 모양) */
     const team = item.teams[0]
@@ -140,7 +160,7 @@ function WhoCell({ item }: { item: InboxItem }) {
   }
   return (
     <span className="flex w-[130px] shrink-0 items-baseline gap-1.5 text-sm">
-      <Link to={traineePath(item.traineeId)} className="hover:text-primary font-bold">
+      <Link to={traineePath(item.traineeId, cohortId)} className="hover:text-primary font-bold">
         {item.name}
       </Link>
       {/* 반 이름은 signals가 안 준다 — 없으면 자리를 비운다(지어내지 않는다) */}
@@ -153,16 +173,18 @@ type Props = {
   item: InboxItem
   /** 미제출·분석 실패가 넘어갈 프로젝트 — 행이 아니라 화면이 안다 */
   projectId: string | null
+  /** 교육생 링크에 실을 현재 기수 — 화면(DashboardScreen)의 useManagerCohort가 안다 */
+  cohortId: string | undefined
   onOpenBrief: () => void
   onReviewVoid: () => void
 }
 
-export default function InboxRow({ item, projectId, onOpenBrief, onReviewVoid }: Props) {
+export default function InboxRow({ item, projectId, cohortId, onOpenBrief, onReviewVoid }: Props) {
   return (
     <li className="border-border flex items-center gap-3 border-t px-5 py-3">
       <BandIcon band={item.band} />
       <span className="w-[92px] shrink-0 text-sm font-bold">{KIND_LABEL[item.kind]}</span>
-      <WhoCell item={item} />
+      <WhoCell item={item} cohortId={cohortId} />
       <span className="text-fg-muted min-w-0 flex-1 text-sm">
         <ItemWhy item={item} />
       </span>
@@ -190,7 +212,7 @@ export default function InboxRow({ item, projectId, onOpenBrief, onReviewVoid }:
             variant="ghost"
             size="sm"
             nativeButton={false}
-            render={<Link to={projectPath(projectId)} />}
+            render={<Link to={projectPath(projectId, cohortId)} />}
           >
             프로젝트에서 보기
           </Button>

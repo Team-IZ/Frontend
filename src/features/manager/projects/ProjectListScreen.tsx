@@ -59,7 +59,12 @@ import {
   `classId`로 좁힌다.
 */
 
-const detailPath = (id: string) => `/manager/projects/${id}`
+/*
+  🔴 33차 후속(실측 재현) — 상세 화면도 `useManagerCohort`로 헤더 기수를 고른다.
+  이 목록은 이미 지금 기수로 좁혀 받은 것이라 그대로 실어 보낸다.
+*/
+const detailPath = (id: string, cohortId: string | undefined) =>
+  `/manager/projects/${id}?cohort=${cohortId ?? ''}`
 
 export default function ProjectListScreen() {
   const navigate = useNavigate()
@@ -284,12 +289,12 @@ export default function ProjectListScreen() {
                   <TableRow
                     key={p.id}
                     className="hover:bg-surface-2 cursor-pointer"
-                    onClick={() => navigate(detailPath(p.id))}
+                    onClick={() => navigate(detailPath(p.id, cohortId))}
                   >
                     <TableCell>
                       {/* 행 전체가 클릭되지만 키보드 접근을 위해 실제 링크를 하나 둔다 */}
                       <Link
-                        to={detailPath(p.id)}
+                        to={detailPath(p.id, cohortId)}
                         className="hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >

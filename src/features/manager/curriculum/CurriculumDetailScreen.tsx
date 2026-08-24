@@ -264,7 +264,8 @@ export default function CurriculumDetailScreen() {
           <AlertDescription>
             아래 섹션·쪽 번호가 이 기수 리포트·면담이 가리키는 위치와 다릅니다.{' '}
             <Link
-              to={`/manager/curriculum/${id}?versionId=${cohortVersion.versionId}`}
+              // 🔴 33차 후속(실측 재현) — 버전을 바꿔도 지금 보고 있는 기수를 그대로 싣는다
+              to={`/manager/curriculum/${id}?versionId=${cohortVersion.versionId}&cohort=${cohortId ?? ''}`}
               className="underline"
             >
               {versionLabel(cohortVersion.versionNo)} 보기
@@ -797,7 +798,13 @@ function UsedTable({ rounds }: { rounds: UsedProject[] }) {
             <tr key={r.projectId} className="border-border border-b last:border-0">
               <td className="px-4 py-3 font-bold">
                 <Link
-                  to={`/manager/projects/${r.projectId}`}
+                  /*
+                    🔴 33차 후속(실측 재현) — 이 표는 여러 기수의 회차를 섞어 보여준다
+                    (기수마다 접힘). 바깥 `cohortId`가 아니라 **그 행 자신의 기수**를
+                    실어야 한다 — 다른 기수 회차인데 지금 보는 기수를 실으면 그 프로젝트
+                    상세가 엉뚱한 기수로 열린다.
+                  */
+                  to={`/manager/projects/${r.projectId}?cohort=${r.cohortId}`}
                   className="hover:text-primary hover:underline"
                 >
                   {r.roundLabel ?? r.name}

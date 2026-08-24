@@ -1,6 +1,10 @@
 /* 자동 생성 — 손으로 고치지 마세요. 다시 만들려면: npm run api:gen */
 
-import type { findInterviewBrief_Path, findInterviews_Query } from './interventionTypes'
+import type {
+  findInterviewBrief_Path,
+  findInterviews_Query,
+  findInterviewRoundOptions_Query,
+} from './interventionTypes'
 
 /*
   `all`이 이 도메인 전체를 가리킨다 — 쓰기 훅이 성공하면 이 접두어로 한 번에 무효화한다.
@@ -13,5 +17,6 @@ export const interventionKeys = {
     [...interventionKeys.all, 'findInterviewBrief', params.path ?? null] as const,
   findInterviews: (params: { query?: findInterviews_Query }) =>
     [...interventionKeys.all, 'findInterviews', params.query ?? null] as const,
-  findInterviewRoundOptions: () => [...interventionKeys.all, 'findInterviewRoundOptions'] as const,
+  findInterviewRoundOptions: (params: { query?: findInterviewRoundOptions_Query }) =>
+    [...interventionKeys.all, 'findInterviewRoundOptions', params.query ?? null] as const,
 }

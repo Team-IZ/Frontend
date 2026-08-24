@@ -15,6 +15,7 @@ import type {
   reincludeInterviewCase_Response,
   findInterviews_Query,
   findInterviews_Response,
+  findInterviewRoundOptions_Query,
   findInterviewRoundOptions_Response,
 } from './interventionTypes'
 
@@ -82,7 +83,12 @@ export const findInterviews = (params: { query?: findInterviews_Query } & Reques
   )
 
 /** [면담 목록] 면담 회차 옵션 조회 — `GET /api/v0/interviews/rounds` */
-export const findInterviewRoundOptions = (params: RequestOptions = {}) =>
+export const findInterviewRoundOptions = (
+  params: { query?: findInterviewRoundOptions_Query } & RequestOptions = {},
+) =>
   unwrap<findInterviewRoundOptions_Response>(
-    izClient.GET('/api/v0/interviews/rounds', { signal: params.signal }) as never,
+    izClient.GET('/api/v0/interviews/rounds', {
+      params: { query: params.query ?? {} },
+      signal: params.signal,
+    }) as never,
   )

@@ -1,4 +1,4 @@
-import { useParams } from 'react-router'
+import { Navigate, useParams, useSearchParams } from 'react-router'
 import ConsoleShell from '@/shells/ConsoleShell'
 import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import { Button } from '@/components/ui/Button'
@@ -90,11 +90,26 @@ function TimelineSkeleton({ rounds = 6 }: { rounds?: number }) {
 
 export default function TraineeDetailScreen() {
   const { id } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
   const { cohortId, failed: cohortFailed, cohorts, selectCohort } = useManagerCohort()
   const detail = useTraineeDetail(cohortId, id)
   const timeline = useTraineeTimeline(cohortId, id)
 
   const notFound = detail.isError && isApiError(detail.error) && detail.error.status === 404
+  /*
+    🔴 33차(백엔드 R2②) — 404인데 이 화면으로 올 때 URL에 `?cohort=`가 없었다면,
+    「권한이 없다」가 아니라 `useManagerCohort`가 기본 기수(`enrollments[0]`)로
+    물러서서 **엉뚱한 기수로 조회한 것일 수 있다** — 목록(`TraineeListScreen`)에서
+    온 이동은 항상 `?cohort=`를 싣지만(위 커밋), 대시보드 인박스·히트맵 격자·면담
+    브리프의 "전체 이력" 링크 등 아직 안 싣는 다른 진입점이 남아 있다(33차 §9).
+    그 경우엔 다른 기수로 조용히 렌더하는 대신 명단으로 돌려보내 다시 고르게 한다.
+
+    `?cohort=`가 이미 있었는데도 404면(목록에서 온 정상 이동) 이 분기를 타지
+    않는다 — 그때는 실제로 담당 밖의 교육생이라 진짜 권한 없음이 맞다.
+  */
+  if (notFound && !searchParams.get('cohort')) {
+    return <Navigate to="/manager/trainees" replace />
+  }
 
   return (
     /*

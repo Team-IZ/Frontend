@@ -86,7 +86,16 @@ export function useHeatmap(params: HeatmapQuery | undefined) {
  * 히트맵도 같은 것을 본다. 면담 화면과 쿼리 키를 공유해 캐시도 함께 쓴다.
  */
 export function useHeatmapRounds(cohortId: string | undefined) {
-  const query = useFindInterviewRoundOptions({ enabled: !!cohortId })
+  /*
+    🔴 32차(백엔드) — `cohort`를 실어 보내야 한다. 안 실으면 담당 반이 속한 기수
+    전부의 회차가 섞여 온다(매니저가 여러 기수에서 반을 맡을 수 있게 되면서 드러남).
+    쿼리 키에도 `cohortId`가 들어가야 기수를 바꿀 때 이전 기수의 캐시가 안 남는다
+    (아래 `useFindInterviewRoundOptions`가 `params`를 키에 포함해 자동으로 됨).
+  */
+  const query = useFindInterviewRoundOptions(
+    { query: cohortId ? { cohort: cohortId } : {} },
+    { enabled: !!cohortId },
+  )
   const data = useMemo<RoundOption[] | undefined>(
     () =>
       query.data?.map((r) => ({

@@ -1,6 +1,14 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'react-router'
 import { Lock, LockOpen, AlertTriangle, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+  InputGroupText,
+} from '@/components/ui/InputGroup'
+import { ButtonGroup } from '@/components/ui/ButtonGroup'
 import { Badge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import TableSkeleton from '@/components/common/TableSkeleton'
@@ -27,8 +35,10 @@ import {
   TableRow,
 } from '@/components/ui/Table'
 import { errorCopy } from '@/lib/errorCopy'
+import { useManagedClassrooms } from '@/stores/cohortScope'
 import {
   useTeams,
+  useSubmissionStatus,
   useCreateTeam,
   useConfirmTeams,
   useReopenTeams,
@@ -39,7 +49,7 @@ import TeamEditDialog from './TeamEditDialog'
 import TeamAutoAssignDialog from './TeamAutoAssignDialog'
 
 /*
-  MG-08 팀 편성 탭 — 5국면 상태머신(정의서 §3·§6).
+  MG-08 팀 편성 탭 — `teamFormationStage` 5국면 상태머신(서버가 판정한다).
 
   국면별로 무엇이 가능한지가 전부 다르다:
   ① 편성 전(NOT_STARTED)     자동 배분 · 팀 추가 — 제출 잠김
@@ -48,13 +58,13 @@ import TeamAutoAssignDialog from './TeamAutoAssignDialog'
   ④ 확정됨(CONFIRMED)        🔒 · `편성 다시 열기` — 제출 열림
   ⑤ 종료(CLOSED)             🔒 · 편성 액션 전부 잠김
 
-  "자동 배분"은 팀이 하나도 없을 때만 보인다(정의서 §5) — 이미 짜인 팀을
-  뒤엎는 액션을 상시 노출하지 않는다.
+  "자동 배분"은 **그 반에 팀이 하나도 없을 때만** 보인다 — 서버의 실행 조건이 그것이라
+  (`NOT_STARTED`), 조건을 못 채운 버튼을 그리지 않는 것뿐이다. 이미 짜인 팀을 뒤엎는
+  액션을 상시 노출하지 않는 이유이기도 하다.
 
-  ⚠ **국면을 서버가 준다**(`teamFormationStage`) — 목은 `teams.length`·
-  `unassigned.length`에서 화면이 파생했다. 목의 5국면과 값이 1:1인데 ⑤만 다르다:
-  목의 `SUBMITTING`(제출 시작됨)이 서버에는 없고 대신 `CLOSED`(종료된 회차)가 있다.
-  제출이 시작됐는지는 `submissionOpened`로 따로 오므로 국면에 섞지 않는다.
+  ⚠ **국면을 서버가 준다**(`teamFormationStage`) — 화면이 `teams.length`·
+  `unassigned.length`에서 파생하지 않는다. 제출이 시작됐는지는 `submissionOpened`로
+  따로 오므로 국면에 섞지 않는다.
 
   🔴 **쓰기가 실패하면 말한다**(하드닝 실측). 확정을 가로채 409를 만들었더니 화면이
   **아무 말도 안 했다** — 눌렀고, 실패했고, 버튼만 원래대로 돌아갔다. 사용자는 됐는지
@@ -73,44 +83,158 @@ import TeamAutoAssignDialog from './TeamAutoAssignDialog'
 
   ⚠ **반 열이 생겼다.** 담당 반이 여럿이면 팀 번호가 반마다 1부터 다시 시작해
   한 목록에 `1팀`이 반 수만큼 나온다(30차 R4). 반 없이는 팀을 구분할 수 없다.
+
+  🔴 **한 번에 한 반을 본다**(33차 백엔드). 팀 생성·자동 배분·확정·다시 열기가
+  `classId`를 **필수로** 받게 바뀌었고, 확정 판정도 그 반 기준이다. 그래서 이 탭은
+  국면·미배정·팀 목록·쓰기를 **같은 반으로 맞춰** 읽는다 — 하나라도 범위가 다르면
+  「지금 무엇을 할 수 있는가」가 두 가지로 갈린다. 고른 반은 주소(`?class=`)가 갖고,
+  담당 반이 하나뿐이면 고를 것이 없어 세그먼트를 그리지 않는다.
 */
 
 type Props = {
-  /*
-    🔴 **셋 다 「아직 모른다」가 있다** — 제출 현황 조회가 팀 목록보다 늦게 온다.
-    `?? 'NOT_STARTED'` · `?? false`로 메웠더니 **종료된 회차에서 3.8초 동안
-    「편성 전」이라며 [팀 추가]·[자동 배분]이 열려 있었다**(실측 · 제출 조회를 6초
-    늦춰 재현). 자동 배분은 팀을 다시 짜는 되돌릴 수 없는 쓰기다 — 서버가 막더라도
-    화면이 권해서는 안 된다(규칙 C·F).
-
-    그래서 `undefined`를 그대로 받고, **모르는 동안에는 액션 줄을 안 그린다.**
-    표는 그려도 된다 — 읽기라 틀릴 것이 없다.
-  */
   projectId: string
-  /** 제출 현황이 준다 — 아직 못 읽었으면 `undefined` */
-  stage: string | undefined
-  locked: boolean | undefined
-  /** 이미 제출한 팀 수 — 확정 경고 문구가 이 값으로 갈린다(아래). 모르면 `undefined` */
-  submittedTeamCount: number | undefined
+  /**
+   * 담당 반 목록을 읽는 기수 — 팀 **쓰기 넷이 `classId`를 요구한다**(33차 백엔드).
+   * `useManagerCohort`가 미리 받아 둬서 이 화면에서 추가 요청이 나가지 않는다.
+   */
+  cohortId: string | undefined
 }
 
-export default function TeamTab({ projectId, stage, locked, submittedTeamCount }: Props) {
+export default function TeamTab({ projectId, cohortId }: Props) {
   const [autoAssignOpen, setAutoAssignOpen] = useState(false)
-  const [editTeam, setEditTeam] = useState<Team | null>(null)
+  /*
+    🔴 **id만 들고, 팀 객체는 매 렌더 `teams`에서 다시 찾는다**(실측).
+
+    한때 `useState<Team | null>`로 클릭 시점의 객체를 통째로 들고 있었다. 배정·해제는
+    표를 갱신하는데(`teamList.data`가 새로 온다) 다이얼로그 안의 좌측 팀원 목록은 그
+    스냅샷을 계속 그려서 **바뀌지 않았다** — 방금 뺀 사람이 팀원으로도, 미배정으로도
+    동시에 보였다(우측은 `teamList.data`를 직접 읽어 갱신되므로 한쪽만 멈춘 것처럼
+    보인다). 닫았다 다시 열면 그때는 맞았다 — 스냅샷이 열 때만 새로 찍혔기 때문이다.
+
+    id로 바꾸면 매 렌더 `teams.find`가 최신 값을 돌려주므로 다이얼로그가 열려 있는
+    동안에도 따라간다. 해체돼 사라지면 `find`가 `undefined`를 주므로 아래에서 자동으로
+    닫힌다.
+  */
+  const [editTeamId, setEditTeamId] = useState<string | null>(null)
   const [addingTeam, setAddingTeam] = useState(false)
   const [newTeamName, setNewTeamName] = useState('')
   const [disbandTarget, setDisbandTarget] = useState<Team | null>(null)
+  const [params, setParams] = useSearchParams()
 
-  const teamList = useTeams(projectId)
+  const classrooms = useManagedClassrooms(cohortId)
+  const classOptions = classrooms.data?.classrooms
+
+  /*
+    **고른 반은 주소가 갖는다**(규칙 J) — 새로 고쳐도, 링크를 받아도 같은 반이 열린다.
+    주소의 값이 담당 반에 없으면 버린다(남이 보낸 링크·배정 변경) — 안 버리면 담당하지
+    않는 반으로 조회해 403이다.
+
+    담당 반이 **하나면 고를 것이 없다** — 그 반이다.
+  */
+  const fromUrl = params.get('class')
+  const selectedClassId =
+    classOptions?.find((c) => c.classroomId === fromUrl)?.classroomId ??
+    classOptions?.[0]?.classroomId
+
+  /*
+    반이 하나뿐이면 **좁히지 않는다** — 담당 반 전체가 곧 그 반이라 결과가 같고,
+    실으면 같은 데이터를 다른 캐시 키로 한 번 더 받는다(`_/api/api.ts` 주석).
+  */
+  const scopeClassId = classOptions && classOptions.length > 1 ? selectedClassId : undefined
+
+  const teamList = useTeams(projectId, scopeClassId)
+  /*
+    🔴 **국면을 이 탭이 직접 읽는다** — 부모가 주던 값은 담당 반 **전체** 기준이라
+    반이 둘이면 틀린다. B반은 전원 배정인데 D반에 미배정이 남으면 `FORMING`이 와서
+    「팀 편성 완료」가 잠기는데, **서버는 B반 확정을 허용한다**(33차 3-4절 — 확정 판정도
+    그 반 기준으로 바뀌었다). 백엔드가 푼 제약을 화면이 다시 걸게 된다.
+
+    스펙이 `teamFormationStage`·`unassignedMemberCount`·`summary`를 **그 매니저가 보는
+    범위의 값**이라고 적고 있어, `classId`를 실으면 그 반 기준으로 온다.
+
+    반이 하나면 `scopeClassId`가 `undefined`라 부모와 **같은 쿼리 키**다 — 캐시를
+    공유하므로 요청이 늘지 않는다.
+  */
+  const submission = useSubmissionStatus(projectId, scopeClassId)
+  const sub = submission.data
+  /*
+    🔴 **셋 다 「아직 모른다」가 있다** — 제출 현황이 팀 목록보다 늦게 온다.
+    `?? 'NOT_STARTED'` · `?? false`로 메웠더니 **종료된 회차에서 3.8초 동안 「편성 전」
+    이라며 [팀 추가]·[자동 배분]이 열려 있었다**(실측 · 제출 조회를 6초 늦춰 재현).
+    자동 배분은 팀을 다시 짜는 되돌릴 수 없는 쓰기다 — 서버가 막더라도 화면이
+    권해서는 안 된다(규칙 C·F).
+
+    그래서 `undefined`를 그대로 두고, **모르는 동안에는 액션 줄을 안 그린다.**
+    표는 그려도 된다 — 읽기라 틀릴 것이 없다.
+  */
+  const stage = sub?.teamFormationStage
+  const locked = sub?.locked
+  const submittedTeamCount = sub?.summary.submittedTeamCount
+
   const createTeam = useCreateTeam()
   const confirmTeams = useConfirmTeams()
   const reopenTeams = useReopenTeams()
   const disbandTeam = useDisbandTeam()
 
+  /*
+    🔴 **실측 — 반을 바꿔도 실패 배너가 안 지워진다.** `useMutation`의 `error`는 다음
+    `mutate`나 `reset()`까지 남는다. E반에서 팀 추가가 실패한 채로 G반으로 넘어가면
+    G반 화면에 **E반 실패**("팀을 추가하지 못했습니다")가 그대로 떠 있었다 — 다른 반
+    이야기를 하고 있는데 실패 문구만 안 지워진 것이라 원인을 잘못 짚게 만든다.
+  */
+  useEffect(() => {
+    createTeam.reset()
+    confirmTeams.reset()
+    reopenTeams.reset()
+    disbandTeam.reset()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClassId])
+
+  /*
+    **반 세그먼트 — 담당 반이 둘 이상일 때만 그린다.**
+
+    팀은 반별로 짜고(33차) 확정도 반 단위다. 그래서 이 탭은 **한 번에 한 반**을 본다 —
+    국면·미배정·팀 목록·쓰기가 전부 같은 반을 가리켜야 「지금 무엇을 할 수 있는가」가
+    한 가지로 읽힌다. 반이 하나면 고를 것이 없어 그리지 않는다.
+
+    🔴 **조회 상태 바깥에 둔다.** 아래 스켈레톤·에러가 `return`으로 빠져나가는데 그 안에
+    세그먼트가 없으면, 반을 바꾸는 순간 세그먼트째 사라져 **돌아올 방법이 없다**(반을
+    바꾸면 팀 목록을 다시 받으므로 반드시 그 상태를 지난다).
+  */
+  const classSegment = classOptions && classOptions.length > 1 && (
+    <ButtonGroup aria-label="반">
+      {classOptions.map((c) => (
+        <Button
+          key={c.classroomId}
+          size="sm"
+          variant={selectedClassId === c.classroomId ? 'primary' : 'ghost'}
+          aria-pressed={selectedClassId === c.classroomId}
+          onClick={() => {
+            /* 쓰던 입력은 그 반의 것이다 — 안 닫으면 B반에 쓰던 이름이 D반에 만들어진다 */
+            setAddingTeam(false)
+            setNewTeamName('')
+            setParams(
+              (prev) => {
+                const next = new URLSearchParams(prev)
+                next.set('class', c.classroomId)
+                return next
+              },
+              /* 반을 바꾸는 것은 탭 전환과 같은 결의 이동이다 — 히스토리를 쌓지 않는다 */
+              { replace: true },
+            )
+          }}
+        >
+          {c.name}
+        </Button>
+      ))}
+    </ButtonGroup>
+  )
+
   if (!teamList.data && !teamList.isError) {
     /* 실측 — 머리 줄 30 + gap 16 · 표 헤더 38.5 · 행 53 · 6행. 열 폭은 헤더 그대로 */
     return (
       <div className="flex flex-col gap-4">
+        {classSegment}
         <div className="flex h-[30px] items-center gap-2">
           <Skeleton className="h-[22px] w-16 rounded-full" />
           <Skeleton className="h-3 w-28" />
@@ -127,15 +251,18 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
 
   if (teamList.isError || !teamList.data) {
     return (
-      <Empty>
-        <EmptyHeader>
-          <EmptyTitle>팀을 불러오지 못했습니다</EmptyTitle>
-          <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
-        </EmptyHeader>
-        <Button variant="ghost" onClick={() => void teamList.refetch()}>
-          다시 시도
-        </Button>
-      </Empty>
+      <div className="flex flex-col gap-4">
+        {classSegment}
+        <Empty>
+          <EmptyHeader>
+            <EmptyTitle>팀을 불러오지 못했습니다</EmptyTitle>
+            <EmptyDescription>잠시 후 다시 시도해 주세요.</EmptyDescription>
+          </EmptyHeader>
+          <Button variant="ghost" onClick={() => void teamList.refetch()}>
+            다시 시도
+          </Button>
+        </Empty>
+      </div>
     )
   }
 
@@ -157,12 +284,28 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
       Number(a.teamNumber) - Number(b.teamNumber),
   )
 
+  /* 매 렌더 최신 값을 찾는다(`editTeamId` 주석) — 해체돼 사라졌으면 `undefined`라 닫힌다 */
+  const editTeam = teams.find((t) => t.teamId === editTeamId)
+
   const canEdit =
     !locked && (phase === 'NOT_STARTED' || phase === 'FORMING' || phase === 'READY_TO_CONFIRM')
 
-  /* 담당 반이 여럿이면 자동 배분이 400(MANAGER_CLASSROOM_AMBIGUOUS)이다 */
-  const classIds = new Set(teams.map((t) => t.classId))
-  const autoAssignAmbiguous = classIds.size > 1
+  /*
+    **어느 반에 쓰는가** — 팀 생성·자동 배분·확정·다시 열기가 `classId`를 요구한다
+    (33차 백엔드). 없으면 400 `VALIDATION_FAILED`다.
+
+    🔴 **종전에는 이미 만들어진 팀에서 반을 역산했다**(`new Set(teams.map(t => t.classId))`).
+    팀이 0개면 `size === 0`이라 「반이 하나」로 읽혀, **편성 전 화면에서 경고 없이
+    자동 배분이 열려 있었다** — 누르면 400이다. 미프 5차가 정확히 그 상태였다.
+    편성 전에 반을 알아야 하는데 팀에서 역산하면 편성 전에는 알 수가 없다.
+
+    담당 반 목록을 근거로 바꾼다 — 팀이 0개여도 맞다.
+
+    ⚠ 반 목록이 아직 안 왔으면 `undefined`다. 그 동안 쓰기를 열지 않는다 —
+    `classId` 없이 나가면 400이라, 모르는 채로 권하지 않는다(규칙 C·F).
+  */
+  /** 쓰기에 실을 반 — 반 목록이 오기 전에는 `undefined`라 쓰기 액션을 그리지 않는다 */
+  const writeClassId = selectedClassId
 
   /* 쓰기 넷 중 마지막으로 실패한 것 — 하나만 띄운다(연달아 누르면 마지막 것이 맞다) */
   const failure = confirmTeams.error ?? reopenTeams.error ?? createTeam.error ?? disbandTeam.error
@@ -177,9 +320,14 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
           : undefined
 
   function handleCreateTeam() {
-    const name = newTeamName.trim() || `${teams.length + 1}팀`
+    if (!writeClassId) return
+    const typed = newTeamName.trim()
+    /* 번호는 **반 안에서** 1부터다(30차 R4) — 전체 팀 수로 세면 다음 번호가 어긋난다 */
+    const name = typed
+      ? withTeamSuffix(typed)
+      : `${teams.filter((t) => t.classId === writeClassId).length + 1}팀`
     createTeam.mutate(
-      { path: { projectId }, body: { name } },
+      { path: { projectId }, body: { classId: writeClassId, name } },
       {
         onSuccess: () => {
           setNewTeamName('')
@@ -191,14 +339,21 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
 
   return (
     <div className="flex flex-col gap-4">
+      {/*
+        반이 맨 위다 — 아래 국면·팀 수·미배정이 **고른 반의 값**이라 무엇에 대한
+        숫자인지가 먼저 읽혀야 한다. 스켈레톤·에러 분기도 같은 순서다.
+      */}
+      {classSegment}
+
       <div className="flex flex-wrap items-center gap-2">
         <PhaseBadge phase={phase} locked={locked} />
         <span className="text-fg-subtle text-xs">
           {teams.length}팀 · 미배정 {unassignedCount}명
         </span>
 
+        {/* 반이 정해져야 쓰기가 나간다(`writeClassId` 주석) — 모르면 액션 줄이 없다 */}
         <div className="ml-auto flex gap-2">
-          {!locked && phase === 'NOT_STARTED' && (
+          {!locked && writeClassId && phase === 'NOT_STARTED' && (
             <>
               <Button variant="ghost" size="sm" onClick={() => setAddingTeam(true)}>
                 팀 추가
@@ -208,26 +363,30 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
               </Button>
             </>
           )}
-          {!locked && (phase === 'FORMING' || phase === 'READY_TO_CONFIRM') && (
+          {!locked && writeClassId && (phase === 'FORMING' || phase === 'READY_TO_CONFIRM') && (
             <>
               <Button variant="ghost" size="sm" onClick={() => setAddingTeam(true)}>
                 팀 추가
               </Button>
               <Button
                 size="sm"
-                onClick={() => confirmTeams.mutate({ path: { projectId } })}
+                onClick={() =>
+                  confirmTeams.mutate({ path: { projectId }, query: { classId: writeClassId } })
+                }
                 disabled={phase !== 'READY_TO_CONFIRM' || confirmTeams.isPending}
               >
                 {confirmTeams.isPending ? '확정 중…' : '팀 편성 완료'}
               </Button>
             </>
           )}
-          {!locked && phase === 'CONFIRMED' && (
+          {!locked && writeClassId && phase === 'CONFIRMED' && (
             <Button
               variant="ghost"
               size="sm"
               disabled={reopenTeams.isPending}
-              onClick={() => reopenTeams.mutate({ path: { projectId } })}
+              onClick={() =>
+                reopenTeams.mutate({ path: { projectId }, query: { classId: writeClassId } })
+              }
             >
               <LockOpen className="size-3.5" />
               편성 다시 열기
@@ -334,7 +493,7 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
                       variant="ghost"
                       size="sm"
                       disabled={!canEdit}
-                      onClick={() => setEditTeam(team)}
+                      onClick={() => setEditTeamId(team.teamId)}
                     >
                       편집
                     </Button>
@@ -360,20 +519,32 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
       {editTeam && (
         <TeamEditDialog
           open={!!editTeam}
-          onOpenChange={(o) => !o && setEditTeam(null)}
+          onOpenChange={(o) => !o && setEditTeamId(null)}
           projectId={projectId}
           team={editTeam}
-          unassigned={unassignedMembers}
+          /*
+            🔴 **그 팀의 반 사람만 넣을 수 있다**(33차 백엔드) — 서버가 「배정하려는
+            교육생이 그 팀과 같은 반인가」를 새로 검증해 아니면 400
+            `PROJECT_MEMBERSHIP_NOT_FOUND`다.
+
+            위에서 조회를 한 반으로 좁혔으므로 지금은 이미 그 반 사람뿐이다. 그래도
+            거르는 것은 **이 다이얼로그가 서는 전제를 코드로 적어 두기 위해서**다 —
+            스코프가 바뀌는 날 남의 반 사람이 조용히 목록에 섞이는 대신 여기서 걸린다.
+          */
+          unassigned={unassignedMembers.filter((m) => m.classId === editTeam.classId)}
         />
       )}
 
-      <TeamAutoAssignDialog
-        open={autoAssignOpen}
-        onOpenChange={setAutoAssignOpen}
-        projectId={projectId}
-        unassignedCount={unassignedCount}
-        ambiguousClassroom={autoAssignAmbiguous}
-      />
+      {/* 반이 정해졌을 때만 연다 — 모달이 열렸다면 실을 `classId`가 있다는 뜻이다 */}
+      {writeClassId && (
+        <TeamAutoAssignDialog
+          open={autoAssignOpen}
+          onOpenChange={setAutoAssignOpen}
+          projectId={projectId}
+          classId={writeClassId}
+          unassignedCount={unassignedCount}
+        />
+      )}
 
       <AlertDialog
         open={!!disbandTarget}
@@ -430,6 +601,11 @@ export default function TeamTab({ projectId, stage, locked, submittedTeamCount }
   )
 }
 
+/** "9"를 쳐도 "9팀"이 된다 — 이미 "팀"으로 끝나면 그대로 둔다("9팀팀" 방지) */
+function withTeamSuffix(name: string): string {
+  return name.endsWith('팀') ? name : `${name}팀`
+}
+
 function PhaseBadge({
   phase,
   locked,
@@ -472,14 +648,34 @@ function NewTeamPrompt({
   onConfirm: () => void
 }) {
   return (
-    <div className="border-border bg-surface-2 flex items-center gap-2 rounded-md border p-3">
-      <input
-        autoFocus
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="예: 9팀"
-        className="border-border-strong bg-surface flex-1 rounded-md border px-3 py-1.5 text-sm"
-      />
+    /*
+      `w-fit` — 아래 표와 같은 폭으로 늘어나면 입력칸도 같이 늘어나 숫자와 "팀"이
+      멀리 떨어져 보인다(실측 · 사용자 지적). 카드를 내용만큼만 감싸면 둘이 붙어 보인다.
+    */
+    <div className="border-border bg-surface-2 flex w-fit items-center gap-2 rounded-md border p-3">
+      {/*
+        **"팀"은 우리가 붙인다.** 설명 문구가 아니라 입력칸 자체에 박아 둔다 — 같은
+        패턴을 반 이름 입력(`AddClassDialog`의 "반")이 이미 쓰고 있다. 저장될 이름이
+        칸 안에 그대로 보이므로 사용자가 따로 "팀"을 안 쳐도 되고, 쳐도
+        `withTeamSuffix`가 중복을 막는다.
+
+        ⚠ **고정폭(`w-32`)이 아니라 `field-sizing-content`다**(사용자 지적). 고정폭이면
+        긴 이름이 잘리거나 칸을 벗어난다 — 짧으면 숫자 하나만큼, 길면 그만큼 늘어나야
+        "팀"이 항상 글자 바로 뒤에 붙어 보인다. `Textarea`가 세로로 쓰는 것과 같은
+        속성을 가로로 쓴다.
+      */}
+      <InputGroup className="h-9 w-fit">
+        <InputGroupInput
+          autoFocus
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="9"
+          className="field-sizing-content w-auto min-w-24 max-w-48 flex-none"
+        />
+        <InputGroupAddon align="inline-end">
+          <InputGroupText>팀</InputGroupText>
+        </InputGroupAddon>
+      </InputGroup>
       <Button variant="ghost" size="sm" onClick={onCancel} disabled={pending}>
         취소
       </Button>

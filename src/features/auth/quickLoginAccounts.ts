@@ -30,6 +30,18 @@
 export type QuickLoginAccount = { label: string; email: string; password: string }
 
 /**
+ * 역할 넷 — **이 순서가 화면 순서다.**
+ *
+ * 로그인 화면의 역할 버튼과 계정 고르개의 탭이 같은 배열을 읽는다. 둘이 각자 순서를
+ * 들고 있으면 한쪽만 고쳤을 때 나란히 놓인 두 줄이 다른 순서로 보인다.
+ *
+ * 컴포넌트 파일이 아니라 여기 두는 이유는 Fast Refresh다 — 컴포넌트 파일이 상수를
+ * 함께 export하면 그 파일의 상태 보존 핫리로드가 꺼진다(react/only-export-components).
+ */
+export const ROLES = ['매니저', '오퍼레이터', '교육생', '슈퍼 어드민'] as const
+export type Role = (typeof ROLES)[number]
+
+/**
  * 케이스 계정 하나. 교육생은 어느 반·팀 누구인지까지 보여줘야 고를 수 있고,
  * 매니저·오퍼레이터처럼 반·팀이 없는 역할은 `className`·`teamName`을 빈 문자열로 둔다
  * (표시부는 빈 값을 알아서 건너뛴다).
@@ -68,12 +80,26 @@ export type CaseGroup = {
   accounts: CaseAccount[]
 }
 
+/*
+  **배열도 받고 `{ groups: [{ accounts: [...] }] }`도 받는다.**
+
+  🔴 Vercel이 자격 증명처럼 보이는 값을 `VITE_`(브라우저 노출) 변수로 저장하지 못하게
+  막는다 — **저장 버튼이 아예 안 먹었다**(실측). 값을 넣을 수 없으면 배포본에서 기능이
+  통째로 사라지므로, 이미 통과한 적이 있는 모양(`dev-team-accounts.env`의 봉투)을
+  그대로 쓴다.
+
+  값을 가리는 것이 아니다 — 어차피 번들에 들어가고 그것이 의도다(위 주석). 노출 범위는
+  여전히 **어디에 넣느냐**로 정한다(운영 환경에는 넣지 않는다).
+*/
 function parseAccounts(raw: string | undefined): QuickLoginAccount[] {
   if (!raw) return []
   try {
-    const parsed: unknown = JSON.parse(raw)
-    if (!Array.isArray(parsed)) throw new Error('배열이 아닙니다')
-    return parsed.filter(
+    const parsed = JSON.parse(raw) as unknown[] | { groups?: { accounts?: unknown[] }[] }
+    const list = Array.isArray(parsed)
+      ? parsed
+      : (parsed.groups ?? []).flatMap((g) => g?.accounts ?? [])
+    if (!Array.isArray(list)) throw new Error('배열이 아닙니다')
+    return (list as Partial<QuickLoginAccount>[]).filter(
       (a): a is QuickLoginAccount =>
         typeof a?.label === 'string' &&
         typeof a?.email === 'string' &&
@@ -181,5 +207,20 @@ export const CASE_ACCOUNT_OWNERS = [
   ...new Set([...(caseData.owners ?? []), ...(teamData.owners ?? [])]),
 ]
 
-/** 고른 계정 총수 — 토글 라벨이 "N개"를 말하려면 필요하다 */
-export const CASE_ACCOUNT_TOTAL = CASE_ACCOUNT_GROUPS.reduce((n, g) => n + g.accounts.length, 0)
+/*
+  헤더 역할 전환 전용 목록 — **로그인 화면의 역할 버튼과 다른 값이다.**
+
+  로그인 화면은 아직 아무도 아닌 상태라 «역할»을 고르지만, 헤더는 이미 누군가로 들어와
+  있는 상태에서 **다른 사람으로 갈아타는** 자리다. 시연에서 그 갈아타기는 대개
+  «같은 반의 매니저 ↔ 그 반 학생»이라, 역할 이름보다 **누구인지**가 필요하다.
+
+  그래서 목록을 따로 둔다. 값이 없으면 `QUICK_LOGIN_ACCOUNTS`로 물러서므로(호출부)
+  env를 안 넣은 환경도 종전과 똑같이 동작한다.
+
+  ⚠️ **넷을 넘기지 않는다.** 드롭다운은 훑는 자리가 아니라 집는 자리다 — 한 반을
+  통째로 올렸다가 26줄이 되어 도로 뺐다. 많은 계정이 필요하면 로그인 화면의 고르개를
+  쓴다(`CaseAccountPicker`).
+
+  ⚠️ 값이 번들에 들어간다 — 운영 환경에는 넣지 않는다(위 `VITE_DEV_ACCOUNTS`와 같다).
+*/
+export const HEADER_ACCOUNTS = parseAccounts(import.meta.env.VITE_HEADER_ACCOUNTS)

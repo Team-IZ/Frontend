@@ -281,7 +281,7 @@ export function renderQueryKeys(ops, cfg) {
     const parts = [op.hasPath && 'path', op.hasQuery && 'query'].filter(Boolean)
     const args = [
       op.hasPath && `path: ${alias(op, 'Path')}`,
-      op.hasQuery && `query?: ${alias(op, 'Query')}`,
+      op.hasQuery && `query${op.queryRequired ? '' : '?'}: ${alias(op, 'Query')}`,
     ].filter(Boolean)
     const sig = args.length ? `(params: { ${args.join('; ')} })` : '()'
     const value = parts.length
@@ -373,7 +373,7 @@ export function renderMutations(ops, cfg) {
   const hooks = writes.map((op) => {
     const args = [
       op.hasPath && `path: ${alias(op, 'Path')}`,
-      op.hasQuery && `query?: ${alias(op, 'Query')}`,
+      op.hasQuery && `query${op.queryRequired ? '' : '?'}: ${alias(op, 'Query')}`,
       // 필수 헤더(`Idempotency-Key`)는 화면이 값을 만들어 넘겨야 한다 — 서버가 요구한다
       op.hasHeader && `header: ${alias(op, 'Header')}`,
       op.hasBody && `body: ${alias(op, 'Body')}`,

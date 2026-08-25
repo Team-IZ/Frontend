@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ArrowLeftRight } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -94,7 +95,7 @@ export default function TeamEditDialog({ open, onOpenChange, projectId, team, un
             )
           })()}
 
-        <div className="grid min-h-0 flex-1 grid-cols-2 gap-3 overflow-hidden">
+        <div className="grid min-h-0 flex-1 grid-cols-[1fr_auto_1fr] gap-3 overflow-hidden">
           <div className="border-border flex flex-col overflow-hidden rounded-md border">
             <div className="bg-surface-2 border-border text-fg-muted border-b px-3 py-2 text-xs font-bold">
               팀원 {team.members.length}명
@@ -128,6 +129,11 @@ export default function TeamEditDialog({ open, onOpenChange, projectId, team, un
                 미배정으로 보내기
               </Button>
             </div>
+          </div>
+
+          {/* 두 목록이 서로 자리를 바꿀 수 있다는 뜻만 말한다 — 장식이라 아무것도 안 누른다 */}
+          <div aria-hidden className="text-fg-subtle flex items-center justify-center">
+            <ArrowLeftRight className="size-4" />
           </div>
 
           <div className="border-border flex flex-col overflow-hidden rounded-md border">

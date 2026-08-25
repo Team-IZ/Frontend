@@ -6,6 +6,7 @@ import {
   replaceRequirements,
   confirmConcepts,
   createTeam,
+  disbandClassTeams,
   assignTeamMember,
   confirmTeams,
   autoAssignTeams,
@@ -31,6 +32,9 @@ import type {
   createTeam_Path,
   createTeam_Body,
   createTeam_Response,
+  disbandClassTeams_Path,
+  disbandClassTeams_Query,
+  disbandClassTeams_Response,
   assignTeamMember_Path,
   assignTeamMember_Body,
   assignTeamMember_Response,
@@ -120,6 +124,26 @@ export function useCreateTeam(
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (vars: { path: createTeam_Path; body: createTeam_Body }) => createTeam(vars),
+    ...options,
+    onSuccess: (...args) => {
+      // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
+      queryClient.invalidateQueries({ queryKey: projectExecutionKeys.all })
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+/** 반 통째로 해체 */
+export function useDisbandClassTeams(
+  options?: MutationOptions<
+    disbandClassTeams_Response,
+    { path: disbandClassTeams_Path; query: disbandClassTeams_Query }
+  >,
+) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (vars: { path: disbandClassTeams_Path; query: disbandClassTeams_Query }) =>
+      disbandClassTeams(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다

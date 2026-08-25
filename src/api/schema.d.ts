@@ -903,6 +903,17 @@ export interface paths {
      *     name)이다 — 편성 화면이 사람을 두 목록 사이로 끌어다 옮기는 자리라 한 컴포넌트로
      *     다룰 수 있어야 한다. `memberCount`는 이 배열의 길이다.
      *
+     *     ## 🔴 46차 R1·R2 — 해체한 팀은 목록에 없다
+     *
+     *     해체는 행을 지우지 않고 종료 시각만 찍는 소프트 삭제인데, 이 조회에 그 필터가 없어
+     *     **해체한 팀이 목록에 그대로 남았다**. 매니저가 보기에는 「204를 받았는데 아무 일도
+     *     안 일어났다」와 구분되지 않았다.
+     *
+     *     같은 원인으로 이 조회와 제출 현황(`findProjectSubmissionStatus`)이 갈렸다 —
+     *     제출 현황은 처음부터 해체된 팀을 뺐으므로, 같은 반을 두고 팀 목록은 "1개",
+     *     제출 현황은 `teamFormationStage: NOT_STARTED`(0개)라고 답했다. 두 조회가 다시
+     *     **같은 모집단**이므로 화면은 33차 R2대로 `teamFormationStage`만 보면 된다.
+     *
      *     ⚠️ 팀 편성 화면의 5단계(편성 전·편성 중·전원 배정·확정·제출 시작)를 이 응답 하나로
      *     전부 판정할 수는 없다 — "제출 시작됨" 여부는 Submission 도메인(미착수)이 있어야
      *     알 수 있어 지금은 status(DRAFT/CONFIRMED)와 unassignedCount까지만 내려준다.
@@ -934,10 +945,62 @@ export interface paths {
      *
      *     종전 구현은 `프로젝트 전체 팀 수 + 1`이었다. DB 제약이
      *     `uq_team_project_id_class_id_team_number`(프로젝트 · 반 · 번호)라 반 내 유일이 정본이고,
-     *     시드도 반마다 1부터다. 이제 그 반의 팀 수 + 1이다.
+     *     시드도 반마다 1부터다. 이제 **그 반의 살아 있는 팀 중 최대 번호 + 1**이다.
+     *
+     *     ## 🔴 46차 — 이름이 겹치면 무엇이 겹쳤는지 말한다
+     *
+     *     종전에는 팀명 중복이 그대로 DB까지 내려가 `409 DATA_INTEGRITY_VIOLATION`
+     *     (「요청을 처리할 수 없습니다. 데이터 제약 조건에 맞지 않습니다.」)으로 나갔습니다 —
+     *     전역 처리기의 fallback이라 **화면이 무엇이 잘못됐는지 말할 수 없었습니다.**
+     *     이제 두 코드로 나눠서 옵니다.
+     *
+     *     | 코드 | 뜻 | 화면이 할 일 |
+     *     |---|---|---|
+     *     | `TEAM_NAME_DUPLICATED` | 그 반에 같은 이름의 팀이 이미 있다 | **이름을 고치라**고 안내 |
+     *     | `TEAM_NUMBER_DUPLICATED` | 번호가 겹쳤다(서버가 매기는 값) | **다시 시도**하라고 안내 |
+     *
+     *     둘을 나눈 이유는 고칠 수 있는 주체가 다르기 때문입니다 — 이름은 매니저가 입력한
+     *     값이고, 번호는 서버가 매긴 값이라 다시 누르면 다음 번호를 받습니다.
      */
     post: operations['createTeam']
-    delete?: never
+    /**
+     * 반 통째로 해체 | ✅ 사용 가능
+     * @description **그 반의 팀을 한 번에 전부 해체한다**(46차 R3). `classId`(쿼리)가 필수다.
+     *
+     *     자동 배분이 한 번에 여러 팀을 만드는 액션이라, 되돌리는 쪽도 한 번이어야 합니다.
+     *     종전에는 반 하나를 다시 짜려면 팀 수만큼 `DELETE`를 순서대로 눌러야 했고,
+     *     그 중 하나가 실패하면 반이 **반쯤 해체된 채로** 남았습니다.
+     *
+     *     **요청**
+     *     - projectId (경로): 기준 프로젝트 ID
+     *     - classId (쿼리, 필수): 비울 반. 빠뜨리면 400이다 — 프로젝트 전체를 비우는 갈래는 없다
+     *
+     *     **응답 (200)**
+     *     - disbandedTeamCount: 해체한 팀 수
+     *     - unassignedMemberCount: 미배정으로 돌아간 인원 수
+     *
+     *     ## DRAFT만 해체한다
+     *
+     *     확정된 팀이 하나라도 있으면 **아무것도 해체하지 않고** `409 TEAM_CONFIRMED_LOCKED`다.
+     *     이 API의 용도는 **확정 전 되돌리기**이지 확정 취소가 아닙니다 — 확정을 되돌리려면
+     *     [편성 다시 열기](`reopenTeams`)를 먼저 부르시면 됩니다.
+     *
+     *     팀 하나짜리 해체(`disbandTeam`)는 그대로 CONFIRMED도 해체합니다. 일괄 쪽만
+     *     좁힌 것이라 할 수 있던 일이 없어지지는 않습니다.
+     *
+     *     ## 전부 아니면 아무것도 아니다
+     *
+     *     정상 접수된 제출이 있는 팀이 **하나라도** 있으면 `409 TEAM_SUBMISSION_LOCKED`이고
+     *     그 반은 한 팀도 해체되지 않습니다. 이때 `message`에 걸린 팀 이름이 들어갑니다
+     *     (예: `이미 제출한 팀이 있어 반을 비울 수 없습니다: 3팀, 5팀`) — 팀이 여럿인 요청이
+     *     끊길 때 화면이 어느 팀 때문인지 말할 수 있어야 해서입니다.
+     *
+     *     ## 이미 빈 반은 에러가 아니다
+     *
+     *     해체할 팀이 없으면 200에 `disbandedTeamCount: 0`입니다. 다시 눌러도 같은 답이
+     *     나오므로 재시도가 안전합니다.
+     */
+    delete: operations['disbandClassTeams']
     options?: never
     head?: never
     patch?: never
@@ -3734,6 +3797,21 @@ export interface paths {
      *
      *     ⚠️ **정상 접수된 제출이 있는 팀은 해체할 수 없습니다**(`409 TEAM_SUBMISSION_LOCKED`).
      *     해체하면 그 제출이 팀 없이 뜹니다. 배정·제외와 같은 규칙입니다.
+     *
+     *     ## 🔴 46차 R1 — 해체 결과가 조회에 반영됩니다
+     *
+     *     해체는 예전에도 정상 커밋됐지만 **조회가 해체된 팀을 걸러 내지 않아** 목록에
+     *     그대로 남았습니다. 이제 다음 세 가지가 보장됩니다.
+     *
+     *     - 해체한 팀은 팀 목록·제출 현황 어디에도 나오지 않습니다
+     *     - **해체한 이름·번호를 다시 쓸 수 있습니다** — 종전에는 같은 이름으로 다시 만들면
+     *       살아 있는 행과 부딪혀 409였습니다(코드도 `DATA_INTEGRITY_VIOLATION` fallback이라
+     *       이유를 말하지 못했습니다 — 지금은 `TEAM_NAME_DUPLICATED`입니다)
+     *     - 팀을 전부 해체한 반은 **자동 배분을 다시 쓸 수 있습니다** — 종전에는 해체된 팀도
+     *       "이미 팀이 있다"로 세어 `409 AUTO_ASSIGN_NOT_ALLOWED`가 영구히 났습니다
+     *
+     *     이미 해체된 팀에 다시 이 요청을 보내면 `404 TEAM_NOT_FOUND`입니다 — 목록에 없는
+     *     팀은 없는 팀입니다.
      */
     delete: operations['disbandTeam']
     options?: never
@@ -3748,6 +3826,14 @@ export interface paths {
      *     - name (필수): 새 팀 이름
      *
      *     **응답 (200)** — 본문 없음
+     *
+     *     ## 🔴 46차 — 이름이 겹치면 `TEAM_NAME_DUPLICATED`
+     *
+     *     같은 반에 이미 있는 이름으로 바꾸면 `409 TEAM_NAME_DUPLICATED`입니다
+     *     (종전에는 `DATA_INTEGRITY_VIOLATION` fallback이었습니다).
+     *
+     *     **지금 이름 그대로 보내는 것은 중복이 아닙니다** — 편집 폼을 그대로 저장하는
+     *     흐름이 있어서, 아무것도 안 바꾸는 요청이 409가 되면 안 됩니다.
      */
     patch: operations['updateTeam']
     trace?: never
@@ -17512,6 +17598,23 @@ export interface components {
       /** @description 발생한 이벤트 타입별 집계. 한 건도 없던 타입은 나오지 않는다 */
       events: components['schemas']['ActivityEventSummary'][]
     }
+    /** @description 반 통째로 해체 응답(46차 R3) */
+    DisbandClassTeamsResponse: {
+      /**
+       * Format: int32
+       * @description 해체한 팀 수. 이미 빈 반이었으면 0입니다(에러가 아닙니다).
+       * @example 6
+       */
+      disbandedTeamCount: number
+      /**
+       * Format: int32
+       * @description 미배정으로 돌아간 인원 수입니다. 목록을 다시 받아서는 알 수 없는 값이라
+       *     (해체 전 인원을 모릅니다) 여기에 실어 보냅니다 — 「6개 팀 25명이 미배정으로
+       *     돌아갔습니다」 같은 안내에 쓰시면 됩니다.
+       * @example 25
+       */
+      unassignedMemberCount: number
+    }
     /** @description 기관 삭제 확인 요청 */
     DeleteOrganizationRequest: {
       /**
@@ -18712,6 +18815,92 @@ export interface operations {
       }
       /** @description PROJECT_NOT_FOUND 프로젝트를 찾을 수 없음 · CLASS_NOT_FOUND 이 기수에 그 반이 없음 */
       404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /**
+       * @description TEAM_NAME_DUPLICATED 그 반에 같은 이름의 팀이 이미 있음(이름을 고쳐 재시도) ·
+       *     TEAM_NUMBER_DUPLICATED 번호가 겹침(그대로 재시도)
+       */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  disbandClassTeams: {
+    parameters: {
+      query: {
+        /** @description 비울 반 */
+        classId: string
+      }
+      header?: never
+      path: {
+        /** @description 프로젝트 ID */
+        projectId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 반 해체 성공(이미 빈 반이면 0건) */
+      200: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['DisbandClassTeamsResponse']
+        }
+      }
+      /** @description VALIDATION_FAILED classId 누락 */
+      400: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED 액세스 토큰이 없거나 유효하지 않음 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description CLASS_NOT_MANAGED 담당하지 않는 반 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description CLASS_NOT_FOUND 이 프로젝트의 기수에 그 반이 없음 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /**
+       * @description TEAM_CONFIRMED_LOCKED 확정된 팀이 있음(편성 다시 열기 후 재시도) ·
+       *     TEAM_SUBMISSION_LOCKED 정상 접수된 제출이 있는 팀이 있음
+       */
+      409: {
         headers: {
           [name: string]: unknown
         }
@@ -22216,6 +22405,15 @@ export interface operations {
       }
       /** @description TEAM_NOT_FOUND 팀을 찾을 수 없음 */
       404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description TEAM_NAME_DUPLICATED 그 반에 같은 이름의 팀이 이미 있음 */
+      409: {
         headers: {
           [name: string]: unknown
         }

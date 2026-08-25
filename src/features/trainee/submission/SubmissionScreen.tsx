@@ -6,13 +6,7 @@ import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/u
 import { isApiError } from '@/api/_contract'
 import { formatDateTime } from '@/lib/format'
 import ConsoleShell from '@/shells/ConsoleShell'
-import {
-  useRepositoryCheck,
-  useSubmission,
-  useSubmitGithub,
-  useSubmitZip,
-  type RepoCheck,
-} from './_/api/api'
+import { useRepositoryCheck, useSubmission, useSubmitGithub, type RepoCheck } from './_/api/api'
 import SubmissionSkeleton from './components/SubmissionSkeleton'
 import type { SubmissionView } from './_/api/types'
 import { buildStateBanner, submitFailureOf, type SubmitFailure } from './labels'
@@ -29,35 +23,19 @@ import SubmittedContentCard from './components/SubmittedContentCard'
   **낙관적 전환을 걷어냈다.** 목은 제출 즉시 화면이 `ANALYZING` 카드를 지어냈는데, 지금은
   서버가 접수만 하고 분석을 비동기로 돌리므로 **제출 후 다시 읽어** 서버가 준 상태를 그린다.
 */
-/** 두 제출 수단 중 실제로 실패한 쪽의 사유. 아무 일 없으면 `null` */
+/** 제출이 실패한 사유. 아무 일 없으면 `null` */
 const failureOf = (e: unknown): SubmitFailure | null =>
   e == null ? null : submitFailureOf(isApiError(e) ? e.code : null)
 
 export default function SubmissionScreen() {
   const { data, isPending, isError, refetch, analysisFailureReason } = useSubmission()
-  const submit = useSubmitZip()
   const github = useSubmitGithub()
   const repoCheck = useRepositoryCheck()
   const [resubmitting, setResubmitting] = useState(false)
 
-  const handleSubmit = async (file: File) => {
-    if (!data) return
-    await submit.mutateAsync({
-      assessmentRoundId: data.assessmentRoundId,
-      /*
-        **제출 버튼을 누른 이 순간 키를 만든다.** 재시도(타임아웃·5xx)는 같은 키라야
-        서버가 최초 결과를 돌려주고, 사용자가 다시 제출하면 새 키가 되어 별개 제출이
-        된다 — `mutateAsync` 한 번이 곧 한 제출이라 여기가 그 경계다.
-      */
-      idempotencyKey: crypto.randomUUID(),
-      file,
-    })
-    setResubmitting(false)
-  }
-
   /*
     저장소 제출은 멱등키가 없다 — 파일을 올리는 것이 아니라 주소를 남기는 것이라
-    같은 주소를 두 번 내도 같은 결과다(ZIP은 재전송이 곧 재업로드라 키가 필요했다).
+    같은 주소를 두 번 내도 같은 결과다.
   */
   const handleSubmitRepository = async (repositoryUrl: string, branch: string) => {
     if (!data) return
@@ -94,11 +72,10 @@ export default function SubmissionScreen() {
             view={data}
             analysisFailureReason={analysisFailureReason}
             resubmitting={resubmitting}
-            submitting={submit.isPending || github.isPending}
-            failure={failureOf(submit.error ?? github.error)}
+            submitting={github.isPending}
+            failure={failureOf(github.error)}
             onResubmitClick={() => setResubmitting(true)}
             onCancelResubmit={() => setResubmitting(false)}
-            onSubmit={handleSubmit}
             onSubmitRepository={handleSubmitRepository}
             onCheckRepository={repoCheck.check}
             checking={repoCheck.isPending}
@@ -117,7 +94,6 @@ function SubmissionBody({
   failure,
   onResubmitClick,
   onCancelResubmit,
-  onSubmit,
   onSubmitRepository,
   onCheckRepository,
   checking,
@@ -131,7 +107,6 @@ function SubmissionBody({
   failure: SubmitFailure | null
   onResubmitClick: () => void
   onCancelResubmit: () => void
-  onSubmit: (file: File) => void
   onSubmitRepository: (repositoryUrl: string, branch: string) => void
   onCheckRepository: (repoUrl: string) => Promise<RepoCheck>
   checking: boolean
@@ -150,9 +125,9 @@ function SubmissionBody({
       {banner && <StateBanner {...banner} />}
 
       {/*
-        **서버가 준 이유를 그대로 옮긴다.** 접수 거절 코드가 13종인데 하나로 뭉치면
-        학생이 무엇을 해야 하는지 모른다 — 압축을 다시 하면 되는 경우와 기다려야 하는
-        경우가 섞인다. 재시도가 의미 없는 경우에는 그 말을 하지 않는다(`labels.ts`).
+        **서버가 준 이유를 그대로 옮긴다.** 접수 거절 코드가 여러 종인데 하나로 뭉치면
+        학생이 무엇을 해야 하는지 모른다 — 다시 내면 되는 경우와 기다려야 하는 경우가
+        섞인다. 재시도가 의미 없는 경우에는 그 말을 하지 않는다(`labels.ts`).
       */}
       {failure && (
         <div className="rounded-md bg-danger-soft px-4 py-3 text-sm text-danger">
@@ -171,7 +146,6 @@ function SubmissionBody({
         <SubmissionForm
           submitting={submitting}
           availableMethods={view.availableMethods}
-          onSubmit={onSubmit}
           onSubmitRepository={onSubmitRepository}
           onCheckRepository={onCheckRepository}
           checking={checking}
@@ -198,7 +172,6 @@ function SubmissionBody({
             <SubmissionForm
               submitting={submitting}
               availableMethods={view.availableMethods}
-              onSubmit={onSubmit}
               onSubmitRepository={onSubmitRepository}
               onCheckRepository={onCheckRepository}
               checking={checking}

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useQueryClient } from '@tanstack/react-query'
 import { isApiError } from '@/api/_contract'
 import { useGetMyAssessmentRounds } from '@/api/assessment/useAssessmentQueries'
 import { assessmentKeys } from '@/api/assessment/assessmentKeys'
@@ -10,7 +10,6 @@ import {
 import { submissionKeys } from '@/api/submission/submissionKeys'
 import type { findMySubmission_Response } from '@/api/submission/submissionTypes'
 import { useCheckRepository, useSubmitGithubUrl } from '@/api/submission/useSubmissionMutations'
-import { submitZip } from '@/api/uploads'
 import type { SubmissionMethod, SubmissionView } from './types'
 
 /*
@@ -206,43 +205,16 @@ function toView(s: Server, availableMethods: SubmissionMethod[]): SubmissionView
 }
 
 /**
- * ZIP 제출·재제출.
- *
- * **멱등키를 화면이 만들어 넘긴다.** 제출 버튼을 누른 순간 하나 만들어 그 제출이 끝날
- * 때까지 들고 있어야 재시도가 같은 키를 쓴다 — 여기서 만들면 호출마다 새 키가 되어
- * 멱등이 성립하지 않는다(uploads.ts 주석).
- *
- * **성공하면 제출 현황과 홈을 다시 읽는다.** 서버가 접수만 하고 분석은 비동기로 돌리므로
- * 화면이 상태를 지어내지 않고 서버가 준 것을 그린다 — 목이 하던 낙관적 전환을 걷어냈다.
- * 홈까지 무효화하는 이유는 카드의 대표 상태가 제출로 바뀌기 때문이다.
- */
-export function useSubmitZip() {
-  const queryClient = useQueryClient()
-  return useMutation({
-    mutationFn: (vars: { assessmentRoundId: string; idempotencyKey: string; file: File }) =>
-      submitZip({
-        query: { assessmentRoundId: vars.assessmentRoundId },
-        idempotencyKey: vars.idempotencyKey,
-        file: vars.file,
-      }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: submissionKeys.all })
-      queryClient.invalidateQueries({ queryKey: assessmentKeys.all })
-    },
-  })
-}
-
-/**
  * GitHub 저장소 제출.
  *
- * ZIP과 달리 **파일이 아니라 주소만 보낸다** — 서버는 형식·호스트만 검사하고 실제
- * 접근 가능 여부는 마감 후 분석에서 판정한다(스펙). 그래서 여기서 성공했다고 코드가
- * 읽혔다는 뜻은 아니다.
+ * **파일이 아니라 주소만 보낸다** — 서버는 형식·호스트만 검사하고 실제 접근 가능
+ * 여부는 마감 후 분석에서 판정한다(스펙). 그래서 여기서 성공했다고 코드가 읽혔다는
+ * 뜻은 아니다.
  *
  * `branch`는 비워도 된다 — AI 서버가 기본 브랜치를 골라 `resolvedBranch`로 회신한다.
  *
- * ⚠️ **ZIP과 똑같이 `Idempotency-Key`가 필수다**(생략하면 400). 파일을 안 올린다고
- * 예외가 아니다 — 재시도했을 때 제출이 둘로 갈리지 않게 하는 장치라 수단과 무관하다.
+ * ⚠️ **`Idempotency-Key`가 필수다**(생략하면 400) — 재시도했을 때 제출이 둘로
+ * 갈리지 않게 하는 장치다.
  */
 export function useSubmitGithub() {
   const queryClient = useQueryClient()
@@ -258,7 +230,7 @@ export function useSubmitGithub() {
         /*
           **제출 버튼을 누른 이 순간 키를 만든다.** 재시도는 같은 키라야 서버가 최초
           결과를 돌려주고, 사용자가 주소를 고쳐 다시 내면 새 키가 되어 별개 제출이 된다
-          — `submit` 한 번이 곧 한 제출이라 여기가 그 경계다(ZIP과 같은 규칙).
+          — `submit` 한 번이 곧 한 제출이라 여기가 그 경계다.
         */
         header: { 'Idempotency-Key': crypto.randomUUID() },
         body: {

@@ -119,43 +119,19 @@ const failureText = (code: string | null, serverReason?: string | null) =>
   '제출한 코드를 읽지 못했어요. 파일을 확인하고 다시 올려 주세요.'
 
 /*
-  🔴 **서버 상한과 정확히 같은 값이다** — `app.submission.max-zip-bytes` 기본값이고,
-  넘으면 `413 FILE_TOO_LARGE`다. 화면 상한이 더 크면 "올린 뒤에 거절"이 생기고, 더 작으면
-  올릴 수 있는 파일을 막는다. 50MB를 `50 * 1024 * 1024`로 쓰면 같은 값이지만, 스펙이
-  바이트로 못박은 값이라 그대로 적는다.
+  🔴 **ZIP 업로드 검증(`validateZipSize`)을 지웠다**(사용자 지시 — 새 제출은 GitHub URL
+  하나뿐이다). `MAX_ZIP_BYTES`도 함께 지운다 — 파일 업로드 자체가 없어져 크기를 잴
+  일이 없다.
 
-  톰캣 상한(60MB)이 그 앞에 하나 더 있는데 **일부러 넉넉하게 잡은 것**이다 — 톰캣이 먼저
-  끊으면 우리 에러 코드가 안 실려 화면이 사유를 알 수 없기 때문이다(스펙 명시).
+  `METHOD_LABEL`은 **지우지 않는다** — 예전에 ZIP으로 낸 제출 기록을 표시할 때
+  `SubmittedContentCard`가 아직 이 라벨을 읽는다. 지우면 과거 제출 화면이 깨진다.
 */
-export const MAX_ZIP_BYTES = 52_428_800
 
-export type ZipCheckResult = { ok: true } | { ok: false; message: string }
-
-/** 순수 계산 — 네트워크가 필요 없다. **업로드 전에** 막는 것이 목적이다 */
-export function validateZipSize(file: File): ZipCheckResult {
-  if (file.size > MAX_ZIP_BYTES) {
-    /*
-      **올림한다.** 반올림하면 상한을 1바이트 넘긴 파일이 `50MB — 50MB를 넘어…`로 나와
-      제 말과 부딪힌다(실제로 그렇게 보였다). 올림하면 표시값이 상한과 같아지는 일이
-      없어 문구가 늘 성립하고, 실제로 큰 파일에서는 어차피 같은 수가 나온다.
-    */
-    const mb = Math.ceil(file.size / (1024 * 1024))
-    return { ok: false, message: `${file.name} · ${mb}MB — 50MB를 넘어 제출할 수 없어요` }
-  }
-  return { ok: true }
-}
-
-/** 서버 enum을 학생이 읽는 말로 — 폼의 탭 이름과 같은 단어를 쓴다 */
+/** 서버 enum을 학생이 읽는 말로. `ZIP_WITH_GITLOG`는 과거 제출 표시에만 쓰인다 */
 export const METHOD_LABEL: Record<SubmissionMethod, string> = {
   GITHUB_URL: 'GitHub 저장소',
   ZIP_WITH_GITLOG: 'ZIP 업로드',
 }
-
-export const REPO_HELP =
-  '우리 기관 GitHub 조직 안의 저장소는 따로 권한을 주지 않아도 돼요.\n조직 밖이거나 비공개라면 ZIP으로 올려 주세요.'
-export const ZIP_HELP = '최대 50MB · node_modules, .venv 같은 폴더는 빼고 압축해 주세요.'
-export const REPO_NOT_FOUND_HELP =
-  '비공개 저장소이거나 우리 기관 조직 밖에 있으면 열 수 없어요 — 그럴 땐 ZIP으로 올리면 됩니다.'
 
 /*
   제출이 **접수되지 못한** 이유 — 분석 실패(`failureCode`)와 다른 축이다.
@@ -165,27 +141,26 @@ export const REPO_NOT_FOUND_HELP =
   | 접수 실패 | 요청이 거절됐다 | 서버가 파일을 받지도 않았다 |
   | 분석 실패 | 접수는 됐다 | 받아서 열어 보니 분석할 수 없었다 |
 
-  13종이 오는데 화면이 하나로 뭉치면 **학생이 무엇을 해야 하는지 모른다.** 압축을 다시
-  하면 되는 경우와 기다려야 하는 경우와 매니저를 찾아야 하는 경우가 섞인다.
+  여러 종이 오는데 화면이 하나로 뭉치면 **학생이 무엇을 해야 하는지 모른다.** 다시
+  내면 되는 경우와 기다려야 하는 경우와 매니저를 찾아야 하는 경우가 섞인다.
 
   그래서 **다음 행동으로 갈라** 세 갈래만 만든다. 코드를 그대로 노출하지 않는 이유는
   그것이 개발자용 문자열이기 때문이다(F3).
 */
 export type SubmitFailure = {
   message: string
-  /** 같은 파일로 다시 눌러 볼 만한가 — 아니면 버튼을 다시 강조하지 않는다 */
+  /** 같은 내용으로 다시 눌러 볼 만한가 — 아니면 버튼을 다시 강조하지 않는다 */
   retryable: boolean
 }
 
 const SUBMIT_FAILURE: Record<string, SubmitFailure> = {
-  // 학생이 고칠 수 있다 — 파일을 바꿔 다시 낸다
-  ARCHIVE_INVALID: {
-    message: '압축 파일을 열지 못했어요. 다시 압축해서 올려 주세요.',
-    retryable: false,
-  },
-  FILE_TOO_LARGE: { message: '파일이 너무 커요. 50MB 아래로 줄여 주세요.', retryable: false },
+  /*
+    🔴 **`ARCHIVE_INVALID`·`FILE_TOO_LARGE`를 지웠다.** 둘 다 업로드한 파일 자체를
+    거절하는 사유라 ZIP 제출에서만 났다 — GitHub URL 제출은 파일을 안 올리므로 이
+    코드가 다시 올 자리가 없다(사용자 지시로 ZIP 제출을 없앴다).
+  */
 
-  // 기다리면 된다 — 같은 파일로 다시 눌러도 된다
+  // 기다리면 된다 — 같은 내용으로 다시 눌러도 된다
   ARTIFACT_STORE_FAILED: {
     message: '파일을 저장하는 중 문제가 생겼어요. 잠시 후 다시 시도해 주세요.',
     retryable: true,

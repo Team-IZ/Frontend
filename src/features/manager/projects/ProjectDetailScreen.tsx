@@ -115,7 +115,6 @@ export default function ProjectDetailScreen() {
   }
 
   const p = project.data
-  const sub = submission.data
   const cp = classProgress.data
 
   /* 담당 반 문구 — 반 이름과 인원 모두 서버가 준다(목은 상수로 박아 뒀다) */
@@ -183,12 +182,13 @@ export default function ProjectDetailScreen() {
             [팀 추가]·[자동 배분]이 열려 있었다**(실측). `undefined`를 그대로 넘기고
             모르는 동안에는 `TeamTab`이 액션 줄을 안 그린다.
           */}
-          <TeamTab
-            projectId={id}
-            stage={sub?.teamFormationStage}
-            locked={sub?.locked}
-            submittedTeamCount={sub?.summary.submittedTeamCount}
-          />
+          {/*
+            팀 탭은 **한 반씩** 본다(33차) — 국면·미배정·확정이 전부 반 단위라
+            제출 현황을 그 반으로 좁혀 **탭이 직접 읽는다.** 여기서 넘기던
+            `stage`·`locked`·`submittedTeamCount`는 담당 반 전체 기준이라 반이
+            둘이면 틀린 값이었다(`TeamTab`의 `useSubmissionStatus` 주석).
+          */}
+          <TeamTab projectId={id} cohortId={cohortId} />
         </TabsContent>
 
         <TabsContent value="submission">

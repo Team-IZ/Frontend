@@ -42,12 +42,28 @@ export function useProject(projectId: string) {
   return useFindProject({ path: { projectId } }, { enabled: !!projectId })
 }
 
-export function useTeams(projectId: string) {
-  return useFindTeams({ path: { projectId } }, { enabled: !!projectId })
+/*
+  두 조회의 `classId`는 **좁힐 때만 싣는다.**
+
+  생략하면 서버가 담당 반 전체를 준다. 담당 반이 하나뿐이면 그 값이 이미 그 반의
+  것이라, `classId`를 실으면 **같은 데이터를 다른 쿼리 키로 한 번 더** 받는다
+  (`?? null`로 키를 만드는데 `{ classId: undefined }`는 `null`이 아니다).
+
+  그래서 호출부는 **반이 둘 이상일 때만** 값을 넘긴다 — 그때는 좁히는 것이 실제로
+  결과를 바꾸므로 요청이 하나 느는 것이 맞다.
+*/
+export function useTeams(projectId: string, classId?: string) {
+  return useFindTeams(
+    { path: { projectId }, query: classId ? { classId } : undefined },
+    { enabled: !!projectId },
+  )
 }
 
-export function useSubmissionStatus(projectId: string) {
-  return useFindProjectSubmissionStatus({ path: { projectId } }, { enabled: !!projectId })
+export function useSubmissionStatus(projectId: string, classId?: string) {
+  return useFindProjectSubmissionStatus(
+    { path: { projectId }, query: classId ? { classId } : undefined },
+    { enabled: !!projectId },
+  )
 }
 
 export function useClassProgress(projectId: string) {

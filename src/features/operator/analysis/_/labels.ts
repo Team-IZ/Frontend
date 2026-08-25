@@ -93,7 +93,8 @@ export const REACH_STEPS = [
   { step: 1, label: '무엇을 하는지', required: true },
   { step: 2, label: '왜 그렇게 했는지', required: true },
   { step: 3, label: '다른 방법과 비교', required: false },
-  { step: 4, label: '언제 깨지는지', required: false },
+  // `깨지는지` → `문제가 되는지`(v2 루브릭 어휘). 근거는 trainee/report/labels.ts 머리 주석
+  { step: 4, label: '언제 문제가 되는지', required: false },
 ] as const
 
 /**

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { useNavigate, Navigate } from 'react-router'
+import { useNavigate, Navigate, Link } from 'react-router'
 import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { initialScreenFor } from './authStore'
 import { useSession, useSignIn } from './useSession'
@@ -155,33 +155,54 @@ export default function LoginScreen() {
             계정은 `.env.local`에서 온다. **없으면 상자째 안 그린다** — 빈 상자가 남으면
             "버튼이 안 뜨는 버그"로 보인다.
           */}
-          {SHOW_DEV_UI && QUICK_LOGIN_ACCOUNTS.length > 0 && (
+          {SHOW_DEV_UI && (
             <div className="mb-6 rounded-md bg-canvas px-3 py-2.5">
               <p className="mb-2 text-[11px] font-medium text-fg-muted">
                 발표용 · 역할별 바로 입장
               </p>
-              <div className="grid grid-cols-2 gap-2">
-                {QUICK_LOGIN_ACCOUNTS.map(
-                  ({ label, email: quickEmail, password: quickPassword }) => (
-                    <Button
-                      key={quickEmail}
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      disabled={isSubmitting}
-                      onClick={() => handleQuickLogin(quickEmail, quickPassword)}
-                    >
-                      {label}
-                    </Button>
-                  ),
-                )}
-              </div>
 
               {/*
-                교육생 상태별 계정은 **접어 둔다.** 수십 개라 펼쳐 두면 위 역할 버튼과
-                아래 입력 칸이 밀린다 — 찾을 때만 여는 것이 맞다.
+                **계정이 없어도 이 줄은 그린다.** 아래 역할 버튼은 `.env.local`의 계정을
+                쓰지만 시연용 목업은 네트워크를 한 번도 안 타므로, 로그인 API가 죽어
+                있든 env가 비어 있든 들어갈 수 있어야 한다 — 그게 이 화면이 존재하는
+                이유다. 그래서 계정 유무와 무관하게 상자 맨 위에 둔다.
               */}
-              <CaseAccountPicker disabled={isSubmitting} onPick={handleQuickLogin} />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mb-2 w-full"
+                nativeButton={false}
+                render={<Link to="/demo" />}
+              >
+                시연용 목업 — 로그인 없이 교육생 플로우 보기
+              </Button>
+
+              {QUICK_LOGIN_ACCOUNTS.length > 0 && (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    {QUICK_LOGIN_ACCOUNTS.map(
+                      ({ label, email: quickEmail, password: quickPassword }) => (
+                        <Button
+                          key={quickEmail}
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          disabled={isSubmitting}
+                          onClick={() => handleQuickLogin(quickEmail, quickPassword)}
+                        >
+                          {label}
+                        </Button>
+                      ),
+                    )}
+                  </div>
+
+                  {/*
+                    교육생 상태별 계정은 **접어 둔다.** 수십 개라 펼쳐 두면 위 역할 버튼과
+                    아래 입력 칸이 밀린다 — 찾을 때만 여는 것이 맞다.
+                  */}
+                  <CaseAccountPicker disabled={isSubmitting} onPick={handleQuickLogin} />
+                </>
+              )}
             </div>
           )}
 

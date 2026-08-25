@@ -48,6 +48,24 @@ function useInvalidateSubmissionStatus() {
   return () => queryClient.invalidateQueries({ queryKey: submissionKeys.all })
 }
 
+/*
+  **`classId`만 바뀌면 옛 값을 유지한다** — 반 전환은 "같은 프로젝트 안의 다른 조각"이라
+  `lib/listQuery.ts`의 필터·페이지 쪽 규칙과 같은 자리다(하드닝 3차 실측). 반을 바꾸면
+  `classId`가 쿼리 키에 실려 새 키가 되고, 새 키는 캐시가 없어 `data`가 통째로
+  `undefined`가 된다 — `TeamTab`은 그것을 "아직 아무것도 안 왔다"로 읽어 방금 보던
+  반의 표까지 스켈레톤 6행으로 지웠다.
+
+  **`projectId`가 바뀌면 버린다.** 다른 프로젝트의 팀을 이 프로젝트 것처럼 보여주면
+  사고다 — `lib/listQuery.ts`가 "다른 것(상세의 id)은 유지 안 한다"고 가른 바로 그
+  경계다. 쿼리 키의 세 번째 자리가 `path`(`{ projectId }`)라 거기서 판정한다.
+*/
+function sameProjectPlaceholder<TData>(projectId: string) {
+  return (data: TData | undefined, query: { queryKey: readonly unknown[] } | undefined) => {
+    const prevPath = query?.queryKey[2] as { projectId?: string } | null | undefined
+    return prevPath?.projectId === projectId ? data : undefined
+  }
+}
+
 export function useProject(projectId: string) {
   return useFindProject({ path: { projectId } }, { enabled: !!projectId })
 }
@@ -65,14 +83,14 @@ export function useProject(projectId: string) {
 export function useTeams(projectId: string, classId?: string) {
   return useFindTeams(
     { path: { projectId }, query: classId ? { classId } : undefined },
-    { enabled: !!projectId },
+    { enabled: !!projectId, placeholderData: sameProjectPlaceholder(projectId) },
   )
 }
 
 export function useSubmissionStatus(projectId: string, classId?: string) {
   return useFindProjectSubmissionStatus(
     { path: { projectId }, query: classId ? { classId } : undefined },
-    { enabled: !!projectId },
+    { enabled: !!projectId, placeholderData: sameProjectPlaceholder(projectId) },
   )
 }
 

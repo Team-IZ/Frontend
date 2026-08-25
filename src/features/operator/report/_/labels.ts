@@ -10,7 +10,8 @@ export const REACH_LEVEL_LABEL: Record<ReachLevel, string> = {
   1: '무엇을 하는지',
   2: '왜 그렇게 했는지',
   3: '다른 방법과 비교',
-  4: '언제 깨지는지',
+  // `깨지는지` → `문제가 되는지`(v2 루브릭 어휘). 근거는 trainee/report/labels.ts 머리 주석
+  4: '언제 문제가 되는지',
 }
 
 /**

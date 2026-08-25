@@ -1,47 +1,134 @@
-import { ChevronRightIcon } from 'lucide-react'
-import { useState } from 'react'
+import { SearchIcon } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { cn } from '@/lib/utils/cn'
-import {
-  CASE_ACCOUNT_GROUPS,
-  CASE_ACCOUNT_MEASURED_AT,
-  CASE_ACCOUNT_OWNERS,
-  CASE_ACCOUNT_TOTAL,
-  type CaseAccount,
-} from '../quickLoginAccounts'
-
-/** 담당자를 안 골랐을 때 — 「전체」도 하나의 선택지다 */
-const ALL = '전체'
+import { CASE_ACCOUNT_GROUPS, ROLES, type CaseAccount, type Role } from '../quickLoginAccounts'
 
 /*
-  dev 전용 — 케이스(교육생 상태별 · 매니저/오퍼레이터 담당자별) 테스트 계정 고르개.
+  dev 전용 계정 고르개.
 
-  ## 왜 접어 두나
-  계정이 수십 개다. 펼쳐 둔 채로 로그인 화면에 놓으면 원래 있어야 할 것(역할 버튼 넷,
-  입력 칸)이 밀려 내려간다. 이 목록은 **찾을 때만 필요하다.**
+  ## 무엇이 달라졌나 — **여섯 명이 아니라 수백 명이 본다**
 
-  ## 왜 케이스를 먼저 고르나
-  `미응시`만 백 명이 넘어 한 목록에 다 넣으면 찾을 수 없다. 케이스를 좁힌 뒤 그 안에서
-  고른다 — 테스트할 때 아는 것은 계정 이름이 아니라 **"무엇을 보고 싶다"** 다.
+  종전 구조는 팀원 여섯이 *자기 담당 계정*을 찾는 자리였다(`owner` 필터 · 케이스 13개
+  격자 · 접힌 목록). 그 전제가 바뀌었다. 시연에서 이 화면을 수백 명이 동시에 연다.
 
-  ## 왜 케이스마다 설명이 붙나
-  백엔드가 엑셀 요약에 *"이 계정들로 무엇을 보나"* 를 적어 준다. 그것을 그대로 보여준다 —
-  계정 목록만 있고 무엇을 확인하는 자리인지 모르면 고를 수가 없다.
+  그때 종전 구조는 **한 계정으로 몰린다.** 위에 크게 놓인 역할 버튼 넷이 곧바로
+  로그인시키고, 270명 명부는 접혀 있어 아무도 안 연다. 결국 전원이 같은 `t001`로
+  들어가 같은 세션을 밀어 댄다.
 
-  ## 왜 담당자로 한 번 더 거르나
-  여섯이 함께 테스트하는데 **계정은 소모된다.** 남이 쓴 것을 열면 이미 끝난 상태를 보게
-  되고, 그러면 "누가 뭘 썼는지"를 매번 말로 맞춰야 한다. 엑셀에 `담당`이 적혀 오므로
-  화면은 그것으로 거르기만 한다 — **배정은 엑셀이 정본이다.**
+  ## 그래서 두 가지를 바꿨다
 
-  ## 왜 반·팀·이름·상태까지 보여주나
-  같은 케이스 계정이 여러 개 있는 이유는 **소모되기 때문**이다(세션을 시작하면 그 계정은
-  돌아오지 않는다). 어느 것을 이미 썼는지 알아보려면 식별이 되어야 하고, 같은 케이스
-  안에서도 화면이 갈리는 계정(`문제 2개`/`3개`)은 **그 차이가 보여야 고를 수 있다.**
+  **① 역할을 「로그인」이 아니라 「갈림길」로.** 역할을 누르면 들어가지지 않고 아래
+  목록이 바뀐다. 누를 수 있는 공용 계정이 화면에서 사라지므로 몰릴 대상이 없다.
 
-  ## 왜 잰 날짜를 말하나
-  **상태에 유효기간이 있다.** 개인 응시 창은 분석 완료 뒤 24시간이라 `응시 가능` 계정
-  아홉이 하루 만에 전부 `창 닫힘`이 됐다(실측). 날짜를 숨기면 라벨을 믿고 눌렀다가
-  다른 화면을 보게 되고, 그때 화면을 의심하게 된다.
+  **② 교육생은 반 → 이름으로 좁힌다.** 각자 **자기 이름**을 고르면 252명이 252개로
+  자연히 흩어진다. 배정표도, 서버 조율도 필요 없다 — 이름이 곧 배정이다.
+
+  ## 왜 `owner` 필터를 뺐나
+
+  지금 데이터에 `owner`가 하나도 없다(`owners: []`). 팀 배정은 엑셀에서 끊겼고, 화면만
+  빈 필터 줄을 그리고 있었다. 다시 배정이 생기면 역할 탭 옆에 되살리면 된다.
 */
+
+/** 한 사람. `groups`가 복수인 이유는 아래 dedupe 주석에 있다 */
+type Row = Omit<CaseAccount, 'className'> & { role: Role; groups: string[] }
+
+const roleOf = (group: string, note: string | null): Role =>
+  group === '슈퍼 어드민'
+    ? '슈퍼 어드민'
+    : group === '오퍼레이터'
+      ? '오퍼레이터'
+      : /매니저/.test(note ?? '')
+        ? '매니저'
+        : '교육생'
+
+/*
+  ## 같은 사람이 여러 그룹에 들어 있다 — **이메일로 합친다**
+
+  🔴 매니저 셋이 두 반을 겸한다(박지현 A·F · 이도윤 B·D · 강민서 E·G). 엑셀이 반마다
+  한 줄씩 적어 오므로 **같은 이메일이 두 그룹에 나온다** — 270행인데 사람은 267명이다.
+
+  합치지 않고 그대로 그리면 그 셋이 목록에 두 번 나오고, `key`가 겹쳐 React가
+  *"두 자식이 같은 키를 씁니다 — 중복되거나 누락될 수 있습니다"* 를 던진다. 실제로
+  탭을 오갈 때마다 카드가 **세 개씩 쌓였다**(실측: 10 → 28 → 31 → 34).
+
+  그래서 이메일로 묶고 담당 반을 배열로 모은다. 화면에는 `A반 · F반`으로 한 줄에 나온다.
+*/
+const ALL_ROWS: Row[] = Object.values(
+  CASE_ACCOUNT_GROUPS.reduce<Record<string, Row>>((acc, g) => {
+    for (const a of g.accounts) {
+      const prev = acc[a.email]
+      if (prev) {
+        prev.groups.push(g.label)
+        continue
+      }
+      acc[a.email] = {
+        email: a.email,
+        password: a.password,
+        name: a.name,
+        teamName: a.teamName,
+        note: a.note,
+        owner: a.owner,
+        groups: [g.label],
+        role: roleOf(g.label, a.note),
+      }
+    }
+    return acc
+  }, {}),
+)
+
+const countOf = (role: Role) => ALL_ROWS.filter((r) => r.role === role).length
+
+/*
+  매니저를 **화면에 보여줄 것이 많은 순**으로 세우는 데 쓴다.
+
+  매니저 화면(대시보드·히트맵)은 담당 반에 데이터가 없으면 빈 화면이다. 시연에서
+  아무나 골라 들어가면 그 빈 화면을 보여주게 된다.
+
+  ## 응시 인원이 아니라 화면에 실제로 차는 것으로 잰다
+
+  🔴 처음엔 4차 응시자 수로 세웠는데 **틀렸다.** `강민서`(E·G반)는 응시 50명으로 1위인데
+  **4차 히트맵이 개념 0개·빈 격자**다. 응시했다고 히트맵이 차는 것이 아니다.
+
+  그래서 두 화면의 실제 응답을 재서 넣는다.
+
+  ```
+  inbox  GET /cohorts/{7기}/analytics/signals            → signals[] 길이
+  heat   GET /cohorts/{7기}/analytics/heatmap            → concepts[] 길이
+         (projectId·assessmentRoundId = 미프 4차, level=CLASS)
+  ```
+
+  히트맵을 4차로 재는 이유는 **그 화면이 4차를 기본으로 열기** 때문이다
+  (`heatmap/_/api/api.ts`의 `currentRound()` — `OPEN` 중 마지막). 로그인 직후 보이는
+  것이 그 회차라 그것으로 재야 맞다.
+
+  ⚠️ **로그인 전에는 이 값을 물어볼 수 없다**(두 API 모두 인증을 요구한다). 2026-08-25
+  실측값을 적어 둔다 — 회차가 넘어가면 위 두 요청을 다시 돌려 갱신한다. 틀려도 순서만
+  어긋나고 로그인 자체에는 영향이 없다.
+*/
+const MANAGER_DATA: Record<string, { inbox: number; heat: number }> = {
+  이도윤: { inbox: 96, heat: 5 },
+  임하늘: { inbox: 49, heat: 5 },
+  박지현: { inbox: 97, heat: 4 },
+  최유진: { inbox: 48, heat: 3 },
+  조은비: { inbox: 49, heat: 1 },
+  강민서: { inbox: 100, heat: 0 },
+  윤서준: { inbox: 49, heat: 0 },
+}
+
+/**
+ * 정렬 점수 — **히트맵이 비면 인박스가 아무리 많아도 뒤로 보낸다.**
+ *
+ * 인박스는 담당 반 수에 거의 비례해(겸임이면 두 배) 변별력이 낮고, 히트맵은 비면
+ * 시연 중에 "여긴 왜 아무것도 없죠"가 나온다. 그래서 히트맵에 가중치를 크게 준다.
+ */
+const dataScore = (name: string) => {
+  const d = MANAGER_DATA[name]
+  return d ? d.heat * 100 + d.inbox : -1
+}
+
+/** 교육생 반 목록 — 데이터 순서를 그대로 쓴다(A~J · 반 없음) */
+const CLASSES = [...new Set(ALL_ROWS.filter((r) => r.role === '교육생').flatMap((r) => r.groups))]
+
 export default function CaseAccountPicker({
   disabled,
   onPick,
@@ -49,166 +136,139 @@ export default function CaseAccountPicker({
   disabled?: boolean
   onPick: (email: string, password: string) => void
 }) {
-  const [open, setOpen] = useState(false)
-  const [groupIndex, setGroupIndex] = useState(0)
-  const [owner, setOwner] = useState(ALL)
+  const [role, setRole] = useState<Role>(ROLES[0])
+  const [klass, setKlass] = useState<string>(CLASSES[0] ?? '')
+  const [query, setQuery] = useState('')
 
-  if (CASE_ACCOUNT_GROUPS.length === 0) return null
+  const rows = useMemo(() => {
+    const q = query.trim().toLowerCase()
+    const found = ALL_ROWS.filter((r) => {
+      if (r.role !== role) return false
+      // 검색 중에는 반을 넘어 찾는다 — 자기 반을 모르는 사람이 이름만 치는 경우가 잦다
+      if (role === '교육생' && !q && !r.groups.includes(klass)) return false
+      if (!q) return true
+      return `${r.name} ${r.groups.join(' ')} ${r.teamName} ${r.email}`.toLowerCase().includes(q)
+    })
+    /*
+      매니저만 데이터 많은 순으로 세운다. 나머지 역할은 데이터 순서를 그대로 둔다 —
+      교육생은 어차피 한 반 안이라 전원 같은 값이고, 이름 순서가 흔들리면 자기 이름을
+      찾던 사람이 매번 다른 자리를 봐야 한다.
+    */
+    return role === '매니저'
+      ? [...found].sort((a, b) => dataScore(b.name) - dataScore(a.name))
+      : found
+  }, [role, klass, query])
 
-  const group = CASE_ACCOUNT_GROUPS[groupIndex]
-  /*
-    담당자를 고르면 그 사람 것만 남긴다. **케이스 버튼의 수도 함께 줄인다** — 「응시중
-    2개」인데 눌러 보니 내 것이 없는 일이 잦아서, 누르기 전에 몇 개인지 보여야 한다.
-  */
-  const mine = (list: CaseAccount[]) =>
-    owner === ALL ? list : list.filter((a) => a.owner === owner)
-  const shown = mine(group.accounts)
-  const measuredLabel = CASE_ACCOUNT_MEASURED_AT
-    ? new Date(CASE_ACCOUNT_MEASURED_AT).toLocaleDateString('ko-KR', {
-        month: 'numeric',
-        day: 'numeric',
-      })
-    : null
+  if (ALL_ROWS.length === 0) return null
 
   return (
-    <div className="mt-2 rounded-md bg-canvas">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        className="flex w-full items-center gap-1.5 px-3 py-2 text-[11px] text-fg-muted transition-colors hover:text-fg"
-      >
-        <ChevronRightIcon
-          aria-hidden="true"
-          className={cn('size-3 shrink-0 transition-transform', open && 'rotate-90')}
-        />
-        <span className="flex-1 text-left">
-          케이스별 계정 <span className="text-fg-subtle">{CASE_ACCOUNT_TOTAL}개</span>
-        </span>
-        <span>{open ? '접기' : '펼치기'}</span>
-      </button>
+    <div className="mt-2 rounded-md border border-border bg-canvas p-2.5">
+      {/*
+        역할 탭 — **누르면 로그인되지 않는다.** 아래 목록이 바뀔 뿐이다.
+        이 화면에서 공용 계정으로 몰리는 것을 막는 장치가 이것 하나다.
+      */}
+      <div role="tablist" aria-label="역할" className="flex flex-wrap gap-1">
+        {ROLES.map((r) => (
+          <button
+            key={r}
+            type="button"
+            role="tab"
+            aria-selected={r === role}
+            onClick={() => {
+              setRole(r)
+              setQuery('')
+            }}
+            className={cn(
+              'rounded px-2.5 py-1 text-xs transition-colors',
+              r === role
+                ? 'bg-primary font-medium text-white'
+                : 'text-fg-muted hover:bg-surface-2 hover:text-fg',
+            )}
+          >
+            {r} <span className={r === role ? 'opacity-70' : 'text-fg-subtle'}>{countOf(r)}</span>
+          </button>
+        ))}
+      </div>
 
-      {open && (
-        <div className="border-t border-border px-3 pt-2 pb-3">
-          {measuredLabel && (
-            <p className="mb-2 text-[11px] text-fg-subtle">
-              {measuredLabel} 기준 상태입니다 — 응시 창은 24시간이라 지나면 <b>창 닫힘</b>이 됩니다.
-            </p>
-          )}
-          {/* 담당자 줄 — 케이스보다 위에 둔다. 먼저 좁히는 축이 이쪽이다 */}
-          {CASE_ACCOUNT_OWNERS.length > 0 && (
-            <div className="mb-2 flex flex-wrap gap-1 border-b border-border pb-2">
-              {[ALL, ...CASE_ACCOUNT_OWNERS].map((o) => (
-                <button
-                  key={o}
-                  type="button"
-                  onClick={() => setOwner(o)}
-                  aria-current={o === owner}
-                  className={cn(
-                    'rounded px-2 py-1 text-[11px] transition-colors',
-                    o === owner
-                      ? 'bg-primary font-medium text-white'
-                      : 'text-fg-muted hover:bg-surface-2 hover:text-fg',
-                  )}
-                >
-                  {o}
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/*
-            케이스 고르개 — 라벨이 길어 두 칸 격자로 둔다. 고른 것은 채움으로 표시한다:
-            테두리만으로 구분하면 어느 케이스를 보고 있는지 놓친다.
-          */}
-          <div className="grid grid-cols-2 gap-1">
-            {CASE_ACCOUNT_GROUPS.map((g, i) => (
+      {role === '교육생' && (
+        <>
+          {/* 반 → 이름. 252명을 한 목록에 두면 자기 이름을 못 찾는다 */}
+          <div className="mt-2 flex flex-wrap gap-1 border-t border-border pt-2">
+            {CLASSES.map((c) => (
               <button
-                key={g.label}
+                key={c}
                 type="button"
-                onClick={() => setGroupIndex(i)}
-                aria-current={i === groupIndex}
+                onClick={() => {
+                  setKlass(c)
+                  setQuery('')
+                }}
+                aria-current={c === klass && !query}
                 className={cn(
-                  'rounded px-2 py-1.5 text-left text-[11px] transition-colors',
-                  /*
-                    선택은 **연한 파랑 + 진한 파랑 글씨**다(리포트 회차 목록과 같은 패턴).
-                    진한 파랑을 배경으로 쓰면 그 위에 올릴 글자색 토큰이 없어 글씨가
-                    검정으로 남는다 — 실제로 안 읽혔다.
-                  */
-                  i === groupIndex
+                  'rounded px-2 py-1 text-xs transition-colors',
+                  c === klass && !query
                     ? 'bg-primary-soft font-medium text-primary'
                     : 'text-fg-muted hover:bg-surface-2 hover:text-fg',
                 )}
               >
-                {g.label}
-                {/*
-                  **담당자를 고르면 그 사람 몫만 센다.** 전체 수를 보여 주면 눌러 보고서야
-                  내 것이 없다는 것을 알게 된다 — `응시중`은 계정이 둘뿐이라 넷은 못 본다.
-                */}
-                <span className={cn('ml-1', i === groupIndex ? 'opacity-70' : 'text-fg-subtle')}>
-                  {mine(g.accounts).length}
-                  {owner !== ALL && `/${g.accounts.length}`}
-                </span>
+                {c}
               </button>
             ))}
           </div>
+        </>
+      )}
 
-          {/* 이 케이스로 무엇을 보는지 — 백엔드가 엑셀에 적어 준 문장 그대로 */}
-          {group.hint && <p className="mt-2 text-[11px] text-fg-muted">{group.hint}</p>}
+      {/* 이름을 아는 사람에게는 검색이 제일 빠르다 — 반을 몰라도 찾아진다 */}
+      <div className="mt-2 flex items-center gap-1.5 rounded border border-border bg-surface px-2 py-1.5">
+        <SearchIcon aria-hidden="true" className="size-3.5 shrink-0 text-fg-subtle" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={role === '교육생' ? '이름으로 찾기 (반 전체에서)' : '이름으로 찾기'}
+          aria-label="계정 이름 검색"
+          className="min-w-0 flex-1 bg-transparent text-xs outline-none placeholder:text-fg-subtle"
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery('')}
+            className="shrink-0 text-[11px] text-fg-subtle hover:text-fg"
+          >
+            지우기
+          </button>
+        )}
+      </div>
 
-          {/* 목록이 길어도 화면을 밀지 않게 스스로 스크롤한다 */}
-          <ul className="mt-1 max-h-[196px] overflow-y-auto">
-            {shown.map((a) => (
-              <li key={a.email}>
-                <AccountRow account={a} disabled={disabled} onPick={onPick} />
-              </li>
-            ))}
-          </ul>
-          {/* 「비어 있다」와 「고장났다」는 다르다 — 왜 없는지 말한다 */}
-          {shown.length === 0 && (
-            <p className="mt-2 text-[11px] text-fg-subtle">
-              {owner}님 몫으로 배정된 {group.label} 계정이 없어요.
-            </p>
-          )}
-        </div>
+      {/*
+        이름 격자 — 목록(1열)이 아니라 격자다. 25명이 1열이면 스크롤이 길어져
+        자기 이름이 화면 밖에 있고, 그러면 맨 위 것을 그냥 누른다(= 다시 몰린다).
+      */}
+      <ul className="mt-1.5 grid max-h-[188px] grid-cols-2 gap-1 overflow-y-auto sm:grid-cols-3">
+        {rows.map((r) => (
+          <li key={r.email}>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => onPick(r.email, r.password)}
+              className="w-full rounded border border-border bg-surface px-2 py-1.5 text-left transition-colors hover:border-primary-border hover:bg-primary-soft disabled:opacity-50"
+            >
+              <span className="block truncate text-xs font-medium text-fg">{r.name}</span>
+              {/* 두 반을 겸하는 매니저는 `A반 · F반`으로 한 줄에 나온다(위 dedupe) */}
+              <span className="block truncate text-[11px] text-fg-subtle">
+                {[r.groups.join(' · '), r.teamName].filter(Boolean).join(' · ') ||
+                  r.note ||
+                  r.email}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
+
+      {/* 「비어 있다」와 「고장났다」는 다르다 — 왜 없는지 말한다 */}
+      {rows.length === 0 && (
+        <p className="mt-2 text-[11px] text-fg-subtle">
+          {query ? `「${query}」와 맞는 계정이 없어요.` : `${role} 계정이 없어요.`}
+        </p>
       )}
     </div>
-  )
-}
-
-function AccountRow({
-  account,
-  disabled,
-  onPick,
-}: {
-  account: CaseAccount
-  disabled?: boolean
-  onPick: (email: string, password: string) => void
-}) {
-  const { email, password, name, className: klass, teamName, note } = account
-  const where = [klass, teamName].filter(Boolean).join(' ')
-
-  return (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={() => onPick(email, password)}
-      className="w-full rounded px-2 py-1.5 text-left text-[11px] transition-colors hover:bg-surface-2 disabled:opacity-50"
-    >
-      <span className="flex items-baseline gap-2">
-        <span className="w-[92px] shrink-0 text-fg">
-          {where && <span className="text-fg-subtle">{where} </span>}
-          {name}
-        </span>
-        {/* 이메일이 길어 줄바꿈되면 행 높이가 흔들린다 — 한 줄로 잘라 둔다 */}
-        <span className="min-w-0 flex-1 truncate text-fg-subtle">{email}</span>
-      </span>
-      {/*
-        이 계정만 다른 점은 **아랫줄로 내린다.** 상태 코드 세 개(`WAIT_FOR_REPORT ·
-        INTERRUPTED · 도달 2단`)가 이름·이메일과 한 줄에 들어가면 목록이 가로로 넘쳐
-        이메일이 잘려 사라진다 — 실제로 그렇게 됐다.
-      */}
-      {note && <span className="mt-0.5 block truncate text-fg-muted">{note}</span>}
-    </button>
   )
 }

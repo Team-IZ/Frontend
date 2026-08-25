@@ -183,22 +183,68 @@ test('리포트는 누른 점수로 만들어진다 — 도달 단계가 문제�
   )
 })
 
-test('리포트의 문답이 세션에서 보여준 답변과 같다', () => {
-  const s = playAll([5, 5, 5, 5], [5, 2, 2, 2], [0, 0, 0])
-  const first = buildConcepts(s)[0]
-  assert.ok(first.asked)
-  // 문제1 L1 5점은 녹화된 자리다 — 리포트에도 그 진짜 답변이 있어야 한다
-  assert.match(first.qa?.[0].answer ?? '', /@BeforeEach/)
-  assert.equal(first.qa?.length, 4) // 네 축을 한 번씩
+test('문답은 답한 것이 전부 남는다 — 통과한 축의 답변도', () => {
+  // L1·L2 통과 후 L3에서 힌트 둘 쓰고 미달 → 답한 것은 1+1+3 = 5건
+  const s = playAll([5, 5, 2, 2, 2], [5, 5, 5, 5], [5, 5, 5, 5])
+  const c = buildConcepts(s)[0]
+  assert.ok(c.asked)
+  assert.deepEqual(
+    c.qa?.map((q) => q.questionLabel),
+    ['L1 질문', 'L2 질문', 'L3 질문', 'L3 힌트 1', 'L3 힌트 2'],
+  )
 })
 
-test('막힌 축만 설명에 적는다 — 통과한 축은 안 적는다', () => {
-  const s = playAll([5, 5, 5, 5], [5, 2, 2, 2], [0, 0, 0])
+test('전부 통과하면 네 축의 문답이 다 남는다', () => {
+  const s = playAll([5, 5, 5, 5], [5, 5, 5, 5], [5, 5, 5, 5])
+  const c = buildConcepts(s)[0]
+  assert.ok(c.asked && c.qa)
+  assert.deepEqual(
+    c.qa?.map((q) => q.questionLabel),
+    ['L1 질문', 'L2 질문', 'L3 질문', 'L4 질문'],
+  )
+})
+
+test('해설은 막힌 개념에만 — 전부 통과하면 없다', () => {
+  const s = playAll([5, 5, 5, 5], [5, 5, 2, 2, 2], [5, 5, 5, 5])
   const [all, stuck] = buildConcepts(s)
   assert.ok(all.asked && stuck.asked)
   assert.equal(all.explanation, null) // 전부 통과 → 적을 것이 없다
-  assert.equal(stuck.explanation?.length, 1) // L2 하나만
-  assert.match(stuck.explanation?.[0] ?? '', /설계논리/)
+  // 해설은 요약(`said`)을 되풀이하지 않고 **풀어 쓰는 부분부터** 시작한다
+  assert.doesNotMatch(stuck.explanation?.[0] ?? '', /^문제 \d \[/)
+  assert.ok((stuck.explanation?.length ?? 0) >= 2, '해설이 한 줄뿐이다')
+})
+
+test('`said`는 한 줄 요약이다 — 해설은 `explanation`이 맡는다', () => {
+  /*
+    실측 형식: `문제 1 [개념명] — A는 통과했지만 B를 통과하지 못했습니다.`
+    한때 여기에 세 문장짜리 진단을 넣었다가 "이 멘트 자체가 해설 아니냐"는 지적을 받았다.
+  */
+  const s = playAll([5, 5, 2, 2, 2], [5, 5, 5, 5], [5, 5, 5, 5])
+  const c = buildConcepts(s)[0]
+  assert.ok(c.asked)
+  assert.match(c.said, /^문제 1 \[테스트 경계와 대역 설계\] — /)
+  assert.match(c.said, /통과하지 못했습니다\.$/)
+  assert.ok(c.said.length < 150, `요약이 너무 길다(${c.said.length}자): ${c.said}`)
+  // 상세 설명은 해설 쪽에 있다
+  assert.ok((c.explanation?.length ?? 0) >= 2, '해설이 요약보다 얇다')
+})
+
+test('도달 2단 미만이면 해설·문답이 잠긴다', () => {
+  const s = playAll([0, 0, 0], [5, 5, 5, 5], [5, 5, 5, 5])
+  const c = buildConcepts(s)[0]
+  assert.ok(c.asked && c.isRetryTarget)
+  assert.equal(c.explanation, null)
+  assert.equal(c.qa, null)
+})
+
+test('다시 보기를 마치면 잠금이 풀린다', () => {
+  const first = playAll([0, 0, 0], [5, 5, 5, 5], [5, 5, 5, 5])
+  const r = run([{ type: 'START_REVIEW', problemNo: 1 }, ...answers(5, 5)], first)
+  const c = buildConcepts(r)[0]
+  assert.ok(c.asked)
+  assert.equal(c.reachedLevel, 0) // 배지는 정본 그대로
+  assert.ok(c.explanation, '다시 보기를 마쳤는데 해설이 잠겨 있다')
+  assert.ok(c.qa, '다시 보기를 마쳤는데 문답이 잠겨 있다')
 })
 
 test('시간 초과로 닫힌 개념은 「못한 것」이 아니라고 말한다', () => {
@@ -212,8 +258,10 @@ test('시간 초과로 닫힌 개념은 「못한 것」이 아니라고 말한�
   const first = buildConcepts(s)[0]
   assert.ok(first.asked)
   assert.equal(first.reachedLevel, 2)
-  assert.match(first.said, /시간이 다 됐어요/)
-  assert.equal(first.explanation, null) // 도달 못 한 축을 미달로 적지 않는다
+  // 시간 초과는 미달이 아니다 — "못했다"가 아니라 "묻지 못했다"로 적는다
+  assert.match(first.said, /묻지 못했습니다/)
+  // 해설은 요약을 되풀이하지 않는다
+  assert.doesNotMatch(first.explanation?.[0] ?? '', /^문제 \d \[/)
 })
 
 test('교안 근거가 개념마다 붙는다 — 「어디를 보라」가 비면 리포트가 반쪽이다', () => {
@@ -347,4 +395,126 @@ test('미달 답변은 통과 답변보다 짧다 — 못 하는 학생이 더 �
       )
     }
   }
+})
+
+/* ── 다시 보기(REVIEW) ───────────────────────────────────────────────
+   2단 미만인 개념만 다시 여는 자리다. 여기가 1차 결과를 덮으면 "원래 몇 단이었나"가
+   사라져 성장이 안 보인다.
+*/
+test('다시 보기는 그 문제 하나만 열고 `1 / 1`로 센다', () => {
+  const s = playAll([0, 0, 0], [5, 5, 5, 5], [5, 5, 5, 5])
+  const r = run([{ type: 'START_REVIEW', problemNo: 1 }], s)
+  assert.equal(r.mode, 'REVIEW')
+  assert.equal(r.phase, 'IN_PROBLEM')
+  // 상단이 `2 / 3`으로 나오면 나머지도 다시 푸는 것처럼 읽힌다
+  assert.equal(currentProblem(r).problemNo, 1)
+  assert.equal(currentProblem(r).problemTotal, 1)
+})
+
+test('다시 보기에도 힌트가 있다', () => {
+  const s = playAll([0, 0, 0], [5, 5, 5, 5], [5, 5, 5, 5])
+  const r = run([{ type: 'START_REVIEW', problemNo: 1 }], s)
+  assert.equal(currentProblem(r).current?.hintsLeft, 2)
+  const opened = run([{ type: 'OPEN_HINT' }], r)
+  assert.equal(opened.hintsUsed, 1)
+  assert.equal(currentProblem(opened).current?.shownHints.length, 1)
+})
+
+test('다시 보기도 힌트를 다 쓰고 미달이면 그때 끝난다', () => {
+  const s = playAll([0, 0, 0], [5, 5, 5, 5], [5, 5, 5, 5])
+  const one = run([{ type: 'START_REVIEW', problemNo: 1 }, ...answers(2)], s)
+  assert.equal(one.phase, 'IN_PROBLEM') // 힌트가 남아 아직 안 끝난다
+  const done = run(answers(2, 2), one)
+  assert.equal(done.phase, 'ENDED')
+  assert.equal(done.reviewResults[0].status, 'NOT_PASSED')
+})
+
+test('다시 봐서 통과하면 리포트 내용이 그 결과로 바뀐다', () => {
+  // 1단이라 잠긴 상태로 시작한다 — 해설·문답이 안 온다
+  const first = playAll([5, 2, 2, 2], [5, 5, 5, 5], [5, 5, 5, 5])
+  const before = buildConcepts(first)[0]
+  assert.ok(before.asked && before.isRetryTarget)
+  assert.equal(before.explanation, null)
+
+  // 다시 보기에서 L1·L2를 넘긴다
+  const r = run([{ type: 'START_REVIEW', problemNo: 1 }, ...answers(5, 5)], first)
+  const after = buildConcepts(r)[0]
+  assert.ok(after.asked)
+  assert.equal(after.reachedLevel, 1) // 배지는 1차 그대로
+  assert.deepEqual(after.comparedReach, { before: 1, after: 2 })
+  // 잠금이 풀린다 — 판정(해설)은 1차 기준 그대로다
+  assert.ok(after.explanation, '잠금이 안 풀렸다')
+  // 1차 문답을 지우지 않고 다시 본 것을 뒤에 붙인다
+  const labels = after.qa?.map((q) => q.questionLabel) ?? []
+  assert.ok(
+    labels.some((l) => !l.startsWith('다시 보기')),
+    '1차 문답이 사라졌다',
+  )
+  assert.ok(
+    labels.some((l) => l.startsWith('다시 보기 · ')),
+    '다시 본 문답이 안 남았다',
+  )
+})
+
+test('1차에 답을 못 해도 다시 본 문답은 남는다', () => {
+  // 0단: L1을 세 번 다 미달 → 1차 문답은 L1 셋뿐
+  const first = playAll([0, 0, 0], [5, 5, 5, 5], [5, 5, 5, 5])
+  const r = run([{ type: 'START_REVIEW', problemNo: 1 }, ...answers(5, 5)], first)
+  const c = buildConcepts(r)[0]
+  assert.ok(c.asked && c.qa)
+  const again = c.qa.filter((q) => q.questionLabel.startsWith('다시 보기 · '))
+  assert.deepEqual(
+    again.map((q) => q.questionLabel),
+    ['다시 보기 · L1 질문', '다시 보기 · L2 질문'],
+  )
+})
+
+test('다시 보기는 개념마다 한 번 — 본 개념만 열리고 나머지는 잠긴 채다', () => {
+  // 개념 1·2가 둘 다 2단 미만
+  const first = playAll([0, 0, 0], [5, 2, 2, 2], [5, 5, 5, 5])
+  const before = buildConcepts(first)
+  assert.ok(before[0].asked && before[1].asked)
+  assert.equal(before[0].explanation, null)
+  assert.equal(before[1].explanation, null)
+
+  // 개념 1만 다시 본다
+  const r = run([{ type: 'START_REVIEW', problemNo: 1 }, ...answers(5, 5)], first)
+  const after = buildConcepts(r)
+  assert.ok(after[0].asked && after[1].asked)
+  assert.ok(after[0].explanation, '다시 본 개념이 안 열렸다')
+  // 개념 2는 아직 안 봤으므로 잠긴 채여야 한다 — 그 자리에 버튼이 계속 있다
+  assert.equal(after[1].explanation, null)
+  assert.equal(after[1].comparedReach, null)
+})
+
+test('다시 보기가 1차 결과를 덮지 않는다 — 배지는 원점수 그대로', () => {
+  const first = playAll([0, 0, 0], [5, 5, 5, 5], [5, 5, 5, 5])
+  assert.equal(reachedLevel(first.results, 1), 0)
+
+  // 다시 보기에서 L1·L2를 통과시킨다
+  const r = run([{ type: 'START_REVIEW', problemNo: 1 }, ...answers(5, 5)], first)
+  assert.equal(reachedLevel(r.results, 1), 0) // 1차는 그대로 0단
+  assert.equal(reachedLevel(r.reviewResults, 1), 2) // 다시 보기는 2단
+
+  const c = buildConcepts(r)[0]
+  assert.ok(c.asked)
+  assert.equal(c.reachedLevel, 0) // 배지는 정본(1차)
+  assert.deepEqual(c.comparedReach, { before: 0, after: 2 })
+})
+
+test('다시 보기를 안 한 개념은 비교 줄이 없다', () => {
+  const s = playAll([0, 0, 0], [5, 5, 5, 5], [5, 5, 5, 5])
+  for (const c of buildConcepts(s)) assert.equal(c.asked && c.comparedReach, null)
+})
+
+test('다시 보기 버튼이 붙는 개념 = 2단 미만 (0단·1단 둘 다)', () => {
+  const s = playAll(
+    [0, 0, 0], //       0단
+    [5, 2, 2, 2], //    1단 — L1만 통과
+    [5, 5, 5, 5], //    4단
+  )
+  assert.deepEqual(
+    buildConcepts(s).map((c) => c.asked && c.isRetryTarget),
+    [true, true, false],
+  )
 })

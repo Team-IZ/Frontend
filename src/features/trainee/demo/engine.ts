@@ -5,6 +5,7 @@
   이미 켜져 있고 Vite도 그대로 푼다.
 */
 import type { CurrentQuestion, ProblemView, Turn } from '../session/_/api/types'
+import type { SessionMode } from '../session/types'
 import { PROBLEMS } from './data/fixture.ts'
 import { answerFor, evidenceFor } from './data/answers.ts'
 import { PASS_SCORE, type AxisCode, type Score } from './data/rubric.ts'
@@ -54,6 +55,16 @@ export type CloseReason = 'ALL_AXES' | 'HINTS_EXHAUSTED' | 'PROBLEM_TIME_LIMIT' 
 
 export type DemoState = {
   phase: Phase
+  /*
+    `FIRST` 1차 응시 · `REVIEW` 다시 보기.
+
+    **다시 보기는 한 문제만 다시 연다.** 리포트에서 2단 미만인 개념에만 버튼이 붙고,
+    그 문제 하나로 세션이 구성된다 — 통과한 개념까지 다시 물으면 「다시 보기」가 아니라
+    재응시가 된다.
+  */
+  mode: SessionMode
+  /** `REVIEW`가 보고 있는 문제 번호. `FIRST`면 `null` */
+  reviewProblemNo: number | null
   /** 0-based. 화면에 그릴 때는 `+1` */
   problemIdx: number
   /** 0-based (L1=0 … L4=3) */
@@ -63,6 +74,14 @@ export type DemoState = {
   turns: Turn[]
   /** 12칸 누적. 문제 순 → 축 순 */
   results: AxisResult[]
+  /*
+    다시 보기 결과 — **`results`를 덮지 않는다.**
+
+    도달 단계의 정본은 1차 응시다(`ConceptCard`가 배지를 그 값으로 그린다). 다시 봐서
+    올라간 것은 그 아래 한 줄로만 말한다(`comparedReach`). 덮어쓰면 "원래 몇 단이었나"가
+    사라져 성장이 안 보인다.
+  */
+  reviewResults: AxisResult[]
   closeReasons: CloseReason[]
   transitionReason: 'NEXT' | 'STOP' | null
   endReason: 'COMPLETED' | 'TIMEOUT' | null
@@ -79,23 +98,29 @@ export const PROBLEM_TOTAL = PROBLEMS.length
 */
 const ANSWERED_AT = '2026-08-25T10:00:00+09:00'
 
+const blankResults = (): AxisResult[] =>
+  PROBLEMS.flatMap((p) =>
+    AXES.map((axisCode) => ({
+      problemNo: p.problemNo,
+      axisCode,
+      status: 'NOT_REACHED' as AxisStatus,
+      scores: [],
+      finalScore: null,
+      evidence: null,
+    })),
+  )
+
 export function initialState(): DemoState {
   return {
     phase: 'INTRO',
+    mode: 'FIRST',
+    reviewProblemNo: null,
     problemIdx: 0,
     axisIdx: 0,
     hintsUsed: 0,
     turns: [],
-    results: PROBLEMS.flatMap((p) =>
-      AXES.map((axisCode) => ({
-        problemNo: p.problemNo,
-        axisCode,
-        status: 'NOT_REACHED' as AxisStatus,
-        scores: [],
-        finalScore: null,
-        evidence: null,
-      })),
-    ),
+    results: blankResults(),
+    reviewResults: blankResults(),
     closeReasons: PROBLEMS.map(() => null),
     transitionReason: null,
     endReason: null,
@@ -108,8 +133,12 @@ export type DemoAction =
   | { type: 'ANSWER'; score: Score }
   /** 시연자가 「시간 초과」를 눌렀다 */
   | { type: 'TIME_OUT' }
+  /** 학생이 「다시 설명해 주세요」를 눌렀다 — 점수와 무관하게 직접 여는 힌트 */
+  | { type: 'OPEN_HINT' }
   /** 전환 화면의 「계속하기」 */
   | { type: 'CONTINUE' }
+  /** 리포트에서 「다시 보기」를 눌렀다 — 그 개념 하나만 다시 연다 */
+  | { type: 'START_REVIEW'; problemNo: number }
   | { type: 'RESET' }
 
 export function reduce(s: DemoState, a: DemoAction): DemoState {
@@ -120,6 +149,31 @@ export function reduce(s: DemoState, a: DemoAction): DemoState {
     case 'RESET':
       return initialState()
 
+    /*
+      다시 보기 — **그 문제 하나로 세션을 다시 연다.**
+
+      1차 결과(`results`·`closeReasons`)는 그대로 두고 `reviewResults`만 비운다. 도달
+      단계의 정본은 1차이고, 다시 봐서 올라간 것은 리포트가 `comparedReach`로 곁들여
+      말한다(실제 제품과 같은 규칙 — `ConceptCard` 주석).
+    */
+    case 'START_REVIEW': {
+      const idx = PROBLEMS.findIndex((p) => p.problemNo === a.problemNo)
+      if (idx < 0) return s
+      return {
+        ...s,
+        phase: 'IN_PROBLEM',
+        mode: 'REVIEW',
+        reviewProblemNo: a.problemNo,
+        problemIdx: idx,
+        axisIdx: 0,
+        hintsUsed: 0,
+        turns: [],
+        reviewResults: blankResults(),
+        transitionReason: null,
+        endReason: null,
+      }
+    }
+
     case 'CONTINUE':
       // 전환 화면에서만 유효하다. 다음 문제는 이미 `problemIdx`가 가리키고 있다
       return s.phase === 'TRANSITION' ? { ...s, phase: 'IN_PROBLEM', transitionReason: null } : s
@@ -129,6 +183,20 @@ export function reduce(s: DemoState, a: DemoAction): DemoState {
 
     case 'TIME_OUT':
       return s.phase === 'IN_PROBLEM' ? closeProblem(s, 'PROBLEM_TIME_LIMIT') : s
+
+    /*
+      학생이 직접 여는 힌트 — **점수를 매기지 않고 힌트만 하나 연다.**
+
+      미달로 자동으로 열리는 것과 같은 자원을 쓴다(축당 2개). 실제 서버도 요청분과
+      지급분을 합쳐 세므로(`hintsLeft` 주석) 여기서도 한 칸으로 둔다.
+
+      다 썼으면 아무 일도 안 한다 — 실제 화면은 그때 버튼을 문구로 바꾸므로 누를 수
+      없지만, 상태 쪽에서도 막아 두어야 규칙이 한 곳에 있다.
+    */
+    case 'OPEN_HINT':
+      return s.phase === 'IN_PROBLEM' && s.hintsUsed < MAX_HINTS
+        ? { ...s, hintsUsed: s.hintsUsed + 1 }
+        : s
   }
 }
 
@@ -152,18 +220,22 @@ function answer(s: DemoState, score: Score): DemoState {
     highlight: highlightOf(s.problemIdx, s.axisIdx),
   }
 
-  const results = s.results.map((r) =>
-    r.problemNo === problem.problemNo && r.axisCode === axisCode
-      ? {
-          ...r,
-          scores: [...r.scores, score],
-          finalScore: score,
-          evidence: evidenceFor(problem.problemNo, axisCode, s.hintsUsed, score) ?? r.evidence,
-        }
-      : r,
-  )
+  const record = (list: AxisResult[]) =>
+    list.map((r) =>
+      r.problemNo === problem.problemNo && r.axisCode === axisCode
+        ? {
+            ...r,
+            scores: [...r.scores, score],
+            finalScore: score,
+            evidence: evidenceFor(problem.problemNo, axisCode, s.hintsUsed, score) ?? r.evidence,
+          }
+        : r,
+    )
 
-  const next = { ...s, turns: [...s.turns, turn], results }
+  const next: DemoState =
+    s.mode === 'REVIEW'
+      ? { ...s, turns: [...s.turns, turn], reviewResults: record(s.reviewResults) }
+      : { ...s, turns: [...s.turns, turn], results: record(s.results) }
 
   // 통과 — 다음 축으로. L4였으면 이 문제는 물어볼 것이 없다
   if (score >= PASS_SCORE) {
@@ -189,6 +261,14 @@ function answer(s: DemoState, score: Score): DemoState {
  * 못한 것"이 갈려 있어야** 리포트에서 도달 단계를 셀 수 있다.
  */
 function closeProblem(s: DemoState, reason: NonNullable<CloseReason>): DemoState {
+  /*
+    **다시 보기는 한 문제뿐이라 그 문제가 닫히면 곧 끝이다.** 1차의 종료 사유
+    (`closeReasons`)도 건드리지 않는다 — 그건 1차가 왜 끝났는지의 기록이다.
+  */
+  if (s.mode === 'REVIEW') {
+    return { ...s, phase: 'ENDED', endReason: 'COMPLETED', transitionReason: null }
+  }
+
   const closeReasons = s.closeReasons.map((r, i) => (i === s.problemIdx ? reason : r))
   const isLast = s.problemIdx === PROBLEMS.length - 1
 
@@ -214,12 +294,13 @@ const setStatus = (
   problemNo: number,
   axisCode: AxisCode,
   status: AxisStatus,
-): DemoState => ({
-  ...s,
-  results: s.results.map((r) =>
-    r.problemNo === problemNo && r.axisCode === axisCode ? { ...r, status } : r,
-  ),
-})
+): DemoState => {
+  const mark = (list: AxisResult[]) =>
+    list.map((r) => (r.problemNo === problemNo && r.axisCode === axisCode ? { ...r, status } : r))
+  return s.mode === 'REVIEW'
+    ? { ...s, reviewResults: mark(s.reviewResults) }
+    : { ...s, results: mark(s.results) }
+}
 
 /*
   질문이 가리키는 코드 구간. 분석 결과가 축마다 `QUESTION_HIGHLIGHT`를 하나씩 준다 —
@@ -248,9 +329,16 @@ function highlightOf(problemIdx: number, axisIdx: number) {
  */
 export function currentProblem(s: DemoState): ProblemView {
   const p = PROBLEMS[s.problemIdx]
+  /*
+    **다시 보기는 문제가 하나뿐이라 `1 / 1`이다.**
+
+    전체 번호를 그대로 쓰면 상단이 `2 / 3`으로 나와 나머지 둘도 다시 푸는 것처럼
+    읽힌다 — 다시 보기는 그 개념 하나만 여는 자리다(실사용 피드백).
+  */
+  const review = s.mode === 'REVIEW'
   return {
-    problemNo: p.problemNo,
-    problemTotal: PROBLEM_TOTAL,
+    problemNo: review ? 1 : p.problemNo,
+    problemTotal: review ? 1 : PROBLEM_TOTAL,
     title: p.title,
     timeLimitAt: null,
     code: {

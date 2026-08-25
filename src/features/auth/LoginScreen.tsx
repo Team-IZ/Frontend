@@ -8,7 +8,6 @@ import { login, resendAccountInvitation } from '@/api/auth/authApi'
 import { resolveAuthState } from './authStates'
 import type { AuthState } from './authStates'
 import { useCapsLockWarning } from './useCapsLockWarning'
-import { QUICK_LOGIN_ACCOUNTS } from './quickLoginAccounts'
 import BrandPanel from './components/BrandPanel'
 import CaseAccountPicker from './components/CaseAccountPicker'
 import AuthForm from './components/AuthForm'
@@ -162,10 +161,9 @@ export default function LoginScreen() {
               </p>
 
               {/*
-                **계정이 없어도 이 줄은 그린다.** 아래 역할 버튼은 `.env.local`의 계정을
-                쓰지만 시연용 목업은 네트워크를 한 번도 안 타므로, 로그인 API가 죽어
-                있든 env가 비어 있든 들어갈 수 있어야 한다 — 그게 이 화면이 존재하는
-                이유다. 그래서 계정 유무와 무관하게 상자 맨 위에 둔다.
+                **계정이 없어도 이 줄은 그린다.** 목업은 네트워크를 한 번도 안 타므로
+                로그인 API가 죽어 있든 env가 비어 있든 들어갈 수 있어야 한다 — 그게 이
+                화면이 존재하는 이유다.
               */}
               <Button
                 variant="ghost"
@@ -174,35 +172,19 @@ export default function LoginScreen() {
                 nativeButton={false}
                 render={<Link to="/demo" />}
               >
-                시연용 목업 — 로그인 없이 교육생 플로우 보기
+                교육생 플로우 목업 (로그인 없이)
               </Button>
 
-              {QUICK_LOGIN_ACCOUNTS.length > 0 && (
-                <>
-                  <div className="grid grid-cols-2 gap-2">
-                    {QUICK_LOGIN_ACCOUNTS.map(
-                      ({ label, email: quickEmail, password: quickPassword }) => (
-                        <Button
-                          key={quickEmail}
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          disabled={isSubmitting}
-                          onClick={() => handleQuickLogin(quickEmail, quickPassword)}
-                        >
-                          {label}
-                        </Button>
-                      ),
-                    )}
-                  </div>
+              {/*
+                🔴 **역할 버튼 넷을 뺐다.** `.env.local`의 역할 계정으로 곧바로
+                로그인시키던 자리인데, 역할당 계정이 하나뿐이라 **여럿이 누르면 전원이
+                같은 계정에 들어간다.** 이 화면을 수백 명이 동시에 여는 자리가 생겨
+                (시연) 그 몰림이 실제 사고가 됐다.
 
-                  {/*
-                    교육생 상태별 계정은 **접어 둔다.** 수십 개라 펼쳐 두면 위 역할 버튼과
-                    아래 입력 칸이 밀린다 — 찾을 때만 여는 것이 맞다.
-                  */}
-                  <CaseAccountPicker disabled={isSubmitting} onPick={handleQuickLogin} />
-                </>
-              )}
+                같은 계정이 필요하면 아래 고르개에서 그 사람을 찾으면 된다 — 역할 계정도
+                전부 명부 안에 있다.
+              */}
+              <CaseAccountPicker disabled={isSubmitting} onPick={handleQuickLogin} />
             </div>
           )}
 

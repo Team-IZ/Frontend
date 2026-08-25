@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { LogOutIcon, UserCogIcon } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/Avatar'
 import { Badge } from '@/components/ui/Badge'
@@ -22,7 +22,7 @@ import {
 import Wordmark from '@/components/common/Wordmark'
 import { initialScreenFor } from '@/features/auth/authStore'
 import { useQueryClient } from '@tanstack/react-query'
-import { useSignIn, useSignOut } from '@/features/auth/useSession'
+import { useSession, useSignIn, useSignOut } from '@/features/auth/useSession'
 import { login } from '@/api/auth/authApi'
 import { HEADER_ACCOUNTS, QUICK_LOGIN_ACCOUNTS } from '@/features/auth/quickLoginAccounts'
 
@@ -212,6 +212,12 @@ type Props = {
 
 export default function Header({ user, scope }: Props) {
   /*
+    브랜드 마크가 갈 곳 — **로그인 직후 보내는 곳과 같은 값**이다(`initialScreenFor`).
+    역할마다 홈이 다르므로 주소를 하나로 못 박을 수 없고, 그 판정은 이미 여기 있다.
+  */
+  const { initialScreen } = useSession()
+
+  /*
     선택은 **화면이 갖는 것이 맞다** — 기수는 URL에 실려 새로고침·공유를 견뎌야 한다
     (`stores/cohortScope.ts`). `onChange`를 준 화면이 그 값의 주인이다.
 
@@ -226,7 +232,28 @@ export default function Header({ user, scope }: Props) {
   return (
     <header className="bg-surface border-border flex h-[54px] w-full shrink-0 items-center justify-between overflow-x-auto border-b px-6">
       <div className="flex items-center gap-4">
-        <Wordmark />
+        {/*
+          브랜드 마크를 누르면 **그 사람의 시작 화면**으로 간다(`initialScreenFor`).
+
+          어느 서비스나 로고를 홈으로 여기는데 이 헤더의 로고만 아무 일도 안 했다 —
+          역할마다 홈이 다르니 주소를 하나로 못 박을 수 없어서였다. 그 값은 이미
+          `useSession`이 `initialScreen`으로 준다(로그인 직후 보내는 곳과 같은 값이라
+          두 벌이 되지 않는다).
+
+          세션을 아직 모르는 동안에는 링크로 만들지 않는다 — 갈 곳을 모르면서 누를 수
+          있게 두면 잘못된 곳으로 보낸다.
+        */}
+        {initialScreen ? (
+          <Link
+            to={initialScreen}
+            aria-label="시작 화면으로"
+            className="rounded-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+          >
+            <Wordmark />
+          </Link>
+        ) : (
+          <Wordmark />
+        )}
 
         {scope && (
           <Select

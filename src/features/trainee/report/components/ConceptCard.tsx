@@ -1,7 +1,6 @@
 import { BookOpenIcon, CircleSlashIcon, LockIcon, LockOpenIcon } from 'lucide-react'
 import { cn } from '@/lib/utils/cn'
 import { REACH_LABEL, UNASKED_BODY, UNASKED_TITLE } from '../labels'
-import { clampLevel } from '../_/api/types'
 import type { ConceptReport, ReachedLevel } from '../_/api/types'
 import QaList from './QaList'
 
@@ -33,6 +32,16 @@ type Props = {
   concept: ConceptReport
   /** 마지막 카드는 선이 다음 카드로 안 이어지니 꼬리를 남기지 않는다 */
   isLast: boolean
+  /**
+   * 카드 맨 아래에 덧붙일 것 — **카드 안에 있어야 하는 것만** 넣는다.
+   *
+   * 밖에서 형제로 그리면 좌측 타임라인 선·핀과 어긋나 레이아웃이 깨진다(실측).
+   * 카드가 자기 `pl-5`·`pb-8` 안에 품어야 선이 그 아래로 이어진다.
+   *
+   * 실제 리포트는 다시 보기를 **리포트 단위 버튼 하나**로 열기 때문에(`PublishedBody`)
+   * 이 자리를 안 쓴다 — 값을 안 넘기면 아무것도 안 그린다.
+   */
+  footer?: React.ReactNode
 }
 
 /*
@@ -45,7 +54,7 @@ type Props = {
   — flex gap은 형제 사이 공간이라 어느 카드도 그 구간의 선을 못 그린다. 마지막
   카드는 다음 핀이 없어 padding도 짧고(pb-3) 선도 그 안에서 멈춘다.
 */
-export default function ConceptCard({ concept, isLast }: Props) {
+export default function ConceptCard({ concept, isLast, footer }: Props) {
   return (
     <div className={cn('relative pl-5', isLast ? 'pb-3' : 'pb-8')}>
       {/* top-[11px] = 핀(top-1.5=6px, size-2.5=10px)의 세로 중심 — 선이 핀 가운데서 뻗어나온다 */}
@@ -67,6 +76,7 @@ export default function ConceptCard({ concept, isLast }: Props) {
       )}
 
       {concept.asked ? <AskedBody concept={concept} /> : <UnaskedBody name={concept.name} />}
+      {footer}
     </div>
   )
 }
@@ -105,7 +115,19 @@ function AskedBody({ concept }: { concept: Extract<ConceptReport, { asked: true 
   return (
     <>
       <div className="mb-2 flex items-baseline justify-between gap-3">
-        <span className="text-lg font-bold text-fg">{concept.name}</span>
+        <span className="flex items-baseline gap-2">
+          <span className="text-lg font-bold text-fg">{concept.name}</span>
+          {/*
+            🔴 **제목 옆에 붙인다.** 배지 아래 별도 줄로 뒀더니 한 줄을 통째로 쓰면서
+            정작 말하는 것은 "다시 봤다" 한 마디였다(실사용 피드백). 개념 이름 옆이
+            그 사실이 붙을 자리다 — 이 개념에 일어난 일이므로.
+          */}
+          {concept.comparedReach && (
+            <span className="shrink-0 rounded-full bg-info-soft px-2 py-0.5 text-2xs font-medium text-info">
+              다시 봄
+            </span>
+          )}
+        </span>
         <div className="flex shrink-0 flex-col items-end gap-1">
           <span
             className={cn(
@@ -115,18 +137,6 @@ function AskedBody({ concept }: { concept: Extract<ConceptReport, { asked: true 
           >
             {REACH_LABEL[concept.reachedLevel]}
           </span>
-          {/*
-            다시 봐서 올라간 단계는 **배지를 덮어쓰지 않는다** — 배지는 정본(첫 응시)이고
-            성적에 반영되는 값이다. 올라간 것은 그 아래 한 줄로만 말한다.
-
-            서버는 문답을 두 벌로 주지 않고 전후 단계(`comparedReach`)만 준다 — 올라간
-            경우에만 말하면 되므로 그것으로 충분하다.
-          */}
-          {concept.comparedReach && concept.comparedReach.after > concept.reachedLevel && (
-            <span className="text-2xs text-fg-subtle">
-              다시 봤을 때 {REACH_LABEL[clampLevel(concept.comparedReach.after)]}
-            </span>
-          )}
         </div>
       </div>
 
@@ -154,7 +164,17 @@ function AskedBody({ concept }: { concept: Extract<ConceptReport, { asked: true 
         </div>
       ) : (
         concept.isRetryTarget && (
-          <div className="mt-3 flex items-center gap-2 rounded-md border border-border bg-surface-2 px-3 py-2.5 text-sm text-fg-muted">
+          /*
+            🔴 **잠금 안내는 눈에 띄어야 한다.**
+
+            연한 회색(`surface-2` + `fg-muted`)으로 뒀더니 카드 안에서 **가장 안 보이는
+            줄**이 됐다(실사용 피드백). 그런데 이 줄은 "여기 볼 것이 더 있고, 다시 보면
+            열린다"는 **행동을 부르는 안내**다 — 안 보이면 학생이 다시 보기를 안 한다.
+
+            바로 아래 「다시 보기」 버튼과 같은 warning 톤으로 묶는다. 열렸을 때의
+            primary(파랑)와도 색으로 갈려서, 잠김/열림이 한눈에 구분된다.
+          */
+          <div className="mt-3 flex items-center gap-2 rounded-md border border-warning-border bg-warning-soft px-3 py-2.5 text-sm font-medium text-warning">
             <LockIcon className="size-4 shrink-0" />
             다시 보기를 마치면 자세한 해설과 문답을 볼 수 있어요
           </div>

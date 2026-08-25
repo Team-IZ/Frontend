@@ -21,25 +21,46 @@ import {
 } from '@/components/ui/Select'
 import Wordmark from '@/components/common/Wordmark'
 import { initialScreenFor } from '@/features/auth/authStore'
+import { useQueryClient } from '@tanstack/react-query'
 import { useSignIn, useSignOut } from '@/features/auth/useSession'
 import { login } from '@/api/auth/authApi'
-import { QUICK_LOGIN_ACCOUNTS } from '@/features/auth/quickLoginAccounts'
+import { HEADER_ACCOUNTS, QUICK_LOGIN_ACCOUNTS } from '@/features/auth/quickLoginAccounts'
 
 // dev 전용 역할 전환(헤더) — import.meta.env.DEV는 프로덕션 빌드(vite build)에서
 // 항상 false라 develop Vercel 프리뷰 배포도 걸러진다. __GIT_BRANCH__(vite.config.ts
 // define, sidebarConfig.ts와 같은 패턴)로 "로컬이거나 develop 배포"일 때만 보이고
 // main 배포에서는 숨긴다.
+/*
+  헤더는 **누구로 갈아탈지**를 고르는 자리라 목록이 로그인 화면과 다르다
+  (`HEADER_ACCOUNTS` 주석). 전용 값이 없으면 종전처럼 역할 계정으로 물러선다.
+*/
+const SWITCHER_ACCOUNTS = HEADER_ACCOUNTS.length > 0 ? HEADER_ACCOUNTS : QUICK_LOGIN_ACCOUNTS
+
 // 계정이 없으면(.env.local 미설정) 드롭다운을 열어도 항목이 없다 — 아예 안 그린다
 const SHOW_DEV_ROLE_SWITCHER =
-  (import.meta.env.DEV || __GIT_BRANCH__ === 'develop') && QUICK_LOGIN_ACCOUNTS.length > 0
+  (import.meta.env.DEV || __GIT_BRANCH__ === 'develop') && SWITCHER_ACCOUNTS.length > 0
 
 function DevRoleSwitcher() {
   const navigate = useNavigate()
   const signIn = useSignIn()
+  const queryClient = useQueryClient()
 
   async function handleQuickLogin(email: string, password: string) {
     try {
       const res = await login({ body: { email, password } })
+      /*
+        🔴 **앞사람 캐시를 버린다.**
+
+        토큰은 `signIn`이 덮어쓰므로 꼬이지 않는다. 문제는 react-query 캐시다 —
+        `signIn`은 `memberKeys.all`만 무효화하고, 대시보드·명부·히트맵·리포트는
+        그대로 남는다. 그러면 **다음 사람이 앞사람의 데이터를 잠깐 본다**
+        (`useSignOut`이 `clear()`를 부르는 것과 같은 이유이고, 그 주석이 이미
+        같은 말을 하고 있다).
+
+        로그아웃을 먼저 부르지 않는 이유는 그 사이에 쿠키가 사라져 **무인증 구간**이
+        생기기 때문이다. 새 토큰을 받은 뒤 캐시만 비우면 그 구간이 없다.
+      */
+      queryClient.clear()
       await signIn(res)
       navigate(initialScreenFor(res.role))
     } catch (err) {
@@ -57,10 +78,14 @@ function DevRoleSwitcher() {
           </Button>
         }
       />
-      <DropdownMenuContent align="end">
+      {/*
+        라벨이 `매니저 · 이도윤 (D반)`처럼 길어져 기본 폭에서 줄바꿈됐다 — 항목 하나가
+        두 줄이 되면 훑는 눈이 멈춘다. 한 줄에 들어갈 만큼만 넓힌다.
+      */}
+      <DropdownMenuContent align="end" className="min-w-52">
         <DropdownMenuGroup>
           <DropdownMenuLabel>역할 전환 (dev)</DropdownMenuLabel>
-          {QUICK_LOGIN_ACCOUNTS.map(({ label, email, password }) => (
+          {SWITCHER_ACCOUNTS.map(({ label, email, password }) => (
             <DropdownMenuItem
               key={email}
               className="cursor-pointer"

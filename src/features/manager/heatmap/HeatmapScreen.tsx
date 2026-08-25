@@ -6,7 +6,7 @@ import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/u
 import { Alert, AlertTitle, AlertDescription, AlertAction } from '@/components/ui/Alert'
 import StaleBlock from '@/components/common/StaleBlock'
 import { useManagerCohort } from '@/stores/cohortScope'
-import { useHeatmap, useHeatmapRounds } from './_/api/api'
+import { currentRound, useHeatmap, useHeatmapRounds } from './_/api/api'
 import type { HeatmapLevel, ScopeOption } from './_/api/types'
 import { getSessionView, setSessionView } from './viewState'
 import HeatmapToolbar from './components/HeatmapToolbar'
@@ -52,9 +52,8 @@ export default function HeatmapScreen() {
 
   const rounds = useHeatmapRounds(cohortId)
   const roundList = rounds.data ?? []
-  /* 서버가 준 마지막 회차를 기본으로 — 회차가 늘어도 안 깨진다 */
-  const picked =
-    roundList.find((r) => r.assessmentRoundId === round) ?? roundList[roundList.length - 1]
+  /* 고른 것이 있으면 그것, 없으면 **지금 굴러가는 회차**(`currentRound` 주석 참고) */
+  const picked = roundList.find((r) => r.assessmentRoundId === round) ?? currentRound(roundList)
 
   const heatmap = useHeatmap(
     cohortId && picked

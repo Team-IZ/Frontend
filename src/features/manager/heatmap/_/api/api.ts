@@ -93,7 +93,8 @@ export function useHeatmapRounds(cohortId: string | undefined) {
     (아래 `useFindInterviewRoundOptions`가 `params`를 키에 포함해 자동으로 됨).
   */
   const query = useFindInterviewRoundOptions(
-    { query: cohortId ? { cohort: cohortId } : {} },
+    /* 33차로 `cohort`가 **필수**가 됐다 — 빈 값은 `enabled`가 막아 나가지 않는다 */
+    { query: { cohort: cohortId ?? '' } },
     { enabled: !!cohortId },
   )
   const data = useMemo<RoundOption[] | undefined>(
@@ -106,10 +107,41 @@ export function useHeatmapRounds(cohortId: string | undefined) {
           (격자 자체가 이해도다). 회차만 남긴다.
         */
         label: r.label.replace(/\s*이해도 확인\s*$/, ''),
+        status: r.status,
       })),
     [query.data],
   )
   return { ...query, data }
+}
+
+/**
+ * **기본으로 열 회차 — 목록의 마지막이 아니라 「지금 굴러가는」 것.**
+ *
+ * 🔴 목록 마지막을 집으면 **아직 시작도 안 한 회차**가 잡힌다. 7기가 그 상태였다 —
+ * 미프 4차가 진행 중인데 5차가 이미 만들어져 있어(팀은 아직 `DRAFT`) 히트맵만 5차를
+ * 열었고, 대시보드·면담·명단은 4차를 열어 **같은 기수에서 화면마다 다른 차수**를
+ * 가리켰다. 5차는 응시가 없어 격자가 빈 채로 그려진다.
+ *
+ * 명부 스펙이 이것을 명시로 경고한다 — *"마지막 원소가 기본 선택이라는 보장이 없습니다."*
+ *
+ * 순서는 서버의 「이번 회차」 규칙(`GET /cohorts/{id}/projects/current`)과 같은 축이다.
+ *
+ *   ① `OPEN` 중 **가장 뒤** — 겹쳐 열렸으면 나중에 연 쪽이 지금이다
+ *   ② 없으면 **가장 이른 `PLANNED`** — 다음에 열릴 회차가 지금의 관심사다
+ *   ③ 그것도 없으면 **마지막** — 전부 끝난 기수도 마지막 결과를 그려야 한다
+ *
+ * ⚠ 목록은 프로젝트 순서(`sequenceNo`)로 오므로 배열 순서가 곧 그 축이다.
+ *
+ * ⚠ **③은 끝난 회차를 돌려준다.** 이 값이 나왔다고 「진행 중」이라고 말하면 안 된다 —
+ * 서버 스펙도 같은 경고를 달고 있다.
+ *
+ * 🔴 이 판정이 화면에 있는 것은 **빚이다.** 서버가 규칙을 갖는 API(`findCurrentProject`)가
+ * 이미 있지만 매니저 권한으로 부를 수 있는지 확인되지 않았고, `/interviews/rounds`
+ * 응답에는 「어느 것이 지금인가」 표시가 없다. 그 표시가 생기면 이 함수는 지운다.
+ */
+export function currentRound(list: RoundOption[]): RoundOption | undefined {
+  const open = list.filter((r) => r.status === 'OPEN')
+  return open.at(-1) ?? list.find((r) => r.status === 'PLANNED') ?? list.at(-1)
 }
 
 function toView(res: Server): HeatmapView {

@@ -112,4 +112,6 @@ export type RoundOption = {
   assessmentRoundId: string
   projectId: string
   label: string
+  /** `PLANNED` · `OPEN` · `CLOSED` · `COMPLETED` — 기본 회차를 고르는 근거다(`currentRound`) */
+  status: string
 }

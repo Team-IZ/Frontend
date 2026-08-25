@@ -51,6 +51,24 @@ export type createTeam_Errors =
   | 'CLASS_NOT_MANAGED'
   | 'PROJECT_NOT_FOUND'
   | 'CLASS_NOT_FOUND'
+  | 'TEAM_NAME_DUPLICATED'
+  | 'TEAM_NUMBER_DUPLICATED'
+
+// DELETE /api/v0/projects/{projectId}/teams — 반 통째로 해체
+export type disbandClassTeams_Path = operations['disbandClassTeams']['parameters']['path']
+export type disbandClassTeams_Query = NonNullable<
+  operations['disbandClassTeams']['parameters']['query']
+>
+export type disbandClassTeams_Response =
+  operations['disbandClassTeams']['responses'][200]['content']['application/json']
+export type disbandClassTeams_Errors =
+  | 'VALIDATION_FAILED'
+  | 'UNAUTHENTICATED'
+  | 'CLASS_NOT_MANAGED'
+  | 'ACCESS_DENIED'
+  | 'CLASS_NOT_FOUND'
+  | 'TEAM_CONFIRMED_LOCKED'
+  | 'TEAM_SUBMISSION_LOCKED'
 
 // POST /api/v0/projects/{projectId}/teams/{teamId}/members — 팀원 배정
 export type assignTeamMember_Path = operations['assignTeamMember']['parameters']['path']
@@ -161,7 +179,11 @@ export type updateTeam_Body = NonNullable<
 >['content']['application/json']
 export type updateTeam_Response = void
 export type updateTeam_Errors =
-  'VALIDATION_FAILED' | 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'TEAM_NOT_FOUND'
+  | 'VALIDATION_FAILED'
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'TEAM_NOT_FOUND'
+  | 'TEAM_NAME_DUPLICATED'
 
 // PATCH /api/v0/projects/{projectId}/teams/reopen — 팀 편성 다시 열기
 export type reopenTeams_Path = operations['reopenTeams']['parameters']['path']

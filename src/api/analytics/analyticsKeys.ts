@@ -45,7 +45,7 @@ export const analyticsKeys = {
     ] as const,
   findManagerHeatmap: (params: {
     path: findManagerHeatmap_Path
-    query?: findManagerHeatmap_Query
+    query: findManagerHeatmap_Query
   }) =>
     [
       ...analyticsKeys.all,
@@ -57,7 +57,7 @@ export const analyticsKeys = {
     [...analyticsKeys.all, 'findCohortGroupGaps', params.path ?? null] as const,
   findManagerConceptScope: (params: {
     path: findManagerConceptScope_Path
-    query?: findManagerConceptScope_Query
+    query: findManagerConceptScope_Query
   }) =>
     [
       ...analyticsKeys.all,

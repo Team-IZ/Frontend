@@ -9,6 +9,7 @@ import type {
   confirmConcepts_Body,
   confirmConcepts_Response,
   findTeams_Path,
+  findTeams_Query,
   findTeams_Response,
   createTeam_Path,
   createTeam_Body,
@@ -17,6 +18,7 @@ import type {
   assignTeamMember_Body,
   assignTeamMember_Response,
   confirmTeams_Path,
+  confirmTeams_Query,
   confirmTeams_Response,
   autoAssignTeams_Path,
   autoAssignTeams_Body,
@@ -43,6 +45,7 @@ import type {
   updateTeam_Body,
   updateTeam_Response,
   reopenTeams_Path,
+  reopenTeams_Query,
   reopenTeams_Response,
   updateRoundSchedule_Path,
   updateRoundSchedule_Body,
@@ -89,10 +92,12 @@ export const confirmConcepts = (
   )
 
 /** 팀 목록 조회 — `GET /api/v0/projects/{projectId}/teams` */
-export const findTeams = (params: { path: findTeams_Path } & RequestOptions) =>
+export const findTeams = (
+  params: { path: findTeams_Path; query?: findTeams_Query } & RequestOptions,
+) =>
   unwrap<findTeams_Response>(
     izClient.GET('/api/v0/projects/{projectId}/teams', {
-      params: { path: params.path },
+      params: { path: params.path, query: params.query ?? {} },
       signal: params.signal,
     }) as never,
   )
@@ -122,10 +127,12 @@ export const assignTeamMember = (
   )
 
 /** 팀 편성 확정 — `POST /api/v0/projects/{projectId}/teams/confirm` */
-export const confirmTeams = (params: { path: confirmTeams_Path } & RequestOptions) =>
+export const confirmTeams = (
+  params: { path: confirmTeams_Path; query: confirmTeams_Query } & RequestOptions,
+) =>
   unwrap<confirmTeams_Response>(
     izClient.POST('/api/v0/projects/{projectId}/teams/confirm', {
-      params: { path: params.path },
+      params: { path: params.path, query: params.query },
       signal: params.signal,
     }) as never,
   )
@@ -229,10 +236,12 @@ export const updateTeam = (
   )
 
 /** 팀 편성 다시 열기 — `PATCH /api/v0/projects/{projectId}/teams/reopen` */
-export const reopenTeams = (params: { path: reopenTeams_Path } & RequestOptions) =>
+export const reopenTeams = (
+  params: { path: reopenTeams_Path; query: reopenTeams_Query } & RequestOptions,
+) =>
   unwrap<reopenTeams_Response>(
     izClient.PATCH('/api/v0/projects/{projectId}/teams/reopen', {
-      params: { path: params.path },
+      params: { path: params.path, query: params.query },
       signal: params.signal,
     }) as never,
   )

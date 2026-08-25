@@ -31,6 +31,7 @@ export type confirmConcepts_Errors =
 
 // GET /api/v0/projects/{projectId}/teams — 팀 목록 조회
 export type findTeams_Path = operations['findTeams']['parameters']['path']
+export type findTeams_Query = NonNullable<operations['findTeams']['parameters']['query']>
 export type findTeams_Response =
   operations['findTeams']['responses'][200]['content']['application/json']
 export type findTeams_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'PROJECT_NOT_FOUND'
@@ -45,10 +46,11 @@ export type createTeam_Response =
 export type createTeam_Item = NonNullable<createTeam_Response['members']>[number]
 export type createTeam_Errors =
   | 'VALIDATION_FAILED'
-  | 'MANAGER_CLASSROOM_AMBIGUOUS'
   | 'UNAUTHENTICATED'
   | 'ACCESS_DENIED'
+  | 'CLASS_NOT_MANAGED'
   | 'PROJECT_NOT_FOUND'
+  | 'CLASS_NOT_FOUND'
 
 // POST /api/v0/projects/{projectId}/teams/{teamId}/members — 팀원 배정
 export type assignTeamMember_Path = operations['assignTeamMember']['parameters']['path']
@@ -65,6 +67,7 @@ export type assignTeamMember_Errors =
 
 // POST /api/v0/projects/{projectId}/teams/confirm — 팀 편성 확정
 export type confirmTeams_Path = operations['confirmTeams']['parameters']['path']
+export type confirmTeams_Query = NonNullable<operations['confirmTeams']['parameters']['query']>
 export type confirmTeams_Response = void
 export type confirmTeams_Errors =
   'NO_TEAMS_TO_CONFIRM' | 'TEAMS_NOT_READY' | 'UNAUTHENTICATED' | 'ACCESS_DENIED'
@@ -79,10 +82,11 @@ export type autoAssignTeams_Response =
 export type autoAssignTeams_Errors =
   | 'VALIDATION_FAILED'
   | 'NO_MEMBERS_TO_ASSIGN'
-  | 'MANAGER_CLASSROOM_AMBIGUOUS'
   | 'UNAUTHENTICATED'
   | 'ACCESS_DENIED'
+  | 'CLASS_NOT_MANAGED'
   | 'PROJECT_NOT_FOUND'
+  | 'CLASS_NOT_FOUND'
   | 'AUTO_ASSIGN_NOT_ALLOWED'
 
 // POST /api/v0/projects/{projectId}/curricula — 프로젝트 교안 연결
@@ -161,6 +165,7 @@ export type updateTeam_Errors =
 
 // PATCH /api/v0/projects/{projectId}/teams/reopen — 팀 편성 다시 열기
 export type reopenTeams_Path = operations['reopenTeams']['parameters']['path']
+export type reopenTeams_Query = NonNullable<operations['reopenTeams']['parameters']['query']>
 export type reopenTeams_Response = void
 export type reopenTeams_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'
 

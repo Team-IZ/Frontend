@@ -40,7 +40,7 @@ export const curriculumKeys = {
     [...curriculumKeys.all, 'findSections', params.path ?? null, params.query ?? null] as const,
   findUsedProjects: (params: { path: findUsedProjects_Path; query?: findUsedProjects_Query }) =>
     [...curriculumKeys.all, 'findUsedProjects', params.path ?? null, params.query ?? null] as const,
-  findComparableCohorts: (params: { query?: findComparableCohorts_Query }) =>
+  findComparableCohorts: (params: { query: findComparableCohorts_Query }) =>
     [...curriculumKeys.all, 'findComparableCohorts', params.query ?? null] as const,
   findCohortLinkedCurricula: (params: { path: findCohortLinkedCurricula_Path }) =>
     [...curriculumKeys.all, 'findCohortLinkedCurricula', params.path ?? null] as const,

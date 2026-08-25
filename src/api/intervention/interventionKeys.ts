@@ -15,8 +15,8 @@ export const interventionKeys = {
   all: ['intervention'] as const,
   findInterviewBrief: (params: { path: findInterviewBrief_Path }) =>
     [...interventionKeys.all, 'findInterviewBrief', params.path ?? null] as const,
-  findInterviews: (params: { query?: findInterviews_Query }) =>
+  findInterviews: (params: { query: findInterviews_Query }) =>
     [...interventionKeys.all, 'findInterviews', params.query ?? null] as const,
-  findInterviewRoundOptions: (params: { query?: findInterviewRoundOptions_Query }) =>
+  findInterviewRoundOptions: (params: { query: findInterviewRoundOptions_Query }) =>
     [...interventionKeys.all, 'findInterviewRoundOptions', params.query ?? null] as const,
 }

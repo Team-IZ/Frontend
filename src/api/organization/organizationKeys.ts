@@ -24,6 +24,6 @@ export const organizationKeys = {
   findOrganizationCohorts: (params: { path: findOrganizationCohorts_Path }) =>
     [...organizationKeys.all, 'findOrganizationCohorts', params.path ?? null] as const,
   findPlatformSummary: () => [...organizationKeys.all, 'findPlatformSummary'] as const,
-  checkNameAvailability: (params: { query?: checkNameAvailability_Query }) =>
+  checkNameAvailability: (params: { query: checkNameAvailability_Query }) =>
     [...organizationKeys.all, 'checkNameAvailability', params.query ?? null] as const,
 }

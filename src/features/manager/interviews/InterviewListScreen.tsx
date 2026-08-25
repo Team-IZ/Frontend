@@ -24,7 +24,7 @@ import {
   useReincludeInterviewCase,
   VOID_REVIEW_OPEN,
 } from './_/api/api'
-import type { InterviewCase } from './_/api/types'
+import type { InterviewCase, RoundOption } from './_/api/types'
 import {
   ALL,
   getSessionFilters,
@@ -80,6 +80,24 @@ const traineePath = (traineeId: string, cohortId: string | undefined) =>
 /** `2026-07-24T…` → `07.24` */
 const shortDate = (iso: string | null) => (iso ? `${iso.slice(5, 7)}.${iso.slice(8, 10)}` : '')
 
+/**
+ * 아직 판정이 없는 회차 — 면담 케이스가 **하나도 생길 수 없는** 상태다.
+ *
+ * `OPEN`은 이해도 확인이 진행 중이고(`RoundOption.status` 주석), `PLANNED`는 시작도
+ * 안 했다. 위험 판정은 결과가 나와야 켜지므로 둘 다 목록이 비어 있다.
+ */
+const NO_VERDICT_YET = ['OPEN', 'PLANNED']
+
+/**
+ * 첫 진입에 열 회차 — **판정이 나온 가장 최근 회차.**
+ *
+ * 목록은 프로젝트 순서로 오므로 뒤에서부터 찾으면 가장 최근이다. 전부 진행 중이면
+ * (막 시작한 기수) `undefined`를 돌려 서버 기본값에 맡긴다 — 그때는 어느 회차를
+ * 열어도 비어 있고, 화면이 굳이 다른 판정을 내밀 이유가 없다.
+ */
+const defaultRound = (list: RoundOption[] | undefined) =>
+  list?.filter((r) => !NO_VERDICT_YET.includes(r.status)).at(-1)?.assessmentRoundId
+
 export default function InterviewListScreen() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -134,14 +152,32 @@ export default function InterviewListScreen() {
   */
   const roundList = rounds.data
   /*
-    🟢 **회차를 안 골라도 목록을 부른다**(32차 R2). 한때 회차 목록을 먼저 받아야
-    했고 그래서 첫 진입이 **직렬 두 왕복**(2.5~3.1초)이었다 — 이제 서버가 「이번
-    회차」를 고르고, 회차 드롭다운은 그와 **나란히** 채워진다.
+    🔴 **첫 진입에 「판정이 나온 가장 최근 회차」를 연다.**
 
-    사용자가 고른 값이 있으면 그것을 보내고, 없으면 **아무것도 안 보낸다** —
-    직전 회차를 화면이 추측하지 않는다(명부와 같은 판정을 서버가 갖고 있다).
+    종전에는 회차를 안 보내고 **서버가 「이번 회차」를 고르게** 했다(32차 R2). 그런데
+    이번 회차는 **아직 진행 중**이라 위험 판정 자체가 없다 — 면담 케이스는 이해도
+    확인이 끝나고 결과가 나와야 생긴다. 그래서 첫 진입이 언제나 **빈 목록**이었다
+    (7기 실측: 미프 4차 `OPEN` → 0건, 미프 3차 `CLOSED` → 20건. 전 매니저 동일).
+
+    빈 목록은 "담당 학생 중 면담 대상이 없다"로 읽힌다. 실제로는 "아직 안 나왔다"이고,
+    바로 옆 회차에는 20건이 있다. 회차를 손으로 바꿔야만 그것을 볼 수 있었다.
+
+    ⚠️ 이 판정을 화면이 갖는 것은 **빚이다.** 서버가 「이번 회차」를 고르는 규칙은
+    명부·대시보드와 같은 축이라 그쪽과 어긋나면 안 되는데, 지금은 이 화면만 다른
+    회차를 연다. 서버가 「판정이 나온 마지막 회차」를 알려주게 되면 이 함수는 지운다.
+
+    비용은 **첫 진입 +200ms**다(회차 목록을 기다린다). 사용자가 고른 회차가 있으면
+    기다리지 않는다. 실측: `rounds` 191~209ms · `interviews` 228~351ms.
   */
-  const round = filters.round
+  const round = filters.round || defaultRound(roundList) || ''
+  /*
+    회차 조회가 끝나기 전에는 목록을 안 부른다 — 안 그러면 서버가 고른 진행 중 회차로
+    한 번 그리고 곧바로 다른 회차로 갈아쳐, 빈 목록이 한 번 스친다.
+
+    **`isPending`으로 본다.** `roundList`가 왔는지로 보면 회차 조회가 실패했을 때
+    목록이 영영 안 뜬다 — 그때는 서버 기본값으로라도 그려야 한다.
+  */
+  const roundReady = !!filters.round || !rounds.isPending
 
   const search = useDebounced(filters.search).trim()
   /*
@@ -150,7 +186,7 @@ export default function InterviewListScreen() {
     조회를 끈다 — 빈 값으로 부르면 400이다.
   */
   const list = useInterviewList(
-    cohortId
+    cohortId && roundReady
       ? {
           cohort: cohortId,
           assessmentRoundId: round || undefined,

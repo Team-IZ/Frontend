@@ -1,6 +1,8 @@
 import { formatClock } from '@/lib/format'
 
 type Props = {
+  /** `REVIEW`면 「기록에만 남아요」 배지가 붙는다 — 실제 화면과 같다 */
+  mode?: 'FIRST' | 'REVIEW'
   problemNo: number
   problemTotal: number
   title?: string
@@ -21,6 +23,7 @@ type Props = {
   괜찮은 이유는 이 폴더가 **시연이 끝나면 지울 것**이기 때문이다.
 */
 export default function DemoTopBar({
+  mode = 'FIRST',
   problemNo,
   problemTotal,
   title,
@@ -52,6 +55,11 @@ export default function DemoTopBar({
             />
           ))}
         </span>
+        {mode === 'REVIEW' && (
+          <span className="rounded-full bg-info-soft px-2 py-0.5 text-xs font-medium text-info">
+            기록에만 남아요
+          </span>
+        )}
       </div>
       <span className="flex items-baseline gap-3 text-sm text-fg-subtle">
         {ended ? (

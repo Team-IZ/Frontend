@@ -4,6 +4,8 @@ import CodePane from '../session/components/CodePane'
 import IntroScreen from '../session/components/IntroScreen'
 import QuestionThread from '../session/components/QuestionThread'
 import TransitionScreen from '../session/components/TransitionScreen'
+import { AwayToast } from '../session/components/AwayToast'
+import { useAwayToast } from '../session/useSessionEffects'
 import DemoEndScreen from './components/DemoEndScreen'
 import DemoTopBar from './components/DemoTopBar'
 import ScoreBar from './components/ScoreBar'
@@ -36,6 +38,9 @@ import { useDemoSession } from './useDemoSession.ts'
 /** 문제당 20분 — 실제 값(`session.problem-time-limit-minutes`)과 같다 */
 const PROBLEM_LIMIT_MS = 20 * 60_000
 
+/** 관찰 신호를 보낼 서버가 없다 — 토스트만 띄우면 되므로 콜백은 비운다 */
+const noop = () => {}
+
 export default function DemoSessionScreen() {
   const { state, send } = useDemoSession()
   const [callersExpanded, setCallersExpanded] = useState(true)
@@ -49,6 +54,12 @@ export default function DemoSessionScreen() {
     problemStartedAt.current = Date.now()
   }, [state.problemIdx])
 
+  /*
+    창 이탈 감지 — 실제 화면의 훅을 그대로 쓴다. 데모는 기록을 서버로 보내지 않으므로
+    콜백은 비어 있고, 토스트만 뜬다.
+  */
+  const awayToast = useAwayToast(noop, state.phase !== 'ENDED')
+
   const elapsedMs = useTicker(state.phase === 'IN_PROBLEM')
   const problemRemainingMs =
     state.phase === 'IN_PROBLEM'
@@ -61,7 +72,7 @@ export default function DemoSessionScreen() {
     return (
       <div className="h-svh">
         <IntroScreen
-          mode="FIRST"
+          mode={state.mode}
           problemTotal={PROBLEM_TOTAL}
           onStart={() => send({ type: 'START' })}
           starting={false}
@@ -74,6 +85,7 @@ export default function DemoSessionScreen() {
     return (
       <div className="flex h-svh flex-col">
         <DemoTopBar
+          mode={state.mode}
           problemNo={problem.problemNo}
           problemTotal={PROBLEM_TOTAL}
           elapsedMs={elapsedMs}
@@ -91,6 +103,7 @@ export default function DemoSessionScreen() {
     return (
       <div className="flex h-svh flex-col">
         <DemoTopBar
+          mode={state.mode}
           problemNo={problem.problemNo}
           problemTotal={PROBLEM_TOTAL}
           elapsedMs={elapsedMs}
@@ -99,7 +112,7 @@ export default function DemoSessionScreen() {
         <div className="flex-1">
           <TransitionScreen
             reason={state.transitionReason ?? 'NEXT'}
-            mode="FIRST"
+            mode={state.mode}
             nextTitle={problem.title}
             nextPath={problem.code.path}
             isNextLast={problem.problemNo === PROBLEM_TOTAL}
@@ -118,6 +131,7 @@ export default function DemoSessionScreen() {
   return (
     <div className="relative flex h-svh flex-col">
       <DemoTopBar
+        mode={state.mode}
         problemNo={problem.problemNo}
         problemTotal={PROBLEM_TOTAL}
         title={problem.title}
@@ -144,7 +158,7 @@ export default function DemoSessionScreen() {
         <ResizableHandle withHandle />
         <ResizablePanel minSize={320} className="flex flex-col">
           <QuestionThread
-            mode="FIRST"
+            mode={state.mode}
             turns={problem.turns}
             current={problem.current}
             pendingAnswer={null}
@@ -156,9 +170,19 @@ export default function DemoSessionScreen() {
             hintsLeft={problem.current?.hintsLeft ?? 0}
             onScore={(score: Score) => send({ type: 'ANSWER', score })}
             onTimeOut={() => send({ type: 'TIME_OUT' })}
+            onRequestHint={() => send({ type: 'OPEN_HINT' })}
           />
         </ResizablePanel>
       </ResizablePanelGroup>
+
+      {/*
+        창을 벗어났다 돌아오면 뜨는 토스트 — 실제 화면 것을 그대로 쓴다.
+
+        데모는 기록을 서버로 보내지 않지만 **토스트는 보여준다.** 시연에서 설명해야 하는
+        것이 "다른 창을 열면 남는다"는 사실 자체이고, 그것을 말로만 하면 안 믿는다.
+        다른 탭으로 갔다 돌아오면 그 자리에서 뜬다.
+      */}
+      {awayToast && <AwayToast seconds={awayToast.data.seconds} leaving={awayToast.leaving} />}
     </div>
   )
 }

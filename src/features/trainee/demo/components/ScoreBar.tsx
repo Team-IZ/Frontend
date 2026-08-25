@@ -1,3 +1,4 @@
+import { LightbulbIcon } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { cn } from '@/lib/utils/cn'
 import { AXIS_NAME, PASS_SCORE, RUBRIC, SCORES, type AxisCode, type Score } from '../data/rubric.ts'
@@ -7,6 +8,8 @@ type Props = {
   hintsLeft: number
   onScore: (score: Score) => void
   onTimeOut: () => void
+  /** 학생이 직접 여는 힌트 — 실제 화면의 「다시 설명해 주세요」 */
+  onRequestHint: () => void
 }
 
 /*
@@ -29,7 +32,13 @@ type Props = {
   실제로는 문제당 20분이 지나면 서버가 그 문제를 접는다. 시계로 재현하면 시연 도중
   예상 못 한 순간에 화면이 넘어가므로 **시연자가 원할 때** 누른다.
 */
-export default function ScoreBar({ axisCode, hintsLeft, onScore, onTimeOut }: Props) {
+export default function ScoreBar({
+  axisCode,
+  hintsLeft,
+  onScore,
+  onTimeOut,
+  onRequestHint,
+}: Props) {
   const rubric = RUBRIC[axisCode]
 
   return (
@@ -40,11 +49,9 @@ export default function ScoreBar({ axisCode, hintsLeft, onScore, onTimeOut }: Pr
           <span className="text-fg-muted">{AXIS_NAME[axisCode]}</span> · 채점 결과를 고르면 그대로
           진행됩니다
         </p>
-        {hintsLeft > 0 ? (
-          <span className="text-xs text-fg-subtle">설명 {hintsLeft}번 남음</span>
-        ) : (
+        {hintsLeft === 0 && (
           <span className="text-xs font-medium text-warning">
-            설명을 다 썼어요 · 여기서 또 미달이면 이 문제가 끝납니다
+            더 이상 설명해 드릴 수 없어요 · 여기서 또 미달이면 이 문제가 끝납니다
           </span>
         )}
       </div>
@@ -81,13 +88,32 @@ export default function ScoreBar({ axisCode, hintsLeft, onScore, onTimeOut }: Pr
         })}
       </div>
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[11px] text-fg-subtle">
-          {PASS_SCORE}점 이상이면 다음 질문으로 · 미만이면 같은 질문을 다시 설명해 줍니다
-        </p>
-        <Button type="button" variant="ghost" size="sm" onClick={onTimeOut}>
-          시간 초과시키기
-        </Button>
+      {/*
+        아래 줄은 **실제 세션의 `ComposeBar`와 같은 구성**이다 — 왼쪽에 힌트, 오른쪽에
+        진행 조작. 종전에는 힌트 버튼이 맨 위 우측 구석에 작게 있어 시연 중에 눈에
+        안 띄었다(실사용 피드백). 학생이 스스로 힌트를 여는 길이 제품에 있다는 것이
+        시연에서 설명해야 할 대목이라, 실제 화면과 같은 자리로 내렸다.
+      */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3">
+        <div className="flex flex-wrap items-center gap-2">
+          {hintsLeft > 0 ? (
+            <>
+              <Button type="button" variant="ghost" size="sm" onClick={onRequestHint}>
+                <LightbulbIcon className="size-3.5" />
+                다시 설명해 주세요
+              </Button>
+              <span className="text-xs text-fg-subtle">{hintsLeft}번 남음</span>
+            </>
+          ) : (
+            <p className="text-xs text-fg-subtle">더 이상 설명해 드릴 수 없어요</p>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <p className="text-[11px] text-fg-subtle">{PASS_SCORE}점 이상이면 다음 질문으로</p>
+          <Button type="button" variant="ghost" size="sm" onClick={onTimeOut}>
+            시간 초과시키기
+          </Button>
+        </div>
       </div>
     </div>
   )

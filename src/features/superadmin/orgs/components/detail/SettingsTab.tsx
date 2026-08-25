@@ -355,7 +355,6 @@ export default function SettingsTab({ org }: { org: Org }) {
         initial={{
           allowManagerInvite: s.allowManagerInvite,
           allowDataExport: s.allowDataExport,
-          allowZipSubmission: s.allowZipSubmission,
           allowGithubIntegration: s.allowGithubIntegration,
         }}
         toPatch={(d, i) => {
@@ -379,12 +378,6 @@ export default function SettingsTab({ org }: { org: Org }) {
               description="리포트·명단을 파일로 내려받을 수 있습니다"
               checked={d.allowDataExport}
               onChange={(v) => set({ allowDataExport: v })}
-            />
-            <SwitchField
-              label="ZIP 코드 제출"
-              description="끄면 GitHub 연동으로만 제출합니다"
-              checked={d.allowZipSubmission}
-              onChange={(v) => set({ allowZipSubmission: v })}
             />
             <SwitchField
               label="GitHub 조직 연동"
@@ -502,9 +495,7 @@ function SwitchField({
 }
 
 const countEnabled = (s: Settings) =>
-  [s.allowManagerInvite, s.allowDataExport, s.allowZipSubmission, s.allowGithubIntegration].filter(
-    Boolean,
-  ).length
+  [s.allowManagerInvite, s.allowDataExport, s.allowGithubIntegration].filter(Boolean).length
 
 /** 서버가 준 값이 선택지에 없으면 무제한이 아니라 **모르는 값**이다 — 그대로 두면 저장 시 덮인다 */
 const tokenKeyOf = (tokens: number | null) =>

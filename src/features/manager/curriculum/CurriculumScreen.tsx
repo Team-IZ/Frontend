@@ -164,7 +164,12 @@ export default function CurriculumScreen() {
                 *"이 기수가 실제로 붙인 교안"* 이라 최신이 아닐 수 있는데, 그냥 보내면
                 상세가 최신을 그려 **쪽 번호가 어긋난 채로** 읽힌다.
               */
-              const detailPath = `/manager/curriculum/${c.materialId}?versionId=${c.versionId}`
+              /*
+                🔴 33차 후속(실측 재현) — 상세 화면도 `useManagerCohort`로 헤더 기수를
+                고른다. 이 목록은 이미 `cohort` 경로 파라미터로 좁혀 받은 것이라 지금
+                보고 있는 기수를 그대로 실어 보낸다.
+              */
+              const detailPath = `/manager/curriculum/${c.materialId}?versionId=${c.versionId}&cohort=${cohortId ?? ''}`
               return (
                 <TableRow
                   key={c.versionId}
@@ -200,7 +205,8 @@ export default function CurriculumScreen() {
                       <span key={p.projectId}>
                         {i > 0 && ' · '}
                         <Link
-                          to={`/manager/projects/${p.projectId}`}
+                          /* 이 목록 자체가 지금 기수로 좁혀 받은 것이라 그 기수를 그대로 싣는다 */
+                          to={`/manager/projects/${p.projectId}?cohort=${cohortId ?? ''}`}
                           className="hover:text-primary hover:underline"
                           onClick={(e) => e.stopPropagation()}
                         >

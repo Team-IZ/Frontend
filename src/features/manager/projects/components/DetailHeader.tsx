@@ -90,7 +90,8 @@ export default function DetailHeader({
                   {i > 0 && ' · '}
                   {c.materialId ? (
                     <Link
-                      to={`/manager/curriculum/${c.materialId}?versionId=${c.curriculumVersionId}`}
+                      // 🔴 33차 후속(실측 재현) — 위 뒤로가기 링크와 같은 이유로 기수를 싣는다
+                      to={`/manager/curriculum/${c.materialId}?versionId=${c.curriculumVersionId}&cohort=${project.cohortId}`}
                       className="text-fg-muted hover:text-primary font-bold hover:underline"
                     >
                       {label}

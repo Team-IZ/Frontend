@@ -37,9 +37,21 @@ import type { Brief, InterviewCase, InterviewListView, RoundOption } from './typ
 type ListServer = findInterviews_Response
 type BriefServer = findInterviewBrief_Response
 
-/** 회차 선택지 — 목록과 별개 조회다 */
-export function useInterviewRounds() {
-  const query = useFindInterviewRoundOptions()
+/**
+ * 회차 선택지 — 목록과 별개 조회다.
+ *
+ * 🔴 33차(백엔드) — `cohort`를 실어 보낸다. 안 실으면 담당 반이 속한 기수 전부의
+ * 회차가 섞여 오고, 그중 마지막(가장 최근 프로젝트의 마지막 회차)이 기본으로
+ * 잡혀 「보고 있는 기수와 무관한 회차」가 뽑힌다(면담 첫 진입 기본 회차 버그).
+ *
+ * `enabled: !!cohortId`로 기수가 오기 전에는 부르지 않는다 — 백엔드가 이 API의
+ * `cohort`를 필수로 바꿀 예정이라(예고), 미리 게이트를 걸어 둔다.
+ */
+export function useInterviewRounds(cohortId: string | undefined) {
+  const query = useFindInterviewRoundOptions(
+    { query: cohortId ? { cohort: cohortId } : {} },
+    { enabled: !!cohortId },
+  )
   const data = useMemo<RoundOption[] | undefined>(
     () =>
       query.data?.map((r) => ({
@@ -53,6 +65,12 @@ export function useInterviewRounds() {
 }
 
 export type InterviewQuery = {
+  /**
+   * 🔴 33차(백엔드) — 회차를 아직 못 고른 첫 진입에서 서버가 「이번 회차」를
+   * **담당 기수 전체가 아니라 이 기수 안에서** 고르게 한다. 생략해도 동작하지만
+   * (하위 호환), 생략하면 다른 기수의 회차가 기본값으로 잡힐 수 있다.
+   */
+  cohort?: string
   /**
    * 생략하면 **서버가 이번 회차를 고른다**(32차 R2). 고른 회차는 응답의 `round`로
    * 돌아오므로 화면이 그 값을 드롭다운에 되채운다.

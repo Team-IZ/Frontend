@@ -207,11 +207,21 @@ export default function InterviewBriefScreen() {
       key={JSON.stringify(brief.data.savedRecord)}
       brief={brief.data}
       cohortName={cohortName ?? ''}
+      cohortId={cohortId}
     />,
   )
 }
 
-function BriefSheet({ brief, cohortName }: { brief: Brief; cohortName: string }) {
+function BriefSheet({
+  brief,
+  cohortName,
+  cohortId,
+}: {
+  brief: Brief
+  cohortName: string
+  /** "전체 이력" 링크에 실을 현재 기수 — 화면(InterviewBriefScreen)의 useManagerCohort가 안다 */
+  cohortId: string | undefined
+}) {
   const navigate = useNavigate()
   const save = useSaveInterviewBrief()
 
@@ -439,7 +449,8 @@ function BriefSheet({ brief, cohortName }: { brief: Brief; cohortName: string })
           <div className="mb-3 flex items-baseline gap-2">
             <span className="text-fg text-sm font-bold">기록</span>
             <Link
-              to={`/manager/trainees/${brief.traineeId}`}
+              // 🔴 33차(백엔드 R2, 실측 재현) — 기수를 함께 싣는다(다중 기수 매니저 실측).
+              to={`/manager/trainees/${brief.traineeId}?cohort=${cohortId ?? ''}`}
               className="text-primary ml-auto text-xs hover:underline"
             >
               전체 이력 ↗

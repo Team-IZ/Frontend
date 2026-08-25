@@ -70,6 +70,9 @@ export type findInterviews_Errors =
   'UNAUTHENTICATED' | 'ACCESS_DENIED' | 'MANAGER_SCOPE_NOT_FOUND' | 'ORGANIZATION_CONTEXT_MISSING'
 
 // GET /api/v0/interviews/rounds — [면담 목록] 면담 회차 옵션 조회
+export type findInterviewRoundOptions_Query = NonNullable<
+  operations['findInterviewRoundOptions']['parameters']['query']
+>
 export type findInterviewRoundOptions_Response =
   operations['findInterviewRoundOptions']['responses'][200]['content']['application/json']
 export type findInterviewRoundOptions_Errors = 'UNAUTHENTICATED' | 'ACCESS_DENIED'

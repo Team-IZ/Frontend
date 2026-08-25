@@ -9,6 +9,7 @@ import type {
   findInterviewBrief_Response,
   findInterviews_Query,
   findInterviews_Response,
+  findInterviewRoundOptions_Query,
   findInterviewRoundOptions_Response,
 } from './interventionTypes'
 
@@ -38,11 +39,12 @@ export function useFindInterviews(
 
 /** [면담 목록] 면담 회차 옵션 조회 */
 export function useFindInterviewRoundOptions(
+  params: { query?: findInterviewRoundOptions_Query } = {},
   options?: QueryOptions<findInterviewRoundOptions_Response>,
 ) {
   return useQuery({
-    queryKey: interventionKeys.findInterviewRoundOptions(),
-    queryFn: ({ signal }) => findInterviewRoundOptions({ signal }),
+    queryKey: interventionKeys.findInterviewRoundOptions(params),
+    queryFn: ({ signal }) => findInterviewRoundOptions({ ...params, signal }),
     ...options,
   })
 }

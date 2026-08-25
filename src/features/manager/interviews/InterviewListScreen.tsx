@@ -62,9 +62,20 @@ import InterviewFilters from './components/InterviewFilters'
  * 브리프로 갈 때 **`briefState`를 같이 넘긴다** — 브리프 화면이 조회(`GET`)와
  * 생성(`POST`) 중 무엇을 부를지 그 값으로 가른다(스펙이 정한 계약).
  */
-const briefPath = (c: InterviewCase) =>
-  `/manager/interviews/${c.caseId}/brief?state=${c.briefState}`
-const traineePath = (traineeId: string) => `/manager/trainees/${traineeId}`
+/*
+  🔴 33차 후속(실측 재현) — 브리프 화면도 `useManagerCohort`로 헤더 기수를
+  고른다(`InterviewBriefScreen.tsx`). `?cohort=`가 없으면 여기서도 기본 기수
+  (진행 중인 기수)로 물러서 헤더가 7기로 바뀐다 — [브리프 수정] 눌렀을 때 실측.
+*/
+const briefPath = (c: InterviewCase, cohortId: string | undefined) =>
+  `/manager/interviews/${c.caseId}/brief?state=${c.briefState}&cohort=${cohortId ?? ''}`
+/*
+  🔴 33차(백엔드 R2, 실측 재현) — 기수를 함께 싣는다. 안 실으면 상세 화면이 기본
+  기수(진행 중인 기수)로 물러서서, 5기를 보다가 이름을 눌러도 교육생 상세가
+  7기로 열린다(다중 기수 매니저 계정으로 실측).
+*/
+const traineePath = (traineeId: string, cohortId: string | undefined) =>
+  `/manager/trainees/${traineeId}?cohort=${cohortId ?? ''}`
 
 /** `2026-07-24T…` → `07.24` */
 const shortDate = (iso: string | null) => (iso ? `${iso.slice(5, 7)}.${iso.slice(8, 10)}` : '')
@@ -100,11 +111,12 @@ export default function InterviewListScreen() {
     setSessionFilters(filters)
   }, [filters])
 
-  const rounds = useInterviewRounds()
   /*
-    **회차가 정해지기 전에는 목록을 안 부른다.** `assessmentRoundId`가 필수 파라미터라
-    빈 값으로 부르면 400이 온다. 기본값은 **마지막 회차**다(사용자 지시).
+    🔴 33차(백엔드 R3) — `cohort`를 실어 보낸다. 안 실으면 서버가 담당 기수 전부를
+    훑어 「이번 회차」를 고르고, 정렬상 항상 가장 최근 기수의 회차가 걸린다 — 지금
+    보고 있는 기수와 무관하게 첫 진입 기본 회차가 고정돼 버린다.
   */
+  const rounds = useInterviewRounds(cohortId)
   /*
     🔴 **`?? []`를 쓰지 않는다**(화면 규칙 E). 아직 안 온 것과 없는 것이 같아지면
     필터가 「선택지 0개」로 그려지고, 그게 「이 기수엔 회차가 없다」로 읽힌다.
@@ -122,6 +134,8 @@ export default function InterviewListScreen() {
 
   const search = useDebounced(filters.search).trim()
   const list = useInterviewList({
+    // 🔴 33차(백엔드 R3) — 이번 회차 판정을 담당 기수 전체가 아니라 이 기수 안에서 하게 한다.
+    cohort: cohortId,
     assessmentRoundId: round || undefined,
     search: search || undefined,
     status: filters.status === ALL ? undefined : filters.status,
@@ -144,6 +158,20 @@ export default function InterviewListScreen() {
       return
     }
     setFilters((f) => ({ ...f, ...patch }))
+  }
+
+  /*
+    🔴 (실측 재현) — 기수를 바꾸면 회차 선택도 함께 비운다. 안 비우면 방금 보던
+    기수의 `assessmentRoundId`를 그대로 들고 있는데, 새 기수의 회차 목록에는
+    그 id가 없어 회차 드롭다운이 라벨을 못 찾고 **UUID를 그대로** 그린다(실측 —
+    5기 담당 반에서 기수를 바꾸자 회차 칸에 `5bf9b0ef-…`가 떴다). 검색·상태·반
+    필터도 기수마다 대상 자체가 달라 같이 초기화한다 — `changeFilters`의 회차
+    변경 분기와 같은 이유다. `HeatmapScreen.tsx`의 `changeCohort`와 같은 처방.
+  */
+  function changeCohort(next: string) {
+    setUndoBanner(null)
+    setFilters(INITIAL_FILTERS)
+    selectCohort(next)
   }
 
   async function handleExclude(c: InterviewCase) {
@@ -179,7 +207,7 @@ export default function InterviewListScreen() {
       role="manager"
       cohort={cohortId ?? ''}
       cohorts={cohorts}
-      onCohortChange={selectCohort}
+      onCohortChange={changeCohort}
     >
       <PageHeader
         /*
@@ -385,7 +413,10 @@ export default function InterviewListScreen() {
                     <InterviewStatusBadge status={c.status} />
                   </TableCell>
                   <TableCell className="whitespace-nowrap">
-                    <Link to={traineePath(c.traineeId)} className="font-bold hover:underline">
+                    <Link
+                      to={traineePath(c.traineeId, cohortId)}
+                      className="font-bold hover:underline"
+                    >
                       {c.name}
                     </Link>
                     <span className="text-fg-subtle ml-1.5 text-2xs">{c.className}</span>
@@ -403,7 +434,7 @@ export default function InterviewListScreen() {
                     <RowActions
                       caseItem={c}
                       pending={pending}
-                      onOpenBrief={() => navigate(briefPath(c))}
+                      onOpenBrief={() => navigate(briefPath(c, cohortId))}
                       onExclude={() => void handleExclude(c)}
                       onUndo={() => void handleUndo(c.caseId)}
                     />

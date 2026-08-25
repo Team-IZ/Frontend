@@ -748,6 +748,124 @@ export interface paths {
     patch?: never
     trace?: never
   }
+  '/api/v0/reports/sessions/{sessionId}/regeneration': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * 세션 지정 리포트 재생성 | ✅ 사용 가능
+     * @description 배치가 다시 집지 못하는 세션의 리포트를 운영자 판단으로 다시 만듭니다.
+     *
+     *     ## 언제 쓰는가
+     *
+     *     배치(`dispatchDueSessions`)는 두 가지 이유로 대상을 영구히 놓칠 수 있습니다.
+     *
+     *     - `ai.report.max-attempts`를 소진했다
+     *     - 문제 1개만 실패해 run이 `PARTIAL`로 닫혔다(`BLOCKING_RUN_EXISTS`가 `FAILED`만
+     *       다시 집어서, 상한 소진보다 흔하게 발생합니다)
+     *
+     *     둘 다 배치 스스로는 복구하지 못하고, 이 API가 유일한 복구 경로입니다.
+     *
+     *     ## `ReportForceGenerationController`와 다릅니다
+     *
+     *     이 API는 세션·응시 완료, 종료 사유 6종 제외, 무효 확인, 발행 예정 시각, 단계 정리
+     *     완료를 배치와 동일하게 전부 검증합니다. 조건이 안 맞으면 만들지 않습니다 —
+     *     연동 시험 전용 강제 생성 경로와 혼동하지 마세요.
+     *
+     *     ## 재실행 횟수 상한이 없습니다
+     *
+     *     `USER_REQUESTED` 실행은 재시도 상한 카운터에 안 잡힙니다. 몇 번이든 다시 부를 수
+     *     있다는 뜻이라, 같은 대상을 반복해서 누르고 있다면 그건 이 도구가 아니라 AI 쪽
+     *     문제일 가능성이 높습니다.
+     *
+     *     ## 202이고 결과는 폴링이 회수합니다
+     *
+     *     즉시 `generationRunId`만 돌아옵니다. 진행 상황은 `report_generation_item`에서
+     *     확인하세요.
+     *
+     *     ## 오류
+     *
+     *     | 코드 | 상태 | 뜻 |
+     *     |---|---|---|
+     *     | `REPORT_REGENERATION_TARGET_NOT_ELIGIBLE` | 404 | 세션이 없거나, 호출한 매니저가 지금 담당하지 않는 교육생이거나, 위 5종 조건에 안 맞습니다. 어느 쪽인지는 이 API로 구분되지 않습니다(존재 자체를 알려주지 않기 위해서입니다) |
+     *     | `REPORT_SESSION_HAS_NO_PROBLEM` | 409 | 채점된 문제가 없는 세션입니다 |
+     *     | `REPORT_GENERATION_ALREADY_RUNNING` | 409 | 이미 진행 중인 수동 실행이 있습니다. 그 실행이 끝나기를 기다리세요 |
+     *     | `REPORT_MODEL_NOT_CONFIGURED` | 500 | 리포트 생성 모델 설정이 어긋났습니다. 요청 문제가 아니라 운영 설정 문제입니다 |
+     */
+    post: operations['regenerateReport']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
+  '/api/v0/reports/sessions/{sessionId}/generation': {
+    parameters: {
+      query?: never
+      header?: never
+      path?: never
+      cookie?: never
+    }
+    get?: never
+    put?: never
+    /**
+     * [연동 시험] 세션 지정 리포트 강제 생성 | ✅ 사용 가능
+     * @description 세션 ID 하나로 **저장된 검증세션 결과를 읽어 8필드를 조립하고 FastAPI에 보냅니다.**
+     *     문제 1건당 요청 1회이므로 문제가 2개면 LLM 호출도 2회입니다.
+     *
+     *     > ⚠️ **연동 시험 전용입니다.** 아래 표대로 유효성 검사를 거의 전부 건너뛰므로
+     *     > LLM 비용을 쉽게 태울 수 있습니다. 운영 환경에서는 등록되지 않습니다.
+     *
+     *     ### 미정리 게이트 하나만 남기고 전부 건너뜁니다
+     *
+     *     배치(`findDueProblems`)나 재생성(`findTargetBySession`)과 비교하면 이렇습니다.
+     *
+     *     | 조건 | 배치 | 재생성 | 이 API |
+     *     |---|---|---|---|
+     *     | 세션·응시 `COMPLETED` | ✅ | ✅ | **❌** |
+     *     | 종료 사유 6종 제외 | ✅ | ✅ | **❌** |
+     *     | 무효 확인 | ✅ | ✅ | **❌** |
+     *     | 발행 예정 시각 도래 | ✅ | ✅ | **❌** |
+     *     | 횟수 상한·중복 차단 | ✅ | ❌ | **❌** |
+     *     | **단계 정리 완료** | ✅ | ✅ | **✅ 유지** |
+     *
+     *     회차 마감을 기다리거나 회차 일정을 손대지 않고 AI 계약과 8필드 조립을 확인하려고
+     *     둔 경로입니다.
+     *
+     *     ### 그래도 발행은 막힙니다
+     *
+     *     여기서 만든 리포트가 학생에게 나가지는 않습니다. `ReportRunFinalizer`가 확정 직전에
+     *     세션 유효성과 발행 예정 시각을 **다시** 보고, 어긋나면 스냅샷만 만들고
+     *     `published_at`을 비워 둡니다. **생성 게이트만 풀리고 발행 게이트는 그대로입니다.**
+     *
+     *     ### 단계 정리만은 면제하지 않습니다
+     *
+     *     위 재확인이 보는 것은 세션·응시 완료, 무효 확인, 종료 사유 넷뿐입니다.
+     *     **미정리 단계는 거기 없습니다.** 그래서 단계가 안 끝난 세션에 이 API를 걸면
+     *     재확인을 그대로 통과해 **틀린 리포트가 발행됩니다** — 도달조차 못 한 축이
+     *     대표로 잡힙니다. 조절기는 풀고 유효성 규칙은 남기는 것이 이 경로의 설계입니다.
+     *
+     *     ### 202이고 결과는 폴링이 회수합니다
+     *
+     *     AI가 202 + jobId만 주므로 이 응답도 즉시 돌아옵니다. 상태는
+     *     `report_generation_item`에서 확인하세요 — `QUEUED` → `RUNNING` → `SUCCEEDED`.
+     *     **1건당 실측 129초**이고 폴링 주기가 1분이라 반영까지 최대 1분 더 걸립니다.
+     *
+     *     > 이 엔드포인트는 `ai.report.force-endpoint.enabled=true`일 때만 등록됩니다.
+     *     > 꺼져 있으면 404입니다.
+     */
+    post: operations['forceGenerateReport']
+    delete?: never
+    options?: never
+    head?: never
+    patch?: never
+    trace?: never
+  }
   '/api/v0/projects/{projectId}/teams': {
     parameters: {
       query?: never
@@ -1933,8 +2051,11 @@ export interface paths {
      *     | `excellentOccurrenceCount` | int? | 이 교육생이 우수로 발견된 누적 횟수 |
      *     | `excellentAssessmentSequenceNos` | int[] | 우수로 발견된 프로젝트 차수(`analysis_sequence_no`) 전부. **조회 회차를 포함**하므로 이 배열에 조회 차수가 있으면 이번 회차도 우수다. 최신 차수부터 내림차순, 근거 없으면 빈 배열 |
      *     | `matchedRiskTypeCodes` | string[]? | 이번 회차에 걸린 위험 유형 코드 **배열**. `STAGE_DECLINE`(단계 하락) · `PERSISTENT_LOW`(지속 저점) · `INVALID_ATTEMPT`(무효 응시) · `CONTRIBUTION_UNDERSTANDING_GAP`(기여·이해도 괴리) · `LOW_PARTICIPATION`(저기여) 중 동시에 여러 개가 걸릴 수 있다. 해소(`RESOLVED`)된 사유는 들어오지 않는다. **`null`(지표 없음)과 `[]`(위험 없음)은 뜻이 다르다.** 30차 R6까지는 `"{}"` 같은 PostgreSQL 배열 리터럴 문자열이었다 |
-     *     | `roundPrimaryStatusCode` | enum? | 배지 한 칸에 넣을 **단일** 코드. 1층 응시상태(`NOT_ATTENDED` 미응시 → `SESSION_INCOMPLETE` 응시 중단 → `INVALID_ATTEMPT` 무효 응시)가 있으면 2층 위험 유형(`LOW_PARTICIPATION` → `CONTRIBUTION_UNDERSTANDING_GAP` → `STAGE_DECLINE` → `PERSISTENT_LOW`)은 보지 않는다. 걸린 것이 없으면 `null`(정상). 중도 이탈은 여기 들어오지 않는다 — 계정 상태의 비활성화 사유로 이미 드러난다 |
+     *     | `roundPrimaryStatusCode` | enum? | 배지 한 칸에 넣을 **단일** 코드. 1층 응시상태(`NOT_ATTENDED` 검증 세션 못 함 → `SESSION_INCOMPLETE` 응시 중단 → `INVALID_ATTEMPT` 무효 응시)가 있으면 2층 위험 유형(`LOW_PARTICIPATION` → `CONTRIBUTION_UNDERSTANDING_GAP` → `STAGE_DECLINE` → `PERSISTENT_LOW`)은 보지 않는다. 걸린 것이 없으면 `null`(정상). 중도 이탈은 여기 들어오지 않는다 — 계정 상태의 비활성화 사유로 이미 드러난다 |
+     *     | `notAttendedReasonCode` | enum? | 🆕 `roundPrimaryStatusCode`가 `NOT_ATTENDED`일 때만. `NO_SHOW`(볼 수 있었는데 안 봄) · `NOT_SUBMITTED`(팀 미제출) · `ANALYSIS_FAILED`(분석 실패). **독촉 대상은 `NO_SHOW`뿐**이며 나머지 둘은 응시할 문항 자체가 없었다 |
      *     | `roundTerminalAt` | date-time? | `roundPrimaryStatusCode`가 `NOT_ATTENDED`·`SESSION_INCOMPLETE`일 때만 값이 있는 시각. 화면이 `우수 누적` 칸에 정상 결과 대신 `세션 중단 · 07-14`처럼 사유·일자를 그릴 때 쓴다 |
+     *
+     *     🆕 **`roundPrimaryStatusCode = NOT_ATTENDED`의 범위가 넓어졌다.** 종전에는 `terminal_reason_code`가 `NOT_ATTENDED`인 경우만 봐서, **팀이 제출을 안 해 응시조차 못 한 학생이 배지 없이 「정상」으로 보였다.** 이제 팀 미제출·코드 분석 실패도 이 배지가 잡고, 원인은 `notAttendedReasonCode`로 가른다. 결과 탭(`GET /projects/{projectId}/evaluations`)의 `resultStatus`·`notAttendedReason`과 같은 값 집합이다.
      *     | `rowAggregationStatus` | string? | 이 행의 지표 집계 상태. 현재는 항상 `COMPLETE`다 |
      *
      *     #### inactivatedReasonCode 값
@@ -5488,10 +5609,20 @@ export interface paths {
      *     |---|---|
      *     | `reportPublished` | 회차 리포트 발행 여부. 발행 방식이 ROUND_BATCH라 회차 단위 판정 |
      *     | `resultAvailable` | 결과를 그릴 수 있는지. false면 화면은 빈 상태를 보여준다 |
-     *     | `summary` | `totalCount` · `attendedCount` · `failedCount` · `notAttendedCount` · `invalidCount` |
+     *     | `summary` | `totalCount` · `attendedCount` · `failedCount` · `notAttendedCount`(세션을 못 한 인원 = 미응시 + 미제출 + 분석 실패) · `invalidCount` |
      *     | `classWarnings[]` | 집단 미달 경고. 유효 응시자의 **절반을 넘는** 인원이 막힌 개념 |
      *     | `conceptAggregates[]` | 개념별 막힌 사람 · 코드에 없던 사람과 명단 |
      *     | `trainees[]` | 교육생 목록. 개념별 도달 결과까지 담고 **축별 단계는 담지 않는다** |
+     *
+     *     🆕 **`resultStatus = NOT_ATTENDED`가 팀 미제출·분석 실패까지 포함한다.** 종전에는 그 둘이
+     *     값이 없어 `IN_PROGRESS`로 나갔고, 그래서 **이미 종료된 회차에 「응시 중」인 사람이
+     *     남았다.** 셋 다 검증 세션을 하지 못했다는 같은 사실이라 한 값으로 묶고,
+     *     **원인은 `trainees[].notAttendedReason`으로 가른다**(`NO_SHOW` · `NOT_SUBMITTED` ·
+     *     `ANALYSIS_FAILED`). `summary.notAttendedCount`도 이 셋의 합이며 반별 현황
+     *     (`class-progress`)의 같은 이름 필드와 기준이 일치한다.
+     *
+     *     🔴 **독촉·면담 대상은 `NO_SHOW`뿐이다.** 나머지 둘은 응시할 문항 자체가 없어 볼 수
+     *     없었던 사람이며, 제출 현황 탭에서 같은 사람이 `BLOCKED`인 것과 같은 갈래다.
      *
      *     💡 **`notInCode`를 따로 센다.** 그 개념이 코드에 없어 문제가 만들어지지 않은 것이라
      *     **못한 것이 아니다.** 막힌 사람과 한 칸에 넣으면 매니저가 둘을 구분하지 못한다.
@@ -5531,7 +5662,8 @@ export interface paths {
      *
      *     | 필드 | 설명 |
      *     |---|---|
-     *     | `resultStatus` | `AVAILABLE` · `IN_PROGRESS` · `INCOMPLETE`(중단) · `NOT_ATTENDED` · `INVALID` |
+     *     | `resultStatus` | `AVAILABLE` · `IN_PROGRESS` · `INCOMPLETE`(중단) · `NOT_ATTENDED`(검증 세션을 못 함) · `INVALID` |
+     *     | `notAttendedReason` | `NOT_ATTENDED`일 때만. `NO_SHOW`(안 봄) · `NOT_SUBMITTED`(팀 미제출) · `ANALYSIS_FAILED`(분석 실패) |
      *     | `concepts[]` | 개념별 `inCode` · `reachLevel` · `retryTarget` · `steps[]` |
      *
      *     ### concepts[].steps[]
@@ -5624,13 +5756,18 @@ export interface paths {
      *
      *     단계별 깔때기라 각 단계의 분모가 앞 단계의 분자입니다.
      *     제출률은 submittedCount / targetTraineeCount,
-     *     응시율은 assessedCount / analysisSucceededCount 입니다.
+     *     응시율은 assessedCount / assessmentTargetCount 입니다.
      *     응시율의 분모가 제출 단계에서 나오므로 두 지표를 나눠 호출하지 않습니다.
+     *
+     *     미제출·분석 실패는 응시할 문항 자체가 없었으므로 응시율 분모에서 빠집니다.
+     *     매니저 프로젝트 목록(`GET /projects`)의 `progress`도 같은 기준이라 두 화면이
+     *     같은 회차를 두고 다른 응시율을 말하지 않습니다.
      *
      *     제출은 팀 단위 원장이지만 이 화면은 인원 기준으로 환산합니다.
      *
      *     분석 상태는 성공·실패·부분 성공·진행 중 네 갈래를 모두 내려줍니다.
-     *     부분 성공(PARTIAL)은 분석 완료로 세지 않으므로 응시율 분모에서 빠집니다.
+     *     부분 성공(PARTIAL)은 일부 개념만 문항이 생성된 경우이며 그 문항으로 응시할 수
+     *     있으므로 응시율 분모에 **포함**됩니다.
      *     네 값을 더하면 제출 인원과 같아 어느 열에도 잡히지 않고 사라지는 인원이 없습니다.
      *
      *     회차는 projectId와 roundNo로 특정합니다. round_no는 프로젝트 안에서만 유일합니다.
@@ -5667,7 +5804,7 @@ export interface paths {
      *     | `submittedCount` | long | 제출을 마친 교육생 수 |
      *     | `analysisTargetCount` | long | 분석 대상 교육생 수. `submittedCount`와 값이 같습니다 — 단계별 분모를 필드 이름으로도 드러내려고 따로 둡니다 |
      *     | `analysisSucceededCount` | long | 분석이 성공한 교육생 수 |
-     *     | `assessmentTargetCount` | long | 응시 대상 교육생 수. `analysisSucceededCount`와 값이 같습니다 |
+     *     | `assessmentTargetCount` | long | **응시율의 분모**. 분석이 끝나 문항이 만들어진 인원(`SUCCEEDED + PARTIAL`)이며 `analysisSucceededCount`와 다를 수 있습니다 |
      *     | `assessedCount` | long | 응시(INITIAL 완료)를 마친 교육생 수 |
      *
      *     **`classes[]`** — 반 한 행
@@ -5678,12 +5815,14 @@ export interface paths {
      *     | `className` | string | 반 이름 |
      *     | `targetTraineeCount` | long | 회차 수행 대상 교육생 수. 제출률의 분모 |
      *     | `submittedCount` | long | 소속 팀이 제출을 마친 교육생 수 |
-     *     | `analysisSucceededCount` | long | 분석이 성공한 교육생 수. 응시율의 분모이며 PARTIAL은 포함하지 않음 |
+     *     | `analysisSucceededCount` | long | 분석이 성공한 교육생 수 |
+     *     | `assessmentTargetCount` | long | 이 반의 **응시율 분모**. `analysisSucceededCount + analysisPartialCount` |
      *     | `analysisFailedCount` | long | 분석이 실패한 교육생 수(**인원** 기준) |
-     *     | `analysisPartialCount` | long | 분석이 부분 성공(PARTIAL)한 교육생 수. 응시율 분모에서 빠짐 |
+     *     | `analysisPartialCount` | long | 분석이 부분 성공(PARTIAL)한 교육생 수. 그 문항으로 응시할 수 있어 **응시율 분모에 포함** |
      *     | `analysisInProgressCount` | long | 분석이 대기·진행 중인 교육생 수 |
      *     | `assessedCount` | long | 최초 응시(INITIAL)를 완료한 교육생 수 |
-     *     | `notAttendedCount` | long | 미응시(NOT_ATTENDED) 교육생 수 |
+     *     | `notAttendedCount` | long | **검증 세션을 하지 못한** 교육생 수. 미응시 + 팀 미제출 + 분석 실패의 합이며 결과 탭의 `resultStatus = NOT_ATTENDED`와 같은 기준 |
+     *     | `noShowCount` | long | 그중 **응시할 수 있었는데 안 본** 인원. 독촉·면담 대상은 이 인원뿐이다 |
      *     | `sessionIncompleteCount` | long | 중단(SESSION_INCOMPLETE) 교육생 수 |
      *     | `invalidAttemptCount` | long | 무효 확정(CONFIRMED_INVALID) 교육생 수. 무효 확인 중(PENDING)은 미포함 |
      *     | `managerNames[]` | string[] | 활성 담당 매니저 이름 목록. 비어 있으면 화면의 '담당 없음'이며 대시보드 미배정 경보와 같은 조건 |
@@ -9822,6 +9961,34 @@ export interface components {
        */
       repositoryName: string
     }
+    /** @description 재생성 접수 결과 */
+    RegenerationResponse: {
+      /**
+       * Format: uuid
+       * @description 요청한 세션 ID
+       */
+      sessionId: string
+      /**
+       * Format: uuid
+       * @description 만들어진 실행 ID(`report_generation_run.generation_run_id`).
+       *     `report_generation_item.generation_run_id`로 진행 상황을 조회할 수 있다.
+       */
+      generationRunId: string
+    }
+    /** @description 강제 생성 접수 결과 */
+    ForceGenerationResponse: {
+      /**
+       * Format: uuid
+       * @description 요청한 세션 ID
+       */
+      sessionId: string
+      /**
+       * Format: uuid
+       * @description 만들어진 실행 ID(`report_generation_run.generation_run_id`).
+       *     `report_generation_item.generation_run_id`로 진행 상황을 조회할 수 있다.
+       */
+      generationRunId: string
+    }
     /** @description 팀 생성 요청 */
     CreateTeamRequest: {
       /**
@@ -10618,7 +10785,7 @@ export interface components {
       assessedCount: number
       /**
        * Format: int64
-       * @description 그 반의 전체 대상 인원
+       * @description 그 반의 응시 대상 인원. 합계와 같은 기준이라 미제출·분석 실패는 빠진다
        */
       targetTraineeCount: number
     }
@@ -10631,10 +10798,32 @@ export interface components {
       assessedCount: number
       /**
        * Format: int64
-       * @description 담당 반 전체 대상 인원
+       * @description **응시 대상** 인원이며 담당 반 총원이 아닙니다.
+       *
+       *     분석이 끝나 문항이 만들어진 사람(`SUCCEEDED`·`PARTIAL`)만 셉니다. 미제출·분석
+       *     실패로 응시할 문항 자체가 없었던 사람은 여기서 빠지고 `blockedCount`로 옵니다 —
+       *     분모에 남기면 아무리 독촉해도 줄지 않는 숫자가 됩니다.
+       *
+       *     반별 현황(`GET /projects/{projectId}/class-progress`)의 `assessmentTargetCount`와
+       *     **같은 기준**이라 두 화면의 응시율이 갈리지 않습니다.
+       *
+       *     `assessedCount + blockedCount`가 담당 반 총원이 아닐 수 있습니다 — 분석이 아직
+       *     진행 중인 사람은 어느 쪽도 아닙니다(종료된 회차에는 없습니다).
        */
       targetTraineeCount: number
-      /** @description 담당 반이 둘 이상일 때, 진행률이 가장 낮은 반. 담당 반이 하나뿐이면 null */
+      /**
+       * Format: int64
+       * @description 미제출·분석 실패로 **응시할 방법이 없었던** 인원이며 `targetTraineeCount`에서 빠진 수입니다.
+       *
+       *     화면이 `응시 200/220 (응시 불가 29)`처럼 함께 보여줄 값입니다. 0이면 전원이
+       *     응시 가능했다는 뜻이며 화면은 표시하지 않으면 됩니다.
+       *
+       *     `targetTraineeCount`가 0인데 이 값이 0보다 크면 **전원이 응시 자체를 못 한 회차**입니다.
+       *     `progress` 자체가 비는 것(= 아직 잴 것이 없다)과 다릅니다.
+       * @example 29
+       */
+      blockedCount: number
+      /** @description 담당 반이 둘 이상일 때, 진행률이 가장 낮은 반. 담당 반이 하나뿐이거나 응시 대상이 있는 반이 하나뿐이면 null */
       laggingClass: components['schemas']['LaggingClass'] | null
     }
     /**
@@ -11749,9 +11938,13 @@ export interface components {
       matchedRiskTypeCodes: string[] | null
       /**
        * @description 배지 한 칸에 넣을 **단일** 코드입니다. 정책 문서 §7의 2층 구조를 그대로 담습니다 —
-       *     1층 응시상태(`NOT_ATTENDED` 미응시 → `SESSION_INCOMPLETE` 응시 중단 →
+       *     1층 응시상태(`NOT_ATTENDED` 검증 세션 못 함 → `SESSION_INCOMPLETE` 응시 중단 →
        *     `INVALID_ATTEMPT` 무효 응시)가 있으면 2층 위험 유형(저기여 → 기여·이해도 괴리 →
        *     단계 하락 → 지속 저점)은 보지 않습니다. 걸린 것이 없으면 `null`(정상)입니다.
+       *
+       *     🆕 **`NOT_ATTENDED`가 팀 미제출·코드 분석 실패까지 덮습니다.** 종전에는 순수 미응시만
+       *     이 값이었고, 팀이 제출을 안 해 응시조차 못 한 학생은 **배지 없이 「정상」으로
+       *     보였습니다.** 원인은 `notAttendedReasonCode`에 있습니다.
        *
        *     **중도 이탈은 이 값에 들어오지 않습니다** — 계정 상태의 비활성화 사유로 이미
        *     드러나므로 화면은 `status=INACTIVE`일 때 그 사유·일자를 계정 칸에 그리면 됩니다.
@@ -11759,9 +11952,21 @@ export interface components {
        */
       roundPrimaryStatusCode: string | null
       /**
+       * @description 검증 세션을 **왜** 하지 못했는지이며 `roundPrimaryStatusCode`가 `NOT_ATTENDED`일 때만 값이 있습니다.
+       *
+       *     `NO_SHOW`(응시할 수 있었는데 안 봄) · `NOT_SUBMITTED`(팀 미제출로 문항이 안 만들어짐) ·
+       *     `ANALYSIS_FAILED`(코드 분석 실패로 문항이 안 만들어짐).
+       *
+       *     🔴 **독촉·면담 대상은 `NO_SHOW`뿐입니다.** 나머지 둘은 응시할 문항 자체가 없어
+       *     **볼 수 없었던** 경우이며, 특히 `ANALYSIS_FAILED`는 시스템 귀책입니다.
+       *     결과 탭(`GET /projects/{projectId}/evaluations`)의 `notAttendedReason`과 같은 값 집합입니다.
+       * @example NOT_SUBMITTED
+       */
+      notAttendedReasonCode: string | null
+      /**
        * Format: date-time
        * @description `roundPrimaryStatusCode`가 `NOT_ATTENDED`·`SESSION_INCOMPLETE`일 때만 값이 있는
-       *     시각입니다. 그 회차엔 우수 누적을 그릴 수 없으므로, 화면이 `우수 누적` 칸에 대신
+       *     시각입니다(미제출·분석 실패도 `NOT_ATTENDED`이므로 값이 옵니다). 그 회차엔 우수 누적을 그릴 수 없으므로, 화면이 `우수 누적` 칸에 대신
        *     `세션 중단 · 07-14`처럼 사유·일자를 그릴 때 이 값을 씁니다.
        */
       roundTerminalAt: string | null
@@ -13096,8 +13301,13 @@ export interface components {
       failedCount: number
       /**
        * Format: int64
-       * @description 응시 창이 닫히도록 끝내 안 본 인원(확정 미응시). 아직 창이 열려 있는 사람은 세지 않습니다.
-       * @example 2
+       * @description **검증 세션을 하지 못한 인원**이며 세 사유(`NO_SHOW`·`NOT_SUBMITTED`·`ANALYSIS_FAILED`)의
+       *     합입니다. 아직 창이 열려 있는 사람은 세지 않습니다.
+       *
+       *     🆕 종전에는 창이 닫히도록 안 본 인원만 셌습니다. 반별 현황
+       *     (`class-progress`)의 `notAttendedCount`와 **같은 기준**이라 두 화면의 숫자가 갈리지 않습니다.
+       *     사유별 내역이 필요하면 `trainees[].notAttendedReason`을 세면 됩니다.
+       * @example 31
        */
       notAttendedCount: number
       /**
@@ -13173,14 +13383,34 @@ export interface components {
        *     | `AVAILABLE` | 응시를 마쳐 결과가 있다 |
        *     | `IN_PROGRESS` | 아직 응시 중이거나 시작 전이다 |
        *     | `INCOMPLETE` | 끝내지 못한 채 응시 창이 닫혔다(중단) |
-       *     | `NOT_ATTENDED` | 창이 닫히도록 아예 안 봤다 |
+       *     | `NOT_ATTENDED` | **검증 세션을 하지 못했다.** 왜인지는 `notAttendedReason`에 있다 |
        *     | `INVALID` | 무효 확정된 수행이다 |
+       *
+       *     🆕 **`NOT_ATTENDED`의 범위가 넓어졌습니다.** 종전에는 창이 닫히도록 안 본 경우만
+       *     이 값이었고, **팀 미제출·코드 분석 실패는 값이 없어 `IN_PROGRESS`로 왔습니다** —
+       *     그래서 이미 종료된 회차에 「응시 중」인 사람이 남았습니다. 셋 다 검증 세션을 하지
+       *     못했다는 같은 사실이므로 한 값으로 묶고, **원인은 `notAttendedReason`으로 가릅니다.**
        *
        *     🔴 **`AVAILABLE`이 아니면 합격·불합격을 말하지 않습니다.** 아직 풀지 않은 문제는 도달
        *     단계가 0이라, 판정을 걸면 응시 중인 사람이 전부 불합격으로 잡힙니다.
        * @example AVAILABLE
        */
       resultStatus: string
+      /**
+       * @description 검증 세션을 **왜** 하지 못했는지이며 `resultStatus`가 `NOT_ATTENDED`일 때만 값이 있습니다.
+       *
+       *     | 값 | 뜻 | 매니저가 할 일 |
+       *     |---|---|---|
+       *     | `NO_SHOW` | 응시할 수 있었는데 창이 닫히도록 안 봤다 | 학생 독촉·면담 |
+       *     | `NOT_SUBMITTED` | 팀이 제출하지 않아 문항이 만들어지지 않았다 | 팀에 재제출 안내 |
+       *     | `ANALYSIS_FAILED` | 제출은 했으나 코드 분석이 실패했다 | 시스템 조치(학생 귀책 아님) |
+       *
+       *     🔴 **`NO_SHOW`만 학생 책임입니다.** 나머지 둘은 응시할 문항 자체가 없어 **볼 수 없었던**
+       *     경우이며, 특히 `ANALYSIS_FAILED`는 시스템 귀책이라 사유 없이 「미응시」로만 읽으면
+       *     학생에게 불리한 기록이 됩니다. 제출 현황 탭이 `BLOCKED`와 `MISSED`를 가르는 축과 같습니다.
+       * @example NOT_SUBMITTED
+       */
+      notAttendedReason: string | null
       /**
        * Format: int64
        * @description 코드에 있는데 2단 미달인 개념 수. 목록의 '막힘 N' 배지이며 `AVAILABLE`이 아니면 항상 0입니다.
@@ -13236,13 +13466,27 @@ export interface components {
       reportPublished: boolean
       /**
        * @description `AVAILABLE`(응시 완료) · `IN_PROGRESS`(응시 중) · `INCOMPLETE`(끝내지 못하고 창이 닫힘) ·
-       *     `NOT_ATTENDED`(아예 안 봄) · `INVALID`(무효 확정).
+       *     `NOT_ATTENDED`(검증 세션을 하지 못함) · `INVALID`(무효 확정).
+       *
+       *     🆕 `NOT_ATTENDED`는 **팀 미제출·코드 분석 실패까지 포함**합니다. 종전에는 그 둘이
+       *     `IN_PROGRESS`로 와서 종료된 회차에 「응시 중」인 사람이 남았습니다.
+       *     원인은 `notAttendedReason`으로 옵니다.
        *
        *     🔴 **`AVAILABLE`이 아니면 `retryTarget`이 항상 false입니다** — 아직 풀지 않은 문제를
        *     2단 미달로 판정하면 응시 중인 사람이 전부 다시 보기 대상이 됩니다.
        * @example AVAILABLE
        */
       resultStatus: string
+      /**
+       * @description 검증 세션을 **왜** 하지 못했는지이며 `resultStatus`가 `NOT_ATTENDED`일 때만 값이 있습니다.
+       *
+       *     `NO_SHOW`(볼 수 있었는데 안 봄 — 학생 책임) · `NOT_SUBMITTED`(팀 미제출로 문항 없음) ·
+       *     `ANALYSIS_FAILED`(코드 분석 실패 — 시스템 귀책).
+       *
+       *     🔴 뒤의 둘은 **볼 수 없었던** 경우라 학생 책임으로 읽으면 안 됩니다.
+       * @example NOT_SUBMITTED
+       */
+      notAttendedReason: string | null
       /** @description 개념별 결과이며 표시 순서 오름차순입니다. */
       concepts: components['schemas']['TraineeEvaluationConcept'][]
     }
@@ -13331,9 +13575,8 @@ export interface components {
     /**
      * @description 반 한 행.
      *
-     *     분석 상태는 네 갈래를 모두 내려줍니다. PARTIAL을 분석 완료로 세지 않기로 했으므로
-     *     완료·실패만으로는 제출 인원과 등식이 성립하지 않습니다. 네 값을 모두 보면
-     *     어느 열에도 잡히지 않고 사라지는 인원이 없습니다.
+     *     분석 상태는 네 갈래를 모두 내려줍니다. 완료·실패만으로는 제출 인원과 등식이 성립하지
+     *     않습니다. 네 값을 모두 보면 어느 열에도 잡히지 않고 사라지는 인원이 없습니다.
      *
      *     submittedCount = analysisSucceededCount + analysisFailedCount
      *                    + analysisPartialCount + analysisInProgressCount
@@ -13356,10 +13599,16 @@ export interface components {
       submittedCount: number
       /**
        * Format: int64
-       * @description 분석이 성공한 교육생 수이며 응시율의 분모입니다. PARTIAL은 포함하지 않습니다.
+       * @description 분석이 성공한 교육생 수입니다. 응시율의 분모는 이 값이 아니라 assessmentTargetCount입니다 — PARTIAL도 응시할 수 있어서입니다.
        * @example 23
        */
       analysisSucceededCount: number
+      /**
+       * Format: int64
+       * @description 이 반의 응시 대상 교육생 수이며 **응시율의 분모**입니다. `analysisSucceededCount + analysisPartialCount`입니다.
+       * @example 23
+       */
+      assessmentTargetCount: number
       /**
        * Format: int64
        * @description 분석이 실패한 교육생 수
@@ -13369,8 +13618,8 @@ export interface components {
       /**
        * Format: int64
        * @description 분석이 부분 성공(PARTIAL)한 교육생 수입니다.
-       *     분석 완료로 세지 않으므로 응시율 분모에서 빠집니다. 이 값이 0이 아닌데
-       *     응시율이 100%를 넘으면 그 인원이 응시를 마쳤다는 뜻입니다.
+       *     일부 개념만 문항이 생성된 경우이며 **그 문항으로 응시할 수 있으므로
+       *     `assessmentTargetCount`에 포함**됩니다.
        * @example 0
        */
       analysisPartialCount: number
@@ -13388,9 +13637,23 @@ export interface components {
       assessedCount: number
       /**
        * Format: int64
-       * @description 미응시(NOT_ATTENDED) 교육생 수
+       * @description **검증 세션을 하지 못한 교육생 수**이며 미응시 + 팀 미제출 + 코드 분석 실패의 합입니다.
+       *
+       *     🆕 종전에는 `NOT_ATTENDED` 코드만 셌습니다. 결과 탭(`GET /projects/{projectId}/evaluations`)의
+       *     `resultStatus = NOT_ATTENDED`와 **같은 기준**이라 두 화면의 숫자가 갈리지 않습니다.
+       * @example 31
        */
       notAttendedCount: number
+      /**
+       * Format: int64
+       * @description `notAttendedCount` 중 **응시할 수 있었는데 창이 닫히도록 안 본** 교육생 수입니다.
+       *
+       *     🔴 **독촉·면담 대상은 이 인원입니다.** 나머지(`notAttendedCount - noShowCount`)는
+       *     응시할 문항 자체가 만들어지지 않아 **볼 수 없었던** 사람이라 학생 책임이 아닙니다 —
+       *     팀 미제출은 재제출 안내가, 분석 실패는 시스템 조치가 할 일입니다.
+       * @example 2
+       */
+      noShowCount: number
       /**
        * Format: int64
        * @description 중단(SESSION_INCOMPLETE) 교육생 수
@@ -13462,9 +13725,13 @@ export interface components {
     /**
      * @description 회차 전체 합계.
      *
-     *     analysisTargetCount는 submittedCount와, assessmentTargetCount는 analysisSucceededCount와
-     *     값이 같습니다 — 단계별 분모를 필드 이름으로도 드러내기 위해 따로 둡니다.
-     *     제출률은 submittedCount / targetTraineeCount, 응시율은 assessedCount / analysisTargetCount 입니다.
+     *     analysisTargetCount는 submittedCount와 값이 같습니다 — 단계별 분모를 필드 이름으로도
+     *     드러내기 위해 따로 둡니다.
+     *
+     *     **assessmentTargetCount는 analysisSucceededCount와 다릅니다** — PARTIAL도 그 문항으로
+     *     응시할 수 있어 응시 대상에 넣기 때문입니다(`SUCCEEDED + PARTIAL`).
+     *
+     *     제출률은 submittedCount / targetTraineeCount, 응시율은 assessedCount / assessmentTargetCount 입니다.
      */
     ClassProgressSummary: {
       /**
@@ -13496,7 +13763,14 @@ export interface components {
       analysisSucceededCount: number
       /**
        * Format: int64
-       * @description 응시 대상 교육생 수이며 analysisSucceededCount와 같습니다.
+       * @description 응시 대상 교육생 수이며 **응시율의 분모**입니다.
+       *
+       *     분석이 끝나 문항이 만들어진 인원(`analysisSucceededCount + analysisPartialCount`)이라
+       *     `analysisSucceededCount`와 다를 수 있습니다. 미제출·분석 실패는 응시할 문항 자체가
+       *     없었으므로 빠집니다.
+       *
+       *     매니저 프로젝트 목록(`GET /projects`)의 `progress.targetTraineeCount`와 같은 기준이라
+       *     두 화면의 응시율이 갈리지 않습니다.
        * @example 223
        */
       assessmentTargetCount: number
@@ -14505,6 +14779,14 @@ export interface components {
        */
       projectId: string
       /**
+       * Format: uuid
+       * @description 그 회차가 속한 기수 ID.
+       *
+       *     한 매니저가 여러 기수에서 반을 맡을 수 있어(종료 기수를 되돌아보는 경우) 회차만으로는
+       *     어느 기수의 것인지 가릴 수 없다. 화면이 보고 있는 기수와 대조할 수 있도록 함께 싣는다.
+       */
+      cohortId: string
+      /**
        * @description 드롭다운 문구. `round_no`가 프로젝트 안에서만 유일해 **프로젝트명을 함께 붙인다** —
        *     안 붙이면 서로 다른 프로젝트의 1차가 목록에 똑같이 두 번 보인다.
        * @example 미니프로젝트 3차
@@ -15014,13 +15296,26 @@ export interface components {
       resultStatus: string
       /**
        * @description 배지 한 칸에 넣을 **단일** 코드이며 정책 문서 §7의 2층 구조를 그대로 담습니다 —
-       *     1층 응시상태(`NOT_ATTENDED` 미응시 → `SESSION_INCOMPLETE` 응시 중단 →
+       *     1층 응시상태(`NOT_ATTENDED` 검증 세션 못 함 → `SESSION_INCOMPLETE` 응시 중단 →
        *     `INVALID_ATTEMPT` 무효 응시)가 걸리면 2층 위험 유형(`LOW_PARTICIPATION` →
        *     `CONTRIBUTION_UNDERSTANDING_GAP` → `STAGE_DECLINE` → `PERSISTENT_LOW`)은 보지 않습니다.
        *     걸린 것이 없으면 null(정상)입니다.
+       *
+       *     🆕 **`NOT_ATTENDED`가 팀 미제출·코드 분석 실패까지 덮습니다.** 원인은
+       *     `notAttendedReasonCode`에 있습니다.
        * @example STAGE_DECLINE
        */
       primaryStatusCode: string | null
+      /**
+       * @description 검증 세션을 **왜** 하지 못했는지이며 `primaryStatusCode`가 `NOT_ATTENDED`일 때만 값이 있습니다.
+       *
+       *     `NO_SHOW`(응시할 수 있었는데 안 봄) · `NOT_SUBMITTED`(팀 미제출) ·
+       *     `ANALYSIS_FAILED`(코드 분석 실패 — 시스템 귀책).
+       *
+       *     🔴 **독촉·면담 대상은 `NO_SHOW`뿐입니다.** 결과 탭의 `notAttendedReason`과 같은 값 집합입니다.
+       * @example NOT_SUBMITTED
+       */
+      notAttendedReasonCode: string | null
       /**
        * @description 이번 회차에 걸린 위험 유형 **전부**입니다. 동시에 여러 개가 걸릴 수 있어
        *     `primaryStatusCode`와 따로 냅니다. 없으면 빈 배열입니다.
@@ -15034,7 +15329,7 @@ export interface components {
       /**
        * Format: date-time
        * @description `primaryStatusCode`가 `NOT_ATTENDED`·`SESSION_INCOMPLETE`일 때만 값이 있는 시각이며
-       *     화면의 `세션 중단 · 07-14`가 이 값입니다.
+       *     화면의 `세션 중단 · 07-14`가 이 값입니다(미제출·분석 실패도 `NOT_ATTENDED`이므로 값이 옵니다).
        */
       terminalAt: string | null
       /**
@@ -18076,6 +18371,145 @@ export interface operations {
       }
       /** @description ACCESS_DENIED — 이 역할로는 부를 수 없다 */
       403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  regenerateReport: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description 리포트를 다시 만들 검증세션 ID */
+        sessionId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 요청 접수. `generationRunId`로 추적 */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['RegenerationResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description 매니저 권한이 없음 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description REPORT_REGENERATION_TARGET_NOT_ELIGIBLE */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description REPORT_SESSION_HAS_NO_PROBLEM · REPORT_GENERATION_ALREADY_RUNNING */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description REPORT_MODEL_NOT_CONFIGURED */
+      500: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+    }
+  }
+  forceGenerateReport: {
+    parameters: {
+      query?: never
+      header?: never
+      path: {
+        /** @description 리포트를 만들 검증세션 ID */
+        sessionId: string
+      }
+      cookie?: never
+    }
+    requestBody?: never
+    responses: {
+      /** @description 요청 접수. `generationRunId`로 추적 */
+      202: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ForceGenerationResponse']
+        }
+      }
+      /** @description UNAUTHENTICATED — 토큰이 없거나 만료됐다 */
+      401: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description 매니저 권한이 없음 */
+      403: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description REPORT_SESSION_NOT_FOUND 그 세션이 없음 */
+      404: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /**
+       * @description REPORT_SESSION_HAS_NO_PROBLEM 채점된 문제가 없는 세션
+       *     · REPORT_GENERATION_ALREADY_RUNNING 이미 진행 중인 수동 실행이 있음
+       */
+      409: {
+        headers: {
+          [name: string]: unknown
+        }
+        content: {
+          'application/json': components['schemas']['ErrorResponse']
+        }
+      }
+      /** @description REPORT_MODEL_NOT_CONFIGURED 모델 설정 어긋남 */
+      500: {
         headers: {
           [name: string]: unknown
         }
@@ -24471,6 +24905,8 @@ export interface operations {
         riskType?: string
         /** @description 반 필터. 없으면 담당 반 전체 */
         classId?: string
+        /** @description 기수 ID. `assessmentRoundId`를 생략했을 때 「이번 회차」를 고르는 범위를 좁힌다. 생략하면 담당 기수 전부에서 고른다 */
+        cohort?: string
       }
       header?: never
       path?: never
@@ -24527,7 +24963,10 @@ export interface operations {
   }
   findInterviewRoundOptions: {
     parameters: {
-      query?: never
+      query?: {
+        /** @description 기수 ID. 생략하면 담당 기수 전부라 여러 기수의 회차가 섞인다 */
+        cohort?: string
+      }
       header?: never
       path?: never
       cookie?: never

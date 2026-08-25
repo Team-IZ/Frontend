@@ -7,6 +7,30 @@ import type { operations } from '@/api/schema'
     {operationId}_Body · _Query · _Path · _Header · _Response · _Item · _Errors
 */
 
+// POST /api/v0/reports/sessions/{sessionId}/regeneration — 세션 지정 리포트 재생성
+export type regenerateReport_Path = operations['regenerateReport']['parameters']['path']
+export type regenerateReport_Response =
+  operations['regenerateReport']['responses'][202]['content']['application/json']
+export type regenerateReport_Errors =
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'REPORT_REGENERATION_TARGET_NOT_ELIGIBLE'
+  | 'REPORT_SESSION_HAS_NO_PROBLEM'
+  | 'REPORT_GENERATION_ALREADY_RUNNING'
+  | 'REPORT_MODEL_NOT_CONFIGURED'
+
+// POST /api/v0/reports/sessions/{sessionId}/generation — [연동 시험] 세션 지정 리포트 강제 생성
+export type forceGenerateReport_Path = operations['forceGenerateReport']['parameters']['path']
+export type forceGenerateReport_Response =
+  operations['forceGenerateReport']['responses'][202]['content']['application/json']
+export type forceGenerateReport_Errors =
+  | 'UNAUTHENTICATED'
+  | 'ACCESS_DENIED'
+  | 'REPORT_SESSION_NOT_FOUND'
+  | 'REPORT_SESSION_HAS_NO_PROBLEM'
+  | 'REPORT_GENERATION_ALREADY_RUNNING'
+  | 'REPORT_MODEL_NOT_CONFIGURED'
+
 // GET /api/v0/reports — 내 리포트 전량 조회
 export type findMyReports_Response =
   operations['findMyReports']['responses'][200]['content']['application/json']

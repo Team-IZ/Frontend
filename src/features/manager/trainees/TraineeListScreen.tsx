@@ -141,6 +141,16 @@ function terminalSuffix(at: string | null) {
   return at ? ` · ${at.slice(5, 10)}` : ''
 }
 
+/*
+  🔴 33차(백엔드 R2) — 명단 → 상세 이동에 지금 보고 있는 기수를 함께 싣는다.
+  기수는 주소의 `?cohort=`에만 산다(`cohortScope.ts`) — 상세 경로(`/manager/trainees/:id`)엔
+  기수가 없어, 안 실으면 상세 화면의 `useManagerCohort`가 기수를 다시 골라야 하고
+  (`enrollments` 목록의 첫 항목 = 진행 중인 기수) 그 기수엔 이 교육생이 없을 수 있다
+  — 명단에서 분명히 보이던 교육생이 상세에서 "조회 권한 없음"으로 뜬다.
+*/
+const traineePath = (id: string, cohortId: string | undefined) =>
+  `/manager/trainees/${id}?cohort=${cohortId ?? ''}`
+
 export default function TraineeListScreen() {
   const navigate = useNavigate()
 
@@ -461,7 +471,7 @@ export default function TraineeListScreen() {
                         <TableRow
                           key={t.id}
                           className="hover:bg-surface-2 cursor-pointer"
-                          onClick={() => navigate(`/manager/trainees/${t.id}`)}
+                          onClick={() => navigate(traineePath(t.id, cohortId))}
                         >
                           <TableCell className="w-64">
                             <div className="flex items-center gap-3">
@@ -473,7 +483,7 @@ export default function TraineeListScreen() {
                               <div>
                                 <span className="flex items-center gap-1.5">
                                   <Link
-                                    to={`/manager/trainees/${t.id}`}
+                                    to={traineePath(t.id, cohortId)}
                                     aria-label={`${t.name} 상세 보기`}
                                     className="text-fg hover:text-primary font-semibold hover:underline"
                                     onClick={(e) => e.stopPropagation()}

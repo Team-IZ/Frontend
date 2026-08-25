@@ -29,7 +29,12 @@ import HeatmapSkeleton from './components/HeatmapSkeleton'
   · **회차를 바꾸면 팀은 뜻을 잃는다** — 팀은 프로젝트에 매인다. 이건 400도 아니라
     200 + 빈 결과가 와서, 안 비우면 화면이 「결과 없음」이라고 거짓말한다
 */
-const traineePath = (id: string) => `/manager/trainees/${id}`
+/*
+  🔴 33차(백엔드 R2, 실측 재현) — 기수를 함께 싣는다. 안 실으면 상세 화면이 기본
+  기수(진행 중인 기수)로 물러선다(다중 기수 매니저 계정으로 실측).
+*/
+const traineePath = (id: string, cohortId: string | undefined) =>
+  `/manager/trainees/${id}?cohort=${cohortId ?? ''}`
 
 export default function HeatmapScreen() {
   const { cohortId, cohortName, failed: cohortFailed, cohorts, selectCohort } = useManagerCohort()
@@ -176,6 +181,18 @@ export default function HeatmapScreen() {
     if (level === 'TRAINEE') setLevel('TEAM')
   }
 
+  /**
+   * 🔴 33차(백엔드 R4) — 기수를 바꾸는 순간 `round` 상태도 함께 비운다.
+   *
+   * 서버가 `cohort`로 회차 목록을 좁혀도(위 `useHeatmapRounds`), 화면이 기억하던
+   * `round`는 여전히 이전 기수의 회차 ID일 수 있다. 비우지 않으면 새 회차 목록이
+   * 도착하기 전 한 프레임 동안 `useHeatmap`이 그 값으로 조회를 내보낸다.
+   */
+  function changeCohort(next: string) {
+    setRound('')
+    selectCohort(next)
+  }
+
   /** 행을 눌러 한 단 내려간다 */
   function drill(rowId: string) {
     if (level === 'CLASS') {
@@ -197,7 +214,7 @@ export default function HeatmapScreen() {
       role="manager"
       cohort={cohortId ?? ''}
       cohorts={cohorts}
-      onCohortChange={selectCohort}
+      onCohortChange={changeCohort}
     >
       {/* 있는 것만 잇는다 — 스코프가 오기 전 `히트맵 › › ` 가 되지 않게(MG-03과 같은 건) */}
       <PageHeader breadcrumb={crumb.join(' › ')} title="히트맵" />
@@ -293,7 +310,7 @@ export default function HeatmapScreen() {
           <HeatmapTable
             view={view}
             onDrill={view.level === 'TRAINEE' ? undefined : drill}
-            traineePath={traineePath}
+            traineePath={(id) => traineePath(id, cohortId)}
           />
           {view.asOfAt && (
             <p className="mt-4 text-xs text-fg-subtle">

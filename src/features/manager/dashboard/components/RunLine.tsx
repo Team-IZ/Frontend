@@ -48,7 +48,14 @@ export default function RunLine({
           줄어들고, 그러면 `SelectValue`의 `line-clamp-1`이 프로젝트 이름을 잘라
           보여준다(사용자 지적). 줄어들지 못하게 고정한다. */}
       <SelectTrigger className="h-8 shrink-0 text-sm font-bold" aria-label="프로젝트">
-        <SelectValue />
+        {/*
+          🔴 33차 후속 — placeholder를 준다. 종료 기수는 `RUNNING` 프로젝트가
+          없어(`_/api/api.ts`) `projectId`가 `null`로 떨어지는데, 그때 트리거가
+          아무 글자 없이 화살표만 남아 있어(`value=''`) 눌러야 하는 컨트롤인지
+          알 수 없었다(사용자 실측 — 5기 대시보드 첫 진입). 프로젝트가 실제로
+          있는데 다 CLOSED라 안 골랐을 뿐이므로, 명시적으로 고르라고 말한다.
+        */}
+        <SelectValue placeholder="프로젝트 선택" />
       </SelectTrigger>
       {/*
         min-w-64 — 팝업 폭이 트리거 폭(`w-fit`, 지금 고른 프로젝트 이름 길이)에

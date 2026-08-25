@@ -371,6 +371,28 @@ const BY_CODE: Record<string, (ctx: Ctx) => ErrorCopy> = {
     tone: 'failed',
   }),
 
+  /*
+    🟢 **46차 회신 — `DATA_INTEGRITY_VIOLATION`에서 갈라져 나왔다.** 팀 이름·번호 중복이
+    DB 제약을 그대로 통과해 "데이터가 서로 맞지 않습니다"로 뭉쳐 나오던 것을, 서버가
+    무엇이 겹쳤는지로 나눠 주기 시작했다 — `DATA_INTEGRITY_VIOLATION`의 docblock이
+    말하는 "코드가 케이스를 안 가린다" 문제가 이 두 경우엔 이제 안 생긴다.
+  */
+  /** 팀 생성·이름 변경 — 이름은 매니저가 친 값이라 **고치라고** 말한다 */
+  TEAM_NAME_DUPLICATED: () => ({
+    title: '같은 이름의 팀이 이미 있습니다',
+    description: '그 반 안에서 팀 이름은 겹칠 수 없습니다 — 다른 이름을 지어 주세요.',
+    retry: false,
+    tone: 'failed',
+  }),
+
+  /** 팀 생성 — 번호는 서버가 매기는 값이라 사람이 고칠 게 없다. 다시 누르면 다음 번호를 받는다 */
+  TEAM_NUMBER_DUPLICATED: () => ({
+    title: '팀 번호가 겹쳤습니다',
+    description: '다시 시도해 주세요.',
+    retry: true,
+    tone: 'failed',
+  }),
+
   NO_MEMBERS_TO_ASSIGN: () => ({
     title: '배분할 인원이 없습니다',
     description: '미배정 인원이 없어 자동 배분이 할 일이 없습니다.',

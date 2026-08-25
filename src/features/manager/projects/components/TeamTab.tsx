@@ -12,6 +12,7 @@ import { ButtonGroup } from '@/components/ui/ButtonGroup'
 import { Badge } from '@/components/ui/Badge'
 import { Skeleton } from '@/components/ui/Skeleton'
 import TableSkeleton from '@/components/common/TableSkeleton'
+import StaleBlock from '@/components/common/StaleBlock'
 import { Spinner } from '@/components/ui/Spinner'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/Alert'
 import { Empty, EmptyHeader, EmptyTitle, EmptyDescription } from '@/components/ui/Empty'
@@ -345,69 +346,105 @@ export default function TeamTab({ projectId, cohortId }: Props) {
       */}
       {classSegment}
 
-      <div className="flex flex-wrap items-center gap-2">
-        <PhaseBadge phase={phase} locked={locked} />
-        <span className="text-fg-subtle text-xs">
-          {teams.length}팀 · 미배정 {unassignedCount}명
-        </span>
-
-        {/* 반이 정해져야 쓰기가 나간다(`writeClassId` 주석) — 모르면 액션 줄이 없다 */}
-        <div className="ml-auto flex gap-2">
-          {!locked && writeClassId && phase === 'NOT_STARTED' && (
-            <>
-              <Button variant="ghost" size="sm" onClick={() => setAddingTeam(true)}>
-                팀 추가
-              </Button>
-              <Button size="sm" onClick={() => setAutoAssignOpen(true)}>
-                자동 배분
-              </Button>
-            </>
-          )}
-          {!locked && writeClassId && (phase === 'FORMING' || phase === 'READY_TO_CONFIRM') && (
-            <>
-              <Button variant="ghost" size="sm" onClick={() => setAddingTeam(true)}>
-                팀 추가
-              </Button>
-              <Button
-                size="sm"
-                onClick={() =>
-                  confirmTeams.mutate({ path: { projectId }, query: { classId: writeClassId } })
-                }
-                disabled={phase !== 'READY_TO_CONFIRM' || confirmTeams.isPending}
-              >
-                {confirmTeams.isPending ? '확정 중…' : '팀 편성 완료'}
-              </Button>
-            </>
-          )}
-          {!locked && writeClassId && phase === 'CONFIRMED' && (
-            <Button
-              variant="ghost"
-              size="sm"
-              disabled={reopenTeams.isPending}
-              onClick={() =>
-                reopenTeams.mutate({ path: { projectId }, query: { classId: writeClassId } })
-              }
-            >
-              <LockOpen className="size-3.5" />
-              편성 다시 열기
-            </Button>
-          )}
-        </div>
-      </div>
-
-      {failure !== null &&
-        failureAction !== undefined &&
-        (() => {
-          const copy = errorCopy(failure, { subject: '팀', action: failureAction })
-          return (
-            <Alert variant="danger">
-              <AlertTitle>{copy.title}</AlertTitle>
-              <AlertDescription>{copy.description}</AlertDescription>
-            </Alert>
-          )
-        })()}
-
       {/*
+        🔴 **하드닝 실측(MG-08 3차)** — 반을 바꾸면 `classId`가 쿼리 키에 실려 새
+        키가 된다. 새 키는 캐시가 없어 `teamList.data`가 통째로 `undefined`가 되고,
+        위 스켈레톤 분기(`!teamList.data && !teamList.isError`)를 다시 타 방금 보던
+        반의 표까지 스켈레톤 6행으로 지웠다 — 규칙 E가 "표를 비우지 말라"고 하는
+        바로 그 증상인데, 원인이 필터가 아니라 **반 전환**이라 처음엔 안 걸렸다.
+
+        **반 전환 말고도 같은 증상이 있다** — 확정·다시 열기를 누르면 서버가 처리를
+        끝낼 때까지, 그리고 그 뒤 무효화된 조회가 새로 오기까지 표는 **버튼만 잠긴
+        채 아무 말도 안 했다**(사용자 지적). `ClassesTab`(오퍼레이터 반 관리)이
+        기수 전환에 쓰는 것과 같은 자리 — `isFetching`으로 보면 원인이 무엇이든
+        (반 전환·확정·다시 열기·팀 추가·해체) 한 조건으로 다 걸린다.
+
+        `useTeams`·`useSubmissionStatus`에 같은 프로젝트 안에서는 옛 값을 유지하는
+        `placeholderData`를 달아 두었다(`_/api/api.ts`) — 그래서 여기서는 `data`가
+        옛 값으로 계속 있고, `isFetching`으로 "그 사실을 숨기지 않는다."
+      */}
+      {/*
+        ⚠ **`gap-4`는 `StaleBlock`이 아니라 안쪽 래퍼에 둔다.** `StaleBlock`의
+        `className`은 자신의 바깥 `relative` 래퍼에 붙고, 실제 children은 그
+        안쪽의 `transition-opacity` div 하나에만 담긴다 — 거기엔 레이아웃 클래스가
+        없다. 여기 바로 `flex flex-col gap-4`를 줬더니 배지 줄 아래로 표까지 전부
+        간격이 사라졌다(실측 · 사용자 지적).
+      */}
+      <StaleBlock
+        stale={
+          (teamList.isFetching && teamList.data !== undefined) ||
+          (submission.isFetching && submission.data !== undefined) ||
+          createTeam.isPending ||
+          confirmTeams.isPending ||
+          reopenTeams.isPending ||
+          disbandTeam.isPending
+        }
+        label="반영하는 중"
+      >
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <PhaseBadge phase={phase} locked={locked} />
+            <span className="text-fg-subtle text-xs">
+              {teams.length}팀 · 미배정 {unassignedCount}명
+            </span>
+
+            {/* 반이 정해져야 쓰기가 나간다(`writeClassId` 주석) — 모르면 액션 줄이 없다 */}
+            <div className="ml-auto flex gap-2">
+              {!locked && writeClassId && phase === 'NOT_STARTED' && (
+                <>
+                  <Button variant="ghost" size="sm" onClick={() => setAddingTeam(true)}>
+                    팀 추가
+                  </Button>
+                  <Button size="sm" onClick={() => setAutoAssignOpen(true)}>
+                    자동 배분
+                  </Button>
+                </>
+              )}
+              {!locked && writeClassId && (phase === 'FORMING' || phase === 'READY_TO_CONFIRM') && (
+                <>
+                  <Button variant="ghost" size="sm" onClick={() => setAddingTeam(true)}>
+                    팀 추가
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() =>
+                      confirmTeams.mutate({ path: { projectId }, query: { classId: writeClassId } })
+                    }
+                    disabled={phase !== 'READY_TO_CONFIRM' || confirmTeams.isPending}
+                  >
+                    {confirmTeams.isPending ? '확정 중…' : '팀 편성 완료'}
+                  </Button>
+                </>
+              )}
+              {!locked && writeClassId && phase === 'CONFIRMED' && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={reopenTeams.isPending}
+                  onClick={() =>
+                    reopenTeams.mutate({ path: { projectId }, query: { classId: writeClassId } })
+                  }
+                >
+                  <LockOpen className="size-3.5" />
+                  {reopenTeams.isPending ? '여는 중…' : '편성 다시 열기'}
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {failure !== null &&
+            failureAction !== undefined &&
+            (() => {
+              const copy = errorCopy(failure, { subject: '팀', action: failureAction })
+              return (
+                <Alert variant="danger">
+                  <AlertTitle>{copy.title}</AlertTitle>
+                  <AlertDescription>{copy.description}</AlertDescription>
+                </Alert>
+              )
+            })()}
+
+          {/*
         🔴 **제출이 이미 들어왔으면 다른 말을 한다**(하드닝 실측 · 32차).
 
         원래 문구는 「확정하면 학생들이 코드를 제출할 수 있게 되고」 · 「제출이
@@ -416,105 +453,110 @@ export default function TeamTab({ projectId, cohortId }: Props) {
         「되돌려도 된다」고 읽혀 위험하다 — 되돌리면 이미 낸 팀이 어떻게 되는지를
         화면이 모른다.
       */}
-      {stageKnown && !locked && phase === 'READY_TO_CONFIRM' && (
-        <Alert variant="warning">
-          <AlertTriangle />
-          {/* 이 자리는 `stageKnown`을 지나왔으므로 제출 팀 수도 이미 왔다(같은 응답이다) */}
-          {(submittedTeamCount ?? 0) > 0 ? (
-            <>
-              <AlertTitle>확정 전인데 이미 {submittedTeamCount}팀이 제출했습니다</AlertTitle>
-              <AlertDescription>
-                편성을 바꾸면 낸 코드와 팀이 어긋날 수 있습니다. 확정만 하고 팀은 건드리지 마세요.
-              </AlertDescription>
-            </>
-          ) : (
-            <>
-              <AlertTitle>확정하면 학생들이 코드를 제출할 수 있게 되고, 팀은 잠깁니다</AlertTitle>
-              <AlertDescription>
-                제출이 시작되기 전까지는 `편성 다시 열기`로 되돌릴 수 있습니다.
-              </AlertDescription>
-            </>
+          {stageKnown && !locked && phase === 'READY_TO_CONFIRM' && (
+            <Alert variant="warning">
+              <AlertTriangle />
+              {/* 이 자리는 `stageKnown`을 지나왔으므로 제출 팀 수도 이미 왔다(같은 응답이다) */}
+              {(submittedTeamCount ?? 0) > 0 ? (
+                <>
+                  <AlertTitle>확정 전인데 이미 {submittedTeamCount}팀이 제출했습니다</AlertTitle>
+                  <AlertDescription>
+                    편성을 바꾸면 낸 코드와 팀이 어긋날 수 있습니다. 확정만 하고 팀은 건드리지
+                    마세요.
+                  </AlertDescription>
+                </>
+              ) : (
+                <>
+                  <AlertTitle>
+                    확정하면 학생들이 코드를 제출할 수 있게 되고, 팀은 잠깁니다
+                  </AlertTitle>
+                  <AlertDescription>
+                    제출이 시작되기 전까지는 `편성 다시 열기`로 되돌릴 수 있습니다.
+                  </AlertDescription>
+                </>
+              )}
+            </Alert>
           )}
-        </Alert>
-      )}
 
-      {stageKnown && !locked && unassignedCount > 0 && phase !== 'NOT_STARTED' && (
-        <Alert variant="warning">
-          <AlertTriangle />
-          <AlertTitle>미배정 {unassignedCount}명이 남아 있어 제출이 열리지 않습니다</AlertTitle>
-          <AlertDescription>
-            {unassignedMembers.map((p) => p.name).join(', ')} — 팀을 눌러 편집하면 여기서 배정할 수
-            있습니다.
-          </AlertDescription>
-        </Alert>
-      )}
+          {stageKnown && !locked && unassignedCount > 0 && phase !== 'NOT_STARTED' && (
+            <Alert variant="warning">
+              <AlertTriangle />
+              <AlertTitle>미배정 {unassignedCount}명이 남아 있어 제출이 열리지 않습니다</AlertTitle>
+              <AlertDescription>
+                {unassignedMembers.map((p) => p.name).join(', ')} — 팀을 눌러 편집하면 여기서 배정할
+                수 있습니다.
+              </AlertDescription>
+            </Alert>
+          )}
 
-      {teams.length === 0 ? (
-        <Empty>
-          <EmptyHeader>
-            <EmptyTitle>아직 팀이 없어요</EmptyTitle>
-            {/* 지금 편성할 수 있을 때만 그 길을 말한다 — 잠긴 회차에 권하지 않는다(규칙 F) */}
-            <EmptyDescription>
-              {canEdit
-                ? '자동 배분을 누르거나 팀을 하나씩 추가하세요.'
-                : '이 프로젝트는 팀이 편성되지 않은 채로 잠겼습니다.'}
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-20">반</TableHead>
-              <TableHead className="w-20">팀</TableHead>
-              <TableHead className="w-16">인원</TableHead>
-              <TableHead>팀원</TableHead>
-              <TableHead className="w-24">상태</TableHead>
-              <TableHead className="w-20" />
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {teams.map((team) => (
-              <TableRow key={team.teamId}>
-                <TableCell className="text-fg-muted text-xs">{team.className ?? '—'}</TableCell>
-                <TableCell className="font-bold">{team.name}</TableCell>
-                <TableCell className="text-fg-muted text-xs">{team.memberCount}명</TableCell>
-                <TableCell className="text-fg-muted text-xs">
-                  {team.members.map((m) => m.name).join(' · ') || '—'}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={team.status === 'CONFIRMED' ? 'info' : 'neutral'}>
-                    {team.status === 'CONFIRMED' ? '확정됨' : '편성 중'}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={!canEdit}
-                      onClick={() => setEditTeamId(team.teamId)}
-                    >
-                      편집
-                    </Button>
-                    {/* 되돌릴 수 없는 것이 가장 오른쪽·빨강(화면 규칙 C) */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      disabled={!canEdit || disbandTeam.isPending}
-                      className="text-danger hover:bg-danger-soft p-1.5"
-                      aria-label={`${team.className ?? ''} ${team.name} 해체`}
-                      onClick={() => setDisbandTarget(team)}
-                    >
-                      <Trash2 className="size-3.5" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
+          {teams.length === 0 ? (
+            <Empty>
+              <EmptyHeader>
+                <EmptyTitle>아직 팀이 없어요</EmptyTitle>
+                {/* 지금 편성할 수 있을 때만 그 길을 말한다 — 잠긴 회차에 권하지 않는다(규칙 F) */}
+                <EmptyDescription>
+                  {canEdit
+                    ? '자동 배분을 누르거나 팀을 하나씩 추가하세요.'
+                    : '이 프로젝트는 팀이 편성되지 않은 채로 잠겼습니다.'}
+                </EmptyDescription>
+              </EmptyHeader>
+            </Empty>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-20">반</TableHead>
+                  <TableHead className="w-20">팀</TableHead>
+                  <TableHead className="w-16">인원</TableHead>
+                  <TableHead>팀원</TableHead>
+                  <TableHead className="w-24">상태</TableHead>
+                  <TableHead className="w-20" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {teams.map((team) => (
+                  <TableRow key={team.teamId}>
+                    <TableCell className="text-fg-muted text-xs">{team.className ?? '—'}</TableCell>
+                    <TableCell className="font-bold">{team.name}</TableCell>
+                    <TableCell className="text-fg-muted text-xs">{team.memberCount}명</TableCell>
+                    <TableCell className="text-fg-muted text-xs">
+                      {team.members.map((m) => m.name).join(' · ') || '—'}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={team.status === 'CONFIRMED' ? 'info' : 'neutral'}>
+                        {team.status === 'CONFIRMED' ? '확정됨' : '편성 중'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex justify-end gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={!canEdit}
+                          onClick={() => setEditTeamId(team.teamId)}
+                        >
+                          편집
+                        </Button>
+                        {/* 되돌릴 수 없는 것이 가장 오른쪽·빨강(화면 규칙 C) */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          disabled={!canEdit || disbandTeam.isPending}
+                          className="text-danger hover:bg-danger-soft p-1.5"
+                          aria-label={`${team.className ?? ''} ${team.name} 해체`}
+                          onClick={() => setDisbandTarget(team)}
+                        >
+                          <Trash2 className="size-3.5" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </div>
+      </StaleBlock>
 
       {editTeam && (
         <TeamEditDialog
@@ -565,6 +607,24 @@ export default function TeamTab({ projectId, cohortId }: Props) {
                 : '팀원이 없어 되돌릴 것 없이 해체됩니다.'}
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {/*
+            🔴 **하드닝 실측(MG-08 3차)** — 실패해도 이 모달은 안 닫히는데(규칙 H),
+            실패 사유는 탭 본문의 공용 배너(위 `failure`)에만 떴다. 그 배너는 이
+            모달의 오버레이 **뒤에** 있어 안 보인다 — "제출이 있어 해체할 수 없다"고
+            서버가 답해도 사용자에게는 [해체]가 다시 눌릴 수 있는 빈 모달로만 보였다.
+            같은 실패를 모달 안에도 보여준다(`TeamEditDialog`·`TeamAutoAssignDialog`와
+            같은 자리).
+          */}
+          {disbandTeam.error !== null &&
+            (() => {
+              const copy = errorCopy(disbandTeam.error, { subject: '팀', action: '해체' })
+              return (
+                <Alert variant="danger">
+                  <AlertTitle>{copy.title}</AlertTitle>
+                  <AlertDescription>{copy.description}</AlertDescription>
+                </Alert>
+              )
+            })()}
           <AlertDialogFooter>
             <AlertDialogCancel disabled={disbandTeam.isPending}>취소</AlertDialogCancel>
             <AlertDialogAction

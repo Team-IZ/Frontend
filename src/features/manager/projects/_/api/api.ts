@@ -1,18 +1,20 @@
+import { useQueryClient } from '@tanstack/react-query'
 import {
   useFindProject,
   useFindTeams,
   useFindProjectClassProgress,
 } from '@/api/projectExecution/useProjectExecutionQueries'
 import { useFindProjectSubmissionStatus } from '@/api/submission/useSubmissionQueries'
+import { submissionKeys } from '@/api/submission/submissionKeys'
 import {
-  useCreateTeam,
+  useCreateTeam as useCreateTeamBase,
   useUpdateTeam,
-  useAssignTeamMember,
-  useRemoveTeamMember,
-  useAutoAssignTeams,
-  useConfirmTeams,
-  useReopenTeams,
-  useDisbandTeam,
+  useAssignTeamMember as useAssignTeamMemberBase,
+  useRemoveTeamMember as useRemoveTeamMemberBase,
+  useAutoAssignTeams as useAutoAssignTeamsBase,
+  useConfirmTeams as useConfirmTeamsBase,
+  useReopenTeams as useReopenTeamsBase,
+  useDisbandTeam as useDisbandTeamBase,
 } from '@/api/projectExecution/useProjectExecutionMutations'
 import {
   useFindProjectEvaluationSummary,
@@ -28,15 +30,41 @@ import {
 
   **`classId`도 안 보낸다.** 생략하면 담당 반 전체이며 그것이 이 화면의 범위다.
 
-  ⚠ 쓰기는 전부 생성 훅을 그대로 쓴다 — `projectExecutionKeys.all`을 무효화하도록
-  이미 만들어져 있어 화면이 `reload`를 들고 다닐 필요가 없다(목은 `useAsync`의
-  `reload`를 탭마다 내려보냈다).
+  ⚠ 팀을 바꾸는 쓰기 8개는 **아래에서 감싼다.** 생성 훅은 `projectExecutionKeys.all`만
+  지운다 — `teamFormationStage`/`locked`(상단 배지·버튼을 켜는 값)는 `submission`
+  도메인 조회라 그 무효화에 안 걸린다. 실측: G반을 확정해도 팀 행은 "확정됨"으로
+  바뀌는데 배지·버튼은 새로고침 전까지 이전 상태에 멈춰 있었다. 그래서 여기서
+  `submissionKeys.all`도 같이 지운다(`useSubmitGithub`와 같은 자리 — 도메인 경계를
+  넘는 무효화는 그 조회를 쓰는 화면이 진다).
 
   🔴 **서버에 없는 액션 셋** — 팀 삭제 · 다시 보기 활성화/취소 · 리포트 발행.
   목에는 있었다(`deleteTeam`·`sendRetry`·`cancelRetry`·`publishReport`). 32차
   요청서로 올리고, 그때까지 화면은 그 버튼을 잠근다. 여기서 흉내 내지 않는다 —
   화면이 지어낸 성공은 새로 고치면 사라진다.
 */
+
+function useInvalidateSubmissionStatus() {
+  const queryClient = useQueryClient()
+  return () => queryClient.invalidateQueries({ queryKey: submissionKeys.all })
+}
+
+/*
+  **`classId`만 바뀌면 옛 값을 유지한다** — 반 전환은 "같은 프로젝트 안의 다른 조각"이라
+  `lib/listQuery.ts`의 필터·페이지 쪽 규칙과 같은 자리다(하드닝 3차 실측). 반을 바꾸면
+  `classId`가 쿼리 키에 실려 새 키가 되고, 새 키는 캐시가 없어 `data`가 통째로
+  `undefined`가 된다 — `TeamTab`은 그것을 "아직 아무것도 안 왔다"로 읽어 방금 보던
+  반의 표까지 스켈레톤 6행으로 지웠다.
+
+  **`projectId`가 바뀌면 버린다.** 다른 프로젝트의 팀을 이 프로젝트 것처럼 보여주면
+  사고다 — `lib/listQuery.ts`가 "다른 것(상세의 id)은 유지 안 한다"고 가른 바로 그
+  경계다. 쿼리 키의 세 번째 자리가 `path`(`{ projectId }`)라 거기서 판정한다.
+*/
+function sameProjectPlaceholder<TData>(projectId: string) {
+  return (data: TData | undefined, query: { queryKey: readonly unknown[] } | undefined) => {
+    const prevPath = query?.queryKey[2] as { projectId?: string } | null | undefined
+    return prevPath?.projectId === projectId ? data : undefined
+  }
+}
 
 export function useProject(projectId: string) {
   return useFindProject({ path: { projectId } }, { enabled: !!projectId })
@@ -55,14 +83,14 @@ export function useProject(projectId: string) {
 export function useTeams(projectId: string, classId?: string) {
   return useFindTeams(
     { path: { projectId }, query: classId ? { classId } : undefined },
-    { enabled: !!projectId },
+    { enabled: !!projectId, placeholderData: sameProjectPlaceholder(projectId) },
   )
 }
 
 export function useSubmissionStatus(projectId: string, classId?: string) {
   return useFindProjectSubmissionStatus(
     { path: { projectId }, query: classId ? { classId } : undefined },
-    { enabled: !!projectId },
+    { enabled: !!projectId, placeholderData: sameProjectPlaceholder(projectId) },
   )
 }
 
@@ -82,13 +110,81 @@ export function useTraineeEvaluation(projectId: string, userId: string | null) {
   )
 }
 
-export {
-  useCreateTeam,
-  useUpdateTeam,
-  useAssignTeamMember,
-  useRemoveTeamMember,
-  useAutoAssignTeams,
-  useConfirmTeams,
-  useReopenTeams,
-  useDisbandTeam,
+export { useUpdateTeam }
+
+export function useCreateTeam(options?: Parameters<typeof useCreateTeamBase>[0]) {
+  const invalidateSubmission = useInvalidateSubmissionStatus()
+  return useCreateTeamBase({
+    ...options,
+    onSuccess: (...args) => {
+      invalidateSubmission()
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+export function useAssignTeamMember(options?: Parameters<typeof useAssignTeamMemberBase>[0]) {
+  const invalidateSubmission = useInvalidateSubmissionStatus()
+  return useAssignTeamMemberBase({
+    ...options,
+    onSuccess: (...args) => {
+      invalidateSubmission()
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+export function useRemoveTeamMember(options?: Parameters<typeof useRemoveTeamMemberBase>[0]) {
+  const invalidateSubmission = useInvalidateSubmissionStatus()
+  return useRemoveTeamMemberBase({
+    ...options,
+    onSuccess: (...args) => {
+      invalidateSubmission()
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+export function useAutoAssignTeams(options?: Parameters<typeof useAutoAssignTeamsBase>[0]) {
+  const invalidateSubmission = useInvalidateSubmissionStatus()
+  return useAutoAssignTeamsBase({
+    ...options,
+    onSuccess: (...args) => {
+      invalidateSubmission()
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+export function useConfirmTeams(options?: Parameters<typeof useConfirmTeamsBase>[0]) {
+  const invalidateSubmission = useInvalidateSubmissionStatus()
+  return useConfirmTeamsBase({
+    ...options,
+    onSuccess: (...args) => {
+      invalidateSubmission()
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+export function useReopenTeams(options?: Parameters<typeof useReopenTeamsBase>[0]) {
+  const invalidateSubmission = useInvalidateSubmissionStatus()
+  return useReopenTeamsBase({
+    ...options,
+    onSuccess: (...args) => {
+      invalidateSubmission()
+      options?.onSuccess?.(...args)
+    },
+  })
+}
+
+export function useDisbandTeam(options?: Parameters<typeof useDisbandTeamBase>[0]) {
+  const invalidateSubmission = useInvalidateSubmissionStatus()
+  return useDisbandTeamBase({
+    ...options,
+    onSuccess: (...args) => {
+      invalidateSubmission()
+      options?.onSuccess?.(...args)
+    },
+  })
 }

@@ -14,6 +14,9 @@ import type {
   createTeam_Path,
   createTeam_Body,
   createTeam_Response,
+  disbandClassTeams_Path,
+  disbandClassTeams_Query,
+  disbandClassTeams_Response,
   assignTeamMember_Path,
   assignTeamMember_Body,
   assignTeamMember_Response,
@@ -110,6 +113,17 @@ export const createTeam = (
     izClient.POST('/api/v0/projects/{projectId}/teams', {
       params: { path: params.path },
       body: params.body,
+      signal: params.signal,
+    }) as never,
+  )
+
+/** 반 통째로 해체 — `DELETE /api/v0/projects/{projectId}/teams` */
+export const disbandClassTeams = (
+  params: { path: disbandClassTeams_Path; query: disbandClassTeams_Query } & RequestOptions,
+) =>
+  unwrap<disbandClassTeams_Response>(
+    izClient.DELETE('/api/v0/projects/{projectId}/teams', {
+      params: { path: params.path, query: params.query },
       signal: params.signal,
     }) as never,
   )

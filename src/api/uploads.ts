@@ -28,13 +28,6 @@ type RegisterCurriculumResponse =
 type RegisterCurriculumVersionResponse =
   operations['registerCurriculumVersion']['responses'][201]['content']['application/json']
 /*
-  **`202` — 접수만 하고 분석은 비동기로 돌린다.** 한동안 스펙이 `200`으로 적혀 있었는데
-  서버는 그때도 202를 보내고 있었고, 23차 요청으로 표기가 사실에 맞춰졌다.
-  선언이 바뀌면 여기서 컴파일이 깨지므로 스펙과 어긋난 채로 굳지 않는다.
-*/
-type SubmitZipResponse = operations['submitZip']['responses'][202]['content']['application/json']
-
-/*
   **손으로 쓰는 계약 — multipart 업로드.**
 
   `openapi-fetch`는 본문을 JSON으로 직렬화하는 것을 전제한다. 파일 업로드는 `FormData`를
@@ -170,43 +163,3 @@ export const registerCurriculumVersion = async (
     }) as never,
   )
 }
-
-/*
-  ─── 교육생 코드 제출 (ZIP) ──────────────────────────────────────────────────
-*/
-
-/**
- * ZIP 업로드 제출·재제출 — `POST /api/v0/submissions/zip`
- *
- * **`Idempotency-Key`가 필수다**(생략하면 400). 지금까지 우리가 안 쓰던 헤더인데,
- * 이 오퍼레이션이 처음으로 요구한다 — 서버가 대신 만들어 주지 않는다.
- *
- * ```
- * 재시도(타임아웃·5xx·네트워크)  →  같은 키   →  서버가 최초 결과를 돌려준다
- * 사용자가 다시 제출              →  새 키     →  별개의 제출
- * ```
- *
- * **키를 여기서 만들지 않는다.** 화면이 제출 버튼을 누른 순간 만들어 그 제출이 끝날
- * 때까지 들고 있어야 재시도가 같은 키를 쓴다 — 이 함수 안에서 만들면 호출마다 새 키가
- * 되어 멱등이 성립하지 않는다(스펙이 명시한 실패 방식이다).
- *
- * **접수만 하고 끝난다.** 서버가 보는 것은 크기·압축 형식뿐이고 `EMPTY_CODE` 같은
- * 내용 판정은 분석 단계에서 `failureCode`로 온다.
- */
-export const submitZip = (
-  params: {
-    query: { assessmentRoundId: string }
-    idempotencyKey: string
-    file: File
-  } & RequestOptions,
-) =>
-  unwrap<SubmitZipResponse>(
-    izClient.POST('/api/v0/submissions/zip', {
-      params: {
-        query: params.query,
-        header: { 'Idempotency-Key': params.idempotencyKey },
-      },
-      body: csvBody(params.file) as never,
-      signal: params.signal,
-    }) as never,
-  )

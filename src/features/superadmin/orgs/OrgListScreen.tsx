@@ -154,7 +154,10 @@ export default function OrgListScreen() {
   const summary = useFindPlatformSummary()
 
   const result = data ? toPage<findOrganizations_Item>(data) : null
-  const rows = result?.items ?? []
+  // ponytail: 교육생 수가 가장 많은 기관이 눈에 먼저 띄도록 현재 쪽 안에서만 조용히 재정렬한다.
+  // 서버 정렬(name/createdAt)은 그대로 두고 표시 순서만 바꾼다 — 페이지 경계를 넘는 전역
+  // 정렬은 아니다(교육생 수는 배치 집계라 전역 정렬이 안 되는 이유는 위 머리 주석 참고).
+  const rows = [...(result?.items ?? [])].sort((a, b) => b.traineeCount - a.traineeCount)
   const total = result?.total ?? 0
   const totalPages = data?.totalPages ?? 1
 

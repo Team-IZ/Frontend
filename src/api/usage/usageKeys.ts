@@ -19,6 +19,6 @@ export const usageKeys = {
     [...usageKeys.all, 'findOrganizationOperationSettings', params.path ?? null] as const,
   findUsage: (params: { path: findUsage_Path; query?: findUsage_Query }) =>
     [...usageKeys.all, 'findUsage', params.path ?? null, params.query ?? null] as const,
-  findCohortCost: (params: { path: findCohortCost_Path; query?: findCohortCost_Query }) =>
+  findCohortCost: (params: { path: findCohortCost_Path; query: findCohortCost_Query }) =>
     [...usageKeys.all, 'findCohortCost', params.path ?? null, params.query ?? null] as const,
 }

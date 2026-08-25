@@ -915,14 +915,26 @@ export interface paths {
      *
      *     **요청**
      *     - projectId (경로): 대상 프로젝트 ID
+     *     - classId (필수): 팀을 만들 반
      *     - name (필수): 팀 이름
      *
      *     **응답 (201)**
-     *     - 생성된 팀 정보(teamId · teamNumber · name · status)
+     *     - 생성된 팀 정보(teamId · classId · className · teamNumber · name · status)
      *
-     *     ⚠️ 팀이 속할 반(class)은 요청에 없다 — 로그인한 매니저가 이 프로젝트의 기수에서
-     *     담당하는 반을 서버가 역산한다. 매니저가 한 기수에 반을 하나만 담당한다는 전제라,
-     *     여러 반을 담당하면 400 MANAGER_CLASSROOM_AMBIGUOUS로 막힌다.
+     *     ## 🔴 반은 요청이 정한다 (2026-08-25)
+     *
+     *     종전에는 `classId`가 요청에 없었고, 로그인한 매니저가 이 기수에서 담당하는 반을 서버가
+     *     **역산**했다. "매니저는 기수당 반 하나만 담당한다"는 전제였는데 사실이 아니었고
+     *     (이도윤 = 7기 B·D반), 반이 둘 이상이면 400 `MANAGER_CLASSROOM_AMBIGUOUS`로 막혔다.
+     *     **그 폴백과 에러 코드를 삭제했다.**
+     *
+     *     반 목록은 `GET /cohorts/{cohortId}/classrooms`가 준다 — 매니저에게는 담당 반만 내려간다.
+     *
+     *     ## 🔴 팀 번호가 반 안에서 매겨진다
+     *
+     *     종전 구현은 `프로젝트 전체 팀 수 + 1`이었다. DB 제약이
+     *     `uq_team_project_id_class_id_team_number`(프로젝트 · 반 · 번호)라 반 내 유일이 정본이고,
+     *     시드도 반마다 1부터다. 이제 그 반의 팀 수 + 1이다.
      */
     post: operations['createTeam']
     delete?: never
@@ -971,9 +983,18 @@ export interface paths {
     put?: never
     /**
      * 팀 편성 확정 | ✅ 사용 가능
-     * @description 전원 배정 상태에서 편성을 확정한다(정의 문서 ③→④). 미배정 인원이 있으면 실패한다.
+     * @description **그 반의** 전원 배정 상태에서 편성을 확정한다(정의 문서 ③→④). 그 반에 미배정 인원이
+     *     있으면 실패한다.
+     *
+     *     **요청** — `classId`(쿼리, 필수)
      *
      *     **응답 (200)** — 본문 없음. 이후 학생이 코드를 제출할 수 있게 된다.
+     *
+     *     ## 🔴 반 단위다 (2026-08-25)
+     *
+     *     확정 대상도 `TEAMS_NOT_READY` 판정도 그 반만 본다. 종전에는 둘 다 프로젝트 전역이라
+     *     **다른 반에 미배정이 남아 있으면 내 반 확정이 막혔다** — 반마다 편성 진도가 다른 것이
+     *     정상인데 가장 늦은 반이 나머지를 전부 붙잡고 있었다.
      */
     post: operations['confirmTeams']
     delete?: never
@@ -993,13 +1014,26 @@ export interface paths {
     put?: never
     /**
      * 팀 자동 배분 실행 | ✅ 사용 가능
-     * @description 팀이 하나도 없을 때만 실행할 수 있다([자동 배분] 모달).
+     * @description **그 반에** 팀이 하나도 없을 때만 실행할 수 있다([자동 배분] 모달).
      *
      *     **요청**
+     *     - classId (필수): 배분할 반
      *     - teamSize (필수): 팀 하나의 목표 인원
      *     - skillBalanced (필수): true면 직전 회차 도달 단계 기준 실력 섞기, false면 무작위
      *
-     *     **응답 (200)** — 생성된 팀 목록
+     *     **응답 (200)** — 그 반에 생성된 팀 목록
+     *
+     *     ## 🔴 반 단위로 돈다 (2026-08-25)
+     *
+     *     | | 종전 | 지금 |
+     *     | --- | --- | --- |
+     *     | 배분 대상 | 프로젝트 전체 미배정 | **그 반의 미배정** |
+     *     | 실행 조건 | 프로젝트에 팀 0개 | **그 반에 팀 0개** |
+     *     | 생성 팀 수 | `ceil(전체인원 / teamSize)` | `ceil(반인원 / teamSize)` |
+     *
+     *     종전 동작으로는 7기에서 기수 전원 249명이 한 반의 팀 63개로 들어갔고, 다른 반 매니저가
+     *     먼저 팀을 만들면 내 반은 자동 배분을 영영 못 썼다(미프 5차가 그 상태였다 — J반에만
+     *     팀 6개가 있어 B·D반이 409였다).
      *
      *     실력 섞기는 직전 회차(같은 카테고리 바로 앞 순번)의 응시 기록이 있어야 동작한다.
      *     1차 프로젝트이거나 직전 회차에 응시 기록이 하나도 없으면 무작위로 조용히 대체된다 —
@@ -3733,7 +3767,8 @@ export interface paths {
     head?: never
     /**
      * 팀 편성 다시 열기 | ✅ 사용 가능
-     * @description 확정된 편성을 다시 편성 중 상태로 되돌린다([편성 다시 열기] 버튼).
+     * @description **그 반의** 확정된 편성을 다시 편성 중 상태로 되돌린다([편성 다시 열기] 버튼).
+     *     `classId`(쿼리)가 필수다.
      *
      *     ⚠️ 제출이 시작된 뒤에도 이 API는 지금 막지 않는다 — 그 판정에 필요한 Submission
      *     도메인이 아직 없다. 도메인이 생기면 제출 존재 시 이 API를 막는 조건이 추가된다.
@@ -6806,7 +6841,15 @@ export interface paths {
     }
     /**
      * [면담 목록] 면담 회차 옵션 조회 | ✅ 사용 가능
-     * @description 목록 화면의 **회차 드롭다운**을 채웁니다. 담당 기수의 회차를 프로젝트 순서대로 반환합니다.
+     * @description 목록 화면의 **회차 드롭다운**을 채웁니다. `cohort`가 가리키는 기수의 회차를
+     *     프로젝트 순서대로 반환합니다.
+     *
+     *     ### 🔴 `cohort`가 필수입니다 (2026-08-25)
+     *
+     *     종전에는 생략할 수 있었고, 생략하면 **담당 반이 속한 기수 전부**의 회차가 섞여 나왔습니다.
+     *     매니저가 여러 기수에서 반을 맡으면(이도윤 = 5·6·7기) 드롭다운에 13개 회차가 섞이고,
+     *     화면이 마지막을 기본으로 고르면 보고 있는 기수의 것이 아니라 히트맵·교육생 상세가
+     *     **에러 없이 빈 채로** 그려졌습니다. 그 폴백을 없앴습니다.
      *
      *     ### `PLANNED` 회차도 포함합니다
      *
@@ -9992,7 +10035,23 @@ export interface components {
     /** @description 팀 생성 요청 */
     CreateTeamRequest: {
       /**
-       * @description 팀 이름
+       * Format: uuid
+       * @description 팀을 만들 **반 ID**입니다. 팀은 반별로 짜므로 어느 반의 팀인지를 요청이 정합니다.
+       *
+       *     | 상황 | 응답 |
+       *     | --- | --- |
+       *     | 담당하지 않는 반 | 403 `CLASS_NOT_MANAGED` |
+       *     | 이 프로젝트의 기수에 없는 반 | 404 `CLASS_NOT_FOUND` |
+       *     | 값이 없음 | 400 `VALIDATION_FAILED` |
+       *
+       *     반 목록은 `GET /cohorts/{cohortId}/classrooms`가 줍니다 — 매니저에게는 담당 반만
+       *     내려가므로 그대로 드롭다운에 쓰면 됩니다. 담당 반이 하나뿐이면 선택 UI 없이
+       *     그 값을 실어 보내면 됩니다.
+       * @example d047bb3a-db7d-59e5-bd23-118340d6075a
+       */
+      classId: string
+      /**
+       * @description 팀 이름. 같은 반 안에서 유일해야 합니다
        * @example 3팀
        */
       name: string
@@ -10068,6 +10127,18 @@ export interface components {
     }
     /** @description 팀 자동 배분 요청 */
     AutoAssignTeamsRequest: {
+      /**
+       * Format: uuid
+       * @description 배분할 **반 ID**입니다. 이 반의 미배정 인원만 대상이고, 만들어지는 팀도 이 반의 팀입니다.
+       *
+       *     🔴 **생성 팀 수가 `ceil(그 반 인원 / teamSize)`입니다.** 종전에는 기수 전원이 대상이라
+       *     7기에서 한 반에 63팀이 만들어질 수 있었습니다. B반 25명 · `teamSize: 4`면 7팀입니다.
+       *
+       *     🔴 **"팀이 하나도 없다"는 조건도 이 반 기준입니다.** 종전에는 프로젝트 전역이라
+       *     다른 반에 팀이 있으면 내 반 자동 배분이 409로 막혔습니다.
+       * @example d047bb3a-db7d-59e5-bd23-118340d6075a
+       */
+      classId: string
       /**
        * Format: int32
        * @description 팀 하나의 목표 인원
@@ -12794,7 +12865,11 @@ export interface components {
     TeamListResponse: {
       /** @description 팀 목록입니다. **매니저의 담당 반만** 옵니다(30차 R3). */
       teams: components['schemas']['TeamResponse'][]
-      /** @description 아직 어느 팀에도 속하지 않은 인원 목록 */
+      /**
+       * @description 아직 어느 팀에도 속하지 않은 인원입니다. **매니저의 담당 반만** 옵니다 —
+       *     `teams[]`와 같은 모집단입니다. 종전에는 여기만 기수 전원이라 배너 숫자가
+       *     팀에 사람을 넣어도 줄지 않았습니다.
+       */
       unassignedMembers: components['schemas']['UnassignedMemberResponse'][]
       /**
        * Format: int32
@@ -12802,12 +12877,23 @@ export interface components {
        */
       unassignedCount: number
     }
+    /** @description 아직 어느 팀에도 속하지 않은 사람 한 명 */
     UnassignedMemberResponse: {
       /** Format: uuid */
       projectMembershipId: string
       /** Format: uuid */
       userId: string
       name: string
+      /**
+       * Format: uuid
+       * @description 이 사람이 속한 반 ID
+       */
+      classId: string
+      /**
+       * @description 반 이름. 반이 지워졌으면 null
+       * @example B반
+       */
+      className: string | null
     }
     /**
      * @description 분석 시도 한 건.
@@ -18521,7 +18607,10 @@ export interface operations {
   }
   findTeams: {
     parameters: {
-      query?: never
+      query?: {
+        /** @description 반 필터. 생략하면 담당 반 전체 */
+        classId?: string
+      }
       header?: never
       path: {
         /** @description 프로젝트 ID */
@@ -18594,7 +18683,7 @@ export interface operations {
           'application/json': components['schemas']['TeamResponse']
         }
       }
-      /** @description VALIDATION_FAILED 팀 이름 누락 · MANAGER_CLASSROOM_AMBIGUOUS 담당 반을 하나로 정할 수 없음 */
+      /** @description VALIDATION_FAILED classId·팀 이름 누락 */
       400: {
         headers: {
           [name: string]: unknown
@@ -18612,7 +18701,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description ACCESS_DENIED 매니저가 아님 */
+      /** @description ACCESS_DENIED 매니저가 아님 · CLASS_NOT_MANAGED 담당하지 않는 반 */
       403: {
         headers: {
           [name: string]: unknown
@@ -18621,7 +18710,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description PROJECT_NOT_FOUND 프로젝트를 찾을 수 없음 */
+      /** @description PROJECT_NOT_FOUND 프로젝트를 찾을 수 없음 · CLASS_NOT_FOUND 이 기수에 그 반이 없음 */
       404: {
         headers: {
           [name: string]: unknown
@@ -18697,7 +18786,10 @@ export interface operations {
   }
   confirmTeams: {
     parameters: {
-      query?: never
+      query: {
+        /** @description 확정할 반 */
+        classId: string
+      }
       header?: never
       path: {
         /** @description 프로젝트 ID */
@@ -18768,7 +18860,7 @@ export interface operations {
           'application/json': components['schemas']['TeamResponse'][]
         }
       }
-      /** @description VALIDATION_FAILED 필수값 누락 · NO_MEMBERS_TO_ASSIGN 배분할 인원 없음 · MANAGER_CLASSROOM_AMBIGUOUS 담당 반을 하나로 정할 수 없음 */
+      /** @description VALIDATION_FAILED 필수값 누락 · NO_MEMBERS_TO_ASSIGN 그 반에 배분할 인원 없음 */
       400: {
         headers: {
           [name: string]: unknown
@@ -18786,7 +18878,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description ACCESS_DENIED 매니저가 아님 */
+      /** @description ACCESS_DENIED 매니저가 아님 · CLASS_NOT_MANAGED 담당하지 않는 반 */
       403: {
         headers: {
           [name: string]: unknown
@@ -18795,7 +18887,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description PROJECT_NOT_FOUND 프로젝트를 찾을 수 없음 */
+      /** @description PROJECT_NOT_FOUND 프로젝트를 찾을 수 없음 · CLASS_NOT_FOUND 이 기수에 그 반이 없음 */
       404: {
         headers: {
           [name: string]: unknown
@@ -18804,7 +18896,7 @@ export interface operations {
           'application/json': components['schemas']['ErrorResponse']
         }
       }
-      /** @description AUTO_ASSIGN_NOT_ALLOWED 이미 팀이 편성되어 있음 — 자동 배분은 팀이 없을 때만 된다 */
+      /** @description AUTO_ASSIGN_NOT_ALLOWED 그 반에 이미 팀이 있음 — 자동 배분은 그 반에 팀이 없을 때만 된다 */
       409: {
         headers: {
           [name: string]: unknown
@@ -22135,7 +22227,10 @@ export interface operations {
   }
   reopenTeams: {
     parameters: {
-      query?: never
+      query: {
+        /** @description 되돌릴 반 */
+        classId: string
+      }
       header?: never
       path: {
         /** @description 프로젝트 ID */
@@ -24875,7 +24970,7 @@ export interface operations {
   }
   findInterviews: {
     parameters: {
-      query?: {
+      query: {
         /**
          * @description 조회할 회차 ID. **생략하면 서버가 「이번 회차」를 고릅니다**(32차 R2).
          *
@@ -24905,8 +25000,8 @@ export interface operations {
         riskType?: string
         /** @description 반 필터. 없으면 담당 반 전체 */
         classId?: string
-        /** @description 기수 ID. `assessmentRoundId`를 생략했을 때 「이번 회차」를 고르는 범위를 좁힌다. 생략하면 담당 기수 전부에서 고른다 */
-        cohort?: string
+        /** @description 기수 ID. **필수다.** `assessmentRoundId`를 생략했을 때 「이번 회차」를 고르는 범위가 이 값이다. */
+        cohort: string
       }
       header?: never
       path?: never
@@ -24963,9 +25058,9 @@ export interface operations {
   }
   findInterviewRoundOptions: {
     parameters: {
-      query?: {
-        /** @description 기수 ID. 생략하면 담당 기수 전부라 여러 기수의 회차가 섞인다 */
-        cohort?: string
+      query: {
+        /** @description 기수 ID. **필수다.** 이 기수의 회차만 돌려준다. */
+        cohort: string
       }
       header?: never
       path?: never

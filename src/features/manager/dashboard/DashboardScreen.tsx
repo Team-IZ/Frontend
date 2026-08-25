@@ -46,10 +46,20 @@ const BAND_ORDER: InboxBand[] = [1, 2, 3, 4]
  * 우선해 읽는다 — `interviews/filterState.ts`를 직접 import하지 않는 이유는
  * feature 간 교차 import 금지(`no-restricted-imports`) 때문이다.
  */
-function interviewsListPath(roundId: string, classId: string | null): string {
+function interviewsListPath(
+  roundId: string,
+  classId: string | null,
+  cohortId: string | undefined,
+): string {
   const params = new URLSearchParams({ round: roundId })
   /* ⚠ **`classId`다 — 반 이름이 아니다.** 목록의 `?class=`가 그대로 서버로 나간다 */
   if (classId) params.set('class', classId)
+  /*
+    🔴 33차 §9 — 기수를 안 실으면 목록이 `useManagerCohort`의 기본값(진행 중인
+    기수)으로 물러선다. 면담 목록 조회는 `cohort`가 **필수**라, 여기서 빠뜨리면
+    보고 있던 기수가 아닌 곳의 회차를 조회한다.
+  */
+  if (cohortId) params.set('cohort', cohortId)
   return `/manager/interviews?${params.toString()}`
 }
 
@@ -271,7 +281,9 @@ export default function DashboardScreen() {
                         }
                         onReviewVoid={() =>
                           item.kind === 'INVALID' &&
-                          navigate(interviewsListPath(item.assessmentRoundId, item.classId))
+                          navigate(
+                            interviewsListPath(item.assessmentRoundId, item.classId, cohortId),
+                          )
                         }
                       />
                     ))}

@@ -15,6 +15,7 @@ import {
 import { projectExecutionKeys } from './projectExecutionKeys'
 import type {
   findTeams_Path,
+  findTeams_Query,
   findTeams_Response,
   findProjects_Path,
   findProjects_Query,
@@ -36,7 +37,7 @@ import type {
 
 /** 팀 목록 조회 */
 export function useFindTeams(
-  params: { path: findTeams_Path },
+  params: { path: findTeams_Path; query?: findTeams_Query },
   options?: QueryOptions<findTeams_Response>,
 ) {
   return useQuery({

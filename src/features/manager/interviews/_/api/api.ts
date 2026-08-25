@@ -44,12 +44,13 @@ type BriefServer = findInterviewBrief_Response
  * 회차가 섞여 오고, 그중 마지막(가장 최근 프로젝트의 마지막 회차)이 기본으로
  * 잡혀 「보고 있는 기수와 무관한 회차」가 뽑힌다(면담 첫 진입 기본 회차 버그).
  *
- * `enabled: !!cohortId`로 기수가 오기 전에는 부르지 않는다 — 백엔드가 이 API의
- * `cohort`를 필수로 바꿀 예정이라(예고), 미리 게이트를 걸어 둔다.
+ * `enabled: !!cohortId`로 기수가 오기 전에는 부르지 않는다 — 33차로 `cohort`가
+ * **필수**가 되어, 게이트가 없으면 그 요청이 400이다.
  */
 export function useInterviewRounds(cohortId: string | undefined) {
   const query = useFindInterviewRoundOptions(
-    { query: cohortId ? { cohort: cohortId } : {} },
+    /* 빈 값은 `enabled`가 막아 나가지 않는다 */
+    { query: { cohort: cohortId ?? '' } },
     { enabled: !!cohortId },
   )
   const data = useMemo<RoundOption[] | undefined>(
@@ -67,10 +68,13 @@ export function useInterviewRounds(cohortId: string | undefined) {
 export type InterviewQuery = {
   /**
    * 🔴 33차(백엔드) — 회차를 아직 못 고른 첫 진입에서 서버가 「이번 회차」를
-   * **담당 기수 전체가 아니라 이 기수 안에서** 고르게 한다. 생략해도 동작하지만
-   * (하위 호환), 생략하면 다른 기수의 회차가 기본값으로 잡힐 수 있다.
+   * **담당 기수 전체가 아니라 이 기수 안에서** 고르게 한다.
+   *
+   * **필수다.** 요청서 7절은 이 값을 선택으로 남긴다고 적었지만 실제 스펙은
+   * `required`로 왔다. 기수를 모르는 동안에는 `useInterviewList`에 `undefined`를
+   * 넘겨 조회 자체를 끈다 — 빈 값으로 부르면 400이다.
    */
-  cohort?: string
+  cohort: string
   /**
    * 생략하면 **서버가 이번 회차를 고른다**(32차 R2). 고른 회차는 응답의 `round`로
    * 돌아오므로 화면이 그 값을 드롭다운에 되채운다.
@@ -101,7 +105,8 @@ export type InterviewQuery = {
  */
 export function useInterviewList(params: InterviewQuery | undefined) {
   const query = useFindInterviews(
-    { query: params ?? {} },
+    /* 빈 값은 `enabled`가 막아 나가지 않는다 — `cohort`가 필수라 자리만 채운다 */
+    { query: params ?? { cohort: '' } },
     { enabled: !!params, ...listQueryOptions },
   )
   const data = useMemo(() => (query.data ? toListView(query.data) : undefined), [query.data])

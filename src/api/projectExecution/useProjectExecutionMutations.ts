@@ -35,6 +35,7 @@ import type {
   assignTeamMember_Body,
   assignTeamMember_Response,
   confirmTeams_Path,
+  confirmTeams_Query,
   confirmTeams_Response,
   autoAssignTeams_Path,
   autoAssignTeams_Body,
@@ -56,6 +57,7 @@ import type {
   updateTeam_Body,
   updateTeam_Response,
   reopenTeams_Path,
+  reopenTeams_Query,
   reopenTeams_Response,
   updateRoundSchedule_Path,
   updateRoundSchedule_Body,
@@ -149,11 +151,15 @@ export function useAssignTeamMember(
 
 /** 팀 편성 확정 */
 export function useConfirmTeams(
-  options?: MutationOptions<confirmTeams_Response, { path: confirmTeams_Path }>,
+  options?: MutationOptions<
+    confirmTeams_Response,
+    { path: confirmTeams_Path; query: confirmTeams_Query }
+  >,
 ) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (vars: { path: confirmTeams_Path }) => confirmTeams(vars),
+    mutationFn: (vars: { path: confirmTeams_Path; query: confirmTeams_Query }) =>
+      confirmTeams(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다
@@ -293,11 +299,14 @@ export function useUpdateTeam(
 
 /** 팀 편성 다시 열기 */
 export function useReopenTeams(
-  options?: MutationOptions<reopenTeams_Response, { path: reopenTeams_Path }>,
+  options?: MutationOptions<
+    reopenTeams_Response,
+    { path: reopenTeams_Path; query: reopenTeams_Query }
+  >,
 ) {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (vars: { path: reopenTeams_Path }) => reopenTeams(vars),
+    mutationFn: (vars: { path: reopenTeams_Path; query: reopenTeams_Query }) => reopenTeams(vars),
     ...options,
     onSuccess: (...args) => {
       // 기본 무효화 — 이 도메인의 조회를 전부 다시 읽는다

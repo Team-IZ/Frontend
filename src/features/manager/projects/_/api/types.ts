@@ -51,9 +51,10 @@ export type TraineeEvaluation = components['schemas']['TraineeEvaluationDetailRe
 export type EvaluationStep = components['schemas']['TraineeEvaluationStep']
 
 /**
- * 팀 편성 5국면 — 목 `TeamPhase`와 값이 1:1이다(`BEFORE`→`NOT_STARTED`,
- * `READY`→`READY_TO_CONFIRM`, `LOCKED`→`CONFIRMED`). 스펙이 `string`으로 열어 둬
- * 좁혀 쓴다.
+ * 팀 편성 5국면 — 스펙이 `string`으로 열어 둬 좁혀 쓴다. 값은
+ * `ProjectSubmissionStatusResponse.teamFormationStage`의 표 그대로다.
+ *
+ * ⚠ **반 스코프 값이다**(33차) — `classId`를 실어 조회하면 그 반 기준으로 온다.
  */
 export type TeamFormationStage =
   'NOT_STARTED' | 'FORMING' | 'READY_TO_CONFIRM' | 'CONFIRMED' | 'CLOSED'

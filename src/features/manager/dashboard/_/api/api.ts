@@ -99,9 +99,10 @@ export function useInbox(cohortId: string | undefined, picked: string | undefine
     { enabled: !!cohortId && !!roundId, ...opts },
   )
 
+  /* 33차 — `cohort`가 필수다. 빈 값은 `enabled`가 막아 나가지 않는다 */
   const interviews = useFindInterviews(
-    { query: { assessmentRoundId: roundId } },
-    { enabled: !!roundId, ...opts },
+    { query: { cohort: cohortId ?? '', assessmentRoundId: roundId } },
+    { enabled: !!cohortId && !!roundId, ...opts },
   )
 
   const signals = useGetRiskSignalsForInbox(

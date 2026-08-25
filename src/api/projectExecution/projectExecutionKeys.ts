@@ -2,6 +2,7 @@
 
 import type {
   findTeams_Path,
+  findTeams_Query,
   findProjects_Path,
   findProjects_Query,
   findProject_Path,
@@ -20,8 +21,8 @@ import type {
 */
 export const projectExecutionKeys = {
   all: ['projectExecution'] as const,
-  findTeams: (params: { path: findTeams_Path }) =>
-    [...projectExecutionKeys.all, 'findTeams', params.path ?? null] as const,
+  findTeams: (params: { path: findTeams_Path; query?: findTeams_Query }) =>
+    [...projectExecutionKeys.all, 'findTeams', params.path ?? null, params.query ?? null] as const,
   findProjects: (params: { path: findProjects_Path; query?: findProjects_Query }) =>
     [
       ...projectExecutionKeys.all,

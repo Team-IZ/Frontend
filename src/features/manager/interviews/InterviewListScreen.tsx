@@ -101,9 +101,20 @@ export default function InterviewListScreen() {
   const [undoBanner, setUndoBanner] = useState<{ caseId: string; name: string } | null>(null)
   const [rowFailed, setRowFailed] = useState<string | null>(null)
 
-  // 딥링크 쿼리는 초기 필터에 한 번 반영하고 바로 지운다(위 docblock)
+  /*
+    딥링크 쿼리는 초기 필터에 한 번 반영하고 바로 지운다(위 docblock).
+
+    🔴 **지우는 것은 `round`·`class`뿐이다.** 종전에는 `setSearchParams({})`로 주소를
+    통째로 비웠는데, 기수는 주소의 `?cohort=`에만 살기 때문에(`cohortScope.ts`) 그것까지
+    날아가 `useManagerCohort`가 기본 기수(`enrollments[0]` = 진행 중인 기수)로
+    물러섰다 — 대시보드에서 5기 인박스를 눌러 들어와도 7기 목록이 열렸다.
+  */
   useEffect(() => {
-    if (searchParams.has('round')) setSearchParams({}, { replace: true })
+    if (!searchParams.has('round')) return
+    const next = new URLSearchParams(searchParams)
+    next.delete('round')
+    next.delete('class')
+    setSearchParams(next, { replace: true })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -133,15 +144,23 @@ export default function InterviewListScreen() {
   const round = filters.round
 
   const search = useDebounced(filters.search).trim()
-  const list = useInterviewList({
-    // 🔴 33차(백엔드 R3) — 이번 회차 판정을 담당 기수 전체가 아니라 이 기수 안에서 하게 한다.
-    cohort: cohortId,
-    assessmentRoundId: round || undefined,
-    search: search || undefined,
-    status: filters.status === ALL ? undefined : filters.status,
-    riskType: filters.riskType === ALL ? undefined : filters.riskType,
-    classId: filters.classFilter === ALL ? undefined : filters.classFilter,
-  })
+  /*
+    🔴 33차(백엔드 R3) — 이번 회차 판정을 담당 기수 전체가 아니라 이 기수 안에서
+    하게 한다. `cohort`가 **필수**라 기수를 아직 모르는 동안에는 `undefined`를 넘겨
+    조회를 끈다 — 빈 값으로 부르면 400이다.
+  */
+  const list = useInterviewList(
+    cohortId
+      ? {
+          cohort: cohortId,
+          assessmentRoundId: round || undefined,
+          search: search || undefined,
+          status: filters.status === ALL ? undefined : filters.status,
+          riskType: filters.riskType === ALL ? undefined : filters.riskType,
+          classId: filters.classFilter === ALL ? undefined : filters.classFilter,
+        }
+      : undefined,
+  )
 
   const exclude = useExcludeInterviewCase()
   const reinclude = useReincludeInterviewCase()

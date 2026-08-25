@@ -27,7 +27,7 @@ export function useFindInterviewBrief(
 
 /** [면담 목록] 면담 목록 조회 */
 export function useFindInterviews(
-  params: { query?: findInterviews_Query } = {},
+  params: { query: findInterviews_Query },
   options?: QueryOptions<findInterviews_Response>,
 ) {
   return useQuery({
@@ -39,7 +39,7 @@ export function useFindInterviews(
 
 /** [면담 목록] 면담 회차 옵션 조회 */
 export function useFindInterviewRoundOptions(
-  params: { query?: findInterviewRoundOptions_Query } = {},
+  params: { query: findInterviewRoundOptions_Query },
   options?: QueryOptions<findInterviewRoundOptions_Response>,
 ) {
   return useQuery({

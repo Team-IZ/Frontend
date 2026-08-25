@@ -12,7 +12,7 @@ export default function PrivacyPolicyScreen() {
       <div className="mx-auto max-w-[640px]">
         <h1 className="text-fg text-xl font-bold">개인정보 처리방침</h1>
         <p className="text-fg-muted mt-2 text-sm leading-relaxed">
-          IZ 프로젝트팀(&quot;서비스&quot;)은 「개인정보 보호법」 등 관련 법령을 준수하며, 이용자의
+          IZ는(&quot;서비스&quot;)은 「개인정보 보호법」 등 관련 법령을 준수하며, 이용자의
           개인정보를 안전하게 처리하기 위해 다음과 같이 개인정보 처리방침을 수립·공개합니다.
         </p>
         <p className="text-fg-subtle mt-2 text-sm leading-relaxed">
@@ -24,7 +24,7 @@ export default function PrivacyPolicyScreen() {
         <Section title="1. 운영 주체">
           <table className="w-full border-collapse text-sm">
             <tbody>
-              <Row label="운영">IZ 프로젝트팀</Row>
+              <Row label="운영">IZ</Row>
               <Row label="주소">서울특별시 종로구 청계천로 81 4층</Row>
               <Row label="대표자">김연주</Row>
               <Row label="사업자등록번호">

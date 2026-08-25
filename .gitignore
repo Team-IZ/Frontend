@@ -49,3 +49,6 @@ dev-accounts.env
 # 한 기수 전원 명부 — 기관이 준 마크다운을 scripts/dev-team-accounts.mjs가 바꾼 것
 dev-team-accounts.json
 dev-team-accounts.env
+
+# 헤더 역할 전환 목록(넷) — 위 명부에서 뽑은 것이라 같은 자격 증명이 들어 있다
+header-accounts.env

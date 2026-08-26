@@ -518,3 +518,15 @@ test('다시 보기 버튼이 붙는 개념 = 2단 미만 (0단·1단 둘 다)',
     [true, true, false],
   )
 })
+
+test('직접 친 답이 있으면 그것이 말풍선에 들어간다', () => {
+  const typed = '제가 쓴 답입니다. setUp이 mock을 만들고 grader에 넘깁니다.'
+  const s = run([{ type: 'ANSWER', score: 2, answerText: typed }], started())
+  assert.equal(s.turns[0].answerText, typed)
+})
+
+test('입력이 비어 있으면 그 자리의 준비된 답변을 쓴다', () => {
+  // 시연자가 매번 타이핑할 수는 없다 — 비워 두면 은행/녹화본이 대신한다
+  const s = run([{ type: 'ANSWER', score: 5, answerText: '   ' }], started())
+  assert.match(s.turns[0].answerText, /@BeforeEach/)
+})

@@ -168,7 +168,9 @@ export default function DemoSessionScreen() {
           <ScoreBar
             axisCode={axisCode}
             hintsLeft={problem.current?.hintsLeft ?? 0}
-            onScore={(score: Score) => send({ type: 'ANSWER', score })}
+            onScore={(score: Score, answerText: string) =>
+              send({ type: 'ANSWER', score, answerText })
+            }
             onTimeOut={() => send({ type: 'TIME_OUT' })}
             onRequestHint={() => send({ type: 'OPEN_HINT' })}
           />

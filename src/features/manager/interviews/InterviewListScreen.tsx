@@ -88,6 +88,26 @@ const shortDate = (iso: string | null) => (iso ? `${iso.slice(5, 7)}.${iso.slice
  */
 const NO_VERDICT_YET = ['OPEN', 'PLANNED']
 
+/** 브리프를 아직 안 만든 케이스 — 이 목록에서 할 일이 남은 쪽이다 */
+const needsBriefCase = (c: InterviewCase) => c.briefState === 'NONE' || c.briefState === 'FAILED'
+
+/**
+ * **할 일이 남은 케이스를 위로 올린다.**
+ *
+ * 🔴 정렬은 원래 서버 것이다(스펙: *"정렬은 서버가 정하며 클라이언트가 바꿀 수 없다"*).
+ * 그런데 서버 순서는 **반 → 이름**이라 브리프를 만든 것과 안 만든 것이 뒤섞여 나오고,
+ * 매니저가 이 목록에서 하는 일이 「만들 것 찾기」인데 스무 줄을 훑어야 했다(사용자 지시).
+ *
+ * 서버 순서를 **버리지 않는다** — 안정 정렬이라 같은 묶음 안에서는 반·이름 순이 그대로
+ * 유지된다. 위아래로 가르기만 한다.
+ *
+ * ⚠️ 서버가 이 축을 정렬에 넣어 주면 이 함수는 지운다.
+ */
+const briefFirst = (items: InterviewCase[]) => [
+  ...items.filter(needsBriefCase),
+  ...items.filter((c) => !needsBriefCase(c)),
+]
+
 /**
  * 첫 진입에 열 회차 — **판정이 나온 가장 최근 회차.**
  *
@@ -459,7 +479,7 @@ export default function InterviewListScreen() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data.items.map((c) => (
+              {briefFirst(data.items).map((c) => (
                 <TableRow
                   key={c.caseId}
                   className={c.status === 'EXCLUDED' ? 'opacity-45' : undefined}
@@ -576,6 +596,8 @@ function RowActions({
   }
 
   // PLANNED
+  const needsBrief = needsBriefCase(c)
+
   return (
     <div className="flex justify-end gap-1.5">
       {c.voidReviewPending && !VOID_REVIEW_OPEN ? (
@@ -586,8 +608,23 @@ function RowActions({
         */
         <span className="text-fg-subtle self-center text-2xs">무효 확인 준비 중</span>
       ) : (
-        <Button variant="primary" size="sm" disabled={pending} onClick={onOpenBrief}>
-          {c.briefState === 'NONE' || c.briefState === 'FAILED' ? '브리프 생성' : '브리프 열기'}
+        /*
+          **생성과 열기는 다른 일이라 다르게 보인다.**
+
+          둘 다 `primary`였는데, 목록을 훑을 때 **아직 안 만든 것과 이미 만든 것이
+          구분되지 않았다**(실사용 피드백). 매니저가 이 목록에서 하는 일은 "만들 것을
+          찾는 것"이라, 만드는 쪽이 눈에 먼저 들어와야 한다.
+
+          생성은 채운 버튼(primary), 열기는 테두리 버튼(ghost) — 색이 아니라 **형태**로
+          갈린다(`Wordmark`·교안 알약에서 쓴 것과 같은 규칙).
+        */
+        <Button
+          variant={needsBrief ? 'primary' : 'ghost'}
+          size="sm"
+          disabled={pending}
+          onClick={onOpenBrief}
+        >
+          {needsBrief ? '브리프 생성' : '브리프 열기'}
         </Button>
       )}
       <Button variant="ghost" size="sm" disabled={pending} onClick={onExclude}>

@@ -28,6 +28,7 @@ import { execFileSync, execSync } from 'node:child_process'
 import { existsSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { posixShell, run } from './verify-ci-run.mjs'
 
 const CI = '.github/workflows/ci.yml'
 
@@ -77,15 +78,6 @@ function stepsFromWorkflow() {
   return steps
 }
 
-function run(script, cwd) {
-  try {
-    execSync(script, { cwd, stdio: 'pipe', encoding: 'utf8', shell: '/bin/sh' })
-    return null
-  } catch (e) {
-    return `${e.stdout ?? ''}${e.stderr ?? ''}`.trim().split('\n').slice(-12).join('\n')
-  }
-}
-
 const dirty = execSync('git status --porcelain', { encoding: 'utf8' }).trim()
 const head = execSync('git log --oneline -1', { encoding: 'utf8' }).trim()
 
@@ -96,13 +88,23 @@ if (dirty) {
   console.log(`  ⚠️ 커밋되지 않은 변경 ${n}건은 검사 대상이 아니다 (CI도 안 본다)`)
 }
 
+// 셸을 못 찾으면 여기서 멈춘다 — 실행 못 한 스텝을 ✅로 찍는 것이 가장 나쁜 결과다
+const shell = posixShell()
+if (!shell) {
+  console.log('\n✗ POSIX sh를 찾지 못했다 — CI 스텝은 셸 스크립트라 검사를 돌릴 수 없다.')
+  console.log(
+    '  Windows면 Git for Windows(Git Bash)가 필요하다. 검사를 건너뛰고 통과시키지 않는다.\n',
+  )
+  process.exit(1)
+}
+
 const dir = mkdtempSync(join(tmpdir(), 'verify-ci-'))
 let failed = 0
 try {
   execFileSync('git', ['worktree', 'add', '--detach', dir, 'HEAD'], { stdio: 'pipe' })
 
   process.stdout.write(`\n  ${'npm ci'.padEnd(38)} `)
-  const install = run('npm ci', dir)
+  const install = run('npm ci', dir, shell)
   if (install) {
     console.log('❌')
     console.log(install.replace(/^/gm, '      '))
@@ -114,7 +116,7 @@ try {
 
   for (const step of stepsFromWorkflow()) {
     process.stdout.write(`  ${step.name.padEnd(38)} `)
-    const err = run(step.script, dir)
+    const err = run(step.script, dir, shell)
     if (err) {
       failed++
       console.log('❌')

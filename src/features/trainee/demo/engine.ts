@@ -129,8 +129,14 @@ export function initialState(): DemoState {
 
 export type DemoAction =
   | { type: 'START' }
-  /** 시연자가 점수를 눌렀다 — 이것이 답변 제출이자 채점 결과다 */
-  | { type: 'ANSWER'; score: Score }
+  /**
+   * 시연자가 점수를 눌렀다 — 이것이 답변 제출이자 채점 결과다.
+   *
+   * `answerText`는 **학생이 직접 친 답**이다. 비어 있으면 그 자리의 준비된 답변을
+   * 쓴다(`answers.ts`) — 시연자가 타이핑까지 하고 있을 수는 없으므로 기본은 그쪽이고,
+   * 쳤을 때만 그것이 말풍선에 들어간다.
+   */
+  | { type: 'ANSWER'; score: Score; answerText?: string }
   /** 시연자가 「시간 초과」를 눌렀다 */
   | { type: 'TIME_OUT' }
   /** 학생이 「다시 설명해 주세요」를 눌렀다 — 점수와 무관하게 직접 여는 힌트 */
@@ -179,7 +185,7 @@ export function reduce(s: DemoState, a: DemoAction): DemoState {
       return s.phase === 'TRANSITION' ? { ...s, phase: 'IN_PROBLEM', transitionReason: null } : s
 
     case 'ANSWER':
-      return answer(s, a.score)
+      return answer(s, a.score, a.answerText)
 
     case 'TIME_OUT':
       return s.phase === 'IN_PROBLEM' ? closeProblem(s, 'PROBLEM_TIME_LIMIT') : s
@@ -200,7 +206,7 @@ export function reduce(s: DemoState, a: DemoAction): DemoState {
   }
 }
 
-function answer(s: DemoState, score: Score): DemoState {
+function answer(s: DemoState, score: Score, typed?: string): DemoState {
   if (s.phase !== 'IN_PROBLEM') return s
 
   const problem = PROBLEMS[s.problemIdx]
@@ -215,7 +221,8 @@ function answer(s: DemoState, score: Score): DemoState {
     sequenceNo: s.axisIdx + 1,
     questionText: stage.questionText,
     hintText: s.hintsUsed > 0 ? stage.hints[s.hintsUsed - 1] : null,
-    answerText: answerFor(problem.problemNo, axisCode, s.hintsUsed, score),
+    // 직접 친 답이 있으면 그것이 이긴다 — 없으면 그 자리의 준비된 답변
+    answerText: typed?.trim() || answerFor(problem.problemNo, axisCode, s.hintsUsed, score),
     answeredAt: ANSWERED_AT,
     highlight: highlightOf(s.problemIdx, s.axisIdx),
   }
